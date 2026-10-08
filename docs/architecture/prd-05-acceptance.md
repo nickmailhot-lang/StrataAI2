@@ -372,3 +372,15 @@ live preference/acceptance and reconnect assertions remain. Four new passive
 observer regressions pass with the existing seven. No product guard is weakened;
 strict/provider and full current retained-image acceptance remain required.
 PRD-05 remains open at **15% estimated work remaining** (planning estimate).
+
+## Invitation withdrawal after current Board role events
+
+The current membership producer's `BOARD_MEMBER_ADDED` and
+`BOARD_MEMBER_ROLE_CHANGED` families now reach the PostgreSQL recipient authority
+pipeline, preserving the original source IDs and bounded leased delivery.
+Both unchanged native Board invitation cases pass issuer downgrade and independent
+protected acceptance denial. The routing fixture reproduces the missing family
+before repair and verifies deduplicated restricted delivery after migration 113.
+See [native recipient evidence](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption).
+Estimated PRD-05 work remaining stays **15%** (planning estimate); full current
+immutable CI and remaining acceptance still govern closure.

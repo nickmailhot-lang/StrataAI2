@@ -317,3 +317,16 @@ withdrawal and WCAG assertions remain unchanged. This prevents a failed desktop
 case from fabricating a mobile precondition failure; it does not make the failed
 case pass. The corrected complete exact-image pipeline remains pending. PRD-04
 stays open at 18% estimated remaining.
+
+## Current Board issuer authority delivery
+
+Actual Board membership additions and role changes now enter PostgreSQL's
+existing private invitation authority pipeline through forward migration 113.
+Both unchanged desktop/phone native scenarios pass rename, archive/restore and
+issuer downgrade: stale acceptance/private Board names are withdrawn, focus and
+content-free frames remain, and independent acceptance/current Board reads are
+refused. Three source-family routing/retry cases and existing bounded private
+capability checks pass with migration/readiness checks. See
+[complete evidence](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption).
+Estimated PRD-04 work remaining stays **16%** (planning estimate). Current immutable
+CI, remaining release failures and full-PRD acceptance still prevent closure.

@@ -395,3 +395,16 @@ post-session binding check and verifies that the pending source page is withheld
 These in-process transport checks passed alongside a zero-warning Release build;
 they do not prove concurrent native account changes, Production WebSocket
 acceptance, browser consumption or current exact-image CI acceptance.
+
+## Native missed-event recovery after actual socket closure
+
+The desktop/phone Portal scenarios now interrupt the actual server-connected
+transport during the browser offline interval, then permit reconnection after
+an independent issuer creates the genuine missed invitation. Server/client bytes
+are forwarded unchanged; only transport availability is faulted. The original
+three event IDs/types/sequences, exact content-free envelopes, protected nonmember
+reads, no document reload, focus on Refresh invitations, logout withdrawal and WCAG assertions
+remain. Both cases pass in the final four-case recipient invocation. The original
+baseline failed all four recipient cases. See
+[routing and interruption evidence](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption)
+for current runtime scope and release limits.

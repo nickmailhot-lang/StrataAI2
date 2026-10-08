@@ -49,7 +49,7 @@ of this new catalog guard is still required before treating it as release eviden
 ## Runtime migration readiness
 
 Production connections require every named migration through
-`087_organization_deletion_replays`. The readiness query checks for missing
+`113_invitation_recipient_membership_authority`. The readiness query checks for missing
 required ledger entries directly, avoiding a separately maintained numeric total.
 Extra later migrations do not substitute for a missing required entry.
 
@@ -63,3 +63,16 @@ foundation or navigation entries are temporarily hidden by the fixture admin,
 and recovery after each entry is restored. Fixture mutations are confined to the
 disposable CI database and restored in `finally`. Compilation passed with zero
 warnings/errors; native execution of this repair remains pending CI.
+
+
+## Membership authority forward upgrade
+
+Migration 113 retains current canonical history and adds the actual Board
+membership producer names to recipient invalidation. The clean/repeat/forward
+upgrade runner executes its three-family routing fixture, including restricted
+Worker retry, then retains concurrent-runner serialization, injected migration
+rollback and unrecorded-migration rejection. All pass locally on an owned
+PostgreSQL17/pgvector database. The corresponding mandatory PostgreSQL CI step
+also runs the routing fixture directly. Current restricted API/Worker readiness
+checks pass, including refusal/recovery when 113 is hidden. See
+[execution scope](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption).

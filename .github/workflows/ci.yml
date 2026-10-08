@@ -244,6 +244,8 @@ jobs:
 
       - name: Verify canonical Board recipient authority paging and restricted capabilities
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-board-authority.sql
+      - name: Current Board membership producer authority routing and idempotent delivery
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/invitation-membership-authority-fixture.sql
 
       - name: Verify concurrent Board journal commit order with restricted runtime role
         run: bash scripts/ci/test-organization-board-journal-order.sh

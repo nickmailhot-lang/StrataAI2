@@ -731,3 +731,23 @@ mandatory scenarios on retained API/web images without rebuilding them. Local
 compiled framework API and production bundle passes do not prove exact release
 identity or complete Portal/Organization/retention acceptance. PRD-03 remains
 **10%** unfinished and PRD-60 **18%**, both planning estimates; the issues stay open.
+
+## Current membership producer names in PostgreSQL
+
+[Migration 113](../../db/migrations/113_invitation_recipient_membership_authority.sql)
+closes a native delivery gap: actual Board role changes emit
+`BOARD_MEMBER_ROLE_CHANGED`, and additions emit `BOARD_MEMBER_ADDED`, while the
+older publication/view recognized only `BOARD_MEMBER_UPDATED` and removals.
+Both new families now enter the existing private canonical-source routing.
+Existing update/removal, lifecycle and issuer-account branches remain. No historical
+event is renamed or synthesized; the Worker still advances bounded private
+recipient revisions rather than disclosing Board/member details in frames.
+
+The new routing fixture fails before the repair and passes afterward for all
+three upsert families, restricted delivery and same-source retry. The existing
+205-candidate paging/rollback/capability contract also passes. Both unchanged
+native Board cases pass actual rename, archive/restore and issuer downgrade,
+with stale acceptance withdrawn, focus retained and independent acceptance/API
+refusal. Readiness and migration upgrade checks pass through schema 113. See
+[full execution evidence](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption)
+for baseline failures, final four-case run and current immutable-release limits.

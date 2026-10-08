@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from './releaseTest';
+import { expect, test, type WebSocketRoute } from './releaseTest';
+import { focusAdmittedControl } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-03/60-TC-05/08/09/11/12: nonmember Portal recipient discovers, revokes and recovers actual live invitations at ${width}px`, async ({ page, context, browser }) => {
@@ -11,14 +12,29 @@ for (const width of [1280, 390]) {
     let documents = 0;
     const envelopes: { cursor: string; resetRequired: boolean; hasMore: boolean; events: { eventId: string; eventType: string; sequence: string; createdAt: string }[] }[] = [];
     page.on('request', request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++; });
-    page.on('websocket', socket => {
-      if (!new URL(socket.url()).pathname.startsWith('/invitations/live')) return;
-      socket.on('framereceived', frame => {
-        if (typeof frame.payload !== 'string') return;
-        for (const part of frame.payload.split('\u001e').filter(Boolean)) {
-          const value = JSON.parse(part);
-          if (value.type === 2) envelopes.push(value.item);
+    let disconnected = false; let socket: WebSocketRoute | undefined;
+    // Connect every admitted socket to the actual API. Forward original bytes
+    // in both directions; only transport closure/reconnect availability is faulted.
+    await page.routeWebSocket(url => url.pathname === '/invitations/live', route => {
+      if (disconnected) { void route.close({ code: 1013 }); return; }
+      socket = route; const server = route.connectToServer(); const watches = new Set<string>();
+      route.onMessage(message => {
+        if (typeof message === 'string') for (const part of message.split('\u001e').filter(Boolean)) {
+          try {
+            const value = JSON.parse(part);
+            if (value.type === 4 && value.target === 'Watch' && typeof value.invocationId === 'string') watches.add(value.invocationId);
+          } catch { /* Handshake framing is not a source event. */ }
         }
+        server.send(message);
+      });
+      server.onMessage(message => {
+        if (typeof message === 'string') for (const part of message.split('\u001e').filter(Boolean)) {
+          try {
+            const value = JSON.parse(part);
+            if (value.type === 2 && watches.has(value.invocationId)) envelopes.push(value.item);
+          } catch { /* Passive actual-server observation only. */ }
+        }
+        route.send(message);
       });
     });
     try {
@@ -36,15 +52,16 @@ for (const width of [1280, 390]) {
       }
       await page.goto('/app/invitations'); await expect(page.getByText('No pending invitations on this page.', { exact: true })).toBeVisible();
       await expect.poll(() => envelopes.some(p => p.resetRequired && !p.events.length)).toBe(true);
-      const refresh = page.getByRole('button', { name: 'Refresh invitations' }); await refresh.focus();
+      const refresh = page.getByRole('button', { name: 'Refresh invitations' }); await focusAdmittedControl(refresh);
       const first = await create(); const accept = page.getByRole('button', { name: 'Accept invitation to Live Portal scope' });
       await expect(accept).toBeEnabled({ timeout: 15_000 }); await expect(refresh).toBeFocused();
       expect((await context.request.get(`/organizations/${org}`)).status()).toBe(404);
       expect((await issuer.request.delete(`${root}/${first}`, { headers })).status()).toBe(204);
       await expect(accept).toHaveCount(0); await expect(page.getByText('No pending invitations on this page.', { exact: true })).toBeVisible();
-      await context.setOffline(true);
+      expect(socket).toBeDefined(); disconnected = true;
+      await context.setOffline(true); await socket!.close({ code: 1013 });
       await expect(page.getByRole('status')).toContainText('interrupted', { timeout: 15_000 });
-      const missed = await create(); await context.setOffline(false);
+      const missed = await create(); disconnected = false; await context.setOffline(false);
       await expect(accept).toBeEnabled({ timeout: 45_000 }); await expect(refresh).toBeFocused();
       await expect.poll(() => envelopes.flatMap(p => p.events).length).toBe(3);
       const events = envelopes.flatMap(p => p.events);
@@ -61,6 +78,6 @@ for (const width of [1280, 390]) {
       expect((await context.request.post('/auth/logout', { headers })).status()).toBe(204);
       await expect(page).toHaveURL(/\/login(?:\?|$)/, { timeout: 15_000 });
       await expect(page.getByText('Live Portal scope', { exact: true })).toHaveCount(0);
-    } finally { await context.setOffline(false); await issuer.close(); }
+    } finally { disconnected = false; await context.setOffline(false); await issuer.close(); }
   });
 }

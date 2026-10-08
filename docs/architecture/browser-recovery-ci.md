@@ -475,3 +475,47 @@ three original services/data preserved. Five more retained failures are addresse
 locally; seven other retained failures still need repair/verification. The original
 release run remains failed. Full current immutable CI and release-bundle acceptance
 remain mandatory; this local invocation does not close PRD-03, PRD-60 or ARCH-11.
+
+## Current Board membership authority and actual recipient interruption
+
+All four retained recipient cases were reproduced locally: desktop/phone Board
+issuer downgrade kept stale acceptance, and desktop/phone Portal recovery did not
+observe interruption after only changing browser offline state. The unchanged
+Board producer emits `BOARD_MEMBER_ADDED` / `BOARD_MEMBER_ROLE_CHANGED`; the
+PostgreSQL authority publication and source view still admitted only legacy
+`BOARD_MEMBER_UPDATED` / removal. The routing regression fails before the repair
+on missing member-addition routing. This is a product delivery gap, not a weakened
+browser assertion.
+
+[Migration 113](../../db/migrations/113_invitation_recipient_membership_authority.sql)
+adds current membership families to the publication and private source view while
+retaining legacy updates, Organization lifecycle/account source branches, canonical
+references, fixed-cutoff 100-candidate paging and leased delivery. Original source
+IDs and historical events are not rewritten. API/Worker require its named ledger
+entry. The new PostgreSQL regression covers all three upsert families, discoverable
+jobs, restricted Worker delivery, one recipient revision per source, retry without
+duplicate effects and unchanged invitation-transition/Work-readiness journals.
+It passes alongside the existing 205-candidate, 100/100/5-page rollback/private
+capability contract. Clean/repeat/forward-upgrade, concurrent migration runners,
+failed migration rollback and unrecorded-migration rejection pass through 113.
+Restricted API/Worker readiness also passes missing-entry refusal and recovery.
+
+The Portal test now explicitly closes its actual server-connected socket during
+the browser offline interval and blocks reconnection until a genuine invitation
+is created by the independent issuer. Original messages are forwarded unchanged
+in both directions and observed only for the page's Watch invocation. No event,
+HTTP response, cursor, database readiness or application state is manufactured.
+Existing interruption deadline, three original source IDs/sequences, exact private
+envelope keys, missed-event replay, current acceptance, focus, no document reload,
+logout withdrawal and accessibility assertions remain.
+
+The final native invocation passes all four cases together in 2.3 minutes. Board
+browser assertions were unchanged; actual issuer downgrade removes stale consent
+and protected acceptance is rejected. Strict zero-warning Release build, browser
+TypeScript and shell syntax pass. This is frozen current compiled Production
+API/Worker, MUI bundle, Nginx and restricted PostgreSQL schema-113 proof, with
+optional-verification browser policy and mail providers disabled. Owned fixtures
+are removed; original services/data remain. Four more retained failures are
+addressed locally, leaving three other retained failures to repair/verify. The
+original failed release gate remains failed. Current immutable CI, complete native
+suite and release-bundle verification still govern issue closure.

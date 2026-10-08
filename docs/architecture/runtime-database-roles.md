@@ -30,3 +30,14 @@ memberships. Future migrations must explicitly review any new runtime grants.
 CI tests actual login sessions (not administrator sessions using SET ROLE),
 service-specific denied access, privilege escalation and recovery, and the exact
 release images' readiness and safe API failure behavior.
+
+## Required current membership authority migration
+
+Both runtime connections require the named
+`113_invitation_recipient_membership_authority` ledger entry. The current real
+PostgreSQL readiness contract accepts the complete ledger, refuses temporarily
+hidden required entries using separate restricted API/Worker logins, and recovers
+after each restoration, including 113. The owned fixture database is removed.
+The migration replaces existing publication/view definitions and introduces no
+new runtime table grants. See
+[migration and native evidence](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption).
