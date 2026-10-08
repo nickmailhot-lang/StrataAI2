@@ -730,3 +730,11 @@ current required release gates still govern closure. The separate retained run
 fails at the large-Board horizontal transfer response wait, rather than this
 producer phase; the preceding continuous-Worker capacity repair has local normal
 and CPU-four evidence, while its current immutable verification remains pending.
+
+The later retained run
+[37811393903](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37811393903)
+also stops in this strict producer phase: **7 passed, 1 failed in 7.6 minutes**.
+Its phone reminder fails the option-visibility assertion at the old line 133,
+before interval selection. Those fixtures predate the current source-admission
+repair in `4c436df7`; the failed immutable run remains failed. The current eight-
+case local pass does not substitute for the still-running current exact-image gate.

@@ -2,6 +2,8 @@
 set -euo pipefail
 test "${CI:-}" = true || { echo 'Disposable sign-in fixtures may run only in CI.' >&2; exit 1; }
 BASE_URL="${1:-http://localhost:8080}"
+hash_mode="${2:-current}"
+case "$hash_mode" in current|legacy) ;; *) echo 'Unsupported sign-in hash fixture mode.' >&2; exit 1 ;; esac
 scratch="$(mktemp -d)"
 pids=()
 original_version="${STRATAAI_AUTH_RETRY_CURRENT_KEY:?Runtime key version required}"
@@ -30,6 +32,17 @@ docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scr
 body="$(jq -nc --arg email "login-retry-${RANDOM}-${RANDOM}@example.test" '{email:$email,password:"login-retry-correct-horse",displayName:"Sign-in retry"}')"
 curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$body" "$BASE_URL/auth/register" > "$scratch/user"
 user="$(jq -r '.user.id' "$scratch/user")"
+printf '%s' "$body" > "$scratch/credentials"
+admin "SELECT password_hash FROM users WHERE id='$user';" > "$scratch/registered-hash"
+python3 scripts/ci/identity-password-hash-fixture.py verify-current "$scratch/credentials" "$scratch/registered-hash"
+expected_profile_version=1
+if test "$hash_mode" = legacy; then
+  legacy_hash="$(python3 scripts/ci/identity-password-hash-fixture.py legacy "$scratch/credentials")"
+  [[ "$legacy_hash" =~ ^[A-Za-z0-9+/=]+$ ]]
+  admin "UPDATE users SET password_hash='$legacy_hash' WHERE id='$user';" >/dev/null
+  expected_profile_version=2
+fi
+original_profile="$(admin "SELECT (to_jsonb(u)-'password_hash'-'updated_at'-'version')::text FROM users u WHERE id='$user';")"
 key="$(cat /proc/sys/kernel/random/uuid)"
 request() {
   curl --max-time 60 --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
@@ -62,6 +75,10 @@ admin "UPDATE users SET password_hash='$hash_fixture_original' WHERE id='$user';
 hash_fixture_user=''
 test "$before" = "$(state)"
 wrong_credentials="$(jq -c '.password="incorrect-private-password"' <<< "$body")"
+printf '%s' "$wrong_credentials" > "$scratch/wrong-credentials"
+if python3 scripts/ci/identity-password-hash-fixture.py verify-current "$scratch/wrong-credentials" "$scratch/registered-hash" > "$scratch/hash-refusal" 2>&1; then
+  echo 'Stored-hash verification accepted the wrong fixture password.' >&2; exit 1
+fi
 unknown_email="unknown-signin-$(cat /proc/sys/kernel/random/uuid)@example.test"
 unknown_credentials="$(jq -c --arg email "$unknown_email" '.email=$email' <<< "$wrong_credentials")"
 for refused_body in "$wrong_credentials" "$unknown_credentials"; do
@@ -122,6 +139,16 @@ done
 test "$(admin "SELECT count(*) FROM sessions WHERE user_id='$user';")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE actor_id='$user' AND event_type='SESSION_CREATED';")" = 1
 test "$(admin "SELECT count(*) FROM identity_login_replays WHERE user_id='$user' AND key_id='$key';")" = 1
+test "$(jq -r '.user.version' "$scratch/retry-1.body")" = "$expected_profile_version"
+test "$(admin "SELECT version FROM users WHERE id='$user';")" = "$expected_profile_version"
+test "$original_profile" = "$(admin "SELECT (to_jsonb(u)-'password_hash'-'updated_at'-'version')::text FROM users u WHERE id='$user';")"
+admin "SELECT password_hash FROM users WHERE id='$user';" > "$scratch/persisted-hash"
+python3 scripts/ci/identity-password-hash-fixture.py verify-current "$scratch/credentials" "$scratch/persisted-hash"
+if test "$hash_mode" = legacy; then
+  test "$legacy_hash" != "$(cat "$scratch/persisted-hash")"
+else
+  cmp "$scratch/registered-hash" "$scratch/persisted-hash"
+fi
 saved="$(state)"
 wrong="$(jq -c '.password="incorrect-private-password"' <<< "$body")"
 test "$(request "$key" "$wrong")" = 401
@@ -155,9 +182,9 @@ test "$(request)" = 200
 cmp "$scratch/retry-1.body" "$scratch/response"
 test "$saved" = "$(state)"
 curl --fail --silent --show-error -b "$scratch/retry-1.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
-  -X PATCH -d '{"displayName":"Current sign-in profile","version":1}' "$BASE_URL/me" > "$scratch/profile"
+  -X PATCH -d "$(jq -nc --argjson version "$expected_profile_version" '{displayName:"Current sign-in profile",version:$version}')" "$BASE_URL/me" > "$scratch/profile"
 test "$(request)" = 200
-jq -e '.user.displayName=="Current sign-in profile" and .user.version==2' "$scratch/response" >/dev/null
+jq -e --argjson version "$((expected_profile_version+1))" '.user.displayName=="Current sign-in profile" and .user.version==$version' "$scratch/response" >/dev/null
 test "$(admin "SELECT count(*) FROM sessions WHERE user_id='$user';")" = 1
 curl --fail --silent --show-error -b "$scratch/retry-1.cookies" -H 'X-StrataAI-Request: 1' -X POST "$BASE_URL/auth/logout" >/dev/null
 saved="$(state)"
@@ -202,4 +229,4 @@ jq -e '.code=="idempotency_key_expired"' "$scratch/response" >/dev/null
 scripts/ci/assert-file-excludes.sh '^[Ss]et-[Cc]ookie:' "$scratch/headers"
 test "$(admin "SELECT count(*) FROM sessions WHERE user_id='$user';")" = 2
 test "$(admin "SELECT count(*) FROM audit_events WHERE actor_id='$user' AND event_type='SESSION_CREATED';")" = 2
-echo 'Release sign-in retries: atomic audit/receipt rollback, concurrent original-session acknowledgment, fresh password checks, restart, current profile and revoked-session denial passed.'
+echo "Release $hash_mode-hash sign-in retries: adaptive persisted hash, atomic audit/receipt rollback, concurrent original-session acknowledgment, fresh password checks, restart, current profile and revoked-session denial passed."

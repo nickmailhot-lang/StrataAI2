@@ -508,8 +508,10 @@ jobs:
       - name: Session-bound logout and deactivation receipts against exact release API
         run: bash scripts/ci/test-identity-revocation-retries.sh
 
-      - name: Credential-checked sign-in retries against exact release API
-        run: bash scripts/ci/test-identity-login-retries.sh
+      - name: Current and legacy credential-checked sign-in retries against exact release API
+        run: |
+          bash scripts/ci/test-identity-login-retries.sh http://localhost:8080 current
+          bash scripts/ci/test-identity-login-retries.sh http://localhost:8080 legacy
 
       - name: Authentication lifecycle privacy against exact release API
         run: bash scripts/ci/test-identity-login-privacy.sh

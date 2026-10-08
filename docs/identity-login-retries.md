@@ -79,3 +79,62 @@ post-publication admission, not elapsed real-time expiry during a database wait.
 It is guarded by CI-only execution and cleaned up on exit; no migration or
 production runtime policy is changed. Bash syntax passes; execution against the
 exact release API remains pending CI. Full PRD-02 acceptance remains open.
+
+## Executed current and legacy adaptive password-hash recovery
+
+The mandatory release sign-in fixture now runs independently for `current` and
+`legacy` hashes. Both create their disposable account through actual registration.
+The registered hash is decoded and independently verified from the fixture's
+known password. Only the legacy case replaces that new account's hash with the
+old ASP.NET Identity encoding to exercise upgrade admission. The
+[private hash fixture](../scripts/ci/identity-password-hash-fixture.py) follows the
+[.NET 10 PasswordHasher format](https://github.com/dotnet/aspnetcore/blob/v10.0.0/src/Identity/Extensions.Core/src/PasswordHasher.cs):
+it requires the current SHA-512 PBKDF2 format, a 128-bit salt, a 256-bit subkey and
+at least the current 100,000-iteration default. It recomputes the stored subkey;
+format inspection or a successful login alone does not satisfy that check.
+The independent verifier must also refuse the wrong fixture password against
+the actual registered hash, so a vacuous successful oracle fails the CI step.
+Legacy encoding is fixture input only. Passwords, hashes, cookies, key rings and
+complete private snapshots are not console diagnostics or release artifacts.
+
+Both complete modes pass locally against the frozen current compiled Production
+API, restricted PostgreSQL 17/pgvector schema 113 and a separate real Worker.
+They retain malformed-hash and known/unknown wrong-password privacy checks.
+Revoked audit/receipt publication grants and actual post-receipt session-expiry
+fault injection each require the complete user/session/audit/identity-stream/
+event/receipt snapshot to remain identical. In the legacy case this includes the
+original old hash and account version, so a refused sign-in cannot retain an
+upgrade. The same original key then runs three concurrent real HTTP requests:
+one session, one session audit, one receipt and identical original cookie/body.
+
+Current hashing preserves the original hash and profile version one. Legacy
+hashing changes only the password hash, updated clock and profile version, with
+exactly one revision advance to version two. Other complete account fields remain
+identical. The upgraded hash must independently verify under current parameters;
+later wrong-password refusals, same-key recovery, retained/retired key rotation
+and API restart preserve the complete stored snapshot. A real profile edit must
+advance the expected version once in each mode. Logout denies old-session reuse,
+the Worker removes 101 actual expired receipts, and an observed real session-row
+wait still refuses expired original-session disclosure. The existing single-API-
+connection and rollback checks remain; no session, audit or receipt is seeded as
+successful delivery.
+
+A final API-host regression uses the real hash/session/replay providers with a
+clock that advances on every observation and retains sub-microsecond ticks. The
+first upgraded profile must equal the stored profile, its same-key retry must
+return the exact same acknowledgment and the stored hash/version must not change
+again. All five focused legacy upgrade, post-publication expiry and original-session
+recovery cases pass; the locked Release solution build has zero warnings/errors.
+A preliminary Demo-only microsecond assertion was discarded: provider precision
+is not the requirement, and the existing final session read already returns the
+authoritative stored profile. No product logic change follows from that hypothesis.
+
+The initial local harness stops before registration at an API replacement
+readiness mistake; it is retained separately. The corrected harness waits for
+actual API health and passes both complete modes, then removes only its owned
+containers/database and private environment files. Original services/data remain.
+This is current compiled runtime evidence with the existing optional-verification
+sign-in fixture policy, not current immutable/full CI, timing equivalence, native
+browser or email-provider delivery. Current exact-image execution and complete
+PRD-02 acceptance remain required. Estimated PRD-02 work remaining is **16%**
+(planning estimate); the issue remains open.

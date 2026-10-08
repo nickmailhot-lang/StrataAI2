@@ -1,6 +1,8 @@
 # Authentication acceptance map — PRD-02
 
 [PRD-02](https://github.com/nickmailhot-lang/StrataAI2/issues/2) remains open.
+Current estimated work remaining is **16%** (planning estimate); earlier estimates
+below record their historical evidence scope.
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
@@ -174,7 +176,7 @@ a planning estimate.
 | AUTH-FR-002 case-insensitive email uniqueness | Canonical identity storage and [identity schema](../../db/migrations/003_identity.sql); executed restricted PostgreSQL registration races below | Complete current-release registration policy/browser evidence |
 | AUTH-FR-003 secure sign-in/out | [Sign-in retries](../identity-login-retries.md), [revocation retries](identity-command-retries.md), API login/revocation cases | Current release-image credential/session and browser checks |
 | AUTH-FR-004 expiring single-use reset tokens | [Token consumption](../identity-token-consumption-retries.md), [email delivery](identity-email.md), token replay/final-admission cases | Current Worker delivery, elapsed-expiry, single-use and rollback evidence |
-| AUTH-FR-005 adaptive password hashes | Identity password-hash provider and sign-in/reset verification | Current hash policy and persisted-secret protection checks; passing compilation is insufficient |
+| AUTH-FR-005 adaptive password hashes | Identity password-hash provider and sign-in/reset verification; [executed current/legacy hash recovery](../identity-login-retries.md#executed-current-and-legacy-adaptive-password-hash-recovery) | Both complete native hash modes and independent stored-hash verification pass locally, including upgrade rollback and one-revision concurrent recovery; current immutable/full CI and complete secret-protection acceptance remain required |
 | AUTH-FR-006 session expiry/revocation | Sign-in/token/revocation/profile final-admission cases; native identity command fixtures | Current post-wait expiry, original-session withdrawal and durable transaction results |
 | AUTH-FR-007 complete profile fields | [Profile management](profile-management.md), profile concurrency/replay fixtures and account browser scenario | Current persisted-field, concurrent save, recovery and browser evidence |
 | AUTH-FR-008 deactivation with attribution | [Owner continuity](account-owner-continuity.md), account deactivation and assignment rollback cases | Current usable-owner floor, historical attribution and exact-image rollback/replay checks |
@@ -680,3 +682,25 @@ for the specific measured failure, runtime scope and limitations.
 Estimated PRD-02 work remaining stays **17%** (planning estimate). Local compiled
 runtime verification is distinct from current retained images, actual external
 inbox delivery and full PRD-wide acceptance; the ticket remains open.
+
+## Executed current and legacy persisted-hash sign-in recovery
+
+The [complete hash recovery contract](../identity-login-retries.md#executed-current-and-legacy-adaptive-password-hash-recovery)
+passes both current and old-hash modes through actual Production HTTP/restricted
+PostgreSQL. Registration and successful upgrade hashes are independently decoded
+and verified. Publication failure and post-receipt expiry preserve the complete
+graph, including old hash/version. Three concurrent original-key requests produce
+one session/audit/receipt and one legacy revision advance; normal hashes remain
+unchanged. Key rotation, restart, current profile updates, logout, actual Worker
+receipt cleanup and observed session-row expiry checks also pass.
+
+Five API-host recovery/expiry cases pass, including an advancing-clock legacy
+profile assertion. The final strict locked Release build has zero warnings/errors.
+The existing final session read already supplies authoritative first/retry profile
+clocks; no product change or Demo precision requirement was introduced. The
+mandatory exact-image sign-in step now runs both modes, preserving all previous
+checks. Local compiled schema-113 evidence uses the existing optional-verification
+fixture policy; current immutable/full CI, timing/privacy/provider and complete
+PRD-wide acceptance remain separate. Owned fixtures are removed and original
+services/data remain. PRD-02 stays open at **16% estimated work remaining**
+(planning estimate).
