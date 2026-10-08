@@ -137,8 +137,13 @@ mail_token() {
     '.[] | select(.key==$key) | .payload.text | capture("#token=(?<token>[A-Za-z0-9_-]+)").token'
 }
 # The release's disabled mail mode fails uniformly before identity lookup.
-known="$(query 'SELECT email FROM users ORDER BY created_at,id LIMIT 1;')"
-test -n "$known"
+# This group starts with an empty database; it cannot borrow an account from
+# an earlier profile test. Create its own persisted account through the API
+# while the explicit optional-verification fixture and disabled mail are active.
+known="mail-disabled-${RANDOM}-${RANDOM}@example.test"
+test "$(post /auth/register "$(jq -nc --arg email "$known" '{email:$email,password:"mail-disabled-correct-horse",displayName:"Disabled mail fixture"}')")" = 201
+jq -e --arg email "$known" '.user.email==$email' "$scratch/response" >/dev/null
+test "$(query "SELECT count(*) FROM users WHERE email='$known';")" = 1
 for target in missing@example.test "$known"; do
   test "$(post /auth/password/forgot "$(jq -nc --arg email "$target" '{email:$email}')")" = 503
   jq -e '.code=="identity_delivery_unavailable"' "$scratch/response" >/dev/null

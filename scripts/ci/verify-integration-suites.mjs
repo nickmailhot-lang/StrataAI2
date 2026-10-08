@@ -38,6 +38,29 @@ export function verifyIntegrationSuites(workflow, registry) {
   for (const name of ['web-quality', 'dotnet-quality', 'postgres-integration']) {
     assert.ok(jobs[name].needs.includes('metadata'), 'Source checks require verified initial metadata');
   }
+  for (const [jobName, summaryName, uploadName] of [
+    ['web-quality', 'Summarize web source test results', 'Retain web source test results'],
+    ['dotnet-quality', 'Summarize .NET source test results', 'Retain .NET source test results'],
+  ]) {
+    const steps = jobs[jobName].steps;
+    const summary = steps.find(step => step.name === summaryName);
+    const upload = steps.find(step => step.name === uploadName);
+    assert.equal(summary?.if, 'always()', 'Retain result summaries after test failures');
+    assert.equal(summary['continue-on-error'] ?? false, false);
+    assert.ok(summary.run.includes('--metadata source-inputs/build-metadata.json'));
+    assert.ok(summary.run.includes('--output artifacts/source-tests/'));
+    assert.equal(upload?.if, 'always()');
+    assert.equal(upload.with.path, 'artifacts/source-tests/', 'Never publish raw assertion reports');
+    assert.ok(steps.find(step => step.name === 'Download source evidence identity')?.with.name === 'strataai-build-metadata-${{ github.sha }}');
+  }
+  const webTests = jobs['web-quality'].steps.find(step => step.name === 'Unit and component tests').run;
+  assert.ok(webTests.includes('--reporter=junit'));
+  assert.ok(webTests.includes('--outputFile.junit="$RUNNER_TEMP/source-tests-raw/web.xml"'));
+  for (const [name, file] of [['Domain tests', 'domain.trx'], ['API host tests', 'api.trx']]) {
+    const run = jobs['dotnet-quality'].steps.find(step => step.name === name).run;
+    assert.ok(run.includes(`--report-trx --report-trx-filename ${file}`));
+    assert.ok(!run.includes('--filter'), 'CI source suites must remain unfiltered');
+  }
   assert.ok(jobs['source-quality-gate'].needs.includes('metadata'));
   const sourceGate = jobs['source-quality-gate'].steps[0];
   assert.equal(sourceGate.env.METADATA_RESULT, '${{ needs.metadata.result }}');

@@ -41,6 +41,11 @@ const mutations = [
   ['image arguments recalculate build version', value => { value.jobs['build-images-once'].steps.find(entry => entry.name === 'Build web image').run = 'docker build --build-arg STRATAAI_BUILD_VERSION=other .'; }],
   ['image archive metadata lacks checksums', value => { value.jobs['build-images-once'].steps.find(entry => entry.name === 'Export exact built images').run = 'echo unchecked'; }],
   ['release metadata reconstructed downstream', value => { value.jobs['release-bundle'].steps.find(entry => entry.name === 'Assemble release bundle').run = 'cat > bundle/build-metadata.json'; }],
+  ['raw assertion reports published', value => { value.jobs['dotnet-quality'].steps.find(entry => entry.name === 'Retain .NET source test results').with.path = '${{ runner.temp }}/source-tests-raw'; }],
+  ['source test failure summary skipped', value => { value.jobs['web-quality'].steps.find(entry => entry.name === 'Summarize web source test results').if = 'success()'; }],
+  ['source report publication failure ignored', value => { value.jobs['web-quality'].steps.find(entry => entry.name === 'Summarize web source test results')['continue-on-error'] = true; }],
+  ['mandatory API source suite filtered', value => { value.jobs['dotnet-quality'].steps.find(entry => entry.name === 'API host tests').run += ' --filter-method *Notification*'; }],
+  ['source reporter dropped', value => { value.jobs['web-quality'].steps.find(entry => entry.name === 'Unit and component tests').run = 'npm test'; }],
 ];
 for (const [name, mutate] of mutations) {
   test(`rejects ${name}`, () => {

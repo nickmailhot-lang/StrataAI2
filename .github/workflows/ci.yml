@@ -63,6 +63,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Download source evidence identity
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-build-metadata-${{ github.sha }}
+          path: source-inputs
+
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -104,8 +110,26 @@ jobs:
       - name: Verify operator evidence rejects missing and private metric fields
         run: python3 -m unittest discover -s tests -p 'operator_metrics_test.py'
 
+      - name: Verify source test report completeness and privacy
+        run: python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
+
       - name: Unit and component tests
-        run: npm test
+        run: |
+          mkdir -p "$RUNNER_TEMP/source-tests-raw"
+          npm --workspace @strataai/web run test -- --reporter=default --reporter=junit --outputFile.junit="$RUNNER_TEMP/source-tests-raw/web.xml"
+
+      - name: Summarize web source test results
+        if: always()
+        run: python3 scripts/ci/summarize-source-tests.py --format junit --metadata source-inputs/build-metadata.json --output artifacts/source-tests/web.json "$RUNNER_TEMP/source-tests-raw/web.xml"
+
+      - name: Retain web source test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: source-test-results-web-${{ github.sha }}
+          path: artifacts/source-tests/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Production web build
         env:
@@ -124,6 +148,12 @@ jobs:
     needs: [metadata]
     steps:
       - uses: actions/checkout@v7
+
+      - name: Download source evidence identity
+        uses: actions/download-artifact@v8
+        with:
+          name: strataai-build-metadata-${{ github.sha }}
+          path: source-inputs
 
       - uses: actions/setup-dotnet@v6
         with:
@@ -162,11 +192,23 @@ jobs:
         run: dotnet build StrataAI2.slnx --configuration Release --no-restore
 
       - name: Domain tests
-        run: dotnet test tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj --configuration Release --no-build
+        run: dotnet test --project tests/StrataAI.Domain.Tests/StrataAI.Domain.Tests.csproj --configuration Release --no-build --report-trx --report-trx-filename domain.trx --results-directory "$RUNNER_TEMP/source-tests-raw"
 
       - name: API host tests
-        run: dotnet test tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj --configuration Release --no-build
+        run: dotnet test --project tests/StrataAI.Api.Tests/StrataAI.Api.Tests.csproj --configuration Release --no-build --report-trx --report-trx-filename api.trx --results-directory "$RUNNER_TEMP/source-tests-raw"
 
+      - name: Summarize .NET source test results
+        if: always()
+        run: python3 scripts/ci/summarize-source-tests.py --format trx --metadata source-inputs/build-metadata.json --output artifacts/source-tests/dotnet.json "$RUNNER_TEMP/source-tests-raw/domain.trx" "$RUNNER_TEMP/source-tests-raw/api.trx"
+
+      - name: Retain .NET source test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: source-test-results-dotnet-${{ github.sha }}
+          path: artifacts/source-tests/
+          if-no-files-found: ignore
+          retention-days: 14
 
   postgres-integration:
     name: postgres-integration

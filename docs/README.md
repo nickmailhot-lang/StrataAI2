@@ -173,6 +173,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Testing, security, performance, and acceptance
 
+- [Source test result artifacts and private-content exclusion (ARCH-11)](architecture/source-test-results.md)
 - [Activity history observations (PRD-15, partial)](architecture/activity-history-telemetry.md)
 - [PRD-14 Attachments and Card Covers acceptance audit](architecture/attachment-acceptance.md)
 - [Release browser rate budget](architecture/browser-rate-budget.md)
