@@ -162,6 +162,24 @@ Fresh CI is required to verify this repair and the subsequent fan-out checks.
 
 Watch timestamp admission now uses the inbox's strict canonical UTC parser and preserves PostgreSQL microseconds/.NET ticks when comparing createdAt and updatedAt. Invalid calendar dates, ambiguous local dates, non-UTC offsets and precisely reversed updates are withheld instead of being accepted by permissive millisecond Date.parse. Four negative cases and a valid microsecond ordering case cover disclosure/mutation-control admission. All 62 watch/inbox parser component tests, SPA/full browser typechecks and lint pass. Original subscription identity, version, same-key retry and server authorization rules remain enforced. Actual native release acceptance and recipient-private notification event delivery remain pending.
 
+## Executed native access restoration
+
+The [extended five-case cross-Board run](prd-17-acceptance.md#executed-native-watch-re-admission-and-retained-history)
+passes under strict verification. The four non-Owner cases regain access through
+actual ADMIN/MEMBER re-grants or Organization/Public visibility restoration.
+Their direct Card watches retain exact subscription ID/version/creation/update
+clocks and become readable at the current destination. The keyboard watching
+dialog reports the retained state without another watch mutation. Original
+notification rows/private journal fingerprints remain unchanged; both native
+desktop/phone inboxes recover the four retained articles. A subsequent eligible
+edit adds exactly one new notification/private event to each client, preserving
+all original HTTP rows and canonical journal envelopes. Activity while access
+was unavailable stays unnotified. No stored intent/history is fabricated.
+All five cases pass together in 6.1 minutes, including the unchanged Owner
+control; tagged Axe/overflow and browser typechecking pass. Current retained
+release-image/full CI and complete PRD acceptance remain required. PRD-17 stays
+open at **16% estimated work remaining**.
+
 Personal watch-state disclosure also rechecks the active account after the bounded watch read. Until that check succeeds, neither personal state nor mutation controls are published. A changed account retires previous state and uncertain intent; malformed or unavailable post-read admission withholds state and private diagnostics. Held-response tests exercise all three outcomes, while updated command/retry/focus/reopen fixtures preserve their original assertions. All 31 watch component tests, SPA typechecking and lint pass locally. Server admission remains authoritative; actual native/immutable-image acceptance remains pending.
 
 An open admitted watch dialog now also refreshes on the browser online event. Offline failure withdraws personal state and mutation controls; recovery follows the same pre/post account checks and authoritative watch read. The listener is removed with the dialog effect, and a component regression verifies fresh recovery plus no reads after unmount. All 32 watch component tests, SPA typechecking and lint pass locally. Actual native recovery remains pending immutable-image CI.

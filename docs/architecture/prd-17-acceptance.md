@@ -487,3 +487,39 @@ current retained-image/full CI, every role/visibility combination, concurrent
 transitions, full configured producer matrix or capacity. Both strict CI and
 optional full-suite phases include these five cases. PRD-17 remains open at
 **16% estimated work remaining**.
+
+## Executed native watch re-admission and retained history
+
+The complete five-case cross-Board invocation passes again with **five cases in
+6.1 minutes**, no failed cases. Owner remains the control case. Board ADMIN,
+MEMBER and Organization/Public visibility readers now actually regain access
+after the previously proved withdrawal and skipped peer activity. The Owner
+re-grants the same canonical Board role, or restores the destination's original
+visibility at its current version; no retained rows are seeded or reconstructed.
+
+Each restored recipient reads the original direct Card subscription ID, version,
+creation/update clocks and `watching=true` at the current destination. All four
+original HTTP notification rows return identical, and the full
+stored notification/private-journal fingerprints and four/four counts remain
+unchanged by re-admission. Both already-open native inboxes recover four articles
+without reload. Keyboard opening/checking/closing the Card watching dialog shows
+the retained watching state, returns Check focus, and leaves stored history
+unchanged. No additional watch mutation is needed to recover retained intent.
+
+A subsequent admitted peer edit then creates exactly one new `CARD_UPDATED`
+notification, with the actual actor/recipient/Card and canonical destination
+link. Both inboxes show five articles. Original four notification rows and four
+canonical journal envelopes remain identical. The new canonical event identifies
+the new notification and reaches each actual recipient-private transport exactly
+once; each observed event-identity set equals the five stored journal identities.
+Tagged Axe/overflow checks pass again and the actor inbox stays empty. The edit
+performed while access was unavailable remains unnotified.
+
+This executes current compiled Production API/separate scoped Worker, strict
+verified-email admission, current MUI bundle and restricted PostgreSQL 17/pgvector
+schema 112. Browser typechecking passes. Owned containers/database are removed;
+original services and data remain. Both mandatory strict CI and optional full
+browser phases run the extended cases. Current retained-image/full CI, complete
+role/visibility and producer matrices, concurrent transitions, capacity and full
+Definition of Done still govern closure. PRD-17 remains open at **16% estimated
+work remaining** (planning estimate).

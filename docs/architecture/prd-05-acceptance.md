@@ -16,6 +16,15 @@ This uses current compiled Production services and restricted PostgreSQL schema
 112; it does not establish current retained-image or complete permission-matrix
 acceptance. PRD-05 remains open at **15% estimated work remaining**.
 
+The [extended native re-admission run](prd-17-acceptance.md#executed-native-watch-re-admission-and-retained-history)
+also passes all five cases in 6.1 minutes. The four non-Owner cases regain their
+actual Board role or original visibility, recover retained subscription clocks
+and original notification history in both already-open inboxes, then receive
+exactly one new private notification from a later eligible edit. This strengthens
+withdrawal/re-admission consumer evidence while retaining the same current-image,
+complete permission inventory and concurrency limits. PRD-05 stays open at
+**15% estimated work remaining**.
+
 | Requirement | Current implementation or source evidence | Evidence or work still required |
 | --- | --- | --- |
 | PERM-FR-001 three visibility values | WorkManagementService validates canonical visibility; BoardVisibilityPage reviews the current Board revision and explains public exposure. | Complete current-image native consent/conflict/recovery and rejected-write persistence assertions. |

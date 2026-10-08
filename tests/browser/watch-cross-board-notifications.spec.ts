@@ -215,6 +215,53 @@ test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships
       await waitForBoardDelivery(peer.request, boards[1]); expect(await inboxRows()).toEqual([]);
       expect(privateHistory()).toBe(history);
       for (const observed of live) expect(observed.events.map(event => event.eventId)).toEqual(journal.map((event: { eventId: string }) => event.eventId));
+      // Restored view authority reveals retained intent/history without
+      // recreating subscriptions or backfilling the activity while inaccessible.
+      if (reader) {
+        const current = await administrator.request.get(`/boards/${boards[1]}`); expect(current.status()).toBe(200);
+        expect((await administrator.request.patch(`/boards/${boards[1]}/visibility`, { headers,
+          data: { visibility: recipientRole === 'ORGANIZATION_READER' ? 'ORGANIZATION' : 'PUBLIC',
+            version: (await current.json()).board.version } })).status()).toBe(200);
+      } else {
+        const grant = await administrator.request.patch(`/boards/${boards[1]}/members/${recipient}`, { headers, data: { role: recipientRole } });
+        expect(grant.status()).toBe(200); expect((await grant.json()).role).toBe(recipientRole);
+      }
+      await waitForBoardDelivery(peer.request, boards[1]);
+      const retainedWatch = await context.request.get(`/watch/CARD/${card}`); expect(retainedWatch.status()).toBe(200);
+      expect(await retainedWatch.json()).toMatchObject({ subscriptionId: direct.subscriptionId, watching: true, version: direct.version,
+        createdAt: direct.createdAt, updatedAt: direct.updatedAt, boardId: boards[1] });
+      expect(await inboxRows()).toEqual(rows); expect(privateHistory()).toBe(history);
+      for (const client of [desktop, mobile]) await expect(client.getByRole('article')).toHaveCount(4, { timeout: 25_000 });
+      await page.bringToFront(); await page.goto(`/app/${org}/boards/${boards[1]}/cards/${card}`);
+      await activate(page.getByRole('button', { name: 'Card watching', exact: true }));
+      const restoredDialog = page.getByRole('dialog', { name: 'Card watching', exact: true });
+      await expect(restoredDialog.getByText('You are watching this Card.', { exact: true })).toBeVisible();
+      await activate(restoredDialog.getByRole('button', { name: 'Check current watching', exact: true }));
+      await expect(restoredDialog.getByRole('button', { name: 'Check current watching', exact: true })).toBeFocused();
+      await activate(restoredDialog.getByRole('button', { name: 'Done watching', exact: true }));
+      await expect(restoredDialog).toHaveCount(0); expect(privateHistory()).toBe(history);
+      expect((await peer.request.patch(`/cards/${card}`, { headers,
+        data: { title: 'Edit after recipient readmission', description: '', version: 7 } })).status()).toBe(200);
+      await waitForBoardDelivery(peer.request, boards[1]);
+      for (const client of [desktop, mobile]) await expect(client.getByRole('article')).toHaveCount(5, { timeout: 25_000 });
+      const resumedRows = await inboxRows(); expect(resumedRows).toHaveLength(5);
+      const retainedIds = new Set(rows.map((row: { id: string }) => row.id));
+      expect(resumedRows.filter((row: { id: string }) => retainedIds.has(row.id))).toEqual(rows);
+      const resumed = resumedRows.filter((row: { id: string }) => !retainedIds.has(row.id)); expect(resumed).toHaveLength(1);
+      expect(resumed[0]).toMatchObject({ entityId: card, actorId: issuer, recipientId: recipient, type: 'CARD_UPDATED',
+        entityLink: `/app/${org}/boards/${boards[1]}/cards/${card}` });
+      const resumedSync = await context.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(resumedSync.status()).toBe(200);
+      const resumedJournal = (await resumedSync.json()).events; expect(resumedJournal).toHaveLength(5);
+      expect(resumedJournal.slice(0, 4)).toEqual(journal);
+      const newEvent = resumedJournal[4]; expect(newEvent.entityId).toBe(resumed[0].id);
+      for (const [index, client] of [desktop, mobile].entries()) {
+        await expect.poll(() => live[index].events.filter(event => event.eventId === newEvent.eventId).length).toBe(1);
+        expect([...new Set(live[index].events.map(event => event.eventId))].sort()).toEqual(resumedJournal.map((event: { eventId: string }) => event.eventId).sort());
+        expect(live[index].events.every(event => event.eventType === 'NOTIFICATION_CREATED')).toBe(true);
+        expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+        expect(await client.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      }
+      expect((await (await peer.request.get(`/organizations/${org}/notifications`)).json()).items).toEqual([]);
     }
   } finally { try { restoreWorker(); } finally { await phone?.close(); await peer.close(); if (administrator !== context) await administrator.close(); } }
 });
