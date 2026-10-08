@@ -700,6 +700,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 90
 
+      - name: Retain fixed-scope permanent-deletion capacity measurements
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: work-deletion-capacity-${{ github.sha }}
+          path: artifacts/capacity/work-deletion.json
+          if-no-files-found: ignore
+          retention-days: 90
+
       - name: Atomic Work events and leased Worker readiness against exact release images
         run: scripts/ci/test-work-events.sh
 

@@ -94,4 +94,5 @@ bash scripts/ci/test-card-copy-capacity.sh "$org" "$board" "$card" "$owner" "$sc
 bash scripts/ci/test-attachment-capacity.sh "$org" "$board" "$card" "$scratch/cookies"
 bash scripts/ci/test-work-lifecycle-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
 bash scripts/ci/test-watch-fanout-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
+bash scripts/ci/test-work-deletion-capacity.sh "$org" "$board" "$card" "$owner" "$scratch/cookies"
 echo 'Exact-image Checklist capacity: 200 Lists, 5,000 active Cards, 100,000 archived Cards, bounded first/seek/final pages, full progress, unchanged read state and versioned completion passed.'

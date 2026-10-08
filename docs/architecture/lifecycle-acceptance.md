@@ -135,6 +135,22 @@ The isolated local compiled Production API on PostgreSQL 17/pgvector passed the 
 
 All six p95 values were independently recomputed from the retained samples. The test database and invocation-owned containers were removed afterward. This is local compiled-runtime evidence, not current immutable-image or browser interaction evidence. The CI artifact is `work-lifecycle-capacity-<revision>` / `work-lifecycle.json`. Permanent-deletion capacity/performance, concurrent lifecycle admission and full integrated release acceptance remain separate requirements; this archive/restore measurement does not prove them.
 
+### Permanent-deletion capacity measurements (2026-10-08)
+
+`scripts/ci/test-work-deletion-capacity.sh` runs last in the mandatory supported-capacity chain, after other cases finish using the original selected List. It verifies the original 200-List/5,000-active-Card/100,000-archived-Card fixture, then seeds 20 independent Boards, each with 200 Lists and 5,000 active child records. Each has an archived List and an additional archived Card. Synthetic setup is not proof of audited creation/archive behavior. The timed commands perform 20 distinct Card deletions, 20 distinct List deletions and 20 distinct Board deletions; none of the 60 samples is a replay. Actual preparatory API commands archive 20 Boards and the original selected List.
+
+One List deletion reviews the original List containing all 100,000 archived Cards plus its active children. The report retains that command's latency and impact separately, as well as every per-entity sample, p95 and maximum. Missing confirmation is rejected without canonical/effect changes. Every successful deletion must persist its next version, archive history, deletion clock and actor. List/Board children retain complete-record fingerprints. Deleted Cards lose archived-detail admission, deleted Lists disappear from the active canvas, and deleted Boards deny ordinary reads. Every original deletion acknowledgment is recovered with the same key and unchanged aggregate effects. Deletion-tagged audit/event/Work job deltas match 60, and receipt deltas include the 21 preparatory archives. Failed timing reports remain available before the mandatory p95 gate rejects CI.
+
+The complete isolated local compiled Production API/PostgreSQL 17/pgvector/Nginx invocation passed, using one serial client with no intentional network delay:
+
+| Deleted entity | Samples | p95 (ms) | Maximum (ms) |
+| --- | ---: | ---: | ---: |
+| Card | 20 | 290.151 | 308.798 |
+| List | 20 | 343.478 | 365.055 |
+| Board | 20 | 292.759 | 305.025 |
+
+The largest reviewed List retained 100,025 child Cards; its deletion acknowledgment took 321.834 ms. All three nearest-rank p95 values were independently recomputed from the retained samples. Temporary databases and invocation-owned containers were removed. This is compiled-runtime evidence; current immutable-image release acceptance, concurrent lifecycle scenarios and native browser interaction remain separate requirements. CI retains only fixed conditions/counts/timings/revision/topology in `work-deletion-capacity-<revision>` / `work-deletion.json`, without identities, content, command keys or cookies.
+
 Board deletion now requires explicit confirmation at HTTP and Application boundaries after current archived-state/administration admission. Its transactional fingerprint includes consent. See board-deletion-consent.md for the source regression and remaining Board tombstone-receipt recovery/UI requirements. Full solution compilation passes; runtime consent execution remains pending CI.
 
 Board tombstone receipt recovery now has a dedicated fresh-admission path for current Organization/Board administrators with active Organization membership. Normal Board/member lookup excludes deleted Boards in both stores. Source API and PostgreSQL container cases cover identical replay, changed consent, new keys, normal-read non-disclosure, membership revocation and atomic audit rollback. Their runtime execution remains pending. The archive directory retains an unresolved original deletion for recovery after its Board disappears from discovery.
