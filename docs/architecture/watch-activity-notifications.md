@@ -292,3 +292,31 @@ counts stayed unchanged. The disposable database was removed after profiling.
 These component measurements identify a reduced source-validation cost, but the
 unchanged twenty-command HTTP benchmark and current release CI still must verify
 end-to-end acceptance. PRD-17 remains open with 24% estimated work remaining.
+
+### Full HTTP fan-out after schema 111
+
+The unchanged `test-watch-fanout-capacity.sh` passed locally against the API
+published from `a9d107f7`, schema 111, restricted API credentials, current Nginx/CSP
+and the existing frozen web bundle. Its database was a separate disposable copy;
+the three original containers and their running database were preserved. A fresh
+HTTP issuer/Organization/Board/Card and the full synthetic scale fixture were
+created in that copy. No Worker ran in this producer benchmark.
+
+All twenty actual HTTP edits and original-key/body retries completed with the
+required canonical revisions, exact 500-recipient deduplication, actor/inactive
+suppression, 10,000 notifications, 10,000 distinct creation journal events, source
+audit/job/receipt counts and unchanged replay effects. The strict p95 gate passed
+at **477.964 ms**; samples ranged from 377.907 to 530.658 ms. The report explicitly
+identifies `local-compiled-runtime`, source revision and all original fixture
+sizes/conditions. Twenty finite samples, nearest-rank p95, fixed verified counts
+and booleans, and absence of private identifiers/URLs were independently checked.
+The prior 555.548 ms local failure is retained as before-change evidence.
+
+The API publish passed, and the owned API/web containers and copied database were
+removed after the benchmark's terminal success. This establishes the local
+producer HTTP target under the documented serial conditions; it does not prove
+500 authenticated recipient clients, Worker delivery at that scale, or current
+immutable-image release acceptance. The exact `a9d107f7` CI run remains live in
+.NET/API and PostgreSQL checks after web quality passed. Estimated PRD-17 work
+remaining is now **22%** (planning estimate); full PRD/release acceptance still
+prevents issue closure.
