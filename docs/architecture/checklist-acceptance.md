@@ -153,3 +153,24 @@ requirements still govern closure; the run is still in its browser stage.
 Run 37139663138 completed with failures in both checklist read widths and feedback observation. A fully parsed, same-scope checklist page with a newer Card revision now requests a bounded parent re-admission and withholds the mismatched contents. Repeating the same mismatch across temporary access refresh does not create an automatic refresh loop; older and foreign pages do not invalidate the current parent. Component cases verify recovery after the authoritative parent revision advances and refusal of older/foreign pages. The browser feedback observer now follows the actual form submission on the stable document across form replacement and requires immediate busy status plus a disabled or removed resubmit control. The original 100 ms feedback, 200 ms detail, 1500 ms usability and 500 ms mutation p95 budgets remain enforced. Local full web validation passes 959 tests in 73 files plus typecheck/lint/build. Updated browser scenarios are discovered but their repaired exact-image execution is pending; PRD-13 remains open.
 
 Archived Card detail now mounts the existing scope/revision-fenced checklist disclosure. Retained titles, progress and item text remain readable without child mutation controls. The Card/List archive browser fixture now opens those disclosures before restore and still verifies deletion purges retained content. Focused archived/checklist/attachment component validation passes 28 cases with typecheck and lint. Browser execution remains pending.
+
+## Current Checklist benchmark and Card lookup evidence
+
+The full normal Checklist browser case now executed twice against compiled local
+Production API/restricted PostgreSQL and the separate scoped delivery Worker.
+Both executions passed 50/13 scoped item pages, full 63-item progress, actual held
+creation/busy feedback and twenty real revisioned completion commands. Both failed
+the unchanged <200 ms cached-detail budget: 209.22 ms before and 201.74 ms after
+the canonical Card lookup refactor. Final Board readiness was 952.56 ms, creation
+feedback 40.60 ms and mutation p95 100.80 ms; first/next item pages 122.49/125.38 ms.
+These independent single runs do not establish a controlled latency improvement.
+
+The refactor avoids flattening all Cards and reuses one memoized canonical
+Card/List location across existing controls. The extracted old lookup strategy
+fails a new early-termination regression; all 70 focused source cases and the
+strengthened three-case integration suite pass, plus types/lint/build. Existing
+admission, revision, active-parent and recovery flags remain. See the
+[full measurements and scope limits](../kanban-performance.md#current-mobile-evidence-and-canonical-card-lookup).
+Local execution is not current exact-image acceptance; the reporter marks the
+runtime unverified. PRD-13 remains open at **35% estimated work remaining**
+(planning estimate), including detail latency and remaining full-ticket evidence.

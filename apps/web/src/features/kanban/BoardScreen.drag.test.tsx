@@ -3,6 +3,7 @@ import type { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { BoardScreen } from './BoardScreen';
+import { boardCardLocation } from './boardCardLocation';
 import type { BoardSnapshot } from '../../api/workManagement';
 
 const drag = vi.hoisted(() => ({ current: undefined as ComponentProps<typeof DndContext> | undefined }));
@@ -22,6 +23,10 @@ vi.mock('@dnd-kit/core', async importOriginal => {
   } };
 });
 vi.mock('../../api/boardLive', () => ({ watchBoard: vi.fn(() => () => {}) }));
+vi.mock('./boardCardLocation', async importOriginal => {
+  const actual = await importOriginal<typeof import('./boardCardLocation')>();
+  return { ...actual, boardCardLocation: vi.fn(actual.boardCardLocation) };
+});
 
 const rank = '500000000000000000000000000000';
 const card = { id: 'card', title: 'Inspect roof', description: null, rank, version: 3 };
@@ -72,16 +77,19 @@ it('preserves canvas columns during dialog state changes and replaces them after
   render(<RouterProvider router={router} />);
   await waitFor(() => expect(screen.getByRole('button', { name: `Drag ${card.title} card` })).toBeEnabled());
   const original = canvas.items;
+  vi.mocked(boardCardLocation).mockClear();
   act(() => screen.getByRole('button', { name: 'Add list' }).click());
   expect(screen.getByRole('dialog')).toBeVisible();
   expect(canvas.items).toBe(original);
   act(() => within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }).click());
   expect(canvas.items).toBe(original);
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(boardCardLocation).not.toHaveBeenCalled();
   current = { ...snapshot, lists: snapshot.lists.map(column => ({ ...column,
     cards: column.cards.map(item => ({ ...item, title: 'Authoritative new title', version: item.version + 1 })) })) };
   act(() => screen.getByRole('button', { name: 'Refresh board' }).click());
   await screen.findByRole('link', { name: 'Authoritative new title' });
+  expect(boardCardLocation).toHaveBeenCalled();
   expect(canvas.items).not.toBe(original);
   expect(snapshot.lists[0].cards[0].title).toBe(card.title);
 });

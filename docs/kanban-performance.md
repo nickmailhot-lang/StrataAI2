@@ -459,6 +459,47 @@ for the new trace condition but were not rerun in this increment. Full mobile,
 large-data and current immutable CI acceptance remain open. PRD-06 remains at
 **29%** and PRD-12 at **25% estimated work remaining** (planning estimates).
 
+## Current mobile evidence and canonical Card lookup
+
+At `b96b2cb5`, a complete three-case native invocation passed mobile Kanban and
+phone List feedback, while Checklist detail opening failed its original budget.
+The original Chromium buffer error did not recur in this invocation:
+
+| Fixture before Card lookup refactor | Outcome | Usable Board | Cached detail | Painted feedback | Mutation p95 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Phone Kanban, 50 Cards | Passed | 656.93 ms | 147.34 ms | 60.30 ms | 116.05 ms |
+| Phone List drop, two empty Lists | Passed | Not sampled | Not sampled | 50.50 ms | Not sampled |
+| Desktop Checklist, 50 Cards/63 items | Failed | 948.65 ms | 209.22 ms | 43.70 ms | 99.42 ms |
+
+The phone workflows retain touch activation, actual viewport intersection, one
+held keyed write, unchanged canonical placement while held, intended acknowledgment,
+unchanged neighbor and persisted order after reload. Checklist reads retain the
+50/13 item pages, full 63-item progress and twenty changing revisioned commands.
+
+Board detail now resolves its selected Card and parent List once per canonical
+snapshot/selection. The lookup stops when found instead of flattening all Card
+collections; ten repeated lifecycle checks and the date-editor parent identity
+reuse that same location. Access, active Board/List, busy/recovery and protected
+read flags keep their existing semantics. No formatted result, account authority
+or future snapshot is cached. The extracted original flattening strategy failed
+the new test because it materialized a later 5,000-Card collection after finding
+the requested Card. Three lookup cases cover early termination, changed canonical
+parent/revision, archive and missing selection/scope. All 70 focused Board/editor/
+drag/date cases pass. A strengthened three-case integration suite also passes,
+showing unrelated dialog state reuses the lookup and fresh snapshots recompute it.
+Typechecking, targeted lint and the isolated production build pass.
+
+The complete unchanged Checklist benchmark on the new compiled build still
+failed: usable 952.56 ms, detail **201.74 ms**, creation feedback 40.60 ms and
+mutation p95 100.80 ms. Item pages measured 122.49/125.38 ms. The <200 ms detail
+budget remains unmet; no retry or threshold change was made. The older passing
+phone measurements above are not new-build or immutable-image proof. All native
+results use compiled local Production API/restricted PostgreSQL, with Checklist
+delivery through a separate scoped Worker; the reporter marks this topology
+unverified. Temporary owned services were removed after execution. Full current
+immutable/mobile/large-data acceptance remains required. Estimated work remaining
+stays **29% for PRD-06** and **35% for PRD-13** (planning estimates).
+
 ## Phone List feedback coverage
 
 The two-empty-List feedback fixture now also runs at 390x844 with Chromium touch input. It reveals the moving List, activates its actual handle, and uses the left canvas boundary to auto-scroll until the anchor center is reachable. Touch release starts the same browser-clock sample used by the desktop pointer case. The first painted optimistic order must intersect the viewport and meet the unchanged <100ms budget while the keyed PATCH is held before dispatch. The fixture requires exactly one write, unchanged canonical ordering while held, the intended acknowledgment at revision two, an unchanged neighboring List, and persisted order after reload. Touch cancellation and session cleanup run on failure.
