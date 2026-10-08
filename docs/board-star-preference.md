@@ -70,3 +70,22 @@ owned fallback. History now retains that exact Dialog reference before removal,
 restores the opener and still respects deliberate external focus. An installed
 Dialog regression fails before the fix and passes afterward. All 63 combined
 star/activity/comment/identity component cases, web typechecking and lint pass.
+
+## Initial keyboard admission in the current native run
+
+At main `e375d2bb`, the four-case star/label baseline ended with three failures
+and one pass in 3.7 minutes. Desktop starring failed its initial personal-state
+assertion without issuing a star read; phone starring passed. The opener could
+become temporarily disabled during live bootstrap after its initial enabled
+check. The fixture now observes two successful, navigation-qualified protected
+Board reads for each of its three clients before opening the personal dialog.
+The existing observer rejects previous-screen, foreign, failed and mutation
+responses; all four observer tests and browser typechecking pass.
+
+Both unchanged substantive desktop/phone star workflows then pass together in
+1.8 minutes against the same frozen compiled web/Production API, restricted
+PostgreSQL and scoped Worker. Private delivery, account isolation, lost-response
+same-key recovery after a later unstar, history/timezone recovery, immutable
+timestamps/shared state and focus/reload checks remain intact. This changes
+fixture readiness only. Current immutable CI and full Board acceptance remain
+pending; estimated PRD-04 work remaining stays **16%** (planning estimate).

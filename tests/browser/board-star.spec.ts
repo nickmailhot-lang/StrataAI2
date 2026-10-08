@@ -1,5 +1,6 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads } from './boardReadTracker';
 
 for (const width of [1280, 390]) {
   test(`PRD-04: personal star isolation, lost acknowledgment and later-state recovery at ${width}px`, async ({ page, context, browser }) => {
@@ -23,6 +24,7 @@ for (const width of [1280, 390]) {
       await waitForBoardDelivery(context.request, board.id);
       const path = `/app/${org}/boards/${board.id}`; const other = await outsider.newPage();
       const mirror = await context.newPage(); let initialPrivateFrame = false; let liveRevision = 0;
+      const admissionReads = new Map([page, other, mirror].map(client => [client, trackBoardReads(client, board.id, path)]));
       mirror.on('websocket', socket => {
         if (!socket.url().includes('/boards/live/stars')) return;
         socket.on('framereceived', frame => {
@@ -39,6 +41,9 @@ for (const width of [1280, 390]) {
       });
       await page.goto(path); await other.goto(path); await mirror.goto(path);
       for (const client of [page, other, mirror]) {
+        // The live bootstrap retires the first snapshot while it rechecks
+        // admission. Require its protected follow-up read before keyboard use.
+        await expect.poll(admissionReads.get(client)!).toBeGreaterThanOrEqual(2);
         await expect(client.getByRole('button', { name: 'Board starring', exact: true })).toBeEnabled();
         await client.getByRole('button', { name: 'Board starring', exact: true }).press('Enter');
         await expect(client.getByText('You have not starred this Board.', { exact: true })).toBeVisible();

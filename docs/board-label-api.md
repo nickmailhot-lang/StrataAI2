@@ -194,3 +194,16 @@ covering definition mutations, reads, retry receipts, authorization waits and
 filtering through the exact web/API images. Shell syntax and local web build
 passed; execution of this repair is pending CI. Existing browser assertions
 retain their expected statuses and recovery behavior.
+
+## Current native acceptance gaps
+
+The four-case star/label baseline at main `e375d2bb` ended with three failures
+and one pass in 3.7 minutes. Both label scenarios failed: desktop at
+`card-labels.spec.ts:107` after a real successful Card-label DELETE while requiring
+focus to return to Edit Card labels; phone at line 145 while requiring the Match
+filters menu to be enabled and opened. These are separate unresolved failures;
+the latter is not a label-management retry failure. The star fixture was repaired
+and rerun independently, without rerunning or claiming these label cases passed.
+No label product behavior or acceptance assertion was changed by that repair.
+PRD-10 remains open with **35%** estimated work remaining (planning estimate),
+including these native gaps and the outstanding full-PRD requirements above.
