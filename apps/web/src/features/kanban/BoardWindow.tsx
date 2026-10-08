@@ -17,9 +17,9 @@ const WindowContent = memo(function WindowContent<T extends Item>({ item, render
 }) { return <>{renderItem(item)}</>; }) as <T extends Item>(props: {
   item: T; renderItem: (item: T) => ReactNode;
 }) => ReactNode;
-const focusable = (row: HTMLElement) => Array.from(row.querySelectorAll<HTMLElement>(
+const focusable = (row: HTMLElement, includeDisabled = false) => Array.from(row.querySelectorAll<HTMLElement>(
   'a[href],button,input,select,textarea,[tabindex]',
-)).filter(node => node.tabIndex >= 0 && !node.matches(':disabled') && !node.closest('[hidden],[inert],[aria-hidden="true"]'));
+)).filter(node => node.tabIndex >= 0 && (includeDisabled || !node.matches(':disabled')) && !node.closest('[hidden],[inert],[aria-hidden="true"]'));
 
 // PRD-04/06: only viewport rows and bounded overscan mount. Small Boards retain
 // their existing layout. Stable identities pin focus, open work and active drags.
@@ -42,7 +42,7 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
   const [heights, setHeights] = useState(() => heightMemory?.get(memoryKey)?.rows ?? new Map<string, number>());
   const measuredWidth = useRef(heightMemory?.get(memoryKey)?.width);
   const [focused, setFocused] = useState<string>();
-  const pendingFocus = useRef<{ id: string; reverse: boolean } | undefined>(undefined);
+  const pendingFocus = useRef<{ id: string; reverse: boolean; origin: HTMLElement } | undefined>(undefined);
   const pendingAnchor = useRef<number | undefined>(undefined);
   const columnSize = desktop ? 320 : viewport.width * 0.82;
   // CSS-variable themes return calc(...), not a numeric spacing string.
@@ -76,6 +76,20 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
     layout.entries.forEach((row, i) => { if (retained.has(row.item.id) || activeId && ownsDrag?.(row.item, activeId)) selected.add(i); });
     return [...selected].sort((a, b) => a - b);
   }, [layout, viewport.offset, viewport.size, items.length, pinned, focused, activeId, ownsDrag]);
+
+  useLayoutEffect(() => {
+    const retire = (event: Event) => {
+      if (pendingFocus.current && (event.type === 'pointerdown'
+        || event.target !== pendingFocus.current.origin && event.target !== document.body)) pendingFocus.current = undefined;
+    };
+    document.addEventListener('focusin', retire);
+    document.addEventListener('pointerdown', retire);
+    return () => {
+      document.removeEventListener('focusin', retire);
+      document.removeEventListener('pointerdown', retire);
+      pendingFocus.current = undefined;
+    };
+  }, []);
 
   useLayoutEffect(() => {
     // A newly mounted row replaces its estimated height and moves later drop
@@ -152,9 +166,12 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
     }
     const request = pendingFocus.current; if (!request) return;
     const row = rows.current.get(request.id); if (!row) return;
-    const targets = focusable(row); const target = request.reverse ? targets.at(-1) : targets[0];
+    // Preserve canonical traversal while admission temporarily disables the
+    // boundary handle. Skipping it would focus the link and discard the request.
+    const targets = focusable(row, true); const target = request.reverse ? targets.at(-1) : targets[0];
+    if (target?.matches(':disabled')) return;
     if (target) { pendingFocus.current = undefined; target.focus({ preventScroll: true }); }
-  }, [indices, layout, memory, memoryKey, horizontal, end, gap, viewport.offset, viewport.size]);
+  }, [indices, layout, memory, memoryKey, horizontal, end, gap, viewport.offset, viewport.size, renderItem]);
 
   function keyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.defaultPrevented || event.key !== 'Tab' || event.altKey || event.ctrlKey || event.metaKey || active) return;
@@ -166,7 +183,7 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
     const index = items.findIndex(item => item.id === id) + (event.shiftKey ? -1 : 1);
     if (index < 0 || index >= items.length || !root.current) return;
     event.preventDefault(); const destination = layout.entries[index];
-    pendingFocus.current = { id: destination.item.id, reverse: event.shiftKey };
+    pendingFocus.current = { id: destination.item.id, reverse: event.shiftKey, origin: target };
     setFocused(destination.item.id);
     const offset = destination.start;
     if (horizontal) root.current.scrollLeft = offset; else root.current.scrollTop = offset;

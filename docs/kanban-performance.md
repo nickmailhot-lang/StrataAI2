@@ -625,8 +625,38 @@ pass afterward; all 31 focused checks pass, with an additional different-row
 focus regression passing in the 21-case Board-window suite. Types, lint, browser
 types and the production build pass.
 
+The next complete native invocation with active-source viewport retention passed
+the phone's full capacity scenario, including the previously failing List
+alignment. Desktop still failed its first Tab check. Its decoded DOM snapshots
+show the source and destination handles disabled across Tab: boundary traversal
+selected the enabled Card link and discarded the intended handle request.
+Handle recovery alone cannot fix a handle that never received focus.
+
+Boundary traversal now waits for the first canonical control to become enabled
+instead of silently skipping it; a new component regression fails before this
+repair and passes afterward. Choosing another focused control or making a
+pointer choice cancels that deferred request. Existing reverse traversal and
+readonly navigation remain covered. All **35 focused checks** pass, as do the
+Board drag integration suite, types, lint and the production build.
+
+The invocation before this final boundary repair separately passed all five
+normal performance cases, with the original limits unchanged:
+
+| Scenario | Usable Board (<1500 ms) | Cached detail (<200 ms) | Feedback (<100 ms) | Mutation p95 (<500 ms) |
+| --- | ---: | ---: | ---: | ---: |
+| Desktop, 50 dated Cards | 959.51 | 189.28 | — | 76.22 |
+| Desktop Kanban, mouse | 686.42 | 174.35 | 71.00 | 128.47 |
+| Phone Kanban, Chromium touch | 679.13 | 133.89 | 59.80 | 110.04 |
+| Desktop List feedback | — | — | 56.70 | — |
+| Phone List feedback, Chromium touch | — | — | 48.10 | — |
+
+Each Board mutation report retains twenty samples and its independently checked
+nearest-rank p95. Runtime provenance remains explicitly unverified. The failed
+desktop case prevented final archived-fingerprint checks; all owned test
+containers and the database copy were removed after terminal checks.
+
 The complete rank/two-viewport capacity chain and five normal performance cases
-are being re-executed against a fresh restricted schema-111 database copy and
-the new frozen web bundle. Full native verification and exact immutable-release
+are being re-executed on another fresh restricted schema-111 database copy and
+the final frozen web bundle. Full native verification and exact immutable-release
 acceptance remain pending. PRD-06 remains at **27% estimated work remaining**;
 this is a planning estimate, not completion evidence.

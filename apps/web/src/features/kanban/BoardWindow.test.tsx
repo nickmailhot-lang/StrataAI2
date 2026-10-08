@@ -149,6 +149,31 @@ it('tabs forward and backward across a window boundary in canonical order', asyn
   await waitFor(() => expect(screen.getByRole('link', { name: `Open card-${index}` })).toHaveFocus());
   expect(screen.getAllByRole('link').length).toBeLessThan(30);
 });
+it('waits for the canonical boundary handle instead of skipping it during temporary disablement', () => {
+  const memory = new Map<string, number>();
+  const tree = (disabled: boolean) => <BoardWindow items={cards} axis="cards" memory={memory} memoryKey="cards"
+    renderItem={item => <><button disabled={disabled}>Drag {item.id}</button><a href={'#' + item.id}>Open {item.id}</a></>} />;
+  const view = render(tree(true));
+  const source = screen.getByRole('link', { name: 'Open card-0' });
+  act(() => source.focus()); fireEvent.keyDown(source, { key: 'Tab' });
+  expect(source).toHaveFocus();
+  expect(screen.getByRole('link', { name: 'Open card-1' })).not.toHaveFocus();
+  view.rerender(tree(false));
+  expect(screen.getByRole('button', { name: 'Drag card-1' })).toHaveFocus();
+});
+it.each(['focus', 'pointer'] as const)('retires pending boundary focus after a user %s choice elsewhere', choice => {
+  const memory = new Map<string, number>();
+  const tree = (disabled: boolean) => <><button>Outside Board</button><BoardWindow items={cards} axis="cards" memory={memory} memoryKey="cards"
+    renderItem={item => <><button disabled={disabled}>Drag {item.id}</button><a href={'#' + item.id}>Open {item.id}</a></>} /></>;
+  const view = render(tree(true));
+  const source = screen.getByRole('link', { name: 'Open card-0' });
+  act(() => source.focus()); fireEvent.keyDown(source, { key: 'Tab' });
+  if (choice === 'focus') act(() => screen.getByRole('button', { name: 'Outside Board' }).focus());
+  else fireEvent.pointerDown(document.body);
+  view.rerender(tree(false));
+  expect(screen.getByRole('button', { name: 'Drag card-1' })).not.toHaveFocus();
+  expect(choice === 'focus' ? screen.getByRole('button', { name: 'Outside Board' }) : source).toHaveFocus();
+});
 it('preserves normal Board markup and all Cards below the virtualization threshold', () => {
   mount(cards.slice(0, 50));
   expect(screen.getAllByRole('link')).toHaveLength(50);
