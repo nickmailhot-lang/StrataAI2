@@ -235,3 +235,53 @@ Two focused regressions cover removing/adding ancestors, actual source offset
 changes, returning to the original parents, unrelated identities and cleanup.
 Forty BoardScreen and scroll-policy tests, web typecheck, focused lint and diff checks pass. Native capacity and the original persistence/alignment
 assertions remain mandatory; this correction is not a completed release claim.
+
+### Stop the observed horizontal edge gesture before browser checks
+
+The retained db4ff033 phone trace observes a later empty destination, then keeps
+the pointer at the edge during attachment/window-count checks. Its final center
+has moved outside the visible canvas before release. The fixture now stops the
+real gesture immediately after observing that same destination, before those
+checks. Actual edge scrolling, original canonical target, middle-half observation,
+source retention, bounded mounts, visible drop center, pointer release and exact
+persisted placement assertions remain. See [CI evidence](architecture/browser-recovery-ci.md#stop-horizontal-edge-input-before-inspecting-the-observed-destination).
+
+The unchanged supplementary CPU-four baseline passes phone and fails desktop
+earlier at List focus; that stress failure is separate and remains unresolved.
+The first normal-CPU validation also passes phone, but desktop sends no move POST
+after its final keyboard drop and times out waiting for a response. That final
+Space now requires the same current access/active-source admission as each of the
+twelve preceding Arrow keys. One enabled, focused drop retains the original source
+and selected position; no drop key is retried. The continuous-Worker results below
+govern final native validation. Neither fixture edit nor the earlier phone passes
+alone establishes complete current release acceptance.
+
+### Complete-history delivery admission
+
+The shared browser fixture's readiness helper previously accepted a ready first
+100-event page even when `hasMore=true`. Native trace responses confirm that
+shape; it cannot prove delivery of later commands. The helper now follows actual
+server cursors through the final non-pending page, within the existing 30 seconds.
+Resets retire prior source admission, and invalid progress cannot satisfy it.
+Four regression cases are mandatory in CI; all 22 related observer/readiness
+checks pass. See [evidence](architecture/browser-recovery-ci.md#board-delivery-readiness-follows-the-complete-bounded-history).
+The complete native capacity results below are required evidence; no event is
+marked ready by the fixture, and whole-release success remains unproven.
+
+The complete-tail run refuses desktop setup at its existing 30-second delivery
+deadline; phone subsequently passes. The rank fixture now starts its scoped
+Worker before Board/bulk publication and keeps it through browser acceptance,
+avoiding a restart of accepted in-flight jobs immediately before the interaction.
+The real queue, complete-tail admission, exit restoration and all capacity/history
+assertions remain. Complete normal-CPU native validation now exits zero with both
+widths passing in 2.0 minutes, concurrent/replay checks passing and all 100,000
+archived records retaining their full fingerprint. Owned fixtures are removed and
+original services/data preserved. The fresh CPU-four invocation also exits zero:
+both widths pass in 3.7 minutes, including the previously failed desktop List focus
+and all original keyboard/pointer/windowing/placement checks. Concurrent/replay
+checks and the full 100,000-row archive fingerprint pass again. These are frozen
+current compiled Production API/real Worker/MUI/PostgreSQL schema-113 results;
+current immutable CI and complete PRD acceptance remain outstanding.
+
+Estimated PRD-06 work remaining stays **35%** (planning estimate). This focused
+capacity evidence does not certify every Kanban, performance or release criterion.

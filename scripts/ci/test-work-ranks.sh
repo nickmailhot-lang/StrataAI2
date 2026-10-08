@@ -20,6 +20,13 @@ curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: a
 curl --fail --silent --show-error -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$body" "$BASE_URL/auth/login" >/dev/null
 request() { curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $(cat /proc/sys/kernel/random/uuid)" -X POST -d "$2" "$BASE_URL$1"; }
 organization="$(request /organizations '{"name":"Rank fixture"}' | jq -r '.organization.id')"
+[[ "$organization" =~ ^[0-9a-fA-F-]{36}$ ]]
+# Keep this same real Worker alive through publication and browser acceptance.
+# Restarting after the bulk commands can interrupt an in-flight delivery lease;
+# a ready first replay page must not hide the remaining pending history.
+capacity_worker=1
+STRATAAI_TEST_EVENT_ORGANIZATION_ID="$organization" docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml \
+  -f scripts/ci/compose.work-event-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
 board="$(request /boards "$(jq -nc --arg org "$organization" '{organizationId:$org,name:"Rank capacity"}')" | jq -r '.id')"
 [[ "$organization" =~ ^[0-9a-fA-F-]{36}$ && "$board" =~ ^[0-9a-fA-F-]{36}$ ]]
 # Independent commands, rather than retries of one key, contend on the parent.
@@ -157,9 +164,6 @@ echo 'Concurrent relative list positions and non-reapplying durable replay passe
 umask 077
 jq -nc --argjson account "$body" --arg org "$organization" --arg board "$board" --arg list "$list" \
   '$account | {email,password,organizationId:$org,boardId:$board,listId:$list}' > "$scratch/browser-capacity"
-capacity_worker=1
-STRATAAI_TEST_EVENT_ORGANIZATION_ID="$organization" docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml \
-  -f scripts/ci/compose.work-event-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
 STRATAAI_BOARD_CAPACITY_FIXTURE="$scratch/browser-capacity" STRATAAI_E2E_RATE_PACING=1 STRATAAI_E2E_RELEASE_HEADERS=1 \
   npx playwright test --config playwright.capacity.config.ts
 test "$(admin "SELECT count(*)=100000 FROM cards WHERE tenant_id='$organization' AND board_id='$board' AND list_id='$list' AND lifecycle_state='ARCHIVED';")" = t

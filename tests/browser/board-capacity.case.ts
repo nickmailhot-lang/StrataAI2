@@ -122,9 +122,15 @@ for (const width of [1280, 390]) {
       const hrefs = await mounted.evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
       return hrefs.some(href => column.cards.findIndex(card => href?.endsWith('/' + card.id)) > lastInitialIndex);
     }).toBe(true);
+    // The final window inventory can overlap a protected refresh just like an
+    // adjacent Arrow key. Admit the one drop key after that read, retaining
+    // this same active source and its already selected canonical target.
+    await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+    await focusAdmittedControl(handle);
+    await expect(handle).toHaveAttribute('aria-pressed', 'true');
     const moveReply = page.waitForResponse(response => response.request().method() === 'POST'
       && new URL(response.url()).pathname === `/cards/${moving.id}/move`);
-    await page.keyboard.press('Space'); expect((await moveReply).status()).toBe(200);
+    await handle.press('Space'); expect((await moveReply).status()).toBe(200);
     await expect(page.getByText('Move acknowledged. Current placement is being checked.', { exact: true })).toBeVisible();
     await waitForBoardDelivery(context.request, fixture.boardId);
     const movedResponse = await context.request.get(`/boards/${fixture.boardId}`); expect(movedResponse.status()).toBe(200);
@@ -294,15 +300,16 @@ for (const width of [1280, 390]) {
     }), laterEmptyIds);
     if (goRight) await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeGreaterThan(horizontalOffset);
     else await expect.poll(() => canvas.evaluate(node => node.scrollLeft)).toBeLessThan(horizontalOffset);
-    // Retain the observed later drop target while edge scrolling is active. Moving
-    // back to the middle stops scrolling, but the final animation frame can
-    // leave that column partially visible on a one-column phone viewport.
+    // Stop the real edge gesture immediately after observing its target. Keep
+    // that canonical destination, then inspect retention/windowing: waiting on
+    // those extra browser round trips while still at the edge lets the target
+    // leave the phone viewport before the stop input reaches the browser.
     const observedDestination = await laterEmptyColumn();
+    await page.mouse.move((left + right) / 2, dragY); await settleDrag();
     const destinationId = observedDestination.id;
     expect(destinationId, JSON.stringify(observedDestination)).not.toBeNull();
     await expect(middle).toBeAttached();
     expect(await canvas.locator('[data-board-window-axis="lists"]').count()).toBeLessThan(15);
-    await page.mouse.move((left + right) / 2, dragY); await settleDrag();
     expect(destinationId).not.toBeNull();
     const destination = pointerSnapshot.lists.find(value => value.list.id === destinationId)!;
     const destinationRow = canvas.locator(`[data-board-window-id="${destinationId}"]`);

@@ -344,3 +344,20 @@ sent no second DELETE. See [execution evidence](browser-recovery-ci.md#archive-s
 Estimated PRD-04 work remaining stays **16%** (planning estimate). The separate
 retained phone capacity failure, current immutable CI and full-PRD acceptance
 remain outstanding; this focused success does not justify closure.
+
+## Complete-history large Board capacity admission
+
+The final current compiled Production API/real Worker/MUI/PostgreSQL schema-113
+capacity invocations pass both desktop/phone cases at normal CPU (2.0 minutes)
+and CPU-four (3.7 minutes). The actual 200-List/5,000-active-Card fixture retains
+keyboard and pointer movement across mounted buffers, cancellation, empty-List
+transfer, stable focus and exact persisted placement. Concurrent/replay checks
+and post-browser fingerprints of all 100,000 archived records pass in both runs.
+
+Readiness follows actual server cursors through the final non-pending page;
+the same scoped Worker runs from before Board publication through acceptance.
+Keyboard-drop admission and prompt edge stopping preserve every original target,
+version and mutation assertion. Four new mandatory readiness regressions and all
+22 related observer cases pass. See [complete evidence](browser-recovery-ci.md#board-delivery-readiness-follows-the-complete-bounded-history).
+Estimated PRD-04 work remaining stays **16%** (planning estimate). Current immutable
+CI and full-PRD acceptance remain required before closure.

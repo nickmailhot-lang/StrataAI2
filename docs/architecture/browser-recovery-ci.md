@@ -578,3 +578,100 @@ investigation; its archive SHA-256 is
 The drag assertion and mandatory capacity gate remain intact. Repair and native
 verification of this failure are still outstanding. It is separate from the
 three earlier retained failures addressed by the seven-case invocation above.
+
+## Stop horizontal edge input before inspecting the observed destination
+
+The retained db4ff033 phone trace keeps the pointer at the horizontal edge while
+checking source attachment and mounted-column count after observing a later empty
+destination. Auto-scroll continues during those browser round trips. By the time
+the center stop input and final rectangle read complete, that same destination's
+center is outside the visible canvas. The failure therefore precedes the actual
+cross-List release/HTTP command.
+
+The capacity fixture now sends the real center stop input immediately after the
+animation-frame observer returns. It settles the gesture, then checks source
+retention and bounded mounts. It retains the same canonical destination rather
+than selecting an easier replacement. Middle-half observation beyond the original
+buffer, visible destination center, actual pointer release, one acknowledged
+cross-List command, exact source/destination/sibling state and all keyboard,
+version, focus, viewport and archive-history assertions remain unchanged. No
+scroll offset, drag state, response or event is fabricated; no assertion budget,
+automatic test retry or mandatory gate changes.
+
+A separate unchanged CPU-four baseline passes phone but fails desktop earlier at
+`board-capacity.case.ts:77`, while focusing a newly mounted List. It never reaches
+desktop horizontal dragging, so it is not evidence that the edge correction fixes
+that stress failure. The existing five-second focus admission and 500ms individual
+focus attempt remain. The final continuous-Worker check below governs its current
+verification.
+
+The first normal-CPU validation passes phone, but desktop times out waiting for
+the first keyboard Card move response at `board-capacity.case.ts:125`. Its trace
+has no browser Card move POST after the twelve aligned Arrow keys and final
+Space; the after-key snapshot has the workspace busy during protected refresh.
+Each Arrow already waits for current admission, but the final drop previously
+followed the window inventory without the same check. The fixture now requires
+current workspace admission, enabled focus and the same still-active source
+before its one Space drop. It retains all twelve targets, two-pixel alignment,
+same source/version and original persisted-placement assertions. No drop key is
+retried. The next normal-CPU invocation passes that keyboard stage but fails later
+horizontal transfer; the complete-history investigation below records that result.
+
+Browser TypeScript and rank-script syntax pass. Exact retained-image CI and
+complete PRD acceptance remain required before closure.
+
+## Board delivery readiness follows the complete bounded history
+
+The subsequent normal-CPU invocation with final keyboard admission passes phone;
+desktop passes the keyboard Card move and reaches horizontal transfer, then times
+out waiting for its response. This is another failed invocation, not a completed
+capacity result. Its retained HTTP trace contains three readiness responses with
+100 events, `hasMore=true`, `pending=false`, `resetRequired=false`. The shared
+`waitForBoardDelivery` helper previously accepted each first page as complete.
+
+The production `WorkEventReadWindow` contract checks a bounded ordered window,
+not every published source. A ready first page can have more history and a later
+pending source. Its consumer must follow the cursor; repeatedly checking only
+the first hundred cannot establish readiness of later accepted commands. The
+helper now resumes from the actual cursor until a final non-pending page, retaining
+observed-source admission across pages. A reset retires that admission; malformed,
+backward or inconsistent progress fails. Every read still uses the authenticated
+Board sync endpoint, and the existing 30-second deadline remains. No Worker job
+or event readiness is fabricated and no private cursor enters diagnostic output.
+
+Four regressions cover a ready first hundred followed by a pending source, an
+empty head, reset recovery and invalid progress. They join the mandatory web
+quality step; all 22 Board-read, invitation/archive-observer and delivery-admission
+checks pass, as does browser TypeScript. The complete current-schema native
+capacity results below verify both browser widths and the post-browser full
+fingerprint of 100,000 archived records. Current immutable CI and complete PRD
+acceptance remain outstanding.
+
+The complete-tail invocation correctly rejects desktop setup after 30 seconds
+at the initial delivery wait; phone subsequently passes. It no longer admits an
+incomplete first window as ready. The rank fixture previously force-recreated its
+Worker after publishing all bulk commands. Background jobs retain their existing
+two-minute lease on interrupted processing, so that restart can leave accepted
+sources pending beyond the unchanged readiness deadline.
+
+The rank fixture now establishes its scoped real Worker after Organization
+creation, before creating the Board or publishing any bulk Work command. That
+same Worker stays alive through the concurrent SQL/HTTP checks and both browser
+cases; the existing exit trap restores the ordinary Worker. Readiness still
+requires real complete-history delivery, and the 30-second/150-second bounds,
+concurrency assertions and 100,000-row archive fingerprint remain. The complete
+continuous-Worker normal-CPU native invocation exits zero: both desktop and phone
+cases pass together in 2.0 minutes, and the post-browser archived count and full
+100,000-row fingerprint match. Concurrent append, relative moves/positions and
+non-reapplying durable replay also pass. It uses the frozen current compiled
+Production API, separate real Worker, MUI bundle, Nginx and restricted PostgreSQL
+schema 113; owned containers/database are removed and original services/data
+remain. This is current local runtime evidence, not current retained-image/full
+release acceptance. The fresh CPU-four invocation also exits zero: both widths
+pass together in 3.7 minutes, including the previously failed desktop List focus,
+keyboard moves, pointer moves/cancellation, horizontal transfer and List keyboard
+reordering. Its complete concurrent/replay checks and post-browser 100,000-row
+archive fingerprint also pass. Both invocations remove only their owned fixtures;
+the original three services/data remain. The earlier failures are retained above,
+not automatically retried or hidden. Current mandatory immutable-image CI and
+complete PRD acceptance still govern issue closure.
