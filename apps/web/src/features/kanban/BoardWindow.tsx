@@ -19,7 +19,8 @@ const WindowContent = memo(function WindowContent<T extends Item>({ item, render
 }) => ReactNode;
 const focusable = (row: HTMLElement, includeDisabled = false) => Array.from(row.querySelectorAll<HTMLElement>(
   'a[href],button,input,select,textarea,[tabindex]',
-)).filter(node => node.tabIndex >= 0 && (includeDisabled || !node.matches(':disabled')) && !node.closest('[hidden],[inert],[aria-hidden="true"]'));
+)).filter(node => (node.tabIndex >= 0 || includeDisabled && node.matches(':disabled'))
+  && (includeDisabled || !node.matches(':disabled')) && !node.closest('[hidden],[inert],[aria-hidden="true"]'));
 
 // PRD-04/06: only viewport rows and bounded overscan mount. Small Boards retain
 // their existing layout. Stable identities pin focus, open work and active drags.
@@ -167,7 +168,8 @@ function Windowed<T extends Item>({ items, axis, memory, memoryKey, heightMemory
     const request = pendingFocus.current; if (!request) return;
     const row = rows.current.get(request.id); if (!row) return;
     // Preserve canonical traversal while admission temporarily disables the
-    // boundary handle. Skipping it would focus the link and discard the request.
+    // boundary handle, including MUI's disabled tabIndex=-1. Skipping it would
+    // focus the link and discard the request.
     const targets = focusable(row, true); const target = request.reverse ? targets.at(-1) : targets[0];
     if (target?.matches(':disabled')) return;
     if (target) { pendingFocus.current = undefined; target.focus({ preventScroll: true }); }

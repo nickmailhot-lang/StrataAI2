@@ -656,7 +656,19 @@ desktop case prevented final archived-fingerprint checks; all owned test
 containers and the database copy were removed after terminal checks.
 
 The complete rank/two-viewport capacity chain and five normal performance cases
-are being re-executed on another fresh restricted schema-111 database copy and
-the final frozen web bundle. Full native verification and exact immutable-release
-acceptance remain pending. PRD-06 remains at **27% estimated work remaining**;
+were re-executed after that boundary repair. Phone again passed, but desktop
+still failed the initial Tab check. The regression originally used a plain
+native button and missed MUI's disabled `tabIndex=-1`. Replacing that button
+with the real MUI Button reproduced the failure (one failure, 23 passes).
+Canonical pending-focus selection now includes disabled native controls even
+with negative tab index, without changing normal Tab filtering or enabling any
+disabled control. The real MUI regression and all **35 focused checks** pass,
+as do types, lint and the production build. All five normal performance cases
+also passed on the preceding bundle; this does not establish the final repair's
+capacity acceptance. Failed traces and privacy-safe normal reports are retained.
+
+The complete chain is being re-executed on another fresh restricted schema-111
+database copy and the MUI-corrected frozen web bundle. Full native verification
+and exact immutable-release acceptance remain pending.
+PRD-06 remains at **27% estimated work remaining**;
 this is a planning estimate, not completion evidence.

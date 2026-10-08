@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@mui/material/styles';
+import { Button } from '@mui/material';
 import { appTheme } from '../../theme/appTheme';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { BoardWindow, type BoardWindowHeights } from './BoardWindow';
@@ -152,7 +153,7 @@ it('tabs forward and backward across a window boundary in canonical order', asyn
 it('waits for the canonical boundary handle instead of skipping it during temporary disablement', () => {
   const memory = new Map<string, number>();
   const tree = (disabled: boolean) => <BoardWindow items={cards} axis="cards" memory={memory} memoryKey="cards"
-    renderItem={item => <><button disabled={disabled}>Drag {item.id}</button><a href={'#' + item.id}>Open {item.id}</a></>} />;
+    renderItem={item => <><Button disabled={disabled}>Drag {item.id}</Button><a href={'#' + item.id}>Open {item.id}</a></>} />;
   const view = render(tree(true));
   const source = screen.getByRole('link', { name: 'Open card-0' });
   act(() => source.focus()); fireEvent.keyDown(source, { key: 'Tab' });
