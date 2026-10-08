@@ -1,6 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { focusAdmittedControl, pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-08 Card copy keyboard review and original retry update the destination without changing the source at ${width}px`, async ({ page, context, browser }) => {
@@ -49,26 +50,32 @@ for (const width of [1280, 390]) {
           expect(route.request().headers()['idempotency-key']).toBe(originalKey); await route.continue();
         }
       });
-      await page.getByRole('link', { name: 'Original copy source', exact: true }).focus(); await page.keyboard.press('Enter');
-      const open = page.getByRole('button', { name: 'Copy Card', exact: true }); await expect(open).toBeEnabled(); await open.focus(); await page.keyboard.press('Enter');
+      await page.bringToFront();
+      await pressAdmittedAction(page.getByRole('link', { name: 'Original copy source', exact: true }));
+      const open = page.getByRole('button', { name: 'Copy Card', exact: true }); await pressAdmittedAction(open);
       await expect(page.getByText(/attachments and covers are not copied/)).toBeVisible();
-      const title = page.getByRole('textbox', { name: 'Copied Card title', exact: true }); await title.focus(); await title.press('ControlOrMeta+A'); await page.keyboard.type('Independent copied Card');
+      const title = page.getByRole('textbox', { name: 'Copied Card title', exact: true });
+      // Initial destination discovery disables the draft until its protected
+      // read completes. Typing before admission leaves the default source title.
+      await focusAdmittedControl(title); await title.press('ControlOrMeta+A'); await title.pressSequentially('Independent copied Card');
+      await expect(title).toHaveValue('Independent copied Card');
       const boardChoice = page.getByRole('combobox', { name: 'Copy destination Board', exact: true }); await expect(boardChoice).toBeEnabled();
-      await boardChoice.press('ArrowDown'); await page.getByRole('option', { name: 'Copy destination', exact: true }).focus(); await page.keyboard.press('Enter');
+      await focusAdmittedControl(boardChoice); await boardChoice.press('ArrowDown'); await pressAdmittedAction(page.getByRole('option', { name: 'Copy destination', exact: true }));
       const listChoice = page.getByRole('combobox', { name: 'Copy destination List', exact: true }); await expect(listChoice).toBeEnabled();
-      await listChoice.press('ArrowDown'); await page.getByRole('option', { name: 'Copy destination List', exact: true }).focus(); await page.keyboard.press('Enter');
-      const confirm = page.getByRole('button', { name: 'Confirm Card copy', exact: true }); await confirm.focus(); await page.keyboard.press('Enter');
+      await focusAdmittedControl(listChoice); await listChoice.press('ArrowDown'); await pressAdmittedAction(page.getByRole('option', { name: 'Copy destination List', exact: true }));
+      await expect(title).toHaveValue('Independent copied Card');
+      const confirm = page.getByRole('button', { name: 'Confirm Card copy', exact: true }); await pressAdmittedAction(confirm);
       const retry = page.getByRole('button', { name: 'Retry this Card copy', exact: true }); await expect(retry).toBeEnabled();
       await expect(sourcePeer.getByRole('link', { name: 'Original copy source', exact: true })).toBeVisible();
       await expect(targetPeer.getByRole('link', { name: 'Independent copied Card', exact: true })).toBeVisible({ timeout: 20_000 });
-      expect(copies).toBe(1); await retry.focus(); await page.keyboard.press('Enter');
+      expect(copies).toBe(1); await pressAdmittedAction(retry);
       const link = page.getByRole('link', { name: 'Open copied Card', exact: true }); await expect(link).toHaveAttribute('href', `/app/${org}/boards/${boards[1]}/cards/${copiedId}`);
       expect(copies).toBe(2);
       const source = await context.request.get(`/boards/${boards[0]}`); const sourceCards = (await source.json()).lists.flatMap((l: { cards: typeof sourceCard[] }) => l.cards);
       expect(sourceCards).toHaveLength(1); expect(sourceCards[0]).toMatchObject(sourceCard);
       const destination = await context.request.get(`/boards/${boards[1]}`);
       expect((await destination.json()).lists.flatMap((l: { cards: { id: string }[] }) => l.cards)).toHaveLength(1);
-      await link.focus(); await page.keyboard.press('Enter'); await expect(page.getByRole('heading', { name: 'Card details', exact: true })).toBeVisible();
+      await pressAdmittedAction(link); await expect(page.getByRole('heading', { name: 'Card details', exact: true })).toBeVisible();
       await page.getByRole('button', { name: 'Review Card activity', exact: true }).click();
       await expect(page.getByRole('region', { name: 'Card activity' }).getByText('Copy reviewer copied a Card.', { exact: true })).toBeVisible();
       await page.reload(); await expect(page.getByRole('heading', { name: 'Card details', exact: true })).toBeVisible();

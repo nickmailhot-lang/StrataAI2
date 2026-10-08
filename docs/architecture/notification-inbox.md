@@ -187,3 +187,18 @@ Tagged Axe/overflow and browser typechecking pass. The full case passes in
 1.2 minutes using current compiled Production services; current retained-image
 and complete PRD acceptance remain required. PRD-17 stays open at **15% estimated
 work remaining**.
+
+
+## Actual read and permission withdrawal ordering
+
+The [executed sixteen-race read matrix](prd-17-acceptance.md#executed-read-and-permission-withdrawal-ordering)
+observes actual Board lock order for single reads and two-source bulk selections
+under Member/Admin removal and Organization/Public visibility withdrawal. Access
+withdrawal first preserves unread rows, private journal/counters and receipt count;
+read first records exact first-read clocks and one transition per selected row.
+The original successful receipt is inaccessible after withdrawal. Real
+re-admission recovers its exact reply/clock, or permits the first authorized read
+with the previously denied key. Full graph and canonical attribution checks remain.
+All five combined cases pass in eight minutes on the strict local Production
+fixture. Current immutable release and complete native/PRD-wide acceptance remain
+required; PRD-17 stays open at **15% estimated work remaining**.

@@ -91,3 +91,40 @@ enforces nearest-rank mutation p95 below the unchanged 500ms budget and retains
 failed budget measurements. Conditions are one serial client with no intentional
 network latency. This does not establish concurrent-client or browser-feedback
 budgets. Linux execution is required before any measured copy performance claim.
+
+
+## Executed copy draft admission and capacity
+
+Retained-image run [37766259462](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37766259462)
+failed both native copy widths. Both retained traces show the default source title
+in the attempted copy body rather than the reviewed title. Initial destination
+discovery still disables the draft while its protected reads are pending; the
+fixture typed before requiring the title control to be enabled and focused.
+`card-copy.spec.ts` now brings the active page forward, observes enabled keyboard
+focus, types through the actual title control and verifies its value before and
+after destination selection. Single activation keys remain; no command retry,
+original-body/key assertion or copy-integrity requirement is relaxed.
+
+Both unchanged desktop/390px cases pass in one **1.4-minute** local Production
+API/MUI/Nginx invocation with restricted PostgreSQL 17/pgvector schema 112 and
+separate scoped Worker. The API uses the optional-verification account policy of
+the full release browser phase; this is distinct from strict notification admission.
+Actual lost successful acknowledgment, exact original-key/body recovery, source
+immutability, independent destination identity/children, live destination appearance
+and activity assertions remain. Browser TypeScript passes. Owned containers/database
+are removed, preserving original services/data. This is local compiled-runtime
+verification, not a green current immutable release.
+
+The retained `card-copy-capacity-35aabef2ea479c87bbc629bace23b22e126df31c` artifact
+from that same failed overall run independently reports **passed**: twenty actual
+copies through Nginx and exact release images, mutation p95 **76.98 ms** against
+500 ms. The source has 5,000 active Cards, both Boards have 200 Lists, destination
+active Cards grow from 4,980 to 5,000, and the Organization has 100,000 archived
+Cards. Each copy contains one label, one Checklist and 63 fresh incomplete items;
+independent IDs, unchanged source, no inherited history/personal state and original
+retry integrity pass. Conditions are one serial client and zero intentional network
+latency. This supersedes the unexecuted Linux-capacity status above for that
+revision only. Product source (`src`, `apps/web`, `db`) is unchanged between the
+retained revision and `3656fa63`; current full image CI and complete PRD-08 scope
+remain required. PRD-08 stays open at **35% estimated work remaining** (planning
+estimate).

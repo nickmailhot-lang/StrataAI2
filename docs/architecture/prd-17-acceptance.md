@@ -793,3 +793,43 @@ execution uses current compiled Production API/MUI and restricted PostgreSQL
 originating-transaction fan-out. Current immutable release CI and the complete
 role/visibility/lifecycle/interaction matrices remain independently required.
 PRD-17 stays open at **15% estimated work remaining** (planning estimate).
+
+
+## Executed read and permission withdrawal ordering
+
+The expanded `watch-permission-order.spec.ts` passes with the unchanged watch
+regression in one **five-case, 8.0-minute** strict verified-account invocation.
+It preserves the previous fourteen command races and adds sixteen read races:
+MEMBER, ADMIN, ORGANIZATION_READER and PUBLIC_READER, each with single/bulk read
+and withdrawal first/read first. Bulk selections contain two distinct actual
+Card source notifications. No notifications, read clocks or journal transitions
+are fabricated. The observed Board waiters and queued peer blockers establish
+each actual request order before release.
+
+Withdrawal first returns `notification_not_found`, preserves the complete retained
+notification/journal/counter fingerprint and creates no read receipt. Both selected
+bulk rows remain unread. Read first acknowledges exactly the selected identities
+with one shared first-read timestamp and one private READ event per selected row.
+Once access is withdrawn, even the original successful read key/body is refused
+before its cached reply is disclosed. Original Card source retries return exact
+original replies without changing the full protected graph. Inbox/sync remain empty.
+
+Real membership/visibility re-admission preserves retained watch and private
+history. The original denied read key can then perform its first authorized read;
+the originally successful key recovers its exact original reply and clock. All
+original read retries preserve the full Card/watch/private graph, source/audit/job
+and receipt fingerprint. Complete authorized inbox/journal/source/clocks are
+independently checked after every race. Each role ends at Card version nine with
+seven notifications, six read rows and thirteen contiguous private journal events;
+the earlier unselected notification remains unread.
+
+Browser TypeScript passes. The existing required strict immutable-image ordering
+phase collects this expanded matrix; no test is skipped or retried. Local execution
+uses current compiled Production API/MUI and restricted PostgreSQL 17/pgvector
+schema 112 with actual verified-email enforcement. Owned containers/database are
+removed and original services/data preserved. This strengthens NOTIFY-FR-003/012,
+AC-NOTIFY-17-02 and TC-04/05/07/08. It adds no native keyboard/mobile/private
+transport or capacity claim. Current complete retained-image CI, remaining
+role/lifecycle/movement/rollback/interaction/capacity requirements and full DoD
+remain required. PRD-17 stays open at **15% estimated work remaining** (planning
+estimate).

@@ -375,3 +375,42 @@ release, HTTP acknowledgment and exact persisted placement assertions remain.
 Browser TypeScript checks pass; actual repaired exact-image execution is still
 required. Later native acceptance stages did not execute in the failed run,
 and its required gate failed.
+
+
+## Retained release run 35aabef2 failure audit
+
+[Run 37766259462](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37766259462)
+is terminal: source quality, PostgreSQL, immutable image build and security pass;
+container integration and required CI fail, and release packaging is skipped.
+The full browser step ran 3.1 hours with 288 passing and 17 failing cases. All
+seventeen retained failure traces and source locations were inspected; the table
+records observed failures, not inferred root causes or completed repairs.
+
+| Scenario family | Failed cases | Observed failure |
+| --- | ---: | --- |
+| Board invitation administration | 2 | Missing uncertain-issuance notice; cancellation focus |
+| Board invitation live history | 1 | Cancellation focus |
+| Board lifecycle | 1 | Missing deletion acknowledgment |
+| Card copy | 2 | Default title submitted; route assertion prevents expected recovery |
+| Navigation observations | 1 | One unexpected navigation observation |
+| Organization deletion completion | 1 | Observer status differs before scoped Worker starts |
+| Organization departure | 1 | Sole-owner control focus times out |
+| Organization invitation administration | 2 | Issuance acknowledgment observation |
+| Organization settings | 2 | Current-settings settlement not observed |
+| Recipient Board authority | 2 | Stale acceptance action remains visible |
+| Recipient Portal live invitations | 2 | Expected live status not observed |
+
+The copy traces independently confirm the attempted body retains the default title.
+The [copy admission repair](../card-copy.md#executed-copy-draft-admission-and-capacity)
+passes both local native cases; the other fifteen failures remain unresolved in
+this audit. No failure is skipped, automatically rerun to erase evidence, or marked
+fixed from elapsed time. Later main runs remain independent and require their own
+terminal acceptance. Product source is unchanged from the retained revision to
+`3656fa63`; later expanded tests and local passes do not make this failed gate green.
+
+The retained copy-capacity artifact separately proves twenty copies at p95
+76.98 ms under its documented serial-client conditions. Earlier successful steps
+are scoped evidence, not complete release acceptance. The strict
+[read/permission ordering matrix](prd-17-acceptance.md#executed-read-and-permission-withdrawal-ordering)
+adds sixteen actual races while preserving prior watch/activity ordering, but does
+not substitute for native release failures or the full required gate.

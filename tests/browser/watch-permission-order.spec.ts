@@ -101,6 +101,82 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
     }
     expect(query(`SELECT version FROM cards WHERE tenant_id='${org}' AND id='${card}';`)).toBe('3');
     expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${recipient}';`)).toBe('1');
+    // Each read race uses fresh notifications from actual source commands. Bulk
+    // selects two distinct sources, so denial must preserve the entire selection.
+    for (const bulk of [false, true]) for (const withdrawalFirst of [true, false]) {
+      const ids: string[] = [];
+      const sources: { body: { title: string; description: null; version: number }; key: string; text: string }[] = [];
+      for (let index = 0; index < (bulk ? 2 : 1); index++) {
+        const body = { title: `Read order ${role} ${bulk} ${withdrawalFirst} ${index}`, description: null, version };
+        const key = crypto.randomUUID();
+        const response = await context.request.patch(`/cards/${card}`, { headers: { ...headers, 'Idempotency-Key': key }, data: body });
+        expect(response.status()).toBe(200); const text = await response.text(); version++;
+        expect(JSON.parse(text)).toMatchObject({ id: card, version, title: body.title }); sources.push({ body, key, text });
+        const id = query(`SELECT n.id FROM card_assignment_notifications n JOIN work_events e ON e.tenant_id=n.tenant_id AND e.event_id=n.event_id WHERE n.tenant_id='${org}' AND n.recipient_id='${recipient}' AND e.entity_id='${card}' AND e.entity_version=${version} AND e.event_type='CARD_UPDATED';`);
+        expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/); ids.push(id);
+      }
+      expect(new Set(ids).size).toBe(ids.length);
+      const selection = ids.map(id => `'${id}'`).join(',');
+      expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND id IN (${selection}) AND read_at IS NULL;`)).toBe(String(ids.length));
+      const current = await context.request.get(`/boards/${board}`); expect(current.status()).toBe(200);
+      const boardVersion = (await current.json()).board.version;
+      const withdraw = () => reader
+        ? context.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility: 'PRIVATE', version: boardVersion } })
+        : context.request.delete(`/boards/${board}/members/${recipient}`, { headers });
+      const key = crypto.randomUUID();
+      const read = () => member.request.post(`/organizations/${org}/notifications/${bulk ? 'read' : `${ids[0]}/read`}`, {
+        headers: { ...headers, 'Idempotency-Key': key }, ...(bulk ? { data: { ids } } : {}) });
+      const before = retainedState();
+      const receiptCount = () => Number(query(`SELECT count(*) FROM work_command_replays WHERE tenant_id='${org}' AND actor_id='${recipient}';`));
+      const beforeReceipts = receiptCount();
+      const replies = await inObservedBoardOrder(org, board, withdrawalFirst ? withdraw : read, withdrawalFirst ? read : withdraw);
+      expect(replies[withdrawalFirst ? 0 : 1].status()).toBe(reader ? 200 : 204);
+      const readReply = replies[withdrawalFirst ? 1 : 0]; expect(readReply.status()).toBe(withdrawalFirst ? 404 : 200);
+      let originalReadText: string | undefined;
+      if (withdrawalFirst) {
+        expect((await readReply.json()).code).toBe('notification_not_found');
+        expect(retainedState()).toBe(before); expect(receiptCount()).toBe(beforeReceipts);
+        expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND id IN (${selection}) AND read_at IS NULL;`)).toBe(String(ids.length));
+      } else {
+        originalReadText = await readReply.text();
+        const result = JSON.parse(originalReadText); expect(result.organizationId).toBe(org);
+        expect(result.items.map((item: { id: string }) => item.id).sort()).toEqual([...ids].sort());
+        expect(new Set(result.items.map((item: { readAt: string }) => item.readAt)).size).toBe(1);
+        expect(receiptCount()).toBe(beforeReceipts + 1);
+      }
+      expect(query(`SELECT count(*) FROM notification_events WHERE tenant_id='${org}' AND recipient_id='${recipient}' AND notification_id IN (${selection}) AND event_type='NOTIFICATION_READ';`)).toBe(withdrawalFirst ? '0' : String(ids.length));
+      const committed = privateState(), retained = retainedState();
+      const deniedRetry = await read(); expect(deniedRetry.status()).toBe(404); expect((await deniedRetry.json()).code).toBe('notification_not_found');
+      const inbox = await member.request.get(`/organizations/${org}/notifications`); expect(inbox.status()).toBe(200); expect((await inbox.json()).items).toEqual([]);
+      const sync = await member.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(sync.status()).toBe(200); expect((await sync.json()).events).toEqual([]);
+      for (const source of sources) {
+        const replay = await context.request.patch(`/cards/${card}`, { headers: { ...headers, 'Idempotency-Key': source.key }, data: source.body });
+        expect(replay.status()).toBe(200); expect(await replay.text()).toBe(source.text);
+      }
+      expect(privateState()).toBe(committed); expect(watchState()).toBe(originalWatches);
+      if (reader) {
+        const hidden = await context.request.get(`/boards/${board}`); expect(hidden.status()).toBe(200);
+        expect((await context.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility, version: (await hidden.json()).board.version } })).status()).toBe(200);
+      } else expect((await grant()).status()).toBe(200);
+      expect(retainedState()).toBe(retained); expect(watchState()).toBe(originalWatches);
+      const authorized = await read(); expect(authorized.status()).toBe(200); const text = await authorized.text();
+      if (originalReadText !== undefined) expect(text).toBe(originalReadText);
+      else originalReadText = text;
+      const acknowledgment = JSON.parse(text); expect(acknowledgment.organizationId).toBe(org);
+      expect(acknowledgment.items.map((item: { id: string }) => item.id).sort()).toEqual([...ids].sort());
+      expect(new Set(acknowledgment.items.map((item: { readAt: string }) => item.readAt)).size).toBe(1);
+      expect(receiptCount()).toBe(beforeReceipts + 1);
+      expect(query(`SELECT count(DISTINCT read_at) FROM card_assignment_notifications WHERE tenant_id='${org}' AND id IN (${selection});`)).toBe('1');
+      expect(query(`SELECT count(*) FROM notification_events WHERE tenant_id='${org}' AND recipient_id='${recipient}' AND notification_id IN (${selection}) AND event_type='NOTIFICATION_READ';`)).toBe(String(ids.length));
+      await expectPersistedNotificationDelivery(member.request, org, recipient, []);
+      const acknowledged = privateState();
+      const retry = await read(); expect(retry.status()).toBe(200); expect(await retry.text()).toBe(originalReadText);
+      expect(privateState()).toBe(acknowledged);
+    }
+    expect(query(`SELECT version FROM cards WHERE tenant_id='${org}' AND id='${card}';`)).toBe('9');
+    expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${recipient}';`)).toBe('7');
+    expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${recipient}' AND read_at IS NOT NULL;`)).toBe('6');
+    expect(query(`SELECT count(*) FROM notification_events WHERE tenant_id='${org}' AND recipient_id='${recipient}';`)).toBe('13');
   } finally { await member.close(); }
 });
 }

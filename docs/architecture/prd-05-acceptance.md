@@ -344,3 +344,18 @@ not additional native transport, keyboard/mobile or capacity acceptance. The
 required immutable-image CI phase includes them; local evidence does not establish
 a green retained release. Full current CI and remaining PRD-wide acceptance remain
 required. PRD-05 stays open at **15% estimated work remaining** (planning estimate).
+
+
+## Actual read commands across permission withdrawal
+
+The [sixteen actual read-order races](prd-17-acceptance.md#executed-read-and-permission-withdrawal-ordering)
+cover Member/Admin grant removal and Organization/Public visibility withdrawal,
+single and two-source bulk selection, and both command orders. Withdrawal first
+rejects the entire selection without read/journal/receipt changes. Read first
+retains its first-read clocks while current authorization refuses the original
+cached receipt after withdrawal. Actual re-admission recovers exact history and
+allows only the currently authorized read. Full protected graph and stored source
+attribution checks pass. The expanded five-case strict local invocation passes in
+eight minutes. This strengthens PERM-FR-005/008/010 and TC-04/05/07/08; native
+transport/interaction/capacity and full current retained-image CI remain separate.
+PRD-05 remains open at **15% estimated work remaining** (planning estimate).
