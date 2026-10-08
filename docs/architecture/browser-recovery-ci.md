@@ -738,3 +738,14 @@ Its phone reminder fails the option-visibility assertion at the old line 133,
 before interval selection. Those fixtures predate the current source-admission
 repair in `4c436df7`; the failed immutable run remains failed. The current eight-
 case local pass does not substitute for the still-running current exact-image gate.
+
+Run [37824613470](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37824613470)
+at `4c436df7` has now failed before that strict producer phase, in the large-Board
+rank stage. Its desktop capacity case passes; the phone case fails the destination
+drop-target viewport assertion at `board-capacity.case.ts:317` with ratio zero
+(one passed, one failed in 1.6 minutes). The retained capacity artifact is
+`11573234558`, SHA-256 `aac3a6b49f27c6e89582720bef240bf666841fd52f3fabb5ccf196ac5eaf8170`.
+Its trace records the edge input followed by destination observation, then the
+center stop input and failing viewport assertion. Root-cause/repair verification
+is still required; earlier normal/CPU-four local capacity passes do not establish
+this immutable gate. Required CI fails and the release bundle is skipped.

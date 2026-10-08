@@ -4,6 +4,9 @@ FOUND-FR-009's mutable-record audit now includes the
 [executed session/security-token lifecycle clock repair](architecture/identity-lifecycle-clocks.md).
 That scoped upgrade and restricted-store proof does not certify every mutable
 entity or full PRD-01 acceptance. Estimated work remaining stays **34%**.
+The [canonical invitation metadata audit](architecture/invitation-audit-metadata.md)
+also projects its existing stored clock/revision through creation and lifecycle
+reads, with complete restricted returned-row and recovery checks.
 
 PRD-01 requires `APPLICATION_CONTEXT_CHANGED`, `BOARD_OPENED`, and `CARD_OPENED`. These are personal navigation observations. They do not change shared Board/Card content or replace audit history. See the [documentation index](README.md), [routing isolation](architecture/routing-isolation.md), and [current actor sessions](architecture/command-actor-sessions.md).
 

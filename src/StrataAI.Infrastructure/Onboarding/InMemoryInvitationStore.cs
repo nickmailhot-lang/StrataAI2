@@ -193,7 +193,7 @@ internal sealed class InMemoryInvitationStore(
                     null);
             }
 
-            invitation = invitation with { AcceptedAt = acceptedAt, AcceptedByUserId = userId };
+            invitation = invitation with { AcceptedAt = acceptedAt, AcceptedByUserId = userId, UpdatedAt = acceptedAt, Version = invitation.Version + 1 };
             _byToken[tokenHash] = invitation;
             _versions[(invitation.OrganizationId, invitation.Id)]++;
         }
@@ -258,7 +258,7 @@ internal sealed class InMemoryInvitationStore(
                 return Task.FromResult(false);
             }
 
-            _byToken[pair.Key] = pair.Value with { RevokedAt = revokedAt };
+            _byToken[pair.Key] = pair.Value with { RevokedAt = revokedAt, UpdatedAt = revokedAt, Version = pair.Value.Version + 1 };
             var version = ++_versions[(organizationId, invitationId)];
             journal.Capture(_byToken[pair.Key], version, "INVITATION_REVOKED", cancellationToken);
             return Task.FromResult(true);

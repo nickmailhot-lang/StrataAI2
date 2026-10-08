@@ -21,7 +21,11 @@ public sealed record InvitationRecord(
     DateTimeOffset? RevokedAt,
     Guid? AcceptedByUserId = null,
     string? OrganizationName = null,
-    BoardInvitationTarget? BoardTarget = null);
+    BoardInvitationTarget? BoardTarget = null)
+{
+    public DateTimeOffset UpdatedAt { get; init; } = CreatedAt;
+    public long Version { get; init; } = 1;
+}
 
 public sealed record BoardInvitationTarget(Guid BoardId, StrataAI.Application.WorkManagement.BoardRole Role);
 

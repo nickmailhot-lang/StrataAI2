@@ -4,6 +4,16 @@
 This source review maps the ten functional requirements to implemented behavior
 and remaining work. It does not certify current release acceptance.
 
+## Canonical invitation clock and revision projection
+
+The [invitation metadata audit and repair](invitation-audit-metadata.md) preserves
+the existing database-managed clock/revision and projects it through actual
+creation, routing, acceptance and original-receipt reads. The original model
+regression fails before repair. The final restricted database contract requires
+complete returned/stored row equality, refused repeats and owning rollback;
+all 75 selected invitation API-host cases pass. Current immutable/full release
+acceptance still governs closure. Estimated work remaining stays **8%**.
+
 ## Current departure execution
 
 All six existing desktop/phone departure scenarios pass in one 3.2-minute

@@ -49,6 +49,15 @@ This proves the declared upgrade and store/transaction scope. It does not prove
 current retained-image HTTP/browser/Worker delivery or the complete migration
 runner and full CI. The new source gates must pass for the committed revision.
 This also does not certify audit-clock coverage for every other mutable record;
-for example, invitation lifecycle clocks still require their own writer audit.
+The [invitation writer/projection audit](invitation-audit-metadata.md) separately
+verifies its existing database clock and repairs missing canonical metadata.
 PRD-01 remains open at **34% estimated work remaining** and PRD-02 at **16%**
 (planning estimates).
+
+At `45646a43`, the mandatory PostgreSQL job in
+[run 37831492537](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37831492537)
+has now passed the complete migration-runner clean/repeat/forward/serialization/
+failure checks, required API/Worker ledger refusal/recovery, and the new actual
+restricted lifecycle clock contract. This is executed CI source/persistence
+evidence for that revision. Its full exact-image/release result remains separate;
+the later invitation projection repair must receive its own current CI result.

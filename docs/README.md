@@ -61,6 +61,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 - [Authentication requirements and acceptance map (PRD-02)](architecture/prd-02-acceptance.md)
 - [Session and security-token lifecycle audit clocks (PRD-01 / PRD-02)](architecture/identity-lifecycle-clocks.md)
+- [Canonical invitation clocks and revisions (PRD-01 / PRD-03 / PRD-60)](architecture/invitation-audit-metadata.md)
 
 - [Account deactivation and active Organization owners](architecture/account-owner-continuity.md)
 - [Identity command retries](architecture/identity-command-retries.md)

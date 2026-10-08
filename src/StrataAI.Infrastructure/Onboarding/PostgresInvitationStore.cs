@@ -60,14 +60,14 @@ internal sealed class PostgresInvitationStore(
         await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT i.id,i.tenant_id,i.invited_email,i.email_normalized,i.token_hash,i.target_surface,i.target_role,
-                i.created_by_user_id,i.created_at,i.expires_at,i.accepted_at,i.revoked_at,i.accepted_by_user_id,i.target_board_id,i.target_board_role,
+                i.created_by_user_id,i.created_at,i.expires_at,i.accepted_at,i.revoked_at,i.accepted_by_user_id,i.target_board_id,i.target_board_role,i.updated_at,i.version,
                 r.fingerprint,r.expires_at<=clock_timestamp()
             FROM invitation_creation_replays r JOIN invitations i ON i.id=r.invitation_id AND i.tenant_id=r.tenant_id
             WHERE r.tenant_id=@tenant AND r.actor_id=@actor AND r.key_id=@key;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("actor", actorId); command.Parameters.AddWithValue("key", key);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
-        return await reader.ReadAsync(cancellationToken) ? new(reader.GetString(15), reader.GetBoolean(16), ReadInvitation(reader)) : null;
+        return await reader.ReadAsync(cancellationToken) ? new(reader.GetString(17), reader.GetBoolean(18), ReadInvitation(reader)) : null;
     }
 
     public async Task SaveCreationReplayAsync(Guid organizationId, Guid actorId, Guid key, string fingerprint,
@@ -104,7 +104,7 @@ internal sealed class PostgresInvitationStore(
                 @token_hash, @target_surface, @target_role,
                 @created_by_user_id, @created_at, @expires_at, @target_board_id, @target_board_role)
             RETURNING id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
-                created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role;
+                created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role,updated_at,version;
             """,
             session.Connection,
             session.Transaction);
@@ -222,7 +222,7 @@ internal sealed class PostgresInvitationStore(
         await using var session = await connectionFactory.OpenTenantSessionAsync(tenantId.Value, cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
-              created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role FROM invitations
+              created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role,updated_at,version FROM invitations
             WHERE id=@id AND email_normalized=@email AND (accepted_at IS NULL OR accepted_by_user_id=@actor) AND revoked_at IS NULL
               AND expires_at>clock_timestamp() FOR SHARE;
             """, session.Connection, session.Transaction);
@@ -257,7 +257,7 @@ internal sealed class PostgresInvitationStore(
                 id, tenant_id, invited_email, email_normalized,
                 token_hash, target_surface, target_role,
                 created_by_user_id, created_at, expires_at,
-                accepted_at, revoked_at, accepted_by_user_id, target_board_id, target_board_role
+                accepted_at, revoked_at, accepted_by_user_id, target_board_id, target_board_role, updated_at, version
             FROM invitations
             WHERE token_hash = @token_hash
               AND accepted_at IS NULL
@@ -310,7 +310,7 @@ internal sealed class PostgresInvitationStore(
                 id, tenant_id, invited_email, email_normalized,
                 token_hash, target_surface, target_role,
                 created_by_user_id, created_at, expires_at,
-                accepted_at, revoked_at, accepted_by_user_id, target_board_id, target_board_role
+                accepted_at, revoked_at, accepted_by_user_id, target_board_id, target_board_role, updated_at, version
             FROM invitations
             WHERE token_hash = @token_hash
               AND accepted_at IS NULL
@@ -433,13 +433,16 @@ internal sealed class PostgresInvitationStore(
             grant.Parameters.AddWithValue("preserve", preserveBoardAdmin); grant.Parameters.AddWithValue("now", acceptedAt);
             await grant.ExecuteNonQueryAsync(cancellationToken);
         }
+        InvitationRecord acceptedInvitation;
         await using (var consume = new NpgsqlCommand(
             """
             UPDATE invitations
             SET accepted_at = @accepted_at, accepted_by_user_id=@user_id
             WHERE id = @id
               AND accepted_at IS NULL
-              AND revoked_at IS NULL AND expires_at>clock_timestamp();
+              AND revoked_at IS NULL AND expires_at>clock_timestamp()
+            RETURNING id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
+                created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role,updated_at,version;
             """,
             session.Connection,
             session.Transaction))
@@ -449,13 +452,15 @@ internal sealed class PostgresInvitationStore(
                 acceptedAt);
             consume.Parameters.AddWithValue("id", invitation.Id);
             consume.Parameters.AddWithValue("user_id", userId);
-            if (await consume.ExecuteNonQueryAsync(cancellationToken) != 1)
+            await using var consumed = await consume.ExecuteReaderAsync(cancellationToken);
+            if (!await consumed.ReadAsync(cancellationToken))
             {
                 return new InvitationAcceptStoreResult(
                     false,
                     "invalid_or_expired_invitation",
                     null);
             }
+            acceptedInvitation = ReadInvitation(consumed) with { OrganizationName = invitation.OrganizationName };
         }
 
         await session.CommitAsync(cancellationToken);
@@ -463,7 +468,7 @@ internal sealed class PostgresInvitationStore(
         return new InvitationAcceptStoreResult(
             true,
             null,
-            invitation with { AcceptedAt = acceptedAt, AcceptedByUserId = userId });
+            acceptedInvitation);
     }
 
     public async Task<InvitationRecord?> FindByIdAsync(Guid organizationId, Guid invitationId, CancellationToken cancellationToken = default)
@@ -473,7 +478,7 @@ internal sealed class PostgresInvitationStore(
         await using var session = await connectionFactory.OpenTenantSessionAsync(organizationId, cancellationToken);
         await using var command = new NpgsqlCommand("""
             SELECT id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,
-                created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role
+                created_by_user_id,created_at,expires_at,accepted_at,revoked_at,accepted_by_user_id,target_board_id,target_board_role,updated_at,version
             FROM invitations WHERE tenant_id=@tenant AND id=@id FOR UPDATE;
             """, session.Connection, session.Transaction);
         command.Parameters.AddWithValue("tenant", organizationId); command.Parameters.AddWithValue("id", invitationId);
@@ -569,7 +574,7 @@ internal sealed class PostgresInvitationStore(
                 "ADMIN" => StrataAI.Application.WorkManagement.BoardRole.Admin,
                 "MEMBER" => StrataAI.Application.WorkManagement.BoardRole.Member,
                 _ => throw new InvalidOperationException("Unknown Board invitation role."),
-            }));
+            })) { UpdatedAt = reader.GetFieldValue<DateTimeOffset>(15), Version = reader.GetInt64(16) };
 
     private static InvitationSurface ParseSurface(string surface) =>
         surface switch

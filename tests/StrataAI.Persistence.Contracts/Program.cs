@@ -36,6 +36,12 @@ if (args.Contains("--board-member-events-only", StringComparer.Ordinal))
     await BoardMemberEventContract.RunAsync(admin,apiConnection,ct);
     return;
 }
+if (args.Contains("--invitation-audit-metadata-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await InvitationAuditMetadataContract.RunAsync(admin,apiConnection,ct);
+    return;
+}
 if (args.Contains("--identity-lifecycle-clocks-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
@@ -200,6 +206,7 @@ try
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
     if (!previewLifecycleOnly)
     {
+        await InvitationAuditMetadataContract.RunAsync(admin,apiConnection,ct);
         await IdentityLifecycleClockContract.RunAsync(admin,apiConnection,ct);
         await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
         await IdentityRegistrationConcurrencyContract.RunAsync(admin,apiConnection,ct);
