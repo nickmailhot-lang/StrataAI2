@@ -207,3 +207,45 @@ and rerun independently, without rerunning or claiming these label cases passed.
 No label product behavior or acceptance assertion was changed by that repair.
 PRD-10 remains open with **35%** estimated work remaining (planning estimate),
 including these native gaps and the outstanding full-PRD requirements above.
+
+## MUI trap fallback and keyboard menu repair
+
+A separate desktop diagnostic invocation failed an earlier assignment return-focus
+check (line 79). Passive fixed-label focus recording showed that disabling the
+returned trigger moved focus to its own MUI trap container (`role=presentation`),
+rather than the marked dialog paper. The shared focus helper now recognizes that
+exact ancestor container as owned fallback. Other controls and other dialogs
+remain deliberate destinations. An installed-MUI regression fails before the
+repair and passes afterward; all 170 selected cases across ten focus-helper
+consumer suites pass, with web/browser typechecks, targeted lint and production
+build. The existing bundle-size advisory remains.
+
+The next two-case native invocation passed the previously failing focus steps but
+failed both cases at the Match filters menu check. The actual trace reported a
+strict-locator violation: the combobox and open listbox share that accessible
+label. A role-only intermediate fixture then failed because MUI hides the
+underlying combobox from accessibility queries while its menu is open. The final
+fixture observes the visible named listbox after keyboard opening, selects its
+named option, and retains enabled admission and persisted-filter assertions.
+No consent, timeout, command count, retry identity or server authority was changed.
+
+That two-case invocation progressed through the menu but failed Clear after
+reload at line 162 on both widths; neither trace contained a Clear command.
+The fixture now waits for Clear to be enabled before its single keyboard command.
+The separate cross-client case also missed its second picker activation after
+a real label rename (only its first options read was sent). It now observes the
+read-only picker opening before issuing the single assignment/removal command.
+These fixture repairs do not manufacture, repeat or acknowledge a mutation.
+
+Subsequent execution remains failing. The three-case invocation with Clear and
+cross-client picker admission failed desktop at the second picker activation,
+phone at Move-before option selection, and the cross-client case later during
+assignee editing (source frames 131/135). The final two-case invocation, after
+requiring observed picker opening, visible Move-before menu and enabled mutation
+controls, failed desktop at Add-blue return focus (line 97) and phone at Clear's
+keyword result (line 171). These runs are not native acceptance. Original retry
+key/body, authoritative version/order, consent and persistence checks remain.
+The shared-helper source regression and 170 passing component cases establish
+only the repaired ownership contract, not resolution of every focus/activation
+failure. PRD-10 stays open at **35%** estimated remaining work (planning estimate),
+pending these browser repairs, current immutable CI and full-PRD acceptance.

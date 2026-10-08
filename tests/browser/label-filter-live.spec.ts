@@ -51,7 +51,15 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(page.getByRole('region', { name: 'Card assignees' }).getByText('Label collaboration fixture', { exact: true })).toBeVisible();
     const edit = page.getByRole('button', { name: 'Edit Card labels', exact: true });
     async function assignment(action: string) {
-      await expect(edit).toBeEnabled(); await edit.press('Enter');
+      // A live parent read can disable the opener between enabled admission
+      // and keydown. Observe the read-only picker opening before its command.
+      await expect(async () => {
+        if (await edit.getAttribute('aria-expanded') !== 'true') {
+          await expect(edit).toBeEnabled({ timeout: 500 });
+          await edit.press('Enter', { timeout: 500 });
+        }
+        await expect(edit).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
+      }).toPass({ timeout: 5_000 });
       const change = page.getByRole('button', { name: action, exact: true });
       await expect(change).toBeEnabled(); await change.press('Enter'); await expect(edit).toBeFocused();
     }

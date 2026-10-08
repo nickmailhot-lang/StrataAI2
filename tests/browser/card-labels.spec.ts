@@ -70,9 +70,18 @@ for (const width of [1280, 390]) {
         if (assignmentAttempts.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
       });
       const edit = page.getByRole('button', { name: 'Edit Card labels', exact: true });
-      await expect(edit).toBeEnabled();
-      await edit.press('Enter');
-      await page.getByRole('button', { name: 'Add label Priority', exact: true }).press('Enter');
+      async function openPicker() {
+        await expect(async () => {
+          if (await edit.getAttribute('aria-expanded') !== 'true') {
+            await expect(edit).toBeEnabled({ timeout: 500 });
+            await edit.press('Enter', { timeout: 500 });
+          }
+          await expect(edit).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
+        }).toPass({ timeout: 5_000 });
+      }
+      await openPicker();
+      const addPriority = page.getByRole('button', { name: 'Add label Priority', exact: true });
+      await expect(addPriority).toBeEnabled(); await addPriority.press('Enter');
       const retryAssignment = page.getByRole('button', { name: 'Retry label change' }); await expect(retryAssignment).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
       await retryAssignment.focus(); await expect(retryAssignment).toBeFocused(); await expect(retryAssignment).toBeEnabled();
@@ -83,8 +92,7 @@ for (const width of [1280, 390]) {
       await waitForBoardDelivery(context.request, board);
       await expect.poll(admittedCardVersion).toBeGreaterThanOrEqual(2);
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
-      await expect(edit).toBeEnabled();
-      await edit.press('Enter');
+      await openPicker();
       const addBlue = page.getByRole('button', { name: 'Add label blue', exact: true });
       await expect(addBlue).toBeEnabled(); await addBlue.press('Enter'); await expect(edit).toBeFocused();
       await waitForBoardDelivery(context.request, board);
@@ -102,7 +110,7 @@ for (const width of [1280, 390]) {
       await expect(details.getByText('blue label', { exact: true })).toBeVisible();
       await page.getByRole('button', { name: 'Hide labels', exact: true }).press('Enter');
       await expect(details.getByLabel('Priority, red', { exact: true })).toHaveCount(0);
-      await edit.press('Enter');
+      await openPicker();
       const removeBlue = page.getByRole('button', { name: 'Remove label blue', exact: true });
       await expect(removeBlue).toBeEnabled(); await removeBlue.press('Enter'); await expect(edit).toBeFocused();
       const remaining = await context.request.get(`/cards/${card}/labels`); expect(remaining.status()).toBe(200);
@@ -135,15 +143,20 @@ for (const width of [1280, 390]) {
       await expect(filters.getByText('Filter change acknowledged.', { exact: true })).toBeVisible();
       expect(filterChanges).toHaveLength(2); expect(filterChanges[1]).toEqual(filterChanges[0]); await expect(apply).toBeFocused();
       await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
-      const matchMode = page.getByLabel('Match filters', { exact: true });
+      // The combobox and open listbox share the label, and MUI hides the
+      // underlying combobox while the menu is open. Observe the visible menu.
+      const matchMode = page.getByRole('combobox', { name: 'Match filters', exact: true });
+      const matchMenu = page.getByRole('listbox', { name: 'Match filters', exact: true });
       // Reconciliation can disable a field between locating it and keydown.
       // Verify menu admission before selecting; applied commands remain single.
       await expect(async () => {
-        await expect(matchMode).toBeEnabled({ timeout: 500 });
-        if (await matchMode.getAttribute('aria-expanded') !== 'true') await matchMode.press('Enter', { timeout: 500 });
-        await expect(matchMode).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
+        if (!await matchMenu.isVisible()) {
+          await expect(matchMode).toBeEnabled({ timeout: 500 });
+          await matchMode.press('Enter', { timeout: 500 });
+        }
+        await expect(matchMenu).toBeVisible({ timeout: 500 });
       }).toPass({ timeout: 5_000 });
-      await page.getByRole('option', { name: 'Match ANY', exact: true }).press('Enter');
+      await matchMenu.getByRole('option', { name: 'Match ANY', exact: true }).press('Enter');
       await expect(apply).toBeEnabled(); await apply.press('Enter');
       await expect(filters.getByRole('link', { name: 'Labeled work — Planning', exact: true })).toBeVisible();
       expect(filterChanges).toHaveLength(3); expect(filterChanges[2].key).not.toBe(filterChanges[0].key);
@@ -153,7 +166,8 @@ for (const width of [1280, 390]) {
       await expect(filters.getByRole('checkbox', { name: 'Priority (red)', exact: true })).toBeChecked();
       await expect(filters.getByRole('combobox', { name: 'Match filters' })).toHaveText('Match ANY');
       expect(filterChanges).toHaveLength(3);
-      await filters.getByRole('button', { name: 'Clear filters', exact: true }).press('Enter');
+      const clearFilters = filters.getByRole('button', { name: 'Clear filters', exact: true });
+      await expect(clearFilters).toBeEnabled(); await clearFilters.press('Enter');
       await expect(filters.getByLabel('Card keyword')).toHaveValue('');
       expect(filterChanges).toHaveLength(4); expect(new URL(filterChanges[3].url).searchParams.get('change')).toBe('clear');
       expect(filterChanges[3].key).not.toBe(filterChanges[2].key);
@@ -167,21 +181,33 @@ for (const width of [1280, 390]) {
       const manageLabels = page.getByRole('button', { name: 'Manage labels', exact: true });
       await expect(manageLabels).toBeEnabled(); await manageLabels.press('Enter');
       const management = page.getByRole('dialog', { name: 'Manage Board labels' });
-      await management.getByRole('button', { name: 'Edit Priority (red)', exact: true }).press('Enter');
+      const editPriority = management.getByRole('button', { name: 'Edit Priority (red)', exact: true });
+      await expect(editPriority).toBeEnabled(); await editPriority.press('Enter');
       await management.getByLabel('Label name (optional)').fill('Urgent');
       await management.getByRole('combobox', { name: 'Label color' }).press('Enter');
       await page.getByRole('option', { name: 'Purple', exact: true }).press('Enter');
-      await management.getByRole('button', { name: 'Save label', exact: true }).press('Enter');
+      const saveLabel = management.getByRole('button', { name: 'Save label', exact: true });
+      await expect(saveLabel).toBeEnabled(); await saveLabel.press('Enter');
       await expect(management.getByRole('button', { name: 'Done', exact: true })).toBeDisabled();
-      await management.getByRole('button', { name: 'Retry label change', exact: true }).press('Enter');
+      const retryLabel = management.getByRole('button', { name: 'Retry label change', exact: true });
+      await expect(retryLabel).toBeEnabled(); await retryLabel.press('Enter');
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
       expect(edits).toHaveLength(2); expect(edits[0]).toEqual(edits[1]);
       await expect(management.getByRole('button', { name: 'Reload labels', exact: true })).toBeEnabled();
       await management.getByRole('button', { name: 'Reload labels', exact: true }).press('Enter');
-      await management.getByRole('button', { name: 'Edit Urgent (purple)', exact: true }).press('Enter');
-      await management.getByRole('combobox', { name: 'Move label before' }).press('Enter');
-      await page.getByRole('option', { name: 'Unnamed label (blue)', exact: true }).press('Enter');
-      await management.getByRole('button', { name: 'Move label', exact: true }).press('Enter');
+      const editUrgent = management.getByRole('button', { name: 'Edit Urgent (purple)', exact: true });
+      await expect(editUrgent).toBeEnabled(); await editUrgent.press('Enter');
+      const moveBefore = management.getByRole('combobox', { name: 'Move label before' });
+      const moveMenu = page.getByRole('listbox', { name: 'Move label before', exact: true });
+      await expect(async () => {
+        if (!await moveMenu.isVisible()) {
+          await expect(moveBefore).toBeEnabled({ timeout: 500 }); await moveBefore.press('Enter', { timeout: 500 });
+        }
+        await expect(moveMenu).toBeVisible({ timeout: 500 });
+      }).toPass({ timeout: 5_000 });
+      await moveMenu.getByRole('option', { name: 'Unnamed label (blue)', exact: true }).press('Enter');
+      const moveLabel = management.getByRole('button', { name: 'Move label', exact: true });
+      await expect(moveLabel).toBeEnabled(); await moveLabel.press('Enter');
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
       const reordered = await context.request.get(`/boards/${board}/labels`); expect(reordered.status()).toBe(200);
       const ordered = (await reordered.json()).items;
@@ -189,10 +215,12 @@ for (const width of [1280, 390]) {
       expect(ordered.find((l: { id: string }) => l.id === labels[0]).version).toBe(3);
       await expect(management.getByRole('button', { name: 'Reload labels', exact: true })).toBeEnabled();
       await management.getByRole('button', { name: 'Reload labels', exact: true }).press('Enter');
-      await management.getByRole('button', { name: 'Edit Urgent (purple)', exact: true }).press('Enter');
+      await expect(editUrgent).toBeEnabled(); await editUrgent.press('Enter');
       await expect(management.getByRole('button', { name: 'Delete label', exact: true })).toBeDisabled();
-      await management.getByRole('checkbox', { name: 'Confirm removal from all Cards' }).press('Space');
-      await management.getByRole('button', { name: 'Delete label', exact: true }).press('Enter');
+      const consent = management.getByRole('checkbox', { name: 'Confirm removal from all Cards' });
+      await expect(consent).toBeEnabled(); await consent.press('Space'); await expect(consent).toBeChecked();
+      const deleteLabel = management.getByRole('button', { name: 'Delete label', exact: true });
+      await expect(deleteLabel).toBeEnabled(); await deleteLabel.press('Enter');
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
       await management.getByRole('button', { name: 'Done', exact: true }).press('Enter'); await expect(management).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();

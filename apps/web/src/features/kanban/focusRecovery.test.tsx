@@ -23,3 +23,16 @@ it('parks only the activated owner in its own dialog and preserves subsequent us
   other.focus(); parkRecoveryFocus(owner);
   expect(other).toHaveFocus(); expect(ownsRecoveryFocus(document.activeElement, owner)).toBe(false);
 });
+
+it('recognizes the same installed MUI trap container after an owned control loses focus', () => {
+  render(<Dialog open transitionDuration={0}><button>Owned action</button><button>Another action</button></Dialog>);
+  const owner = screen.getByRole('button', { name: 'Owned action' });
+  const container = owner.closest<HTMLElement>('.MuiDialog-container[role="presentation"]')!;
+  expect(container).toHaveAttribute('tabindex', '-1');
+  owner.focus(); container.focus(); expect(container).toHaveFocus();
+  expect(ownsRecoveryFocus(document.activeElement, owner)).toBe(true);
+  const another = screen.getByRole('button', { name: 'Another action' });
+  another.focus(); expect(ownsRecoveryFocus(document.activeElement, owner)).toBe(false);
+  const foreign = document.createElement('div'); foreign.className = 'MuiDialog-container'; foreign.setAttribute('role', 'presentation');
+  expect(ownsRecoveryFocus(foreign, owner)).toBe(false);
+});

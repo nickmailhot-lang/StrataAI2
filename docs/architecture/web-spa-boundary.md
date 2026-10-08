@@ -181,3 +181,22 @@ This is compiled Nginx/API/restricted PostgreSQL execution, not proof of a green
 current immutable release. Full ARCH-02 acceptance remains pending (**39%** work
 remaining, planning estimate). See [Organization denial](organization-discovery.md#organization-home-denial-after-independent-admission)
 and [watch dismissal focus](watch-subscriptions.md#preserve-dismissal-focus-during-a-protected-read).
+
+## Owned MUI trap-container recovery
+
+The shared focus helper recognizes the installed MUI dialog's exact ancestor
+trap container as owned fallback, in addition to its marked paper. It continues
+to exclude another control or another dialog. An installed-MUI regression fails
+before the repair; all 170 selected cases across ten consumer suites pass after
+it. Web/browser typechecks, targeted lint and production build pass, retaining
+the existing bundle-size advisory.
+
+Actual label browser execution still fails. Fixture repairs now distinguish a
+visible popup listbox from its identically named or accessibility-hidden
+combobox, observe read-only picker opening, require enabled mutation controls,
+and explicitly verify deletion consent before the single command. Subsequent
+runs expose additional return-focus, Clear activation and cross-client assignee
+gaps; none is represented as passing acceptance. See
+[label execution and remaining failures](../board-label-api.md#mui-trap-fallback-and-keyboard-menu-repair).
+Current immutable CI/full architecture acceptance remains required; ARCH-02 stays
+open at **39%** estimated remaining work (planning estimate).
