@@ -1,6 +1,6 @@
 # PRD-18 acceptance audit
 
-Current status (2026-10-08): open, **17% estimated work remaining**. This is a planning estimate. Earlier estimates below record the scope and evidence available at those points; current immutable-image acceptance and the remaining integrated matrix still govern closure.
+Current status (2026-10-08): open, **16% estimated work remaining**. This is a planning estimate. Earlier estimates below record the scope and evidence available at those points; current immutable-image acceptance and the remaining integrated matrix still govern closure.
 
 ## Deleted List child-receipt admission
 
@@ -60,10 +60,20 @@ stays 22%; the ticket remains open.
 | LIFE-FR-005 parent-safe restoration | ListArchivedListsAsync rejects non-active Boards; transactional actor verification; 12 parent-deletion and 156 Organization/account/session/membership/administration lock-wait cases refuse fresh restores and old receipts using the production verifier | Remaining integrated transitions, HTTP cookie/middleware and native recovery scenarios; current immutable-image acceptance |
 | LIFE-FR-006–009 archived-only elevated deletion, confirmation, irreversibility and List impact | Card/List/Board command and receipt contracts; MUI reviews with explicit consent, including Board archive directory reviews | Executed native consent, lost-response/retry and cascading-impact cases |
 | LIFE-FR-010 audit integrity | Immutable audit storage fixture; lifecycle events, canonical receipts and retained deleting actor | Exact execution after archive, deletion and account removal; retained actor interpretation |
-| LIFE-FR-011 deleted content absent from search/notifications | Separate search and notification admission implementations and fixtures | Cross-surface deletion matrix, including historical notification and moved-entity scope |
+| LIFE-FR-011 deleted content absent from search/notifications | Separate search and notification admission implementations; mandatory nine-case real Card/List/Board deletion matrix across private/Organization/public visibility covers search, inbox and historical sync | Current immutable-image execution, Organization terminal deletion and moved-entity scope; browser recovery remains separate |
 | LIFE-FR-012 product deletion versus backup retention | Attachment and Organization lifecycle documentation distinguishes irreversible product tombstones from retained provider evidence and operational backups | Verify irreversible product behavior across lifecycle entities and document actual operational backup windows; provider removal requires its own explicit reconciliation/retention authority, rather than being inferred from this requirement |
 
 ## Record attribution
+
+### Deleted content across search and notification surfaces
+
+The mandatory `scripts/ci/test-deleted-content-surfaces.sh` passed nine complete HTTP workflows against the current compiled Production API, restricted PostgreSQL 17/pgvector and Nginx: Card/List/Board deletion on PRIVATE/ORGANIZATION/PUBLIC Boards. Real registration/login, invitation acceptance, Board membership, Card assignment, notification read, archive and confirmed deletion requests establish each case. Each archived Card remains searchable before deletion, whether its own state or a parent supplies archived context.
+
+After deletion, fresh active/archived search and the original archived search continuation return no results; the recipient inbox and historical sync return no notification entries. The sync cursor still advances over the two retained creation/read sources, rather than fabricating erasure or disclosing their identities. Original-key and new single/bulk read commands return `notification_not_found`; restoration returns the entity's stable not-found code. Original deletion recovery returns the identical acknowledgment. Complete Board/List/Card and notification/journal rows, plus aggregate audit/event/Work-job/receipt counts, remain unchanged throughout these post-deletion checks. Deletion preserves its archive clock and deleting actor.
+
+The final complete invocation exited 0 with verified-email admission enabled. Account activation/verification was controlled setup when configured provider delivery kept tokens private; the script uses the real verification endpoint when registration exposes its test token. This is not proof of provider email delivery, separate Worker transport or native browser rendering. Search still appends its allowed content-free identity observation; the unchanged-state assertion concerns the protected Organization work/notification graph and listed aggregate effects. Invocation-owned containers and the cloned database were removed; original services and data were preserved. Shell syntax and diff validation passed. Earlier setup attempts are not acceptance evidence; the confirmed deletion query uses the existing `confirmed=true` contract without weakening its guard.
+
+The required container-integration job now executes this script using the images built once for that revision. Current immutable-image execution, Organization terminal deletion, moved-entity admission, browser withdrawal/recovery and the remaining integrated Definition of Done still govern closure. Estimated PRD-18 work remaining is **16%**; PRD-17's estimate remains **22%**, since producer/watch/reminder and integrated release requirements remain independently open. This covers LIFE-FR-011 and scoped SEARCH-FR-007/notification-consumer lifecycle acceptance, not complete acceptance of those PRDs.
 
 The four existing archived-Board account uncertainty native cases passed in one
 local Production invocation at desktop and phone widths. Both restore and
