@@ -112,15 +112,18 @@ if (args.Contains("--identity-recovery-rollback-only", StringComparer.Ordinal))
     await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
     return;
 }
-await InvitationIssuerAccountAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
-if (args.Contains("--invitation-issuer-authority-only", StringComparer.Ordinal)) return;
-await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, workerConnection, ct);
-if (args.Contains("--invitation-recipient-only", StringComparer.Ordinal)) return;
-if (args.Contains("--invitation-authority-only", StringComparer.Ordinal))
+if (!args.Contains("--notification-batches-only", StringComparer.Ordinal))
 {
-    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await InvitationRecipientAuthorityDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    return;
+    await InvitationIssuerAccountAuthorityContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    if (args.Contains("--invitation-issuer-authority-only", StringComparer.Ordinal)) return;
+    await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, workerConnection, ct);
+    if (args.Contains("--invitation-recipient-only", StringComparer.Ordinal)) return;
+    if (args.Contains("--invitation-authority-only", StringComparer.Ordinal))
+    {
+        await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await InvitationRecipientAuthorityDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        return;
+    }
 }
 async Task Seed(Guid tenant, Guid actor, Guid boardId, Guid listId, Guid cardId)
 {
@@ -168,6 +171,13 @@ AttachmentUploadIntent Intent(Guid? retry = null) => AttachmentUploadIntent.Prep
     "Contract image",128,fixtureDigest,now.AddHours(1),now);
 try
 {
+    if (args.Contains("--notification-batches-only", StringComparer.Ordinal))
+    {
+        await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await Seed(organization,user,board,list,card); await Seed(foreignOrganization,foreignUser,foreignBoard,foreignList,foreignCard);
+        await CardMentionMemberStoreContract.RunAsync(admin,provider,organization,foreignOrganization,board,foreignBoard,foreignUser,card,ct);
+        return;
+    }
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
     await IdentityRegistrationConcurrencyContract.RunAsync(admin,apiConnection,ct);

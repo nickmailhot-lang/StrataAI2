@@ -22,6 +22,7 @@ public sealed class CardWatchNotificationProducer(IWorkManagementStore work, IWa
             list is not { LifecycleState: WorkItemLifecycleState.Active } || list.OrganizationId != scope.OrganizationId ||
             list.BoardId != scope.BoardId || await organizations.FindOrganizationAsync(scope.OrganizationId, ct)
                 is not { Status: OrganizationStatus.Active }) return;
+        var recipients = new List<Guid>();
         foreach (var recipient in await watches.ListActivityCandidatesAsync(scope, ct))
         {
             // Assignment wins the same event-recipient tuple; neither multiple
@@ -33,7 +34,8 @@ public sealed class CardWatchNotificationProducer(IWorkManagementStore work, IWa
             if (member is not { Active: true }) continue;
             if (board.Visibility == BoardVisibility.Private && member.Role is not (OrganizationRole.Owner or OrganizationRole.Admin) &&
                 await work.FindBoardMemberAsync(scope.BoardId, recipient, ct) is not { Active: true }) continue;
-            await notifications.AppendCardActivityAsync(change, recipient, ct);
+            recipients.Add(recipient);
         }
+        await notifications.AppendCardActivitiesAsync(change, recipients, ct);
     }
 }

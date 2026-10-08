@@ -72,14 +72,33 @@ internal sealed class InMemoryWorkNotificationStore(DemoWorkTransactionScope sco
         => Append(CardNotification.FromActivity(change, recipientId));
     public Task AppendCardMentionAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default)
         => Append(CardNotification.FromMention(change, recipientId));
-    public async Task AppendCardMentionsAsync(WorkEvent change, IReadOnlyList<Guid> recipients, CancellationToken cancellationToken = default)
+    public Task AppendCardMentionsAsync(WorkEvent change, IReadOnlyList<Guid> recipients, CancellationToken cancellationToken = default)
+        => AppendBatch(change, recipients, false, cancellationToken);
+    public Task AppendCardActivitiesAsync(WorkEvent change, IReadOnlyList<Guid> recipients, CancellationToken cancellationToken = default)
+        => AppendBatch(change, recipients, true, cancellationToken);
+
+    private Task AppendBatch(WorkEvent change, IReadOnlyList<Guid> recipients, bool activity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(recipients); cancellationToken.ThrowIfCancellationRequested();
-        if (!scope.Owns(change.OrganizationId)) throw new InvalidOperationException("Mention notifications require the originating command transaction.");
-        _ = CardNotification.FromMention(change, change.ActorId);
+        if (!scope.Owns(change.OrganizationId)) throw new InvalidOperationException("Batch notifications require the originating command transaction.");
+        CardNotification? Create(Guid recipient) => activity
+            ? CardNotification.FromActivity(change, recipient) : CardNotification.FromMention(change, recipient);
+        _ = Create(change.ActorId);
         if (recipients.Any(id => id == Guid.Empty) || recipients.Distinct().Count() != recipients.Count)
-            throw new ArgumentException("Mention notification recipients must be distinct accounts.");
-        foreach (var recipient in recipients) { cancellationToken.ThrowIfCancellationRequested(); await Append(CardNotification.FromMention(change, recipient)); }
+            throw new ArgumentException("Batch notification recipients must be distinct accounts.");
+        var items = recipients.Select(Create).OfType<CardNotification>().ToArray();
+        lock (_notifications)
+        {
+            // Validate the whole batch before adding rows or recipient events.
+            foreach (var item in items)
+                if (_notifications.TryGetValue((item.OrganizationId, item.EventId, item.RecipientId), out var existing) &&
+                    existing with { Id = item.Id, ReadAt = null } != item)
+                    throw new InvalidOperationException("Assignment notification identity was reused.");
+            cancellationToken.ThrowIfCancellationRequested();
+            foreach (var item in items)
+                if (_notifications.TryAdd((item.OrganizationId, item.EventId, item.RecipientId), item)) Journal(item, false);
+        }
+        return Task.CompletedTask;
     }
 
     private Task Append(CardNotification? item)

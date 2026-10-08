@@ -44,6 +44,8 @@ public interface IWorkNotificationStore
     // the first event-recipient notification and self-actions are suppressed.
     Task AppendCardAssignmentAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default);
     Task AppendCardActivityAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default);
+    // Batch recipients are distinct; publication requires the originating transaction.
+    Task AppendCardActivitiesAsync(WorkEvent change, IReadOnlyList<Guid> recipients, CancellationToken cancellationToken = default);
     Task AppendCardMentionAsync(WorkEvent change, Guid recipientId, CancellationToken cancellationToken = default);
     Task AppendCardMentionsAsync(WorkEvent change, IReadOnlyList<Guid> recipients, CancellationToken cancellationToken = default);
 

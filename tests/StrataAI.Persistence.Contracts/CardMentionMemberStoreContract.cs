@@ -134,6 +134,59 @@ internal static class CardMentionMemberStoreContract
                 && await Scope(tenant, () => commentStore.FindAsync(tenant, card, groupComment, ct)) is null
                 && await Scope(tenant, () => snapshotStore.FindSnapshotAsync(tenant, card, groupComment, 1, ct)) is null,
                 "Refused full group history retained comment/snapshot effects.");
+            // Reuse the synthetic eligible roster to exercise the real restricted
+            // activity batch and journal, without claiming HTTP watch admission.
+            var activityId = Guid.NewGuid();
+            var journal = provider.GetRequiredService<INotificationRealtimeStore>();
+            var beforeActivity = new Dictionary<Guid, long>();
+            foreach (var recipient in group)
+                beforeActivity.Add(recipient, await Scope(tenant, () => journal.GetRecipientSequenceAsync(tenant, recipient, ct)));
+            var refusedActivity = await unit.ExecuteReadAsync(tenant, null, "fixture_denied", () => Task.FromResult(true), async () =>
+            {
+                var parent = await provider.GetRequiredService<IWorkManagementStore>().FindCardAsync(card, ct);
+                var change = new WorkEvent(activityId, tenant, board, group[0], "CARD_UPDATED", "Card", card,
+                    parent!.Version, "activity-batch-storage-fixture", AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow));
+                var notifications = provider.GetRequiredService<IWorkNotificationStore>();
+                try
+                {
+                    await notifications.AppendCardActivitiesAsync(change, group, ct);
+                    throw new InvalidOperationException("Absent activity batch source was accepted.");
+                }
+                catch (InvalidOperationException e) when (e.Message == "Assignment notification event was unavailable or reused.") { }
+                await provider.GetRequiredService<IWorkEventStore>().AppendAsync(change, ct);
+                await notifications.AppendCardActivitiesAsync(change, group, ct);
+                var first = new Dictionary<Guid, CardNotification>();
+                foreach (var recipient in group.Skip(1))
+                    first.Add(recipient, (await notifications.ListCardNotificationsAsync(tenant, recipient, cancellationToken: ct)).Single(item => item.EventId == activityId));
+                await notifications.AppendCardActivitiesAsync(change, group.Reverse().ToArray(), ct);
+                foreach (var recipient in group.Skip(1))
+                {
+                    Require(first[recipient] == (await notifications.ListCardNotificationsAsync(tenant, recipient, cancellationToken: ct)).Single(item => item.EventId == activityId),
+                        "Activity batch replay changed the original notification identity.");
+                    Require(first[recipient].NotificationType == "CARD_UPDATED" && first[recipient].CardId == card,
+                        "Activity batch changed canonical event type or Card scope.");
+                    var publication = (await journal.ListRecipientEventsAsync(tenant, recipient, beforeActivity[recipient], ct)).Single();
+                    Require(publication.EntityId == first[recipient].Id && publication.EventType == "NOTIFICATION_CREATED",
+                        "Activity batch journal omitted or duplicated a recipient effect.");
+                }
+                Require(await journal.GetRecipientSequenceAsync(tenant, group[0], ct) == beforeActivity[group[0]],
+                    "Activity batch actor received a self notification.");
+                try
+                {
+                    await notifications.AppendCardActivitiesAsync(change with { CreatedAt = change.CreatedAt.AddSeconds(1) }, group, ct);
+                    throw new InvalidOperationException("Mismatched activity batch source time was accepted.");
+                }
+                catch (InvalidOperationException e) when (e.Message == "Assignment notification event was unavailable or reused.") { }
+                return WorkOperation<bool>.Failure("fixture_refused");
+            }, ct);
+            Require(refusedActivity.ErrorCode == "fixture_refused", "Activity batch did not reach deliberate rollback.");
+            foreach (var recipient in group)
+            {
+                Require(await Scope(tenant, () => journal.GetRecipientSequenceAsync(tenant, recipient, ct)) == beforeActivity[recipient],
+                    "Refused activity batch retained a recipient journal sequence.");
+                Require(!(await Scope(tenant, () => provider.GetRequiredService<IWorkNotificationStore>().ListCardNotificationsAsync(tenant, recipient, cancellationToken: ct))).Any(item => item.EventId == activityId),
+                    "Refused activity batch retained a notification.");
+            }
             var retainedGroup = await Scope(tenant, async () =>
             {
                 var id = Guid.NewGuid(); groupComments.Add(id);
@@ -231,6 +284,7 @@ internal static class CardMentionMemberStoreContract
             await cleanupTransaction.CommitAsync(ct);
         }
         Console.WriteLine("Restricted mention member metadata: owning tenant, literal prefix/seek bounds, exact current handles, active Board/Organization/account/email policy, former alias exclusion and shared-user isolation passed.");
+        Console.WriteLine("Restricted activity batch: exact source, whole roster, original notification identity, actor suppression, one recipient journal effect and notification/journal rollback passed.");
         Console.WriteLine("Restricted mass recipient history: complete Board roster beyond username window, current Card assignments with explicit email policy, union without duplicates, Card/Board/tenant affinity, durable full recipient snapshot and refused comment/history rollback passed.");
     }
 }

@@ -13,6 +13,54 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class WorkNotificationStoreTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Batch_notifications_validate_all_recipients_before_effects_preserve_replay_and_roll_back(bool activity)
+    {
+        var ct = TestContext.Current.CancellationToken; using var services = Demo();
+        var store = services.GetRequiredService<IWorkNotificationStore>();
+        var journal = services.GetRequiredService<INotificationRealtimeStore>();
+        var unit = services.GetRequiredService<IWorkManagementUnitOfWork>();
+        var change = Assignment(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()) with
+            { EventType = activity ? "CARD_UPDATED" : "MENTION_CREATED" };
+        var recipients = Enumerable.Range(0, 76).Select(_ => Guid.NewGuid()).Append(change.ActorId).ToArray();
+        Task Append(WorkEvent source, IReadOnlyList<Guid> targets, CancellationToken token) => activity
+            ? store.AppendCardActivitiesAsync(source, targets, token) : store.AppendCardMentionsAsync(source, targets, token);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Append(change, recipients, ct));
+        var refused = await unit.ExecuteReadAsync(change.OrganizationId, null, "denied", () => Task.FromResult(true), async () =>
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => Append(change, [recipients[0], Guid.Empty], ct));
+            await Assert.ThrowsAsync<ArgumentException>(() => Append(change, [recipients[0], recipients[0]], ct));
+            await Assert.ThrowsAsync<ArgumentException>(() => Append(change with { EventType = "WATCH_CREATED" }, [], ct));
+            using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Append(change, recipients, cancelled.Token));
+            Assert.Empty(await store.ListCardNotificationsAsync(change.OrganizationId, recipients[0], cancellationToken: ct));
+            await Append(change, recipients, ct);
+            var first = Assert.Single(await store.ListCardNotificationsAsync(change.OrganizationId, recipients[0], cancellationToken: ct));
+            await Append(change, recipients.Reverse().ToArray(), ct);
+            Assert.Equal(first, Assert.Single(await store.ListCardNotificationsAsync(change.OrganizationId, recipients[0], cancellationToken: ct)));
+            foreach (var recipient in recipients.Take(76))
+            {
+                var item = Assert.Single(await store.ListCardNotificationsAsync(change.OrganizationId, recipient, cancellationToken: ct));
+                Assert.Equal(change.EventType, item.NotificationType);
+                Assert.Equal(item.Id, Assert.Single(await journal.ListRecipientEventsAsync(change.OrganizationId, recipient, cancellationToken: ct)).EntityId);
+            }
+            Assert.Empty(await journal.ListRecipientEventsAsync(change.OrganizationId, change.ActorId, cancellationToken: ct));
+            var newRecipient = Guid.NewGuid();
+            await Assert.ThrowsAsync<InvalidOperationException>(() => Append(change with { EntityId = Guid.NewGuid() }, [newRecipient, recipients[0]], ct));
+            Assert.Empty(await store.ListCardNotificationsAsync(change.OrganizationId, newRecipient, cancellationToken: ct));
+            Assert.Empty(await journal.ListRecipientEventsAsync(change.OrganizationId, newRecipient, cancellationToken: ct));
+            return WorkOperation<bool>.Failure("fixture_refused");
+        }, ct);
+        Assert.Equal("fixture_refused", refused.ErrorCode);
+        foreach (var recipient in recipients)
+        {
+            Assert.Empty(await store.ListCardNotificationsAsync(change.OrganizationId, recipient, cancellationToken: ct));
+            Assert.Empty(await journal.ListRecipientEventsAsync(change.OrganizationId, recipient, cancellationToken: ct));
+        }
+    }
+
     [Fact]
     public async Task Demo_private_journal_creation_is_deduplicated_bounded_recipient_scoped_and_rolls_back_with_notifications()
     {
