@@ -1,0 +1,331 @@
+{
+  "Download exact built images": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Verify image archive checksums": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Load exact built images": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Start release topology": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Apply release-database migrations": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Provision least-privilege runtime database roles": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Reject unsafe runtime database roles in exact images": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Health, readiness and SPA deep-link smoke tests": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Verify embedded build identity and override resistance": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Production does not expose demo reset": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Verify production account defaults and prepare isolated auth fixture": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Demo documented workflows without PostgreSQL or external network": [
+    "commands"
+  ],
+  "API and Worker startup fail closed against exact retained images": [
+    "commands"
+  ],
+  "Verify explicit Worker job scope and handler configuration": [
+    "commands"
+  ],
+  "Verify enabled attachment configuration refusal in exact release images": [
+    "commands"
+  ],
+  "Test PostgreSQL profile concurrency": [
+    "commands"
+  ],
+  "Identity audit rollback, logout waits and one-connection commands": [
+    "commands"
+  ],
+  "Session-bound logout and deactivation receipts against exact release API": [
+    "commands"
+  ],
+  "Current and legacy credential-checked sign-in retries against exact release API": [
+    "commands"
+  ],
+  "Authentication lifecycle privacy against exact release API": [
+    "commands"
+  ],
+  "Atomic registration retries against exact release API": [
+    "commands"
+  ],
+  "Invitation-backed closed registration and atomic expiry against exact release API": [
+    "commands"
+  ],
+  "Verified-email invitation discovery and retry-safe acceptance": [
+    "commands"
+  ],
+  "Atomic invitation creation retries against exact release API": [
+    "commands"
+  ],
+  "Private board discovery and revoked membership against restricted PostgreSQL runtime": [
+    "commands"
+  ],
+  "Board member canonical events, receipts, Worker delivery and revoked recovery against exact release images": [
+    "commands"
+  ],
+  "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL": [
+    "commands"
+  ],
+  "Board grants, lifecycle freezes and original receipt recovery against exact API and restricted PostgreSQL": [
+    "commands"
+  ],
+  "Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime": [
+    "commands"
+  ],
+  "Independent full-capacity Board copy and atomic retry recovery against restricted PostgreSQL runtime": [
+    "commands"
+  ],
+  "Board administrator demotion continuity and atomic recovery": [
+    "commands"
+  ],
+  "Work command and audit rollback against exact release API": [
+    "commands"
+  ],
+  "Organization audit rollback, revoked actor waits and concurrent owner departures": [
+    "commands"
+  ],
+  "Automatic Organization metadata delivery with typed queue isolation": [
+    "commands"
+  ],
+  "Automatic recipient authority pages and restart against exact Worker image": [
+    "commands"
+  ],
+  "Automatic Board recipient authority pages and restart against exact Worker image": [
+    "commands"
+  ],
+  "Organization request and terminal recipient authority against exact Worker image": [
+    "commands"
+  ],
+  "Canonical issuer deactivation and bounded authority routing against exact Worker image": [
+    "commands"
+  ],
+  "Account deactivation and Organization active-owner continuity": [
+    "commands"
+  ],
+  "Authorized bounded Organization member directory and post-wait revocation": [
+    "commands"
+  ],
+  "Authorized global search, literal matching, cursor binding and archived scope through exact release images": [
+    "commands"
+  ],
+  "Deleted and moved Card content admission across search inbox and notification history through exact release images": [
+    "commands"
+  ],
+  "Organization terminal search and notification withdrawal after issuing-session logout or account deactivation through exact API and Worker images": [
+    "commands"
+  ],
+  "Account-bound navigation observations through exact release proxy and API": [
+    "commands"
+  ],
+  "Durable work retry keys against exact release API": [
+    "commands"
+  ],
+  "Bounded archives, confirmed deletion and atomic List copies": [
+    "commands"
+  ],
+  "Transactional labels, atomic association removal and post-wait receipt authorization": [
+    "commands"
+  ],
+  "Bounded Board members, atomic Card assignments and post-wait revocation through exact release images": [
+    "commands"
+  ],
+  "Personal watch revisions, atomic publication and post-wait revocation through exact release images": [
+    "commands"
+  ],
+  "Atomic username mentions, source notifications and redaction history through exact release images": [
+    "commands"
+  ],
+  "Protected activity history, post-wait access/session admission and persisted cursor restart through exact release images": [
+    "commands"
+  ],
+  "Cross-Board Card movement, original receipt admission and atomic reference rollback through exact release images": [
+    "commands"
+  ],
+  "Independent Card copy, destination Watch notification and atomic late-publication rollback through exact release images": [
+    "commands"
+  ],
+  "UTC Card dates, atomic notification rollback and private retry recovery through exact release images": [
+    "commands"
+  ],
+  "Authorized URL attachments, receipts, metadata paging and atomic rollback against exact release images": [
+    "commands"
+  ],
+  "Authorized checklist creation, ordered progress and atomic rollback against exact release images": [
+    "commands"
+  ],
+  "Checklist, comment, activity, movement and lifecycle at supported capacity": [
+    "commands"
+  ],
+  "Validate pinned operator Collector configuration": [
+    "commands"
+  ],
+  "Verify exact-image operator metric ingestion and private-field exclusion": [
+    "commands"
+  ],
+  "Retain fixed operator collection evidence": [
+    "commands"
+  ],
+  "Retain fixed-scope Checklist capacity measurements": [
+    "commands"
+  ],
+  "Retain fixed-scope activity capacity measurements": [
+    "commands"
+  ],
+  "Retain fixed-scope notification inbox capacity measurements": [
+    "commands"
+  ],
+  "Retain fixed-scope watch producer fan-out measurements": [
+    "commands"
+  ],
+  "Retain fixed-scope global search capacity measurements": [
+    "commands"
+  ],
+  "Retain fixed-scope comment capacity measurements": [
+    "commands"
+  ],
+  "Retain fixed-scope cross-Board movement capacity measurements": [
+    "commands"
+  ],
+  "Retain fixed-scope work lifecycle capacity measurements": [
+    "commands"
+  ],
+  "Retain fixed-scope permanent-deletion capacity measurements": [
+    "commands"
+  ],
+  "Atomic Work events and leased Worker readiness against exact release images": [
+    "commands"
+  ],
+  "Install browser test dependencies": [
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Demo metadata, terminal and recipient lifecycle against exact API and web images": [
+    "browser-foundation"
+  ],
+  "Attachment upload and isolated Worker image publication through explicit private test providers": [
+    "browser-foundation"
+  ],
+  "Retain fixed-scope Card copy capacity measurements": [
+    "commands"
+  ],
+  "Retain fixed-scope attachment capacity measurements": [
+    "browser-foundation"
+  ],
+  "Authorized contiguous event replay and mid-read revocation against exact release API": [
+    "browser-foundation"
+  ],
+  "Check concurrent and large-board rank allocation": [
+    "browser-foundation"
+  ],
+  "Retain actual large-Board native capacity diagnostics": [
+    "browser-foundation"
+  ],
+  "Check write authorization and lifecycle during live database lock waits": [
+    "browser-foundation"
+  ],
+  "Prepare isolated identity mail transport and ephemeral signing keys": [
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Identity mail against exact API/Worker images and restricted database role": [
+    "browser-notifications"
+  ],
+  "Desktop and mobile accessible keyboard verification/recovery through Worker delivery": [
+    "browser-notifications"
+  ],
+  "Strict verified-account watch producers through native private inboxes": [
+    "browser-notifications"
+  ],
+  "Strict verified-account assignment mention and reminder native delivery": [
+    "browser-notifications"
+  ],
+  "Strict verified-account watch and permission ordering through observed database waits": [
+    "browser-notifications"
+  ],
+  "Restore isolated unverified-email account fixture for profile browser tests": [
+    "browser-full"
+  ],
+  "Enable automatic Organization metadata and invitation authority routing for native browser acceptance": [
+    "browser-full"
+  ],
+  "Authenticated browser E2E against exact release images": [
+    "browser-full"
+  ],
+  "Authentication and invitation abuse limits on API and edge": [
+    "browser-full"
+  ],
+  "Retain browser failure evidence": [
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Retain scoped browser performance measurements": [
+    "browser-full"
+  ],
+  "Capture container state and logs": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Upload integration diagnostics": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Stop release topology": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ]
+}

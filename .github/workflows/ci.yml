@@ -41,6 +41,11 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Verify mandatory immutable integration coverage
+        run: |
+          node scripts/ci/verify-integration-suites.mjs
+          node --test tests/integration-suites.test.mjs
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -394,10 +399,15 @@ jobs:
           retention-days: 14
 
   container-integration:
-    name: container-integration
+    name: container-integration (${{ matrix.suite }})
     runs-on: ubuntu-24.04
     needs:
       - build-images-once
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        suite: [commands, browser-foundation, browser-notifications, browser-full]
     env:
       POSTGRES_DB: strataai
       POSTGRES_USER: strataai
@@ -477,7 +487,15 @@ jobs:
           status="$(curl --silent --output /dev/null --write-out '%{http_code}'             -H 'X-StrataAI-Request: 1' -X POST http://127.0.0.1:8080/api/demo/reset)"
           test "$status" = "404"
 
+      - name: Verify production account defaults and prepare isolated auth fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent http://localhost:8080/api/auth/policy | jq -e '.allowSelfRegistration == false and .requireVerifiedEmail == true' >/dev/null
+          docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api
+
       - name: Demo documented workflows without PostgreSQL or external network
+        if: (matrix.suite == 'commands')
         shell: bash
         run: |
           set -euo pipefail
@@ -485,154 +503,196 @@ jobs:
           bash scripts/ci/test-demo-worker-network-isolation.sh "strataai-worker:${GITHUB_SHA}"
 
       - name: API and Worker startup fail closed against exact retained images
+        if: (matrix.suite == 'commands')
         shell: bash
         run: |
           set -euo pipefail
           bash scripts/ci/test-runtime-startup-refusals.sh "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}"
 
       - name: Verify explicit Worker job scope and handler configuration
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-worker-job-configuration.sh "strataai-worker:${GITHUB_SHA}"
       - name: Verify enabled attachment configuration refusal in exact release images
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-attachment-runtime-configuration.sh "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}"
 
-      - name: Verify production account defaults then test PostgreSQL profile concurrency
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl --fail --silent http://localhost:8080/api/auth/policy | jq -e '.allowSelfRegistration == false and .requireVerifiedEmail == true' >/dev/null
-          docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api
-          scripts/ci/test-postgres-profile.sh http://localhost:8080
+      - name: Test PostgreSQL profile concurrency
+        if: (matrix.suite == 'commands')
+        run: scripts/ci/test-postgres-profile.sh http://localhost:8080
 
       - name: Identity audit rollback, logout waits and one-connection commands
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-identity-command-transactions.sh
 
       - name: Session-bound logout and deactivation receipts against exact release API
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-identity-revocation-retries.sh
 
       - name: Current and legacy credential-checked sign-in retries against exact release API
+        if: (matrix.suite == 'commands')
         run: |
           bash scripts/ci/test-identity-login-retries.sh http://localhost:8080 current
           bash scripts/ci/test-identity-login-retries.sh http://localhost:8080 legacy
 
       - name: Authentication lifecycle privacy against exact release API
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-identity-login-privacy.sh
 
       - name: Atomic registration retries against exact release API
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-identity-registration-retries.sh
 
       - name: Invitation-backed closed registration and atomic expiry against exact release API
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-invitation-registration.sh
 
       - name: Verified-email invitation discovery and retry-safe acceptance
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-invitation-discovery.sh
 
       - name: Atomic invitation creation retries against exact release API
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-invitation-creation-retries.sh
 
       - name: Private board discovery and revoked membership against restricted PostgreSQL runtime
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-board-discovery.sh
 
       - name: Board member canonical events, receipts, Worker delivery and revoked recovery against exact release images
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-board-member-events.sh
 
       - name: Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-board-permission-matrix.sh
 
       - name: Board grants, lifecycle freezes and original receipt recovery against exact API and restricted PostgreSQL
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-board-permission-recovery.sh
 
       - name: Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-board-star-preferences.sh
       - name: Independent full-capacity Board copy and atomic retry recovery against restricted PostgreSQL runtime
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-board-copy.sh
 
       - name: Board administrator demotion continuity and atomic recovery
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-board-admin-continuity.sh
 
       - name: Work command and audit rollback against exact release API
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-work-command-transactions.sh
 
       - name: Organization audit rollback, revoked actor waits and concurrent owner departures
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-organization-commands.sh
       - name: Automatic Organization metadata delivery with typed queue isolation
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-organization-metadata-delivery.sh
       - name: Automatic recipient authority pages and restart against exact Worker image
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh
 
       - name: Automatic Board recipient authority pages and restart against exact Worker image
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh http://127.0.0.1:8080 board
 
       - name: Organization request and terminal recipient authority against exact Worker image
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh http://127.0.0.1:8080 lifecycle
 
       - name: Canonical issuer deactivation and bounded authority routing against exact Worker image
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-invitation-recipient-authority-delivery.sh http://127.0.0.1:8080 issuer
 
       - name: Account deactivation and Organization active-owner continuity
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-account-owner-continuity.sh
 
       - name: Authorized bounded Organization member directory and post-wait revocation
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-organization-member-directory.sh
 
       - name: Authorized global search, literal matching, cursor binding and archived scope through exact release images
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-global-search.sh
 
       - name: Deleted and moved Card content admission across search inbox and notification history through exact release images
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-deleted-content-surfaces.sh
 
       - name: Organization terminal search and notification withdrawal after issuing-session logout or account deactivation through exact API and Worker images
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-organization-deletion-surfaces.sh
 
       - name: Account-bound navigation observations through exact release proxy and API
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-navigation-observations.sh
 
       - name: Durable work retry keys against exact release API
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-work-idempotency.sh
 
       - name: Bounded archives, confirmed deletion and atomic List copies
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-archived-lists.sh
 
       - name: Transactional labels, atomic association removal and post-wait receipt authorization
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-label-commands.sh
 
       - name: Bounded Board members, atomic Card assignments and post-wait revocation through exact release images
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-assignable-board-members.sh
 
       - name: Personal watch revisions, atomic publication and post-wait revocation through exact release images
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-watch-subscriptions.sh
 
       - name: Atomic username mentions, source notifications and redaction history through exact release images
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-comment-mention-commands.sh
 
       - name: Protected activity history, post-wait access/session admission and persisted cursor restart through exact release images
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-activity-feeds.sh
 
       - name: Cross-Board Card movement, original receipt admission and atomic reference rollback through exact release images
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-cross-board-card-moves.sh
 
       - name: Independent Card copy, destination Watch notification and atomic late-publication rollback through exact release images
+        if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-card-copy.sh
 
       - name: UTC Card dates, atomic notification rollback and private retry recovery through exact release images
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-card-dates.sh
 
       - name: Authorized URL attachments, receipts, metadata paging and atomic rollback against exact release images
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-attachments.sh
 
       - name: Authorized checklist creation, ordered progress and atomic rollback against exact release images
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-checklists.sh
 
       - name: Checklist, comment, activity, movement and lifecycle at supported capacity
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-checklist-capacity.sh
 
       - name: Validate pinned operator Collector configuration
+        if: (matrix.suite == 'commands')
         run: docker compose -f compose.release.yml -f compose.metrics.yml run --rm --no-deps metrics-collector validate --config=/etc/strataai/metrics.yml
 
       - name: Verify exact-image operator metric ingestion and private-field exclusion
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-operator-metrics.sh
 
       - name: Retain fixed operator collection evidence
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: operator-metrics-${{ github.sha }}
@@ -641,7 +701,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Retain fixed-scope Checklist capacity measurements
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: checklist-capacity-${{ github.sha }}
@@ -650,7 +710,7 @@ jobs:
           retention-days: 90
 
       - name: Retain fixed-scope activity capacity measurements
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: activity-capacity-${{ github.sha }}
@@ -659,7 +719,7 @@ jobs:
           retention-days: 90
 
       - name: Retain fixed-scope notification inbox capacity measurements
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: notification-capacity-${{ github.sha }}
@@ -668,7 +728,7 @@ jobs:
           retention-days: 90
 
       - name: Retain fixed-scope watch producer fan-out measurements
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: watch-fanout-capacity-${{ github.sha }}
@@ -677,7 +737,7 @@ jobs:
           retention-days: 90
 
       - name: Retain fixed-scope global search capacity measurements
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: search-capacity-${{ github.sha }}
@@ -686,7 +746,7 @@ jobs:
           retention-days: 90
 
       - name: Retain fixed-scope comment capacity measurements
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: comment-capacity-${{ github.sha }}
@@ -695,7 +755,7 @@ jobs:
           retention-days: 90
 
       - name: Retain fixed-scope cross-Board movement capacity measurements
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: card-move-capacity-${{ github.sha }}
@@ -704,7 +764,7 @@ jobs:
           retention-days: 90
 
       - name: Retain fixed-scope work lifecycle capacity measurements
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: work-lifecycle-capacity-${{ github.sha }}
@@ -713,7 +773,7 @@ jobs:
           retention-days: 90
 
       - name: Retain fixed-scope permanent-deletion capacity measurements
-        if: always()
+        if: always() && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: work-deletion-capacity-${{ github.sha }}
@@ -721,20 +781,33 @@ jobs:
           if-no-files-found: ignore
           retention-days: 90
 
+      - name: Retain fixed-scope Card copy capacity measurements
+        if: always() && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: card-copy-capacity-${{ github.sha }}
+          path: artifacts/capacity/card-copies.json
+          if-no-files-found: ignore
+          retention-days: 90
+
       - name: Atomic Work events and leased Worker readiness against exact release images
+        if: (matrix.suite == 'commands')
         run: scripts/ci/test-work-events.sh
 
       - uses: actions/setup-node@v7
+        if: (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         with:
           node-version: '24'
           cache: npm
 
       - name: Install browser test dependencies
+        if: (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         run: |
           npm ci
           npx playwright install --with-deps chromium
 
       - name: Demo metadata, terminal and recipient lifecycle against exact API and web images
+        if: (matrix.suite == 'browser-foundation')
         env:
           STRATAAI_E2E_BASE_URL: http://localhost:18088
           STRATAAI_E2E_RUNTIME_MODE: demo
@@ -749,19 +822,11 @@ jobs:
           npx playwright test tests/browser/organization-metadata-live.spec.ts tests/browser/organization-settings-live.spec.ts tests/browser/organization-member-lifecycle.spec.ts tests/browser/organization-deletion-completion.spec.ts tests/browser/recipient-invitation-lifecycle-authority.spec.ts
 
       - name: Attachment upload and isolated Worker image publication through explicit private test providers
+        if: (matrix.suite == 'browser-foundation')
         run: bash scripts/ci/test-attachment-image-pipeline.sh
 
-      - name: Retain fixed-scope Card copy capacity measurements
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: card-copy-capacity-${{ github.sha }}
-          path: artifacts/capacity/card-copies.json
-          if-no-files-found: ignore
-          retention-days: 90
-
       - name: Retain fixed-scope attachment capacity measurements
-        if: always()
+        if: always() && (matrix.suite == 'browser-foundation')
         uses: actions/upload-artifact@v7
         with:
           name: attachment-capacity-${{ github.sha }}
@@ -770,12 +835,14 @@ jobs:
           retention-days: 90
 
       - name: Authorized contiguous event replay and mid-read revocation against exact release API
+        if: (matrix.suite == 'browser-foundation')
         run: scripts/ci/test-work-sync.sh
       - name: Check concurrent and large-board rank allocation
+        if: (matrix.suite == 'browser-foundation')
         run: scripts/ci/test-work-ranks.sh
 
       - name: Retain actual large-Board native capacity diagnostics
-        if: always()
+        if: always() && (matrix.suite == 'browser-foundation')
         uses: actions/upload-artifact@v7
         with:
           name: board-capacity-browser-${{ github.sha }}
@@ -784,9 +851,11 @@ jobs:
           retention-days: 90
 
       - name: Check write authorization and lifecycle during live database lock waits
+        if: (matrix.suite == 'browser-foundation')
         run: scripts/ci/test-work-command-scopes.sh
 
       - name: Prepare isolated identity mail transport and ephemeral signing keys
+        if: (matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         run: |
           set -euo pipefail
           key1="$(openssl rand -base64 32)"
@@ -802,14 +871,17 @@ jobs:
           curl --fail --silent http://localhost:19090/health >/dev/null
 
       - name: Identity mail against exact API/Worker images and restricted database role
+        if: (matrix.suite == 'browser-notifications')
         run: scripts/ci/test-identity-email.sh
 
       - name: Desktop and mobile accessible keyboard verification/recovery through Worker delivery
+        if: (matrix.suite == 'browser-notifications')
         env:
           STRATAAI_E2E_IDENTITY_MAIL: '1'
         run: npx playwright test tests/browser/identity-mail.spec.ts
 
       - name: Strict verified-account watch producers through native private inboxes
+        if: (matrix.suite == 'browser-notifications')
         env:
           STRATAAI_E2E_VERIFY_WATCH_ACCOUNTS: '1'
           STRATAAI_E2E_RATE_PACING: '1'
@@ -820,6 +892,7 @@ jobs:
           npx playwright test tests/browser/watch-cross-board-notifications.spec.ts tests/browser/watch-activity-matrix.spec.ts
 
       - name: Strict verified-account assignment mention and reminder native delivery
+        if: (matrix.suite == 'browser-notifications')
         env:
           STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
           STRATAAI_E2E_RATE_PACING: '1'
@@ -830,6 +903,7 @@ jobs:
           npx playwright test tests/browser/card-assignment-notifications.spec.ts tests/browser/comment-mentions.spec.ts tests/browser/comment-mass-mentions.spec.ts tests/browser/card-reminders.spec.ts --grep 'native assignment|native selected teammate|native confirmed groups|actual Worker due reminder'
 
       - name: Strict verified-account watch and permission ordering through observed database waits
+        if: (matrix.suite == 'browser-notifications')
         env:
           STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
           STRATAAI_E2E_RATE_PACING: '1'
@@ -839,12 +913,14 @@ jobs:
           npx playwright test tests/browser/watch-trigger-order.spec.ts tests/browser/watch-permission-order.spec.ts
 
       - name: Restore isolated unverified-email account fixture for profile browser tests
+        if: (matrix.suite == 'browser-full')
         # Earlier fixtures share the same socket peer and Nginx rate-limit zone.
         # Start fresh processes from the same loaded release images; keep all
         # production abuse limits enabled and preserve the PostgreSQL data.
         run: STRATAAI_TEST_REQUIRE_VERIFIED_EMAIL=false docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 api web
 
       - name: Enable automatic Organization metadata and invitation authority routing for native browser acceptance
+        if: (matrix.suite == 'browser-full')
         env:
           STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED: 'true'
           STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED: 'true'
@@ -862,21 +938,23 @@ jobs:
           test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED)" = true
 
       - name: Authenticated browser E2E against exact release images
+        if: (matrix.suite == 'browser-full')
         env:
           STRATAAI_E2E_RELEASE_HEADERS: '1'
           STRATAAI_E2E_RATE_PACING: '1'
         run: npx playwright test
 
       - name: Authentication and invitation abuse limits on API and edge
+        if: (matrix.suite == 'browser-full')
         run: |
           scripts/ci/test-rate-limits.sh http://localhost:8080
           scripts/ci/test-rate-limits.sh http://localhost:8088 security-headers
 
       - name: Retain browser failure evidence
-        if: failure()
+        if: failure() && (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         uses: actions/upload-artifact@v7
         with:
-          name: browser-diagnostics-${{ github.sha }}
+          name: browser-diagnostics-${{ github.sha }}-${{ matrix.suite }}
           path: |
             test-results/
             playwright-report/
@@ -884,7 +962,7 @@ jobs:
           retention-days: 14
 
       - name: Retain scoped browser performance measurements
-        if: always()
+        if: always() && (matrix.suite == 'browser-full')
         uses: actions/upload-artifact@v7
         with:
           name: browser-performance-${{ github.sha }}
@@ -903,7 +981,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: container-integration-diagnostics-${{ github.sha }}
+          name: container-integration-diagnostics-${{ github.sha }}-${{ matrix.suite }}
           path: |
             compose-ps.txt
             compose.log
