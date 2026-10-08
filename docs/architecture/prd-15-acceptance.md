@@ -296,3 +296,18 @@ foregrounds the author and establishes enabled/admitted focus before one keypres
 API fixture verification remains optional. Current immutable images, strict policy,
 remaining producer/concurrency/capacity and full Definition of Done still govern
 closure. PRD-15 remains open at **36% estimated work remaining**; PRD-17 **15%**.
+
+## Strict verified-account native selected and group mentions
+
+The [complete strict producer invocation](prd-17-acceptance.md#executed-strict-verified-account-notification-producer-families)
+passes both selected-mention widths and both confirmed-group widths, alongside
+assignment and real reminder firing, in one eight-pass 8.2-minute run. Authors
+and recipients must fail login before verification and succeed afterward; actual
+API/Worker policy remains strict. Original selected revision, group consent/quota,
+recovery focus/receipt, self/role scope, withdrawal, full persisted envelopes/clocks
+and tagged accessibility assertions pass unchanged. The required build-once strict
+phase now includes all four mention cases. CI-only fresh-account activation when
+the token is private is not email-provider proof. Local strict admission now
+supersedes the optional-policy limit for these cases; current immutable/full CI,
+remaining producer/concurrency/capacity and Definition of Done still govern closure.
+PRD-15 remains open at **36% estimated work remaining**; PRD-17 **15%**.

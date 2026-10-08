@@ -674,3 +674,35 @@ for NOTIFY-FR-002/009/010/012. Current retained-image/full CI, complete role and
 interaction matrices, concurrent publication/rollback, capacity and the entire
 Definition of Done remain required. PRD-17 stays open at **15% estimated work
 remaining** (planning estimate).
+
+## Executed strict verified-account notification producer families
+
+All eight assignment, selected-mention, confirmed-group and actual reminder-fire
+cases pass together in **8.2 minutes**, at 1280px and 390px. Both running API and
+scoped Worker explicitly require verified email. The shared account fixture first
+requires each fresh account's real login to return 403
+`email_verification_required`, then verifies the account and requires login 200.
+It uses the actual verification endpoint when a token is available; otherwise a
+CI-only canonical-UUID guard permits activation of only the freshly registered
+disposable account. This fixture does not prove email-provider delivery; that
+contract retains its own earlier required CI phase.
+
+Every original producer, lost-response key/body, recovery focus, quota and role,
+self-suppression, current withdrawal, canonical-link, tagged Axe/overflow and
+complete persisted source/notification/private-envelope assertion passes unchanged.
+The same final persistence oracle compares exact journal sequences and full
+significant creation/first-read clocks. Real reminders fire through the separate
+Worker; both private clients compare complete creation/read pairs. No test
+fabricates notification, source, journal or reminder-fire effects.
+
+The required build-once CI now runs these eight cases in a dedicated strict phase
+after strict watch delivery and before the optional-verification profile fixtures.
+The step checks the actual API/Worker settings and reuses the same loaded immutable
+images. Earlier optional-policy runs remain historical evidence; this invocation
+supersedes their local verified-account admission gap for these producer families.
+Browser typechecking passes. Local execution still uses current compiled Production
+services/MUI and restricted PostgreSQL 17/pgvector schema 112. Owned fixtures are
+removed and original services/data preserved. Current retained-image/full CI,
+complete role/interaction/concurrent rollback and capacity matrices, provider
+acceptance and the full Definition of Done remain independently required. PRD-17
+stays open at **15% estimated work remaining** (planning estimate).

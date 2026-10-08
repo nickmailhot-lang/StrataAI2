@@ -638,3 +638,14 @@ identities, versions and sequences. Actual due firing, scheduling receipt replay
 verified Worker account, keyboard reads and tagged Axe/overflow still pass. API
 fixture verification is optional; current retained-image and complete acceptance
 remain required. PRD-12 remains open at **24% estimated work remaining**.
+
+## Strict verified-account native reminder delivery
+
+The [eight-case strict producer invocation](prd-17-acceptance.md#executed-strict-verified-account-notification-producer-families)
+passes both actual due-fire widths with API and Worker verification required.
+Fresh reminder-account login is refused before verification and accepted afterward;
+actual fire, original scheduling replay, full persisted attribution/clocks, private
+creation/read pairs and native accessibility remain unchanged. The new required
+immutable-image strict phase runs these cases before optional profile fixtures.
+Email-provider and current retained-image/full acceptance remain separate. PRD-12
+stays open at **24% estimated work remaining**.

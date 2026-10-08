@@ -86,3 +86,14 @@ reassignment, self-suppression, accessibility and membership-withdrawal assertio
 pass unchanged. This is local compiled evidence with optional API verification;
 current retained-image and full acceptance remain required. PRD-11 remains open
 at **35% estimated work remaining**; PRD-17 remains **15%**.
+
+## Strict verified-account native assignment delivery
+
+The [eight-case strict producer invocation](prd-17-acceptance.md#executed-strict-verified-account-notification-producer-families)
+passes both assignment/reassignment widths with API and Worker verification
+required. Each fresh author/recipient login is refused before verification and
+accepted afterward. Native recovery, complete persisted attribution/envelopes,
+self-suppression and current withdrawal remain unchanged. A required immutable-image
+CI phase now runs these cases before optional profile fixtures. Local compiled
+evidence does not establish email-provider/full release acceptance. PRD-11 stays
+open at **35% estimated work remaining**; PRD-17 **15%**.

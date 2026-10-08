@@ -1,3 +1,4 @@
+import { registerNotificationAccount } from './notificationAccountFixture';
 import { expectPersistedNotificationDelivery, retainPrivateNotification, type PrivateNotificationEnvelope } from './persistedNotificationDelivery';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
@@ -18,8 +19,7 @@ for (const width of [1280, 390]) {
       for (const [index, client] of [context, recipientContext].entries()) {
         const credentials = { email: index ? email : `assignment-owner-${width}-${Date.now()}@example.test`,
           password: 'assignment-browser-battery-horse', displayName: index ? 'Assignment recipient' : 'Assignment author' };
-        expect((await client.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
-        expect((await client.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+        await registerNotificationAccount(client.request, credentials);
       }
       const orgResult = await context.request.post('/organizations', { headers, data: { name: 'Assignment delivery' } });
       expect(orgResult.status()).toBe(201); const org = (await orgResult.json()).organization.id;

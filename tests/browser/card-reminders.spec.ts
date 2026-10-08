@@ -1,8 +1,8 @@
+import { registerNotificationAccount } from './notificationAccountFixture';
 import { expectPersistedNotificationDelivery, retainPrivateNotification, type PrivateNotificationEnvelope } from './persistedNotificationDelivery';
 import { expect, test } from './releaseTest';
 import AxeBuilder from '@axe-core/playwright';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { execFileSync } from 'node:child_process';
 import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
@@ -78,20 +78,7 @@ for (const width of [1280, 390]) {
     test.setTimeout(180_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const credentials = { email: `reminder-fire-${crypto.randomUUID()}@example.test`, password: 'reminder-fire-correct-horse', displayName: 'Reminder delivery fixture' };
-    const registered = await context.request.post('/auth/register', { headers, data: credentials });
-    expect(registered.status()).toBe(201); const account = await registered.json();
-    // Email delivery is a separate contract. Activate only this disposable
-    // account when the provider deliberately keeps its verification token private.
-    if (account.verificationToken) {
-      expect((await context.request.post('/auth/verify-email', { headers, data: { token: account.verificationToken } })).status()).toBe(200);
-    } else {
-      expect(process.env.CI).toBe('true'); expect(account.user.id).toMatch(/^[0-9a-f-]{36}$/);
-      execFileSync('docker', ['compose', '-f', 'compose.release.yml', 'exec', '-T', 'postgres', 'sh', '-c',
-        'psql -X -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'], {
-        input: `UPDATE users SET status='ACTIVE',email_verified=true,updated_at=GREATEST(updated_at,now()) WHERE id='${account.user.id}';`, stdio: 'pipe',
-      });
-    }
-    expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+    const account = await registerNotificationAccount(context.request, credentials, true);
     const orgReply = await context.request.post('/organizations', { headers, data: { name: 'Native reminder firing' } });
     expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
     const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Reminder firing Board', visibility: 'PRIVATE' } });
