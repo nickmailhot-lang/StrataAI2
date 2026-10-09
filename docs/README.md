@@ -50,6 +50,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 - [Durable Organization job foundation (ARCH-07)](architecture/background-jobs.md)
 - [Embedded build identity (ARCH-01-AC-002 / ARCH-11)](architecture/build-identity.md)
+- [Assembled release payload startup and graceful restart](architecture/release-bundle-startup.md)
 - [Configuration and secrets](architecture/configuration.md)
 - [Dependency locking (ARCH-01 / ARCH-11)](architecture/dependency-locking.md)
 - [Mandatory integration CI groups and coverage guard (ARCH-11)](architecture/integration-ci-groups.md)

@@ -31,6 +31,11 @@ original image metadata and checksum manifest; CI compares both image/security
 manifests with the verified original inputs before upload. This does not replace
 successful CI gates.
 
+CI also starts the assembled payload before upload, applies its migrations,
+provisions restricted runtime roles, checks health/build identity and requires
+graceful API/Worker restart. See the
+[startup evidence and limits](../architecture/release-bundle-startup.md).
+
 ## Load images
 
 ```bash
@@ -41,6 +46,9 @@ gunzip -c images/strataai-worker.tar.gz | docker load
 
 Copy `.env.release.example` to `.env`, replace the placeholder values, and ensure
 the three image variables point at the image tags recorded in `build-metadata.json`.
+The initially empty API retry-key fields are required: configure a current key
+version and a JSON ring of base64 32-byte secrets before starting the API. See
+[required production configuration](../architecture/configuration.md).
 
 ## Start and migrate
 

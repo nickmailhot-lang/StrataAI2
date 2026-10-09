@@ -154,3 +154,7 @@ release artifacts remain unverified. ARCH-11 and PRD-14 remain open.
 The [actual scanner engine runtime check](attachment-scanner-runtime.md) adds a
 mandatory exact-Worker verification before export, separate from the existing
 protocol-simulator fixture and its completed browser evidence.
+
+The [assembled release payload startup check](release-bundle-startup.md) loads
+the retained archives, verifies running identities, migrates a fresh database and
+requires graceful API/Worker restart before the bundle can be uploaded.

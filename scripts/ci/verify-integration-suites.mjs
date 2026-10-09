@@ -213,10 +213,19 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(bundle.run.includes('cp "security-artifacts/${component}.cdx.json" "bundle/sbom/${component}.cdx.json"'));
   assert.ok(bundle.run.includes('find . -type f ! -path ./SHA256SUMS'), 'Root checksums must cover nested security manifest');
   const releaseUpload = releaseSteps.find(step => step.name === 'Upload runnable release bundle');
+  const startup = releaseSteps.find(step => step.name === 'Verify assembled bundle startup without source or SDKs');
+  const startupSource = jobs['web-quality'].steps.find(step => step.name === 'Verify mandatory immutable integration coverage');
+  assert.ok(startupSource.run.includes('node --test tests/release-bundle-startup.test.mjs'));
+  assert.equal(startupSource.if, undefined);
+  assert.equal(startupSource['continue-on-error'] ?? false, false);
+  const afterStartup = releaseSteps.find(step => step.name === 'Verify bundle unchanged after startup smoke');
+  assert.equal(startup?.run, 'bash scripts/ci/test-release-bundle-startup.sh bundle');
+  assert.equal(startup['timeout-minutes'], 12);
+  assert.equal(afterStartup?.run, bundleVerify.run);
   assert.equal(releaseUpload.with.path, 'bundle/');
   assert.equal(releaseUpload.with['include-hidden-files'], true, 'Retain the required environment example');
   assert.equal(releaseUpload.with['if-no-files-found'], 'error');
-  for (const step of [inputVerify, bundle, bundleVerify, releaseUpload]) {
+  for (const step of [inputVerify, bundle, bundleVerify, startup, afterStartup, releaseUpload]) {
     assert.equal(step.if, undefined, 'Release checks may not be conditional');
     assert.equal(step['continue-on-error'] ?? false, false);
   }
@@ -224,6 +233,10 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(releaseSteps.indexOf(inputVerify) < releaseSteps.indexOf(bundle));
   assert.ok(releaseSteps.indexOf(bundle) < releaseSteps.indexOf(bundleVerify));
   assert.ok(releaseSteps.indexOf(bundleVerify) < releaseSteps.indexOf(releaseUpload));
+  assert.ok(releaseSteps.indexOf(bundleVerify) < releaseSteps.indexOf(startup));
+  assert.ok(releaseSteps.indexOf(startup) < releaseSteps.indexOf(releaseUpload), 'Smoke the assembled payload before retaining it');
+  assert.ok(releaseSteps.indexOf(startup) < releaseSteps.indexOf(afterStartup));
+  assert.ok(releaseSteps.indexOf(afterStartup) < releaseSteps.indexOf(releaseUpload), 'Refuse changed payloads or leftover private files before upload');
   assert.ok(releaseSteps.every(step => !/docker (?:build|buildx build)/.test(step.run ?? '')), 'Bundle cannot rebuild application images');
 
   const security = jobs.security;

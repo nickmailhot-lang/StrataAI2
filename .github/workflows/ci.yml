@@ -81,6 +81,7 @@ jobs:
         run: |
           node scripts/ci/verify-integration-suites.mjs
           node --test tests/integration-suites.test.mjs
+          node --test tests/release-bundle-startup.test.mjs
 
       - name: Verify complete browser shard coverage
         run: |
@@ -1417,6 +1418,13 @@ jobs:
           )
 
       - name: Verify release bundle completeness and checksums
+        run: python3 scripts/ci/verify-release-artifacts.py bundle --path bundle --images image-artifacts --security security-artifacts
+
+      - name: Verify assembled bundle startup without source or SDKs
+        timeout-minutes: 12
+        run: bash scripts/ci/test-release-bundle-startup.sh bundle
+
+      - name: Verify bundle unchanged after startup smoke
         run: python3 scripts/ci/verify-release-artifacts.py bundle --path bundle --images image-artifacts --security security-artifacts
 
       - name: Upload runnable release bundle
