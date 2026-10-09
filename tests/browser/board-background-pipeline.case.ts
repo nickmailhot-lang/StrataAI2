@@ -132,6 +132,7 @@ for (const width of [1280, 390]) {
     await focusAdmittedControl(coverConfirm); await page.keyboard.press('Enter');
     const coverRetry = page.getByRole('button', { name: 'Retry original cover change', exact: true });
     await expect(coverRetry).toBeEnabled(); await expect(coverRetry).toBeFocused();
+    await expect.poll(admittedCardVersion).toBeGreaterThanOrEqual(initialCover.cardVersion + 1);
     for (const name of ['Save card', 'Manage attachments', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
     await focusAdmittedControl(coverRetry); await page.keyboard.press('Enter'); await expect(page.getByText('Card cover updated.', { exact: true })).toBeVisible();
     expect(coverWrites).toHaveLength(2); expect(coverWrites[1]).toEqual(coverWrites[0]);
@@ -153,16 +154,53 @@ for (const width of [1280, 390]) {
       expect(coverBytes.includes(Buffer.from('PRIVATE ORIGINAL'))).toBe(false);
       expect((await visitor.request.get(coverPath)).status()).toBe(401);
     } finally { await visitor.close(); }
-    await focusAdmittedControl(coverReview); await page.keyboard.press('Enter');
-    await focusAdmittedControl(page.getByRole('button', { name: 'Remove Card cover', exact: true })); await page.keyboard.press('Enter');
-    await expect(coverConsent).toHaveCount(0);
-    await focusAdmittedControl(page.getByRole('button', { name: 'Confirm cover removal', exact: true })); await page.keyboard.press('Enter');
-    await expect(page.getByText('Card cover removed.', { exact: true })).toBeVisible(); await expect(coverImage).toHaveCount(0);
-    await expect(coverReview).toBeFocused(); expect(coverWrites).toHaveLength(3);
-    const removedCoverResponse = await context.request.get(coverPath); expect(removedCoverResponse.status()).toBe(200);
-    expect(await removedCoverResponse.json()).toMatchObject({ cardVersion: initialCover.cardVersion + 2, attachmentId: null });
-    await expect.poll(admittedCardVersion).toBeGreaterThanOrEqual(initialCover.cardVersion + 2);
-    expect((await context.request.get(coverPath + '/image')).status()).toBe(404);
+    // A second real session of this verified owner must retire already-rendered
+    // disclosure through actual Worker delivery, without navigation or reload.
+    const peerContext = await browser.newContext({ baseURL: new URL(page.url()).origin, viewport: { width, height: 844 } });
+    try {
+      expect((await peerContext.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' },
+        data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
+      await waitForBoardDelivery(context.request, board);
+      const peer = await peerContext.newPage(); let peerSequence = 0n;
+      peer.on('websocket', socket => {
+        if (new URL(socket.url()).pathname !== '/boards/live') return;
+        socket.on('framereceived', frame => {
+          for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
+            const message = JSON.parse(raw);
+            if (message.type !== 2 || !Array.isArray(message.item?.events)) continue;
+            for (const event of message.item.events) {
+              if (event.organizationId === org && event.boardId === board && typeof event.sequence === 'string'
+                && /^[0-9]{1,19}$/.test(event.sequence) && BigInt(event.sequence) > peerSequence) peerSequence = BigInt(event.sequence);
+            }
+          }
+        });
+      });
+      await peer.goto(cardPath);
+      const peerImage = peer.getByRole('img', { name: 'Card cover', exact: true }); await expect(peerImage).toBeVisible();
+      await expect.poll(() => peerImage.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
+      await expect(peer.getByText('Live updates connected.', { exact: true })).toBeVisible();
+      let peerNavigations = 0; peer.on('framenavigated', frame => { if (frame === peer.mainFrame()) peerNavigations++; });
+      const priorSyncResponse = await context.request.get(`/boards/${board}/sync`); expect(priorSyncResponse.status()).toBe(200);
+      const priorSync = await priorSyncResponse.json(); expect(priorSync).toMatchObject({ hasMore: false, pending: false, resetRequired: false });
+      expect(priorSync.cursor).toMatch(/^[0-9]{1,19}$/);
+      await focusAdmittedControl(coverReview); await page.keyboard.press('Enter');
+      await focusAdmittedControl(page.getByRole('button', { name: 'Remove Card cover', exact: true })); await page.keyboard.press('Enter');
+      await expect(coverConsent).toHaveCount(0);
+      await focusAdmittedControl(page.getByRole('button', { name: 'Confirm cover removal', exact: true })); await page.keyboard.press('Enter');
+      await expect(page.getByText('Card cover removed.', { exact: true })).toBeVisible(); await expect(coverImage).toHaveCount(0);
+      await expect(coverReview).toBeFocused(); expect(coverWrites).toHaveLength(3);
+      const removedCoverResponse = await context.request.get(coverPath); expect(removedCoverResponse.status()).toBe(200);
+      expect(await removedCoverResponse.json()).toMatchObject({ cardVersion: initialCover.cardVersion + 2, attachmentId: null });
+      await expect.poll(admittedCardVersion).toBeGreaterThanOrEqual(initialCover.cardVersion + 2);
+      await waitForBoardDelivery(context.request, board);
+      await expect.poll(() => peerSequence > BigInt(priorSync.cursor), { timeout: 20_000 }).toBe(true);
+      await expect(peerImage).toHaveCount(0, { timeout: 20_000 }); await expect(peer).toHaveURL(new RegExp(`/cards/${fixture.cardId}$`));
+      expect(peerNavigations).toBe(0);
+      const peerCoverResponse = await peerContext.request.get(coverPath); expect(peerCoverResponse.status()).toBe(200);
+      expect(await peerCoverResponse.json()).toMatchObject({ cardVersion: initialCover.cardVersion + 2, attachmentId: null });
+      expect((await peerContext.request.get(coverPath + '/image')).status()).toBe(404);
+      expect((await context.request.get(coverPath + '/image')).status()).toBe(404);
+    } finally { await peerContext.close(); }
     await page.unroute('**' + coverPath);
     const attempts: { key: string | undefined; body: string | null }[] = [];
     await page.route(`**/boards/${board}/background/image`, async route => {
@@ -173,17 +211,17 @@ for (const width of [1280, 390]) {
       else { expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]); await route.fulfill({ response: result }); }
     });
     const review = page.getByRole('button', { name: 'Review Board background images', exact: true });
-    await expect(review).toBeEnabled(); await review.press('Enter');
-    await page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true }).press('Enter');
+    await focusAdmittedControl(review); await page.keyboard.press('Enter');
+    await focusAdmittedControl(page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true })); await page.keyboard.press('Enter');
     const confirm = page.getByRole('button', { name: 'Confirm Board background image', exact: true });
     await expect(confirm).toBeDisabled();
     const consent = page.getByRole('checkbox', { name: 'I understand this Board background image will be publicly visible', exact: true });
-    await expect(consent).toBeFocused(); await consent.press('Space');
-    await expect(confirm).toBeEnabled(); await confirm.press('Enter');
+    await expect(consent).toBeFocused(); await focusAdmittedControl(consent); await page.keyboard.press('Space');
+    await focusAdmittedControl(confirm); await page.keyboard.press('Enter');
     const retry = page.getByRole('button', { name: 'Retry original Board background change', exact: true });
     await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
     for (const name of ['Save card', 'Review Card cover', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
-    await retry.press('Enter'); await expect(page.getByText('Board background updated.', { exact: true })).toBeVisible();
+    await focusAdmittedControl(retry); await page.keyboard.press('Enter'); await expect(page.getByText('Board background updated.', { exact: true })).toBeVisible();
     await expect(review).toBeFocused(); expect(attempts).toHaveLength(2);
     expect(JSON.parse(attempts[0].body!)).toMatchObject({ publicVisibilityConfirmed: true, boardVersion: before.version + 1 });
     const sourceResponse = await context.request.get(`/boards/${board}`); expect(sourceResponse.status()).toBe(200);

@@ -279,3 +279,35 @@ backend source with a separate native Worker and restricted PostgreSQL, explicit
 local storage and scanner protocol simulator. It does not prove live peer-client
 cover withdrawal, external S3/deployed malware engine, physical erasure/backup
 expiry or current immutable/full release acceptance.
+
+## Live peer cover removal and temporary refresh recovery
+
+Both complete enabled-pipeline viewports now open a second actual session of the
+same verified owner with the published PNG already rendered. After removal in
+the first session, the peer receives a real SignalR event whose sequence exceeds
+the pre-command canonical sync cursor, withdraws the image, and reads the exact
+new Card revision and null cover. Both image endpoints return 404. The peer stays
+on the same Card route with zero main-frame navigations: no reload is used.
+This is two real sessions of one account, not a distinct-account permission matrix.
+
+The expanded run exposed two temporary-refresh races. A completed fresh scoped
+Board-image review was discarded while parent access was being refreshed; review
+now retains its actor, rights and revision fences while its rendering stays hidden.
+An uncertain original cover command was treated as a conclusive conflict during
+the same temporary refresh; recovery now preserves its original key/body after
+fresh account proof and lets the server authorize the replay. Known edit-rights
+withdrawal still refuses the replay before any write, and new commands retain
+the unavailable/current-version checks.
+
+Each defect first fails its new focused regression against the old product code.
+The repaired cover/background/attachment control selection passes all 46 cases;
+web/browser typechecks, focused lint and a fresh web build also pass. Earlier
+failed complete invocations remain failed evidence. The final complete invocation
+passes both cases in 104.8 seconds with zero failures, skips, retries or flaky
+cases, followed by every native HTTP pipeline assertion, including selected-source
+archive/deletion and independent Board image retention. Cleanup independently
+confirms zero owned containers, databases, provider volumes or credential files.
+The original deadlines, command counts, canonical revisions and lifecycle assertions
+remain unchanged. Actual source-archive live peer withdrawal, distinct-account
+roles, disconnect recovery, external providers and current full immutable release
+acceptance remain unproven by this run.

@@ -80,7 +80,10 @@ function Control(props: Props) {
         await actor(signal, id); return { actor: id, board, cardVersion: props.version, page, cursor };
       }, c.signal);
       if (!current(c)) return;
-      if (callbacks.current.unavailable || !callbacks.current.editable || callbacks.current.version !== result.cardVersion || callbacks.current.boardVersion !== result.board.version) throw new Error('Changed review');
+      // A concurrent foreground read conceals the controls but does not revoke
+      // this fresh scoped API review. Keep the actor/rights/revision fences;
+      // rendering remains concealed until current parent access is available.
+      if (!callbacks.current.editable || callbacks.current.version !== result.cardVersion || callbacks.current.boardVersion !== result.board.version) throw new Error('Changed review');
       activityResult('board_read', true, started); setReview(result);
     } catch { if (current(c)) { activityResult('board_read', false, started); retire('Unable to review Board background images. Refresh and try again.'); callbacks.current.onRefresh(); } }
     finally { finish(c); }

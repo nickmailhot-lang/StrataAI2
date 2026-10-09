@@ -942,3 +942,13 @@ cover identifiers are null and the image route is withdrawn. Subsequent source
 deletion keeps that withdrawal while preserving both independent Board image
 owners. The entire native pipeline passes; live peer-client lifecycle withdrawal,
 external provider/backup authority and current full immutable acceptance remain.
+
+The [live peer removal and refresh-recovery evidence](attachment-object-storage.md#live-peer-cover-removal-and-temporary-refresh-recovery)
+adds actual Worker/SignalR delivery to a second session, sequence advancement,
+canonical cover withdrawal and zero page navigation at both viewport sizes.
+The complete native pipeline passes 2/2 in 104.8 seconds and all subsequent HTTP
+assertions; 46 focused controls pass after two independently reproduced refresh
+defects are repaired. This uses one verified account in two sessions. Distinct-account
+roles, source-archive live peer withdrawal, disconnect recovery, external providers,
+capacity/performance and current immutable/full acceptance remain open.
+Estimated PRD-14 work remaining: **33%**.

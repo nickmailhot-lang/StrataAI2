@@ -15,6 +15,19 @@ const ack = { ...board, version: 8, backgroundType: 'IMAGE', backgroundValue: id
 const props = () => ({ ...scope, version: 4, boardVersion: 7, editable: true, disabled: false, unavailable: false,
   onBusyChange: vi.fn(), onRecoveryChange: vi.fn(), onRefresh: vi.fn() });
 const writes = () => vi.mocked(workRequest).mock.calls.filter(([, init]) => !!init?.method);
+it('retains freshly authorized review while a background access refresh conceals the controls', async () => {
+  mock(); let release!: (value: typeof profile) => void;
+  vi.mocked(workRequest).mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
+  const p = props(); const view = render(<BoardBackgroundImageControl {...p} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Review Board background images' }));
+  await waitFor(() => expect(release).toBeTypeOf('function'));
+  view.rerender(<BoardBackgroundImageControl {...p} unavailable />); release(profile);
+  await waitFor(() => expect(p.onBusyChange).toHaveBeenLastCalledWith(false));
+  expect(screen.queryByRole('button', { name: 'Use Checked image.png as Board background' })).not.toBeInTheDocument();
+  view.rerender(<BoardBackgroundImageControl {...p} />);
+  expect(await screen.findByRole('button', { name: 'Use Checked image.png as Board background' })).toBeEnabled();
+  expect(p.onRefresh).not.toHaveBeenCalled(); expect(writes()).toHaveLength(0);
+});
 function mock(write: () => unknown = () => ack, visibility = 'PRIVATE') {
   vi.mocked(workRequest).mockImplementation(async (path, init) => path === '/me' ? profile : init?.method ? write()
     : path.includes('/candidates') ? { ...page, isPublic: visibility === 'PUBLIC' } : { ...source, board: { ...board, visibility } });

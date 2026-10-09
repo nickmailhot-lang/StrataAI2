@@ -73,7 +73,11 @@ function CoverControl(props: UrlAttachmentCreateProps) {
       const value = await boundedWorkRead(async signal => {
         const profile = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(profile) || profile.id.toLowerCase() !== command.actor.toLowerCase()) throw new WorkRequestError(401, null);
-        if (callbacks.current.unavailable || !originalRetry && (callbacks.current.version !== command.input.cardVersion || !callbacks.current.editable))
+        if (!callbacks.current.editable) throw new WorkRequestError(403, null);
+        // A parent access refresh is not a conclusive conflict for an already
+        // uncertain command. Its original PUT is authorized again by the server;
+        // preserve its immutable key/body while fresh account proof completes.
+        if (!originalRetry && (callbacks.current.unavailable || callbacks.current.version !== command.input.cardVersion))
           throw new WorkRequestError(409, null);
         const result = await workRequest<unknown>(path, { method: 'PUT', signal, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify(command.input) });
         parseCardCoverChange(result, props, command.view, command.input);

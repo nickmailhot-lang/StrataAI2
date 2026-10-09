@@ -69,6 +69,13 @@ withdrawal in revision 11. The [selected-cover lifecycle extension](attachment-o
 passes together with both viewports and the complete native HTTP pipeline; all
 owned fixture resources are independently absent.
 
+The same complete two-viewport invocation now also checks [live peer cover removal](attachment-object-storage.md#live-peer-cover-removal-and-temporary-refresh-recovery):
+real Worker/SignalR sequence advancement, withdrawal of an already-rendered PNG,
+canonical null cover and zero main-frame navigation in a second actual session
+of the same account. The final native run passes 2/2 in 104.8 seconds and all
+subsequent HTTP assertions. This does not establish distinct-account permissions,
+source-archive live withdrawal or current immutable release success.
+
 ## Strict notification consumer coverage
 
 The assignment/mention/reminder phase now also selects the complete recipient

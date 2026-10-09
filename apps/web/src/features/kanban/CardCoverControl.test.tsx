@@ -11,6 +11,31 @@ const base = { ...scope, cardVersion: 4, attachmentId: null as string | null, at
 const ack = { ...scope, cardVersion: 5, attachmentId: candidate.attachmentId, attachmentVersion: 3, changed: true };
 const props = () => ({ ...scope, version: 4, editable: true, disabled: false, unavailable: false, onRefresh: vi.fn(), onBusyChange: vi.fn(), onRecoveryChange: vi.fn() });
 const writes = () => vi.mocked(workRequest).mock.calls.filter(([, init]) => !!init?.method);
+it('recovers the original cover receipt when parent access refresh starts during its account proof', async () => {
+  let attempts = 0; mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; });
+  const p = props(); const view = render(<CardCoverControl {...p} />); await choose();
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm Card cover' }));
+  const retry = await screen.findByRole('button', { name: 'Retry original cover change' }); await waitFor(() => expect(retry).toBeEnabled());
+  let release!: (value: typeof profile) => void;
+  vi.mocked(workRequest).mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
+  fireEvent.click(retry); await waitFor(() => expect(release).toBeTypeOf('function'));
+  view.rerender(<CardCoverControl {...p} unavailable version={9} />); release(profile);
+  await screen.findByText('Card cover updated.'); expect(writes()).toHaveLength(2);
+  expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body); expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+  expect(screen.queryByText(candidate.displayName)).not.toBeInTheDocument();
+});
+it('refuses original cover replay when known edit rights are withdrawn during account proof', async () => {
+  mock(() => { throw new WorkRequestError(503, null); });
+  const p = props(); const view = render(<CardCoverControl {...p} />); await choose();
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm Card cover' }));
+  const retry = await screen.findByRole('button', { name: 'Retry original cover change' }); await waitFor(() => expect(retry).toBeEnabled());
+  let release!: (value: typeof profile) => void;
+  vi.mocked(workRequest).mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
+  fireEvent.click(retry); await waitFor(() => expect(release).toBeTypeOf('function'));
+  view.rerender(<CardCoverControl {...p} editable={false} />); release(profile);
+  await screen.findByText('This cover change is unavailable. Load the latest Card before reviewing another change.');
+  expect(writes()).toHaveLength(1); expect(screen.queryByText(candidate.displayName)).not.toBeInTheDocument();
+});
 it('retains restored cover focus through a later access refresh but respects another Card action', async () => {
   let attempts = 0; mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; });
   const p = props();
