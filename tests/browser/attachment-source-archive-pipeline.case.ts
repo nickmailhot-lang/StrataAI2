@@ -6,6 +6,7 @@ import { expect, test, type WebSocketRoute } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 import { focusAdmittedControl, pressAdmittedAction } from './keyboardAdmission';
+import { attachmentFileFixture, type AttachmentFileFormat } from './attachmentFileFixtures';
 
 // Interrupt only the committed response. Fetch interception at Response stage
 // preserves Chromium's original File request body (the request mirror omits it).
@@ -213,12 +214,14 @@ test('PRD-14 actual source archive withdraws the selected cover from distinct me
   } finally { for (const client of clients) await client.context.close(); }
 });
 
-for (const { width, loseReply, rejected } of [
-  { width: 1280, loseReply: false, rejected: false }, { width: 390, loseReply: false, rejected: false },
-  { width: 1280, loseReply: true, rejected: false }, { width: 390, loseReply: true, rejected: false },
-  { width: 1280, loseReply: false, rejected: true }, { width: 390, loseReply: false, rejected: true },
-]) {
-  test(`PRD-14 real browser file upload${loseReply ? ' original receipt recovery' : ''}, ${rejected ? 'Worker quarantine and refused delivery' : 'Worker publication, preview and download'} at ${width}px`, async ({ page, context }) => {
+const fileCases: { width: number; loseReply: boolean; rejected: boolean; format: AttachmentFileFormat }[] = [
+  { width: 1280, loseReply: false, rejected: false, format: 'png' }, { width: 390, loseReply: false, rejected: false, format: 'png' },
+  { width: 1280, loseReply: true, rejected: false, format: 'png' }, { width: 390, loseReply: true, rejected: false, format: 'png' },
+  { width: 1280, loseReply: false, rejected: true, format: 'png' }, { width: 390, loseReply: false, rejected: true, format: 'png' },
+  ...(['jpeg', 'webp', 'pdf'] as const).flatMap(format => [1280, 390].map(width => ({ width, format, loseReply: false, rejected: false }))),
+];
+for (const { width, loseReply, rejected, format } of fileCases) {
+  test(`PRD-14 real browser file upload${format === 'png' ? '' : ` ${format.toUpperCase()}`}${loseReply ? ' original receipt recovery' : ''}, ${rejected ? 'Worker quarantine and refused delivery' : format === 'pdf' ? 'Worker scan and controlled download' : 'Worker publication, preview and download'} at ${width}px`, async ({ page, context, browser }) => {
     test.setTimeout(150_000);
     expect(process.env.CI).toBe('true');
     const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE; expect(path).toBeTruthy();
@@ -228,7 +231,7 @@ for (const { width, loseReply, rejected } of [
     const headers = { 'X-StrataAI-Request': '1' };
     expect((await context.request.post('/auth/login', { headers, data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
     const boardResponse = await context.request.post('/boards', { headers: { ...headers, 'Idempotency-Key': randomUUID() },
-      data: { organizationId: fixture.organizationId, name: `Browser upload ${width}${loseReply ? ' recovery' : ''}${rejected ? ' quarantine' : ''}`, visibility: 'PRIVATE' } });
+      data: { organizationId: fixture.organizationId, name: `Browser upload ${width} ${format}${loseReply ? ' recovery' : ''}${rejected ? ' quarantine' : ''}`, visibility: 'PRIVATE' } });
     expect(boardResponse.status()).toBe(201); const board = (await boardResponse.json()).id;
     const listResponse = await context.request.post(`/boards/${board}/lists`, { headers: { ...headers, 'Idempotency-Key': randomUUID() }, data: { name: 'Browser uploads' } });
     expect(listResponse.status()).toBe(201); const list = (await listResponse.json()).id;
@@ -265,22 +268,22 @@ for (const { width, loseReply, rejected } of [
       await expect.poll(admittedCardVersion).toBe(version);
     }
     await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
-    const original = Buffer.concat([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==', 'base64'), Buffer.from(rejected ? 'STRATAAI_CI_HARMLESS_REJECT_FIXTURE' : 'PRIVATE BROWSER ORIGINAL TRAILING METADATA')]);
-    const name = `Browser original ${width}.png`, uploadPath = `/cards/${card}/attachments`;
+    const file = attachmentFileFixture(format, rejected), original = file.buffer;
+    const name = `Browser original ${width}.${file.extension}`, uploadPath = `/cards/${card}/attachments`;
     const writes: Record<string, string>[] = [];
     page.on('request', request => {
       if (request.method() === 'POST' && new URL(request.url()).pathname === uploadPath) writes.push(request.headers());
     });
     await pressAdmittedAction(page.getByRole('button', { name: 'Add file attachment', exact: true }));
     const input = page.getByLabel('File to attach', { exact: true }); await expect(input).toBeEnabled();
-    await input.setInputFiles({ name, mimeType: 'image/png', buffer: original });
+    await input.setInputFiles({ name, mimeType: file.mimeType, buffer: original });
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     const lost = loseReply ? await loseUploadReply(context, page, uploadPath) : undefined;
     const uploadResponsePromise = lost ? lost.reply : page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === uploadPath)
       .then(async response => { expect(response.status()).toBe(200); return response.json(); });
     await pressAdmittedAction(page.getByRole('button', { name: 'Upload selected file', exact: true }));
     const uploaded = await uploadResponsePromise as { cardVersion: number; attachment: { id: string } };
-    expect(uploaded).toMatchObject({ cardVersion: 2, attachment: { displayName: name, mimeType: 'image/png', sizeBytes: original.length, version: 1, scanStatus: 1 } });
+    expect(uploaded).toMatchObject({ cardVersion: 2, attachment: { displayName: name, mimeType: file.mimeType, sizeBytes: original.length, version: 1, scanStatus: 1 } });
     expect(uploaded.attachment.id).toMatch(/^[0-9a-f-]{36}$/);
     // Chromium's request-body mirror omits File bodies. Prove full byte identity
     // through admitted size/hash and the actual browser download below.
@@ -343,10 +346,13 @@ for (const { width, loseReply, rejected } of [
       return;
     }
     await expect.poll(async () => {
-      const response = await context.request.get(`/cards/${card}/cover/candidates`); expect(response.status()).toBe(200);
-      return (await response.json()).items.some((item: { attachmentId: string; attachmentVersion: number }) => item.attachmentId === uploaded.attachment.id && item.attachmentVersion === 3);
+      const response = await context.request.get(file.image ? `/cards/${card}/cover/candidates` : uploadPath); expect(response.status()).toBe(200);
+      const current = await response.json();
+      return file.image
+        ? current.items.some((item: { attachmentId: string; attachmentVersion: number }) => item.attachmentId === uploaded.attachment.id && item.attachmentVersion === 3)
+        : current.items.some((item: { id: string; version: number; scanStatus: number }) => item.id === uploaded.attachment.id && item.version === 2 && item.scanStatus === 2);
     }, { timeout: 90_000 }).toBe(true);
-    await admitPublishedFile(4);
+    await admitPublishedFile(file.image ? 4 : 3);
     if (loseReply) {
       await expect(input).toBeDisabled();
       for (const name of ['Save card', 'Manage attachments', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
@@ -367,15 +373,35 @@ for (const { width, loseReply, rejected } of [
     const group = page.getByRole('group', { name: `File attachment ${name}`, exact: true }); await expect(group).toBeVisible();
     await expect(group.getByText('Safety scan complete.', { exact: true })).toBeVisible();
     const previewPath = `${uploadPath}/${uploaded.attachment.id}/preview`;
-    const previewResponsePromise = page.waitForResponse(response => new URL(response.url()).pathname === previewPath && response.request().method() === 'GET');
-    await pressAdmittedAction(group.getByRole('button', { name: 'Show image preview', exact: true }));
-    const previewResponse = await previewResponsePromise; expect(previewResponse.status()).toBe(200);
-    const previewBytes = await previewResponse.body();
-    expect(previewBytes.subarray(0, 8)).toEqual(Buffer.from('89504e470d0a1a0a', 'hex'));
-    expect(previewBytes.subarray(-12)).toEqual(Buffer.from('0000000049454e44ae426082', 'hex'));
-    expect(previewBytes.includes(Buffer.from('PRIVATE BROWSER ORIGINAL'))).toBe(false); expect(previewBytes).not.toEqual(original);
-    const preview = group.getByRole('img', { name: `Sanitized preview of ${name}`, exact: true }); await expect(preview).toBeVisible();
-    await expect.poll(() => preview.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
+    let previewBytes: Buffer | undefined;
+    if (file.image) {
+      const previewResponsePromise = page.waitForResponse(response => new URL(response.url()).pathname === previewPath && response.request().method() === 'GET');
+      await pressAdmittedAction(group.getByRole('button', { name: 'Show image preview', exact: true }));
+      const previewResponse = await previewResponsePromise; expect(previewResponse.status()).toBe(200);
+      expect(previewResponse.headers()['content-type']).toBe('image/png');
+      previewBytes = await previewResponse.body();
+      expect(previewBytes.subarray(0, 8)).toEqual(Buffer.from('89504e470d0a1a0a', 'hex'));
+      expect(previewBytes.subarray(-12)).toEqual(Buffer.from('0000000049454e44ae426082', 'hex'));
+      expect(previewBytes.includes(Buffer.from('PRIVATE BROWSER ORIGINAL'))).toBe(false); expect(previewBytes).not.toEqual(original);
+      const preview = group.getByRole('img', { name: `Sanitized preview of ${name}`, exact: true }); await expect(preview).toBeVisible();
+      await expect.poll(() => preview.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
+    } else {
+      await expect(group.getByRole('button', { name: 'Show image preview', exact: true })).toHaveCount(0);
+      await expect(group.getByRole('img')).toHaveCount(0);
+      for (const route of [previewPath, previewPath + '-options']) expect((await context.request.get(route)).status()).toBe(404);
+      const candidatesResponse = await context.request.get(`/cards/${card}/cover/candidates`); expect(candidatesResponse.status()).toBe(200);
+      expect((await candidatesResponse.json()).items).toEqual([]);
+      const coverResponse = await context.request.get(`/cards/${card}/cover`); expect(coverResponse.status()).toBe(200);
+      const before = await coverResponse.json(); expect(before).toMatchObject({ cardVersion: 3, attachmentId: null, attachmentVersion: null });
+      const denied = await context.request.put(`/cards/${card}/cover`, { headers: { ...headers, 'Idempotency-Key': randomUUID() },
+        data: { cardVersion: 3, attachmentId: uploaded.attachment.id, attachmentVersion: 2, publicVisibilityConfirmed: false } });
+      expect(denied.status()).toBe(404); expect(await denied.json()).toMatchObject({ code: 'card_not_found' });
+      expect(await (await context.request.get(`/cards/${card}/cover`)).json()).toEqual(before);
+      const metadataResponse = await context.request.get(uploadPath); expect(metadataResponse.status()).toBe(200);
+      const metadata = await metadataResponse.json(); expect(metadata.cardVersion).toBe(3); expect(metadata.items).toHaveLength(1);
+      expect(metadata.items[0]).toMatchObject({ id: uploaded.attachment.id, mimeType: 'application/pdf', sizeBytes: original.length, version: 2, scanStatus: 2 });
+      expect(metadata.items[0]).not.toHaveProperty('storageKey');
+    }
     await pressAdmittedAction(group.getByRole('button', { name: 'Check file download access', exact: true }));
     const downloadLink = group.getByRole('link', { name: `Download ${name} (opens in a new tab)`, exact: true }); await expect(downloadLink).toBeVisible();
     await expect(downloadLink).toHaveAttribute('rel', 'noopener noreferrer'); await expect(downloadLink).toHaveAttribute('referrerpolicy', 'no-referrer');
@@ -386,5 +412,26 @@ for (const { width, loseReply, rejected } of [
     expect((await context.request.get(`${uploadPath}/${uploaded.attachment.id}/download`)).status()).toBe(200);
     expect(writes).toHaveLength(loseReply ? 2 : 1);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    if (format === 'jpeg' || format === 'webp') {
+      const coverPath = `/cards/${card}/cover`;
+      await pressAdmittedAction(page.getByRole('button', { name: 'Review Card cover', exact: true }));
+      await pressAdmittedAction(page.getByRole('button', { name: `Use ${name} as cover`, exact: true }));
+      await expect(page.getByRole('checkbox', { name: 'I understand this cover image will be publicly visible', exact: true })).toHaveCount(0);
+      const coverWrite = page.waitForResponse(response => response.request().method() === 'PUT' && new URL(response.url()).pathname === coverPath);
+      await pressAdmittedAction(page.getByRole('button', { name: 'Confirm Card cover', exact: true }));
+      const coverWritten = await coverWrite; expect(coverWritten.status()).toBe(200);
+      expect(await coverWritten.json()).toMatchObject({ cardVersion: 5, attachmentId: uploaded.attachment.id, attachmentVersion: 3, changed: true });
+      await expect(page.getByText('Card cover updated.', { exact: true })).toBeVisible();
+      await admitPublishedFile(5);
+      const image = page.getByRole('img', { name: 'Card cover', exact: true }); await expect(image).toBeVisible();
+      await expect.poll(() => image.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
+      const coverResponse = await context.request.get(coverPath); expect(coverResponse.status()).toBe(200);
+      expect(await coverResponse.json()).toMatchObject({ cardVersion: 5, attachmentId: uploaded.attachment.id, attachmentVersion: 3, isPublic: false });
+      const imageResponse = await context.request.get(coverPath + '/image'); expect(imageResponse.status()).toBe(200);
+      expect(imageResponse.headers()['content-type']).toBe('image/png'); expect(await imageResponse.body()).toEqual(previewBytes);
+      const guest = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+      try { expect((await guest.request.get(coverPath + '/image')).status()).toBe(404); } finally { await guest.close(); }
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    }
   });
 }

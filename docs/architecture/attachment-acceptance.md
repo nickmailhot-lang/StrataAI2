@@ -53,13 +53,13 @@ digests and scanner/provider details; authorization precedes disclosure.
 
 | Requirement | Current evidence | Remaining work |
 | --- | --- | --- |
-| FR-001 upload size/type | Configurable admission policy; raw HTTP validation; bounded full-byte size/SHA verification; upload-intent claim/recovery and atomic Pending publication; MUI hashing/upload/retry controls; managed/API/PostgreSQL contracts; executed native desktop/phone browser PNG upload through Worker publication | Complete enabled-file workflow in release images, remaining cross-feature/lifecycle/scenario coverage |
+| FR-001 upload size/type | Configurable admission policy; raw HTTP validation; bounded full-byte size/SHA verification; upload-intent claim/recovery and atomic Pending publication; MUI hashing/upload/retry controls; managed/API/PostgreSQL contracts; executed native desktop/phone browser PNG/JPEG/WebP/PDF upload through actual Worker scanning/publication | Complete enabled-file workflow in release images, remaining invalid/large/complex inputs and cross-feature/lifecycle/scenario coverage |
 | FR-002 URL | Authorized idempotent command, forced-RLS persistence, cursor reads, safe MUI links and exact-image URL transaction checks | Complete linked interaction, concurrency, reconnect, accessibility and performance matrix |
 | FR-003 metadata | Scoped variant DTOs; migrations 041/043/044; tenant-safe integrity/RLS; current authorization before paging/admission; stable errors and atomic receipts/audit/events | Preview/cover/deletion state integration, remaining move/copy/archive races and full release acceptance |
 | FR-004 object storage | Official managed S3 adapter, private-owner/policy validation, non-overwrite multipart storage, explicit readiness/configuration refusal; no database BLOB; SDK transport/private-file contracts | Release-image enabled provider workflow, orphan/retention reconciliation and documented operator configuration/smoke evidence |
-| FR-005 controlled downloads | Current Clean/scoped admission, time-bound snapshot, SHA-verified anonymous staging, final/periodic rights checks, private forced-download headers and MUI browser-owned delivery; managed/API/PostgreSQL contracts; executed actual native browser downloads with exact original bytes | Full enabled-file browser/provider acceptance and deletion/cover/reconciliation interactions |
+| FR-005 controlled downloads | Current Clean/scoped admission, time-bound snapshot, SHA-verified anonymous staging, final/periodic rights checks, private forced-download headers and MUI browser-owned delivery; managed/API/PostgreSQL contracts; executed actual native PNG/JPEG/WebP/PDF browser downloads with exact original bytes | Full enabled-file browser/provider acceptance and deletion/cover/reconciliation interactions |
 | FR-006 scanning/quarantine | Separate Worker job, scope-only payload, restricted lease-bound SQL capability, complete-byte ClamAV protocol and atomic verdict/Card/audit/event persistence; fail-closed Pending/Rejected/Failed delivery; executed bounded final-attempt/expired-claim recovery; native desktop/phone browser upload through actual Worker Rejected verdict, real event receipt, textual status and refused controlled delivery | Remaining mutation/operator/rescan coverage, deployed scanner acceptance and complete current immutable enabled pipeline |
-| FR-007 previews | Linux raster normalization; exact Worker isolated codec/privilege-drop/cancellation verification; durable private derivative jobs and fenced publication; current-authorized controlled PNG delivery and MUI viewer; executed actual upload-through-Worker sanitized browser preview at desktop/phone sizes | Complete actual enabled-provider release/browser pipeline and cross-feature acceptance matrix |
+| FR-007 previews | Linux raster normalization; exact Worker isolated codec/privilege-drop/cancellation verification; durable private derivative jobs and fenced publication; current-authorized controlled PNG delivery and MUI viewer; executed PNG/JPEG/WebP upload-through-Worker sanitized browser previews at desktop/phone sizes; Clean PDF preview/options refusal | Complete actual enabled-provider release/browser pipeline, complex inputs and cross-feature acceptance matrix |
 | FR-008 cover | Nullable tenant/Card composite FK; current published-source prerequisite; dual CAS/idempotent commands and atomic audit/outbox; selected-source withdrawal clears once; PUBLIC consent/current anonymous image admission; minimal snapshot hint and MUI controls/display; executed actual upload-through-Worker cover browser workflow; desktop/phone direct Rejected-source and forged-revision cover refusal with unchanged canonical metadata/event cursor | Current immutable/full enabled-provider coverage, remaining cross-feature/concurrency/reconnect matrix and unchanged capacity/performance acceptance |
 | FR-009 deletion | Guarded archive/restore/elevated confirmed soft deletion; current parent/source versions; atomic selected-cover clearing; audit/events; restore does not reselect | Full enabled-provider/browser lifecycle matrix and retention/purge reconciliation |
 | FR-010 untrusted MIME/name | Canonical raw transport validation; server byte classification/full size/SHA checks; quarantine; safe opaque downloads; strict raw image decoder; forged-input/API/provider cases | Successful isolated image admission/publication plus full enabled release/security regression matrix |
@@ -952,6 +952,27 @@ defects are repaired. This uses one verified account in two sessions. Distinct-a
 roles, source-archive live peer withdrawal, disconnect recovery, external providers,
 capacity/performance and current immutable/full acceptance remain open.
 Estimated PRD-14 work remaining: **33%**.
+
+## Supported-format native browser acceptance
+
+The [complete supported-format browser evidence](attachment-object-storage.md#all-supported-upload-formats-through-the-browser-and-worker)
+adds six desktop/phone JPEG, WebP and PDF cases to the intact enabled phase.
+All use actual browser uploads, separate Worker scanning, real event receipt and
+exact original-byte browser downloads. JPEG/WebP additionally render sanitized
+PNG previews and private covers through ordinary keyboard controls, with actual
+Card revision 5, identical controlled sanitized bytes and anonymous image 404.
+Clean PDF stays at Card/attachment 3/2, without preview or cover eligibility;
+direct preview/options/cover attempts are refused and metadata omits storage keys.
+
+Complete native results: original 2/2 (92.7s), expanded 14/14 (542.5s), subsequent
+HTTP assertions and independent cleanup pass, with zero unexpected/skipped/flaky
+results or retries. Typechecking, generated fixture-byte checks, 91 CI coverage
+guards and ordinary mandatory verification pass. Existing cases/deadlines remain
+intact; product code and release configuration are unchanged. Small static sample
+acceptance does not prove invalid/large/complex inputs, additional per-format
+recovery/role/lifecycle cases, deployed providers, current immutable full CI or
+the remaining cross-feature/performance/AC/DoD matrix. The issue remains open.
+Estimated PRD-14 work remaining: **32%**.
 
 The [lost browser-upload receipt extension](attachment-object-storage.md#lost-browser-upload-reply-recovered-after-actual-worker-publication)
 retains both normal cases and adds both viewport recovery cases. Only actual

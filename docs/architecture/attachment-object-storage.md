@@ -577,3 +577,44 @@ containers, database, provider volume or credential files remain. All 91 CI
 coverage guards and ordinary mandatory coverage verification pass. Current
 immutable release CI, deployed providers and the outstanding feature/full matrix
 remain unproven. Estimated PRD-14 work remaining: **33%**.
+
+## All supported upload formats through the browser and Worker
+
+The intact mandatory lifecycle phase adds desktop (1280px) and phone (390px)
+happy-path cases for JPEG, WebP and PDF, retaining all eight earlier cases.
+The [fixture module](../../tests/browser/attachmentFileFixtures.ts) contains actual
+1x1 JPEG/WebP encodings generated once with the installed Chromium canvas and a
+complete one-page PDF with calculated object offsets and cross-reference table.
+JPEG retains a deliberate trailing private marker; WebP keeps its exact complete
+RIFF container length. No dependency or product policy change is introduced.
+
+Each format uses actual browser File selection, hashing/raw upload, Pending
+acknowledgment, separate Worker scanning and real scoped SignalR delivery through
+the canonical server cursor. All four supported types now pass actual keyboard
+download, safe link attributes and exact browser-downloaded original-byte checks.
+Form and delivered-state WCAG-tagged checks remain mandatory.
+
+JPEG and WebP reach Card/attachment 4/3, produce fresh controlled PNG previews
+that render at their real 1px width and differ from original bytes, and are then
+selected as private covers through the normal keyboard controls. The real PUT
+advances Card to 5; current cover metadata and rendered PNG are verified, the
+owner receives the same sanitized preview bytes, and a fresh anonymous session
+receives 404. PDF reaches Clean at Card/attachment 3/2 and can be downloaded,
+while preview/options return 404, the UI offers no image preview, cover candidates
+are empty, and an ordinary attempted cover PUT returns `card_not_found` without
+changing the cover. Public PDF metadata omits storage keys.
+
+The complete native invocation passes original 2/2 in 92.7 seconds, expanded
+14/14 in 542.5 seconds, all subsequent HTTP lifecycle/privacy/ownership checks and
+process exit 0. Both reports have zero unexpected/skipped/flaky results and retry
+maximum 0. Independent verification confirms no owned containers, database,
+provider volume or credential files remain. Browser typechecking, fixture-byte
+provenance checks, all 91 CI coverage guards and ordinary mandatory verification
+pass. All cases retain their 150-second deadlines and the full unfiltered enabled
+phase; no normal/recovery/quarantine/permission/archive assertion is removed.
+
+This is native local-provider and explicit scanner-protocol-fixture evidence for
+these small static samples. Current immutable full-release CI, deployed providers,
+invalid/large/complex encoded inputs, additional per-format recovery/role/lifecycle
+cases and the full cross-feature/performance/AC/DoD matrix still need proof.
+Estimated PRD-14 work remaining: **32%**.
