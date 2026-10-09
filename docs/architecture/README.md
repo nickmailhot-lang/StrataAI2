@@ -9,6 +9,10 @@ remaining audit/release scope to their verification sources.
 The [invitation issuer clock audit](invitation-issuer-clock-audit.md) identifies
 owning writers, immutable facts and the remaining mutable-job clock gap.
 
+The [Board background ownership clock audit](board-background-clock-audit.md)
+traces immutable preview ownership, canonical selection clocks and installed
+schema-116 metadata evidence.
+
 The implemented web routing and query-state choices, their executable evidence
 and outstanding ARCH-02 audit scope are recorded in
 [Web SPA routing and state boundary](web-spa-boundary.md).

@@ -86,6 +86,13 @@ upgrade refuses unproven RUNNING leases until actual terminal drain; current
 immutable-image/deployed upgrade verification remains. This does not classify
 the remaining candidates.
 
+The [Board background ownership audit](board-background-clock-audit.md) traces
+both production creation paths, immutable SQL history protection and canonical
+Board selection clocks. Five read-only schema-116 catalog/permission checks
+confirm the installed guard, forced RLS and restricted runtime permissions.
+The ownership fact has no allowed update transition; this classification does
+not exclude the mutable Board or other unclassified operational records.
+
 The [recipient page/counter audit](invitation-recipient-authority.md#page-lifecycle-clocks-and-remaining-counter-audit)
 adds explicit managed page creation/update clocks in migration 116 from the
 recorded owning job and first completion. Its complete local migration gate
