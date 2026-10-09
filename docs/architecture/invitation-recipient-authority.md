@@ -4,6 +4,45 @@ Return to the [documentation index](../README.md),
 [recipient journal and replay](invitation-recipient-events.md) or
 [protected discovery](invitation-discovery.md).
 
+## Page lifecycle clocks and remaining counter audit
+
+[Migration 116](../../db/migrations/116_invitation_authority_page_clocks.sql)
+records the page's canonical creation time from its composite-FK owning durable
+job and its update time from its first completion, or creation while pending.
+Historical pages retain those already recorded facts; migration time is not a
+replacement clock. Creation is fixed, completion remains one-time, and an exact
+retry confirms the original completion without changing clocks. Clock fields
+are maintained inside the same database transaction as the page's state.
+No direct runtime page-table grants or public frame fields are added.
+
+The exclusive, transactional upgrade temporarily removes and restores page
+history protection only for its historical backfill. Constraints refuse missing,
+non-finite or contradictory clocks. Both runtime readiness lists now require 116.
+The [before](../../scripts/ci/authority-page-clocks-before-upgrade.sql) and
+[after](../../scripts/ci/authority-page-clocks-after-upgrade.sql) fixtures retain
+two complete historical pages and exercise actual restricted delivery, full
+rollback, substituted Worker refusal, stable same-page retry and creation/
+completion replacement refusal. The complete clean/repeat/forward/serialization/
+failure/unrecorded migration gate passes locally through 116. The locked Release
+solution build has zero warnings/errors. Actual restricted issuer routing/recovery,
+recipient replay/discovery and complete API/Worker ledger refusal/recovery contracts
+also pass against a fresh schema-116 database. All clock fixtures, diagnostics and
+credentials remain outside the repository; owned database/container cleanup is
+checked separately from the ongoing schema-115 Board run. These are local source/
+persistence results, not immutable-image CI or complete PRD acceptance.
+
+`invitation_recipient_authority_revisions` remains an explicitly mutable counter
+without creation/update timestamps. The current owning writer is migration
+109's restricted recipient-delivery function; 105 and 107 contain earlier
+definitions replaced by 109. It increments only after a newly inserted immutable
+recipient effect, with issuer-account effects additionally deduplicated globally.
+Source-event time is not Worker delivery time. Effects do not record their own
+delivery clocks, and current invitation rows cannot prove every historical page
+that touched a recipient. Do not backfill an invented historical counter clock
+from those sources or exclude the counter from FOUND-FR-009. Its historical
+provenance and owning-writer repair remain unresolved. PRD-01 stays open at **34%
+estimated work remaining** (planning estimate).
+
 ## Canonical issuer account deactivation
 
 [Migration 109](../../db/migrations/109_invitation_issuer_account_authority.sql)

@@ -86,6 +86,13 @@ upgrade refuses unproven RUNNING leases until actual terminal drain; current
 immutable-image/deployed upgrade verification remains. This does not classify
 the remaining candidates.
 
+The [recipient page/counter audit](invitation-recipient-authority.md#page-lifecycle-clocks-and-remaining-counter-audit)
+adds explicit managed page creation/update clocks in migration 116 from the
+recorded owning job and first completion. Its complete local migration gate
+passes. Recipient revision counters are mutable and lack historical delivery
+timestamps; their writer/provenance repair remains unresolved, not silently
+excluded from FOUND-FR-009.
+
 ## Executed evidence and closure boundary
 
 The [navigation execution record](../navigation-observations.md) retains the

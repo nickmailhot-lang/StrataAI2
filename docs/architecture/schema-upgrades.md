@@ -49,7 +49,7 @@ of this new catalog guard is still required before treating it as release eviden
 ## Runtime migration readiness
 
 Production connections require every named migration through
-`115_invitation_issuer_job_clocks`. The readiness query checks for missing
+`116_invitation_authority_page_clocks`. The readiness query checks for missing
 required ledger entries directly, avoiding a separately maintained numeric total.
 Extra later migrations do not substitute for a missing required entry.
 
@@ -88,3 +88,14 @@ and recorded terminal facts supply the backfill, with no migration-time substitu
 See the [clock audit and executed verification](invitation-issuer-clock-audit.md#managed-job-clock-and-historical-upgrade)
 for preserved rows, transactional clocks, current readiness and remaining release
 scope. The new runtime requires the named 115 entry before admitting connections.
+
+## Recipient authority page clocks
+
+Migration 116 preserves the owning durable job's recorded creation time and the
+page's first recorded completion time. The clock backfill and restored history
+guard commit together under an exclusive page-table lock. Missing, non-finite
+or contradictory clock facts refuse the upgrade; migration time is not substituted.
+The new runtime also requires the named 116 entry. See the
+[page lifecycle audit](invitation-recipient-authority.md#page-lifecycle-clocks-and-remaining-counter-audit)
+for source ownership, exact retry/rollback checks and the separate unresolved
+recipient-counter history.
