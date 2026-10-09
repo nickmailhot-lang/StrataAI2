@@ -98,7 +98,7 @@ build-once CI remain outstanding. No ticket is closed.
 
 The captured-dialog-fixed nine-case invocation subsequently finishes **8/9**
 in 633.97 seconds, with exactly one result per original case and zero
-skipped/flaky outcomes or report-level errors. The phone confirmed-group case
+skipped/flaky outcomes or report-level errors. The desktop confirmed-group case
 passes its earlier automatic retry focus assertion, then fails a later
 `Comment added.` visibility assertion at `comment-mass-mentions.spec.ts:141`
 while publishing subsequent confirmed mentions. That later failure remains
@@ -113,3 +113,32 @@ its whole-counter source-clock oracle, as recorded in the
 replace the incomplete nine-case phase, capacity acceptance, current full-source
 verification or immutable build-once release proof. PRD-17 remains open at
 **15% estimated work remaining** (planning estimate).
+
+## Subsequent comment-source admission observation
+
+The retained nine-case report identifies the later failure at **1280px**;
+the phone case passes in that invocation. Earlier issue commentary described
+the later failure as phone and is corrected by the authoritative report.
+Read-only trace inspection finds the desktop Save action followed by its
+pre-save account check, no subsequent comment POST, and the existing local
+unavailable-change announcement. The overlapping protected Board read retains
+Card revision 4 and edit permission. This is not proof of a server publication
+failure or a reason to bypass the foreground authorization boundary.
+
+The native fixture previously waited for the Worker drain and an observed Card
+revision, which could both precede delivery of the corresponding Board source
+frame. Before each subsequent draft it now additionally requires the actual
+`COMMENT_ADDED` sources and the protected Board read started after that source
+epoch, using the existing passive history tracker. In this fixture assignment
+establishes revision 2 and each following revision is one admitted comment;
+the required source count is the current revision minus 2. Replayed frames do
+not count twice, and a read from an older epoch cannot satisfy admission.
+
+Browser typecheck and all **15** tracker tests pass, with zero failures,
+cancelled or skipped cases. The production component and its frozen assets are
+unchanged by this observation repair. A fresh complete original nine-case
+invocation retains all original source/privacy, key/body, quota, role-scope,
+keyboard, mobile and lifecycle assertions, deadlines and zero test retries.
+Its actual terminal result and successful-exit whole-counter oracle remain
+required; this change is not itself native acceptance. PRD-15 and PRD-17 remain
+open at **34%** and **15% estimated work remaining**, respectively.

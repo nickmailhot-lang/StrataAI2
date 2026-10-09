@@ -5,7 +5,7 @@ import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 import { pressAdmittedAction } from './keyboardAdmission';
-import { trackInvitationAdmission } from './invitationAdmissionTracker';
+import { trackBoardHistoryChanges, trackInvitationAdmission } from './invitationAdmissionTracker';
 
 // Real account invitations, explicit Board membership and Card assignment.
 // Only an actual committed first response is replaced to exercise recovery.
@@ -73,6 +73,7 @@ for (const width of [1280, 390]) {
       const cardVersion = trackCardVersion(page, board, card, cardPath);
       const actor = (await (await context.request.get('/me')).json()).id;
       const admission = trackInvitationAdmission(page, org, actor, board, cardPath);
+      const commentChanges = trackBoardHistoryChanges(page, org, board, cardPath, `/boards/${board}`);
       const reads = trackBoardReads(page, board, cardPath); await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       await expect.poll(admission.ready).toBe(true);
       const commentsPath = `/cards/${card}/comments`;
@@ -83,6 +84,11 @@ for (const width of [1280, 390]) {
         const current = snapshot.lists.flatMap((column: { cards: { id: string; version: number }[] }) => column.cards)
           .find((row: { id: string }) => row.id === card);
         expect(current).toBeDefined(); await expect.poll(cardVersion).toBe(current.version);
+        // This fixture starts at revision 2 after assignment; every later
+        // revision is one admitted comment. The mutation's canvas refresh can
+        // precede its Worker frame. Require the actual comment sources and the
+        // protected read after them before beginning the next review.
+        await expect.poll(() => commentChanges.settled('COMMENT_ADDED', current.version - 2)).toBe(true);
         await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
         const review = page.getByRole('button', { name: 'Review Card comments', exact: true });
         await pressAdmittedAction(review);
