@@ -341,3 +341,48 @@ browser invocation also remains live; its recorded lifecycle navigation failure
 must be retained when the whole report becomes terminal. Current immutable
 build-once release acceptance remains outstanding. PRD-01 remains open at
 **34% estimated work remaining** (planning estimate).
+
+### Mention revision history and privileged cleanup
+
+Two further candidates are immutable **runtime revision metadata**, with
+privileged cleanup semantics distinct from unconditional history guards.
+The repository-wide writer audit finds insertion in the owning comment
+transaction and explicit administrative cleanup in disposable persistence
+contracts; it finds no runtime UPDATE/DELETE producer for either table.
+
+| Candidate | Writer and clock provenance | Mutation and retention boundary |
+| --- | --- | --- |
+| `comment_mention_snapshots` | [Comment producer](../../src/StrataAI.Application/WorkManagement/CardCommentService.cs) inserts a snapshot for each actual create/edit/soft-delete revision, using the same database-normalized timestamp as that revision. [Migration 058](../../db/migrations/058_comment_mention_snapshots.sql) requires the current comment version and exact `updated_at=created_at`; a deleted revision must have zero recipients. | Changed payloads are refused, exact no-op UPDATE is accepted, and the restricted API has only SELECT/INSERT. There is no unconditional administrative DELETE guard. A later revision inserts a new snapshot rather than updating the old one. |
+| `comment_mention_recipients` | [Snapshot store](../../src/StrataAI.Infrastructure/WorkManagement/PostgresCommentMentionSnapshotStore.cs) inserts the exact stable recipient set after its snapshot header, in the same owning transaction. The composite FK identifies the original revision/header and its source `created_at`; recipients are not independently mutable timestamped entities. | Changed recipient identities are refused; exact no-op UPDATE is accepted. Deferred cardinality prevents a partial recipient set from committing. Runtime UPDATE/DELETE are denied; privileged cleanup can delete recipients and headers together. |
+
+The store validates exact replay against the retained timestamp, count and
+sorted recipient identities. Editing to an empty set preserves previous
+revision identities. [Migration 060](../../db/migrations/060_mass_mention_recipient_history.sql)
+removes the username-only recipient-count cap for confirmed groups without
+changing these clock, revision or cardinality rules. The Worker has no table
+access. Administrative fixture cleanup is not evidence of a runtime mutable
+entity, and these tables are not classified as having unconditional deletion
+refusal.
+
+On 2026-10-09 the complete unchanged original
+[mention snapshot SQL gate](../../scripts/ci/test-comment-mention-snapshots.sql)
+passes on fresh schema 127. The first companion runtime-role invocation fails
+because the private helper omitted the original RLS seed prerequisite; that
+failed attempt remains retained and is not a product failure or a whole-gate
+pass. A fresh invocation applies all 127 migrations and standard restricted
+roles, then passes the complete original [RLS gate](../../scripts/ci/test-rls.sh),
+mention snapshot gate and [runtime-role gate](../../scripts/ci/test-runtime-roles.sh)
+in that order. Assertions, fixture scope and scripts remain unchanged; staged
+sources match after normalizing both sides' newline encoding. Both attempts'
+owned containers and environment files are independently confirmed absent.
+
+The source-classified total is now **19/51**: **16 unconditional immutable
+history/ownership candidates, two runtime-immutable revision metadata
+candidates with privileged cleanup, and one mutable derived-clock table**.
+The remaining **32** still require complete writer/retention/clock
+classification. This SQL scope does not replace complete persistence,
+native producer/consumer, capacity or immutable-image release verification.
+The unfiltered persistence executable and fresh full 32-case Board browser
+run are still active; current main CI is queued. No schema, grants or runtime
+behavior change. PRD-01 remains open at **34% estimated work remaining**
+(planning estimate).
