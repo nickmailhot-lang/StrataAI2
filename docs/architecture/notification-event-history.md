@@ -142,3 +142,16 @@ keyboard, mobile and lifecycle assertions, deadlines and zero test retries.
 Its actual terminal result and successful-exit whole-counter oracle remain
 required; this change is not itself native acceptance. PRD-15 and PRD-17 remain
 open at **34%** and **15% estimated work remaining**, respectively.
+
+The source-admission invocation subsequently finishes **8/9** in 778.88 seconds,
+with one result per original case, zero skipped/flaky outcomes and no
+report-level errors. The desktop confirmed-group scenario now passes its full
+quota/role/source assertions. The phone scenario instead times out filling the
+first new-comment draft at `comment-mass-mentions.spec.ts:96`, called from line
+108, before its first comment submission. This is a new verification gap;
+neither the desktop pass nor source-tracker tests establish the whole phase.
+Its failed trace/report remain private and retained. The final whole-counter
+oracle does not execute after browser failure. Owned containers, database and
+environment files are independently absent. Initial phone action admission,
+complete producer/consumer, capacity and current build-once acceptance remain
+outstanding; no ticket is closed.
