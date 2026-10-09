@@ -16,7 +16,7 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 - New contributor: [architecture overview](architecture/README.md), [runtime modes](architecture/runtime-modes.md), [configuration](architecture/configuration.md), and [API host testing](architecture/api-host-testing.md).
 - Implementing a ticket: [dependency audit](ticket-dependencies.md), [linked dependency map](ticket-dependency-map.md), the feature document below, then its shared contracts and acceptance records.
-- Reviewing completion: [Board acceptance](architecture/prd-04-acceptance.md), [activity acceptance](architecture/prd-15-acceptance.md), and the relevant evidence documents. Match every result to its recorded revision and test scope.
+- Reviewing completion: [foundation acceptance](architecture/prd-01-acceptance.md), [Board acceptance](architecture/prd-04-acceptance.md), [activity acceptance](architecture/prd-15-acceptance.md), and the relevant evidence documents. Match every result to its recorded revision and test scope.
 - Operating the application: [release guide](release/README.md), [database roles](architecture/runtime-database-roles.md), [schema upgrades](architecture/schema-upgrades.md), and [operator metrics](architecture/operator-metrics.md).
 
 ## How to navigate
@@ -188,6 +188,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [PRD-13 acceptance audit](architecture/checklist-acceptance.md)
 - [Retaining CI evidence for main commits](architecture/ci-run-retention.md)
 - [PRD-18 acceptance audit](architecture/lifecycle-acceptance.md)
+- [PRD-01 foundation acceptance and closure audit](architecture/prd-01-acceptance.md)
 - [PRD-04 acceptance and closure audit](architecture/prd-04-acceptance.md)
 - [PRD-05 sharing and permission acceptance audit](architecture/prd-05-acceptance.md)
 - [PRD-15 acceptance map — open](architecture/prd-15-acceptance.md)
