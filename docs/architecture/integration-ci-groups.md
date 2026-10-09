@@ -102,6 +102,16 @@ The complete native original 2/2 (94.5 seconds), whole expanded archive 1/1
 Degraded current-state polling remains enabled. Existing deadlines and mutations
 are unchanged; current Linux exact-image/full acceptance remains pending.
 
+The same complete lifecycle configuration now contains a second mandatory case
+for [published-source Board membership withdrawal](attachment-object-storage.md#board-membership-loss-with-published-cover-and-attachment-review-open).
+Both desktop/phone peers withdraw their real cover and keyboard-opened attachment
+review; delivery/writes are denied while owner state and Organization membership
+are retained. Ordinary restoration precedes the intact archive/reconnect case.
+The complete native original 2/2 (91.5 seconds), lifecycle 2/2 (74.3 seconds), all
+following HTTP assertions and independently checked cleanup pass. No filtering,
+deadline relaxation or mutation/revision changes are introduced; current exact-image
+and full matrix acceptance remain pending.
+
 ## Strict notification consumer coverage
 
 The assignment/mention/reminder phase now also selects the complete recipient

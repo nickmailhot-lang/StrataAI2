@@ -983,3 +983,15 @@ all subsequent HTTP assertions and independent cleanup pass without failures,
 skips, retries or flaky cases. Permission loss/live permanent deletion, full
 role/cross-feature/capacity/performance, external provider and current immutable
 acceptance remain open. Estimated PRD-14 work remaining: **33%**.
+
+The [published-source Board-membership loss case](attachment-object-storage.md#board-membership-loss-with-published-cover-and-attachment-review-open)
+also executes both viewport sessions with a real cover and keyboard-opened file
+review before the owner's versioned membership removal. Protected UI disappears
+without navigation and source/cover delivery and attempted cover writes return
+404. The owner's cover and Organization membership remain unchanged. Ordinary
+membership restoration preserves the following complete archive/reconnect case.
+The original 2/2 (91.5 seconds), both whole lifecycle cases 2/2 (74.3 seconds), all
+subsequent HTTP assertions and independent cleanup pass without failures/skips/
+retries/flaky cases. Full role/parent/move/copy/lifecycle/capacity/performance,
+external provider and current immutable acceptance remain open. Estimated PRD-14
+work remaining: **33%**.

@@ -1,7 +1,88 @@
 import { readFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { focusAdmittedControl } from './keyboardAdmission';
+
+test('PRD-14 private published cover and attachment review withdraw when Board membership is removed at desktop and phone sizes', async ({ context, browser }) => {
+  test.setTimeout(150_000);
+  expect(process.env.CI).toBe('true');
+  const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE; expect(path).toBeTruthy();
+  const fixture = JSON.parse(readFileSync(path!, 'utf8')) as {
+    email: string; password: string; organizationId: string; boardId: string; cardId: string;
+    peer: { email: string; password: string };
+  };
+  for (const id of [fixture.organizationId, fixture.boardId, fixture.cardId]) expect(id).toMatch(/^[0-9a-f-]{36}$/);
+  const headers = { 'X-StrataAI-Request': '1' };
+  expect((await context.request.post('/auth/login', { headers, data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
+  const coverPath = `/cards/${fixture.cardId}/cover`;
+  const originalCoverResponse = await context.request.get(coverPath); expect(originalCoverResponse.status()).toBe(200);
+  const originalCover = await originalCoverResponse.json(); expect(originalCover).toMatchObject({ cardVersion: 9, attachmentVersion: 3, isPublic: false });
+  expect(originalCover.attachmentId).toMatch(/^[0-9a-f-]{36}$/);
+  const ownerResponse = await context.request.get('/me'); expect(ownerResponse.status()).toBe(200); const owner = await ownerResponse.json();
+  const cardPath = `/app/${fixture.organizationId}/boards/${fixture.boardId}/cards/${fixture.cardId}`;
+  const clients = []; let peerId: string | undefined; let removed = false;
+  try {
+    await waitForBoardDelivery(context.request, fixture.boardId);
+    for (const width of [1280, 390]) {
+      const peerContext = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 844 } });
+      const peer = await peerContext.newPage(); const client = { context: peerContext, page: peer, navigations: 0 }; clients.push(client);
+      expect((await peerContext.request.post('/auth/login', { headers, data: { email: fixture.peer.email, password: fixture.peer.password } })).status()).toBe(200);
+      const profileResponse = await peerContext.request.get('/me'); expect(profileResponse.status()).toBe(200);
+      const profile = await profileResponse.json(); expect(profile.id).not.toBe(owner.id);
+      if (peerId) expect(profile.id).toBe(peerId); else peerId = profile.id;
+      const reads = trackBoardReads(peer, fixture.boardId, cardPath);
+      await peer.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      const image = peer.getByRole('img', { name: 'Card cover', exact: true }); await expect(image).toBeVisible();
+      await expect.poll(() => image.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
+      await expect(peer.getByText('Live updates connected.', { exact: true })).toBeVisible();
+      await focusAdmittedControl(peer.getByRole('button', { name: 'Manage attachments', exact: true })); await peer.keyboard.press('Enter');
+      await expect(peer.getByRole('group', { name: 'Attachment Private original.png', exact: true })).toBeVisible();
+      peer.on('framenavigated', frame => { if (frame === peer.mainFrame()) client.navigations++; });
+    }
+    expect(peerId).toMatch(/^[0-9a-f-]{36}$/);
+    const organizationMemberPath = `/organizations/${fixture.organizationId}/members/${peerId}`;
+    const beforeMembershipResponse = await context.request.get(organizationMemberPath); expect(beforeMembershipResponse.status()).toBe(200);
+    const beforeMembership = await beforeMembershipResponse.json();
+    const directoryResponse = await context.request.get(`/boards/${fixture.boardId}/members`); expect(directoryResponse.status()).toBe(200);
+    const directory = await directoryResponse.json(); expect(Array.isArray(directory)).toBe(true);
+    const member = directory.find((row: { userId: string }) => row.userId === peerId);
+    expect(member).toMatchObject({ active: true, role: 'MEMBER' }); expect(Number.isSafeInteger(member.version) && member.version > 0).toBe(true);
+    const removal = await context.request.delete(`/boards/${fixture.boardId}/members/${peerId}`, {
+      headers: { ...headers, 'Idempotency-Key': randomUUID(), 'If-Match': `"${member.version}"` },
+    });
+    expect(removal.status()).toBe(204); removed = true;
+    await waitForBoardDelivery(context.request, fixture.boardId);
+    for (const client of clients) {
+      await expect(client.page.getByRole('img', { name: 'Card cover', exact: true })).toHaveCount(0, { timeout: 20_000 });
+      await expect(client.page.getByRole('group', { name: 'Attachment Private original.png', exact: true })).toHaveCount(0, { timeout: 20_000 });
+      await expect(client.page.getByRole('button', { name: 'Review Card cover', exact: true })).toHaveCount(0);
+      await expect(client.page).toHaveURL(new RegExp(`/cards/${fixture.cardId}$`)); expect(client.navigations).toBe(0);
+      for (const route of [`/boards/${fixture.boardId}`, coverPath, coverPath + '/image', `/cards/${fixture.cardId}/attachments`,
+        ...['download-options', 'download', 'preview'].map(suffix => `/cards/${fixture.cardId}/attachments/${originalCover.attachmentId}/${suffix}`)]) {
+        expect((await client.context.request.get(route)).status()).toBe(404);
+      }
+      const deniedWrite = await client.context.request.put(coverPath, { headers: { ...headers, 'Idempotency-Key': randomUUID() },
+        data: { cardVersion: 9, attachmentId: null, attachmentVersion: null, publicVisibilityConfirmed: false } });
+      expect(deniedWrite.status()).toBe(404);
+    }
+    const retainedCoverResponse = await context.request.get(coverPath); expect(retainedCoverResponse.status()).toBe(200);
+    expect(await retainedCoverResponse.json()).toEqual(originalCover);
+    expect((await context.request.get(coverPath + '/image')).status()).toBe(200);
+    const afterMembershipResponse = await context.request.get(organizationMemberPath); expect(afterMembershipResponse.status()).toBe(200);
+    expect(await afterMembershipResponse.json()).toEqual(beforeMembership);
+  } finally {
+    try {
+      if (removed) {
+        const restored = await context.request.patch(`/boards/${fixture.boardId}/members/${peerId}`, {
+          headers: { ...headers, 'Idempotency-Key': randomUUID() }, data: { role: 'MEMBER' },
+        }); expect(restored.status()).toBe(200);
+        await waitForBoardDelivery(context.request, fixture.boardId);
+      }
+    } finally { for (const client of clients) await client.context.close(); }
+  }
+});
 
 // Mandatory alternate phase: the shell has selected its actual Worker-published
 // source as a private cover. The following HTTP phase recovers this same command.

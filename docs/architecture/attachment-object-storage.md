@@ -391,3 +391,32 @@ owned containers/database/provider volume/credential files are independently
 absent. Native verification/provider and immutable release limits remain. This
 adds archive reconnect evidence, leaving permission loss, live permanent deletion,
 the full role/cross-feature/performance matrix and external-provider acceptance open.
+
+## Board membership loss with published cover and attachment review open
+
+The mandatory lifecycle configuration now also runs a complete permission-loss
+case before archive. A distinct admitted member's desktop and phone sessions
+render the actual published private cover, then open the attachment review using
+keyboard controls and display its actual file group. The owner reviews the active
+MEMBER revision and removes that Board membership with the ordinary versioned
+command. Both open sessions withdraw the cover, file review and cover controls
+without main-frame navigation. Their Board, cover metadata/image, attachment page,
+download-options, download and preview requests return 404, as does each attempted
+cover removal. The owner's canonical cover remains exactly unchanged at 9/3 and
+its PNG remains readable; Organization membership is exactly unchanged.
+
+The fixture restores only that Board membership through the normal API, including
+after a failed assertion without changing its failed result. Fresh peer sessions
+then execute the existing complete connected/archive/reconnect case. No membership,
+file metadata, image or realtime reply is fabricated. Current authorization and
+restricted persistence remain the security boundary.
+
+The complete native invocation passes original 2/2 in 91.5 seconds, both whole
+lifecycle cases 2/2 in 74.3 seconds and every subsequent HTTP assertion, with zero
+failures/skips/retries/flaky cases and process exit zero. Original Card/attachment
+revisions, source archive receipt recovery, deletion, independent Board images,
+connected viewport/reconnect checks and deadlines remain. Browser typechecking
+and diff checks pass; owned resources and credentials are independently absent.
+This proves Board-member access withdrawal on an open published source, not the
+whole role/parent/move/copy/lifecycle/performance matrix. Native account/provider
+limits, external authority and current immutable/full release acceptance remain.
