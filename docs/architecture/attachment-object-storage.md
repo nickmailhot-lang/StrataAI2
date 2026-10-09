@@ -145,6 +145,16 @@ of that shared preview object. Provider reconciliation must account for every
 surviving owner before releasing bytes; backup/version-retention authority remains
 separate from immediate irreversible product deletion.
 
+The MUI attachment deletion review explains, before consent, that Board
+backgrounds using an image keep their copies. This clarification applies to PNG,
+JPEG and WebP attachments; URL and PDF reviews retain the ordinary irreversible
+deletion warning. The explicit unchecked consent and scoped, versioned deletion
+command are unchanged. All 16 management-control cases pass, including review of
+each supported file type with no write before consent; web typecheck, focused lint
+and a fresh production web build pass. This web build is newer than the previously
+recorded complete strict Board browser invocation, which must not be presented as
+execution of this changed UI.
+
 The complete Linux Board-image API source case now permanently deletes its
 already archived source attachment after copying the Board. Original download
 options, download and preview all return 404 without another provider read or

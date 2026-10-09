@@ -60,10 +60,22 @@ it('requires a fresh explicit irreversible-deletion checkbox and uses the scoped
   mock(() => ({ ...scope, cardVersion: 5, changed: true, attachment: { ...archivedFile, lifecycleState: 2, version: 3, updatedAt: later, deletedAt: later, deletedBy: profile.id } }));
   render(<AttachmentManageControl {...props()} />); await select('Delete');
   const save = screen.getByRole('button', { name: 'Permanently delete attachment' }); expect(save).toBeDisabled(); expect(writes()).toHaveLength(0);
+  expect(screen.queryByText(/Board backgrounds using this image/)).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('checkbox', { name: /cannot be undone/ })); expect(save).toBeEnabled(); fireEvent.click(save);
   await screen.findByText('Attachment permanently deleted.');
   expect(writes()[0][0]).toBe(`/attachments/${file.id}?cardId=${scope.cardId}&cardVersion=4&version=2&confirmed=true`);
   expect(writes()[0][1]!.method).toBe('DELETE'); expect(writes()[0][1]!.body).toBeUndefined();
+});
+it.each(['image/png', 'image/jpeg', 'image/webp', 'application/pdf'])('explains retained Board image copies before deletion consent for %s', async mimeType => {
+  const attachment = { ...archivedFile, kind: 0, mimeType, url: null, sizeBytes: 123, scanStatus: 2, scannedAt: created };
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile
+    : path.endsWith('/archive') ? { ...archivePage, items: [attachment] } : page);
+  render(<AttachmentManageControl {...props()} />); await select('Delete');
+  expect(screen.getByRole('button', { name: 'Permanently delete attachment' })).toBeDisabled();
+  expect(screen.getByRole('checkbox', { name: /cannot be undone/ })).not.toBeChecked();
+  if (mimeType === 'application/pdf') expect(screen.queryByText(/Board backgrounds using this image/)).not.toBeInTheDocument();
+  else expect(screen.getByText(/Board backgrounds using this image keep their copies/)).toBeVisible();
+  expect(writes()).toHaveLength(0);
 });
 it('restores retained archive history without fabricating a new source or scan state', async () => {
   mock(() => ({ ...scope, cardVersion: 5, changed: true, attachment: { ...archivedFile, lifecycleState: 0, version: 3, updatedAt: later } }));

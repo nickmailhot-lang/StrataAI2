@@ -137,7 +137,10 @@ function Management(props: Props) {
         <Typography sx={{ overflowWrap: 'anywhere' }}>{draft.file.displayName}</Typography>
         {conflict && !intent && <Alert severity="warning">The Card changed. Review the latest attachment before confirming.</Alert>}
         {draft.action === 'delete' ? <>
-          <Alert severity="warning">Permanent deletion cannot be undone. This attachment will lose access and cannot be restored.</Alert>
+          <Alert severity="warning">
+            Permanent deletion cannot be undone. This attachment will lose access and cannot be restored.
+            {draft.file.kind === 0 && draft.file.mimeType !== 'application/pdf' && ' Board backgrounds using this image keep their copies.'}
+          </Alert>
           <FormControlLabel label="I understand this attachment deletion cannot be undone" control={<Checkbox slotProps={{ input: { ref: consent } }} checked={draft.confirmed}
             disabled={disabled || !!intent || blocked || conflict || !props.canAdminister || !props.editable}
             onChange={event => setDraft({ ...draft, confirmed: event.target.checked })} />} />
