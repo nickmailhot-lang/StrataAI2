@@ -143,8 +143,9 @@ The existing desktop/phone persisted Board workflow now checks Back focus,
 Forward reopening and Close focus without removing its concurrent-client,
 retry, deep-link or isolation assertions.
 
-Complete web-suite and 14-file/31-case native Board-phase verification are in
-progress. The local browser fixture uses this production frontend build with
+The complete web suite passes **1,986 tests across 142 files**, with no failed
+or skipped cases. The 14-file/31-case native Board phase remains in progress.
+The local browser fixture uses this production frontend build with
 retained API/Worker images and restricted PostgreSQL roles; it is separate from
 the full immutable build-once CI gate, which remains pending. No complete
 foundation acceptance or issue closure is inferred from these focused results.
