@@ -486,3 +486,13 @@ phase are running against the new web output; their results are not certified.
 The completed eighteen-case run above predates this copy-focus change. Current
 immutable/full CI and remaining full-PRD acceptance still govern closure.
 Estimated PRD-04 work remaining stays **16%**.
+
+Both unchanged desktop/phone copy cases now pass after closing-focus ownership
+repair in one complete 1.8-minute strict invocation, with zero skips/retries/flaky
+cases. Original private graph, lost original response, concurrent source,
+account-bound destination disclosure, one-request and keyboard navigation checks
+remain. This uses the newly frozen rebuilt web output, compiled strict Production
+API/separate Worker and restricted schema-114 database; owned containers/database
+were removed. The chosen external destination regression is component evidence;
+these native cases retain their existing normal copy recovery/navigation scope.
+The complete combined 28-case invocation remains active and uncertified.
