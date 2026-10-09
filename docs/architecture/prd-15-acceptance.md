@@ -343,3 +343,23 @@ established by the confirmation regression. Temporary diagnostic edits and owned
 containers/database are removed. Current immutable/full CI and remaining complete
 acceptance/DoD still govern closure. PRD-15 remains at **36% estimated work
 remaining** and PRD-17 at **15%** (planning estimates).
+
+## Activity-opening admission in the combined strict phase
+
+The combined 28-case run records a phone peer-history failure at the original
+50-row assertion (`activity-history.spec.ts:84` before the fixture edit). Its
+retained peer network trace contains two real 200 Card activity responses, each
+with 50 rows and a continuation, taking about 1.8 and 3.2 seconds. The expected
+admitted rows did not render inside the original five-second assertion. This
+proves neither missing source history nor an exact intermittent focus cause.
+
+All five activity-opening gestures now use the existing admission helper:
+focus the current enabled control, verify focus and enabled admission, then
+send one Enter. Only focusing may be retried within the helper's existing
+five-second budget. The 50/17-row pages, actor/UTC formatting, two-client genuine
+Worker/reconnect updates, preference changes, current admission withdrawal,
+archive/delete state, keyboard/Axe assertions and original deadlines remain.
+Product admission and history readers are unchanged. Browser TypeScript passes.
+A fresh complete two-viewport isolated strict invocation is running; this is not
+yet passing runtime evidence or a claimed product-cause repair. Current immutable
+and full acceptance remain required. Estimated PRD-15 work remaining stays **36%**.

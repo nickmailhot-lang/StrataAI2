@@ -160,3 +160,16 @@ and a missing Card-label confirmation, which are separate investigation items;
 the fixture ownership correction does not claim to fix them. The current local
 28-case phase additionally records a phone Card activity opening failure and
 continues collecting the remaining cases. No combined pass is claimed.
+
+The older shard's browser diagnostic artifact `11588154757` was downloaded and
+its SHA-256 verified as
+`2c05b86f69731f26b67443a3f40a2df7b7bf98aa440b4f20ea84f6cc6bbe878c`.
+The label trace contains no root Board-label DELETE request following the
+confirmation gesture; an initially matched successful DELETE is a Card-label
+association removal. A later snapshot contains the prior confirmation, which
+does not establish successful Board-label deletion. Its activation failure
+remains under investigation; no speculative notice-clearing change is made.
+The current combined phase also records a separate phone member-consent failure
+and continues collecting the remaining cases. The
+[activity-opening fixture increment](prd-15-acceptance.md#activity-opening-admission-in-the-combined-strict-phase)
+has fresh native execution pending. No combined-phase pass is certified.

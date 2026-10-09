@@ -1,3 +1,4 @@
+import { pressAdmittedAction } from './keyboardAdmission';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
@@ -48,7 +49,7 @@ for (const width of [1280, 390]) {
       const boardPath = `/app/${org}/boards/${board}`;
       const boardReads = trackBoardReads(page, board, boardPath); await page.goto(boardPath); await expect.poll(boardReads).toBeGreaterThanOrEqual(2);
       const boardOpen = page.getByRole('button', { name: 'Review Board activity', exact: true });
-      await expect(boardOpen).toBeEnabled(); await boardOpen.press('Enter');
+      await pressAdmittedAction(boardOpen);
       const boardHistory = page.getByRole('region', { name: 'Board activity', exact: true });
       await expect(boardHistory.getByRole('listitem')).toHaveCount(50);
       await expect(boardHistory.getByRole('button', { name: 'Older activity', exact: true })).toBeEnabled();
@@ -57,7 +58,7 @@ for (const width of [1280, 390]) {
       await page.getByRole('link', { name: 'Activity Card 65', exact: true }).press('Enter');
       const cardHistory = page.getByRole('region', { name: 'Card activity', exact: true });
       const open = page.getByRole('button', { name: 'Review Card activity', exact: true });
-      await expect(open).toBeEnabled(); await open.press('Enter');
+      await pressAdmittedAction(open);
       await expect(cardHistory.getByRole('listitem')).toHaveCount(50);
       expect(await cardHistory.locator('script').count()).toBe(0);
       await expect(cardHistory.getByText(`${caption} updated a Card.`, { exact: true })).toHaveCount(50);
@@ -80,7 +81,7 @@ for (const width of [1280, 390]) {
         socket = route; route.connectToServer();
       });
       const peerReads = trackBoardReads(peerPage, board, cardPath); await peerPage.goto(cardPath); await expect.poll(peerReads).toBeGreaterThanOrEqual(2);
-      const peerOpen = peerPage.getByRole('button', { name: 'Review Card activity', exact: true }); await expect(peerOpen).toBeEnabled(); await peerOpen.press('Enter');
+      const peerOpen = peerPage.getByRole('button', { name: 'Review Card activity', exact: true }); await pressAdmittedAction(peerOpen);
       const peerHistory = peerPage.getByRole('region', { name: 'Card activity', exact: true }); await expect(peerHistory.getByRole('listitem')).toHaveCount(50);
       // A command from this account's other client changes its viewing policy;
       // the open history must recover without reloading the document.
@@ -126,7 +127,7 @@ for (const width of [1280, 390]) {
       const archivedReads = trackBoardReads(page, board, archivedPath);
       await page.goto(archivedPath); await expect.poll(archivedReads).toBeGreaterThanOrEqual(2);
       await expect(page.getByText('This Card or its List is archived. Details are read-only.', { exact: true })).toBeVisible();
-      await expect(open).toBeEnabled(); await open.press('Enter');
+      await pressAdmittedAction(open);
       await expect(cardHistory.getByText(`${caption} archived a Card.`, { exact: true })).toHaveCount(1);
       await expect(page.getByRole('textbox', { name: 'Card title', exact: true })).toHaveCount(0);
       const archivedComments = page.getByRole('button', { name: 'Review Card comments', exact: true });
@@ -135,7 +136,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Add comment', exact: true })).toBeDisabled();
       const returnReads = trackBoardReads(page, board, boardPath);
       await page.goto(boardPath); await expect.poll(returnReads).toBeGreaterThanOrEqual(2);
-      await expect(boardOpen).toBeEnabled(); await boardOpen.press('Enter');
+      await pressAdmittedAction(boardOpen);
       await expect(boardHistory.getByText(`${caption} archived a Card.`, { exact: true })).toHaveCount(1);
       const deleted = await context.request.delete(`/cards/${card}?version=${version}&confirmed=true`, { headers });
       expect(deleted.status()).toBe(200);
