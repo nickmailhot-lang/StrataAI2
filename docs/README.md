@@ -224,6 +224,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Organization event delivery clocks and verification scope](architecture/organization-event-clocks.md)
 - [Work event delivery clock audit and remaining provenance gap](architecture/work-event-clock-audit.md)
 - [Organization metadata stream clock provenance and guards](architecture/organization-metadata-stream-clocks.md)
+- [Invitation recipient stream clocks, provenance and privacy](architecture/invitation-recipient-stream-clocks.md)
 
 ## Keeping this index current
 

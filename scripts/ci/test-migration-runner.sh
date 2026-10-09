@@ -814,37 +814,49 @@ run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 122
 query "$(cat scripts/ci/organization-stream-clocks-after-upgrade.sql)" >/dev/null
-cat > "$scratch/migrations/123_serialization_fixture.sql" <<'SQL'
+query "$(cat scripts/ci/recipient-stream-clocks-before-upgrade.sql)" >/dev/null
+cp db/migrations/123_invitation_recipient_stream_clocks.sql "$scratch/migrations/"
+recipient_stream_before="$(query "SELECT md5(string_agg(to_jsonb(s)::text,',' ORDER BY email_normalized)) FROM invitation_recipient_streams s;")"
+if run; then echo 'Missing recipient counter history was admitted'; exit 1; fi
+test "$recipient_stream_before" = "$(query "SELECT md5(string_agg(to_jsonb(s)::text,',' ORDER BY email_normalized)) FROM invitation_recipient_streams s;")"
+test "$(query "SELECT count(*) FROM information_schema.columns WHERE table_name='invitation_recipient_streams' AND column_name IN ('created_at','updated_at')")" = 0
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='123_invitation_recipient_stream_clocks'")" = 0
+query "DELETE FROM invitation_recipient_streams WHERE email_normalized='UNBACKED-RECIPIENT-CLOCK@EXAMPLE.TEST';" >/dev/null
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 123
+query "$(cat scripts/ci/recipient-stream-clocks-after-upgrade.sql)" >/dev/null
+cat > "$scratch/migrations/124_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('123_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('124_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='123_serialization_fixture'")" = 1
-cat > "$scratch/migrations/124_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='124_serialization_fixture'")" = 1
+cat > "$scratch/migrations/125_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('124_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('125_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='124_failure_fixture'")" = 0
-rm "$scratch/migrations/124_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='125_failure_fixture'")" = 0
+rm "$scratch/migrations/125_failure_fixture.sql"
 run
-cat > "$scratch/migrations/125_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/126_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='125_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/125_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='126_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/126_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

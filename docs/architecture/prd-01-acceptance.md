@@ -137,6 +137,11 @@ excluded from FOUND-FR-009.
 
 ## Executed evidence and closure boundary
 
+The [invitation recipient publication counter clock repair](invitation-recipient-stream-clocks.md)
+derives clocks from retained immutable events and preserves recipient lookup
+privacy. The separate authority revision-counter provenance gap remains;
+this repair does not establish complete mutable-clock or release acceptance.
+
 The [Organization metadata counter clock repair](organization-metadata-stream-clocks.md)
 derives clocks from retained journal facts and requires matching source history
 before commit. Its local migration/runtime verification is scoped separately

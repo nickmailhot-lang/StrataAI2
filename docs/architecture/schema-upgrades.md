@@ -149,3 +149,9 @@ refuses missing/gapped journal history. Its event refresh and deferred guard
 preserve existing allocators while requiring retained source facts before
 commit. API and Worker require ledger 122. The [stream clock record](organization-metadata-stream-clocks.md)
 documents provenance, bounded source lookups and verification scope.
+
+Migration 123 adds source-derived recipient publication counter clocks,
+refuses incomplete journal provenance, and preserves the protected recipient
+lookup RLS. Its event refresh/deferred final-state guard adds no runtime write
+grant. API/Worker require ledger 123. See the [recipient stream clock record](invitation-recipient-stream-clocks.md)
+for populated upgrade, tamper/refusal, canonical revision and runtime scope.
