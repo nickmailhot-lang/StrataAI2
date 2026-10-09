@@ -93,6 +93,15 @@ assertion with independently verified cleanup. Both configurations retain the
 existing release policies and are browser-typechecked. Linux exact-image execution
 and full release success remain pending.
 
+The mandatory archive phase also retains both connected viewports and adds an
+[interrupted phone peer with actual durable recovery](attachment-object-storage.md#missed-source-archive-event-recovered-after-reconnect).
+Its stream misses archive, then reconnects, advances beyond the old canonical
+cursor and renews the Board read; all peers verify withdrawal without navigation.
+The complete native original 2/2 (94.5 seconds), whole expanded archive 1/1
+(37.0 seconds), all subsequent HTTP assertions and independent cleanup pass.
+Degraded current-state polling remains enabled. Existing deadlines and mutations
+are unchanged; current Linux exact-image/full acceptance remains pending.
+
 ## Strict notification consumer coverage
 
 The assignment/mention/reminder phase now also selects the complete recipient

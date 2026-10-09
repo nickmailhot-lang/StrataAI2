@@ -971,3 +971,15 @@ assertion pass without skips/retries/flaky cases. This is API-initiated archive;
 live permanent deletion, permission loss/reconnect, full role/cross-feature and
 current immutable/performance acceptance remain open. Estimated PRD-14 work
 remaining: **33%**.
+
+The [missed archive-event recovery extension](attachment-object-storage.md#missed-source-archive-event-recovered-after-reconnect)
+retains both connected viewport proofs and adds an actual interrupted phone
+session. It receives no newer socket sequence during archive, then reconnects
+to the server, receives a sequence beyond the pre-command cursor and renews its
+Board read without navigation. Current canonical null cover and source/cover
+delivery withdrawal are verified. Degraded snapshot checks remain enabled.
+The original 2/2 (94.5 seconds), whole expanded archive case 1/1 (37.0 seconds),
+all subsequent HTTP assertions and independent cleanup pass without failures,
+skips, retries or flaky cases. Permission loss/live permanent deletion, full
+role/cross-feature/capacity/performance, external provider and current immutable
+acceptance remain open. Estimated PRD-14 work remaining: **33%**.

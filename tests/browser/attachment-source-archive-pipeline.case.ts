@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
-import { expect, test } from './releaseTest';
+import { expect, test, type WebSocketRoute } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
 
 // Mandatory alternate phase: the shell has selected its actual Worker-published
 // source as a private cover. The following HTTP phase recovers this same command.
-test('PRD-14 actual source archive withdraws the selected cover from distinct member desktop and phone sessions', async ({ page, context, browser }) => {
+test('PRD-14 actual source archive withdraws the selected cover from distinct member desktop, phone and reconnecting sessions', async ({ page, context, browser }) => {
   test.setTimeout(150_000);
   expect(process.env.CI).toBe('true');
   const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE; expect(path).toBeTruthy();
@@ -31,11 +31,16 @@ test('PRD-14 actual source archive withdraws the selected cover from distinct me
   await page.goto(cardPath); await expect.poll(ownerReads).toBeGreaterThanOrEqual(2);
   await expect(page.getByRole('img', { name: 'Card cover', exact: true })).toBeVisible();
   const clients = [];
+  let unavailable = false; let interruptedSocket: WebSocketRoute | undefined;
   try {
-    for (const width of [1280, 390]) {
+    for (const { width, interrupted } of [{ width: 1280, interrupted: false }, { width: 390, interrupted: false }, { width: 390, interrupted: true }]) {
       const peerContext = await browser.newContext({ baseURL: new URL(page.url()).origin, viewport: { width, height: 844 } });
       const peer = await peerContext.newPage();
-      const client = { context: peerContext, page: peer, sequence: 0n, navigations: 0 }; clients.push(client);
+      const client = { context: peerContext, page: peer, sequence: 0n, navigations: 0, interrupted, reads: () => 0 }; clients.push(client);
+      if (interrupted) await peerContext.routeWebSocket('**/boards/live*', route => {
+        if (unavailable) { route.close({ code: 1013 }); return; }
+        interruptedSocket = route; route.connectToServer();
+      });
       expect((await peerContext.request.post('/auth/login', { headers, data: { email: fixture.peer.email, password: fixture.peer.password } })).status()).toBe(200);
       const profileResponse = await peerContext.request.get('/me'); expect(profileResponse.status()).toBe(200);
       expect((await profileResponse.json()).id).not.toBe(owner.id);
@@ -54,6 +59,7 @@ test('PRD-14 actual source archive withdraws the selected cover from distinct me
         });
       });
       const peerReads = trackBoardReads(peer, fixture.boardId, cardPath);
+      client.reads = peerReads;
       await peer.goto(cardPath); await expect.poll(peerReads).toBeGreaterThanOrEqual(2);
       const image = peer.getByRole('img', { name: 'Card cover', exact: true });
       await expect(image).toBeVisible();
@@ -64,6 +70,11 @@ test('PRD-14 actual source archive withdraws the selected cover from distinct me
     const syncResponse = await context.request.get(`/boards/${fixture.boardId}/sync`); expect(syncResponse.status()).toBe(200);
     const sync = await syncResponse.json(); expect(sync).toMatchObject({ hasMore: false, pending: false, resetRequired: false });
     expect(sync.cursor).toMatch(/^[0-9]{1,19}$/);
+    const interrupted = clients.find(client => client.interrupted)!;
+    expect(interruptedSocket).toBeDefined(); unavailable = true;
+    await interruptedSocket!.close({ code: 1012 });
+    await expect(interrupted.page.getByText('Live updates connected.', { exact: true })).not.toBeVisible();
+    const interruptedSequence = interrupted.sequence;
     const archivedResponse = await context.request.post(`/cards/${fixture.cardId}/attachments/${cover.attachmentId}/archive`, {
       headers: { ...headers, 'Idempotency-Key': fixture.archiveKey }, data: { cardVersion: 9, version: 3 },
     });
@@ -71,6 +82,16 @@ test('PRD-14 actual source archive withdraws the selected cover from distinct me
     expect(await archivedResponse.json()).toMatchObject({ cardVersion: 10, attachment: { id: cover.attachmentId, version: 4, lifecycleState: 1 } });
     await waitForBoardDelivery(context.request, fixture.boardId);
     await expect(page.getByRole('img', { name: 'Card cover', exact: true })).toHaveCount(0, { timeout: 20_000 });
+    // Preserve both continuously connected viewport proofs before admitting
+    // the extra interrupted peer. Its socket cannot receive the archive event.
+    for (const client of clients.filter(client => !client.interrupted)) {
+      await expect.poll(() => client.sequence > BigInt(sync.cursor), { timeout: 20_000 }).toBe(true);
+      await expect(client.page.getByRole('img', { name: 'Card cover', exact: true })).toHaveCount(0, { timeout: 20_000 });
+    }
+    expect(interrupted.sequence).toBe(interruptedSequence);
+    const beforeReconnectReads = interrupted.reads(); unavailable = false;
+    await expect(interrupted.page.getByText('Live updates connected.', { exact: true })).toBeVisible({ timeout: 45_000 });
+    await expect.poll(interrupted.reads, { timeout: 20_000 }).toBeGreaterThan(beforeReconnectReads);
     for (const client of clients) {
       await expect.poll(() => client.sequence > BigInt(sync.cursor), { timeout: 20_000 }).toBe(true);
       await expect(client.page.getByRole('img', { name: 'Card cover', exact: true })).toHaveCount(0, { timeout: 20_000 });

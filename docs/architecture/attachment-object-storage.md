@@ -363,3 +363,31 @@ restricted PostgreSQL, separate Worker, local storage and scanner-protocol
 simulation limits remain. Live permanent-deletion/permission-loss/reconnect and
 the complete role/cross-feature/capacity/performance matrix, external provider
 authority and current immutable/full release acceptance remain open.
+
+## Missed source-archive event recovered after reconnect
+
+The same mandatory archive phase retains both continuously connected desktop
+and phone peers and adds a third real phone session of the admitted member.
+All initially render the actual published PNG. The extra session's real socket
+is closed before archive; reconnection attempts are temporarily refused at the
+transport, without fabricating any event or API response. Its received sequence
+remains unchanged while the owner archives and the two connected peers observe
+the withdrawal. On readmission it must reconnect to the actual server, receive
+an event sequence above the pre-archive canonical cursor and complete another
+Board read. It then verifies Card revision 10, null cover identifiers, cover/source
+delivery 404 and zero main-frame navigation alongside the original peers.
+
+Existing degraded snapshot checks stay enabled and may conceal or refresh the
+image during the outage. The recovery proof additionally requires actual stream
+reconnection, received sequence advancement and renewed Board reading; it does
+not depend on keeping stale pixels visible while disconnected.
+
+The complete native invocation passes the original 2/2 in 94.5 seconds, the whole
+expanded archive case 1/1 in 37.0 seconds and every subsequent HTTP assertion,
+with zero failures/skips/retries/flaky cases and process exit zero. Original
+archive key/body recovery, canonical revisions, connected-viewpoint checks and
+150-second case deadline remain. Browser typechecking and diff checks pass;
+owned containers/database/provider volume/credential files are independently
+absent. Native verification/provider and immutable release limits remain. This
+adds archive reconnect evidence, leaving permission loss, live permanent deletion,
+the full role/cross-feature/performance matrix and external-provider acceptance open.
