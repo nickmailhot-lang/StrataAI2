@@ -67,6 +67,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Canonical invitation clocks and revisions (PRD-01 / PRD-03 / PRD-60)](architecture/invitation-audit-metadata.md)
 - [Invitation issuer facts, mutable job clocks and remaining repair evidence (PRD-01)](architecture/invitation-issuer-clock-audit.md)
 - [Board background ownership and canonical selection clock audit (PRD-01)](architecture/board-background-clock-audit.md)
+- [Canonical Board/List/Card/Label route clocks (PRD-01)](architecture/entity-route-clocks.md)
 
 - [Account deactivation and active Organization owners](architecture/account-owner-continuity.md)
 - [Identity command retries](architecture/identity-command-retries.md)

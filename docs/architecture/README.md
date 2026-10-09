@@ -13,6 +13,9 @@ The [Board background ownership clock audit](board-background-clock-audit.md)
 traces immutable preview ownership, canonical selection clocks and installed
 schema-116 metadata evidence.
 
+[Canonical entity route clocks](entity-route-clocks.md) records migration 117's
+source-derived projection clocks and the remaining verification scope.
+
 The implemented web routing and query-state choices, their executable evidence
 and outstanding ARCH-02 audit scope are recorded in
 [Web SPA routing and state boundary](web-spa-boundary.md).

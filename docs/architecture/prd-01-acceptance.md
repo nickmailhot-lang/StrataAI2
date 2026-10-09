@@ -93,6 +93,15 @@ confirm the installed guard, forced RLS and restricted runtime permissions.
 The ownership fact has no allowed update transition; this classification does
 not exclude the mutable Board or other unclassified operational records.
 
+[Canonical entity route clocks](entity-route-clocks.md) adds source-derived
+creation/update metadata to Board/List/Card/Label projections in migration 117.
+The local locked build, restricted persistence/readiness contracts and complete
+populated migration gate pass. A fresh complete gate also passes explicit
+orphan-source refusal, untouched route history and absent columns/ledger after
+rollback, followed by successful repair and repeat application. Current
+immutable-image/deployed upgrade verification remains. Invitation routing and other operational writers
+still require their own history audit.
+
 The [recipient page/counter audit](invitation-recipient-authority.md#page-lifecycle-clocks-and-remaining-counter-audit)
 adds explicit managed page creation/update clocks in migration 116 from the
 recorded owning job and first completion. Its complete local migration gate

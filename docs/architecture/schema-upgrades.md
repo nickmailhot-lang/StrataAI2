@@ -49,7 +49,7 @@ of this new catalog guard is still required before treating it as release eviden
 ## Runtime migration readiness
 
 Production connections require every named migration through
-`116_invitation_authority_page_clocks`. The readiness query checks for missing
+`117_entity_route_clocks`. The readiness query checks for missing
 required ledger entries directly, avoiding a separately maintained numeric total.
 Extra later migrations do not substitute for a missing required entry.
 
@@ -99,3 +99,15 @@ The new runtime also requires the named 116 entry. See the
 [page lifecycle audit](invitation-recipient-authority.md#page-lifecycle-clocks-and-remaining-counter-audit)
 for source ownership, exact retry/rollback checks and the separate unresolved
 recipient-counter history.
+
+## Canonical entity route clocks
+
+Migration 117 projects persisted canonical creation/update timestamps into
+Board/List/Card/Label routes. Source tables and route tables are locked for the
+historical backfill; a missing or mismatched source refuses the transaction
+without publishing columns or ledger 117. Normal canonical synchronization
+triggers maintain the new clocks through a tenant-scoped BEFORE trigger, with
+no additional runtime grants. API and Worker require the named 117 ledger entry.
+The [route-clock record](entity-route-clocks.md) documents the full passing
+local upgrade/refusal/rollback gate, restricted readiness contracts and current
+immutable-image/deployed verification boundary.
