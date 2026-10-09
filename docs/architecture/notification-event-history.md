@@ -155,3 +155,42 @@ oracle does not execute after browser failure. Owned containers, database and
 environment files are independently absent. Initial phone action admission,
 complete producer/consumer, capacity and current build-once acceptance remain
 outstanding; no ticket is closed.
+
+## Admitted identity head and comment action availability
+
+Read-only inspection of the phone trace finds the successful first comment
+review, enabled/focused Add action and a second comment read overlapping its
+Enter activation. No draft or comment submission follows. The component starts
+its own identity subscription after verifying the profile around the protected
+comment read. Previously the subscription started at revision zero, so its
+initial matching profile head scheduled another recovery read immediately.
+This identifies a redundant-read gap; it is not proof that no other native
+admission race exists.
+
+The identity subscriber now optionally accepts a previously verified profile
+revision. The comment control supplies the revision from its final protected
+profile check after the comment page is admitted. A matching event-free head
+advances the accepted cursor without scheduling another read. Newer profiles,
+same-version session events, malformed/cross-subject pages, reconnects and
+failures retain recovery. A head older than the admitted revision is refused
+without acknowledging its cursor. Missing/invalid revision hints retain the
+original conservative startup. Other callers omit the hint and retain their
+existing behavior; pre-save account checks and server authorization remain.
+
+Four regressions fail before the product change in an isolated **43-case**
+baseline: matching-head silence, older-head refusal, final-profile revision
+handoff and integrated comment/action availability. After the repair, all
+**56** identity/live-replay, comment and shared-focus cases pass, with matching
+actual rows and declared counts and zero failures/pending cases. A preliminary
+integrated fixture leaked its mock implementation into later cases; that
+separate private result is retained and the test setup now resets the mock
+between cases. It is not evidence of additional product defects. Web types,
+targeted lint, architecture source checks and private production build pass.
+
+A fresh complete original nine-case native invocation uses the exact repaired
+frontend assets, strict schema-127 API and separate Worker. All original
+producer/consumer, source, privacy, quota, role, keyboard/mobile, lifecycle and
+receipt assertions, deadlines and zero test retries remain. Its terminal
+report and successful-exit whole-counter oracle, full capacity and current
+immutable build-once CI remain required. PRD-15 and PRD-17 remain open at
+**34%** and **15% estimated work remaining**, respectively (planning estimates).

@@ -26,6 +26,7 @@ function CommentsControl(props: CardCommentsProps) {
   const [acknowledged, setAcknowledged] = useState<CardCommentChange & { preferences: Preferences }>();
   const [mentionBusy, setMentionBusy] = useState(false);
   const [subject, setSubject] = useState<string>();
+  const subjectVersion = useRef<number | undefined>(undefined);
   const refreshQueued = useRef(false), recover = useRef<() => void>(() => {});
   const admittedPage = useRef<{ version: number; cursor?: string } | undefined>(undefined);
   const container = useRef<HTMLElement>(null);
@@ -67,7 +68,7 @@ function CommentsControl(props: CardCommentsProps) {
   useEffect(() => {
     if (!subject || props.unavailable || props.disabled || blocked) return;
     const check = () => { if (document.visibilityState !== 'hidden') recover.current(); };
-    const stop = watchIdentity({ subject, isProfile: isNotificationProfile, invalidate: check });
+    const stop = watchIdentity({ subject, initialVersion: subjectVersion.current, isProfile: isNotificationProfile, invalidate: check });
     const timer = setInterval(check, 10_000);
     window.addEventListener('focus', check); window.addEventListener('online', check); document.addEventListener('visibilitychange', check);
     return () => {
@@ -108,11 +109,12 @@ function CommentsControl(props: CardCommentsProps) {
         const page = parseCardCommentPage(await workRequest<unknown>(path + (cursor ? '?after=' + encodeURIComponent(cursor) : ''), { signal }), props, version, cursor);
         const current = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(current) || current.id.toLowerCase() !== profile.id.toLowerCase()) throw new WorkRequestError(401, null);
-        return { actor: profile.id, page, cursor, preferences: { locale: current.locale, timezone: current.timezone } };
+        return { actor: profile.id, actorVersion: current.version, page, cursor, preferences: { locale: current.locale, timezone: current.timezone } };
       }, controller.signal);
       if (!mounted.current || pending.current !== controller) return;
       if (callbacks.current.unavailable || callbacks.current.version !== version) throw new Error();
-      activityResult('comment_read', true, started); admittedPage.current = { version, cursor }; setSubject(result.actor); setReview(result);
+      activityResult('comment_read', true, started); admittedPage.current = { version, cursor };
+      subjectVersion.current = result.actorVersion; setSubject(result.actor); setReview(result);
       setNotice(value => value === 'Unable to read current comments. Refresh the Card and try again.' ? undefined : value);
     } catch (error) { if (mounted.current && pending.current === controller) {
       activityResult('comment_read', false, started); if (!(error instanceof WorkRequestError)) activityEvent('comment_read', 'exception');

@@ -775,3 +775,14 @@ invocation is running with both the retained actual refusal body and this
 targeted keyboard observation; its terminal result and immutable build-once
 proof remain outstanding. The earlier failed reports remain retained rather
 than being rewritten as successful evidence.
+
+The targeted-keyboard complete invocation subsequently passes **8/8** in
+219.47 seconds, with exactly one result per original desktop/phone profile,
+logout, deactivation and handle case, zero skipped/flaky outcomes and no
+report-level errors. Actual server 401/code, original expected-user header,
+no replacement cookie, sign-in navigation, private-draft withdrawal and exact
+unchanged account/handle histories remain enforced. Owned containers, database
+and environment files are independently absent. This is compiled schema-127
+local runtime proof with the recorded CI fixture verification policy; it does
+not establish current immutable-image or complete PRD acceptance. PRD-02
+remains open at **16% estimated work remaining** (planning estimate).

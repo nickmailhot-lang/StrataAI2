@@ -10,6 +10,7 @@ export function createIdentityConnection() {
 
 export function watchIdentity<T extends { id: string; version: number }>(options: {
   subject: string; isProfile: (value: unknown) => value is T; invalidate: () => void;
+  initialVersion?: number;
   connection?: ReturnType<typeof createIdentityConnection>;
 }) {
   let connection: ReturnType<typeof createIdentityConnection>;
@@ -17,7 +18,11 @@ export function watchIdentity<T extends { id: string; version: number }>(options
   catch { options.invalidate(); return () => {}; } // Existing bounded HTTP recovery stays active.
   let disposed = false, generation = 0, attempt = 0;
   let cursor: number | undefined;
-  let version = 0;
+  // A protected read can already have admitted the snapshot revision. Keep
+  // the initial handoff quiet only for that known revision, never for events.
+  const initialVersion = typeof options.initialVersion === 'number' && Number.isSafeInteger(options.initialVersion)
+    && options.initialVersion > 0 ? options.initialVersion : 0;
+  let version = initialVersion;
   const seen = new Set<string>();
   let subscription: { dispose(): void } | undefined;
   let retry: ReturnType<typeof setTimeout> | undefined;
@@ -39,7 +44,7 @@ export function watchIdentity<T extends { id: string; version: number }>(options
       next: value => {
         if (disposed || active !== generation) return;
         const page = validateIdentitySync(value, cursor, options.isProfile, seen);
-        if (!page || page.profile.id !== options.subject) { fail(); return; }
+        if (!page || page.profile.id !== options.subject || page.profile.version < initialVersion) { fail(); return; }
         if (page.eventIds.length || page.profile.version > version) invalidate();
         version = Math.max(version, page.profile.version);
         cursor = page.cursor;

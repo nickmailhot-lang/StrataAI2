@@ -27,9 +27,40 @@ async function review() {
   await waitFor(() => expect(watchIdentity).toHaveBeenCalled());
 }
 async function create() { await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' })); fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: row.content } }); }
-beforeEach(() => { vi.mocked(workRequest).mockReset(); vi.mocked(watchIdentity).mockClear(); });
+beforeEach(() => { vi.mocked(workRequest).mockReset(); vi.mocked(watchIdentity).mockReset().mockImplementation(() => vi.fn()); });
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });
 function telemetry() { configureActivityTelemetry(true); const fetch = vi.fn().mockResolvedValue(new Response(null, { status: 204 })); vi.stubGlobal('fetch', fetch); return fetch; }
+it('starts comment identity recovery from the final admitted profile revision', async () => {
+  let profileReads = 0;
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me'
+    ? { ...profile, version: ++profileReads === 1 ? 1 : 2 } : page);
+  render(<CardCommentsControl {...props()} />); await review();
+  await waitFor(() => expect(watchIdentity).toHaveBeenCalledWith(expect.objectContaining({ subject: profile.id, initialVersion: 2 })));
+  expect(screen.getByRole('button', { name: 'Add comment' })).toBeEnabled(); expect(writes()).toHaveLength(0);
+});
+it('keeps comment actions admitted through a matching initial identity head and rereads a newer profile', async () => {
+  const { watchIdentity: actualWatch } = await vi.importActual<typeof import('../auth/identityLive')>('../auth/identityLive');
+  const observers: { next(value: unknown): void }[] = [];
+  const connection = { start: vi.fn(async () => {}), stop: vi.fn(async () => {}),
+    stream: vi.fn(() => ({ subscribe: (observer: { next(value: unknown): void }) => {
+      observers.push(observer); return { dispose: vi.fn() };
+    } })), onreconnecting: vi.fn(), onreconnected: vi.fn(), onclose: vi.fn() };
+  vi.mocked(watchIdentity).mockImplementation(options => actualWatch({ ...options,
+    connection: connection as unknown as NonNullable<Parameters<typeof actualWatch>[0]['connection']> }));
+  let version = 1;
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? { ...profile, version } : page);
+  render(<CardCommentsControl {...props()} />); await review();
+  await waitFor(() => expect(observers).toHaveLength(1));
+  await act(async () => { observers[0].next({ profile, cursor: 1, latestSequence: 1, hasMore: false, events: [] });
+    await new Promise(resolve => setTimeout(resolve, 150)); });
+  const reads = () => vi.mocked(workRequest).mock.calls.filter(([path]) => path.includes('/comments')).length;
+  expect(reads()).toBe(1); expect(screen.getByRole('button', { name: 'Add comment' })).toBeEnabled();
+  version = 2;
+  await act(async () => { observers[0].next({ profile: { ...profile, version }, cursor: 1, latestSequence: 1, hasMore: false, events: [] });
+    await new Promise(resolve => setTimeout(resolve, 150)); });
+  await waitFor(() => expect(reads()).toBe(2)); expect(screen.getByRole('button', { name: 'Add comment' })).toBeEnabled();
+  expect(writes()).toHaveLength(0);
+});
 it('recovers viewing preferences in a clean comment review without changing the stored comment', async () => {
   let timezone = 'Pacific/Honolulu';
   vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? { ...profile, timezone } : page);
