@@ -146,8 +146,22 @@ for (const width of [1280, 390]) {
       expect((await peer.request.patch('/me', { headers, data: { displayName: 'Renamed activity reader', version: peerProfile.version } })).status()).toBe(200);
       expect((await peer.request.post('/me/deactivate', { headers, data: {} })).status()).toBe(204);
       expect((await peer.request.get(`/cards/${card}/activity`)).status()).toBe(401);
+      await waitForBoardDelivery(context.request, board);
       const boardOlder = boardHistory.getByRole('button', { name: 'Older activity', exact: true });
-      await focusAdmittedControl(boardOlder); await page.keyboard.press('Enter');
+      const boardNewer = boardHistory.getByRole('button', { name: 'Newer activity', exact: true });
+      // Account departure can invalidate the Board generation during paging.
+      // Readmit only a reset first page; never advance an admitted older page
+      // again or repeat the account mutation to recover its historical label.
+      await expect(async () => {
+        if (await boardNewer.isDisabled()) {
+          await expect(boardOlder).toBeEnabled({ timeout: 500 });
+          await boardOlder.focus({ timeout: 500 });
+          await expect(boardOlder).toBeFocused({ timeout: 500 });
+          await expect(boardOlder).toBeEnabled({ timeout: 500 });
+          await boardOlder.press('Enter', { timeout: 500 });
+        }
+        await expect(boardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1, { timeout: 500 });
+      }).toPass({ timeout: 5_000 });
       await expect(boardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1);
       await expect(boardHistory.getByText('Renamed activity reader updated a Card.', { exact: true })).toHaveCount(0);
     } finally { try { restoreWorker(); } finally { await peer.close(); } }

@@ -122,6 +122,14 @@ full invocation uses current compiled schema-115 API/Worker source; its
 [execution scope and preserved failures](../navigation-observations.md#subsequent-complete-board-result-and-current-schema-115-rerun)
 remain separate from current immutable-image CI and aggregate acceptance.
 
+The next complete schema-115 compiled-source phase now passes **31/31** across
+all fourteen original files in 1,352.49 seconds, each case passing on its only
+attempt with no skips/flaky cases/report errors. The [full passing scope](../navigation-observations.md#complete-schema-115-board-phase-passed)
+retains the original assertions, exact dispatch/key/state checks, failed-run
+history, 179 passing CI source checks and independently verified cleanup. This
+closes the pending local aggregate verification of those five fixture repairs;
+newer schema-116/immutable-image release and complete foundation matrices remain.
+
 The complete three-width capacity chain passes all **3/3 cases** and final
 100,000 archived-record count/fingerprint checks. [Its execution record](../navigation-observations.md#executed-large-board-history-and-viewport-preservation)
 documents runtime, optional rank-fixture verification policy, exact nested scroll

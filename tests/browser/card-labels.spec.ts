@@ -93,7 +93,21 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
       await openPicker();
       const addBlue = page.getByRole('button', { name: 'Add label blue', exact: true });
-      await pressAdmittedAction(addBlue); await expect(edit).toBeFocused();
+      let blueWrites = 0;
+      page.on('request', request => {
+        if (request.method() === 'PUT' && new URL(request.url()).pathname === `/cards/${card}/labels/${labels[1]}`) blueWrites++;
+      });
+      // A protected refresh can withdraw the key's target after focus admission.
+      // Retry only while no command was dispatched; never replay a sent write.
+      await expect(async () => {
+        if (blueWrites === 0) {
+          await expect(addBlue).toBeEnabled({ timeout: 500 });
+          await addBlue.focus({ timeout: 500 }); await expect(addBlue).toBeFocused({ timeout: 500 });
+          await expect(addBlue).toBeEnabled({ timeout: 500 }); await addBlue.press('Enter', { timeout: 500 });
+        }
+        expect(blueWrites).toBe(1);
+      }).toPass({ timeout: 5_000 });
+      await expect(edit).toBeFocused(); expect(blueWrites).toBe(1);
       await waitForBoardDelivery(context.request, board);
       await navigate(`/app/${org}/boards/${board}`);
       const face = page.getByRole('link').filter({ hasText: 'Labeled work' });
@@ -166,8 +180,22 @@ for (const width of [1280, 390]) {
       await expect(filters.getByRole('combobox', { name: 'Match filters' })).toHaveText('Match ANY');
       expect(filterChanges).toHaveLength(3);
       const clearFilters = filters.getByRole('button', { name: 'Clear filters', exact: true });
-      await focusAdmittedControl(clearFilters); await page.keyboard.press('Enter');
+      let clearDispatches = 0;
+      page.on('request', request => {
+        const url = new URL(request.url());
+        if (request.method() === 'POST' && url.pathname === `/boards/${board}/cards/filter-change`
+          && url.searchParams.get('change') === 'clear') clearDispatches++;
+      });
+      await expect(async () => {
+        if (clearDispatches === 0) {
+          await expect(clearFilters).toBeEnabled({ timeout: 500 });
+          await clearFilters.focus({ timeout: 500 }); await expect(clearFilters).toBeFocused({ timeout: 500 });
+          await expect(clearFilters).toBeEnabled({ timeout: 500 }); await clearFilters.press('Enter', { timeout: 500 });
+        }
+        await expect.poll(() => clearDispatches, { timeout: 500 }).toBe(1);
+      }).toPass({ timeout: 5_000 });
       await expect(filters.getByLabel('Card keyword')).toHaveValue('');
+      expect(clearDispatches).toBe(1);
       expect(filterChanges).toHaveLength(4); expect(new URL(filterChanges[3].url).searchParams.get('change')).toBe('clear');
       expect(filterChanges[3].key).not.toBe(filterChanges[2].key);
       await filters.getByRole('button', { name: 'Close filters', exact: true }).press('Enter'); await expect(filters).toHaveCount(0);

@@ -57,6 +57,9 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
       await expect(async () => {
         if (await edit.getAttribute('aria-expanded') !== 'true') {
           await expect(edit).toBeEnabled({ timeout: 500 });
+          await edit.focus({ timeout: 500 });
+          await expect(edit).toBeFocused({ timeout: 500 });
+          await expect(edit).toBeEnabled({ timeout: 500 });
           await edit.press('Enter', { timeout: 500 });
         }
         await expect(edit).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
@@ -81,8 +84,17 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await assignment('Add label Urgent'); await expect(matching).toBeVisible({ timeout: 20_000 });
     expect(filterChanges).toBe(1);
     const completion = filters.getByRole('combobox', { name: 'Due completion', exact: true });
-    await completion.press('Enter'); await other.getByRole('option', { name: 'Due complete', exact: true }).press('Enter');
-    await filters.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
+    await pressAdmittedAction(completion); await other.getByRole('option', { name: 'Due complete', exact: true }).press('Enter');
+    await expect(completion).toHaveText('Due complete');
+    const applyCompletion = filters.getByRole('button', { name: 'Apply filters', exact: true });
+    await expect(async () => {
+      if (filterChanges === 1) {
+        await expect(applyCompletion).toBeEnabled({ timeout: 500 });
+        await applyCompletion.focus({ timeout: 500 }); await expect(applyCompletion).toBeFocused({ timeout: 500 });
+        await expect(applyCompletion).toBeEnabled({ timeout: 500 }); await applyCompletion.press('Enter', { timeout: 500 });
+      }
+      await expect.poll(() => filterChanges, { timeout: 500 }).toBe(2);
+    }).toPass({ timeout: 5_000 });
     await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible();
     const snapshot = await (await context.request.get(`/boards/${board}`)).json();
     const current = snapshot.lists.flatMap((column: { cards: { id: string; version: number }[] }) => column.cards).find((row: { id: string }) => row.id === card);
@@ -129,7 +141,11 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     async function memberChange(action: string) {
       await expect(async () => {
         if (await editMembers.getAttribute('aria-expanded') !== 'true') {
-          await expect(editMembers).toBeEnabled({ timeout: 500 }); await editMembers.press('Enter', { timeout: 500 });
+          await expect(editMembers).toBeEnabled({ timeout: 500 });
+          await editMembers.focus({ timeout: 500 });
+          await expect(editMembers).toBeFocused({ timeout: 500 });
+          await expect(editMembers).toBeEnabled({ timeout: 500 });
+          await editMembers.press('Enter', { timeout: 500 });
         }
         await expect(editMembers).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
       }).toPass({ timeout: 5_000 });

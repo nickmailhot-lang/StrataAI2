@@ -244,3 +244,30 @@ This local compiled-source fixture is separate from immutable-image/build-once
 release proof; its result is pending. The full scenario selection, original
 assertions and zero test retries remain. PRD-01 stays open at **34% estimated work
 remaining** (planning estimate).
+
+### Complete schema-115 Board phase passed
+
+The fresh current compiled-source invocation passes **31/31 cases across all
+fourteen original files** in 1,352.49 seconds. The complete JSON report confirms
+every case expected and actually passed on its only attempt: no retries, skipped,
+flaky or failed cases and no report-level errors. Both history-focus workflows,
+activity historical-actor recovery, member consent, metadata and Card-label
+recovery, and live label/filter/assignee collaboration retain their original
+scenario assertions and deadlines. Earlier failed invocations and traces remain
+privately retained, rather than overwritten or represented as passing results.
+
+Five fixture repairs admit focus/current controls before activation, re-review
+unsubmitted consent after withdrawal, readmit reset history paging, or observe
+actual dispatch before stopping activation retries. Destructive member consent
+and label/member commands remain outside read-only opener retries. The explicit
+Blue/Clear/second-Apply dispatch checks retain exact write counts, original-key
+recovery, persisted state and authorization assertions. Browser type/diff checks
+pass, as do all **179 integration-suite/build-metadata source checks**, no skips.
+
+The runtime is the frozen repaired production frontend with current compiled
+schema-115 API/Worker binaries mounted into local runtime containers, restricted
+PostgreSQL17/pgvector, current Nginx/CSP and verified-account policy. It does not
+prove immutable-image CI, newer schema-116 runtime acceptance, physical devices
+or complete foundation acceptance. Independent cleanup confirms zero owned
+containers/databases, removed API/Worker environment files and preserved original
+services. PRD-01 stays open at **34% estimated work remaining** (planning estimate).
