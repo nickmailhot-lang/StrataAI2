@@ -173,3 +173,19 @@ The current combined phase also records a separate phone member-consent failure
 and continues collecting the remaining cases. The
 [activity-opening fixture increment](prd-15-acceptance.md#activity-opening-admission-in-the-combined-strict-phase)
 has fresh native execution pending. No combined-phase pass is certified.
+
+
+## Completed combined phase and member entry-focus regression
+
+The previously running complete local strict Board phase has completed:
+26 passes / two failures in 21.7 minutes, with no skips or flaky cases. Phone
+activity opening and phone member consent failed. Its owned fixtures were
+removed. A fresh activity-only invocation passes both complete viewport cases
+in 4.2 minutes; this does not certify a combined pass or exact intermittent
+cause. See [activity evidence](prd-15-acceptance.md#complete-activity-opening-verification).
+
+A real-MUI member dialog regression proves delayed entry unconditionally steals
+chosen Confirm focus. The ownership repair passes all 18 member/focus component
+checks; unchanged native member scenarios are running against fresh web assets.
+See [member evidence](prd-05-acceptance.md#preserve-chosen-member-confirmation-during-dialog-entry).
+Current immutable/full matrix acceptance remains pending.

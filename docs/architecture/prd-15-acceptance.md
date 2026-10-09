@@ -363,3 +363,21 @@ Product admission and history readers are unchanged. Browser TypeScript passes.
 A fresh complete two-viewport isolated strict invocation is running; this is not
 yet passing runtime evidence or a claimed product-cause repair. Current immutable
 and full acceptance remain required. Estimated PRD-15 work remaining stays **36%**.
+
+
+## Complete activity-opening verification
+
+The fresh complete strict activity-history invocation passes both viewport
+cases in 4.2 minutes, with zero skips, retries or flaky cases. The original
+history paging, actor/UTC, genuine two-client Worker/reconnect, preference,
+admission withdrawal, archive/delete and accessibility assertions remain.
+It uses current compiled Production API/separate Worker, frozen copy-focus
+web assets and restricted schema-114 PostgreSQL 17/pgvector. Its owned
+containers and database were removed.
+
+The preceding combined 28-case invocation completed with 26 passes and two
+failures (phone activity opening and phone member consent). It predates the
+activity fixture increment and member opening-focus repair. The scoped activity
+pass does not establish the intermittent failure's exact cause or a combined
+pass. Current immutable/full CI and complete acceptance remain required.
+Estimated PRD-15 work remaining stays **36%**.

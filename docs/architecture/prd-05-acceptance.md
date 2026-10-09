@@ -445,3 +445,23 @@ Existing complete native consumers remain mandatory; original checks are not
 skipped or weakened. All 75 workflow guards pass, including six regressions for
 missing/late private fixture producers. Current repaired immutable/full browser
 execution remains pending. Estimated PRD-05 work remaining stays **15%**.
+
+
+## Preserve chosen member confirmation during dialog entry
+
+The completed combined strict Board phase passed 26 of 28 cases and failed
+phone activity opening and phone member consent. A real-MUI component
+regression independently reproduces an opening-transition defect: choosing
+Confirm before entry finishes loses focus to Cancel when `onEntered` runs
+(14 existing tests pass / one new regression fails before repair). This is
+confirmed component behavior; the native phone failure's exact cause is not
+established by that regression alone.
+
+Cancel receives initial focus. Delayed entry recovery now checks the dialog's
+own paper/trap fallback before focusing Cancel, preserving a chosen control.
+Closing recovery, reviewed versions, command consent, uncertain-write warnings,
+authority checks and live recovery remain unchanged. All 18 member/focus
+component checks, web TypeScript, targeted lint and a fresh Production web
+build pass. The unchanged two-viewport strict member scenarios are running
+against the rebuilt assets; native and current immutable/full CI acceptance
+remain pending. Estimated PRD-05 work remaining stays **15%**.

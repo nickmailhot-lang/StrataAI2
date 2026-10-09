@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { watchBoard, type LiveStatus } from '../../api/boardLive';
 import { validInvitationKey } from '../organizations/invitationIntent';
+import { ownsRecoveryFocus } from './focusRecovery';
 
 type Member = { boardId: string; userId: string; role: 'ADMIN' | 'MEMBER'; active: boolean; version: number;
   displayName: string | null; email: string | null; organizationMemberActive: boolean };
@@ -42,6 +43,7 @@ function Members({ org, id }: { org: string; id: string }) {
   const [retryRead, setRetryRead] = useState(false);
   const mutationWarning = useRef<string | undefined>(undefined);
   const cancel = useRef<HTMLButtonElement>(null); const refresh = useRef<HTMLButtonElement>(null);
+  const focusOwner = useRef<HTMLDivElement | null>(null);
   const focusRequested = useRef(false);
   const restoreFocus = () => {
     focusRequested.current = !refresh.current || refresh.current.disabled;
@@ -147,11 +149,14 @@ function Members({ org, id }: { org: string; id: string }) {
       <Stack direction="row" spacing={1}><Button disabled={busy || previous.length === 0} onClick={() => void load(previous.at(-1) ?? null, previous.slice(0, -1))}>Previous members</Button>
         <Button disabled={busy || !next} onClick={() => void load(next, [...previous, cursor])}>Next members</Button></Stack></>}
     <Dialog open={!!selected} onClose={() => { if (!busy) setSelected(undefined); }} aria-labelledby="member-change-title"
-      slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: restoreFocus } }}>
+      slotProps={{ paper: { ref: (node: HTMLDivElement | null) => { if (node) focusOwner.current = node; } },
+        transition: { onEntered: () => {
+          if (mounted.current && !busy && ownsRecoveryFocus(document.activeElement, focusOwner.current)) cancel.current?.focus();
+        }, onExited: restoreFocus } }}>
       <DialogTitle id="member-change-title">{selected?.role ? 'Change Board role?' : 'Remove Board membership?'}</DialogTitle>
       <DialogContent><Typography>{name}</Typography><Typography>{selected?.member.displayName ?? selected?.member.userId}</Typography><Typography>{selected?.member.email}</Typography>
         <Typography>{selected?.role ? `Board access will change from ${selected.member.role.toLowerCase()} to ${selected.role.toLowerCase()}.` : 'This removes Board membership. Organization membership and read access through visibility are managed separately.'}</Typography></DialogContent>
-      <DialogActions><Button ref={cancel} disabled={busy} onClick={() => setSelected(undefined)}>Cancel</Button><Button disabled={busy} onClick={() => void change()}>Confirm member change</Button></DialogActions>
+      <DialogActions><Button ref={cancel} autoFocus disabled={busy} onClick={() => setSelected(undefined)}>Cancel</Button><Button disabled={busy} onClick={() => void change()}>Confirm member change</Button></DialogActions>
     </Dialog>
   </Stack></Container>;
 }

@@ -188,3 +188,14 @@ it('retains an uncertain-write warning during automatic live recovery without re
   expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
   expect(screen.queryByText(/Member change acknowledged/)).not.toBeInTheDocument();
 });
+
+it('preserves a chosen confirmation control when the opening transition finishes', async () => {
+  mount(reply(scope), reply([row]));
+  const change = await screen.findByRole('button', { name: 'Make administrator: Jordan' });
+  vi.useFakeTimers();
+  fireEvent.click(change);
+  const confirm = screen.getByRole('button', { name: 'Confirm member change' });
+  confirm.focus(); expect(confirm).toHaveFocus();
+  await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+  expect(confirm).toHaveFocus();
+});
