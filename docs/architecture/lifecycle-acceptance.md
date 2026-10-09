@@ -327,3 +327,36 @@ PostgreSQL, a separate native contained-decoder Worker and both browser viewport
 Deleted attachment access/restoration is refused while both Board image owners
 retain sanitized bytes. Immediate product deletion remains separate from provider
 erasure/backup authority; current full immutable acceptance remains open.
+
+## Current schema-127 combined Board navigation investigation
+
+The complete current CI Board command is running on 2026-10-09 with all fourteen
+original files / 32 collected cases, schema-127 compiled API/separate Worker
+and the production frontend containing the filter recovery focus repair. It
+has recorded a desktop `board-lifecycle.spec.ts` failure at the original URL
+assertion after Manage archived Boards. The whole invocation is still live;
+neither its final case totals nor whole-phase acceptance is established.
+
+Independent reconstruction of the retained trace's incremental frame snapshots
+shows the archive-management link enabled during focus and the focused-state
+check, then `aria-disabled=true`, `tabindex=-1` and MUI disabled styling after
+the final enabled check. All three properties remain during the native Enter
+gesture. The keypress itself succeeds, but the original expected route is not
+reached; the link is enabled again by the end of the URL assertion's existing
+five-second budget. Snapshot analysis prints only selected guard attributes,
+not account rows, HTTP bodies or DOM text.
+
+This proves an input/admission race in that recorded attempt; it does not
+justify removing the application's current-read or recovery guard. The next
+fixture investigation must account for actual Board source publication and
+protected read recovery before the navigation gesture, retaining original
+receipt key/body comparisons, child states, current-account/privacy, focus,
+WCAG assertions and all deadlines. The running original specification remains
+unchanged so later cases cannot silently use a different fixture version.
+
+The complete unfiltered schema-127 persistence executable is independently
+live against its own fresh restricted PostgreSQL/pgvector fixture. Its full
+original lifecycle/scale/preview/contracts, terminal outcome and cleanup also
+remain required. Current immutable build-once CI and complete lifecycle
+acceptance are unproved. PRD-18 stays open at **15% estimated work remaining**
+(planning estimate).
