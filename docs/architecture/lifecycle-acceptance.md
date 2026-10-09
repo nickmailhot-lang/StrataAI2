@@ -360,3 +360,31 @@ original lifecycle/scale/preview/contracts, terminal outcome and cleanup also
 remain required. Current immutable build-once CI and complete lifecycle
 acceptance are unproved. PRD-18 stays open at **15% estimated work remaining**
 (planning estimate).
+
+The schema-127 combined Board invocation subsequently finishes **31/32** in
+1,408.22 seconds. Independent report inspection confirms all 32 actual case
+rows, exactly one result per case, zero skips/flaky outcomes and zero
+report-level errors. The desktop archive-management navigation described above
+is its only failure. The complete report/trace remains retained; owned
+containers, database and environment files are independently absent. This is
+not a whole-phase pass, and earlier schema-114 acceptance remains separately
+scoped to its original frontend/hosts.
+
+After that invocation is terminal, the lifecycle fixture adds the existing
+passive Board-history tracker before navigation. Before entering the archive
+directory, it brings the original page to the foreground, drains actual scoped
+Worker delivery, observes `BOARD_ARCHIVED` plus a successful protected Board
+read started after that source epoch, and requires the Board workspace's busy
+state to clear. It then sends the same single Enter gesture. The application
+guard, receipt comparisons, child/account/privacy/focus/WCAG assertions,
+150-second test deadline and existing observation budgets remain unchanged.
+No mutation or navigation activation retry is added by this repair.
+
+Browser TypeScript and all **15/15** existing passive-tracker tests pass with
+zero failures/skips. A fresh complete invocation has collected the same
+**14 files / 32 cases** and is running against the same repaired production
+frontend and schema-127 API/Worker, with the new lifecycle source observation.
+The previous failing phase is not restarted or relabeled as passing. The new
+terminal report/cleanup, complete unfiltered persistence outcome and current
+immutable build-once CI remain required. PRD-18 stays open at **15% estimated
+work remaining** (planning estimate).

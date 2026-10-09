@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
-import { trackArchivedBoardChanges } from './invitationAdmissionTracker';
+import { trackArchivedBoardChanges, trackBoardHistoryChanges } from './invitationAdmissionTracker';
 import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
@@ -35,6 +35,7 @@ for (const width of [1280, 390]) {
       await waitForBoardDelivery(context.request, board.id);
       const boardPath = `/app/${org}/boards/${board.id}`; const archivePath = `/app/${org}/archived-boards`;
       const archiveChanges = trackArchivedBoardChanges(page, org, actor, board.id, archivePath);
+      const boardChanges = trackBoardHistoryChanges(page, org, board.id, boardPath, `/boards/${board.id}`);
       const other = await context.newPage(); await other.setViewportSize({ width, height: 844 });
       const otherReads = trackBoardReads(other, board.id, boardPath);
       const initiatingReads = trackBoardReads(page, board.id, boardPath);
@@ -72,6 +73,12 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
       expect(archives).toHaveLength(2); expect(archives[1]).toEqual(archives[0]);
       expect(archives[0].key).toMatch(/^[0-9a-f-]{36}$/); expect(JSON.parse(archives[0].body!)).toEqual({ version: before.board.version });
+      // A committed archive's canvas refresh can precede its Worker frame.
+      // Admit the current foreground read after that actual source before
+      // sending the single navigation key into a recovering Board surface.
+      await page.bringToFront(); await waitForBoardDelivery(context.request, board.id);
+      await expect.poll(() => boardChanges.settled('BOARD_ARCHIVED', 1)).toBe(true);
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
       await pressAdmittedAction(page.getByRole('link', { name: 'Manage archived Boards', exact: true }));
       await expect(page).toHaveURL(new RegExp(`${archivePath}$`));
       await expect(page.getByRole('heading', { name: board.name, exact: true })).toBeVisible();
