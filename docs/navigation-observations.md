@@ -144,7 +144,14 @@ Forward reopening and Close focus without removing its concurrent-client,
 retry, deep-link or isolation assertions.
 
 The complete web suite passes **1,986 tests across 142 files**, with no failed
-or skipped cases. The 14-file/31-case native Board phase remains in progress.
+or skipped cases. The complete 14-file/31-case native Board phase finished with
+**30 passed, one failed**, no skipped/flaky cases and no report-level errors
+(1,365.63 seconds). Both desktop/phone persisted Board workflows pass the new
+Back/Forward/Close focus assertions. The desktop member-removal review failed
+when a live directory refresh canceled unsubmitted consent; its phone case
+passed. The failure trace remains preserved, and a complete phase rerun is
+required after the pending fixture repair. This invocation is not a green
+Board-phase result.
 The local browser fixture uses this production frontend build with
 retained API/Worker images and restricted PostgreSQL roles; it is separate from
 the full immutable build-once CI gate, which remains pending. No complete

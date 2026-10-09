@@ -4,6 +4,23 @@ This audit covers the complete [PRD-05 issue](https://github.com/nickmailhot-lan
 
 ## Functional traceability
 
+### Complete Board-phase history-focus verification
+
+The local 14-file/31-case Board phase using the history-focus frontend repair
+completed with **30 passes and one failure**, no skipped/flaky cases or
+report-level errors, in 1,365.63 seconds. The desktop member-removal case failed
+while preparing consent: a live directory refresh disabled and canceled the
+unsubmitted review. The phone case and both visibility-consent cases passed.
+The full failed report and trace are retained privately; this is not a complete
+passing phase or immutable release result.
+
+The pending fixture repair waits for actual Worker delivery and can prepare
+fresh consent after a canceled unsubmitted review. The destructive confirmation
+is still sent once, with original version, lost-response, exactly-one removal,
+withdrawn permission and unchanged Organization membership assertions retained.
+Browser types pass; native repair verification and a full phase rerun remain
+required. Estimated work remaining stays **14%** (planning estimate).
+
 The [five-case strict-policy native watch matrix](prd-17-acceptance.md#executed-role-and-visibility-reader-watch-matrix)
 adds executed consumer proof for PERM-FR-002/003/008/010: actual ADMIN/MEMBER
 grants on Private Boards and Organization/Public read-only visibility without
