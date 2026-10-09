@@ -14,6 +14,10 @@ proof, with native and immutable release acceptance tracked separately.
 receipt completion/update timestamps while preserving unknown legacy times,
 with migration, restricted-role and readiness verification boundaries.
 
+[Attachment sweep checkpoint clocks](attachment-sweep-audit-clocks.md) records
+prospective preview/recovery audit times, original Worker capability boundaries
+and exact legacy cursor preservation with unknown historical clocks.
+
 The [invitation issuer clock audit](invitation-issuer-clock-audit.md) identifies
 owning writers, immutable facts and the remaining mutable-job clock gap.
 

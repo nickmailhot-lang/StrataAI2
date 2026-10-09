@@ -62,6 +62,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Notification counter clocks and forward-upgrade verification (PRD-01 / PRD-17)](architecture/notification-stream-clocks.md)
 - [Immutable notification journal history and upgrade/refusal proof](architecture/notification-event-history.md)
 - [Work receipt update clocks and unknown legacy completion times](architecture/work-replay-update-clocks.md)
+- [Attachment sweep checkpoint clocks and legacy provenance](architecture/attachment-sweep-audit-clocks.md)
 
 ## Identity, profiles, and invitations
 
