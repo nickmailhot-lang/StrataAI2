@@ -221,6 +221,8 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Work Management command transactions](architecture/work-command-transactions.md)
 - [Board synchronization contract (PRD-22)](architecture/work-synchronization.md)
 
+- [Organization event delivery clocks and verification scope](architecture/organization-event-clocks.md)
+
 ## Keeping this index current
 
 When adding a document, link it under the closest subject above and include any related contract or acceptance document in its own introduction. Keep dated evidence and dependency inventories explicit; update links when moving files. Avoid interpreting implementation notes as proof that a whole ticket is complete.

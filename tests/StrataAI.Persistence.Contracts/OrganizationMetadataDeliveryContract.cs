@@ -19,11 +19,19 @@ internal static class OrganizationMetadataDeliveryContract
         Require(claim.JobType == OrganizationMetadataDeliveryHandler.Type, "Metadata fixture claimed the wrong job.");
         var eventId = OrganizationLifecycleDeliveryHandler.ParseEventId(claim.SafeMetadataJson);
         var store = new PostgresOrganizationMetadataDeliveryStore(worker);
+        DateTime? originalCreated = null;
         async Task<DateTime?> ReadyAt()
         {
-            await using var query = new NpgsqlCommand("SELECT ready_at FROM organization_metadata_events WHERE tenant_id=@tenant AND event_id=@event", admin);
+            await using var query = new NpgsqlCommand("SELECT ready_at,created_at,updated_at FROM organization_metadata_events WHERE tenant_id=@tenant AND event_id=@event", admin);
             query.Parameters.AddWithValue("tenant", tenant); query.Parameters.AddWithValue("event", eventId);
-            var result = await query.ExecuteScalarAsync(ct); return result is DateTime value ? value : null;
+            await using var reader = await query.ExecuteReaderAsync(ct);
+            Require(await reader.ReadAsync(ct), "Metadata delivery source missing.");
+            DateTime? ready = reader.IsDBNull(0) ? null : reader.GetDateTime(0);
+            var created = reader.GetDateTime(1); var updated = reader.GetDateTime(2);
+            originalCreated ??= created;
+            Require(created == originalCreated && updated == (ready ?? created),
+                "Metadata delivery or rollback changed retained creation/derived update clocks.");
+            return ready;
         }
         Require(await ReadyAt() is null, "Metadata event was ready before Worker delivery.");
         foreach (var bad in new[] { claim with { OrganizationId = Guid.NewGuid() }, claim with { ActorId = Guid.NewGuid() },

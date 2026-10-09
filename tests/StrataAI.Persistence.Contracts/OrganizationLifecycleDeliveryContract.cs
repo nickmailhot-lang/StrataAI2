@@ -29,11 +29,19 @@ internal static class OrganizationLifecycleDeliveryContract
         Require(claim.JobType == OrganizationLifecycleDeliveryHandler.Type, "Lifecycle fixture claimed the wrong job.");
         var eventId = OrganizationLifecycleDeliveryHandler.ParseEventId(claim.SafeMetadataJson);
         var store = new PostgresOrganizationLifecycleDeliveryStore(worker);
+        DateTime? originalCreated = null;
         async Task<DateTime?> ReadyAt()
         {
-            await using var query = new NpgsqlCommand("SELECT ready_at FROM organization_lifecycle_events WHERE tenant_id=@tenant", admin);
+            await using var query = new NpgsqlCommand("SELECT ready_at,created_at,updated_at FROM organization_lifecycle_events WHERE tenant_id=@tenant", admin);
             query.Parameters.AddWithValue("tenant", tenant);
-            var result = await query.ExecuteScalarAsync(ct); return result is DateTime value ? value : null;
+            await using var reader = await query.ExecuteReaderAsync(ct);
+            Require(await reader.ReadAsync(ct), "Lifecycle delivery source missing.");
+            DateTime? ready = reader.IsDBNull(0) ? null : reader.GetDateTime(0);
+            var created = reader.GetDateTime(1); var updated = reader.GetDateTime(2);
+            originalCreated ??= created;
+            Require(created == originalCreated && updated == (ready ?? created),
+                "Lifecycle delivery or rollback changed retained creation/derived update clocks.");
+            return ready;
         }
         Require(await ReadyAt() is null, "Lifecycle event was ready before Worker delivery.");
         await OrganizationLifecycleReplayContract.RunAsync(admin, apiConnection, tenant, actor, eventId, false, ct);

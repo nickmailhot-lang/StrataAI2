@@ -137,6 +137,12 @@ excluded from FOUND-FR-009.
 
 ## Executed evidence and closure boundary
 
+The [Organization event clock repair](organization-event-clocks.md) derives
+metadata/lifecycle journal update clocks from actual first publication or
+creation, retaining immutable payload and delivery authority. Its migration
+and restricted-role verification are bounded evidence; other mutable records
+and complete current release acceptance remain part of FOUND-FR-009.
+
 The [navigation execution record](../navigation-observations.md) retains the
 history-focus repair, two regressions failing before repair, final 38-case Board
 component pass, complete **1,986-test/142-file web-suite pass**, type/lint/build checks,
