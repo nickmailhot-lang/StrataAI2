@@ -441,3 +441,17 @@ and Axe assertions remain. Owned containers/database were removed. This scoped
 pass supports the optimized reader; complete API execution remains live and
 current immutable/full CI, race/capacity and full acceptance remain required.
 Estimated PRD-15 work remaining stays **36%**.
+
+
+## Private-reference and fresh-pass source regression
+
+The current source suite explicitly exercises one resolution pass with valid
+Watch and Reminder references followed by identical target/type events with
+new, missing-reference event IDs. Those private events remain unavailable;
+an admitted private event never authorizes a different reference. A fresh pass
+after Card deletion denies both ordinary history and private Reminder history
+to the non-administrator, even though earlier passes admitted that target.
+All 11 selected activity source tests pass in a separate fresh build with no
+skips. This complements the distinct-identity/read-cost regression; current
+PostgreSQL post-wait/session race and immutable/full acceptance remain required.
+Estimated PRD-15 work remaining stays **36%**.

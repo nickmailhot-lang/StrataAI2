@@ -102,6 +102,15 @@ public sealed partial class ApiHostTests
         Assert.NotNull(await Resolve(watchSource, f.Recipient));
         Assert.Null(await Resolve(watchSource with { EventId = Guid.NewGuid() }, f.Recipient));
         Assert.Null(await Resolve(reminderSource with { EventId = source.EventId }, f.Recipient));
+        await Scope(async () =>
+        {
+            var read = plans.CreateReadPass(f.Recipient);
+            Assert.NotNull(await read(watchSource, ct));
+            Assert.Null(await read(watchSource with { EventId = Guid.NewGuid() }, ct));
+            Assert.NotNull(await read(reminderSource, ct));
+            Assert.Null(await read(reminderSource with { EventId = Guid.NewGuid() }, ct));
+            return true;
+        });
         await Scope(() => watches.SetAsync(f.Organization, f.Recipient, "CARD", card.Id, false, watch.Version, at.AddSeconds(1), ct));
         await Scope(() => reminders.SetAsync(card, f.Recipient, "1_DAY", false, reminder.Version, at.AddSeconds(1), ct));
         Assert.NotNull(await Resolve(watchSource, f.Recipient)); Assert.NotNull(await Resolve(reminderSource, f.Recipient));
@@ -113,6 +122,13 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.OK, deleted.StatusCode);
         Assert.Null(await Resolve(source, f.Recipient)); Assert.Null(await Resolve(reminderSource, f.Recipient));
         Assert.NotNull(await Resolve(source, f.Owner));
+        await Scope(async () =>
+        {
+            var fresh = plans.CreateReadPass(f.Recipient);
+            Assert.Null(await fresh(source, ct));
+            Assert.Null(await fresh(reminderSource, ct));
+            return true;
+        });
         await work.RemoveBoardMemberAsync(f.Board, f.Recipient, at.AddSeconds(2), ct);
         Assert.Null(await Resolve(watchSource, f.Recipient));
     }
