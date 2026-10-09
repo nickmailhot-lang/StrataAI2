@@ -222,6 +222,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Board synchronization contract (PRD-22)](architecture/work-synchronization.md)
 
 - [Organization event delivery clocks and verification scope](architecture/organization-event-clocks.md)
+- [Work event delivery clock audit and remaining provenance gap](architecture/work-event-clock-audit.md)
 
 ## Keeping this index current
 

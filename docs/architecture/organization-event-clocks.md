@@ -54,3 +54,8 @@ context. They do not establish browser/HTTP authentication, full graph traversal
 external providers or current immutable-image CI. The overall mutable-record
 audit, including other journal counters and Work event delivery state, remains
 open. No PRD closure follows from this bounded repair.
+
+The [Work event clock audit](work-event-clock-audit.md) records its distinct
+full-row history guard, permitted readiness reset and missing legacy mutation
+provenance. Its original activity/reset contract passes on schema 121; this
+does not resolve the missing update clock.

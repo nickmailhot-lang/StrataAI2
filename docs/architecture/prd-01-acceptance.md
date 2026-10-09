@@ -137,6 +137,13 @@ excluded from FOUND-FR-009.
 
 ## Executed evidence and closure boundary
 
+The [Work event delivery clock audit](work-event-clock-audit.md) identifies
+a remaining update-clock/provenance gap and verifies the original activity
+source/publish/reset contract on schema 121 with full required-ledger readiness.
+Its full-row immutable-history guard and admitted reset semantics must be
+preserved in a future repair. The complete current schema-121 Board browser
+phase is active; its result remains pending.
+
 The [Organization event clock repair](organization-event-clocks.md) derives
 metadata/lifecycle journal update clocks from actual first publication or
 creation, retaining immutable payload and delivery authority. Its migration
