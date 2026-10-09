@@ -174,3 +174,10 @@ requires ledger 126. The [notification stream clock record](notification-stream-
 documents completed whole migration/refusal, nine-case native notification and
 126-ledger readiness/security checks, plus pending watch/ordering, capacity and
 immutable-image release verification.
+
+Migration 127 validates retained notification journal attribution, exact parent
+timestamps and counter history, then installs an UPDATE/DELETE history guard.
+API/Worker readiness requires ledger 127. The
+[history integrity record](notification-event-history.md) links completed full
+migration/refusal, all-127-ledger readiness and security verification to pending
+native producer/consumer and current build-once release acceptance.

@@ -171,3 +171,15 @@ clock reconstruction, not further work on other requirements.
 The full catalog, selected writer traces and missing legacy provenance remain
 separate from complete mutable-record classification and runtime acceptance.
 PRD-01 remains open at **34% estimated work remaining** (planning estimate).
+
+### Notification journal classification
+
+`notification_events` is now protected as an append-only fact rather than
+classified from its name. The [forward history guard](notification-event-history.md)
+validates every retained parent fact and counter clock before installation,
+rejects journal edits/deletion, preserves original producer inserts and passes
+the complete upgrade/refusal and role gates. Its existing `created_at` is the
+owning creation/first-read time. The absent physical `updated_at` does not
+represent an untracked mutable state after this guard. Native schema-127 and
+current release proof remain pending; this classification does not classify
+the other 50 catalog candidates or establish complete foundation acceptance.

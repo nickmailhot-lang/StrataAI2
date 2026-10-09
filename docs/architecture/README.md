@@ -6,6 +6,10 @@ The [PRD-01 foundation acceptance map](prd-01-acceptance.md) links the complete
 hierarchy/navigation requirements, acceptance criteria, test scenarios and
 remaining audit/release scope to their verification sources.
 
+[Notification journal history](notification-event-history.md) records retained
+source validation, append-only enforcement and the complete migration/security
+proof, with native and immutable release acceptance tracked separately.
+
 The [invitation issuer clock audit](invitation-issuer-clock-audit.md) identifies
 owning writers, immutable facts and the remaining mutable-job clock gap.
 

@@ -289,7 +289,7 @@ for relation in notification_events notification_event_streams; do
  test "$(api "SELECT has_table_privilege(current_user,'$relation','SELECT') AND NOT (has_table_privilege(current_user,'$relation','INSERT') OR has_table_privilege(current_user,'$relation','UPDATE') OR has_table_privilege(current_user,'$relation','DELETE'))")" = t
  test "$(worker "SELECT has_table_privilege(current_user,'$relation','SELECT') OR has_table_privilege(current_user,'$relation','INSERT') OR has_table_privilege(current_user,'$relation','UPDATE') OR has_table_privilege(current_user,'$relation','DELETE')")" = f
 done
-for function in 'public.append_notification_journal_transition(public.card_assignment_notifications,text,timestamptz)' 'public.journal_notification_transition()' 'public.refresh_notification_stream_clocks()' 'public.enforce_notification_stream_clocks()'; do
+for function in 'public.append_notification_journal_transition(public.card_assignment_notifications,text,timestamptz)' 'public.journal_notification_transition()' 'public.refresh_notification_stream_clocks()' 'public.enforce_notification_stream_clocks()' 'public.protect_notification_event_history()'; do
  test "$(api "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = f
  test "$(worker "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = f
 done

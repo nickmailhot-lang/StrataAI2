@@ -60,6 +60,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Runtime modes and seeded Demo sign-in credentials](architecture/runtime-modes.md)
 - [Schema upgrades and compatibility](architecture/schema-upgrades.md)
 - [Notification counter clocks and forward-upgrade verification (PRD-01 / PRD-17)](architecture/notification-stream-clocks.md)
+- [Immutable notification journal history and upgrade/refusal proof](architecture/notification-event-history.md)
 
 ## Identity, profiles, and invitations
 
