@@ -10,10 +10,13 @@ const integration = value => value.jobs['container-integration'];
 const step = (value, name) => integration(value).steps.find(entry => entry.name === name);
 
 test('every mandatory check has an owner and every group uses retained images', () => {
-  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 110 });
+  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 111 });
 });
 
 const mutations = [
+  ['strict departure account-replacement cases omitted', value => { const entry = step(value, 'Strict verified-account Organization departure and account continuity'); entry.run = entry.run.replace(' tests/browser/organization-departure-account.spec.ts', ''); }],
+  ['strict departure fixture verification disabled', value => { delete step(value, 'Strict verified-account Organization departure and account continuity').env.STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS; }],
+  ['strict departure Worker policy check omitted', value => { const entry = step(value, 'Strict verified-account Organization departure and account continuity'); entry.run = entry.run.split('\n').filter(line => !line.includes('exec -T worker printenv')).join('\n'); }],
   ['strict personal-watch controls omitted', value => { const entry = step(value, 'Strict verified-account watch producers through native private inboxes'); entry.run = entry.run.replace(' tests/browser/watch-subscriptions.spec.ts', ''); }],
   ['strict personal-watch account fixture disabled', value => { delete step(value, 'Strict verified-account watch producers through native private inboxes').env.STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS; }],
   ['strict watch Worker policy check omitted', value => { const entry = step(value, 'Strict verified-account watch producers through native private inboxes'); entry.run = entry.run.split('\n').filter(line => !line.includes('exec -T worker printenv')).join('\n'); }],

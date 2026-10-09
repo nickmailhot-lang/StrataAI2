@@ -1041,6 +1041,17 @@ jobs:
           STRATAAI_E2E_IDENTITY_MAIL: '1'
         run: npx playwright test tests/browser/identity-mail.spec.ts
 
+      - name: Strict verified-account Organization departure and account continuity
+        if: (matrix.suite == 'browser-notifications')
+        env:
+          STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: |
+          set -euo pipefail
+          test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          npx playwright test tests/browser/organization-departure.spec.ts tests/browser/organization-departure-account.spec.ts
+
       - name: Strict verified-account watch producers through native private inboxes
         if: (matrix.suite == 'browser-notifications')
         env:

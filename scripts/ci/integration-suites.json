@@ -281,6 +281,9 @@
   "Desktop and mobile accessible keyboard verification/recovery through Worker delivery": [
     "browser-notifications"
   ],
+  "Strict verified-account Organization departure and account continuity": [
+    "browser-notifications"
+  ],
   "Strict verified-account watch producers through native private inboxes": [
     "browser-notifications"
   ],

@@ -6,7 +6,7 @@ The `container-integration` job runs four logical groups on separate GitHub-host
 | --- | --- |
 | `commands` | Runtime refusal cases, identity/Organization/Board/Work command contracts, restricted persistence and Worker delivery, supported-capacity measurements, and operator metrics |
 | `browser-foundation` | Demo lifecycle, attachment transport/publication, contiguous replay, actual large-Board native capacity, and database-wait authorization |
-| `browser-notifications` | Identity mail integration, accessible keyboard verification/recovery, strictly verified watch/assignment/mention/reminder producers, desktop/phone inbox recovery, and watch/permission ordering |
+| `browser-notifications` | Identity mail integration, accessible keyboard verification/recovery, strict Organization departure/account continuity, strictly verified watch/assignment/mention/reminder producers, desktop/phone inbox recovery, and watch/permission ordering |
 | `browser-full` | The complete browser suite, automatic metadata and invitation authority routing, and API/edge abuse-limit contracts |
 
 Every group first verifies the real Production authentication defaults, then explicitly applies the isolated self-registration/unverified-account fixture. Strict notification tests subsequently require verified accounts in both actual hosts. Both mail-dependent browser groups generate their own ephemeral signing keys and start their own private test mail provider. The full suite sets up its mail overlay and automatic Worker routing explicitly rather than inheriting state from another group's tests. Production rate budgets, browser timeouts, native gestures, expected versions, and whole-snapshot assertions are unchanged.
@@ -65,3 +65,23 @@ flags and API/Worker policy checks are required by the workflow verifier. Three
 new omission mutations establish fail-before/pass-after guard coverage (59/59
 checks pass after repair). See the
 [native watch-control scope](prd-17-acceptance.md#strict-personal-watch-controls-and-native-stored-clocks).
+
+## Strict Organization departure prerequisite
+
+After identity mail and accessible verification/recovery, the notification group
+now runs both complete Organization departure files with the strict account
+fixture flag and normal rate pacing. The phase asserts verified-email
+enforcement in the actual API and Worker before selecting all six native cases,
+then precedes the existing watch and assignment/mention/reminder phases. No
+existing check is removed, and the unfiltered full-browser phase retains the
+optional-verification execution of those same files.
+
+The registry now owns 111 named integration steps (all 110 previous steps plus
+this phase), across the unchanged seven isolated matrix executions. The verifier
+requires both departure files, the verification flag, both host-policy checks and
+phase ordering. Three negative mutations remove account-replacement cases,
+disable verification or omit the Worker policy check. They fail with the old
+guard (59 pass / three fail) and pass after strengthening (62/62). Browser
+TypeScript, workflow syntax and all 320 cases in four intact-file shards pass.
+See the [Organization acceptance map](prd-03-acceptance.md#strict-verified-account-departure-and-continuity)
+for native execution evidence and remaining release requirements.

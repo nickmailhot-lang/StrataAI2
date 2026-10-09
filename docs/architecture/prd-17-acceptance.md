@@ -982,3 +982,20 @@ topology. This confirms its explicit enabled/focused native action and all
 existing recovery/storage/privacy assertions in that invocation. It does not
 prove the earlier intermittent failure is resolved across the entire nine-case
 phase. A fresh combined phase remains required; owned fixtures are removed.
+
+## Complete expanded strict watch-phase execution
+
+All seven cases in the expanded strict watch phase pass together in a 9.3-minute
+invocation, without skips or retries. Both existing producer files and the
+personal-control file execute: the complete configured activity matrix,
+cross-Board Owner/Admin/Member/Organization-reader/Public-reader eligibility and
+direct Card identity, and desktop/phone personal watch recovery. Existing native
+input, recipient-private delivery, stored attribution/clocks, original receipts,
+permission/lifecycle withdrawal and accessibility assertions remain.
+
+The invocation uses current compiled Production API/separate Worker, current
+rebuilt MUI assets and restricted PostgreSQL 17/pgvector schema 114 with both
+verification flags enabled. This replaces the pending combined local watch-phase
+result; it does not resolve the separate notification-consumer phase failure or
+certify current immutable/full CI. Owned fixtures are removed and original
+services/data preserved. PRD-17 stays open at **15% estimated work remaining**.

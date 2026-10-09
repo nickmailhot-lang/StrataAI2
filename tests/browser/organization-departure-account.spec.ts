@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 
@@ -9,13 +10,11 @@ for (const width of [1280, 390]) for (const after of [false, true]) {
     const memberAccount = { ...ownerAccount, email: `departure-reviewed-${suffix}@example.test`, displayName: 'Reviewed member' };
     const issuer = await browser.newContext({ baseURL: test.info().project.use.baseURL });
     try {
-      expect((await issuer.request.post('/auth/register', { headers, data: ownerAccount })).status()).toBe(201);
-      expect((await issuer.request.post('/auth/login', { headers, data: ownerAccount })).status()).toBe(200);
+      await registerVerifiedAccountFixture(issuer.request, ownerAccount);
       const created = await issuer.request.post('/organizations', { headers, data: { name: 'Reviewed departure scope' } });
       expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
-      const registered = await context.request.post('/auth/register', { headers, data: memberAccount });
-      expect(registered.status()).toBe(201); const actor = (await registered.json()).user.id;
-      expect((await context.request.post('/auth/login', { headers, data: memberAccount })).status()).toBe(200);
+      const registered = await registerVerifiedAccountFixture(context.request, memberAccount);
+      const actor = registered.user.id;
       const invitation = await issuer.request.post(`/organizations/${org}/invitations`, { headers,
         data: { email: memberAccount.email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
       expect(invitation.status()).toBe(201);

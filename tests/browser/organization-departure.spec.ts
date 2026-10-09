@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { pressAdmittedAction } from './keyboardAdmission';
@@ -8,8 +9,7 @@ for (const width of [1280, 390]) {
     test.setTimeout(90_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `departure-owner-${width}-${Date.now()}@example.test`, password: 'departure-correct-horse-battery', displayName: 'Departure owner' };
-    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    await registerVerifiedAccountFixture(context.request, account);
     const created = await context.request.post('/organizations', { headers, data: { name: 'Departure Organization' } });
     expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
     const actor = (await (await context.request.get('/me')).json()).id;
@@ -25,9 +25,8 @@ for (const width of [1280, 390]) {
     const member = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 844 } });
     try {
       const credentials = { ...account, email: `departure-member-${width}-${Date.now()}@example.test`, displayName: 'Departure member' };
-      const registered = await member.request.post('/auth/register', { headers, data: credentials }); expect(registered.status()).toBe(201);
-      const user = (await registered.json()).user.id;
-      expect((await member.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+      const registered = await registerVerifiedAccountFixture(member.request, credentials);
+      const user = registered.user.id;
       const invitation = await context.request.post(`/organizations/${org}/invitations`, { headers,
         data: { email: credentials.email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
       expect(invitation.status()).toBe(201);

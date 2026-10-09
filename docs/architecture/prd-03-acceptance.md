@@ -616,3 +616,35 @@ and partial phone-focus failure are retained in the
 
 Estimated PRD-03 work remaining stays **8%** (planning estimate). Current immutable
 CI, complete lifecycle purge/retention and full-PRD acceptance still prevent closure.
+
+## Strict verified-account departure and continuity
+
+All six unchanged interaction scenarios across both departure files now pass
+together under verified-email enforcement, with no skips or retries. The
+untouched sole-owner baseline fails at immediate login (expected 200 / actual
+403). Both fixtures now use the existing strict account helper: fresh
+registration, pending-account refusal, disposable-account verification and actual
+login. The optional-verification path preserves its previous registration/login
+behavior. No production admission policy is relaxed.
+
+The complete desktop/phone run covers sole-owner refusal, confirmed Member
+departure, Cancel/success focus, accessibility, lost acknowledgements, rejoin plus
+original-key/body recovery, account uncertainty before/after submission and actual
+cookie replacement before/after submission. Reviewed private scope/receipts are
+withdrawn after account replacement; refused or original replay operations
+preserve the actual later membership. Original 90-second deadlines, native
+gestures, whole-membership checks, rate pacing and retry policy remain.
+
+This local proof uses current compiled Production API and rebuilt MUI assets
+behind current Nginx/CSP, with restricted PostgreSQL 17/pgvector schema 114. No
+Worker is required for these synchronous departure/receipt checks, and fixture
+activation is separate from real mail-provider delivery. Owned API/web
+containers and the cloned database are removed; original services/data remain.
+
+A new [mandatory strict CI phase](integration-ci-groups.md#strict-organization-departure-prerequisite)
+selects both complete files and checks the real API/Worker verification policy.
+The unfiltered full-browser phase still exercises their optional-policy path.
+All 62 workflow guards, browser TypeScript, workflow syntax and complete
+four-shard coverage pass. Current immutable/full CI, all ten functional
+requirements and complete lifecycle/invitation/performance acceptance still
+govern closure. Estimated PRD-03 work remaining stays **8%**.

@@ -196,3 +196,22 @@ assertions remain. See the
 [complete execution scope](browser-recovery-ci.md#automatic-organization-metadata-routing-in-native-browser-acceptance).
 Estimated PRD-03 work remaining stays **8%** (planning estimate); full release and
 lifecycle acceptance remain required before closure.
+
+## Strict verified-email native departure
+
+Both departure browser files now pass all six desktop/phone cases together under
+strict verified-email admission against current compiled Production API, rebuilt
+MUI assets behind Nginx/CSP and restricted PostgreSQL 17/pgvector schema 114. The
+old immediate-login fixture fails on pending-account 403; the shared strict
+fixture verifies only freshly registered disposable accounts before real login.
+Sole-owner protection, explicit confirmation, Cancel/success focus, account
+replacement/uncertainty, lost-response original-key recovery after rejoin, exact
+later-membership preservation and accessibility remain. Original deadlines and
+rate/retry policy are unchanged.
+
+The new strict CI phase selects both complete files after identity verification
+and checks API/Worker policy; the complete unfiltered browser phase retains the
+optional-policy path. This synchronous command/receipt proof does not require
+Worker delivery or certify provider mail/current immutable/full release gates.
+See [executed scope and remaining acceptance](prd-03-acceptance.md#strict-verified-account-departure-and-continuity).
+Owned test containers/database are removed and original services/data preserved.
