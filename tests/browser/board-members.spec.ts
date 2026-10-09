@@ -1,5 +1,6 @@
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
+import { focusAdmittedControl } from './keyboardAdmission';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
@@ -78,8 +79,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         expect(route.request().headers()['if-match']).toBe(`"${currentVersion + 1}"`);
         expect((await route.fetch()).status()).toBe(204); await route.abort('timedout');
       });
-      await page.getByRole('button', { name: 'Remove from Board: Jordan participant' }).focus(); await page.keyboard.press('Enter');
-      await page.getByRole('button', { name: 'Confirm member change' }).focus(); await page.keyboard.press('Enter');
+      await focusAdmittedControl(page.getByRole('button', { name: 'Remove from Board: Jordan participant', exact: true }));
+      await page.keyboard.press('Enter');
+      const removalReview = page.getByRole('dialog', { name: 'Remove Board membership?', exact: true });
+      await expect(removalReview).toBeVisible();
+      await focusAdmittedControl(removalReview.getByRole('button', { name: 'Confirm member change', exact: true }));
+      await page.keyboard.press('Enter');
       await expect(page.getByText(/The member change could not be confirmed/)).toBeVisible();
       await page.getByRole('button', { name: 'Check current members' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('heading', { name: 'Board owner', exact: true })).toBeVisible();

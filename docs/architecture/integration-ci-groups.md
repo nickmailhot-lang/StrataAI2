@@ -333,3 +333,27 @@ in 124 intact files across four full shards. Workflow syntax validation passes.
 The already-running 30-case invocation predates this addition and cannot certify
 the expanded 31-case phase. Current immutable/full CI and complete acceptance
 remain required. Estimated PRD-10 work remaining: **35%**; PRD-16: **18%**.
+
+
+## Complete strict member-removal keyboard admission
+
+The current combined strict invocation's phone member workflow fails while
+waiting for its uncertain-removal warning. The retained network trace contains
+no member DELETE request; this does not establish a lost-response notice defect.
+Removal opening now uses the existing enabled/focused admission helper before
+one page-level Enter. The fixture observes the specifically named removal
+consent dialog, then admits its own Confirm control before one further Enter.
+Only focus checks may repeat; the removal command is never retried. The shared
+keyboard helper, product behavior, server permission checks, original versions,
+conflict/lost-response assertions and deadlines remain unchanged.
+
+Both complete desktop/phone member workflows pass in 93.2 seconds with zero
+skips, retries or flaky cases, against current compiled Production API/separate
+Worker, frozen original-key recovery web and restricted schema-114
+PostgreSQL17/pgvector. They retain genuine Worker updates, competing-version
+conflict, lost role/removal responses, exactly two intercepted role requests and
+one actual removal, current read recovery without assumed acknowledgment,
+recipient access withdrawal, and unchanged Organization membership. Browser
+TypeScript passes and owned containers/database were removed. This is scoped
+native evidence; the original intermittent cause and combined/current immutable
+acceptance remain unproven. Estimated PRD-05 work remaining stays **15%**.
