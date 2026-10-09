@@ -178,3 +178,12 @@ not certify the later required-ledger change. A fresh complete Linux invocation
 now uses the schema-127 compiled artifacts with the same pinned runtime,
 read-only source/content-root mapping and full unfiltered suite. Its terminal
 report and current immutable build-once pipeline remain required.
+
+The full schema-127 Linux API invocation subsequently passes **697/697** on
+2026-10-09. Independent TRX inspection confirms 697 actual Passed rows and
+matching total/executed/passed counters, with zero failures, errors, timeouts,
+aborts, excluded or pending cases. The original unfiltered suite includes the
+Linux file-delivery coverage and source/content-root contract. Its owned test
+container is independently absent. This certifies the recorded schema-127
+compiled API build; the later frontend changes and current immutable-image
+pipeline have separate verification requirements.

@@ -233,3 +233,23 @@ adds a private adapter for that exact UUID-file read, using a newly generated
 UUID and forwarding other file reads unchanged. The canonical capacity scripts
 remain byte-identical after newline normalization; all original counts and
 acceptance assertions still apply. Notification acceptance remains pending.
+
+## Terminal admitted-identity notification verification
+
+The subsequent full original nine-case native invocation passes **9/9** on
+2026-10-09 in 611.97 seconds against schema-127 API/Worker artifacts and the
+production frontend containing the admitted identity-version handoff repair.
+Independent report inspection confirms exactly one passing result per case,
+zero skips, flaky outcomes or report-level errors. Both desktop and phone
+assignment, selected mentions, confirmed groups and real Worker reminders
+execute, together with the cross-device inbox consumer scenario. The original
+receipt, quota, privacy, lifecycle and accessibility assertions remain.
+
+The successful-exit SQL oracle also validates the entire nonempty retained
+notification counter graph: finite and ordered timestamps, sequence-one
+creation clocks, greatest source update clocks and exact event counts.
+Owned containers, databases and environment files are independently absent.
+Earlier eight-of-nine failures remain retained. The full-count capacity run
+is still live and the current immutable build-once pipeline remains queued;
+neither notification performance nor complete PRD acceptance follows from
+this local producer/consumer pass.

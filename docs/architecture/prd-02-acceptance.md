@@ -786,3 +786,22 @@ and environment files are independently absent. This is compiled schema-127
 local runtime proof with the recorded CI fixture verification policy; it does
 not establish current immutable-image or complete PRD acceptance. PRD-02
 remains open at **16% estimated work remaining** (planning estimate).
+
+## Invitation creation deadline baseline, 2026-10-09
+
+An independent unchanged complete invitation-deadline invocation passes
+**4/4** in 125.02 seconds: Organization and Board invitations at both 1280px
+and 390px. Independent report inspection confirms one passing result per
+case, zero skips, flaky outcomes or report errors. The original aggregate
+deadline, eight-second profile gate, 7,001 ms command hold, original committed
+request key/body and receipt, deadline withdrawal and fresh-admission recovery
+assertions remain unchanged. No test-case retries or deadline increases apply.
+
+This local baseline uses schema-127 compiled API/Worker artifacts, current
+production frontend assets, restricted PostgreSQL and an isolated real Worker
+with default discovery against its own database. It does not reproduce the
+older immutable CI phone Board profile-gate failure and does not justify a
+speculative fixture repair. Its owned containers, database and environment
+files are independently absent. Current immutable-image CI and the other
+PRD-02 acceptance gaps remain outstanding; estimated work remaining stays
+**16%** (planning estimate).
