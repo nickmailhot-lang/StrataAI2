@@ -60,6 +60,37 @@ the complete inspection, mandatory verification before export and source tests.
 The combined workflow/metadata tests pass 135/135. This is source-level gate
 evidence; current exact-image execution and full required-ci remain separate.
 
+## Retained verified image identities
+
+The pre-export verifier now emits `image-provenance.json`, containing only schema
+version 1, the original canonical public build metadata and the three verified
+Docker image IDs. It copies no raw inspection fields, environment variables,
+runtime settings or provider details. The build job exports and checksums this
+record beside the three image archives and original `build-metadata.json`.
+
+Every integration execution and security job compares the loaded image IDs with
+that retained record, in addition to matching all four labels and exact tags.
+The security evidence retains the same record. Release input validation requires
+matching build and image identities in both artifacts; bundle validation requires
+the original record bytes and checksums to survive copying. A replacement record
+cannot be made acceptable merely by recalculating bundle checksums.
+
+These are Docker image IDs observed by the build runner, not invented registry
+digests or attestations. Their representation depends on the Docker image store
+(for example, an OCI index ID versus a configuration ID). CI requires its build
+and loading runners to preserve the recorded identities; an identity change is a
+gate refusal, not permission to regenerate the record. Operators on another image
+store can use the original archives, checksums and canonical build metadata for
+traceability. Clean-host deployment acceptance remains separately required.
+
+Nine provenance tests cover CLI output privacy, loaded-ID substitution and record
+shape/identity failures. Twenty-one release tests include absent records,
+substituted security identity and replacement of both bundle records with
+recalculated checksums. Seven added workflow mutations protect record creation,
+export/checksums, both loaded-ID comparisons and security/release copying.
+Combined workflow/metadata tests pass 164/164. These tests use explicit synthetic
+fixtures; they do not establish execution of the current full GitHub pipeline.
+
 The SPA also displays its compiled version and full revision in the application
 footer, including authentication and Portal routes. These use the same Vite
 build variables validated by the metadata emitter; the footer does not fetch a

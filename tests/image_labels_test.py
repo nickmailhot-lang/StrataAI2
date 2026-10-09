@@ -82,4 +82,35 @@ class ImageProvenanceTests(unittest.TestCase):
             self.assertIn(b"Exactly three image identities", result.stdout)
 
 
+    def test_cli_retains_only_public_provenance_and_compares_loaded_ids(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); images = inspection()
+            images[0]["Config"]["Env"] = ["PRIVATE FIXTURE VALUE"]
+            (root / "metadata.json").write_text(json.dumps(META), encoding="utf-8")
+            (root / "images.json").write_text(json.dumps(images), encoding="utf-8")
+            args = [sys.executable, labels.__file__, "--metadata", str(root / "metadata.json"), "--images", str(root / "images.json")]
+            self.assertEqual(subprocess.run(args + ["--output", str(root / "record.json")], capture_output=True).returncode, 0)
+            record = json.loads((root / "record.json").read_text(encoding="utf-8"))
+            self.assertEqual(set(record), {"schemaVersion", "build", "imageIds"})
+            self.assertEqual(labels.verify_record(META, record), labels.verify_labels(META, images))
+            self.assertNotIn("PRIVATE FIXTURE VALUE", (root / "record.json").read_text(encoding="utf-8"))
+            self.assertEqual(subprocess.run(args + ["--expected", str(root / "record.json")], capture_output=True).returncode, 0)
+            for index in range(3):
+                changed = copy.deepcopy(images); changed[index]["Id"] = "sha256:" + "f" * 64
+                (root / "images.json").write_text(json.dumps(changed), encoding="utf-8")
+                result = subprocess.run(args + ["--expected", str(root / "record.json")], capture_output=True)
+                self.assertEqual(result.returncode, 1)
+                self.assertEqual(result.stdout.strip(), b"Image provenance verification failed.")
+
+    def test_record_refuses_foreign_identity_duplicate_ids_and_extra_private_fields(self):
+        record = {"schemaVersion": 1, "build": META, "imageIds": labels.verify_labels(META, inspection())}
+        mutations = []
+        for field, value in (("schemaVersion", True), ("schemaVersion", 2), ("private", "PRIVATE FIXTURE VALUE"), ("imageIds", {})):
+            changed = copy.deepcopy(record); changed[field] = value; mutations.append(changed)
+        changed = copy.deepcopy(record); changed["build"]["workflowRunId"] = "456"; mutations.append(changed)
+        changed = copy.deepcopy(record); changed["imageIds"]["api"] = changed["imageIds"]["web"]; mutations.append(changed)
+        for changed in mutations:
+            with self.assertRaises(ValueError): labels.verify_record(META, changed)
+
+
 if __name__ == "__main__": unittest.main()

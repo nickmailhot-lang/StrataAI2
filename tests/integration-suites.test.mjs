@@ -14,6 +14,12 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['verified provenance record not written', value => { const entry=value.jobs['build-images-once'].steps.find(step=>step.name==='Verify exact image provenance before export'); entry.run=entry.run.replace(' --output build-inputs/image-provenance.json',''); }],
+  ['verified provenance record not exported', value => { const entry=value.jobs['build-images-once'].steps.find(step=>step.name==='Export exact built images'); entry.run=entry.run.replace('cp build-inputs/image-provenance.json image-artifacts/image-provenance.json','echo omitted'); }],
+  ['verified provenance record omitted from checksums', value => { const entry=value.jobs['build-images-once'].steps.find(step=>step.name==='Export exact built images'); entry.run=entry.run.replace('build-metadata.json image-provenance.json > SHA256SUMS','build-metadata.json > SHA256SUMS'); }],
+  ...['container-integration','security'].map(job=>[`${job} loaded IDs not compared with built IDs`, value=>{const entry=value.jobs[job].steps.find(step=>step.name==='Load exact built images'); entry.run=entry.run.replace(' --expected image-artifacts/image-provenance.json','');}]),
+  ['security omits verified provenance record', value=>{const entry=value.jobs.security.steps.find(step=>step.name==='Verify security input integrity and retain build identity'); entry.run=entry.run.replace('cp image-artifacts/image-provenance.json security-artifacts/image-provenance.json','echo omitted');}],
+  ['release omits verified provenance record', value=>{const entry=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle'); entry.run=entry.run.replace(' image-artifacts/image-provenance.json bundle/images/',' bundle/images/');}],
   ['real scanner image verification omitted', value => { value.jobs['build-images-once'].steps = value.jobs['build-images-once'].steps.filter(step => step.name !== 'Verify real scanner transport in the exact Worker image'); }],
   ['real scanner image verification replaced by success', value => { value.jobs['build-images-once'].steps.find(step => step.name === 'Verify real scanner transport in the exact Worker image').run = 'true'; }],
   ['real scanner image verification skipped', value => { value.jobs['build-images-once'].steps.find(step => step.name === 'Verify real scanner transport in the exact Worker image').if = 'false'; }],
@@ -119,7 +125,7 @@ const mutations = [
   ['environment example excluded by uploader', value => { delete value.jobs['release-bundle'].steps.find(entry => entry.name === 'Upload runnable release bundle').with['include-hidden-files']; }],
   ['release SBOM directory remains empty', value => { const entry = value.jobs['release-bundle'].steps.find(entry => entry.name === 'Assemble release bundle'); entry.run = entry.run.replace('cp -R security-artifacts bundle/security', 'echo omitted'); }],
   ['security checksum generation bypassed', value => { value.jobs.security.steps.find(entry => entry.name === 'Bind retained security evidence checksums').run = 'echo unchecked'; }],
-  ['original image evidence lost during release copying', value => { const entry = value.jobs['release-bundle'].steps.find(entry => entry.name === 'Assemble release bundle'); entry.run = entry.run.replace('cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json bundle/images/', 'echo omitted'); }],
+  ['original image evidence lost during release copying', value => { const entry = value.jobs['release-bundle'].steps.find(entry => entry.name === 'Assemble release bundle'); entry.run = entry.run.replace('cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json image-artifacts/image-provenance.json bundle/images/', 'echo omitted'); }],
   ['final bundle no longer checked against original inputs', value => { value.jobs['release-bundle'].steps.find(entry => entry.name === 'Verify release bundle completeness and checksums').run = 'python3 scripts/ci/verify-release-artifacts.py bundle --path bundle'; }],
   ['browser shard repeated', value => { integration(value).strategy.matrix.include.at(-1).shard = 1; }],
   ['browser total inconsistent', value => { integration(value).strategy.matrix.include.at(-1).totalShards = 5; }],

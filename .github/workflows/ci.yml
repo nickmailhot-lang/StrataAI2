@@ -453,7 +453,7 @@ jobs:
         run: |
           set -euo pipefail
           docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > build-inputs/image-inspection.json
-          python3 scripts/ci/verify-image-labels.py --metadata build-inputs/build-metadata.json --images build-inputs/image-inspection.json
+          python3 scripts/ci/verify-image-labels.py --metadata build-inputs/build-metadata.json --images build-inputs/image-inspection.json --output build-inputs/image-provenance.json
 
       - name: Validate exact web image edge configuration
         run: docker run --rm --network none --entrypoint nginx "strataai-web:${GITHUB_SHA}" -t
@@ -515,12 +515,13 @@ jobs:
           set -euo pipefail
           mkdir -p image-artifacts
           cp build-inputs/build-metadata.json image-artifacts/build-metadata.json
+          cp build-inputs/image-provenance.json image-artifacts/image-provenance.json
           docker save "strataai-web:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-web.tar.gz
           docker save "strataai-api:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-api.tar.gz
           docker save "strataai-worker:${GITHUB_SHA}" | gzip -1 > image-artifacts/strataai-worker.tar.gz
           (
             cd image-artifacts
-            sha256sum strataai-web.tar.gz strataai-api.tar.gz strataai-worker.tar.gz build-metadata.json > SHA256SUMS
+            sha256sum strataai-web.tar.gz strataai-api.tar.gz strataai-worker.tar.gz build-metadata.json image-provenance.json > SHA256SUMS
           )
 
       - name: Upload immutable image artifacts
@@ -587,7 +588,7 @@ jobs:
           gunzip -c image-artifacts/strataai-api.tar.gz | docker load
           gunzip -c image-artifacts/strataai-worker.tar.gz | docker load
           docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json
-          python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json
+          python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json
 
       - name: Start release topology
         shell: bash
@@ -1242,6 +1243,7 @@ jobs:
           jq -e --arg repository "$GITHUB_REPOSITORY" --arg revision "$GITHUB_SHA" --arg run "$GITHUB_RUN_ID" --arg version "$STRATAAI_BUILD_VERSION" '.repository == $repository and .commitSha == $revision and .imageTag == $revision and .workflowRunId == $run and .version == $version' image-artifacts/build-metadata.json >/dev/null
           mkdir -p security-artifacts
           cp image-artifacts/build-metadata.json security-artifacts/build-metadata.json
+          cp image-artifacts/image-provenance.json security-artifacts/image-provenance.json
 
       - uses: actions/setup-node@v7
         with:
@@ -1272,7 +1274,7 @@ jobs:
           gunzip -c image-artifacts/strataai-api.tar.gz | docker load
           gunzip -c image-artifacts/strataai-worker.tar.gz | docker load
           docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json
-          python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json
+          python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json
 
       - name: Generate SBOMs
         shell: bash
@@ -1383,7 +1385,7 @@ jobs:
           cp image-artifacts/strataai-web.tar.gz bundle/images/
           cp image-artifacts/strataai-api.tar.gz bundle/images/
           cp image-artifacts/strataai-worker.tar.gz bundle/images/
-          cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json bundle/images/
+          cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json image-artifacts/image-provenance.json bundle/images/
           cp compose.release.yml compose.metrics.yml compose.attachments.yml bundle/
           mkdir -p bundle/deploy/metrics
           cp deploy/metrics/collector.yml bundle/deploy/metrics/

@@ -19,6 +19,13 @@ It requires actual daemon readiness, clean verdict for a 150,003-byte sample
 spanning multiple INSTREAM chunks, infected verdict for the harmless test
 signature, empty-input refusal, caller cancellation and clean recovery. It also
 requires caller-owned streams to remain readable and fully consumed.
+Before creating the daemon, the same Worker command runs without a socket mount.
+CI requires exit 1 and the fixed failure marker: success, a timeout, a crash or
+another refusal code cannot substitute for the required absent-provider outcome.
+The updated complete local invocation passed both this missing-daemon negative
+control and the real-engine positive checks on the same pinned Worker image;
+the process exited 0. This verifies the standalone command's refusal, not durable
+attachment recovery during a scanner outage.
 Only fixed outcome text is printed. No client filenames, user files, IDs,
 provider diagnostics or database state enter this check.
 
@@ -52,7 +59,9 @@ The complete disposable attachment fixture is also running on those pinned app
 images with the real daemon. Its initial upload has already progressed through
 the restricted Worker, native contained decoder and preview publication. The full
 browser and subsequent HTTP phases are still in progress; no completed result is
-attributed to them here. Official definition coverage, deployed bucket acceptance
+attributed to them here. The complete identity and original two-case browser
+phases have now passed; expanded cases and later HTTP checks remain live.
+Official definition coverage, deployed bucket acceptance
 and full current GitHub CI remain separate evidence requirements.
 
 This establishes only the defined engine transport checks. A custom test

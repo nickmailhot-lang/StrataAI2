@@ -181,7 +181,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(provenance.if, undefined, 'Image provenance verification must not be conditional');
   assert.ok(provenance.run.includes('set -euo pipefail'));
   assert.match(provenance.run, /docker image inspect\s+"strataai-web:\$\{GITHUB_SHA\}"\s+"strataai-api:\$\{GITHUB_SHA\}"\s+"strataai-worker:\$\{GITHUB_SHA\}"\s+> build-inputs\/image-inspection.json/);
-  assert.ok(provenance.run.includes('python3 scripts/ci/verify-image-labels.py --metadata build-inputs/build-metadata.json --images build-inputs/image-inspection.json'));
+  assert.ok(provenance.run.includes('python3 scripts/ci/verify-image-labels.py --metadata build-inputs/build-metadata.json --images build-inputs/image-inspection.json --output build-inputs/image-provenance.json'));
   assert.ok(!provenance.run.includes('||'), 'Image provenance refusal cannot be swallowed');
   assert.equal(provenance['continue-on-error'] ?? false, false);
   assert.ok(build.steps.indexOf(provenance) > build.steps.findIndex(step => step.name === 'Build Worker image'));
@@ -191,7 +191,8 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(sourceProvenance['continue-on-error'] ?? false, false);
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'image_labels_test.py'"));
   assert.match(archive.run, /cp build-inputs\/build-metadata.json image-artifacts\/build-metadata.json/);
-  assert.match(archive.run, /sha256sum .*build-metadata.json > SHA256SUMS/);
+  assert.match(archive.run, /cp build-inputs\/image-provenance.json image-artifacts\/image-provenance.json/);
+  assert.match(archive.run, /sha256sum .*build-metadata.json image-provenance.json > SHA256SUMS/);
   const bundle = jobs['release-bundle'].steps.find(step => step.name === 'Assemble release bundle');
   assert.match(bundle.run, /cp image-artifacts\/build-metadata.json bundle\/build-metadata.json/);
   assert.ok(!bundle.run.includes('cat > bundle/build-metadata.json'), 'Release must preserve the original metadata document');
@@ -207,7 +208,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   const bundleVerify = releaseSteps.find(step => step.name === 'Verify release bundle completeness and checksums');
   assert.equal(bundleVerify?.run, 'python3 scripts/ci/verify-release-artifacts.py bundle --path bundle --images image-artifacts --security security-artifacts');
   assert.ok(bundle.run.includes('cp -R security-artifacts bundle/security'));
-  assert.ok(bundle.run.includes('cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json bundle/images/'));
+  assert.ok(bundle.run.includes('cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json image-artifacts/image-provenance.json bundle/images/'));
   assert.ok(bundle.run.includes('for component in strataai-web strataai-api strataai-worker metrics-collector; do'));
   assert.ok(bundle.run.includes('cp "security-artifacts/${component}.cdx.json" "bundle/sbom/${component}.cdx.json"'));
   assert.ok(bundle.run.includes('find . -type f ! -path ./SHA256SUMS'), 'Root checksums must cover nested security manifest');
@@ -236,7 +237,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
       'set -euo pipefail',
       ...['web', 'api', 'worker'].map(host => `gunzip -c image-artifacts/strataai-${host}.tar.gz | docker load`),
       'docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json',
-      'python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json',
+      'python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json',
     ], 'Load every retained archive and verify complete provenance before executing or scanning images');
   }
   assert.deepEqual(security.needs, ['metadata', 'build-images-once']);
@@ -254,6 +255,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(securityInput.run.includes('(cd image-artifacts && sha256sum --check SHA256SUMS)'));
   assert.ok(securityInput.run.includes('.repository == $repository and .commitSha == $revision and .imageTag == $revision and .workflowRunId == $run and .version == $version'));
   assert.ok(securityInput.run.includes('cp image-artifacts/build-metadata.json security-artifacts/build-metadata.json'));
+  assert.ok(securityInput.run.includes('cp image-artifacts/image-provenance.json security-artifacts/image-provenance.json'));
   for (const name of ['Install locked web dependencies', 'Load exact built images', 'Generate SBOMs', 'Secret scan', 'Block fixed Critical container vulnerabilities']) {
     assert.ok(securitySteps.findIndex(step => step.name === name) > securityVerify, 'Verify security inputs before audits or image loading');
   }

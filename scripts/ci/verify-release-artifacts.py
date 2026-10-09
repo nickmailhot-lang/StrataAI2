@@ -11,6 +11,15 @@ spec = importlib.util.spec_from_file_location("source_identity", Path(__file__).
 identity = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(identity)
 HOSTS = ("web", "api", "worker")
+image_spec = importlib.util.spec_from_file_location("image_provenance", Path(__file__).with_name("verify-image-labels.py"))
+image_provenance = importlib.util.module_from_spec(image_spec)
+image_spec.loader.exec_module(image_provenance)
+
+
+def image_record(root, build):
+    value = json.loads((root / "image-provenance.json").read_text(encoding="utf-8"))
+    image_provenance.verify_record(build, value)
+    return value
 
 
 def digest(path):
@@ -75,6 +84,8 @@ def verify_inputs(images, security):
     verify_checksums(security)
     build = metadata(images)
     metadata(security)
+    if image_record(images, build) != image_record(security, build):
+        raise ValueError("different_security_images")
     if (images / "build-metadata.json").read_bytes() != (security / "build-metadata.json").read_bytes():
         raise ValueError("different_security_identity")
     for host in HOSTS:
@@ -90,6 +101,8 @@ def verify_bundle(bundle, images=None, security_input=None):
     image_copy = bundle / "images"
     verify_checksums(image_copy)
     metadata(image_copy)
+    if image_record(image_copy, build) != image_record(bundle / "security", build):
+        raise ValueError("different_bundle_images")
     if (image_copy / "build-metadata.json").read_bytes() != (bundle / "build-metadata.json").read_bytes():
         raise ValueError("different_image_identity")
     if images is not None or security_input is not None:
@@ -97,7 +110,7 @@ def verify_bundle(bundle, images=None, security_input=None):
             raise ValueError("missing_original_inputs")
         verify_inputs(images, security_input)
         for original, copied in ((images, image_copy), (security_input, bundle / "security")):
-            for name in ("build-metadata.json", "SHA256SUMS"):
+            for name in ("build-metadata.json", "image-provenance.json", "SHA256SUMS"):
                 if (original / name).read_bytes() != (copied / name).read_bytes():
                     raise ValueError("changed_original_evidence")
     required = {"compose.release.yml", "compose.metrics.yml", "compose.attachments.yml", ".env.release.example", "README.md",

@@ -23,7 +23,10 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.root = Path(self.folder.name); self.images = self.root/'images'; self.security = self.root/'security'; self.bundle = self.root/'bundle'
         self.images.mkdir(); self.security.mkdir()
         raw=(json.dumps(META, indent=2)+'\n').encode()
-        for directory in (self.images,self.security): (directory/'build-metadata.json').write_bytes(raw)
+        for directory in (self.images,self.security):
+            (directory/'build-metadata.json').write_bytes(raw)
+            (directory/'image-provenance.json').write_text(json.dumps({'schemaVersion':1,'build':META,
+                'imageIds':{host:'sha256:'+str(i+1)*64 for i,host in enumerate(release.HOSTS)}}),encoding='utf-8')
         for host in release.HOSTS:
             (self.images/f'strataai-{host}.tar.gz').write_bytes(b'synthetic image transport fixture')
             (self.security/f'strataai-{host}.cdx.json').write_text(json.dumps({'bomFormat':'CycloneDX','metadata':{'component':{'type':'container','name':META['images'][host]}},'components':[{'type':'library','name':'synthetic'}]}))
@@ -46,6 +49,23 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.checksums(self.bundle)
 
     def test_matching_inputs_pass(self): self.assertEqual(release.verify_inputs(self.images,self.security),META)
+
+    def test_provenance_is_required_even_with_recalculated_checksums(self):
+        (self.images/'image-provenance.json').unlink(); self.checksums(self.images)
+        with self.assertRaises(OSError): release.verify_inputs(self.images,self.security)
+
+    def test_security_cannot_substitute_another_tested_image_identity(self):
+        path=self.security/'image-provenance.json'; value=json.loads(path.read_text()); value['imageIds']['worker']='sha256:'+'f'*64
+        path.write_text(json.dumps(value)); self.checksums(self.security)
+        with self.assertRaises(ValueError): release.verify_inputs(self.images,self.security)
+
+    def test_bundle_cannot_replace_all_provenance_records_and_recalculate_checksums(self):
+        self.make_bundle()
+        for directory in (self.bundle/'images',self.bundle/'security'):
+            path=directory/'image-provenance.json'; value=json.loads(path.read_text()); value['imageIds']['worker']='sha256:'+'f'*64
+            path.write_text(json.dumps(value)); self.checksums(directory)
+        self.checksums(self.bundle)
+        with self.assertRaises(ValueError): release.verify_bundle(self.bundle,self.images,self.security)
 
     def test_changed_archive_rejected(self):
         (self.images/'strataai-worker.tar.gz').write_bytes(b'changed')

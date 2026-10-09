@@ -14,6 +14,18 @@ cleanup() {
   rmdir "$scratch"
 }
 trap cleanup EXIT
+if timeout --signal=TERM --kill-after=5s 30s docker run --rm \
+  --network none --read-only --user 0:0 --cap-drop ALL --security-opt no-new-privileges \
+  --memory 256m --memory-swap 256m --cpus 1 --pids-limit 64 \
+  --tmpfs /tmp:rw,noexec,nosuid,size=16m --env DOTNET_EnableDiagnostics=0 \
+  "$worker" --verify-attachment-scanner-runtime > "$scratch/result" 2>&1; then
+  echo 'Worker scanner verification incorrectly accepted a missing daemon.'
+  exit 1
+else
+  code=$?
+fi
+test "$code" -eq 1
+grep -Fxq 'Worker real scanner runtime verification failed.' "$scratch/result"
 docker volume create "$volume" >/dev/null
 docker run --rm -i --network none --read-only --user 0:0 --cap-drop ALL \
   --security-opt no-new-privileges -v "$volume:/fixture" --entrypoint sh "$scanner" -s <<'SETUP'
@@ -52,4 +64,4 @@ if ! timeout --signal=TERM --kill-after=5s 30s docker run --rm \
   exit 1
 fi
 grep -Fxq 'Worker real scanner transport verified: clean, test-signature detection, empty refusal, cancellation and recovery.' "$scratch/result"
-echo 'Exact Worker passes real ClamAV transport with a harmless deterministic test signature.'
+echo 'Exact Worker refuses a missing daemon and passes real ClamAV transport with a harmless deterministic test signature.'
