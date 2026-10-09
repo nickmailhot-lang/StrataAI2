@@ -432,3 +432,39 @@ assertions separately pass in their fresh 11-case source invocation. This
 result and the complete two-case activity keyboard pass do not certify current
 immutable images, Linux-only cases or PostgreSQL post-wait/session races.
 Estimated PRD-15 remaining: **36%**.
+
+
+## Native PostgreSQL activity post-wait and key-recreation proof
+
+An isolated equivalent of `scripts/ci/test-activity-feeds.sh` passes against the
+current compiled Production API and a separate restricted schema-114
+PostgreSQL17/pgvector database. Three real accounts first receive the required
+pending-email login denial; only these disposable users are activated. The
+fixture uses the release script's curl cookie transport and non-idempotent
+login, while mutation requests retain their own identities. Login-replay rows
+intentionally restrict hard session deletion and were not bypassed or removed.
+
+The proof checks the complete tied 50/16-row seek (66 distinct events), source
+and current parent projection, viewer/target-bound cursors, outsider denial
+without items, no-store headers, immutable historical actor after profile
+rename, and byte-identical tail recovery after deleting/recreating the API
+container with the same owned protected key volume. Historical source birth
+is synthetic, matching the release fixture; this is not a Card move command.
+
+Actual observed PostgreSQL waits then cover both source and current Board
+FOR UPDATE gates. Membership removal is committed while each read waits;
+each resumed HTTP read returns 404/activity_not_found without items. Restoring
+the member permits a fresh read. A users FOR UPDATE gate holds the issuing
+read before its session SHARE lock; deleting that disposable issuing session
+returns 401 without items after release. A source Board gate holds another
+issuing read while its real session naturally expires: both unexpired and
+expired states are observed using the database clock before gate release.
+The resumed read returns 401/session_unavailable without items; a new login
+recovers 200. No permission/session boundary was relaxed.
+
+All assertions pass and all owned API/web containers, database and key volume
+are removed. This is actual native PostgreSQL/HTTP security evidence using
+compiled hosts, not execution of the unchanged mandatory Linux script or
+current immutable release images. The complete expanded strict Board phase
+and current immutable/Linux/full acceptance remain required. Estimated PRD-15
+work remaining: **35%**.
