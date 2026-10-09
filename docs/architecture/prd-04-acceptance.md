@@ -488,7 +488,7 @@ immutable/full CI and remaining full-PRD acceptance still govern closure.
 Estimated PRD-04 work remaining stays **16%**.
 
 Both unchanged desktop/phone copy cases now pass after closing-focus ownership
-repair in one complete 1.8-minute strict invocation, with zero skips/retries/flaky
+repair in one complete 1.6-minute strict invocation, with zero skips/retries/flaky
 cases. Original private graph, lost original response, concurrent source,
 account-bound destination disclosure, one-request and keyboard navigation checks
 remain. This uses the newly frozen rebuilt web output, compiled strict Production
