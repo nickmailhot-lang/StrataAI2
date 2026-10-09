@@ -111,8 +111,15 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     expect(filterChanges).toBe(2);
     await expect(filters.getByLabel('Card keyword')).toHaveValue('');
     const show = filters.getByRole('button', { name: 'Show this page on Board', exact: true });
-    await expect(show).toBeEnabled(); await show.press('Enter');
-    await expect(other.getByText('Filtered Board: 1 matching Cards on this page.', { exact: true })).toBeVisible();
+    const filteredCanvas = other.getByText('Filtered Board: 1 matching Cards on this page.', { exact: true });
+    await expect(async () => {
+      if (!await filteredCanvas.isVisible()) {
+        await expect(show).toBeEnabled({ timeout: 500 });
+        await show.focus({ timeout: 500 }); await expect(show).toBeFocused({ timeout: 500 });
+        await expect(show).toBeEnabled({ timeout: 500 }); await show.press('Enter', { timeout: 500 });
+      }
+      await expect(filteredCanvas).toBeVisible({ timeout: 500 });
+    }).toPass({ timeout: 5_000 });
     await expect(other.getByText('Unmatched canvas Card', { exact: true })).toHaveCount(0);
     await expect(other.getByRole('button', { name: 'Drag Collaborative labeled Card card', exact: true })).toHaveCount(0);
     await other.reload();

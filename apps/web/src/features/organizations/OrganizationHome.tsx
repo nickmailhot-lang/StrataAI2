@@ -281,11 +281,11 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   }
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Stack spacing={2}>
+      <Stack spacing={2} sx={{ overflowWrap: "anywhere" }}>
         {!organizationId && data && liveActor && !loadError &&
           <NavigationConfirmation key={`navigation-global-${liveActor}`} target={{ kind: 'context', organization: null }} />}
         {liveNotice && <Typography role="status" aria-live="polite" aria-atomic="true">{liveNotice}</Typography>}
-        <Stack direction="row" spacing={2}>
+        <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
           <Button component={Link} to="/app">
             Organizations
           </Button>
@@ -315,7 +315,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             {organization?.description && (
               <Typography>{organization.description}</Typography>
             )}
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
               {organizationId && organization?.status === 0 && <Button component={Link} to={`/app/${organizationId}/archived-boards`}>Archived boards</Button>}
               {organizationId && organization?.status === 0 && ownRole !== undefined && <Button component={Link} to={`/app/${organizationId}/leave`}>Leave Organization</Button>}
               {organizationId && organization?.status === 0 && ownRole === 0 && <Button component={Link} to={`/app/${organizationId}/delete`}>Request Organization deletion</Button>}
@@ -379,7 +379,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             )}
           </>
         )}
-        {(data || cursor) && <Stack direction="row" spacing={2}>
+        {(data || cursor) && <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
           {cursor && <Button ref={firstPage} disabled={creating && !organizationId} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setLoadError(undefined); setCreating(false); setCursor(undefined); }}>First {organizationId ? "Board" : "Organization"} page</Button>}
           {data?.nextCursor && <Button ref={nextPage} disabled={creating && !organizationId} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setCreating(false); setCursor(data.nextCursor!); }}>Next {organizationId ? "Board" : "Organization"} page</Button>}
         </Stack>}

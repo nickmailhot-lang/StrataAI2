@@ -1,8 +1,9 @@
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
-import { expect, test } from "./releaseTest";
+import { expect, test, type Page } from "./releaseTest";
 
 for (const viewport of [
   { name: "desktop", width: 1280, height: 720 },
+  { name: "tablet", width: 768, height: 1024 },
   { name: "mobile", width: 390, height: 844 },
 ]) {
   test(`PRD-01/04/07/08/09: persisted board workflow and isolation (${viewport.name})`, async ({
@@ -16,11 +17,14 @@ for (const viewport of [
     });
     async function activate(name: string) {
       const button = page.getByRole("button", { name, exact: true });
-      if (viewport.name === "mobile") {
+      if (viewport.name !== "desktop") {
         await button.focus();
         await expect(button).toBeFocused();
         await button.press("Enter");
       } else await button.click();
+    }
+    async function expectViewportFit(view: Page = page) {
+      await expect.poll(() => view.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     }
     const email = `board-browser-${Date.now()}@example.test`;
     const password = "board-browser-correct-horse-battery";
@@ -30,6 +34,7 @@ for (const viewport of [
     await expect(
       page.getByText("You have no organizations yet. Create one to begin."),
     ).toBeVisible();
+    await expectViewportFit();
     await activate("Create organization");
     await page
       .getByLabel("Name", { exact: false })
@@ -41,6 +46,7 @@ for (const viewport of [
     await expect(
       page.getByRole("heading", { name: "Browser organization", exact: true }),
     ).toBeVisible();
+    await expectViewportFit();
     const organizationId = new URL(page.url()).pathname.split("/")[2];
     // Live admission initially replaces the home controls while rechecking access.
     await expect(page.getByRole("status")).toHaveText("Current Board access checked.");
@@ -67,6 +73,7 @@ for (const viewport of [
     await expect(
       page.getByRole("heading", { name: "Planning", exact: true }),
     ).toBeVisible();
+    await expectViewportFit();
     await activate("Add card to Planning");
     await page.getByLabel("Card title", { exact: false }).fill("Inspect roof");
     // The server commits, but the first response is lost. An unchanged UI retry
@@ -101,8 +108,10 @@ for (const viewport of [
     await expect(page.getByLabel("Card title", { exact: false })).toHaveValue(
       "Inspect roof",
     );
+    await expectViewportFit();
     const cardPath = new URL(page.url()).pathname;
     const second = await context.newPage();
+    await second.setViewportSize({ width: viewport.width, height: viewport.height });
     await second.goto(cardPath);
     await expect(second.getByLabel("Card title", { exact: false })).toHaveValue(
       "Inspect roof",
@@ -167,13 +176,14 @@ for (const viewport of [
       { headers, data: { visibility: "PUBLIC", version: board.version } },
     );
     expect(publicResponse.ok()).toBeTruthy();
-    const anonymous = await browser.newContext();
+    const anonymous = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
     try {
       const reader = await anonymous.newPage();
       await reader.goto(new URL(path, page.url()).toString());
       await expect(
         reader.getByRole("heading", { name: "Browser board", exact: true }),
       ).toBeVisible();
+      await expectViewportFit(reader);
       await expect(
         reader.getByRole("button", { name: "Add list", exact: true }),
       ).toHaveCount(0);
@@ -183,6 +193,7 @@ for (const viewport of [
       await expect(
         reader.getByLabel("Card title", { exact: false }),
       ).toBeDisabled();
+      await expectViewportFit(reader);
       await expect(
         reader.getByRole("button", { name: "Save card", exact: true }),
       ).toHaveCount(0);

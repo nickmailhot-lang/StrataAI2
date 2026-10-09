@@ -271,3 +271,90 @@ prove immutable-image CI, newer schema-116 runtime acceptance, physical devices
 or complete foundation acceptance. Independent cleanup confirms zero owned
 containers/databases, removed API/Worker environment files and preserved original
 services. PRD-01 stays open at **34% estimated work remaining** (planning estimate).
+
+## Schema-116 tablet fit failures and responsive schema-117 rerun
+
+The next intact Board phase adds a 768×1024 tablet case between desktop
+1280×720 and mobile 390×844. The second authenticated client and anonymous
+reader now explicitly use the same case viewport. Document-width fit checks
+cover empty Organization home, Organization details, List canvas, editable Card
+overlay and anonymous Board/Card reads; existing hierarchy, persistence,
+lost-response recovery, two-client conflict, history-focus and isolation
+assertions remain unchanged.
+
+That complete schema-116 compiled-source invocation finished **29/32** across
+fourteen files in 1,383.66 seconds, with no skips, flaky cases or report-level
+errors. Tablet and mobile failed the fit check immediately after Organization
+creation, before Board creation: the Organization action row did not wrap.
+Desktop Card-label deletion failed while waiting for confirmation. Its trace
+records no completed label DELETE network entry; that absence alone does not
+prove that no command was dispatched. All failed reports/traces remain outside
+the repository in `board-tablet-schema116-native-20261009`. Independent checks
+confirm zero owned containers/databases, absent API/Worker credential files and
+the original three services still running.
+
+The pending product repair uses wrapping MUI flex-gap action/navigation/page
+rows and breakable text on Organization home. It keeps every control available
+at smaller widths. The pending deletion fixture observes actual page request
+dispatch and stops activating as soon as one DELETE is sent, retaining consent,
+exact single-write and confirmed persisted-deletion assertions. It does not
+replay a dispatched destructive command.
+
+All **57 tests in the two OrganizationHome/LabelManageControl component files**
+pass, as do web/browser types, changed-source lint and the production frontend
+build. A fresh full fourteen-file/32-case phase is active with this frozen
+repaired frontend and compiled schema-117 API/Worker binaries mounted read-only
+into local runtime containers. Its private directory is
+`board-responsive-schema117-native-20261009`; collection confirms the complete
+selection. No aggregate pass, immutable-image CI, physical-device acceptance or
+issue closure is claimed. These frontend/fixture changes remain uncommitted
+until full verification completes. PRD-01 remains **34% estimated work remaining**.
+
+That intact schema-117 invocation finished **29/32** in 1,400.35 seconds,
+with no skips, flaky cases or report-level errors. All three persisted hierarchy
+cases pass, including tablet/mobile document-width fit, same-width second-client
+and anonymous-reader checks. The desktop Card-label case passes its deletion
+dispatch/confirmation checks. Failures occur in the phone Board archive retry,
+phone label-management reload before reopening the updated editor, and the
+secondary client's filtered-canvas activation. Private reports/traces are
+retained; independent cleanup again confirms zero owned containers/databases,
+removed API/Worker credential files and the original three running services.
+
+Pending fixture repairs stop archive recovery activation when its second routed
+request is observed, require the current updated Label editor after read-only
+reload, and confirm local filtered-canvas state after activation. Original
+two-request retry keys/bodies, child lifecycle fingerprints, label reorder and
+deletion, exact filter-change counts, persisted filters and archived refusal
+assertions remain. Browser types and diff checks pass. A fresh complete
+fourteen-file/32-case phase is active in
+`board-responsive-schema119-native-20261009`, using the same frozen repaired
+frontend and current compiled schema-119 API/Worker binaries mounted read-only
+into local runtime containers. Collection confirms the complete selection;
+there is no narrowing or test retry. Aggregate/current immutable-image and
+physical-device proof remain pending; no issue is closed.
+
+## Complete schema-119 responsive Board phase passed
+
+The intact fourteen-file phase finished **32/32** in **1,514.14 seconds**,
+with one passing attempt per case, no skips, flaky cases or report-level errors.
+Desktop, tablet and mobile hierarchy workflows pass the document-width checks
+through Organization home, Board/List canvas, Card overlay and anonymous
+Board/Card reads. The Organization action rows now wrap with MUI flex gaps,
+and long text can break without removing controls.
+
+Archive recovery, updated Label reload, single-dispatch Label deletion and
+filtered-canvas activation pass alongside their original persisted-state,
+request-count, retry-key/body, lifecycle, concurrency and isolation assertions.
+The fixtures only repeat activation until the observed dispatch or local
+read-only result; they retain the original recovery and destructive-operation
+criteria. All original fourteen files ran without narrowing or test retries.
+
+The private report and independent verifier are retained in
+`board-responsive-schema119-native-20261009`. Independent checks confirm zero
+owned containers and databases, removed API/Worker credential files and all
+three original services running. This proves the frozen repaired frontend
+against compiled schema-119 API/Worker binaries mounted read-only into local
+runtime containers. It does not prove schema-120 runtime acceptance, current
+immutable-image CI, physical-device behavior or the entire foundation matrix.
+The exact schema-120 main CI run remains queued at this verification point.
+PRD-01 stays open with **34% estimated work remaining** (planning estimate).

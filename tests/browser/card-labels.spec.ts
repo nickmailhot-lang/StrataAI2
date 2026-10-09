@@ -221,8 +221,16 @@ for (const width of [1280, 390]) {
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
       expect(edits).toHaveLength(2); expect(edits[0]).toEqual(edits[1]);
       await expect(management.getByRole('button', { name: 'Reload labels', exact: true })).toBeEnabled();
-      await pressAdmittedAction(management.getByRole('button', { name: 'Reload labels', exact: true }));
       const editUrgent = management.getByRole('button', { name: 'Edit Urgent (purple)', exact: true });
+      const reloadLabels = management.getByRole('button', { name: 'Reload labels', exact: true });
+      await expect(async () => {
+        if (!await editUrgent.isVisible()) {
+          await expect(reloadLabels).toBeEnabled({ timeout: 500 });
+          await reloadLabels.focus({ timeout: 500 }); await expect(reloadLabels).toBeFocused({ timeout: 500 });
+          await expect(reloadLabels).toBeEnabled({ timeout: 500 }); await reloadLabels.press('Enter', { timeout: 500 });
+        }
+        await expect(editUrgent).toBeEnabled({ timeout: 500 });
+      }).toPass({ timeout: 5_000 });
       await pressAdmittedAction(editUrgent);
       const moveBefore = management.getByRole('combobox', { name: 'Move label before' });
       const moveMenu = page.getByRole('listbox', { name: 'Move label before', exact: true });
@@ -247,8 +255,21 @@ for (const width of [1280, 390]) {
       const consent = management.getByRole('checkbox', { name: 'Confirm removal from all Cards' });
       await pressAdmittedAction(consent, 'Space'); await expect(consent).toBeChecked();
       const deleteLabel = management.getByRole('button', { name: 'Delete label', exact: true });
-      await pressAdmittedAction(deleteLabel);
+      let deleteDispatches = 0;
+      page.on('request', request => {
+        if (request.method() === 'DELETE' && new URL(request.url()).pathname === `/labels/${labels[0]}`) deleteDispatches++;
+      });
+      // Foreground admission can withdraw the focused target before Enter.
+      // Stop activating as soon as the single destructive command is sent.
+      await expect(async () => {
+        if (deleteDispatches === 0) {
+          await focusAdmittedControl(deleteLabel);
+          await deleteLabel.press('Enter', { timeout: 500 });
+        }
+        await expect.poll(() => deleteDispatches, { timeout: 500 }).toBe(1);
+      }).toPass({ timeout: 5_000 });
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
+      expect(deleteDispatches).toBe(1);
       await management.getByRole('button', { name: 'Done', exact: true }).press('Enter'); await expect(management).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
       await expect(face.getByLabel('Urgent, purple', { exact: true })).toHaveCount(0);

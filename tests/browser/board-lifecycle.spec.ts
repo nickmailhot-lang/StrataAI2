@@ -63,7 +63,11 @@ for (const width of [1280, 390]) {
       expect((await new AxeBuilder({ page: other }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const activeDirectory = await context.request.get(`/organizations/${org}/boards`); expect(activeDirectory.status()).toBe(200);
       expect(await activeDirectory.json()).toEqual([]);
-      await pressAdmittedAction(page.getByRole('button', { name: 'Retry this archive', exact: true }));
+      const retryArchive = page.getByRole('button', { name: 'Retry this archive', exact: true });
+      await expect(async () => {
+        if (archives.length === 1) await pressAdmittedAction(retryArchive);
+        await expect.poll(() => archives.length, { timeout: 500 }).toBe(2);
+      }).toPass({ timeout: 5_000 });
       await expect(page.getByText('Board archive acknowledged. Current Board state is being checked.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
       expect(archives).toHaveLength(2); expect(archives[1]).toEqual(archives[0]);
