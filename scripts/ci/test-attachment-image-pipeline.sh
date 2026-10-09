@@ -150,6 +150,27 @@ cmp "$scratch/preview" "$scratch/retained-preview"
 json -X POST -d "$(jq -nc --argjson version "$selected_version" '{name:"Independent owned image",version:$version}')" "$base/boards/$board/copy" > "$scratch/copied"
 copy=$(jq -r '.id' "$scratch/copied"); [[ "$copy" =~ ^[0-9a-f-]{36}$ ]]
 jq -e --arg source "$(jq -r '.backgroundValue' "$scratch/selected")" '.version==1 and .visibility=="PRIVATE" and .backgroundType=="IMAGE" and .backgroundValue!=$source' "$scratch/copied" >/dev/null
+# Tombstone the actually uploaded/scanned/published source using its canonical
+# archive acknowledgment. Both independent Board owners must retain their PNG.
+delete_card_version=$(jq -r '.cardVersion' "$scratch/archived-attachment")
+delete_attachment_version=$(jq -r '.attachment.version' "$scratch/archived-attachment")
+json -X DELETE "$base/attachments/$attachment?cardId=$card&cardVersion=$delete_card_version&version=$delete_attachment_version&confirmed=true" > "$scratch/deleted-attachment"
+jq -e --arg id "$attachment" '.cardVersion==6 and .attachment.id==$id and .attachment.version==5 and .attachment.lifecycleState==2' "$scratch/deleted-attachment" >/dev/null
+for route in download-options download preview; do
+  test "$(curl --max-time 60 --silent --show-error -b "$scratch/cookies" -o /dev/null -w '%{http_code}' "$base/cards/$card/attachments/$attachment/$route")" = 404
+done
+curl --max-time 60 --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: $(cat /proc/sys/kernel/random/uuid)" -X POST \
+  -d "$(jq -nc --slurpfile deleted "$scratch/deleted-attachment" '{cardVersion:$deleted[0].cardVersion,version:$deleted[0].attachment.version}')" \
+  -o "$scratch/deleted-source-restore.body" -w '%{http_code}' "$base/cards/$card/attachments/$attachment/restore" > "$scratch/deleted-source-restore.status"
+test "$(cat "$scratch/deleted-source-restore.status")" = 404
+select_image > "$scratch/deleted-source-recovered"
+cmp "$scratch/selected" "$scratch/deleted-source-recovered"
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/background/image?boardVersion=$selected_version" > "$scratch/deleted-source-original-preview"
+curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$copy/background/image?boardVersion=1" > "$scratch/deleted-source-copy-preview"
+cmp "$scratch/preview" "$scratch/deleted-source-original-preview"
+cmp "$scratch/preview" "$scratch/deleted-source-copy-preview"
+echo 'Published source deletion withdraws attachment delivery/restore while both independent Board image owners and the original selection receipt survive.'
 json -X POST -d "$(jq -nc --argjson version "$selected_version" '{version:$version}')" "$base/boards/$board/archive" >/dev/null
 # The original receipt is not continuing authorization. Archiving the source
 # withdraws its command recovery and image route, without withdrawing a copy.

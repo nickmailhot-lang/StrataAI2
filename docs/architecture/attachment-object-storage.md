@@ -169,3 +169,54 @@ Storage and publication metadata are synthetic Demo fixtures; real session,
 lifecycle commands, private Linux byte staging and HTTP checks execute. This is
 source evidence, not physical object erasure, backup expiry, real external
 storage/scanner or current immutable/full release acceptance.
+
+## Executed enabled pipeline with published source deletion
+
+A subsequent owned native fixture builds the current API and Worker images from
+their actual Dockerfiles with locked restores, uses restricted PostgreSQL roles
+at schema 114, and serves the fresh deletion-consent web build. Production runtime
+and verified-email requirements remain enabled in both hosts. Only the disposable
+registered account is explicitly verified by the administrator fixture, after
+asserting the normal unverified-login refusal; this is not email-provider proof.
+
+Actual raw upload reaches Pending, exchanges the Unix-socket scanner protocol,
+runs the native contained image decoder in the separate Worker and publishes the
+sanitized PNG. The complete unchanged two-viewport background-pipeline browser
+invocation passes 2/2 in 84.7 seconds, with zero failures/skips/retries/flaky cases.
+It exercises public consent refusal, original publication recovery, native image
+rendering, independent Board copy, source retirement, live session withdrawal,
+fresh login and accessibility assertions.
+
+The subsequent native HTTP equivalent exercises concurrent selection with one
+commit/one stale refusal, byte-identical original receipt recovery, PNG private
+headers/sanitization, actual source archive and deletion, refusal of all three
+deleted attachment delivery routes and current-version restoration, retained PNGs
+for both Board owners, source Board archive, public/Private copy withdrawal,
+logout/readmission and selection retirement. The initial harness stopped at the
+strict login refusal and cleaned up; explicit test-account verification repaired
+the fixture without relaxing host policy. The successful run independently leaves
+zero owned containers/databases/provider volumes/credential files.
+
+Storage is the explicit IntegrationTest private local adapter and the scanner is
+the declared protocol simulator. These are actual host/Worker/decoder/database
+and browser executions, not external S3, deployed ClamAV, physical erasure or a
+current immutable `required-ci` result. The mandatory release pipeline now also
+asserts source deletion and surviving Board owners; its actual Linux shell still
+requires current immutable execution.
+
+A complete rerun adding the post-tombstone receipt assertion subsequently passes
+the desktop browser case but fails the phone case's return-focus assertion after
+successful retry publication; HTTP lifecycle assertions are not reached in that
+invocation. Its owned resources are independently removed. Focus recovery now
+transfers ownership to the restored control before focusing it, so the removed
+retry control is no longer the owner across later access refreshes. A blur into
+that recorded destination preserves the transfer; another user-selected control
+still cancels recovery. All 29 background/attachment control cases, web typecheck,
+focused lint and a fresh web build pass. The complete native invocation then
+passes both browser viewports with zero skips/failures/retries/flaky cases and all
+subsequent HTTP lifecycle/concurrency assertions, including byte-identical original
+receipt recovery after source deletion. Its original focus assertion and deadlines
+remain intact. The final run independently leaves no owned containers, database,
+provider volume or credential files. API/Worker source is unchanged from the
+locally built images; the fresh web bundle includes the focus repair. This scoped
+native result does not establish current full immutable CI.

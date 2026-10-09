@@ -41,6 +41,15 @@ The same `cef54e18` run's `commands` group also succeeds in [job 113546668048](h
 
 Related: [main-run evidence retention](ci-run-retention.md), [embedded build identity](build-identity.md), [documentation index](../README.md).
 
+The mandatory enabled attachment pipeline now also deletes its actually published
+source using canonical archive acknowledgment revisions. All three source
+delivery routes and current-version restore must refuse admission; both original
+and copied Board images must retain identical sanitized PNGs. Original selection
+receipt recovery must survive the source tombstone while the Board is still
+authorized. The existing complete two-viewport browser invocation and subsequent
+Board archive/public/Private/session/retirement assertions remain. See the
+[owned native equivalent and its provider/CI limits](attachment-object-storage.md#executed-enabled-pipeline-with-published-source-deletion).
+
 ## Strict notification consumer coverage
 
 The assignment/mention/reminder phase now also selects the complete recipient

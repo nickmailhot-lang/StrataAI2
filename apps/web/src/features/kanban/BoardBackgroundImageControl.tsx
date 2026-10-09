@@ -49,10 +49,12 @@ function Control(props: Props) {
     // Acknowledgment can precede another access refresh that disables the
     // restored control. Keep owned focus recoverable until an intentional
     // move to another control cancels it through onBlur.
-    if (target && !target.disabled) { target.focus({ preventScroll: true }); restore.current = true; }
+    if (target && !target.disabled) { owner.current = target; target.focus({ preventScroll: true }); restore.current = true; }
   }, [disabled, intent, draft, review, changed]);
   function focus(element: HTMLElement) { owner.current = element; dialog.current = element.closest('[role="dialog"][data-mui-focusable]'); restore.current = true; parkRecoveryFocus(element); }
-  function blur(event: React.FocusEvent<HTMLElement>) { if (!ownsRecoveryFocus(event.relatedTarget, event.currentTarget)) restore.current = false; }
+  function blur(event: React.FocusEvent<HTMLElement>) {
+    if (event.relatedTarget !== owner.current && !ownsRecoveryFocus(event.relatedTarget, event.currentTarget)) restore.current = false;
+  }
   function current(c: AbortController) { return mounted.current && pending.current === c && !c.signal.aborted; }
   function start(element: HTMLElement) { focus(element); const c = new AbortController(); pending.current = c; setBusy(true); setNotice(undefined); callbacks.current.onBusyChange(true); return c; }
   function finish(c: AbortController) { if (pending.current === c) { pending.current = undefined; if (mounted.current) { setBusy(false); callbacks.current.onBusyChange(false); } } }

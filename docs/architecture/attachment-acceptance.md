@@ -885,3 +885,15 @@ withdrawal/retirement afterward. It passes with zero skips/failures in 7.7 secon
 locked build has no warnings/errors and the owned Linux container is removed.
 Synthetic publication/storage, actual source-host sessions/commands/staging/HTTP,
 and immutable/full/provider/backup-erasure limits remain explicit.
+
+## Enabled native pipeline and published source tombstone
+
+The [enabled native pipeline evidence](attachment-object-storage.md#executed-enabled-pipeline-with-published-source-deletion)
+executes actual upload, restricted PostgreSQL scan/publication, a separate native
+contained-decoder Worker, both unchanged public-consent/copy browser viewports,
+and the full HTTP lifecycle/concurrency equivalent. Unlike the earlier Demo
+source proof, the tombstoned source is actually uploaded, scanned and published.
+Deleted attachment delivery/restoration is refused while both independent Board
+image owners retain their sanitized PNG. The private local provider and scanner
+protocol simulator remain explicit; external provider/operator evidence,
+retention reconciliation and current full immutable CI remain open.

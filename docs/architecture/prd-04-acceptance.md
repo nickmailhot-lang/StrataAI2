@@ -555,3 +555,10 @@ withdrawal/retirement afterward. It passes with zero skips/failures in 7.7 secon
 locked build has no warnings/errors and the owned Linux container is removed.
 Synthetic publication/storage, actual source-host sessions/commands/staging/HTTP,
 and immutable/full/provider/backup-erasure limits remain explicit.
+
+The [enabled native pipeline](attachment-object-storage.md#executed-enabled-pipeline-with-published-source-deletion)
+also executes actual upload/Worker scan/contained decoding/publication, both
+unchanged image-backed copy browser viewports and HTTP concurrency/lifecycle
+checks with strict verified-account hosts. Both Board image owners survive actual
+published-source deletion. The explicit local provider and scanner simulator do
+not establish external-provider operations or current full immutable acceptance.

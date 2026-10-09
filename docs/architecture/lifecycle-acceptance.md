@@ -320,3 +320,10 @@ withdrawal/retirement afterward. It passes with zero skips/failures in 7.7 secon
 locked build has no warnings/errors and the owned Linux container is removed.
 Synthetic publication/storage, actual source-host sessions/commands/staging/HTTP,
 and immutable/full/provider/backup-erasure limits remain explicit.
+
+The [enabled native pipeline](attachment-object-storage.md#executed-enabled-pipeline-with-published-source-deletion)
+extends this to an actually uploaded/scanned/published source, restricted
+PostgreSQL, a separate native contained-decoder Worker and both browser viewports.
+Deleted attachment access/restoration is refused while both Board image owners
+retain sanitized bytes. Immediate product deletion remains separate from provider
+erasure/backup authority; current full immutable acceptance remains open.
