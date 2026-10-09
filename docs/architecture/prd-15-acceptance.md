@@ -381,3 +381,22 @@ activity fixture increment and member opening-focus repair. The scoped activity
 pass does not establish the intermittent failure's exact cause or a combined
 pass. Current immutable/full CI and complete acceptance remain required.
 Estimated PRD-15 work remaining stays **36%**.
+
+
+## Repeated target-scope read performance investigation
+
+Current-source inspection finds `ActivityFeedService` resolves every candidate
+row through `ActivitySourceScopeResolver` during discovery, then resolves every
+row again after sorted Board gates, and again in the transaction's final
+reauthorization callback. For a 51-row window dominated by updates to one Card,
+this repeats Organization membership/status, source Board scope and current
+Card/List resolution per row even though the target is repeated. Native peer
+activity reads around 4.9 seconds make this a concrete performance lead; query
+count and causal timing have not yet been measured directly.
+
+Any optimization must preserve per-event private ownership/reference admission,
+source/current sorted Board gate discovery, fresh target/role resolution after
+waits and final session/account admission. Results must never be cached across
+those boundaries. No authorization pass, lock or stale-source rejection has been
+removed. Runtime performance and race evidence remain necessary before treating
+this lead as a repair. Estimated PRD-15 work remaining stays **36%**.
