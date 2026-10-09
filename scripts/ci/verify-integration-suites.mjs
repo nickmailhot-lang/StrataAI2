@@ -8,6 +8,43 @@ import { shardCount } from './verify-browser-shards.mjs';
 export const suites = ['commands', 'browser-foundation', 'browser-notifications', 'browser-full'];
 const evidenceScopes = JSON.parse(readFileSync(new URL('./evidence-artifacts.json', import.meta.url), 'utf8'));
 
+function readAttachmentSources() {
+  return {
+    script: readFileSync(new URL('./test-attachment-image-pipeline.sh', import.meta.url), 'utf8'),
+    background: readFileSync(new URL('../../playwright.attachment.config.ts', import.meta.url), 'utf8'),
+    lifecycle: readFileSync(new URL('../../playwright.attachment-lifecycle.config.ts', import.meta.url), 'utf8'),
+  };
+}
+
+function verifyAttachmentPipeline(sources) {
+  const script = sources.script.replace(/\r\n/g, '\n');
+  assert.match(script, /^#!\/usr\/bin\/env bash\nset -Eeuo pipefail\n/, 'Attachment pipeline must fail on failed commands');
+  assert.doesNotMatch(script, /^\s*set\s+\+/m, 'Attachment pipeline may not disable strict shell options');
+  const phases = [
+    { key: 'background', config: 'playwright.attachment.config.ts', fixture: 'browser-fixture', file: 'board-background-pipeline.case.ts', output: 'attachment-pipeline' },
+    { key: 'lifecycle', config: 'playwright.attachment-lifecycle.config.ts', fixture: 'archive-browser-fixture', file: 'attachment-source-archive-pipeline.case.ts', output: 'attachment-source-archive-pipeline' },
+  ];
+  const calls = script.split('\n').filter(line => /\bnpx\s+playwright\s+test\b/.test(line) && !line.trimStart().startsWith('#'));
+  assert.deepEqual(calls, phases.map(phase => `  npx playwright test --config ${phase.config}`),
+    'Both intact attachment phases must run once in order, without filters or ignored failures');
+  for (const phase of phases) {
+    const block = [
+      `STRATAAI_ATTACHMENT_BROWSER_FIXTURE="$scratch/${phase.fixture}" STRATAAI_E2E_RATE_PACING=1 STRATAAI_E2E_RELEASE_HEADERS=1 \\`,
+      `  npx playwright test --config ${phase.config}`,
+    ].join('\n');
+    assert.ok(script.includes(block), `Attachment ${phase.key} phase must retain its owned fixture, pacing and release headers`);
+    const expected = [
+      "import { defineConfig } from '@playwright/test';",
+      "import release from './playwright.config';",
+      `export default defineConfig({ ...release, testMatch: '${phase.file}', outputDir: 'test-results/${phase.output}' });`,
+    ].join('\n');
+    // Formatting changes are harmless. New overrides require explicit review:
+    // grep/retry/timeout changes must not silently narrow the inherited policy.
+    assert.equal(sources[phase.key].replace(/\s/g, ''), expected.replace(/\s/g, ''),
+      `Attachment ${phase.key} configuration must select its intact case file and inherit release policy`);
+  }
+}
+
 export function readWorkflow(source) {
   const document = parseDocument(source, { uniqueKeys: true });
   assert.equal(document.errors.length, 0, 'Workflow must be valid YAML without duplicate keys');
@@ -27,7 +64,7 @@ function owners(step) {
   return selected;
 }
 
-export function verifyIntegrationSuites(workflow, registry) {
+export function verifyIntegrationSuites(workflow, registry, attachmentSources = readAttachmentSources()) {
   const jobs = workflow.jobs;
   const job = jobs['container-integration'];
   const executions = [
@@ -39,6 +76,11 @@ export function verifyIntegrationSuites(workflow, registry) {
   const fullBrowser = job.steps.find(step => step.name === 'Authenticated browser E2E against exact release images');
   assert.equal(fullBrowser.run, 'npx playwright test --shard=${{ matrix.shard }}/${{ matrix.totalShards }}');
   assert.deepEqual(fullBrowser.env, { STRATAAI_E2E_RELEASE_HEADERS: '1', STRATAAI_E2E_RATE_PACING: '1' });
+  const attachment = job.steps.find(step => step.name === 'Attachment upload and isolated Worker image publication through explicit private test providers');
+  assert.deepEqual(owners(attachment), ['browser-foundation']);
+  assert.equal(attachment.run, 'bash scripts/ci/test-attachment-image-pipeline.sh', 'Enabled attachment pipeline must be a mandatory, unfiltered invocation');
+  assert.equal(attachment['continue-on-error'] ?? false, false);
+  verifyAttachmentPipeline(attachmentSources);
   const strictNotifications = job.steps.find(step => step.name === 'Strict verified-account assignment mention and reminder native delivery');
   assert.deepEqual(owners(strictNotifications), ['browser-notifications']);
   assert.deepEqual(strictNotifications.env, { STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1', STRATAAI_E2E_RATE_PACING: '1' });

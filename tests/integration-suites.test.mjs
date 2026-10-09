@@ -14,6 +14,8 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['enabled attachment pipeline replaced by success', value => { step(value, 'Attachment upload and isolated Worker image publication through explicit private test providers').run = 'true'; }],
+  ['enabled attachment pipeline errors swallowed', value => { step(value, 'Attachment upload and isolated Worker image publication through explicit private test providers').run += ' || true'; }],
   ['strict two-client label filter recovery omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/label-filter-live.spec.ts', ''); }],
   ['strict Board label workflows omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/card-labels.spec.ts', ''); }],
   ...['Invitation-backed closed registration and atomic expiry against exact release API',
@@ -110,3 +112,28 @@ for (const [name, mutate] of mutations) {
 test('duplicate YAML keys are rejected before coverage validation', () => {
   assert.throws(() => readWorkflow('jobs:\n  required-ci: {}\n  required-ci: {}\n'));
 });
+
+const attachmentSources = () => ({
+  script: readFileSync('scripts/ci/test-attachment-image-pipeline.sh', 'utf8'),
+  background: readFileSync('playwright.attachment.config.ts', 'utf8'),
+  lifecycle: readFileSync('playwright.attachment-lifecycle.config.ts', 'utf8'),
+});
+for (const [name, mutate] of [
+  ['background phase omitted', value => { value.script = value.script.replace('  npx playwright test --config playwright.attachment.config.ts', '  true'); }],
+  ['lifecycle and upload phase omitted', value => { value.script = value.script.replace('  npx playwright test --config playwright.attachment-lifecycle.config.ts', '  true'); }],
+  ['background phase filtered', value => { value.script = value.script.replace('npx playwright test --config playwright.attachment.config.ts', 'npx playwright test --config playwright.attachment.config.ts --grep consent'); }],
+  ['lifecycle and upload phase filtered', value => { value.script = value.script.replace('npx playwright test --config playwright.attachment-lifecycle.config.ts', 'npx playwright test --config playwright.attachment-lifecycle.config.ts --grep archive'); }],
+  ['lifecycle errors swallowed', value => { value.script = value.script.replace('npx playwright test --config playwright.attachment-lifecycle.config.ts', 'npx playwright test --config playwright.attachment-lifecycle.config.ts || true'); }],
+  ['shell fail-fast disabled', value => { value.script = value.script.replace('set -Eeuo pipefail', 'set -Eeuo pipefail\nset +e'); }],
+  ['background release headers disabled', value => { value.script = value.script.replace('STRATAAI_E2E_RELEASE_HEADERS=1', 'STRATAAI_E2E_RELEASE_HEADERS=0'); }],
+  ['lifecycle pacing disabled', value => { value.script = value.script.replace('STRATAAI_ATTACHMENT_BROWSER_FIXTURE="$scratch/archive-browser-fixture" STRATAAI_E2E_RATE_PACING=1', 'STRATAAI_ATTACHMENT_BROWSER_FIXTURE="$scratch/archive-browser-fixture" STRATAAI_E2E_RATE_PACING=0'); }],
+  ['lifecycle owned fixture replaced', value => { value.script = value.script.replace('STRATAAI_ATTACHMENT_BROWSER_FIXTURE="$scratch/archive-browser-fixture"', 'STRATAAI_ATTACHMENT_BROWSER_FIXTURE="$scratch/browser-fixture"'); }],
+  ['background case replaced', value => { value.background = value.background.replace('board-background-pipeline.case.ts', 'board.spec.ts'); }],
+  ['lifecycle case replaced', value => { value.lifecycle = value.lifecycle.replace('attachment-source-archive-pipeline.case.ts', 'attachment-lifecycle.spec.ts'); }],
+  ['lifecycle config hides failed attempts', value => { value.lifecycle = value.lifecycle.replace('...release,', '...release, retries: 2,'); }],
+]) {
+  test(`rejects attachment coverage regression: ${name}`, () => {
+    const value = attachmentSources(); mutate(value);
+    assert.throws(() => verifyIntegrationSuites(workflow(), registry, value));
+  });
+}

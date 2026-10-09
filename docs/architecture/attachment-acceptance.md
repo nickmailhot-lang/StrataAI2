@@ -1020,3 +1020,15 @@ without failures/skips/retries/flaky cases. Earlier failed reports remain retain
 product code and deadlines are unchanged. Other formats/error/quarantine/retry/
 capacity/role/cross-feature and current immutable/provider acceptance remain open.
 Estimated PRD-14 work remaining: **33%**.
+
+## Mandatory enabled-pipeline selection guards
+
+The [attachment pipeline/configuration guards](integration-ci-groups.md#mandatory-enabled-attachment-pipeline-coverage-guards)
+now reject omitted/filtered phases, swallowed failures, disabled strict shell
+options, wrong fixtures, disabled pacing/release headers, replaced case files and
+unreviewed configuration retry overrides. Eleven new weakening cases fail against
+the previous verifier; after strengthening and adding three environment cases,
+the complete suite passes 91/91. The normal verifier retains four groups/seven
+isolated executions/112 steps. Product and browser scenario source are unchanged;
+this is source-quality structural proof, not execution of current release images
+or the remaining acceptance matrix. Estimated PRD-14 work remaining: **33%**.

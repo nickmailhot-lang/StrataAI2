@@ -598,3 +598,29 @@ release/full PRD certification. Current source-platform metadata changes are
 source tests only and do not change the tested product/runtime. All remaining
 functional, provider, capacity, privacy and current full CI requirements still
 apply before issue closure.
+
+## Mandatory enabled attachment pipeline coverage guards
+
+The source-quality integration verifier now requires the foundation attachment
+step to invoke its actual shell pipeline without ignoring failure. It reads that
+script and both explicit configurations. Strict shell startup must remain enabled;
+both complete Playwright phases must run exactly once in order with their owned
+fixture, existing rate pacing and release headers, without grep/filter/error
+suppression. Both configurations must inherit the release policy and select the
+intact intended case file; extra retry/timeout/filter overrides require review.
+Whitespace formatting does not change the accepted configuration.
+
+The initial expanded 88-case guard run against the previous verifier has 77
+passes and 11 failures: eleven new weakening mutations are incorrectly accepted.
+The strengthened verifier then passes all 88. Three further fixture/pacing/header
+mutations expand the suite to 91/91 passing cases, covering fourteen weakening
+mutations overall. The ordinary verification command also passes: four groups,
+seven isolated executions and 112 registered steps. Syntax/diff checks pass.
+
+The already mandatory source-quality command runs this verifier and its complete
+test file; workflow/image build/release configuration is unchanged. These are
+structural guards for pipeline/configuration edits, not execution or a complete
+semantic proof of every shell branch or test body. The separately recorded
+eight-case native enabled pipeline evidence remains bounded local proof. Current
+exact-image/full release CI and outstanding feature/provider/performance acceptance
+still must pass before closure.
