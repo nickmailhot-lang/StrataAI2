@@ -64,3 +64,110 @@ current schema-125 build and running tests remain unchanged. Full mutable-clock
 coverage, all foundation requirements and current build-once release acceptance
 remain outstanding. PRD-01 stays open at **34% estimated work remaining**
 (planning estimate).
+
+## Complete schema-126 catalog navigation
+
+A subsequent read-only query against the isolated, live schema-126 capacity
+fixture finds **51** candidates. Notification counters now have both physical
+columns. The private snapshot contains table/column metadata only; no account,
+notification, invitation or other content rows are copied into this record.
+
+Every candidate is listed below with its original declaration and retained
+clock-bearing fields. These links are entry points into the complete ordered
+migration history, not proof that the first declaration is the current writer.
+Later replacements, runtime stores, capability grants, immutable guards and
+administrative fixture transitions must also be traced. No table is exempted
+from the foundation audit because its name suggests a journal or replay.
+
+| Candidate | Original declaration | Retained clock fields |
+| --- | --- | --- |
+| `attachment_preview_publications` | [046_attachment_preview_publication.sql](../../db/migrations/046_attachment_preview_publication.sql) | `published_at` |
+| `attachment_preview_sweeps` | [049_attachment_preview_backfill.sql](../../db/migrations/049_attachment_preview_backfill.sql) | `cursor_created_at` |
+| `attachment_previews` | [045_attachment_preview_intents.sql](../../db/migrations/045_attachment_preview_intents.sql) | `created_at` |
+| `attachment_scan_sweeps` | [050_attachment_scan_recovery.sql](../../db/migrations/050_attachment_scan_recovery.sql) | `cursor_created_at` |
+| `audit_events` | [002_audit_runtime.sql](../../db/migrations/002_audit_runtime.sql) | `created_at` |
+| `board_background_images` | [072_board_background_images.sql](../../db/migrations/072_board_background_images.sql) | `created_at` |
+| `board_filter_interaction_replays` | [077_board_filter_interaction_replays.sql](../../db/migrations/077_board_filter_interaction_replays.sql) | `created_at`, `expires_at` |
+| `board_star_events` | [071_board_star_private_journal.sql](../../db/migrations/071_board_star_private_journal.sql) | `created_at` |
+| `card_assignment_notifications` | [031_card_assignment_notifications.sql](../../db/migrations/031_card_assignment_notifications.sql) | `created_at`, `read_at` |
+| `comment_mention_recipients` | [058_comment_mention_snapshots.sql](../../db/migrations/058_comment_mention_snapshots.sql) | None |
+| `comment_mention_snapshots` | [058_comment_mention_snapshots.sql](../../db/migrations/058_comment_mention_snapshots.sql) | `created_at` |
+| `identity_events` | [012_identity_events.sql](../../db/migrations/012_identity_events.sql) | `created_at` |
+| `identity_login_replays` | [017_identity_login_replays.sql](../../db/migrations/017_identity_login_replays.sql) | `created_at`, `expires_at` |
+| `identity_recovery_request_replays` | [019_identity_recovery_request_replays.sql](../../db/migrations/019_identity_recovery_request_replays.sql) | `created_at`, `expires_at` |
+| `identity_registration_replays` | [018_identity_registration_replays.sql](../../db/migrations/018_identity_registration_replays.sql) | `created_at`, `expires_at` |
+| `identity_revocation_replays` | [015_identity_revocation_replays.sql](../../db/migrations/015_identity_revocation_replays.sql) | `created_at`, `expires_at` |
+| `identity_token_consumption_replays` | [020_identity_token_consumption_replays.sql](../../db/migrations/020_identity_token_consumption_replays.sql) | `consumed_at`, `created_at`, `expires_at` |
+| `invitation_creation_replays` | [022_invitation_creation_replays.sql](../../db/migrations/022_invitation_creation_replays.sql) | `created_at`, `expires_at` |
+| `invitation_issuer_authority_effects` | [109_invitation_issuer_account_authority.sql](../../db/migrations/109_invitation_issuer_account_authority.sql) | None |
+| `invitation_issuer_authority_proofs` | [109_invitation_issuer_account_authority.sql](../../db/migrations/109_invitation_issuer_account_authority.sql) | `changed_at` |
+| `invitation_issuer_authority_sources` | [109_invitation_issuer_account_authority.sql](../../db/migrations/109_invitation_issuer_account_authority.sql) | `created_at` |
+| `invitation_mail_intents` | [023_invitation_mail_intents.sql](../../db/migrations/023_invitation_mail_intents.sql) | `expires_at`, `finished_at`, `created_at` |
+| `invitation_recipient_authority_effects` | [105_invitation_recipient_authority.sql](../../db/migrations/105_invitation_recipient_authority.sql) | None |
+| `invitation_recipient_authority_revisions` | [105_invitation_recipient_authority.sql](../../db/migrations/105_invitation_recipient_authority.sql) | None |
+| `invitation_recipient_authority_sources` | [107_invitation_recipient_board_authority.sql](../../db/migrations/107_invitation_recipient_board_authority.sql) | None |
+| `invitation_recipient_events` | [102_invitation_recipient_events.sql](../../db/migrations/102_invitation_recipient_events.sql) | `created_at` |
+| `invitation_recipient_organization_lifecycle_proofs` | [108_invitation_recipient_organization_lifecycle.sql](../../db/migrations/108_invitation_recipient_organization_lifecycle.sql) | `changed_at` |
+| `invitation_recipient_organization_lifecycle_sources` | [108_invitation_recipient_organization_lifecycle.sql](../../db/migrations/108_invitation_recipient_organization_lifecycle.sql) | `created_at` |
+| `invitation_recipient_proofs` | [102_invitation_recipient_events.sql](../../db/migrations/102_invitation_recipient_events.sql) | `created_at` |
+| `mass_mention_reservations` | [061_mass_mention_quota.sql](../../db/migrations/061_mass_mention_quota.sql) | `source_created_at`, `reserved_at` |
+| `mention_handle_reservations` | [056_mention_handles.sql](../../db/migrations/056_mention_handles.sql) | `created_at` |
+| `navigation_interaction_events` | [078_navigation_interaction_sources.sql](../../db/migrations/078_navigation_interaction_sources.sql) | `created_at` |
+| `navigation_interaction_replays` | [080_navigation_interaction_replays.sql](../../db/migrations/080_navigation_interaction_replays.sql) | `created_at`, `expires_at` |
+| `notification_events` | [068_notification_private_journal.sql](../../db/migrations/068_notification_private_journal.sql) | `created_at` |
+| `organization_board_events` | [073_organization_board_journal.sql](../../db/migrations/073_organization_board_journal.sql) | None |
+| `organization_creation_replays` | [086_organization_creation_replays.sql](../../db/migrations/086_organization_creation_replays.sql) | `created_at`, `expires_at` |
+| `organization_deletion_replays` | [087_organization_deletion_replays.sql](../../db/migrations/087_organization_deletion_replays.sql) | `created_at`, `expires_at` |
+| `organization_deletion_requests` | [088_organization_deletion_progress.sql](../../db/migrations/088_organization_deletion_progress.sql) | `created_at` |
+| `organization_deletion_steps` | [092_organization_deletion_pages.sql](../../db/migrations/092_organization_deletion_pages.sql) | `completed_at` |
+| `organization_departure_replays` | [083_organization_departure_replays.sql](../../db/migrations/083_organization_departure_replays.sql) | `created_at`, `expires_at` |
+| `organization_invitation_acceptances` | [101_organization_invitation_acceptance_events.sql](../../db/migrations/101_organization_invitation_acceptance_events.sql) | `accepted_at`, `updated_at` |
+| `organization_invitation_creations` | [099_organization_member_invitation_events.sql](../../db/migrations/099_organization_member_invitation_events.sql) | `created_at` |
+| `organization_invitation_revocations` | [100_organization_invitation_revocation_events.sql](../../db/migrations/100_organization_invitation_revocation_events.sql) | `revoked_at`, `updated_at` |
+| `organization_membership_activations` | [097_organization_member_addition_events.sql](../../db/migrations/097_organization_member_addition_events.sql) | `activated_at` |
+| `organization_membership_removals` | [098_organization_member_removal_events.sql](../../db/migrations/098_organization_member_removal_events.sql) | `removed_at` |
+| `organization_metadata_replays` | [082_organization_metadata_replays.sql](../../db/migrations/082_organization_metadata_replays.sql) | `created_at`, `expires_at` |
+| `organization_removal_replays` | [084_organization_removal_replays.sql](../../db/migrations/084_organization_removal_replays.sql) | `created_at`, `expires_at` |
+| `schema_migrations` | [001_foundation.sql](../../db/migrations/001_foundation.sql) | `applied_at` |
+| `search_interaction_events` | [076_search_interaction_sources.sql](../../db/migrations/076_search_interaction_sources.sql) | `created_at` |
+| `work_command_replays` | [010_work_command_replays.sql](../../db/migrations/010_work_command_replays.sql) | `created_at`, `expires_at` |
+| `work_events` | [011_work_events.sql](../../db/migrations/011_work_events.sql) | `created_at`, `ready_at` |
+
+### Additional writer findings
+
+`invitation_mail_intents` has a mutable state, version, receipt, finish time and
+error code. [Its current runtime publisher](../../src/StrataAI.Infrastructure/Onboarding/PostgresInvitationMailPublisher.cs)
+inserts the snapshot selected from a freshly admitted invitation; the original
+private `finish_invitation_mail` capability locks the intent and job, validates
+the tenant/actor/metadata and current Worker lease after waits, then updates only
+a pending row to a terminal state with a database finish time and version advance.
+The capability admits SENT, CANCELLED and FAILED. API table-state updates and
+Worker direct recipient updates are denied by the
+[original mail-scope regression](../../scripts/ci/test-invitation-mail-scope.sh).
+
+That regression also performs admitted administrator changes to the pending
+Board-target snapshot, including changing and restoring the target role. Such
+updates do not record a mutation time. `COALESCE(finished_at,created_at)` therefore
+covers runtime terminal-state publication, but does not prove the last mutation
+clock of every historically admitted row. A repair must explicitly handle this
+legacy distinction, preserve all target-scope/refusal/lease/replay tests, and not
+replace missing mutation provenance with the migration clock. This source trace
+is not a newly executed mail-delivery or whole-schema acceptance result.
+
+The recipient-authority revision has an additional counting boundary. Migration
+105 increments once after each new tenant/source/email effect; 107 retains that
+rule for the expanded source view. The current replacement in 109 first records
+the tenant effect, then deduplicates User-source effects globally by event/email
+in `invitation_issuer_authority_effects`. Only the first global User effect
+increments the private recipient revision, even if that issuer invited the same
+address into multiple Organizations. Thus counting every tenant effect would
+inflate the expected revision. A retained-history check must count non-User
+tenant/source effects plus deduplicated global User effects and independently
+validate their source/actor/email relationships. Neither effect table records a
+per-recipient publication sequence; source event time alone is not proof of
+which effect first created the counter. This blocks an unqualified sequence-one
+clock reconstruction, not further work on other requirements.
+
+The full catalog, selected writer traces and missing legacy provenance remain
+separate from complete mutable-record classification and runtime acceptance.
+PRD-01 remains open at **34% estimated work remaining** (planning estimate).

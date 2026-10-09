@@ -152,3 +152,19 @@ API invocation has started against that newer build; its live handle remains
 authoritative until a terminal result exists. Neither local suite certifies
 the current immutable-image pipeline, whose metadata job remains queued without
 an assigned runner at the recorded inspection.
+
+That full schema-126 Linux API invocation subsequently passes **691/691**.
+Independent TRX inspection confirms 691 actual Passed rows and matching
+total/executed/passed counters, with zero errors, failures, timeouts, aborts or
+excluded cases. Its pinned runtime digest is unchanged and the owned test
+container is independently absent. This build predates the concurrent
+notification-route rediscovery repair; it does not certify that later code.
+
+The [notification route repair](notification-stream-clocks.md) passes its six
+new API regression cases and a full locked solution build. A fresh complete
+Linux API invocation has started against the repaired compiled artifacts,
+including all original 691 cases and the six additions, without filters,
+exclusions, test retries or deadline increases. The actual terminal report must
+prove its full scope. Native watch/order and 100,000-notification capacity runs
+remain live; current immutable-image CI remains queued. None is promoted from
+an unfinished run or an older successful build to current release acceptance.

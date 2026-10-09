@@ -1024,3 +1024,15 @@ shipped. Owned containers and the cloned database are removed.
 The separate expanded watch phase also passes all seven cases as recorded above.
 Current immutable/full CI and the complete requirement/DoD map remain required.
 Estimated PRD-17 work remaining stays **15%**; the ticket is open.
+
+## Current notification clocks and moving-route verification
+
+The [notification counter and route record](notification-stream-clocks.md)
+contains the newer schema-126 migration, complete nine-case native notification
+result, all-126-ledger readiness checks, complete watch/ordering failures and
+the concurrent route-discovery repair. Its six new API regressions pass;
+fresh full native watch/order, full current API source tests and the original
+100,000-notification capacity continuation remain live. The earlier schema-114
+results above retain their original scope and cannot substitute for current
+immutable-image or complete PRD acceptance. The ticket remains open at **15%
+estimated work remaining** (planning estimate).

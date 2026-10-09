@@ -259,3 +259,13 @@ verification also passes all 126 independently applied migration removals,
 expanded from the original 48 selected cases. Additional complete watch/ordering
 and current capacity execution remain separate. Neither this local repair nor an incomplete live run establishes
 full clock coverage or current immutable-image release acceptance.
+
+The [complete schema-126 candidate catalog](remaining-clock-candidates.md#complete-schema-126-catalog-navigation)
+now lists all 51 current physical-column candidates, with verified declaration
+links and retained clock fields. This is complete catalog navigation, not
+complete mutable-record classification. Additional mail-snapshot and recipient
+revision traces identify legacy mutation provenance and global User-effect
+deduplication requirements. The full schema-126 pre-route-repair Linux API suite
+also passes all 691 cases; [its source record](source-test-results.md) separates
+that proof from the six-case route repair and fresh full current invocation.
+No foundation or release requirement is waived; the estimate remains **34%**.
