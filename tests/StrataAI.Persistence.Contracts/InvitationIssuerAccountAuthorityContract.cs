@@ -218,14 +218,19 @@ internal static class InvitationIssuerAccountAuthorityContract
              (SELECT count(*)=207 AND bool_and(state='SUCCEEDED' AND attempt_count=1 AND actor_id=@actor AND correlation_id=@correlation)
                FROM background_jobs WHERE safe_metadata=jsonb_build_object('eventId',@source)),
              (SELECT count(*)=1 FROM identity_events WHERE user_id=@actor AND event_type='USER_DEACTIVATED'),
-             (SELECT count(*)=1 FROM audit_events WHERE actor_id=@actor AND event_type='USER_DEACTIVATED');
+             (SELECT count(*)=1 FROM audit_events WHERE actor_id=@actor AND event_type='USER_DEACTIVATED'),
+             (SELECT count(*)=2 AND bool_and(created_at IS NOT NULL AND updated_at IS NOT NULL
+                AND isfinite(created_at) AND updated_at=created_at
+                AND created_at>=(SELECT created_at FROM invitation_issuer_authority_sources WHERE event_id=@source))
+               FROM invitation_recipient_authority_revisions WHERE email_normalized IN (@email,@other));
             """,admin))
         {
             verify.Parameters.AddWithValue("source",source); verify.Parameters.AddWithValue("actor",actor);verify.Parameters.AddWithValue("correlation",correlation);
             verify.Parameters.AddWithValue("email",email);verify.Parameters.AddWithValue("other",other);verify.Parameters.AddWithValue("future",future);
             await using var row=await verify.ExecuteReaderAsync(ct);
-            Require(await row.ReadAsync(ct)&&Enumerable.Range(0,10).All(i=>!row.IsDBNull(i)&&row.GetBoolean(i)),
-                "Issuer canonical attribution, global/tenant paging, global recipient deduplication, cutoff or retry failed.");
+            Require(await row.ReadAsync(ct)&&Enumerable.Range(0,10).All(i=>!row.IsDBNull(i)&&row.GetBoolean(i))
+                && !row.IsDBNull(10)&&row.GetBoolean(10),
+                "Issuer canonical attribution, global/tenant paging, global recipient deduplication, cutoff, retry or revision clocks failed.");
         }
         foreach(var connection in new[]{apiConnection,workerConnection}) foreach(var table in new[]{"invitation_issuer_authority_proofs","invitation_issuer_authority_sources","invitation_issuer_authority_jobs","invitation_issuer_authority_effects"})
         {

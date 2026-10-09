@@ -83,7 +83,7 @@ filter, cardinality, deadline, assertion or page budget is changed; diagnostic
 logging itself is not a production configuration or latency certification.
 The full failure and current CI evidence remain open obligations.
 
-Recipient-authority revision counters still need their creation/update clock
-repair, and legacy provenance/full acceptance remain unresolved for all six
-classified mutable candidates. PRD-01 stays open at **34% estimated work
+[Recipient-authority revision counters](invitation-authority-revision-clocks.md)
+now have prospective clocks in migration 132. Legacy provenance/full acceptance
+remain unresolved for all six classified mutable candidates. PRD-01 stays open at **34% estimated work
 remaining** (planning estimate).

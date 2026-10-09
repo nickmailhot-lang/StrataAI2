@@ -223,3 +223,38 @@ files are independently confirmed absent. The full 32-case Board browser
 invocation remains active; current immutable build-once release acceptance
 remains outstanding. No SQL assertion is relaxed to accommodate a populated
 contract database.
+
+
+## Completed schema-129 persistence and schema-128 API invocations
+
+The complete default schema-129 persistence executable subsequently passes
+against its own PostgreSQL/pgvector database and restricted API/Worker logins.
+It uses the original default path without mode arguments, exclusions, filters,
+case retries or changed concurrency/scale budgets. Exit/outcome are successful,
+with 68 passing summary lines and no unhandled exception; these are summary
+markers, not an independently collected case count. All 129 staged migrations
+and role provisioning source still match normalized current source. Its owned
+containers and credential environments are independently absent. Private report:
+`attachment-sweep-schema129-full-persistence-native-20261009`.
+
+Unlike the earlier schema-127 enclosing helper, this invocation performs no
+fresh-database SQL companion checks after retaining the default fixture history.
+The separately executed schema-129 SQL/security/migration gates remain their
+own evidence. Default execution does not execute every special-mode branch.
+It is not certification of later migrations or the whole PRD acceptance scope.
+
+The full Linux API invocation using compiled schema-128 Debug artifacts also
+finishes successfully: **697 actual result rows, 697 unique execution IDs and
+697 Passed outcomes**, with matching declared total/executed/passed counters.
+Failed, error, timeout, aborted, nonexecuted, pending and inconclusive counters
+are zero. No filter or retry is added. It uses the pinned .NET 10.0.12 runtime
+image with private source/content-root mappings. Private report:
+`work-replay-clock-full-api-linux-schema128-native-20261009`. Owned test container
+and credential environments are independently absent.
+
+The compiled API payload predates migrations 129–132. The read-only source/
+content-root bind followed the host checkout as it changed during execution;
+it was not a frozen Git SHA. This is the completed original source-test scope,
+not proof of current-schema PostgreSQL behavior, browser acceptance or an
+immutable current release image. Current build-once CI and the independently
+reproduced later full-persistence timeout still require resolution.

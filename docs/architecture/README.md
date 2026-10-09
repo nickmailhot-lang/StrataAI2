@@ -61,3 +61,5 @@ Both are part of one modular-monolith product and share the same domain/applicat
 - [Work event delivery clocks and legacy provenance](work-event-clock-audit.md)
 
 - [Invitation mail update clocks and delivery boundaries](invitation-mail-update-clocks.md)
+
+- [Recipient authority revision clocks and private publication](invitation-authority-revision-clocks.md)

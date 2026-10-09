@@ -326,6 +326,9 @@ jobs:
       - name: Verify real restricted runtime logins and elevation rejection
         run: scripts/ci/test-runtime-roles.sh
 
+      - name: Verify recipient authority revision clocks and idempotent effects
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-authority-revision-clocks.sql
+
       - name: Verify invitation mail clocks without widening delivery authority
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-mail-update-clocks.sql
 

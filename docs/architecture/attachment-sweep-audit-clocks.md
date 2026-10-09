@@ -49,18 +49,21 @@ A fresh original archive-history/readiness mode passes against its own
 schema-129 PostgreSQL/pgvector fixture and new compiled artifacts, including
 all 129 independent required-ledger refusal/restoration checks for API and
 Worker. Its owned containers/environment files are independently absent.
-A fresh **unfiltered** default persistence executable remains active against
-its own separate schema-129 fixture and the same compiled artifacts. It retains the
-original complete default path, nested preview/recovery/Worker contracts and
-original concurrency/scale budgets, without filters or case retries. Their
-terminal outcome remains required. Other special mode-only branches and deployed
-provider/native browser acceptance have separate verification requirements.
-The earlier full Linux API invocation uses compiled schema-128 artifacts and
-remains active; it cannot certify this later migration. Current immutable
+The fresh **unfiltered** default schema-129 persistence executable subsequently
+passed with its own separate fixture and compiled artifacts, original complete
+default path, nested preview/recovery/Worker contracts and original concurrency/
+scale budgets. It ran with no mode arguments, filters or case retries. Its 68
+passing summary lines are not an independently collected test-case count.
+Owned containers and credential environments are independently absent. Special
+mode-only branches, provider/native browser acceptance and later schema versions
+have separate verification requirements. The earlier full Linux API invocation
+also finished with all 697 actual results passing; its compiled payload is
+schema 128 and cannot certify this later migration. See
+[source test results](source-test-results.md).
+Current immutable
 build-once release acceptance is outstanding.
 
-Prospective clock capture now covers Work receipt updates and both sweeps.
-Legacy provenance for these records, and the remaining mail-intent,
-recipient-authority-revision and Work-delivery clock repairs, remain within
-the [original candidate audit](remaining-clock-candidates.md). PRD-01 remains
-open at **34% estimated work remaining** (planning estimate).
+All six [classified mutable clock candidates](remaining-clock-candidates.md)
+now have prospective repairs in migrations 128–132. Legacy provenance and the
+full original acceptance scope remain unresolved. PRD-01 remains open at
+**34% estimated work remaining** (planning estimate).
