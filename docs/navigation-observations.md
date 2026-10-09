@@ -217,3 +217,30 @@ Runtime scope remains the repaired production frontend, retained API/Worker,
 restricted schema-114 PostgreSQL and current Nginx/CSP with verified accounts;
 this does not prove current immutable build-once CI. PRD-01 stays open at **34%
 estimated work remaining** (planning estimate).
+
+### Subsequent complete Board result and current schema-115 rerun
+
+The next fresh complete invocation finished with **29 passes and two failures**,
+zero skipped/flaky cases or report-level errors, in 1,345.90 seconds. Both
+activity-history cases passed, including the retained historical-actor assertions.
+The failures were desktop Card-label filtering after Clear and label-filter
+collaboration after applying due-completion criteria. Their preserved traces
+record earlier successful assignment commands but no observed dispatch for the
+failed filter action. Absence in a trace is not complete proof of every API path.
+
+Pending fixture repairs now observe actual request dispatch: activation retries
+stop as soon as the specific clear request or second Apply request is observed.
+The selected due criterion, unchanged keyword/result assertions, exact command
+counts and original scenario deadlines remain. Browser type/diff checks pass.
+All five browser fixture repairs remain uncommitted pending aggregate acceptance.
+Independent cleanup verifies zero owned containers/databases, removed API/Worker
+environment files and preserved original services for this completed invocation.
+
+A fresh full fourteen-file/31-case phase is active against the current locked
+compiled API/Worker source through migration 115, mounted into local runtime
+containers, with the repaired production frontend and verified-account policy.
+Its schema-only disposable clone avoids inheriting unrelated account/job data.
+This local compiled-source fixture is separate from immutable-image/build-once
+release proof; its result is pending. The full scenario selection, original
+assertions and zero test retries remain. PRD-01 stays open at **34% estimated work
+remaining** (planning estimate).

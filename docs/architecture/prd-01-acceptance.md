@@ -107,6 +107,14 @@ retains the scope, diagnoses, sixteen passing activity component regressions and
 independently verified cleanup. A fresh full rerun with pending fixture repairs
 is active; this is not aggregate acceptance or release proof.
 
+The subsequent complete invocation also finished **29/31**, with no skipped or
+flaky cases, in 1,345.90 seconds. Activity-history passed; desktop Card-label
+Clear and label-filter due-completion Apply failed. Their pending actual-dispatch
+fixture checks retain original criteria, results and command counts. The next
+full invocation uses current compiled schema-115 API/Worker source; its
+[execution scope and preserved failures](../navigation-observations.md#subsequent-complete-board-result-and-current-schema-115-rerun)
+remain separate from current immutable-image CI and aggregate acceptance.
+
 The complete three-width capacity chain passes all **3/3 cases** and final
 100,000 archived-record count/fingerprint checks. [Its execution record](../navigation-observations.md#executed-large-board-history-and-viewport-preservation)
 documents runtime, optional rank-fixture verification policy, exact nested scroll
