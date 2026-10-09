@@ -256,3 +256,26 @@ result. Final owned containers/database/provider volume/credential files are
 independently absent. Private local storage, scanner protocol simulation,
 administrator test-account verification and current immutable/external-provider/
 full acceptance limits remain as recorded above.
+
+## Actual selected-cover source archive and deletion
+
+The complete enabled pipeline now selects its actually uploaded/scanned/published
+attachment as a private Card cover after both browser viewports. It asserts the
+canonical Card revision advances from 8 to 9 and that the cover delivers the same
+sanitized PNG as the independently owned Board background; anonymous cover access
+is refused. Archiving that selected source advances the Card exactly once to 10,
+clears both cover identifiers and makes its image route return 404. Source deletion
+then advances to 11 with the cover still empty and inaccessible. Attachment
+revisions remain exactly 3/4/5; original Board-image receipts and both independent
+Board image owners survive the attachment tombstone.
+
+The complete two-viewport browser invocation passes 2/2 in 87.1 seconds without
+failures/skips/retries/flaky cases, followed by every native HTTP pipeline assertion.
+Existing concurrency, current-version refusal,
+source restoration denial, Board archive, public/Private, session withdrawal,
+readmission and retired-selection checks remain. Owned containers/database/private
+provider volume/credential files are independently absent. This executes current
+backend source with a separate native Worker and restricted PostgreSQL, explicit
+local storage and scanner protocol simulator. It does not prove live peer-client
+cover withdrawal, external S3/deployed malware engine, physical erasure/backup
+expiry or current immutable/full release acceptance.

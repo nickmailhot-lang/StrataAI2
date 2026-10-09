@@ -934,3 +934,11 @@ access refreshes; a focused regression protects intentional focus elsewhere.
 All 43 focused controls and source/build checks pass. Current immutable release,
 external provider/operator and full cross-feature/performance acceptance remain
 open. Estimated PRD-14 work remaining: **33%**.
+
+The [actual selected-cover lifecycle extension](attachment-object-storage.md#actual-selected-cover-source-archive-and-deletion)
+also selects that published source as a private cover before archiving it. The
+archive acknowledgment clears the cover with exactly one Card revision; both
+cover identifiers are null and the image route is withdrawn. Subsequent source
+deletion keeps that withdrawal while preserving both independent Board image
+owners. The entire native pipeline passes; live peer-client lifecycle withdrawal,
+external provider/backup authority and current full immutable acceptance remain.

@@ -60,10 +60,14 @@ Both enabled attachment pipeline viewports now also execute the actual published
 source as a Card cover: PUBLIC refusal/consent, original receipt recovery, native
 PNG rendering, anonymous sanitized bytes/private metadata denial and removal.
 The [complete expanded native equivalent](attachment-object-storage.md#real-upload-through-worker-card-cover-browser-workflow)
-passes 2/2 in 89.2 seconds and all subsequent HTTP checks. Its unchanged 150-second
+passes 2/2 in 87.1 seconds and all subsequent HTTP checks. Its unchanged 150-second
 case deadlines, complete invocation, original Board-background assertions and
 current immutable/provider limits remain; canonical post-browser Card revision
-is exactly 8, archive 9 and deletion 10.
+is exactly 8. The subsequent private lifecycle-cover selection advances to 9,
+source archive clears that cover in revision 10, and source deletion retains its
+withdrawal in revision 11. The [selected-cover lifecycle extension](attachment-object-storage.md#actual-selected-cover-source-archive-and-deletion)
+passes together with both viewports and the complete native HTTP pipeline; all
+owned fixture resources are independently absent.
 
 ## Strict notification consumer coverage
 
