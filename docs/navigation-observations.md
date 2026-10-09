@@ -125,3 +125,27 @@ Board context and WCAG assertions remain. See [execution evidence](architecture/
 
 Estimated PRD-01 work remaining stays **34%** (planning estimate). This focused
 execution does not establish complete foundation or current immutable CI acceptance.
+
+## Card detail focus after browser history navigation
+
+FOUND-FR-007 and PRD-01-TC-11 require predictable browser Back behavior and
+keyboard focus. Card details now remember the current Card route before the
+dialog exit transition runs. Browser Back returns focus to that Card's existing
+Board link, using `preventScroll` to avoid moving the Board viewport. Replacing
+an open detail route updates the return target. If that Card link is unavailable,
+the existing Board refresh control remains the fallback. Organization/Board
+remounting bounds the return target to its current scope.
+
+Both new rendered regressions failed before the repair because focus returned
+to Board refresh. The complete Board component file passed all 38 cases after
+the repair. Type checks, lint and the production frontend build also passed.
+The existing desktop/phone persisted Board workflow now checks Back focus,
+Forward reopening and Close focus without removing its concurrent-client,
+retry, deep-link or isolation assertions.
+
+Complete web-suite and 14-file/31-case native Board-phase verification are in
+progress. The local browser fixture uses this production frontend build with
+retained API/Worker images and restricted PostgreSQL roles; it is separate from
+the full immutable build-once CI gate, which remains pending. No complete
+foundation acceptance or issue closure is inferred from these focused results.
+Estimated PRD-01 work remaining stays **34%** (planning estimate).

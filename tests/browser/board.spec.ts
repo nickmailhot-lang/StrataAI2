@@ -147,6 +147,14 @@ for (const viewport of [
     await expect(second).toHaveURL(new RegExp(`${path}$`));
     await page.goBack();
     await expect(page).toHaveURL(new RegExp(`${path}$`));
+    const returnCard = page.getByRole('link', { name: 'Inspect roof and gutters', exact: true });
+    await expect(returnCard).toBeFocused();
+    await page.goForward();
+    await expect(page).toHaveURL(new RegExp(`${cardPath}$`));
+    await expect(page.getByLabel('Card title', { exact: false })).toHaveValue('Inspect roof and gutters');
+    await activate('Close');
+    await expect(page).toHaveURL(new RegExp(`${path}$`));
+    await expect(returnCard).toBeFocused();
     await page.goto(
       `/app/00000000-0000-0000-0000-000000000000/boards/${board.id}`,
     );

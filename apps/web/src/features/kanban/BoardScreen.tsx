@@ -1,6 +1,6 @@
 import { KanbanPointerScrollFrame } from './kanbanPointerScrollFrame';
 import { KanbanAutoScroll } from './kanbanAutoScroll';
-import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -186,6 +186,9 @@ function BoardContent() {
   const windowMemory = useRef(new Map<string, number>());
   const windowHeights = useRef<BoardWindowHeights>(new Map());
   const closeFocusCard = useRef<string | undefined>(undefined);
+  // History Back closes the dialog without calling closeCard. Remember each
+  // current detail route's return target before its exit transition can run.
+  useLayoutEffect(() => { if (cardId) closeFocusCard.current = cardId; }, [cardId]);
   const cardClose = useRef<HTMLButtonElement>(null);
   const canvasFocus = useRef<{ scope: string; cardId: string } | undefined>(undefined);
   useEffect(() => {

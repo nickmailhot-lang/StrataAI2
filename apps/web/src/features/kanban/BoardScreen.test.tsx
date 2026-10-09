@@ -73,6 +73,32 @@ beforeEach(() => sessionStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
 
 describe("PRD-01/04/07/08/09 persisted board flows", () => {
+  it('PRD-01-TC-11 returns focus to the opened Card after browser history Back', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => response(fixture)));
+    const router = mount();
+    const link = await screen.findByRole('link', { name: /^Inspect roof$/ });
+    link.focus(); fireEvent.click(link);
+    await screen.findByRole('dialog', { name: 'Card details' });
+    await act(async () => { await router.navigate(-1); });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Card details' })).not.toBeInTheDocument());
+    await waitFor(() => expect(link).toHaveFocus());
+    expect(router.state.location.pathname).toBe('/app/org-1/boards/board-1');
+  });
+
+  it('PRD-01-TC-11 returns focus to the latest Card after replacing the open detail route', async () => {
+    const current = structuredClone(fixture);
+    current.lists[0].cards.push({ ...current.lists[0].cards[0], id: 'card-2', title: 'Inspect windows' });
+    vi.stubGlobal('fetch', vi.fn(async () => response(current)));
+    const router = mount();
+    fireEvent.click(await screen.findByRole('link', { name: /^Inspect roof$/ }));
+    await screen.findByRole('dialog', { name: 'Card details' });
+    await act(async () => { await router.navigate('/app/org-1/boards/board-1/cards/card-2', { replace: true }); });
+    await waitFor(() => expect(screen.getByLabelText(/Card title/)).toHaveValue('Inspect windows'));
+    await act(async () => { await router.navigate(-1); });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Card details' })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('link', { name: /^Inspect windows$/ })).toHaveFocus());
+  });
+
   it('keeps mutation admission busy across a queued refresh until the final read withdraws edit access', async () => {
     let invalidate = () => {};
     vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
