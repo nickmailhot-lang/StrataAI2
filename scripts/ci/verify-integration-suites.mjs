@@ -70,7 +70,7 @@ export function verifyIntegrationSuites(workflow, registry) {
   assert.equal(strictBoards.run, [
     'set -euo pipefail',
     ...['api', 'worker'].map(host => `test "$(docker compose -f compose.release.yml exec -T ${host} printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true`),
-    'npx playwright test tests/browser/board.spec.ts tests/browser/board-metadata.spec.ts tests/browser/board-copy.spec.ts tests/browser/board-lifecycle.spec.ts tests/browser/board-archive-account.spec.ts tests/browser/board-star.spec.ts tests/browser/activity-history.spec.ts tests/browser/board-background-client.spec.ts tests/browser/organization-board-live.spec.ts tests/browser/board-visibility.spec.ts tests/browser/board-members.spec.ts tests/browser/board-admin-live.spec.ts tests/browser/card-labels.spec.ts', '',
+    'npx playwright test tests/browser/board.spec.ts tests/browser/board-metadata.spec.ts tests/browser/board-copy.spec.ts tests/browser/board-lifecycle.spec.ts tests/browser/board-archive-account.spec.ts tests/browser/board-star.spec.ts tests/browser/activity-history.spec.ts tests/browser/board-background-client.spec.ts tests/browser/organization-board-live.spec.ts tests/browser/board-visibility.spec.ts tests/browser/board-members.spec.ts tests/browser/board-admin-live.spec.ts tests/browser/card-labels.spec.ts tests/browser/label-filter-live.spec.ts', '',
   ].join('\n'), 'Complete native Board management requires verified admission in both hosts');
   const browserCoverage = jobs['web-quality'].steps.find(step => step.name === 'Verify complete browser shard coverage');
   assert.equal(browserCoverage?.run, 'node --test tests/browser-shards.test.mjs\nnode scripts/ci/verify-browser-shards.mjs\n');

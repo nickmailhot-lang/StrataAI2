@@ -1,13 +1,13 @@
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { pressAdmittedAction } from './keyboardAdmission';
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
 test('PRD-10/16: desktop label changes refresh phone filters through Worker delivery and socket recovery', async ({ page, context, browser }) => {
   test.setTimeout(180_000); await page.setViewportSize({ width: 1280, height: 844 });
   const headers = { 'X-StrataAI-Request': '1' };
   const account = { email: `label-filter-live-${Date.now()}@example.test`, password: 'label-filter-live-correct-horse', displayName: 'Label collaboration fixture' };
-  expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-  expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+  await registerVerifiedAccountFixture(context.request, account);
   const orgReply = await context.request.post('/organizations', { headers, data: { name: 'Label collaboration' } });
   expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
   const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Live labels', visibility: 'PRIVATE' } });

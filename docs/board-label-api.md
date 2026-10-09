@@ -382,3 +382,32 @@ activation failure's exact cause or a complete release. A fresh mandatory
 13-file/30-case combined strict phase is running against those same frozen
 assets and rebuilt hosts. Complete API and current immutable/full CI remain
 pending. Estimated PRD-10 work remaining stays **35%**.
+
+
+## Strict verified-account two-client label/filter recovery
+
+The complete `label-filter-live.spec.ts` initially fails under Production
+verified-email enforcement: its immediate login expects 200 but receives 403.
+It now uses the existing verified-account fixture, which first observes the
+pending-account denial and activates only its newly registered disposable user.
+Production policy and the ordinary optional fixture path remain unchanged;
+this activation does not certify email-provider delivery.
+
+The complete scenario passes in 89.4 seconds with zero skips, retries or flaky
+cases. Two independent browser contexts share one real account, with desktop
+and phone viewports. Genuine Worker delivery and an upstream WebSocket exercise
+label assignment/removal/rename, forced disconnect and reconnect, due completion,
+assignee changes, persisted filters and filtered canvas, exactly four deliberate
+filter-change writes, and archive withdrawal. Original assertions and the
+180-second deadline remain. Runtime: current compiled Production API/separate
+Worker, frozen original-key recovery web and restricted schema-114
+PostgreSQL17/pgvector. Owned containers and database were removed.
+
+Mandatory strict Board coverage now includes this whole file: fourteen files /
+31 cases. A negative guard rejects its omission; the integration registry suite
+passes all 77 tests, browser TypeScript passes, and the registry/shard checks
+retain 112 registered steps across seven isolated executions and all 320 cases
+in 124 intact files across four full shards. Workflow syntax validation passes.
+The already-running 30-case invocation predates this addition and cannot certify
+the expanded 31-case phase. Current immutable/full CI and complete acceptance
+remain required. Estimated PRD-10 work remaining: **35%**; PRD-16: **18%**.

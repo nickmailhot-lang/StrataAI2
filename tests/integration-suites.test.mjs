@@ -14,6 +14,7 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['strict two-client label filter recovery omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/label-filter-live.spec.ts', ''); }],
   ['strict Board label workflows omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/card-labels.spec.ts', ''); }],
   ...['Invitation-backed closed registration and atomic expiry against exact release API',
     'Verified-email invitation discovery and retry-safe acceptance',

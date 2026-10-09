@@ -1061,7 +1061,7 @@ jobs:
           set -euo pipefail
           test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
           test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
-          npx playwright test tests/browser/board.spec.ts tests/browser/board-metadata.spec.ts tests/browser/board-copy.spec.ts tests/browser/board-lifecycle.spec.ts tests/browser/board-archive-account.spec.ts tests/browser/board-star.spec.ts tests/browser/activity-history.spec.ts tests/browser/board-background-client.spec.ts tests/browser/organization-board-live.spec.ts tests/browser/board-visibility.spec.ts tests/browser/board-members.spec.ts tests/browser/board-admin-live.spec.ts tests/browser/card-labels.spec.ts
+          npx playwright test tests/browser/board.spec.ts tests/browser/board-metadata.spec.ts tests/browser/board-copy.spec.ts tests/browser/board-lifecycle.spec.ts tests/browser/board-archive-account.spec.ts tests/browser/board-star.spec.ts tests/browser/activity-history.spec.ts tests/browser/board-background-client.spec.ts tests/browser/organization-board-live.spec.ts tests/browser/board-visibility.spec.ts tests/browser/board-members.spec.ts tests/browser/board-admin-live.spec.ts tests/browser/card-labels.spec.ts tests/browser/label-filter-live.spec.ts
 
       - name: Strict verified-account watch producers through native private inboxes
         if: (matrix.suite == 'browser-notifications')
