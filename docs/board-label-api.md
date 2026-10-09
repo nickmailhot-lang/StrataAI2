@@ -274,3 +274,33 @@ assertions pass. The chooser repair's dedicated full cross-client case then pass
 web/API and real restricted PostgreSQL/scoped Worker. Earlier failures remain
 documented; current immutable CI and outstanding full-PRD requirements still
 prevent closure. PRD-10 remains open at **35%** estimated remaining (planning estimate).
+
+
+## Strict verified-account native label workflow
+
+Both unchanged label workflows fail initial login under real verified-email
+policy (expected 200 / actual 403). They now use the existing shared fixture:
+real registration, pending-account refusal, verification of only the freshly
+registered disposable account, then normal login. Ordinary unfiltered behavior
+remains unchanged when the strict flag is absent. This fixture does not prove
+provider delivery, which retains separate checks.
+
+The mandatory strict Board phase now selects thirteen complete files / 30
+cases, adding both complete label workflows to the previous twelve files / 28
+cases. Lost-response original key/body recovery, persisted filter changes and
+command counts, saved label order/version, explicit deletion consent, actual
+Card association removal, keyboard/focus and mobile assertions retain their
+original deadlines and retry policy. API and Worker verified-email enforcement
+checks remain mandatory. Build-once images, seven matrix executions, 112 named
+steps and the unfiltered full-suite coverage remain unchanged.
+
+A new workflow omission mutation is accepted before verifier repair (75 pass /
+one fail), and all 76 guards pass after repair. Workflow syntax, browser types,
+integration registry and full shard coverage are checked separately. Both
+complete strict native label scenarios are running against current compiled
+Production API/separate Worker, frozen member-focus web and restricted schema-114
+PostgreSQL 17/pgvector. This fixes fixture admission; the older immutable label
+trace's missing root Board-label DELETE remains an independent unresolved
+activation investigation. No speculative product notice change is made.
+Current immutable/full CI and complete PRD acceptance still govern closure.
+Estimated PRD-10 work remaining stays **35%** (planning estimate).

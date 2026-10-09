@@ -205,3 +205,20 @@ This scoped result does not establish the prior intermittent phone failure's
 exact cause or a complete combined/full immutable pass. Current CI remains
 queued; complete acceptance still governs closure. Estimated PRD-05 work
 remaining stays **15%**.
+
+
+## Strict label workflow admission and mandatory coverage
+
+Both desktop/phone label baselines fail login with 403 under verified-email
+enforcement. The existing shared account fixture now supplies strict admission
+without altering production policy or the ordinary unfiltered path. The strict
+Board step adds the complete `card-labels.spec.ts`: thirteen files / 30 cases,
+retaining all previous 28 cases. The preceding 28-case invocation is still
+running and cannot certify the expanded phase.
+
+The new omission guard fails before verifier repair (75 pass / one fail); all
+76 guards pass afterward. The 112-step/seven-execution immutable architecture
+and four complete unfiltered shards remain. Native execution of both label
+cases is in progress. See [PRD-10 evidence](../board-label-api.md#strict-verified-account-native-label-workflow).
+The older missing root label DELETE is not explained by the strict account
+fixture, since that invocation had already completed login.

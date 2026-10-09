@@ -2,14 +2,14 @@ import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 import { pressAdmittedAction } from './keyboardAdmission';
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
 for (const width of [1280, 390]) {
   test(`PRD-10: Card labels have keyboard-readable names and reflect persisted deletion at ${width}px`, async ({ page, context }) => {
     test.setTimeout(90_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `card-labels-${width}-${Date.now()}@example.test`, password: 'card-label-correct-horse-battery', displayName: 'Label reader' };
-    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    await registerVerifiedAccountFixture(context.request, account);
     const orgReply = await context.request.post('/organizations', { headers, data: { name: 'Label Organization' } });
     expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
     const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Label Board', visibility: 'PRIVATE' } });
