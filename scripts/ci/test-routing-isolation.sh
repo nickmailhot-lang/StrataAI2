@@ -77,7 +77,8 @@ for entry in \
   "LIST|INSERT INTO list_routes(list_id,tenant_id,board_id,lifecycle_state,updated_at) VALUES(gen_random_uuid(),'$org_b','$board_b','ACTIVE',now())" \
   "CARD|INSERT INTO card_routes(card_id,tenant_id,board_id,list_id,lifecycle_state,updated_at) VALUES(gen_random_uuid(),'$org_b','$board_b','$list_b','ACTIVE',now())" \
   "LABEL|INSERT INTO label_routes(label_id,tenant_id,board_id,status) VALUES(gen_random_uuid(),'$org_b','$board_b','ACTIVE')" \
-  "INVITATION_ID|INSERT INTO invitation_routes(token_hash,invitation_id,tenant_id,email_normalized,target_surface,target_role,expires_at,organization_name) VALUES(encode(sha256('route-clock-denial-fixture'::bytea),'hex'),gen_random_uuid(),'$org_b','ROUTE-DENIAL@EXAMPLE.TEST','INTERNAL','MEMBER',now()+interval '1 day','Denied fixture')"; do
+  "INVITATION_ID|INSERT INTO invitation_routes(token_hash,invitation_id,tenant_id,email_normalized,target_surface,target_role,expires_at,organization_name) VALUES(encode(sha256('route-clock-denial-fixture'::bytea),'hex'),gen_random_uuid(),'$org_b','ROUTE-DENIAL@EXAMPLE.TEST','INTERNAL','MEMBER',now()+interval '1 day','Denied fixture')" \
+  "ORGANIZATION_USER|INSERT INTO user_organization_access(user_id,tenant_id,role,status,updated_at) VALUES('$user_b','$org_a','MEMBER','ACTIVE',now())"; do
   IFS='|' read -r kind statement <<< "$entry"
   if lookup "$kind" "$board_a" "$statement" >"$scratch/denied" 2>&1; then
     echo 'Read-only discovery context admitted a clocked route write' >&2; exit 1

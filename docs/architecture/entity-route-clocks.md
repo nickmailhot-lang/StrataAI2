@@ -126,3 +126,38 @@ build passes with zero warnings/errors, as do 179 integration/build metadata
 source checks. Current immutable-image CI/deployed verification still governs
 acceptance. Other mutable operational records and recipient revision-counter
 historical delivery clocks remain in the foundation audit.
+
+## Organization membership access routing
+
+[Migration 120](../../db/migrations/120_organization_access_route_clocks.sql)
+adds a creation clock to `user_organization_access`, retaining the canonical
+membership update clock. Its sole synchronization writer is migration 004's
+`sync_user_organization_access`, after membership insert/update/delete.
+Migration 021's reciprocal deferred foreign keys bind route and membership
+user/Organization/role/status at commit. Migration 027 forces routing RLS.
+
+The backfill locks memberships before routes and copies persisted membership
+creation/update facts from the matching user, Organization and state. A missing
+or non-finite/contradictory source refuses the transaction. The new BEFORE guard
+maintains those clocks during canonical synchronization without granting extra
+permissions or adding a SECURITY DEFINER lookup. Discovery-only writes retain
+42501; explicit invented clock values are rejected. The reciprocal state keys
+and canonical owner-continuity rules remain. Startup requires ledger 120.
+
+The populated forward fixture retains every prior route field and both source
+clocks. Rolled-back checks reject explicit clock replacement, preserve no-op
+clocks and verify a canonical membership role/status transition updates route
+state and update time while preserving creation. Deferred constraints are
+forced before rollback. The existing three-case restricted Owner creation
+precision contract now also compares route clocks with the stored initial
+membership and returned Organization timestamps, including sub-microsecond
+request arguments. Fixture-only migration numbers advance to 121–123.
+
+The locked Release build and restricted routing security gate pass, with
+discovery-write denial required for all six routing projections. The complete
+migration runner and current restricted Owner precision/invitation metadata/
+authority/full required-ledger readiness contracts pass. The full historical
+body/clock, role/status propagation, no-op/tamper and deferred-integrity checks
+also pass, as do 179 integration/build metadata source checks. Current
+immutable-image/deployed verification remains; the overall mutable operational
+clock audit is not complete.

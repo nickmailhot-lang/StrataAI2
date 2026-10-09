@@ -46,6 +46,17 @@ internal static class OrganizationCreationTimestampContract
                 if (membership is not { Active: true, Role: OrganizationRole.Owner, Version: 1 }
                     || membership.CreatedAt != acknowledgment.CreatedAt || membership.UpdatedAt != acknowledgment.UpdatedAt)
                     throw new InvalidOperationException("Creation lost its canonical initial Owner membership.");
+                await using var route = new NpgsqlCommand("""
+                    SELECT r.created_at=m.created_at AND r.updated_at=m.updated_at
+                      AND r.created_at=@created AND r.updated_at=@updated
+                    FROM organization_members m JOIN user_organization_access r
+                      ON r.user_id=m.user_id AND r.tenant_id=m.tenant_id AND r.role=m.role AND r.status=m.status
+                    WHERE m.tenant_id=@tenant AND m.user_id=@actor;
+                    """, admin);
+                route.Parameters.AddWithValue("tenant", tenant); route.Parameters.AddWithValue("actor", actor);
+                route.Parameters.AddWithValue("created", membership.CreatedAt); route.Parameters.AddWithValue("updated", membership.UpdatedAt);
+                if (await route.ExecuteScalarAsync(ct) is not true)
+                    throw new InvalidOperationException("Creation lost canonical Owner route clocks.");
             }
             Console.WriteLine("Organization creation timestamp contract passed three restricted persisted-record comparisons.");
         }

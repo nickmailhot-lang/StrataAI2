@@ -119,6 +119,15 @@ creation/acceptance/revocation/rollback and discovery-denial verification passes
 including unchanged invitation clocks/publication label after a fixture parent
 rename. Other mutable operational history and current release proof remain.
 
+[Organization access route clocks](entity-route-clocks.md#organization-membership-access-routing)
+adds persisted membership creation metadata in migration 120. Reciprocal
+membership state integrity and tenant RLS remain; the restricted discovery
+write-denial gate passes for all six routing projections. Complete historical
+upgrade, role/status propagation and actual Owner creation precision/readiness
+verification passes. The local locked build and 179 CI source checks also pass.
+Other operational records and current release scope
+remain part of FOUND-FR-009.
+
 The [recipient page/counter audit](invitation-recipient-authority.md#page-lifecycle-clocks-and-remaining-counter-audit)
 adds explicit managed page creation/update clocks in migration 116 from the
 recorded owning job and first completion. Its complete local migration gate
