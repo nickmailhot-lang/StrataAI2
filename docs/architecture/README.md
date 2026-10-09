@@ -10,6 +10,10 @@ remaining audit/release scope to their verification sources.
 source validation, append-only enforcement and the complete migration/security
 proof, with native and immutable release acceptance tracked separately.
 
+[Work receipt update clocks](work-replay-update-clocks.md) records future
+receipt completion/update timestamps while preserving unknown legacy times,
+with migration, restricted-role and readiness verification boundaries.
+
 The [invitation issuer clock audit](invitation-issuer-clock-audit.md) identifies
 owning writers, immutable facts and the remaining mutable-job clock gap.
 

@@ -388,3 +388,18 @@ The previous failing phase is not restarted or relabeled as passing. The new
 terminal report/cleanup, complete unfiltered persistence outcome and current
 immutable build-once CI remain required. PRD-18 stays open at **15% estimated
 work remaining** (planning estimate).
+
+The fresh source-observed schema-127 Board invocation subsequently passes
+**32/32** across all 14 original files in **1,407.21 seconds**. Independent
+report inspection confirms 32 actual Passed rows, exactly one result per case,
+zero skips, unexpected/flaky outcomes or report-level errors. Its frozen
+browser files match source; owned containers, database and environment files
+are independently absent. This verifies the passive source-epoch fixture
+repair with the original keyboard gesture, guard, deadline and assertions.
+The earlier 31/32 report remains retained. The default unfiltered persistence
+executable also passes within the scope recorded in
+[source verification](source-test-results.md); special mode-only branches and
+current immutable build-once release acceptance remain separate requirements.
+The later schema-128 Work receipt clock change has its own verification and
+is not certified by this schema-127 browser report. PRD-18 remains open at
+**15% estimated work remaining** (planning estimate).

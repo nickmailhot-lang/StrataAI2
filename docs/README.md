@@ -61,6 +61,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Schema upgrades and compatibility](architecture/schema-upgrades.md)
 - [Notification counter clocks and forward-upgrade verification (PRD-01 / PRD-17)](architecture/notification-stream-clocks.md)
 - [Immutable notification journal history and upgrade/refusal proof](architecture/notification-event-history.md)
+- [Work receipt update clocks and unknown legacy completion times](architecture/work-replay-update-clocks.md)
 
 ## Identity, profiles, and invitations
 

@@ -308,6 +308,9 @@ jobs:
       - name: Verify account handle receipts, immutable metadata and expired-only cleanup
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-handle-claim-replay-storage.sql
 
+      - name: Verify Work receipt creation, completion and replay clocks
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-work-replay-update-clocks.sql
+
       - name: Verify durable upload identity, tenant isolation and publication transitions
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-upload-intent-storage.sql
 
