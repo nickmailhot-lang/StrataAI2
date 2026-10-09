@@ -954,6 +954,75 @@ capacity/performance and current immutable/full acceptance remain open.
 Estimated PRD-14 work remaining: **33%**.
 
 
+
+The [lost browser-upload receipt extension](attachment-object-storage.md#lost-browser-upload-reply-recovered-after-actual-worker-publication)
+retains both normal cases and adds both viewport recovery cases. Only actual
+committed response delivery is lost; the original File request is untouched.
+After real Worker publication/newer admitted Card 4, original-key/hash/name/size/
+revision replay returns the identical initial receipt while current state remains
+one Clean attachment at 4/3. Actual preview/download and WCAG-tagged checks remain.
+Complete original 2/2 (93.7 seconds), expanded configuration 6/6 (235.8 seconds),
+all subsequent HTTP assertions and independent cleanup pass without failures,
+skips, retries or flaky cases. Product source and deadlines remain unchanged.
+Other formats/quarantine/invalid/large input, full role/cross-feature/performance,
+external provider and current immutable acceptance remain open. Estimated PRD-14
+work remaining: **33%**.
+
+The subsequent [distinct Board-member peer extension](attachment-object-storage.md#distinct-board-member-live-cover-removal)
+passes the complete native pipeline at both viewports in 103.3 seconds, with all
+subsequent HTTP checks and independently confirmed cleanup. Its participant joins
+through actual invitation acceptance and a normal Board MEMBER grant; actual
+profile IDs must differ. The same live withdrawal and zero-navigation checks
+remain. This adds distinct-account collaboration evidence without claiming the
+remaining read-only/permission-loss/reconnect/source-lifecycle matrix or release CI.
+
+The subsequent [actual source-archive peer phase](attachment-object-storage.md#actual-source-archive-with-live-desktop-and-phone-peers)
+also passes with both member viewport sessions already rendering the published
+cover. Actual archive clears it in one canonical revision; live sequence advance,
+withdrawn rendering, normal source-delivery 404 and zero navigation are verified.
+The complete original two cases (111.4 seconds), additional archive case
+(38.2 seconds), original-key archive recovery and every subsequent HTTP lifecycle
+assertion pass without skips/retries/flaky cases. This is API-initiated archive;
+live permanent deletion, permission loss/reconnect, full role/cross-feature and
+current immutable/performance acceptance remain open. Estimated PRD-14 work
+remaining: **33%**.
+
+The [missed archive-event recovery extension](attachment-object-storage.md#missed-source-archive-event-recovered-after-reconnect)
+retains both connected viewport proofs and adds an actual interrupted phone
+session. It receives no newer socket sequence during archive, then reconnects
+to the server, receives a sequence beyond the pre-command cursor and renews its
+Board read without navigation. Current canonical null cover and source/cover
+delivery withdrawal are verified. Degraded snapshot checks remain enabled.
+The original 2/2 (94.5 seconds), whole expanded archive case 1/1 (37.0 seconds),
+all subsequent HTTP assertions and independent cleanup pass without failures,
+skips, retries or flaky cases. Permission loss/live permanent deletion, full
+role/cross-feature/capacity/performance, external provider and current immutable
+acceptance remain open. Estimated PRD-14 work remaining: **33%**.
+
+The [published-source Board-membership loss case](attachment-object-storage.md#board-membership-loss-with-published-cover-and-attachment-review-open)
+also executes both viewport sessions with a real cover and keyboard-opened file
+review before the owner's versioned membership removal. Protected UI disappears
+without navigation and source/cover delivery and attempted cover writes return
+404. The owner's cover and Organization membership remain unchanged. Ordinary
+membership restoration preserves the following complete archive/reconnect case.
+The original 2/2 (91.5 seconds), both whole lifecycle cases 2/2 (74.3 seconds), all
+subsequent HTTP assertions and independent cleanup pass without failures/skips/
+retries/flaky cases. Full role/parent/move/copy/lifecycle/capacity/performance,
+external provider and current immutable acceptance remain open. Estimated PRD-14
+work remaining: **33%**.
+
+The [actual browser FILE upload/preview/download workflow](attachment-object-storage.md#real-browser-file-upload-through-worker-preview-and-download)
+passes desktop and phone PNG scenarios with one upload each, real Pending receipt,
+actual Worker publication, Clean disclosure, sanitized pixel rendering and exact
+original bytes in actual browser downloads. Selected-file and completed delivery
+states pass WCAG 2.2 AA-tagged Axe checks. After correcting two test observation/
+wording errors, the complete original 2/2 (93.2 seconds), expanded configuration
+4/4 (150.8 seconds), all subsequent HTTP assertions and independent cleanup pass
+without failures/skips/retries/flaky cases. Earlier failed reports remain retained;
+product code and deadlines are unchanged. Other formats/error/quarantine/retry/
+capacity/role/cross-feature and current immutable/provider acceptance remain open.
+Estimated PRD-14 work remaining: **33%**.
+
 ## Mandatory enabled-pipeline selection guards
 
 The [attachment pipeline/configuration guards](integration-ci-groups.md#mandatory-enabled-attachment-pipeline-coverage-guards)
@@ -1026,71 +1095,3 @@ acceptance does not prove invalid/large/complex inputs, additional per-format
 recovery/role/lifecycle cases, deployed providers, current immutable full CI or
 the remaining cross-feature/performance/AC/DoD matrix. The issue remains open.
 Estimated PRD-14 work remaining: **32%**.
-
-The [lost browser-upload receipt extension](attachment-object-storage.md#lost-browser-upload-reply-recovered-after-actual-worker-publication)
-retains both normal cases and adds both viewport recovery cases. Only actual
-committed response delivery is lost; the original File request is untouched.
-After real Worker publication/newer admitted Card 4, original-key/hash/name/size/
-revision replay returns the identical initial receipt while current state remains
-one Clean attachment at 4/3. Actual preview/download and WCAG-tagged checks remain.
-Complete original 2/2 (93.7 seconds), expanded configuration 6/6 (235.8 seconds),
-all subsequent HTTP assertions and independent cleanup pass without failures,
-skips, retries or flaky cases. Product source and deadlines remain unchanged.
-Other formats/quarantine/invalid/large input, full role/cross-feature/performance,
-external provider and current immutable acceptance remain open. Estimated PRD-14
-work remaining: **33%**.
-
-The subsequent [distinct Board-member peer extension](attachment-object-storage.md#distinct-board-member-live-cover-removal)
-passes the complete native pipeline at both viewports in 103.3 seconds, with all
-subsequent HTTP checks and independently confirmed cleanup. Its participant joins
-through actual invitation acceptance and a normal Board MEMBER grant; actual
-profile IDs must differ. The same live withdrawal and zero-navigation checks
-remain. This adds distinct-account collaboration evidence without claiming the
-remaining read-only/permission-loss/reconnect/source-lifecycle matrix or release CI.
-
-The subsequent [actual source-archive peer phase](attachment-object-storage.md#actual-source-archive-with-live-desktop-and-phone-peers)
-also passes with both member viewport sessions already rendering the published
-cover. Actual archive clears it in one canonical revision; live sequence advance,
-withdrawn rendering, normal source-delivery 404 and zero navigation are verified.
-The complete original two cases (111.4 seconds), additional archive case
-(38.2 seconds), original-key archive recovery and every subsequent HTTP lifecycle
-assertion pass without skips/retries/flaky cases. This is API-initiated archive;
-live permanent deletion, permission loss/reconnect, full role/cross-feature and
-current immutable/performance acceptance remain open. Estimated PRD-14 work
-remaining: **33%**.
-
-The [missed archive-event recovery extension](attachment-object-storage.md#missed-source-archive-event-recovered-after-reconnect)
-retains both connected viewport proofs and adds an actual interrupted phone
-session. It receives no newer socket sequence during archive, then reconnects
-to the server, receives a sequence beyond the pre-command cursor and renews its
-Board read without navigation. Current canonical null cover and source/cover
-delivery withdrawal are verified. Degraded snapshot checks remain enabled.
-The original 2/2 (94.5 seconds), whole expanded archive case 1/1 (37.0 seconds),
-all subsequent HTTP assertions and independent cleanup pass without failures,
-skips, retries or flaky cases. Permission loss/live permanent deletion, full
-role/cross-feature/capacity/performance, external provider and current immutable
-acceptance remain open. Estimated PRD-14 work remaining: **33%**.
-
-The [published-source Board-membership loss case](attachment-object-storage.md#board-membership-loss-with-published-cover-and-attachment-review-open)
-also executes both viewport sessions with a real cover and keyboard-opened file
-review before the owner's versioned membership removal. Protected UI disappears
-without navigation and source/cover delivery and attempted cover writes return
-404. The owner's cover and Organization membership remain unchanged. Ordinary
-membership restoration preserves the following complete archive/reconnect case.
-The original 2/2 (91.5 seconds), both whole lifecycle cases 2/2 (74.3 seconds), all
-subsequent HTTP assertions and independent cleanup pass without failures/skips/
-retries/flaky cases. Full role/parent/move/copy/lifecycle/capacity/performance,
-external provider and current immutable acceptance remain open. Estimated PRD-14
-work remaining: **33%**.
-
-The [actual browser FILE upload/preview/download workflow](attachment-object-storage.md#real-browser-file-upload-through-worker-preview-and-download)
-passes desktop and phone PNG scenarios with one upload each, real Pending receipt,
-actual Worker publication, Clean disclosure, sanitized pixel rendering and exact
-original bytes in actual browser downloads. Selected-file and completed delivery
-states pass WCAG 2.2 AA-tagged Axe checks. After correcting two test observation/
-wording errors, the complete original 2/2 (93.2 seconds), expanded configuration
-4/4 (150.8 seconds), all subsequent HTTP assertions and independent cleanup pass
-without failures/skips/retries/flaky cases. Earlier failed reports remain retained;
-product code and deadlines are unchanged. Other formats/error/quarantine/retry/
-capacity/role/cross-feature and current immutable/provider acceptance remain open.
-Estimated PRD-14 work remaining: **33%**.
