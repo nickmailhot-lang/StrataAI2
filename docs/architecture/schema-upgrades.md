@@ -49,7 +49,7 @@ of this new catalog guard is still required before treating it as release eviden
 ## Runtime migration readiness
 
 Production connections require every named migration through
-`113_invitation_recipient_membership_authority`. The readiness query checks for missing
+`115_invitation_issuer_job_clocks`. The readiness query checks for missing
 required ledger entries directly, avoiding a separately maintained numeric total.
 Extra later migrations do not substitute for a missing required entry.
 
@@ -76,3 +76,15 @@ PostgreSQL17/pgvector database. The corresponding mandatory PostgreSQL CI step
 also runs the routing fixture directly. Current restricted API/Worker readiness
 checks pass, including refusal/recovery when 113 is hidden. See
 [execution scope](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption).
+
+## Issuer job clock forward upgrade
+
+Migration 115 refuses historical RUNNING issuer-authority jobs because a lease
+deadline does not prove their latest mutation time. Finish or exhaust those jobs
+with the existing Worker, pause claiming, and retry the upgrade. Never clear a
+lease or manufacture terminal state to bypass this check. The upgrade locks the
+job table; refusal rolls back the schema, ledger and historical state. Creation
+and recorded terminal facts supply the backfill, with no migration-time substitute.
+See the [clock audit and executed verification](invitation-issuer-clock-audit.md#managed-job-clock-and-historical-upgrade)
+for preserved rows, transactional clocks, current readiness and remaining release
+scope. The new runtime requires the named 115 entry before admitting connections.

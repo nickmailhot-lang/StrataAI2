@@ -80,9 +80,11 @@ does not prove complete clock coverage.
 The [issuer-authority writer audit](invitation-issuer-clock-audit.md) classifies
 four candidates from their owning SQL functions and history protections. Proofs,
 sources and effects are immutable facts; jobs have mutable claim/reclaim and
-terminal state. The jobs' missing general update clock is a specific source gap.
-Historical lease provenance and transactional clock checks remain required before
-a repair can be accepted. This does not classify the remaining candidates.
+terminal state. Migration 115 repairs the jobs' general update clock, with
+executed local full migration and restricted contract checks. Its historical
+upgrade refuses unproven RUNNING leases until actual terminal drain; current
+immutable-image/deployed upgrade verification remains. This does not classify
+the remaining candidates.
 
 ## Executed evidence and closure boundary
 
