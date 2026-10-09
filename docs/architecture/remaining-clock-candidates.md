@@ -497,3 +497,42 @@ UPDATE disappear or establish the historical completion time. This remains a
 clock/provenance gap; neither expiry nor a guessed entity time is promoted to
 an authoritative legacy completion clock. PRD-01 stays open at **34% estimated
 work remaining** (planning estimate).
+
+### Final candidate writer classification and remaining clock repairs
+
+The remaining eleven candidates have now been traced through their current
+runtime producers, migration replacements and refusal/cleanup fixtures. Five
+have immutable runtime payloads; their retention boundaries remain explicit.
+
+| Candidate | Actual writer and time | Retention/verification boundary |
+| --- | --- | --- |
+| `attachment_previews` | The private [manifest capability](../../db/migrations/045_attachment_preview_intents.sql) inserts the original declared encoding, source revision and creation time under the owning preview job/lease. Its guard refuses changed fields but allows exact no-op UPDATE. | Runtime direct writes are denied. There is no unconditional DELETE guard; published [publication receipts](../../db/migrations/046_attachment_preview_publication.sql) FK-protect their owning manifests. An unpublished manifest has a different privileged cleanup boundary. The completed default persistence path includes original manifest/preview contracts; external encoding/provider acceptance is separate. |
+| `identity_events` | [Identity store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityStore.cs) inserts each original subject/sequence/type/version/correlation fact in its owning command; [migration 012](../../db/migrations/012_identity_events.sql) supplies database creation time. | API SELECT/INSERT only; Worker cannot read these global payloads. The [migration-109 history trigger](../../db/migrations/109_invitation_issuer_account_authority.sql) guards only USER_DEACTIVATED, not every event type. General administrative UPDATE/DELETE refusal is not claimed. Identity stream counters remain independently mutable and already have their own clocks. |
+| `invitation_recipient_proofs` | [Migration 102](../../db/migrations/102_invitation_recipient_events.sql) captures actual admitted creation/acceptance/revocation with the source invitation's exact version, routing identity and `updated_at` as proof `created_at`. | The current [migration-103 guard](../../db/migrations/103_invitation_recipient_unpublished_cleanup.sql) refuses UPDATE and direct DELETE, but permits nested parent-cascade deletion only before any corresponding journal publication. Published facts remain retained; this is not unconditional deletion refusal. Earlier complete recipient SQL verification is recorded above. |
+| `mention_handle_reservations` | [Migration 056](../../db/migrations/056_mention_handles.sql) reserves the original owner/time at registry seeding, account insertion or an admitted handle revision. Former aliases remain reserved; changing a current handle does not update old reservation payloads. | Changed-field UPDATE is refused and exact no-ops are allowed. No runtime table writes or payload reads; private trigger writers insert only. User FK permits privileged parent cascade and there is no unconditional DELETE guard. Current handle entities have separate creation/update/version clocks. |
+| `mass_mention_reservations` | [Quota store](../../src/StrataAI.Infrastructure/WorkManagement/CardMassMentionQuota.cs) inserts the exact original mention-event/Card/actor/source-time identity. [Migration 061](../../db/migrations/061_mass_mention_quota.sql) serializes at the Board, validates the source, and supplies database `reserved_at`. | Every UPDATE is refused; API SELECT/INSERT only and Worker access denied. No unconditional DELETE guard. The original persistence quota fixture explicitly disables its UPDATE guard to age disposable reservations, restores it and cleans up; that is not runtime clock mutation. |
+
+The other six candidates are **mutable** and remain clock/provenance repairs,
+even though their writer classification is complete. Each needs a migration,
+current writer/read contract, upgrade/refusal evidence and broader regression
+verification before the timestamp requirement can be satisfied.
+
+| Candidate | Current mutable writer | Unresolved clock/provenance requirement |
+| --- | --- | --- |
+| `attachment_preview_sweeps` | Current [migration-051 backfill capability](../../db/migrations/051_attachment_lifecycle.sql) inserts one tenant checkpoint, seeks bounded candidate pages, and updates or resets `(cursor_created_at,cursor_id)` under its tenant/checkpoint locks. | No checkpoint creation/update time is retained. Candidate attachment creation time is a seek key, not checkpoint creation or the last reset time; null reset cannot reconstruct legacy history. |
+| `attachment_scan_sweeps` | Current [migration-052 recovery capability](../../db/migrations/052_attachment_lifecycle_scan.sql) inserts and advances/resets the tenant checkpoint while fencing recovered job/source effects. | Job creation time is a seek key, not checkpoint audit time. Existing checkpoint creation/last-reset provenance is absent; original budgets, tenant locks and recovery fences must remain. |
+| `invitation_mail_intents` | [Mail publisher](../../src/StrataAI.Infrastructure/Onboarding/PostgresInvitationMailPublisher.cs) inserts a pending intent; [finish capability](../../db/migrations/023_invitation_mail_intents.sql) records terminal state/receipt/error, database `finished_at` and increasing version after original job/lease admission. | Pending creation and terminal finish times exist, but no general update clock or guard proves that those cover every historically admitted payload edit. Original privileged scope fixtures alter pending target fields without recording a new clock. A `COALESCE(finished_at,created_at)` alias alone is not whole historical mutation proof. |
+| `invitation_recipient_authority_revisions` | Current [migration-109 publisher](../../db/migrations/109_invitation_issuer_account_authority.sql) increments once for each admitted tenant/source/email effect, with a separate global issuer-event/email deduplication step for User effects. | Neither first counter publication nor subsequent counter effects have recorded publication times/sequences. Source time is not later delivery time; globally deduplicated User effects cannot be counted as every tenant effect. Legacy creation/last increment clocks cannot be invented from a source maximum. |
+| `work_command_replays` | [Work unit of work](../../src/StrataAI.Infrastructure/WorkManagement/PostgresWorkManagementUnitOfWork.cs) inserts a claim and UPDATEs successful `result_json` in the owning transaction; refused commands roll back and exact replay does not UPDATE. | Receipt creation exists; completion/update time is absent. Atomic commit is not a historical completion timestamp, and receipt expiry is not the update clock. Existing results must not be rewritten or treated as pending to manufacture provenance. |
+| `work_events` | [Event store](../../src/StrataAI.Infrastructure/WorkManagement/PostgresWorkEventStore.cs) inserts immutable payload/source time; [delivery store](../../src/StrataAI.Infrastructure/WorkManagement/PostgresWorkEventDeliveryStore.cs) UPDATEs null readiness under the actual live job/worker/lease fence, verifies again and commits. | [Migration 062](../../db/migrations/062_activity_attribution.sql) protects payload fields but excludes readiness. Original privileged source fixtures can clear readiness after publication; `COALESCE(ready_at,created_at)` would lose that last mutation/history. Source insertion and delivery state need distinct truthful clocks without weakening final lease fencing. |
+
+The **source writer/retention audit covers all 51 candidates**. That conclusion
+is deliberately separate from timestamp implementation: six mutable
+candidate-table repairs remain unresolved, and their legacy provenance and
+full acceptance verification are still required. Other mutable entities,
+navigation, capacity, accessibility, all special-mode persistence invocations
+and current immutable-image release evidence remain within PRD-01's original
+scope. No clock is backfilled from migration time, a lease expiry or an
+unrelated source timestamp; no acceptance criterion or scope is changed.
+The full 32-case Board browser invocation remains active. PRD-01 remains open
+at **34% estimated work remaining** (planning estimate).
