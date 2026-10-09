@@ -178,10 +178,10 @@ for (const width of [1280, 390]) {
         if (edits.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
       });
       const manageLabels = page.getByRole('button', { name: 'Manage labels', exact: true });
-      await expect(manageLabels).toBeEnabled(); await manageLabels.press('Enter');
+      await pressAdmittedAction(manageLabels);
       const management = page.getByRole('dialog', { name: 'Manage Board labels' });
       const editPriority = management.getByRole('button', { name: 'Edit Priority (red)', exact: true });
-      await expect(editPriority).toBeEnabled(); await editPriority.press('Enter');
+      await pressAdmittedAction(editPriority);
       await management.getByLabel('Label name (optional)').fill('Urgent');
       await management.getByRole('combobox', { name: 'Label color' }).press('Enter');
       await page.getByRole('option', { name: 'Purple', exact: true }).press('Enter');
@@ -193,9 +193,9 @@ for (const width of [1280, 390]) {
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
       expect(edits).toHaveLength(2); expect(edits[0]).toEqual(edits[1]);
       await expect(management.getByRole('button', { name: 'Reload labels', exact: true })).toBeEnabled();
-      await management.getByRole('button', { name: 'Reload labels', exact: true }).press('Enter');
+      await pressAdmittedAction(management.getByRole('button', { name: 'Reload labels', exact: true }));
       const editUrgent = management.getByRole('button', { name: 'Edit Urgent (purple)', exact: true });
-      await expect(editUrgent).toBeEnabled(); await editUrgent.press('Enter');
+      await pressAdmittedAction(editUrgent);
       const moveBefore = management.getByRole('combobox', { name: 'Move label before' });
       const moveMenu = page.getByRole('listbox', { name: 'Move label before', exact: true });
       await expect(async () => {
@@ -213,8 +213,8 @@ for (const width of [1280, 390]) {
       expect(ordered.find((l: { id: string }) => l.id === labels[0]).rank < ordered.find((l: { id: string }) => l.id === labels[1]).rank).toBe(true);
       expect(ordered.find((l: { id: string }) => l.id === labels[0]).version).toBe(3);
       await expect(management.getByRole('button', { name: 'Reload labels', exact: true })).toBeEnabled();
-      await management.getByRole('button', { name: 'Reload labels', exact: true }).press('Enter');
-      await expect(editUrgent).toBeEnabled(); await editUrgent.press('Enter');
+      await pressAdmittedAction(management.getByRole('button', { name: 'Reload labels', exact: true }));
+      await pressAdmittedAction(editUrgent);
       await expect(management.getByRole('button', { name: 'Delete label', exact: true })).toBeDisabled();
       const consent = management.getByRole('checkbox', { name: 'Confirm removal from all Cards' });
       await pressAdmittedAction(consent, 'Space'); await expect(consent).toBeChecked();

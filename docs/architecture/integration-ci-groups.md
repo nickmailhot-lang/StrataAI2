@@ -272,3 +272,17 @@ fails later label-management controls on both cases (zero passes overall).
 Its unchanged assertions/deadlines remain; private diagnostic fixtures were
 removed. The repository keyboard helper is unchanged. Current immutable/full
 CI and exact causes remain required before closure.
+
+
+## Complete original-key lifecycle recovery verification
+
+Both complete strict desktop/phone lifecycle scenarios pass in 1.9 minutes,
+with zero skips/retries/flaky cases. They now explicitly require the original
+restore acknowledgment before checking the empty directory/focus and exactly
+two identical key/body requests. Genuine two-client Worker updates, current
+actor/role admission, child lifecycle preservation, keyboard/Axe and original
+deadlines remain. Fresh original-recovery web, rebuilt Production API/separate
+Worker and restricted schema-114 PostgreSQL17/pgvector were used. Owned
+containers/database were removed. This scoped pass does not certify the
+combined 30-case or current immutable/full CI; remaining full acceptance applies.
+Estimated PRD-04 work remaining stays **16%**, PRD-18 **16%**.

@@ -344,3 +344,23 @@ activation after the unchanged admission checks. Repository helpers and product
 controls remain unchanged while that comparison and the combined Board phase
 run. No successful dispatch, root-label deletion or complete acceptance is
 claimed. Estimated PRD-10 work remaining stays **35%**.
+
+
+## Label management opening and selection admission
+
+The direct-keyboard diagnostic's later disabled/enabled assertions fail because
+the controls are absent, not because an observed control has the wrong state.
+Desktop misses the selected-label deletion control after Reload/Edit; phone
+misses the Move-before chooser. These failures do not establish a mutation or
+receipt bug. The isolated comparison is failing overall; the repository's
+shared keyboard helper remains unchanged.
+
+Management opening, both label-selection stages and both Reload gestures now
+use the existing enabled/focused admission helper before a single activation.
+Original mutation keys/bodies, filter command counts, order/version, explicit
+delete consent, persisted Card removal, focus and deadlines remain. Browser
+TypeScript passes. Both complete strict label scenarios are running against
+current compiled API/Worker, frozen original-recovery web and restricted
+schema-114 PostgreSQL. Product label behavior and shared helper are unchanged;
+exact intermittent cause and native/full immutable acceptance remain pending.
+Estimated PRD-10 work remaining stays **35%**.
