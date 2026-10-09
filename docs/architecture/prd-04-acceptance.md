@@ -422,8 +422,10 @@ source checks and protected-state assertions remain. A new omission mutation
 fails the previous guard (65 pass / one fail); the strengthened guard passes
 all 66 checks. The 112 named checks and seven matrix executions are retained.
 
-The fresh five-case local strict directory invocation is running, not certified
-successful. The separately running complete eighteen-case post-focus-repair
+The fresh complete five-case local strict directory invocation passes in
+3.8 minutes, with zero skips/retries/flaky cases. It uses the compiled strict
+Production API/separate Worker, freshly built MUI assets and restricted
+schema-114 PostgreSQL 17/pgvector. Owned containers/database were removed. The separately running complete eighteen-case post-focus-repair
 invocation likewise remains pending. Current immutable/full CI and all remaining
 acceptance are required. Estimated PRD-04 work remaining stays **16%**.
 

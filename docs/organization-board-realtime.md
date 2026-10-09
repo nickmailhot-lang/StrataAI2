@@ -372,6 +372,10 @@ strict flag absent, ordinary full-suite registration/login is preserved.
 The mandatory Board CI phase includes the complete directory file without grep,
 with API/Worker verified policy assertions and normal rate pacing. Real upstream
 frames, canonical Worker event IDs, audience filtering, disconnect recovery,
-role and Organization membership withdrawal remain unchanged. The five-case
-isolated strict runtime invocation is in progress; compilation and workflow
-coverage do not establish a pass or current immutable release acceptance.
+role and Organization membership withdrawal remain unchanged. All five cases pass in one complete 3.8-minute isolated strict runtime invocation
+with zero skips/retries/flaky cases: both ordinary-reader viewports, both archive
+viewports and the phone audience/role/Organization membership withdrawal case.
+The runtime uses current compiled Production API/separate Worker, freshly built
+web assets and restricted schema-114 PostgreSQL 17/pgvector; owned containers
+and database were removed. This establishes scoped native execution, while
+current immutable/full release acceptance remains outstanding.
