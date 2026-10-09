@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
-import { boundedWorkRead } from '../../api/workManagement';
+import { boundedWorkRead, WorkRequestError } from '../../api/workManagement';
+import { publicCorrelationReference } from '../../api/correlationReference';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
@@ -30,7 +31,7 @@ async function command(path: string, options: RequestInit, signal: AbortSignal) 
   const response = await apiFetch(path, { ...options, signal });
   const body = response.status === 401 ? undefined : await response.json().catch(() => undefined) as unknown;
   signal.throwIfAborted();
-  return { status: response.status, body };
+  return { status: response.status, body, reference: publicCorrelationReference(response.headers.get('X-Correlation-ID')) };
 }
 export function OrganizationSettingsPage() {
   const { organizationId } = useParams();
@@ -40,7 +41,10 @@ function Settings({ organizationId }: { organizationId: string }) {
   const navigate = useNavigate();
   const [record, setRecord] = useState<Summary>(); const [draft, setDraft] = useState<Draft>();
   const [latest, setLatest] = useState<Summary>(); const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
+  const [error, setFailure] = useState<{ message: string; reference: string | null }>(); const [notice, setNotice] = useState<string>();
+  function setError(message: string | undefined, reference: string | null = null) {
+    setFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
+  }
   const [review, setReview] = useState(false); const [unavailable, setUnavailable] = useState(false);
   const [intent, setIntent] = useState<Intent>();
   const [liveActor, setLiveActor] = useState<string>();
@@ -71,10 +75,10 @@ function Settings({ organizationId }: { organizationId: string }) {
     if (!refreshQueued.current || busy) return;
     refreshQueued.current = false; void load(true, true);
   }, [reload, busy]);
-  function deny(status: number) {
+  function deny(status: number, reference: string | null = null) {
     actor.current = undefined; setLiveActor(undefined); refreshQueued.current = false; setLiveNotice(undefined);
     setRecord(undefined); setDraft(undefined); setLatest(undefined); setIntent(undefined); setUnavailable(true);
-    setError('Organization settings are unavailable to your account.');
+    setError('Organization settings are unavailable to your account.', reference);
     if (status === 401) navigate('/login', { replace: true });
   }
   async function load(preserve: boolean, live = false) {
@@ -82,7 +86,7 @@ function Settings({ organizationId }: { organizationId: string }) {
     const controller = new AbortController(); pending.current = controller; setBusy(true);
     // A protected background read can show current settings, but cannot recover
     // a submitted command's acknowledgment or clear its uncertainty warning.
-    setError(current.current.intent ? 'Your save could not be confirmed. Retry the original save to recover its acknowledgment.' : undefined);
+    if (!current.current.intent) setError(undefined);
     setBackgroundReading(live);
     const telemetryStarted = performance.now(); let succeeded = false;
     activityEvent('organization_settings_read', preserve && !live ? 'retry' : 'use');
@@ -90,21 +94,21 @@ function Settings({ organizationId }: { organizationId: string }) {
       await boundedWorkRead(async signal => {
         const before = await command('/me', {}, signal);
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-        if ([401, 403, 404].includes(before.status)) { deny(before.status); return; }
-        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
+        if ([401, 403, 404].includes(before.status)) { deny(before.status, before.reference); return; }
+        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new WorkRequestError(before.status, before.reference);
         if (actor.current && actor.current !== before.body.id) { deny(401); return; }
         const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {
           headers: { 'X-StrataAI-Expected-Actor': before.body.id },
         }, signal);
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
-        if (result.status !== 200 || !valid(result.body)) throw new Error('Invalid settings response');
+        if ([401, 403, 404].includes(result.status)) { deny(result.status, result.reference); return; }
+        if (result.status !== 200 || !valid(result.body)) throw new WorkRequestError(result.status, result.reference);
         const found = result.body;
         if (found.organization.id !== organizationId || found.role > 1 || found.organization.status !== 0) { deny(404); return; }
         const after = await command('/me', {}, signal);
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-        if ([401, 403, 404].includes(after.status)) { deny(after.status); return; }
-        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
+        if ([401, 403, 404].includes(after.status)) { deny(after.status, after.reference); return; }
+        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new WorkRequestError(after.status, after.reference);
         if (after.body.id !== before.body.id) { deny(401); return; }
         actor.current = after.body.id; setLiveActor(after.body.id);
         setUnavailable(false); succeeded = true;
@@ -119,11 +123,11 @@ function Settings({ organizationId }: { organizationId: string }) {
         } else { setLatest(found); setReview(true); }
         if (live) setLiveNotice('Current settings checked. Review any saved changes before replacing them with your draft.');
       }, controller.signal);
-    } catch {
+    } catch (reason) {
       if (mounted.current && pending.current === controller) {
         activityEvent('organization_settings_read', 'exception');
         setReview(true); setLatest(undefined); setNotice(undefined);
-        setError('Unable to load current settings. Your draft is preserved. Please retry.');
+        setError('Unable to load current settings. Your draft is preserved. Please retry.', reason instanceof WorkRequestError ? reason.correlationId : null);
       }
     } finally { if (mounted.current && pending.current === controller) { activityResult('organization_settings_read', succeeded, telemetryStarted);
       pending.current = undefined; setBusy(false); setBackgroundReading(false); } }
@@ -142,19 +146,19 @@ function Settings({ organizationId }: { organizationId: string }) {
       await boundedWorkRead(async signal => {
         const before = await command('/me', {}, signal);
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-        if ([401, 403, 404].includes(before.status)) { deny(before.status); return; }
-        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Invalid account');
+        if ([401, 403, 404].includes(before.status)) { deny(before.status, before.reference); return; }
+        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new WorkRequestError(before.status, before.reference);
         if (!proposed.actorId || proposed.actorId !== before.body.id) { deny(401); return; }
         submitted = true;
         const result = await command(`/organizations/${encodeURIComponent(organizationId)}`, {
           method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': proposed.key, 'X-StrataAI-Expected-Actor': proposed.actorId }, body: JSON.stringify({ ...proposed.draft, version: proposed.version }),
         }, signal);
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-        if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+        if ([401, 403, 404].includes(result.status)) { deny(result.status, result.reference); return; }
         const after = await command('/me', {}, signal);
         if (!mounted.current || pending.current !== controller || controller.signal.aborted) return;
-        if ([401, 403, 404].includes(after.status)) { deny(after.status); return; }
-        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Invalid account');
+        if ([401, 403, 404].includes(after.status)) { deny(after.status, after.reference); return; }
+        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new WorkRequestError(after.status, after.reference);
         if (after.body.id !== proposed.actorId) { deny(401); return; }
         const updated = { organization: result.body, role: record.role };
         if (result.status === 200 && valid(updated) && updated.organization.id === organizationId
@@ -166,21 +170,21 @@ function Settings({ organizationId }: { organizationId: string }) {
         const code = result.body && typeof result.body === 'object' && 'code' in result.body ? result.body.code : undefined;
         if (result.status === 400) {
           setIntent(undefined);
-          setError(code === 'invalid_organization_logo_url' ? 'Use a secure HTTPS logo URL without embedded credentials, or leave it empty.' : 'Check the Organization fields and try again.'); return;
+          setError(code === 'invalid_organization_logo_url' ? 'Use a secure HTTPS logo URL without embedded credentials, or leave it empty.' : 'Check the Organization fields and try again.', result.reference); return;
         }
         setReview(true);
         if (result.status === 409) activityEvent('organization_settings_update', 'conflict');
         if ([409, 429].includes(result.status)) setIntent(undefined);
         else setIntent(proposed);
-        setError([409, 429].includes(result.status) ? 'The Organization changed elsewhere or the save was refused. Load current settings to review your draft.' : 'Your save could not be confirmed. Retry the original save to recover its acknowledgment.');
+        setError([409, 429].includes(result.status) ? 'The Organization changed elsewhere or the save was refused. Load current settings to review your draft.' : 'Your save could not be confirmed. Retry the original save to recover its acknowledgment.', result.reference);
       }, controller.signal);
-    } catch {
+    } catch (reason) {
       if (mounted.current && pending.current === controller) {
         activityEvent('organization_settings_update', 'exception');
         setReview(true); setLatest(undefined);
         if (submitted || intent) {
-          setIntent(proposed); setError('Your save could not be confirmed. Retry the original save to recover its acknowledgment.');
-        } else setError('No save was sent. Your draft is preserved. Load current settings before saving again.');
+          setIntent(proposed); setError('Your save could not be confirmed. Retry the original save to recover its acknowledgment.', reason instanceof WorkRequestError ? reason.correlationId : null);
+        } else setError('No save was sent. Your draft is preserved. Load current settings before saving again.', reason instanceof WorkRequestError ? reason.correlationId : null);
       }
     } finally { if (mounted.current && pending.current === controller) { activityResult('organization_settings_update', succeeded, telemetryStarted);
       pending.current = undefined; setBusy(false); } }
@@ -188,7 +192,7 @@ function Settings({ organizationId }: { organizationId: string }) {
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to={`/app/${organizationId}`}>Organization boards</Button>
     <Typography component="h1" variant="h4">Organization settings</Typography>
-    {error && <Alert severity="error">{error}</Alert>}
+    {error && <Alert severity="error"><span>{error.message}</span>{error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}</Alert>}
     {notice && <Alert severity="success" role="status">{notice}</Alert>}
     {liveNotice && <Typography role="status">{liveNotice}</Typography>}
     {busy && <CircularProgress aria-label="Loading Organization settings" />}

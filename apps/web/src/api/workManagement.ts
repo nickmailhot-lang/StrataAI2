@@ -1,3 +1,4 @@
+import { publicCorrelationReference } from './correlationReference';
 import { apiFetch } from "./apiFetch";
 export type WorkCard = {
   hasCover?: boolean;
@@ -63,9 +64,7 @@ export class WorkRequestError extends Error {
     );
     // Match the API correlation middleware. Proxy responses must not turn
     // arbitrary diagnostic text into a public support reference.
-    this.correlationId = correlationId !== null && correlationId.length > 0 && correlationId.length <= 64
-      && !/[^A-Za-z0-9._-]/.test(correlationId)
-      ? correlationId : null;
+    this.correlationId = publicCorrelationReference(correlationId);
   }
 }
 // Only local, fixed validation messages use this type; never API response text.

@@ -1,5 +1,7 @@
 import { expect, test } from './releaseTest';
 import type { Request } from '@playwright/test';
+import { scopedBoardWorker } from './scopedBoardWorker';
+import { pressAdmittedAction } from './keyboardAdmission';
 import AxeBuilder from '@axe-core/playwright';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
@@ -12,6 +14,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
     const created = await context.request.post('/organizations', { headers, data: { name: 'Organization metadata', description: 'Original description' } });
     expect(created.status()).toBe(201); const org = (await created.json()).organization;
+    const restoreWorker = scopedBoardWorker(org.id);
+    try {
     const settingsPath = `/app/${org.id}/settings`; const scopePath = `/organizations/${org.id}`;
     let observedVersion = 0, readVersion = 0; const pendingReads = new Map<Request, number>();
     page.on('websocket', socket => {
@@ -50,7 +54,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     page.on('requestfailed', request => pendingReads.delete(request));
     const settled = (version: number) => observedVersion >= version && readVersion === observedVersion;
     await page.goto(`/app/${org.id}`);
-    await page.getByRole('link', { name: 'Organization settings', exact: true }).focus(); await page.keyboard.press('Enter');
+    await pressAdmittedAction(page.getByRole('link', { name: 'Organization settings', exact: true }));
     await expect(page.getByLabel(/^Organization name/)).toHaveValue('Organization metadata');
     const runtime = await context.request.get('/api/runtime'); expect(runtime.status()).toBe(200);
     if ((await runtime.json()).mode === 'production')
@@ -103,5 +107,6 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     await page.reload(); await expect(page.getByLabel(/^Organization name/)).toHaveValue('Later administrator update');
     await expect(page.getByText('Organization settings saved.')).toHaveCount(0);
+    } finally { restoreWorker(); }
   });
 }

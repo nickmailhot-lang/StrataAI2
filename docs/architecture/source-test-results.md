@@ -370,3 +370,55 @@ pre-repair regression, 98 selected intermediate component/request passes and
 It retains the distinct scopes and report-placement correction. This does not
 complete all user-visible-error/NFR coverage or current immutable-image release
 acceptance; the full current API/default persistence invocations remain separate.
+
+
+## Complete current schema-133 persistence result
+
+The original complete schema-133 default persistence executable finishes with
+successful executable/helper outcome, 68 passing summary markers and no
+unhandled exception. The original 133-entry API/Worker missing/restored readiness
+mode also passes. Counts, assertions, default arguments, concurrency/scale/page
+budgets and no-case-retry policy remain unchanged. The default path does not
+execute every special-mode branch; summary markers are not separately collected
+case counts.
+
+The current scale phase executes 826 bounded mutation jobs, 105,201 ready work
+events and one ready terminal across 5,000 active + 100,000 archived Cards and
+200 Lists, in 1,362,836 ms, with maximum leased page time 941 ms. These are local
+compiled-runtime deletion observations, not normal HTTP p95 or immutable release
+performance certification. All 133 migrations plus role source match normalized
+current source. Owned containers and credential environments are independently
+absent. Private report: `card-route-batch-schema133-readiness-full-native-20261009`.
+
+This completes the previously live default invocation for that scope. Earlier
+chronological pending states and failures remain retained; neither an older pass
+nor this default result replaces the current full API result, browser matrices,
+all special modes, current build-once CI or the remaining acceptance/DoD.
+
+
+## Complete current schema-133 API result
+
+The original unfiltered Linux API suite completes successfully against the
+current compiled schema-133 backend and actual source/content-root mappings.
+The terminal TRX contains **697 result rows, 697 unique execution IDs and 697
+passes**, matching the declared counters, with zero failures, errors, timeouts,
+aborted, pending or unexecuted cases. The pinned .NET 10.0.12 runtime and four
+private content-root mappings are retained in the private outcome manifest.
+
+Private report: `card-route-batch-full-api-linux-schema133-native-20261009`.
+The owned API test container is removed. The source bind is not a frozen Git
+checkout; frontend/docs edits during this run do not change its already compiled
+backend. This completes that previously live invocation, not current immutable
+image CI, browser acceptance or every PRD requirement.
+
+
+## Organization settings support references
+
+The [settings error-reference record](organization-settings-error-references.md)
+retains the failing source regression, corrected invalid replacement-profile
+fixture, final 61/61 source passes and complete 6/6 desktop/phone
+settings/realtime/telemetry browser passes. The first browser attempt's 4/6
+result remains retained, with the missing scoped Worker and keyboard-focus
+preconditions corrected while preserving original assertions and deadlines.
+All 323 browser cases remain collected into four complete file partitions.
+Settings response references do not complete other screens or immutable CI.

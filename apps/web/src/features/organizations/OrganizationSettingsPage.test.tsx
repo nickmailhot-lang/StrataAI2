@@ -267,3 +267,57 @@ describe('PRD-03-TC-01/05/06/08 Organization metadata administration', () => {
     await waitFor(() => expect(screen.getByLabelText(/^Organization name/)).toHaveValue('Current')); expect(save()).toBeEnabled();
   });
 });
+
+
+it('shows the admitted read-failure support reference without diagnostic body text', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? reply(profile)
+    : new Response(JSON.stringify({ title: 'private diagnostic', detail: 'private body' }), { status: 503, headers: { 'X-Correlation-ID': 'read.reference-1' } })));
+  mount(); await screen.findByText('Reference: read.reference-1');
+  expect(screen.getByText('Unable to load current settings. Your draft is preserved. Please retry.')).toBeVisible();
+  expect(screen.queryByText(/private diagnostic|private body/)).not.toBeInTheDocument();
+});
+it.each([400, 503])('pairs a settings save refusal with its own safe reference (%s)', async status => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit = {}) => path === '/me' ? reply(profile)
+    : init.method === 'PATCH' ? new Response(JSON.stringify({ title: 'private diagnostic', detail: 'private body' }), { status, headers: { 'X-Correlation-ID': 'save.reference-1' } }) : reply(summary)));
+  mount(); await screen.findByLabelText(/^Organization name/); fireEvent.click(save());
+  await screen.findByText('Reference: save.reference-1');
+  expect(screen.queryByText(/private diagnostic|private body/)).not.toBeInTheDocument();
+  if (status === 503) expect(screen.getByRole('button', { name: 'Retry original save' })).toBeVisible();
+  else expect(screen.queryByRole('button', { name: 'Retry original save' })).not.toBeInTheDocument();
+});
+it('does not expose a prior save reference after final account replacement', async () => {
+  let checks = 0;
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit = {}) => path === '/me' ? reply(++checks === 4 ? { ...profile, id: '33333333-3333-4333-8333-333333333333' } : profile)
+    : init.method === 'PATCH' ? new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'retired-save-reference' } }) : reply(summary)));
+  mount(); await screen.findByLabelText(/^Organization name/); fireEvent.click(save());
+  await screen.findByRole('heading', { name: 'Sign in destination' });
+  expect(screen.queryByText(/retired-save-reference/)).not.toBeInTheDocument();
+  expect(screen.queryByLabelText(/^Organization name/)).not.toBeInTheDocument();
+});
+it('keeps malformed response metadata out of the settings error display', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? reply(profile)
+    : new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'private:diagnostic' } })));
+  mount(); await screen.findByText('Unable to load current settings. Your draft is preserved. Please retry.');
+  expect(screen.queryByText(/private:diagnostic|Reference:/)).not.toBeInTheDocument();
+});
+
+it('preserves the original uncertain-save reference through a protected background refresh', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit = {}) => path === '/me' ? reply(profile)
+    : init.method === 'PATCH' ? new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'original-save-reference' } }) : reply(summary)));
+  mount(); await screen.findByLabelText(/^Organization name/); fireEvent.click(save());
+  await screen.findByText('Reference: original-save-reference');
+  act(() => live.watch.mock.calls.at(-1)![0].invalidate());
+  await screen.findByText('Current settings checked. Review any saved changes before replacing them with your draft.');
+  expect(screen.getByText('Reference: original-save-reference')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Retry original save' })).toBeVisible();
+});
+it('reports the actual final actor-check failure instead of an unadmitted save response reference', async () => {
+  let checks = 0;
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit = {}) => path === '/me'
+    ? ++checks === 4 ? new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'final-actor-check-reference' } }) : reply(profile)
+    : init.method === 'PATCH' ? new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'unadmitted-save-reference' } }) : reply(summary)));
+  mount(); await screen.findByLabelText(/^Organization name/); fireEvent.click(save());
+  await screen.findByText('Reference: final-actor-check-reference');
+  expect(screen.queryByText(/unadmitted-save-reference/)).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Retry original save' })).toBeVisible();
+});

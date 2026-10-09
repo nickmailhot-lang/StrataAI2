@@ -72,3 +72,6 @@ reflow, unavailable browsing state and the remaining release/feature boundaries.
 
 [Public error correlation references](public-error-references.md) explains safe support
 identifiers, preserved error privacy and the remaining error-display review.
+
+[Organization settings error references](organization-settings-error-references.md) records response-bound
+support identifiers, account withdrawal and original-save recovery boundaries.

@@ -28,10 +28,7 @@ Typecheck and lint pass. Private reports: `public-error-reference-20261009`.
 
 The initial CLI reporter used Vitest's default report location; that report was
 moved to the private external evidence folder. Later invocations specify their
-external report paths. An empty staging directory from an earlier incorrect
-working-directory preparation remains because automatic approval review denied
-its removal; it contains no files and is not part of the Git commit.
-
+external report paths.
 These are scoped source checks, not current immutable-image execution, complete
 user-visible-error reference coverage, or full NFR/foundation acceptance. Current
 CI, full error-consumer review and the remaining PRD requirements remain required.

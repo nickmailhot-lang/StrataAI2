@@ -61,8 +61,14 @@ unchanged gates. Report: `card-route-batch-schema133-ci-lf-native-20261009`.
 Current API/Worker readiness passes all 133 individually missing/restored ledger
 entries using the locked current compiled payload. All 133 migrations plus
 role source match normalized current source. Its original complete unfiltered
-default persistence invocation remains live, without new case filters, retries
-or budget changes. Report:
+default persistence invocation subsequently passes, without new case filters,
+retries or budget changes. It reports 68 passing summary markers, not 68
+independently collected cases, with no unhandled exception. The actual scale
+phase completes 826 bounded mutation jobs, 105,201 ready work events and one
+ready terminal for 5,000 active + 100,000 archived Cards and 200 Lists, taking
+1,362,836 ms with maximum leased page time 941 ms. All 134 staged migration/role
+files match normalized current source; owned containers and credential files
+are independently absent. Report:
 `card-route-batch-schema133-readiness-full-native-20261009`.
 Immutable build-once CI and the full PRD acceptance matrices remain required.
 PRD-01 remains open at **34% estimated work remaining** (planning estimate).
