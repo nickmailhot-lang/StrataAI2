@@ -57,7 +57,8 @@ build variables validated by the metadata emitter; the footer does not fetch a
 runtime label or use browser storage. Long revisions wrap at phone widths.
 The ARCH-02-AC-004 browser case compares visible footer text with the deployed
 metadata asset and API runtime identity at desktop/phone widths. Local source
-checks and browser collection pass; exact-image browser execution is pending.
+checks and browser collection pass. The local exact-image execution below also
+passes this complete case at both viewport widths; full release CI is separate.
 
 Local .NET source builds use the available source-control revision and MSBuild
 version; builds without source-control identity report `development`. Local web
@@ -70,3 +71,42 @@ does not itself prove source or image authenticity: archive hashes, exact image
 tests, scans and controlled artifact promotion remain necessary. Replacing
 published assets or assemblies creates a different artifact and must go through
 the release pipeline again.
+
+## Local build-once archive and runtime evidence, 2026-10-09
+
+At implementation commit `33dfad8d36a290189e46a3da4916ad57618fbba7`, all three
+application images were built once from the clean checkout with local version
+`0.1.0-local.33dfad8d`, the source repository URL and one captured UTC build time.
+All four OCI provenance labels matched the local manifest. This manifest is
+explicitly local evidence, without a fabricated GitHub workflow identity.
+
+The three exported archives total 504,926,216 compressed bytes. Hash verification
+covered all 49 content-addressed blobs and their referenced index, manifest,
+configuration and layer objects. Each archive was loaded back without rebuilding;
+the three pinned image IDs and provenance labels were unchanged. This Docker
+store reports the OCI index digest as image identity; it was checked against the
+archive index rather than incorrectly equating it with a configuration digest.
+
+The disposable native fixture then ran those loaded image IDs for web, API and
+Worker, without host-mounted compiled web assets or security-header overlays.
+Only the Nginx upstream hostname was mapped to the isolated API container.
+API and Worker readiness passed; deliberately false runtime revision/version
+variables could not alter their embedded identity. The complete UI identity case
+passed at desktop and phone widths (1/1, 27.1 seconds), followed by the intact
+enabled-provider phase (2/2, 93.0 seconds) and expanded attachment phase
+(18/18, 689.2 seconds). All reports have zero unexpected, skipped or flaky cases,
+top-level errors and retries. Subsequent HTTP lifecycle/privacy/ownership checks
+passed and the process exited successfully. The exact Worker additionally passed
+nonroot, contained-root and missing-scratch-capability decoder checks.
+
+Independent cleanup verified zero owned containers, cloned databases, provider
+volumes or credential files. The three original running services were preserved.
+Post-test verification again matched all image IDs, provenance labels and archive
+checksums. Private fixtures, account data, logs and reports remain outside source.
+
+This is bounded local execution with the explicit scanner protocol fixture and
+local object provider. It does not prove deployed S3/provider behavior, a real
+malware engine, security/SBOM gates or clean-host release-bundle acceptance.
+[Implementation CI run](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37911544925)
+was still queued when this evidence was recorded; full `required-ci` and retained
+release artifacts remain unverified. ARCH-11 and PRD-14 remain open.

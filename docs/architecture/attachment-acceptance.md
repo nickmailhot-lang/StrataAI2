@@ -1122,3 +1122,21 @@ hostile inputs, remaining role/lifecycle combinations, retention/purge and the
 full cross-feature/performance/AC/DoD matrix still require proof. No issue closure
 or broad security/performance acceptance is claimed.
 Estimated PRD-14 work remaining: **32%**.
+
+## Complete attachment phase on reloaded immutable images
+
+The [local build-once archive and runtime evidence](build-identity.md#local-build-once-archive-and-runtime-evidence-2026-10-09)
+now executes the complete attachment phases on the three exported and reloaded
+images from `33dfad8d36a290189e46a3da4916ad57618fbba7`, pinned by image ID.
+Compiled web assets and security headers come from the actual web image.
+The UI identity case passes at both widths, original attachment cases pass 2/2,
+and the entire expanded phase passes 18/18, with no skips, retries, flaky or
+unexpected results. Subsequent HTTP lifecycle/privacy/ownership assertions and
+independent cleanup pass; image IDs, provenance and archive checksums remain
+unchanged afterward. No existing case, assertion or deadline was narrowed.
+
+The provider and scanner boundaries remain explicit local fixtures. Deployed
+provider/real scanner acceptance, complex hostile inputs, remaining role/lifecycle
+combinations, retention/purge, performance and full AC/DoD evidence remain open.
+The current GitHub full-release CI is queued, so this does not establish release
+approval or justify issue closure. Estimated PRD-14 work remaining: **32%**.
