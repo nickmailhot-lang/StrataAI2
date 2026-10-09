@@ -364,3 +364,21 @@ current compiled API/Worker, frozen original-recovery web and restricted
 schema-114 PostgreSQL. Product label behavior and shared helper are unchanged;
 exact intermittent cause and native/full immutable acceptance remain pending.
 Estimated PRD-10 work remaining stays **35%**.
+
+
+## Complete strict label-management admission verification
+
+Both full label viewport workflows pass together in 2.0 minutes, with zero
+skips/retries/flaky cases, using existing admission for opening/selection/reload
+and unchanged shared keyboard activation. Original lost-response key/body
+recovery, filter persistence/counts, saved order/version, explicit deletion
+consent, actual Card association removal and focus/mobile assertions remain.
+Runtime: current compiled Production API/separate Worker, frozen original-key
+lifecycle web and restricted schema-114 PostgreSQL17/pgvector. Owned containers
+and database were removed.
+
+This is scoped local acceptance evidence, not proof of the older immutable
+activation failure's exact cause or a complete release. A fresh mandatory
+13-file/30-case combined strict phase is running against those same frozen
+assets and rebuilt hosts. Complete API and current immutable/full CI remain
+pending. Estimated PRD-10 work remaining stays **35%**.
