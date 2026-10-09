@@ -267,3 +267,32 @@ mutable recipient-authority revision's missing publication provenance, sweep
 checkpoints and Work-event delivery clocks remain unresolved. No schema,
 grant, clock or runtime behavior changes. PRD-01 stays open at **34% estimated
 work remaining** (planning estimate).
+
+### Reconciled audit, image ownership and notification state
+
+Three further candidates have writer classifications already supported by
+their source contracts. This reconciliation counts those implementations in
+the catalog audit without claiming that physical column names define defects.
+
+| Candidate | Writer classification and clock rule | Verification boundary |
+| --- | --- | --- |
+| `audit_events` | [Migration 002](../../db/migrations/002_audit_runtime.sql) creates append-only facts with `created_at` and unconditional BEFORE UPDATE/DELETE refusal. API/Organization/Work/identity publishers and narrow SQL capabilities insert facts in the owning transaction; fault-injection fixtures refuse insertion rather than edit retained history. | The complete original audit append-only gate now passes on fresh schema 127, together with its RLS prerequisite and the runtime-role gate. This verifies update/delete refusal and role isolation, not every application's producer transaction. |
+| `board_background_images` | The existing [ownership audit](board-background-clock-audit.md) traces image-selection/copy insertion with `created_at`. Migration 072 refuses every update/delete; later image selection updates the canonical Board, preserving ownership facts. The schema-127 trigger definition agrees with that classification. | Earlier source/installed-metadata evidence remains scoped as recorded. This reconciliation does not claim a new execution of all publication/tamper/storage contracts. The complete current Board browser group is still running. |
+| `card_assignment_notifications` | This is mutable read state with an [authoritative derived update clock](notification-audit-clocks.md), rather than an immutable event: unread `updatedAt=createdAt`, first-read `updatedAt=readAt`. The persisted first-read fact is retained through original-key/natural retries; replacing an existing first-read time is refused. | Full schema-127 API, nine-case native notification producer/consumer, twelve-case watch/order and full-count capacity evidence are recorded in [notification verification](notification-stream-clocks.md) and [source results](source-test-results.md). These local scopes do not establish current immutable-image/full PRD acceptance. |
+
+The fresh schema-127 audit invocation applies all 127 ordered migrations,
+provisions standard restricted API/Worker roles and passes the unchanged
+original [RLS](../../scripts/ci/test-rls.sh),
+[append-only audit](../../scripts/ci/test-audit-append-only.sh) and
+[runtime-role](../../scripts/ci/test-runtime-roles.sh) scripts. Staged sources
+match after newline normalization; the owned container and environment files
+are independently absent. No schema, privilege or runtime code changes.
+
+The reconciled total is **16 of 51** source-classified candidates: **15 immutable
+history/ownership tables and one mutable notification table with a derived
+clock**. The other **35** still require complete classification. This does not
+waive the legacy sweep, Work delivery or recipient-revision provenance gaps.
+The local full-count notification capacity run is now terminal and passing
+for its recorded seeded-consumer scope. Full mutable-record coverage and
+current immutable build-once release acceptance remain outstanding. PRD-01
+stays open at **34% estimated work remaining** (planning estimate).
