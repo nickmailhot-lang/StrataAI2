@@ -6,6 +6,9 @@ The [PRD-01 foundation acceptance map](prd-01-acceptance.md) links the complete
 hierarchy/navigation requirements, acceptance criteria, test scenarios and
 remaining audit/release scope to their verification sources.
 
+The [invitation issuer clock audit](invitation-issuer-clock-audit.md) identifies
+owning writers, immutable facts and the remaining mutable-job clock gap.
+
 The implemented web routing and query-state choices, their executable evidence
 and outstanding ARCH-02 audit scope are recorded in
 [Web SPA routing and state boundary](web-spa-boundary.md).

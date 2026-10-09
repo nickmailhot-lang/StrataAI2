@@ -77,6 +77,13 @@ semantics and rollback/refusal evidence. Do not backfill an invented historical
 mutation time or infer completion merely from column presence. The catalog probe
 does not prove complete clock coverage.
 
+The [issuer-authority writer audit](invitation-issuer-clock-audit.md) classifies
+four candidates from their owning SQL functions and history protections. Proofs,
+sources and effects are immutable facts; jobs have mutable claim/reclaim and
+terminal state. The jobs' missing general update clock is a specific source gap.
+Historical lease provenance and transactional clock checks remain required before
+a repair can be accepted. This does not classify the remaining candidates.
+
 ## Executed evidence and closure boundary
 
 The [navigation execution record](../navigation-observations.md) retains the
