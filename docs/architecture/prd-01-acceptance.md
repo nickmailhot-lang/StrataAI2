@@ -48,7 +48,7 @@ locate coverage rather than mark the issue checkboxes complete.
 | PRD-01-TC-10: archived/deleted parents | [Lifecycle acceptance](lifecycle-acceptance.md), archived routes and directory cases; whole lifecycle/deep-link matrix remains required. |
 | PRD-01-TC-11: keyboard | Rendered history regressions, intact keyboard workflows and three-width capacity cases pass locally; current release and other primary-screen checks remain. |
 | PRD-01-TC-12: mobile | Desktop/phone persisted workflows and 1280/768/390 capacity cases pass locally; physical-device and remaining screen coverage are separate. |
-| PRD-01-TC-13: large-data performance | Full 200-List/5,000-active/100,000-archived rank/capacity chain passes locally at three widths. [Normal budgets](../kanban-performance.md) are separate; current normal matrix/repeatability and immutable release proof remain required. |
+| PRD-01-TC-13: large-data performance | Full 200-List/5,000-active/100,000-archived rank/capacity chain and all five [normal budget cases](../kanban-performance.md#current-history-focus-normal-performance-matrix) pass locally. Repeatability, physical-device and immutable release proof remain required. |
 
 ## Mutable-record audit scope
 
@@ -84,13 +84,24 @@ history-focus repair, two regressions failing before repair, final 38-case Board
 component pass, complete **1,986-test/142-file web-suite pass**, type/lint/build checks,
 and the local **30-pass/one-failure** complete Board invocation. Both persisted
 history workflows passed; desktop member-removal consent preparation failed.
-Its full report/trace remain private and a fresh intact 31-case rerun is live.
+Its full report/trace remain private. The following intact rerun passed both
+repaired member-consent cases but finished with **29 passes and two failures**
+in phone metadata and label activation, no skipped/flaky cases or report-level
+errors (1,424.54 seconds). Those traces are also retained; the pending fixture
+repairs are being verified in another fresh complete 31-case invocation.
 
 The complete three-width capacity chain passes all **3/3 cases** and final
 100,000 archived-record count/fingerprint checks. [Its execution record](../navigation-observations.md#executed-large-board-history-and-viewport-preservation)
 documents runtime, optional rank-fixture verification policy, exact nested scroll
 checks, fixture restoration and independently confirmed cleanup. It does not
 replace normal performance or current immutable-image CI.
+
+All five unchanged normal performance cases also pass together against the
+history-focus frontend in 161.84 seconds. [Recorded measurements and scope](../kanban-performance.md#current-history-focus-normal-performance-matrix)
+preserve all twenty mutation samples per applicable case, independently checked
+nearest-rank p95, null release revision and independently verified cleanup.
+One local normal/capacity pass is not performance repeatability or full release
+acceptance.
 
 Closure additionally requires all functional/data/API/permission/business rules,
 canonical navigation-event publication/consumption, full mutable-clock coverage,

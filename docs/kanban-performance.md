@@ -755,3 +755,34 @@ See [execution, runtime and cleanup scope](navigation-observations.md#executed-l
 This local capacity proof does not replace the unchanged normal-condition
 readiness, feedback, mutation-p95 or cached-detail budgets, current immutable
 CI, repeatability or complete PRD acceptance.
+
+## Current history-focus normal performance matrix
+
+All five unchanged normal-condition cases pass together with the history-focus
+frontend repair, retained API/Worker images, restricted PostgreSQL 17/pgvector
+schema 114 and current Nginx/CSP. The complete invocation exits zero in
+161.84 seconds, with no skipped/flaky/failed cases or report-level errors.
+Assets are warm; Board snapshots and detail routes follow the original fixtures.
+Optional email verification matches the normal performance fixture configuration.
+
+| Scenario | Usable Board (<1500 ms) | Cached detail (<200 ms) | Feedback (<100 ms) | Mutation p95 (<500 ms) |
+| --- | ---: | ---: | ---: | ---: |
+| Desktop, 50 dated Cards | 988.87 | 192.31 | — | 93.22 |
+| Desktop Kanban, mouse | 699.83 | 158.82 | 70.10 | 140.98 |
+| Phone Kanban, Chromium touch | 713.36 | 172.81 | 66.90 | 158.89 |
+| Desktop List feedback | — | — | 57.80 | — |
+| Phone List feedback, Chromium touch | — | — | 44.00 | — |
+
+Each mutation report retains all twenty samples; nearest-rank p95 was
+independently checked against sorted sample 19. The canonical reporter's
+collection/validation is reused with its output moved outside the repository.
+Provenance remains **unverified runtime**, with null release revision.
+Owned containers/database and API/Worker credential files are independently
+confirmed absent; the original running services remain preserved.
+
+This is one passing local matrix, separate from performance repeatability,
+physical devices and current immutable build-once CI. It does not erase the
+historical failed matrices or establish full-ticket acceptance. The strict
+31-case Board rerun passed both repaired member-consent cases but finished with
+29 passes and two failures in phone metadata and label keyboard activation;
+the pending fixture repairs require another complete phase result.
