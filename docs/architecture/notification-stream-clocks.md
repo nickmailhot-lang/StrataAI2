@@ -225,3 +225,11 @@ preflight verifies exact payload bytes for all four supported curl data-file
 options. Original scripts, 100,000 notifications, graph size, sample counts,
 concurrent readers, replay checks and the p95 <500 ms assertion are unchanged.
 The new invocation's terminal report and current build-once CI remain required.
+
+That first fresh adapter invocation stops after activity completion because
+Windows has no `/proc/sys/kernel/random/uuid`, before notification seeding.
+Its failure and cleanup are retained separately. A subsequent fresh invocation
+adds a private adapter for that exact UUID-file read, using a newly generated
+UUID and forwarding other file reads unchanged. The canonical capacity scripts
+remain byte-identical after newline normalization; all original counts and
+acceptance assertions still apply. Notification acceptance remains pending.
