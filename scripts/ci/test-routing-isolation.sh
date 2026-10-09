@@ -70,6 +70,19 @@ if lookup BOARD "$board_a" "INSERT INTO board_routes(board_id,tenant_id,visibili
   echo 'Read-only discovery context admitted a route write' >&2; exit 1
 fi
 grep -q 'ERROR:  42501:' "$scratch/denied"
+# Clock synchronization must not replace the authorization error for any
+# projection. These fresh IDs have no canonical source and no owning tenant
+# write context; a discovery capability still cannot create routing metadata.
+for entry in \
+  "LIST|INSERT INTO list_routes(list_id,tenant_id,board_id,lifecycle_state,updated_at) VALUES(gen_random_uuid(),'$org_b','$board_b','ACTIVE',now())" \
+  "CARD|INSERT INTO card_routes(card_id,tenant_id,board_id,list_id,lifecycle_state,updated_at) VALUES(gen_random_uuid(),'$org_b','$board_b','$list_b','ACTIVE',now())" \
+  "LABEL|INSERT INTO label_routes(label_id,tenant_id,board_id,status) VALUES(gen_random_uuid(),'$org_b','$board_b','ACTIVE')"; do
+  IFS='|' read -r kind statement <<< "$entry"
+  if lookup "$kind" "$board_a" "$statement" >"$scratch/denied" 2>&1; then
+    echo 'Read-only discovery context admitted a clocked route write' >&2; exit 1
+  fi
+  grep -q 'ERROR:  42501:' "$scratch/denied"
+done
 # Transaction-local lookup state must disappear even after a committed read.
 test "$(api "BEGIN; SET LOCAL app.route_kind='BOARD'; SET LOCAL app.route_key='$board_a'; SELECT count(*) FROM board_routes; COMMIT; SELECT count(*) FROM board_routes;")" = $'1\n0'
 echo 'Forced route RLS, bounded widened queries, wrong/missing/malformed context, tenant isolation, read-only discovery and context reset passed.'

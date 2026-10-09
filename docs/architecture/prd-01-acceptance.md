@@ -102,6 +102,14 @@ rollback, followed by successful repair and repeat application. Current
 immutable-image/deployed upgrade verification remains. Invitation routing and other operational writers
 still require their own history audit.
 
+The same [route-clock record](entity-route-clocks.md#preserve-discovery-authorization-refusals)
+retains a failure in the original restricted routing security gate and migration
+118's forward repair. Discovery-only writes remain denied with the original
+42501 authorization category; source-history faults retain their 23514 guard.
+The original gate, full migration gate and restricted ledger-readiness contracts
+pass. Extended denial checks pass for all four clocked route types; current
+immutable-image/deployed proof remains required.
+
 The [recipient page/counter audit](invitation-recipient-authority.md#page-lifecycle-clocks-and-remaining-counter-audit)
 adds explicit managed page creation/update clocks in migration 116 from the
 recorded owning job and first completion. Its complete local migration gate

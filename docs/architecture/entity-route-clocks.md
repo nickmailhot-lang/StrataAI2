@@ -56,7 +56,36 @@ Private evidence resides outside the repository in the
 `entity-route-clock-*-native-20261009` fixture directories.
 
 This repairs four projection clock gaps in the
-[PRD-01 audit](prd-01-acceptance.md). Invitation routing also projects
-Organization metadata and needs its own writer/history audit. Mutable
+[PRD-01 audit](prd-01-acceptance.md). Invitation routing retains an
+Organization-name snapshot captured on publication (legacy rows received their
+label in migration 016) and needs its own clock audit. Mutable
 operational counters, leases and sweeps remain in scope; this migration does
 not resolve the recipient revision-counter historical delivery-clock gap.
+
+## Preserve discovery authorization refusals
+
+The original mandatory restricted routing test exposed a schema-117 regression:
+a discovery-only insert remained denied, but the BEFORE clock trigger raised
+23514 for its RLS-hidden canonical source before PostgreSQL checked the route's
+write policy. The existing security contract requires authorization SQLSTATE
+42501. The test was not relaxed. A fresh normalized forensic reproduction
+captured 23514; a separate private forensic attempt stopped before SQL because
+Windows line endings were copied into its Linux script. Failed evidence remains
+outside the repository.
+
+[Migration 118](../../db/migrations/118_entity_route_clock_admission.sql) replaces
+the clock function in a forward upgrade. If the source is unavailable while
+route RLS applies and the caller lacks the matching tenant context, it raises
+42501. An owning-context or administrative missing source still raises 23514.
+Canonical clocks, historical migration 117, table grants, RLS policies and
+discovery reads are unchanged. API and Worker require ledger 118.
+
+The original restricted route gate passes after the repair, including widened
+reads, wrong/missing/malformed lookup context, cross-tenant isolation, denied
+discovery writes and transaction-local context reset. A fresh final invocation
+also passes denied List/Card/Label inserts alongside the original Board insert,
+requiring the same authorization error for all four clocked projections.
+The locked Release build, complete migration gate through 118 and restricted
+persistence/full required ledger readiness contracts pass. Fixture-only
+migration numbers are now 119–121. Current immutable-image CI and deployed
+upgrade proof remain required.

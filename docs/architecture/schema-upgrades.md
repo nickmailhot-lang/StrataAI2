@@ -49,7 +49,7 @@ of this new catalog guard is still required before treating it as release eviden
 ## Runtime migration readiness
 
 Production connections require every named migration through
-`117_entity_route_clocks`. The readiness query checks for missing
+`118_entity_route_clock_admission`. The readiness query checks for missing
 required ledger entries directly, avoiding a separately maintained numeric total.
 Extra later migrations do not substitute for a missing required entry.
 
@@ -111,3 +111,12 @@ no additional runtime grants. API and Worker require the named 117 ledger entry.
 The [route-clock record](entity-route-clocks.md) documents the full passing
 local upgrade/refusal/rollback gate, restricted readiness contracts and current
 immutable-image/deployed verification boundary.
+
+Migration 118 preserves the existing discovery-only write authorization error
+(42501) when the BEFORE clock guard cannot see a canonical source without its
+owning tenant context. The source-clock guard remains 23514 for actual owning
+or administrative missing-source faults. The old migration is retained; the
+forward repair changes no grants, routing reads or historical clocks. API and
+Worker additionally require ledger 118. The original real restricted routing
+security gate failed before this repair and passes afterward; all four clocked
+route types pass the extended mandatory denial checks.
