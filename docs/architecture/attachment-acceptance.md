@@ -1140,3 +1140,23 @@ provider/real scanner acceptance, complex hostile inputs, remaining role/lifecyc
 combinations, retention/purge, performance and full AC/DoD evidence remain open.
 The current GitHub full-release CI is queued, so this does not establish release
 approval or justify issue closure. Estimated PRD-14 work remaining: **32%**.
+
+## Actual engine in the complete enabled attachment pipeline
+
+The [real-engine execution](attachment-scanner-runtime.md#local-exact-image-engine-evidence-2026-10-09)
+uses all three build-once images from `1176d4929ac5c44471f48ec1ac3034edd47f6b87`,
+an official digest-pinned ClamAV engine, and explicit deterministic harmless test
+signatures. The standalone Worker verifier requires actual clean/detection/empty/
+cancellation/recovery behavior and a negative missing-daemon check. The intact
+enabled pipeline additionally passes all 21 browser cases (1 identity, 2 original,
+18 expanded), including real quarantine and refused delivery at both widths.
+Subsequent HTTP lifecycle/privacy/ownership checks, terminal process status and
+independent cleanup pass. No case, deadline, retry policy or assertion is narrowed.
+Export/reload and post-test checks retain identical image IDs, provenance and
+archive hashes; this evidence stays attributed to the tested commit.
+
+The daemon uses custom test signatures, without official definition downloads.
+Official coverage/update operations, deployed providers, hostile inputs, remaining
+role/outage/lifecycle combinations, retention/purge, performance and full AC/DoD
+still require proof. Current full GitHub CI remains queued. No release approval
+or issue closure is claimed. Estimated PRD-14 work remaining: **32%**.

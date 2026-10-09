@@ -55,17 +55,32 @@ test-signature detection, empty refusal, cancellation, caller stream ownership
 and clean recovery all passed. The process exited 0; independent Docker inventory
 showed no owned daemon containers or socket volumes remaining afterward.
 
-The complete disposable attachment fixture is also running on those pinned app
-images with the real daemon. Its initial upload has already progressed through
-the restricted Worker, native contained decoder and preview publication. The full
-browser and subsequent HTTP phases are still in progress; no completed result is
-attributed to them here. The complete identity and original two-case browser
-phases have now passed; expanded cases and later HTTP checks remain live.
-Official definition coverage, deployed bucket acceptance
-and full current GitHub CI remain separate evidence requirements.
+The complete disposable attachment fixture now passes on those pinned app images
+with the actual daemon and deterministic harmless hash/body signatures. Actual
+upload progresses through the restricted Worker, native contained decoder and
+preview publication. All 21 browser cases pass: identity 1/1 (27.0 seconds),
+original phase 2/2 (96.5 seconds), expanded phase 18/18 (701.8 seconds). Every
+report has zero unexpected, skipped or flaky cases, top-level errors and retries.
+The intact desktop/phone quarantine cases require authoritative rejection and
+refused normal delivery; supported-format, original-reply recovery, source
+archive/reconnect and invalid/untrusted-content cases remain enabled.
+
+Subsequent HTTP checks pass concurrent original-key selection, PNG sanitization,
+source archive/tombstone, independent Board image ownership, Board archive,
+public/private withdrawal, logout/readmission and retirement. The full process
+exits 0. Independent cleanup confirms zero owned containers, cloned databases,
+provider volumes and credential files; the three original services survive.
+
+The same build-once images were exported and reloaded without rebuilding.
+All 49 content-addressed archive blobs and descriptor references verify; the
+three archives total 504,939,280 compressed bytes. Post-test verification matches
+the original three image IDs, all four OCI labels and archive hashes. This is
+explicitly local evidence pinned to 1176d492, not execution of the later CI
+provenance-record changes. Official definition coverage, deployed bucket
+acceptance and current full GitHub CI remain separate evidence requirements.
 
 This establishes only the defined engine transport checks. A custom test
 signature does not establish current official signature coverage, malware
-detection efficacy, operational definition updates, full durable quarantine/
-publication acceptance, deployed provider acceptance or full release CI. PRD-14
+detection efficacy, operational definition updates, the full quarantine/publication
+role/outage/lifecycle matrix, deployed provider acceptance or full release CI. PRD-14
 remains open; estimated work remaining is **32%**.
