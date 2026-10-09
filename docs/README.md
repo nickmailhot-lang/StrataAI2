@@ -241,3 +241,6 @@ When adding a document, link it under the closest subject above and include any 
 
 [Card route statement projection](architecture/card-route-statement-projection.md) documents batched canonical
 route synchronization, preserved security/clock boundaries and scale verification.
+
+[Owner Portal screen verification](architecture/portal-screen-verification.md) records four-width admission,
+reflow, unavailable browsing state and the remaining release/feature boundaries.

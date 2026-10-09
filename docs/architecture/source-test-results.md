@@ -348,3 +348,14 @@ and locked current compiled payload. It has no added case retry, reduced fixture
 weakened assertion or budget. Immutable current-image CI and full acceptance
 remain pending; neither the completed prototype nor live default path is counted
 as an achieved release gate. PRD-01 remains open at **34% estimated work remaining**.
+
+
+## Current four-width Owner Portal phase
+
+The [Portal screen record](portal-screen-verification.md) retains the complete
+4/4 current compiled Production/real-PostgreSQL/Nginx phase, first-attempt result,
+independently verified cleanup, optional verification-policy boundary and all
+323-case browser-shard collection scope. The previously inert Browse action now
+has a clear unavailable state, without claiming PRD-80 implementation. Full
+current API and default persistence invocations remain live; immutable CI and
+aggregate acceptance are not inferred from this separate Portal phase.

@@ -66,3 +66,6 @@ Both are part of one modular-monolith product and share the same domain/applicat
 
 [Card route statement projection](card-route-statement-projection.md) documents batched canonical
 route synchronization, preserved security/clock boundaries and scale verification.
+
+[Owner Portal screen verification](portal-screen-verification.md) records four-width admission,
+reflow, unavailable browsing state and the remaining release/feature boundaries.

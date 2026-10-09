@@ -50,10 +50,10 @@ function PortalLayout() {
               <Box sx={{ flexGrow: 1 }}>
                 <Typography sx={{ fontWeight: 700 }}>Published documents</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Folder/document publication behavior is implemented under PRD-80.
+                  Document browsing is not available yet.
                 </Typography>
               </Box>
-              <Button variant="outlined">Browse</Button>
+              <Button variant="outlined" disabled>Browse</Button>
             </Stack>
           </Paper>
         </Stack>

@@ -1,6 +1,6 @@
 import { expect, test } from './releaseTest';
 
-for (const width of [1280, 390]) {
+for (const width of [1280, 768, 390, 320]) {
   test(`ARCH-02-AC-003: Portal-only deep links withhold Council navigation at ${width}px`, async ({ context, browser }) => {
     test.setTimeout(90_000);
     const portal = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 844 } });
@@ -34,6 +34,11 @@ for (const width of [1280, 390]) {
       const navigation = page.getByLabel('Internal application navigation');
       await page.goto(`/portal/${org}`);
       await expect(page.getByRole('heading', { name: 'Owner documents', exact: true })).toBeVisible(); await expect(navigation).toHaveCount(0);
+      // FOUND-FR-008 / WCAG reflow: the Portal remains a complete separate
+      // surface on tablet and narrow phones, without horizontal page scrolling.
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await expect(page.getByRole('button', { name: 'Browse', exact: true })).toBeDisabled();
+      await expect(page.getByText('Document browsing is not available yet.', { exact: true })).toBeVisible();
       await page.goto(`/app/${org}/members`);
       await expect(page.getByText('Access to this Organization surface is unavailable.')).toBeVisible(); await expect(navigation).toHaveCount(0);
       await page.goto(`/app/${org}/boards/${boardIds[0]}`);
