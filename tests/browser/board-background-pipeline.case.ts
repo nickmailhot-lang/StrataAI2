@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
-import { focusAdmittedControl } from './keyboardAdmission';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 // Explicit alternate config: never discovered by the ordinary .spec.ts suite.
 // The CI shell fixture supplies a real uploaded/published image and owns the
@@ -123,18 +123,18 @@ for (const width of [1280, 390]) {
       else await route.fulfill({ response: result });
     });
     const coverReview = page.getByRole('button', { name: 'Review Card cover', exact: true });
-    await focusAdmittedControl(coverReview); await page.keyboard.press('Enter');
-    await focusAdmittedControl(page.getByRole('button', { name: 'Use Private original.png as cover', exact: true })); await page.keyboard.press('Enter');
+    await pressAdmittedAction(coverReview);
+    await pressAdmittedAction(page.getByRole('button', { name: 'Use Private original.png as cover', exact: true }));
     const coverConfirm = page.getByRole('button', { name: 'Confirm Card cover', exact: true });
     await expect(coverConfirm).toBeDisabled();
     const coverConsent = page.getByRole('checkbox', { name: 'I understand this cover image will be publicly visible', exact: true });
-    await expect(coverConsent).toBeFocused(); await focusAdmittedControl(coverConsent); await page.keyboard.press('Space');
-    await focusAdmittedControl(coverConfirm); await page.keyboard.press('Enter');
+    await expect(coverConsent).toBeFocused(); await pressAdmittedAction(coverConsent, 'Space');
+    await pressAdmittedAction(coverConfirm);
     const coverRetry = page.getByRole('button', { name: 'Retry original cover change', exact: true });
     await expect(coverRetry).toBeEnabled(); await expect(coverRetry).toBeFocused();
     await expect.poll(admittedCardVersion).toBeGreaterThanOrEqual(initialCover.cardVersion + 1);
     for (const name of ['Save card', 'Manage attachments', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
-    await focusAdmittedControl(coverRetry); await page.keyboard.press('Enter'); await expect(page.getByText('Card cover updated.', { exact: true })).toBeVisible();
+    await pressAdmittedAction(coverRetry); await expect(page.getByText('Card cover updated.', { exact: true })).toBeVisible();
     expect(coverWrites).toHaveLength(2); expect(coverWrites[1]).toEqual(coverWrites[0]);
     expect(coverWrites[0].key).toMatch(/^[0-9a-f-]{36}$/i);
     expect(JSON.parse(coverWrites[0].body!)).toEqual({ attachmentId: candidate.attachmentId,
@@ -186,10 +186,10 @@ for (const width of [1280, 390]) {
       const priorSyncResponse = await context.request.get(`/boards/${board}/sync`); expect(priorSyncResponse.status()).toBe(200);
       const priorSync = await priorSyncResponse.json(); expect(priorSync).toMatchObject({ hasMore: false, pending: false, resetRequired: false });
       expect(priorSync.cursor).toMatch(/^[0-9]{1,19}$/);
-      await focusAdmittedControl(coverReview); await page.keyboard.press('Enter');
-      await focusAdmittedControl(page.getByRole('button', { name: 'Remove Card cover', exact: true })); await page.keyboard.press('Enter');
+      await pressAdmittedAction(coverReview);
+      await pressAdmittedAction(page.getByRole('button', { name: 'Remove Card cover', exact: true }));
       await expect(coverConsent).toHaveCount(0);
-      await focusAdmittedControl(page.getByRole('button', { name: 'Confirm cover removal', exact: true })); await page.keyboard.press('Enter');
+      await pressAdmittedAction(page.getByRole('button', { name: 'Confirm cover removal', exact: true }));
       await expect(page.getByText('Card cover removed.', { exact: true })).toBeVisible(); await expect(coverImage).toHaveCount(0);
       await expect(coverReview).toBeFocused(); expect(coverWrites).toHaveLength(3);
       const removedCoverResponse = await context.request.get(coverPath); expect(removedCoverResponse.status()).toBe(200);
@@ -214,17 +214,17 @@ for (const width of [1280, 390]) {
       else { expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]); await route.fulfill({ response: result }); }
     });
     const review = page.getByRole('button', { name: 'Review Board background images', exact: true });
-    await focusAdmittedControl(review); await page.keyboard.press('Enter');
-    await focusAdmittedControl(page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true })); await page.keyboard.press('Enter');
+    await pressAdmittedAction(review);
+    await pressAdmittedAction(page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true }));
     const confirm = page.getByRole('button', { name: 'Confirm Board background image', exact: true });
     await expect(confirm).toBeDisabled();
     const consent = page.getByRole('checkbox', { name: 'I understand this Board background image will be publicly visible', exact: true });
-    await expect(consent).toBeFocused(); await focusAdmittedControl(consent); await page.keyboard.press('Space');
-    await focusAdmittedControl(confirm); await page.keyboard.press('Enter');
+    await expect(consent).toBeFocused(); await pressAdmittedAction(consent, 'Space');
+    await pressAdmittedAction(confirm);
     const retry = page.getByRole('button', { name: 'Retry original Board background change', exact: true });
     await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
     for (const name of ['Save card', 'Review Card cover', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
-    await focusAdmittedControl(retry); await page.keyboard.press('Enter'); await expect(page.getByText('Board background updated.', { exact: true })).toBeVisible();
+    await pressAdmittedAction(retry); await expect(page.getByText('Board background updated.', { exact: true })).toBeVisible();
     await expect(review).toBeFocused(); expect(attempts).toHaveLength(2);
     expect(JSON.parse(attempts[0].body!)).toMatchObject({ publicVisibilityConfirmed: true, boardVersion: before.version + 1 });
     const sourceResponse = await context.request.get(`/boards/${board}`); expect(sourceResponse.status()).toBe(200);

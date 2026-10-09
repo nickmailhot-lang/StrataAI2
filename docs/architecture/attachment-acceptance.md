@@ -58,7 +58,7 @@ digests and scanner/provider details; authorization precedes disclosure.
 | FR-003 metadata | Scoped variant DTOs; migrations 041/043/044; tenant-safe integrity/RLS; current authorization before paging/admission; stable errors and atomic receipts/audit/events | Preview/cover/deletion state integration, remaining move/copy/archive races and full release acceptance |
 | FR-004 object storage | Official managed S3 adapter, private-owner/policy validation, non-overwrite multipart storage, explicit readiness/configuration refusal; no database BLOB; SDK transport/private-file contracts | Release-image enabled provider workflow, orphan/retention reconciliation and documented operator configuration/smoke evidence |
 | FR-005 controlled downloads | Current Clean/scoped admission, time-bound snapshot, SHA-verified anonymous staging, final/periodic rights checks, private forced-download headers and MUI browser-owned delivery; managed/API/PostgreSQL contracts; executed actual native browser downloads with exact original bytes | Full enabled-file browser/provider acceptance and deletion/cover/reconciliation interactions |
-| FR-006 scanning/quarantine | Separate Worker job, scope-only payload, restricted lease-bound SQL capability, complete-byte ClamAV protocol and atomic verdict/Card/audit/event persistence; fail-closed Pending/Rejected/Failed delivery; executed bounded final-attempt/expired-claim recovery | Remaining mutation/operator/rescan coverage and complete current immutable enabled pipeline |
+| FR-006 scanning/quarantine | Separate Worker job, scope-only payload, restricted lease-bound SQL capability, complete-byte ClamAV protocol and atomic verdict/Card/audit/event persistence; fail-closed Pending/Rejected/Failed delivery; executed bounded final-attempt/expired-claim recovery; native desktop/phone browser upload through actual Worker Rejected verdict, real event receipt, textual status and refused controlled delivery | Remaining mutation/operator/rescan coverage, deployed scanner acceptance and complete current immutable enabled pipeline |
 | FR-007 previews | Linux raster normalization; exact Worker isolated codec/privilege-drop/cancellation verification; durable private derivative jobs and fenced publication; current-authorized controlled PNG delivery and MUI viewer; executed actual upload-through-Worker sanitized browser preview at desktop/phone sizes | Complete actual enabled-provider release/browser pipeline and cross-feature acceptance matrix |
 | FR-008 cover | Nullable tenant/Card composite FK; current published-source prerequisite; dual CAS/idempotent commands and atomic audit/outbox; selected-source withdrawal clears once; PUBLIC consent/current anonymous image admission; minimal snapshot hint and MUI controls/display; executed actual upload-through-Worker cover browser workflow | Current immutable/full enabled-provider coverage, remaining cross-feature/concurrency/reconnect matrix and unchanged capacity/performance acceptance |
 | FR-009 deletion | Guarded archive/restore/elevated confirmed soft deletion; current parent/source versions; atomic selected-cover clearing; audit/events; restore does not reselect | Full enabled-provider/browser lifecycle matrix and retention/purge reconciliation |
@@ -1032,3 +1032,23 @@ the complete suite passes 91/91. The normal verifier retains four groups/seven
 isolated executions/112 steps. Product and browser scenario source are unchanged;
 this is source-quality structural proof, not execution of current release images
 or the remaining acceptance matrix. Estimated PRD-14 work remaining: **33%**.
+
+## Browser quarantine after actual Worker rejection
+
+The [native browser quarantine cases](attachment-object-storage.md#real-browser-upload-rejected-by-the-worker-scanner-protocol)
+extend the intact mandatory lifecycle phase to eight cases. Desktop and phone
+submit a real PNG carrying an explicit harmless CI-only rejection marker. The
+separate Worker persists Rejected at Card/attachment 3/2. Actual browser SignalR
+receipt reaches the delivered server cursor before review; textual rejection,
+absent delivery controls, direct 404 delivery, omitted storage keys, empty cover
+candidates and null cover are asserted. The existing normal/recovered uploads
+also require real event receipt, and both phases use the existing single keyboard
+activation helper.
+
+The complete native original 2/2 (93.0s), expanded 8/8 (296.4s), subsequent HTTP
+assertions and independent cleanup pass, with no unexpected/skipped/flaky cases.
+Earlier phone failures are retained in private reports. Typechecking, scanner
+syntax, all 91 integration guards and ordinary mandatory coverage verification
+pass. No product or release configuration change is included. This is not
+current immutable CI or deployed scanner/storage/full matrix acceptance; the
+issue remains open. Estimated PRD-14 work remaining: **33%**.

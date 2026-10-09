@@ -491,3 +491,50 @@ Product source is unchanged. Native account/provider and current immutable
 release limits remain; other formats, quarantined/invalid/large inputs, full
 role/parent/move/copy/lifecycle/performance and external operator/backup acceptance
 remain open.
+
+## Real browser upload rejected by the Worker scanner protocol
+
+The mandatory lifecycle configuration retains its normal upload, original-receipt
+recovery and permission/archive cases and adds desktop (1280px) and phone (390px)
+quarantine cases on separate owned Boards/Cards. Both use the browser's actual
+File input and keyboard upload. The valid PNG contains the harmless, explicit
+`STRATAAI_CI_HARMLESS_REJECT_FIXTURE` marker. The CI-only clamd protocol simulator
+reads the bounded complete stream and returns `FOUND` for that marker; ordinary
+fixture files still return `OK`. This is a protocol rejection fixture, not a
+malware signature or evidence of a deployed malware engine's detection accuracy.
+
+The actual separate Worker must persist Rejected at attachment version 2 and Card
+revision 3. The browser admits the updated Card and displays the textual rejection
+status. Download and preview controls, links and images are absent. Direct
+download-options/download/preview requests must return 404 without attachment
+bytes or a Content-Disposition header. Public metadata must omit storage keys,
+the cover candidate list must be empty, and the current cover must remain null.
+Each case retains the 150-second deadline, one real upload and WCAG-tagged form
+and rejected-state accessibility checks. No terminal metadata or browser provider
+receipt is fabricated.
+
+All six file-upload cases also require the actual browser's scoped SignalR event
+sequence to reach the canonical delivered server cursor before file review.
+Server readiness and a Card response alone do not prove browser receipt of the
+final scan/publication events. Keyboard actions use the existing
+`pressAdmittedAction` helper: current enabled focus and one locator-targeted
+Enter/Space activation, with no repeated activation, command or test retry.
+The original cover/background phase uses that same helper. Protected revalidation
+and delivery assertions remain in place; case deadlines are unchanged.
+
+Executed native evidence: the complete original phase passes 2/2 in 93.0 seconds
+and the expanded lifecycle phase passes 8/8 in 296.4 seconds. There are zero
+unexpected results, skips or flaky cases; subsequent HTTP lifecycle assertions
+and the process exit pass. Independent verification confirms no owned containers,
+database, private provider volume or credential files remain; the original three
+running services are preserved. Earlier failed reports are retained: three
+expanded runs exposed phone activation/delivery failures (6/8, 7/8 and 7/8), and
+one original phase failed 1/2 before the expanded phase. The final complete run
+adds real browser event receipt and uses the existing keyboard helper throughout;
+it does not remove those delivery/consent/recovery assertions or relax deadlines.
+
+This is bounded native local-provider and protocol-simulator evidence. Product
+source is unchanged; current immutable release CI, deployed scanner/storage,
+other supported formats, invalid/large inputs, Failed/rescan/operator coverage,
+remaining role/lifecycle/cross-feature cases and performance acceptance remain
+open. Estimated PRD-14 work remaining: **33%**.

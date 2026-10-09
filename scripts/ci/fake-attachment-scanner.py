@@ -10,6 +10,8 @@ if os.environ.get("CI") != "true":
 path, counter = sys.argv[1:]
 lock = threading.Lock()
 scans = 0
+# Harmless protocol-fixture marker, deliberately not a malware signature.
+reject_marker = b"STRATAAI_CI_HARMLESS_REJECT_FIXTURE"
 
 def exact(connection, size):
     data = bytearray()
@@ -37,6 +39,7 @@ def serve(connection):
             if command != b"zINSTREAM":
                 return
             size = 0
+            payload = bytearray()
             while True:
                 length = struct.unpack(">I", exact(connection, 4))[0]
                 if not length:
@@ -44,14 +47,15 @@ def serve(connection):
                 size += length
                 if size > 1024 * 1024:
                     return
-                exact(connection, length)
+                payload.extend(exact(connection, length))
             if not size:
                 return
             with lock:
                 scans += 1
                 with open(counter, "w", encoding="ascii") as output:
                     output.write(str(scans))
-            connection.sendall(b"stream: OK\0")
+            connection.sendall(b"stream: StrataAI.CI.HarmlessFixture FOUND\0"
+                               if reject_marker in payload else b"stream: OK\0")
         except (OSError, ValueError):
             return
 
