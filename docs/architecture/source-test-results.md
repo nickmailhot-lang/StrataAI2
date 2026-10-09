@@ -26,3 +26,35 @@ node --test tests/integration-suites.test.mjs
 ```
 
 Related: [mandatory integration groups](integration-ci-groups.md), [runtime build identity](build-identity.md), [documentation index](../README.md).
+
+## Schema-123 compiled-source local comparison
+
+The current locked Release build's unchanged complete Domain suite passes
+**758/758** in a pinned local Linux runtime, with zero failures/skips/errors.
+The XML counters are independently compared with the full case count, and
+the owned test container is removed. Compiled binaries are mounted read-only;
+reports remain outside the repository. This is compiled-source verification
+using an existing runtime image, not current immutable-image release proof.
+
+The Windows comparison finishes **742/758**, with sixteen failures retained
+privately: twelve socket failures, two time-zone assertions and two additional
+runtime/filesystem checks. No test is skipped or rewritten to hide those
+results. An initial direct Linux invocation used MTP report arguments with the
+standalone xUnit runner and refused its options before execution. The complete
+successful invocation uses that runner's own XML reporter, as advertised by
+its local help. This changes the local harness, not mandatory CI.
+
+The first complete Linux API invocation reports **80/691**, with 610
+DirectoryNotFound exceptions plus the architecture source-root assertion:
+the Windows-built WebApplicationFactory manifest points to Windows paths and
+the runtime lacked the source checkout. Its report is retained privately.
+A fresh complete invocation mounts the real checkout read-only and privately
+maps only existing manifest source roots into that Linux checkout. It uses
+the same original 691-case assembly without filtering, retries or changed
+assertions. Its result is pending. The original Windows API invocation also
+remains live; observation timeout is not treated as completion or grounds
+for restarting it.
+
+The separate complete schema-123 Board browser phase remains active. Current
+GitHub CI is queued; none of these local reports certify the required current
+build-once integration/security/release matrix.
