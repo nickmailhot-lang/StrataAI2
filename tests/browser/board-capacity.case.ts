@@ -2,6 +2,7 @@ import { installCapacityScrollDiagnostics, readCapacityScrollDiagnostics } from 
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
+import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -14,8 +15,8 @@ test.afterEach(async ({ page }, info) => {
 });
 // The existing restricted PostgreSQL rank fixture supplies actual persisted
 // 200-List/5000-active-Card data. No Board responses or live events are mocked.
-for (const width of [1280, 390]) {
-  test(`PRD-04/06 large Board windowing, keyboard and detail focus at ${width}px`, async ({ page, context }) => {
+for (const width of [1280, 768, 390]) {
+  test(`PRD-01/04/06 large Board windowing, keyboard and detail focus at ${width}px`, async ({ page, context }) => {
     test.setTimeout(150_000); expect(process.env.CI).toBe('true');
     const fixturePath = process.env.STRATAAI_BOARD_CAPACITY_FIXTURE; expect(fixturePath).toBeTruthy();
     const fixture = JSON.parse(readFileSync(fixturePath!, 'utf8')) as { email: string; password: string; organizationId: string; boardId: string; listId: string };
@@ -351,9 +352,29 @@ for (const width of [1280, 390]) {
     await scrollToColumn(index); await expect(list).toBeVisible();
     await cards.evaluate(node => { node.scrollTop = node.scrollHeight; });
     const last = cards.locator(`a[href$="/cards/${column.cards.at(-1)!.id}"]`);
-    await expect(last).toBeVisible(); await last.press('Enter');
+    await expect(last).toBeVisible(); await last.focus(); await expect(last).toBeFocused();
+    await settleDrag();
+    const boardContext = async () => ({
+      canvas: await canvas.evaluate(node => node.scrollLeft),
+      cards: await cards.evaluate(node => node.scrollTop),
+      section: await section.evaluate(node => node.scrollTop),
+      document: await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY })),
+    });
+    const beforeDetail = await boardContext();
+    await last.press('Enter');
+    await expect(page.getByRole('dialog', { name: 'Card details' })).toBeVisible();
+    // FOUND-FR-007 / PRD-01-TC-11: history exit bypasses the Close handler.
+    // Require the same canonical Card and all nested viewport offsets.
+    await page.goBack(); await expect(page).toHaveURL(new RegExp(`${path}$`));
+    await expect(page.getByRole('dialog', { name: 'Card details' })).toHaveCount(0);
+    await expect(last).toBeFocused(); await expect(last).toBeInViewport();
+    await expect.poll(boardContext).toEqual(beforeDetail);
+    await page.goForward();
+    await expect(page).toHaveURL(new RegExp(`${path}/cards/${column.cards.at(-1)!.id}$`));
+    await expect(page.getByRole('dialog', { name: 'Card details' })).toBeVisible();
     const close = page.getByRole('button', { name: 'Close', exact: true }); await expect(close).toBeEnabled(); await close.press('Enter');
     await expect(last).toBeFocused(); await expect(last).toBeInViewport();
+    await expect.poll(boardContext).toEqual(beforeDetail);
     const listSourceIndex = settledSnapshot.lists.findIndex((value, index) => index + 8 < 200 && value.cards.length === 0);
     expect(listSourceIndex).toBeGreaterThanOrEqual(0);
     const sourceList = settledSnapshot.lists[listSourceIndex];
@@ -432,5 +453,24 @@ for (const width of [1280, 390]) {
     // Capacity timings are retained observations, not a replacement for the
     // separate unchanged normal-condition <1500/<100/<500/<200 budgets.
     expect(Number.isFinite(usableMs) && usableMs > 0).toBe(true);
+    // Each viewport transfers one Card out of the populated List. Return it
+    // through the real command so every subsequent viewport keeps the full
+    // 5,000-Card admission requirement, without changing the archived fixture.
+    const returned = await context.request.post(`/cards/${moving.id}/move`, {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { destinationListId: fixture.listId, expectedVersion: moving.version + 3 },
+    });
+    expect(returned.status()).toBe(200);
+    await waitForBoardDelivery(context.request, fixture.boardId);
+    const restoredResponse = await context.request.get(`/boards/${fixture.boardId}`);
+    expect(restoredResponse.status()).toBe(200);
+    const restored = await restoredResponse.json() as typeof snapshot;
+    const restoredSource = restored.lists.find(value => value.list.id === fixture.listId)!;
+    expect(restoredSource.cards).toHaveLength(column.cards.length);
+    expect(restoredSource.cards.find(card => card.id === moving.id)).toMatchObject({ version: moving.version + 4 });
+    expect(restoredSource.cards.filter(card => card.id !== moving.id)).toEqual(transferredSource.cards);
+    expect(restored.lists.find(value => value.list.id === destinationId)!.cards).toEqual([]);
+    expect(restored.lists.filter(value => ![fixture.listId, destinationId].includes(value.list.id)))
+      .toEqual(listSnapshot.lists.filter(value => ![fixture.listId, destinationId].includes(value.list.id)));
   });
 }

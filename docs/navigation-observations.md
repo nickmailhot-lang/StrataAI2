@@ -157,3 +157,34 @@ retained API/Worker images and restricted PostgreSQL roles; it is separate from
 the full immutable build-once CI gate, which remains pending. No complete
 foundation acceptance or issue closure is inferred from these focused results.
 Estimated PRD-01 work remaining stays **34%** (planning estimate).
+
+### Executed large-Board history and viewport preservation
+
+The complete rank/capacity chain now passes with all three native Chromium
+viewport cases: 1280, 768 and 390 pixels. Each keeps the original 200-List and
+at-least-5,000-active-Card admission checks, keyboard/pointer movement geometry,
+window bounds and tagged accessibility checks. At the populated List's tail,
+Back closes the Card overlay and returns focus to the same canonical Card link;
+Forward reopens it, and Close returns focus again. Both exits preserve the exact
+canvas, Card-window, List-section and document scroll offsets.
+
+Each case returns its transferred Card through the real versioned move command
+after its original assertions. The resulting read verifies the next revision,
+restored source count, empty destination and unchanged other Cards/Lists. This
+keeps every viewport above the original capacity threshold rather than letting
+the added tablet case consume the shared fixture below it.
+
+All **3/3 cases** pass in one invocation (186.60 seconds), with no skipped,
+flaky or failed cases or report-level errors. The complete shell chain exits
+zero after its final **100,000 archived-Card count and complete-record fingerprint**
+checks. Owned containers/database and API/Worker credential files are independently
+confirmed absent; browser credentials are removed and the original three
+running services remain.
+
+This uses the repaired production frontend, retained API/Worker images,
+restricted PostgreSQL 17/pgvector/schema 114 and current Nginx/CSP. The rank
+fixture uses optional email verification as its CI configuration does.
+It is local integration evidence, separate from current immutable release CI,
+physical-device coverage and the unchanged normal-condition performance budgets.
+The earlier 30/31 Board phase and its member-review failure remain recorded
+above. Estimated PRD-01 work remaining stays **34%** (planning estimate).

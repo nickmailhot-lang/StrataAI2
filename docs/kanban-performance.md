@@ -737,3 +737,21 @@ evidence. Exact immutable-image CI, performance repeatability and the remaining
 full-ticket acceptance/Definition of Done still prevent closure. Estimated
 PRD-06 work remaining is **25%** (planning estimate); the objective and all
 other PRD requirements remain unchanged.
+
+## Three-viewport history and exact scroll-context follow-up
+
+The full rank/capacity chain passes with the history-focus frontend repair and
+the intact desktop, added tablet and phone cases at 1280/768/390 pixels. All
+three retain the original data sizes, movement/geometry/window bounds, timeouts
+and tagged accessibility assertions. New Back/Forward/Close checks require
+canonical Card focus and exact preservation of four nested scroll offsets.
+A verified real return command restores the transferred Card after each case,
+keeping the populated List above the original 5,000-Card threshold for every
+viewport. The final count and complete-record fingerprint prove all 100,000
+archived Cards unchanged after all three cases. All 3/3 browser cases pass in
+186.60 seconds and the complete shell chain exits zero.
+
+See [execution, runtime and cleanup scope](navigation-observations.md#executed-large-board-history-and-viewport-preservation).
+This local capacity proof does not replace the unchanged normal-condition
+readiness, feedback, mutation-p95 or cached-detail budgets, current immutable
+CI, repeatability or complete PRD acceptance.
