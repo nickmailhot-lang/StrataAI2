@@ -151,7 +151,9 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     await expect(other.getByText('1 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     await expect.poll(() => phoneLive.cursors.some(cursor => typeof cursor === 'string' && /^[0-9]+$/.test(cursor)), { timeout: 25_000 }).toBe(true);
     await expect.poll(() => phoneLive.events.filter(type => type === 'NOTIFICATION_CREATED').length, { timeout: 25_000 }).toBe(4);
-    await other.getByRole('button', { name: 'Mark read', exact: true }).press('Enter');
+    const recoveredRead = other.getByRole('button', { name: 'Mark read', exact: true });
+    await expect(recoveredRead).toBeEnabled(); await recoveredRead.focus();
+    await expect(recoveredRead).toBeFocused(); await other.keyboard.press('Enter');
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     for (const client of [page, other]) {

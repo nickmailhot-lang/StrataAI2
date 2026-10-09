@@ -956,3 +956,29 @@ workflow syntax and the complete four-shard browser coverage pass.
 This is scoped native source-runtime evidence. Current immutable/full CI and
 the complete requirement map still govern closure. Estimated PRD-17 work
 remaining stays **15%**.
+
+## Combined strict notification-phase failure investigation
+
+The first complete nine-case producer/consumer invocation finishes with eight
+producer cases passing and the consumer failing at its final post-reconnect
+read gesture (9.5 minutes, no skips or retries). The phone remains at one unread
+notification and the trace contains no final read POST to the API. This does
+not establish a persistence or API acknowledgement failure. A separate focused
+consumer invocation with bounded focus-enum diagnostics passes using the original
+gesture; that passing diagnostic does not explain the earlier failure. Temporary
+diagnostic source is removed and its private evidence retained.
+
+The consumer now explicitly requires its recovered single-read control to be
+enabled and focused before sending native Enter. Its original deadline, zero
+unread expectations, desktop delivery checks, storage oracle, native gesture and
+retry policy remain. This strengthens observation of the intended control rather
+than establishing that the complete phase or a product repair has passed. Fresh
+focused and combined execution are required. PRD-17 remains open at **15%
+estimated work remaining**; current immutable/full CI remains separate.
+
+The strengthened complete consumer scenario passes locally without skips or
+retries against the same strict API/Worker, rebuilt MUI and restricted schema-114
+topology. This confirms its explicit enabled/focused native action and all
+existing recovery/storage/privacy assertions in that invocation. It does not
+prove the earlier intermittent failure is resolved across the entire nine-case
+phase. A fresh combined phase remains required; owned fixtures are removed.
