@@ -314,6 +314,31 @@ it('accepts an equal normalized author edit as a no-op without inventing new rev
   await screen.findByText('Comment saved.'); expect(writes()[0][1]!.method).toBe('PATCH');
   expect(JSON.parse(writes()[0][1]!.body as string)).toEqual({ content: row.content, cardVersion: 4, version: 1 });
 });
+it.each(['sentinelStart', 'sentinelEnd'])('restores original comment recovery from its captured dialog %s after the action is removed', async sentinel => {
+  // PRD-15/17-TC-06/11: retain original lost-reply intent and owned keyboard recovery.
+  mock(() => { throw new WorkRequestError(503, null); });
+  const p = props();
+  // Isolate the connected dialog fallback from MUI's sentinel handler, which
+  // immediately redirects focus. Existing real-Dialog tests retain trap coverage.
+  const frame = (unavailable = false) => <div className="MuiDialog-root">
+    <div data-testid="sentinelStart" tabIndex={0} />
+    <div className="MuiDialog-container" role="presentation"><div role="dialog" data-mui-focusable tabIndex={-1}>
+      <CardCommentsControl {...p} unavailable={unavailable} /><Button>Another control</Button>
+    </div></div><div data-testid="sentinelEnd" tabIndex={0} />
+  </div>;
+  const view = render(frame());
+  await create(); const save = screen.getByRole('button', { name: 'Save comment' }); save.focus(); fireEvent.click(save);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Retry original comment change' })).toHaveFocus());
+  const dialog = screen.getByRole('dialog');
+  const fallback = dialog.closest('.MuiDialog-root')!.querySelector<HTMLElement>(`div[data-testid="${sentinel}"]`)!;
+  expect(fallback).not.toBeNull();
+  view.rerender(frame(true));
+  expect(save.isConnected).toBe(false);
+  fallback.focus(); expect(fallback).toHaveFocus();
+  view.rerender(frame());
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Retry original comment change' })).toHaveFocus());
+  expect(writes()).toHaveLength(1);
+});
 it('preserves the original key/body after a lost reply and newer snapshots while respecting another focus owner', async () => {
   let attempts = 0; mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; });
   const p = props(); const view = render(<Dialog open><CardCommentsControl {...p} /><Button>Another control</Button></Dialog>);

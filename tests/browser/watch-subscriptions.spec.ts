@@ -85,7 +85,9 @@ test('PRD-17: desktop and phone recover personal watches for Board, List and mov
     await expect(mobile.getByRole('button', { name: 'Retry same watch change' })).toBeFocused();
     await mobile.getByRole('button', { name: 'Check current watching' }).focus(); await other.keyboard.press('Enter');
     await expect(mobile.getByText('You are watching this Card.', { exact: true })).toBeVisible();
-    await mobile.getByRole('button', { name: 'Retry same watch change' }).focus(); await other.keyboard.press('Enter');
+    const retryWatch = mobile.getByRole('button', { name: 'Retry same watch change' });
+    await expect(retryWatch).toBeEnabled();
+    await retryWatch.focus(); await expect(retryWatch).toBeFocused(); await other.keyboard.press('Enter');
     await expect(mobile.getByRole('button', { name: 'Retry same watch change' })).toHaveCount(0); expect(writes).toBe(2);
     await expect(page.getByText('You are watching this Card.', { exact: true })).toBeVisible({ timeout: 25_000 });
     const before = await storedWatch('CARD', card, true, 1);

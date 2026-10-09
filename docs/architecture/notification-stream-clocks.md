@@ -186,3 +186,15 @@ readiness and security proof. Its native producer/consumer run is still live;
 the eleven-case result above uses the original repaired schema-126 build and
 cannot certify schema-127 or immutable-image release acceptance. The personal
 watch retry failure remains an explicit next verification gap.
+
+Read-only reconstruction of the retained watch trace's incremental DOM
+snapshots establishes that the retry button is disabled both before and after
+the focus call, and during the native Enter action. It becomes enabled only
+afterward. The next test version explicitly requires enabled and focused state
+before the same Enter gesture. Original request key/body equality, exactly two
+writes, recovery-control removal, source-clock persistence, movement/lifecycle,
+accessibility assertions and deadlines remain. Browser typecheck passes. A
+fresh complete original twelve-case invocation is running on schema 127;
+its terminal result and whole-counter check remain required. This input
+observation repair does not change `WatchControl` product behavior or rewrite
+the earlier failed phase as a pass.

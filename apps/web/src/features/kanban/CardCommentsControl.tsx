@@ -43,11 +43,11 @@ function CommentsControl(props: CardCommentsProps) {
     retainedAction.current = undefined;
     focusOwner.current = owner; focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]'); restoreFocus.current = true; parkRecoveryFocus(owner);
   }
-  function blur(event: React.FocusEvent<HTMLElement>) { if (!ownsRecoveryFocus(event.relatedTarget, event.currentTarget)) restoreFocus.current = false; }
+  function blur(event: React.FocusEvent<HTMLElement>) { if (!ownsRecoveryFocus(event.relatedTarget, event.currentTarget, focusDialog.current)) restoreFocus.current = false; }
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); callbacks.current.onBusyChange(false); callbacks.current.onRecoveryChange(false); }; }, []);
   useEffect(() => { props.onRecoveryChange(!!draft || !!intent || blocked); }, [draft, intent, blocked, props.onRecoveryChange]);
   useEffect(() => {
-    if (disabled || !restoreFocus.current || !(ownsRecoveryFocus(document.activeElement, focusOwner.current) || document.activeElement === focusDialog.current)) return;
+    if (disabled || !restoreFocus.current || !ownsRecoveryFocus(document.activeElement, focusOwner.current, focusDialog.current)) return;
     const retained = retainedAction.current;
     const previous = retained && Array.from(container.current?.querySelectorAll<HTMLButtonElement>('button[data-comment-action]') ?? [])
       .find(button => button.dataset.commentAction === retained.action && button.dataset.commentId === retained.comment && !button.disabled);

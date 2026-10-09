@@ -59,3 +59,39 @@ The earlier schema-126 watch/order, capacity and full API runs retain their own
 build/schema scope and live handles. Full current-source and build-once release
 acceptance still govern closure. PRD-01 and PRD-17 remain open at **34%** and
 **15% estimated work remaining**, respectively (planning estimates).
+
+## Subsequent native focus results
+
+The schema-127 nine-case invocation subsequently finishes **8/9** in 617.54
+seconds, with one result per case and zero skipped/flaky outcomes. The phone
+confirmed-group-mention scenario fails its automatic original-comment retry
+focus assertion at `comment-mass-mentions.spec.ts:119`. Its source publication,
+history guard or complete native acceptance is not inferred from eight passing
+cases. The final whole-counter oracle does not execute after browser failure.
+Failed trace/report are retained; owned containers, database and credentials
+are independently absent.
+
+Source review finds a related comment-recovery gap: the component captures its
+dialog when an action begins but omits that dialog from subsequent ownership
+checks after the original action is removed. The shared focus helper already
+supports that captured fallback. Both blur and restoration checks now pass it,
+retaining the rule that another control or another dialog owns its own focus.
+
+Two new isolated dialog-fallback regressions fail before the change at the
+post-removal restoration assertion and pass afterward. They model both same-root
+sentinels with the actual removed action and connected dialog. An initial
+real-Dialog fixture stops at its sentinel-focus setup because MUI immediately
+redirects sentinel focus; that setup result is retained and is not the product
+regression. The isolated fixture preserves the existing real-Dialog tests.
+All **37** comment/shared-focus cases pass without skips, including original
+key/body preservation and respect for another focus owner. Web types, targeted
+lint and the production frontend build pass; output and reports remain private.
+
+These regressions prove the captured-dialog gap, not that it was the unique
+cause of the phone native failure. A fresh complete original nine-case phase
+now uses the repaired MUI assets, strict schema-127 API and separate Worker,
+retaining every original producer/consumer assertion and successful-exit
+whole-counter oracle. The full watch/order phase is separately running with
+enabled/focused native watch-retry observation. Their terminal results, original
+capacity acceptance, complete current-source verification and immutable
+build-once CI remain outstanding. No ticket is closed.
