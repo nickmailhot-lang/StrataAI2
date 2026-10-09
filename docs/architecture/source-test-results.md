@@ -299,3 +299,34 @@ its full-scale mutation and terminal result are still required. The original
 version and is not current release certification. Report:
 `card-route-batch-prototype-deletion-native-20261009`. No production route
 migration is adopted on the strength of a partial run.
+
+
+## Card route statement regression gate
+
+The [Card route statement gate](../../scripts/ci/test-card-route-statement-semantics.sql)
+is now required by PostgreSQL CI after the original routing-isolation check.
+Two transaction-local Organization graphs verify multi-row INSERT through a
+returning CTE, multi-row UPDATE, INSERT with ON CONFLICT UPDATE, zero-row writes,
+DELETE and intentional subtransaction rollback. After each statement, routes
+must match the canonical Card tenant, Board, List, lifecycle and both clocks.
+The CTE must insert exactly two Cards; deletion must leave no fixture Cards.
+Updates and deletes are restricted to the two fixture Organizations, and the
+whole fixture transaction rolls back. These are admin projection-consistency
+checks; the existing restricted-role/RLS checks remain separately required.
+
+The exact committed gate passes on fresh schema 132 with both the current
+row trigger and the isolated transition-table prototype. All 132 migration
+files plus role provisioning match current source after newline normalization,
+and the staged gate matches the committed script. Its owned container and
+credential environments are independently absent. Private report:
+`card-route-statement-ci-gate-native-20261009`.
+
+An earlier isolated statement experiment also passes for both implementations,
+followed by the five original tenant/RLS/role/routing/route-clock companion
+checks. Report: `card-route-batch-statement-semantics-native-20261009`.
+These checks establish after-statement behavior for the tested operations;
+they do not certify arbitrary same-statement consumers, concurrent route lock
+ordering, production latency, all acceptance criteria or immutable release
+images. The original complete deletion run remains live and the prototype is
+still outside production migrations. PRD-01 remains open at **34% estimated
+work remaining**, a planning estimate rather than a passed-test percentage.

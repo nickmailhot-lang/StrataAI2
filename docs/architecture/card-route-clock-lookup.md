@@ -96,3 +96,15 @@ absent and all original services remain running. This gate result complements
 the unchanged routing isolation pass. The full scale/deletion group is still
 live, and neither queued API verification nor current immutable-image CI is
 counted as completed evidence.
+
+
+## Current statement consistency evidence
+
+The required [statement regression gate](../../scripts/ci/test-card-route-statement-semantics.sql)
+passes on fresh schema 132 with the current trigger and the isolated batching
+prototype. It covers multi-row writes, returning CTE inserts, conflict updates,
+empty statements, deletes and rollback, comparing route ownership/lifecycle
+and both timestamps to canonical Cards after each statement. The
+[source-test record](source-test-results.md#card-route-statement-regression-gate)
+describes fixture isolation and verification limits. This does not adopt the
+prototype or supersede the unresolved full deletion and immutable CI evidence.
