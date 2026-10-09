@@ -481,3 +481,22 @@ This scoped result does not establish the prior intermittent phone failure's
 exact cause or a complete combined/full immutable pass. Current CI remains
 queued; complete acceptance still governs closure. Estimated PRD-05 work
 remaining stays **15%**.
+
+
+## Preserve chosen visibility confirmation during dialog entry
+
+A source audit finds the visibility confirmation dialog also unconditionally
+focuses Cancel at entry completion. Its real-MUI regression reproduces chosen
+Confirm losing focus (seven existing cases pass / one new case fails before
+repair). Cancel now receives initial focus, while delayed recovery only moves
+focus from the same dialog's paper/trap fallback. Deliberately chosen controls
+keep their focus. Public visibility consent, reviewed version, retry key,
+server authority, live invalidation and closing focus behavior remain.
+
+All 26 selected visibility/member/focus component checks pass, along with web
+TypeScript, targeted lint and a fresh Production web build. Both unchanged strict
+native visibility scenarios are running against the rebuilt assets, current
+compiled Production API/separate Worker and restricted schema-114 PostgreSQL
+17/pgvector. This component repair does not claim to resolve the separate Clear
+or phone history failures. Current immutable/full CI and complete acceptance
+remain required. Estimated PRD-05 work remaining stays **15%**.

@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
+import { ownsRecoveryFocus } from './focusRecovery';
 import { apiFetch } from '../../api/apiFetch';
 import { watchBoard, type LiveStatus } from '../../api/boardLive';
 
@@ -21,6 +22,7 @@ function Visibility({ org, id }: { org: string; id: string }) {
   const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false); const cancel = useRef<HTMLButtonElement>(null);
   const action = useRef<HTMLButtonElement>(null); const refresh = useRef<HTMLButtonElement>(null);
+  const focusOwner = useRef<HTMLDivElement | null>(null);
   const focusRequested = useRef(false);
   const restoreFocus = () => {
     const target = action.current && !action.current.disabled ? action.current : refresh.current;
@@ -120,12 +122,15 @@ function Visibility({ org, id }: { org: string; id: string }) {
         <Button component="a" href={`/app/${encodeURIComponent(org)}/boards/${encodeURIComponent(id)}`} target="_blank" rel="noopener noreferrer">Open public Board</Button>
       </>}</>}
     <Dialog open={review && !!board} onClose={() => { if (!busy) setReview(false); }} aria-labelledby="visibility-title"
-      slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: restoreFocus } }}>
+      slotProps={{ paper: { ref: (node: HTMLDivElement | null) => { if (node) focusOwner.current = node; } },
+        transition: { onEntered: () => {
+          if (mounted.current && !busy && ownsRecoveryFocus(document.activeElement, focusOwner.current)) cancel.current?.focus();
+        }, onExited: restoreFocus } }}>
       <DialogTitle id="visibility-title">Change Board visibility?</DialogTitle>
       <DialogContent><Typography>{board?.name}: {draft}</Typography><Typography>{draft === 'PUBLIC' ? 'Anyone, including people who are not signed in, can read this Board.' : 'This changes who can discover and read this Board.'} Existing membership and edit permissions are managed separately.</Typography>
         {draft === 'PUBLIC' && <Typography>Selected Card covers and the Board background image will also be publicly visible.</Typography>}
       </DialogContent>
-      <DialogActions><Button ref={cancel} disabled={busy} onClick={() => setReview(false)}>Cancel</Button>
+      <DialogActions><Button ref={cancel} autoFocus disabled={busy} onClick={() => setReview(false)}>Cancel</Button>
         <Button disabled={busy || !board} onClick={() => board && void run({ visibility: draft.toUpperCase(), version: board.version })}>Confirm visibility change</Button></DialogActions>
     </Dialog>
   </Stack></Container>;

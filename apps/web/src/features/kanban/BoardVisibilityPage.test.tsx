@@ -20,7 +20,7 @@ async function choose() {
   fireEvent.click(screen.getByRole('button', { name: 'Review visibility change' }));
   await screen.findByRole('dialog');
 }
-afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 it('requires explicit confirmation and sends the current version with a retry key', async () => {
   const next = { ...board, visibility: 'PUBLIC', version: 5 };
   const mock = mount(response(scope), response(next), response({ ...scope, board: next }));
@@ -92,4 +92,16 @@ it('retains conflict information when live recovery loads the current version wi
   await waitFor(() => expect(screen.getByRole('combobox', { name: 'Board visibility' })).toHaveTextContent('Organization'));
   expect(screen.getByText('The Board changed. Check current visibility before making another change.')).toBeInTheDocument();
   expect(mock.mock.calls.filter(call => call[1]?.method === 'PATCH')).toHaveLength(1);
+});
+
+it('preserves chosen visibility confirmation when the opening transition finishes', async () => {
+  mount(response(scope));
+  fireEvent.mouseDown(await screen.findByRole('combobox', { name: 'Board visibility' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Public' }));
+  vi.useFakeTimers();
+  fireEvent.click(screen.getByRole('button', { name: 'Review visibility change' }));
+  const confirm = screen.getByRole('button', { name: 'Confirm visibility change' });
+  confirm.focus(); expect(confirm).toHaveFocus();
+  await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+  expect(confirm).toHaveFocus();
 });
