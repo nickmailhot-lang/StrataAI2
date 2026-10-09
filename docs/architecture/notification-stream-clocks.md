@@ -137,3 +137,34 @@ release identity plus separate source identity while retaining every fixture,
 verification and sample field. Those checks verify formatting/provenance only;
 their inputs are not runtime performance evidence. Both Bash scripts parse,
 and all 234 Node source cases pass with no skips.
+
+The spawn-aware twelve-case invocation subsequently finishes **10/12** in
+1,411.58 seconds, with one result per case and zero skipped/flaky cases. All five
+observed lock-order scenarios pass. MEMBER and PUBLIC_READER cross-Board cases
+fail at the third delivery: their native inbox refresh receives a 404 and retires
+its display. This is a product failure, not the earlier subprocess setup problem.
+The private failed report is retained; its owned containers, database and
+credential files are independently absent. The final whole-counter check did
+not execute because the browser phase failed.
+
+Inbox, synchronization and read-command admission previously compared the
+discovered Card route with its fresh route after acquiring Board locks. A move
+committing during that wait could make a valid recipient look unavailable.
+`NotificationInboxService` now releases the entire failed transaction before
+rediscovering the route and reacquiring the complete sorted Board lock set.
+Source identity, visible-row equality, fresh Board permissions and actor checks
+remain required. No unlocked destination is accepted, no extra Board is locked
+out of order, and no command effects or replay receipts survive a failed attempt.
+Three changing discoveries return transient storage unavailability; actual
+permission withdrawal still fails closed.
+
+The complete locked solution builds with zero warnings/errors. All **six** new
+API regression cases pass, covering inbox/sync/read for one stale discovery and
+continuous movement, unchanged source identities/clocks, atomic read behavior,
+canonical current links and actual subsequent Board-access withdrawal. These
+tests project a formerly valid discovery over real moved-Card data; they do not
+certify native database interleaving. A fresh full original twelve-case native
+invocation is running against the repaired API and separate Worker. Every
+original scenario, assertion, deadline and the final whole-counter oracle is
+retained. Its terminal result remains required, as do full current-source tests,
+the still-running capacity invocation and current immutable build-once CI.

@@ -56,7 +56,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
         IReadOnlyList<CardNotification> admitted = [];
         var more = false;
         long head = 0; var reset = false;
-        return transactions.ExecuteAsync(organizationId,
+        return RediscoverAsync(() => transactions.ExecuteAsync(organizationId,
             WorkCommand.Create(recipientId, null, "NotificationSync", organizationId, new { after }, "notification_not_found"),
             async _ => {
                 if (!await AdmitOrganization(organizationId, recipientId, ct)) return false;
@@ -90,7 +90,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
                 return WorkOperation<SyncPage>.Success(new(organizationId, recipientId,
                     planned.Count == 0 ? (after is null || reset ? head : after.Value).ToString(CultureInfo.InvariantCulture) : planned[^1].Sequence,
                     more, planned.Where(e => visible.Contains(e.EntityId)).ToArray(), reset));
-            }, ct);
+            }, ct), ct);
     }
 
     public Task<WorkOperation<NotificationInboxPage>> ListAsync(Guid organizationId, Guid recipientId,
@@ -99,7 +99,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
         if (organizationId == Guid.Empty || recipientId == Guid.Empty)
             return Task.FromResult(WorkOperation<NotificationInboxPage>.Failure("notification_not_found"));
         IReadOnlyList<CardNotification> planned = [];
-        return transactions.ExecuteAsync(organizationId,
+        return RediscoverAsync(() => transactions.ExecuteAsync(organizationId,
             WorkCommand.Create(recipientId, null, "NotificationInbox", organizationId, new { }, "notification_not_found"),
             async _ =>
             {
@@ -121,7 +121,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
                     $"/app/{organizationId:D}/boards/{n.CurrentBoardId ?? n.BoardId:D}/cards/{n.CardId:D}", n.CreatedAt, n.ReadAt,
                     n.CurrentBoardId == n.BoardId ? null : n.CurrentBoardId)).ToArray(),
                     current.Count > 50 ? new NotificationCursor(items[^1].CreatedAt, items[^1].Id).ToString() : null));
-            }, ct);
+            }, ct), ct);
     }
 
     // Bulk applies to an explicit bounded set, so newly arrived notifications
@@ -133,7 +133,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
             return Task.FromResult(WorkOperation<NotificationReadResult>.Failure("notification_not_found"));
         var valid = ids.Count is > 0 and <= 50 && !ids.Contains(Guid.Empty) && ids.Distinct().Count() == ids.Count;
         var ordered = ids.OrderBy(id => id.ToString("N"), StringComparer.Ordinal).ToArray();
-        return transactions.ExecuteAsync(organizationId,
+        return RediscoverAsync(() => transactions.ExecuteAsync(organizationId,
             WorkCommand.Create(recipientId, context.IdempotencyKey, "ReadNotifications", organizationId, new { ids = ordered }, "notification_not_found"),
             async _ =>
             {
@@ -150,7 +150,21 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
                 if (result.Count != ordered.Length) return WorkOperation<NotificationReadResult>.Failure("notification_not_found");
                 if (!await actors.VerifyAsync(recipientId, ct)) return WorkOperation<NotificationReadResult>.Failure("session_unavailable");
                 return WorkOperation<NotificationReadResult>.Success(new(organizationId, result));
-            }, ct);
+            }, ct), ct);
+    }
+
+    private sealed class NotificationRouteChanged : Exception { }
+
+    private static async Task<WorkOperation<T>> RediscoverAsync<T>(Func<Task<WorkOperation<T>>> attempt, CancellationToken ct)
+    {
+        for (var discovery = 0; discovery < 3; discovery++)
+        {
+            ct.ThrowIfCancellationRequested();
+            try { return await attempt(); }
+            catch (NotificationRouteChanged) { }
+        }
+        // Continuous movement is transient unavailability, not a revoked grant.
+        return WorkOperation<T>.Failure("work_storage_unavailable");
     }
 
     private async Task<bool> AdmitOrganization(Guid org, Guid recipient, CancellationToken ct) =>
@@ -173,8 +187,15 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
         if (rows.Any(n => n.OrganizationId != org || n.RecipientId != recipient)) return false;
         var ids = rows.Select(n => n.Id).ToArray();
         var current = await notifications.FindVisibleAsync(org, recipient, ids, policy.RequireVerifiedEmail, ct);
-        return current.Count == rows.Count && current.Select(n => n.Id).ToHashSet().SetEquals(ids)
-            && current.All(n => rows.Any(planned => planned.Id == n.Id && planned.BoardId == n.BoardId
-                && planned.CardId == n.CardId && planned.CurrentBoardId == n.CurrentBoardId));
+        if (current.Count != rows.Count || !current.Select(n => n.Id).ToHashSet().SetEquals(ids) ||
+            current.Any(n => !rows.Any(planned => planned.Id == n.Id && planned.BoardId == n.BoardId && planned.CardId == n.CardId)))
+            return false;
+        // A move can commit between discovery and the first parent-lock wait.
+        // Release the entire old lock set before discovering/locking the new
+        // route in canonical order. Never acquire another Board out of order,
+        // accept an unlocked route, or label this movement as access withdrawal.
+        if (current.Any(n => rows.Single(planned => planned.Id == n.Id).CurrentBoardId != n.CurrentBoardId))
+            throw new NotificationRouteChanged();
+        return true;
     }
 }
