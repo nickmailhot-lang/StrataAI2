@@ -188,3 +188,32 @@ It is local integration evidence, separate from current immutable release CI,
 physical-device coverage and the unchanged normal-condition performance budgets.
 The earlier 30/31 Board phase and its member-review failure remain recorded
 above. Estimated PRD-01 work remaining stays **34%** (planning estimate).
+
+### Complete strict Board rerun after activation repairs
+
+The fresh fourteen-file/31-case strict invocation completed with **29 passes and
+two failures**, no skipped/flaky cases or report-level errors, in 1,469.35 seconds.
+Both desktop/phone member-consent, metadata and Card-label cases passed. The
+remaining failures were phone activity-history's final historical actor assertion
+and the label-filter workflow's later desktop picker opening. Full reports and
+traces remain private and were not overwritten.
+
+The activity trace records an interrupted Board continuation followed by newest
+page reads. The existing activity control resets continuation on a fresh parent
+access generation; all sixteen existing component regressions pass. Its pending
+browser repair readmits a reset first page within the original bounded assertion,
+without repeating the account mutation or relaxing historical-name checks. The
+label-filter trace records three successful assignment writes before its later
+opener failure. Pending read-only opener preparation checks focused, enabled
+admission before Enter; assignment/member commands remain outside opener retries.
+
+Browser type checks and diff checks pass. Another fresh complete invocation is
+running with all five pending fixture repairs and the original scenario scope,
+assertions, deadlines and zero retries. Those repairs remain uncommitted pending
+aggregate verification; no full passing Board result is claimed. Independent
+cleanup confirms zero containers/databases from the completed failed invocation,
+no API/Worker environment files and all three original services preserved.
+Runtime scope remains the repaired production frontend, retained API/Worker,
+restricted schema-114 PostgreSQL and current Nginx/CSP with verified accounts;
+this does not prove current immutable build-once CI. PRD-01 stays open at **34%
+estimated work remaining** (planning estimate).

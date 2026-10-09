@@ -97,6 +97,14 @@ in phone metadata and label activation, no skipped/flaky cases or report-level
 errors (1,424.54 seconds). Those traces are also retained; the pending fixture
 repairs are being verified in another fresh complete 31-case invocation.
 
+That next complete invocation finished with **29 passes and two failures** in
+1,469.35 seconds, no skipped/flaky cases or report errors. Member, metadata and
+Card-label cases all passed; phone historical-actor paging and the later
+label-filter picker opening failed. The [updated execution record](../navigation-observations.md#complete-strict-board-rerun-after-activation-repairs)
+retains the scope, diagnoses, sixteen passing activity component regressions and
+independently verified cleanup. A fresh full rerun with pending fixture repairs
+is active; this is not aggregate acceptance or release proof.
+
 The complete three-width capacity chain passes all **3/3 cases** and final
 100,000 archived-record count/fingerprint checks. [Its execution record](../navigation-observations.md#executed-large-board-history-and-viewport-preservation)
 documents runtime, optional rank-fixture verification policy, exact nested scroll
