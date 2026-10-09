@@ -367,6 +367,9 @@ jobs:
       - name: Verify restricted routing discovery cannot widen across Organizations
         run: scripts/ci/test-routing-isolation.sh
 
+      - name: Verify Card route batching hooks retain RLS and invoker security
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-card-route-batching.sql
+
       - name: Verify Card route statement writes and transactional rollback
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-card-route-statement-semantics.sql
 

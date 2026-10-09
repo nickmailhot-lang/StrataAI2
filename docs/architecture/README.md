@@ -63,3 +63,6 @@ Both are part of one modular-monolith product and share the same domain/applicat
 - [Invitation mail update clocks and delivery boundaries](invitation-mail-update-clocks.md)
 
 - [Recipient authority revision clocks and private publication](invitation-authority-revision-clocks.md)
+
+[Card route statement projection](card-route-statement-projection.md) documents batched canonical
+route synchronization, preserved security/clock boundaries and scale verification.

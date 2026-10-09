@@ -41,6 +41,19 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
  SELECT id,tenant_id,board_id,list_id,title,rank,created_at,updated_at FROM statement_cards
  ON CONFLICT(id) DO UPDATE SET title='Conflict change',updated_at=clock_timestamp(),version=cards.version+1;
 SELECT pg_temp.assert_routes();
+DO $$ DECLARE changed_count integer; BEGIN
+WITH changed AS (
+ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
+ SELECT id,tenant_id,board_id,list_id,title,rank,created_at,updated_at FROM statement_cards
+ UNION ALL
+ SELECT gen_random_uuid(),tenant_id,board_id,list_id,'Mixed insert',lpad('3',30,'0'),now(),now()
+ FROM statement_cards WHERE rank=lpad('1',30,'0')
+ ON CONFLICT(id) DO UPDATE SET title='Mixed conflict change',updated_at=clock_timestamp(),version=cards.version+1
+ RETURNING id
+) SELECT count(*) INTO changed_count FROM changed;
+IF changed_count<>6 THEN RAISE EXCEPTION 'Mixed insert/update count changed'; END IF;
+END $$;
+SELECT pg_temp.assert_routes();
 UPDATE cards SET title=title WHERE false AND tenant_id IN ('20626be7-af2f-4408-9f56-3e9b66d31d27','8c8962ba-0f7d-4f01-be52-3a2a0ca128d0');
 INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
  SELECT gen_random_uuid(),tenant_id,board_id,list_id,title,rank,created_at,updated_at FROM statement_cards WHERE false;

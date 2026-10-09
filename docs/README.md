@@ -238,3 +238,6 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 ## Keeping this index current
 
 When adding a document, link it under the closest subject above and include any related contract or acceptance document in its own introduction. Keep dated evidence and dependency inventories explicit; update links when moving files. Avoid interpreting implementation notes as proof that a whole ticket is complete.
+
+[Card route statement projection](architecture/card-route-statement-projection.md) documents batched canonical
+route synchronization, preserved security/clock boundaries and scale verification.

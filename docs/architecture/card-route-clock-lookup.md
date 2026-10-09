@@ -108,3 +108,10 @@ and both timestamps to canonical Cards after each statement. The
 [source-test record](source-test-results.md#card-route-statement-regression-gate)
 describes fixture isolation and verification limits. This does not adopt the
 prototype or supersede the unresolved full deletion and immutable CI evidence.
+
+
+The subsequent [statement projection migration](card-route-statement-projection.md)
+retains this canonical clock lookup while batching source INSERT/UPDATE route
+upserts. Its complete original prototype deletion and current migration/security
+verification are recorded separately from the still-live full current-schema
+persistence invocation and immutable release acceptance.

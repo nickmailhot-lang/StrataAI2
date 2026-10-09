@@ -330,3 +330,21 @@ ordering, production latency, all acceptance criteria or immutable release
 images. The original complete deletion run remains live and the prototype is
 still outside production migrations. PRD-01 remains open at **34% estimated
 work remaining**, a planning estimate rather than a passed-test percentage.
+
+
+## Schema-133 Card route projection verification
+
+The [statement projection record](card-route-statement-projection.md) documents
+the forward migration, exact prototype equivalence apart from its ledger insert,
+complete original seven-contract deletion result, paired original seed measurements
+and their limits. The locked current solution build has zero warnings/errors.
+All 18 current migration/security/clock/routing/statement gates pass; all 334
+staged source files match after newline normalization and owned gate resources
+are independently absent. The failed CRLF staging report is retained separately.
+
+The current 133-entry API/Worker readiness mode passes. The original complete
+unfiltered default persistence invocation remains live on its own fresh database
+and locked current compiled payload. It has no added case retry, reduced fixture,
+weakened assertion or budget. Immutable current-image CI and full acceptance
+remain pending; neither the completed prototype nor live default path is counted
+as an achieved release gate. PRD-01 remains open at **34% estimated work remaining**.
