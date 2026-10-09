@@ -1,10 +1,34 @@
 import AxeBuilder from '@axe-core/playwright';
+import type { BrowserContext, Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 import { focusAdmittedControl } from './keyboardAdmission';
+
+// Interrupt only the committed response. Fetch interception at Response stage
+// preserves Chromium's original File request body (the request mirror omits it).
+// https://chromedevtools.github.io/devtools-protocol/tot/Fetch/
+async function loseUploadReply(context: BrowserContext, page: Page, path: string) {
+  const session = await context.newCDPSession(page);
+  let resolve!: (value: unknown) => void, reject!: (error: unknown) => void;
+  const reply = new Promise<unknown>((accept, refuse) => { resolve = accept; reject = refuse; });
+  let lost = false;
+  session.on('Fetch.requestPaused', async event => {
+    try {
+      if (!lost && event.request.method === 'POST' && event.responseStatusCode === 200) {
+        lost = true;
+        const response = await session.send('Fetch.getResponseBody', { requestId: event.requestId });
+        const value = JSON.parse(response.base64Encoded ? Buffer.from(response.body, 'base64').toString('utf8') : response.body);
+        await session.send('Fetch.failRequest', { requestId: event.requestId, errorReason: 'TimedOut' });
+        await session.send('Fetch.disable'); await session.detach(); resolve(value);
+      } else await session.send('Fetch.continueRequest', { requestId: event.requestId });
+    } catch (error) { reject(error); }
+  });
+  await session.send('Fetch.enable', { patterns: [{ urlPattern: new URL(path, page.url()).href, requestStage: 'Response' }] });
+  return { reply };
+}
 
 test('PRD-14 private published cover and attachment review withdraw when Board membership is removed at desktop and phone sizes', async ({ context, browser }) => {
   test.setTimeout(150_000);
@@ -189,8 +213,8 @@ test('PRD-14 actual source archive withdraws the selected cover from distinct me
   } finally { for (const client of clients) await client.context.close(); }
 });
 
-for (const width of [1280, 390]) {
-  test(`PRD-14 real browser file upload, Worker publication, preview and download at ${width}px`, async ({ page, context }) => {
+for (const { width, loseReply } of [{ width: 1280, loseReply: false }, { width: 390, loseReply: false }, { width: 1280, loseReply: true }, { width: 390, loseReply: true }]) {
+  test(`PRD-14 real browser file upload${loseReply ? ' original receipt recovery' : ''}, Worker publication, preview and download at ${width}px`, async ({ page, context }) => {
     test.setTimeout(150_000);
     expect(process.env.CI).toBe('true');
     const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE; expect(path).toBeTruthy();
@@ -200,7 +224,7 @@ for (const width of [1280, 390]) {
     const headers = { 'X-StrataAI-Request': '1' };
     expect((await context.request.post('/auth/login', { headers, data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
     const boardResponse = await context.request.post('/boards', { headers: { ...headers, 'Idempotency-Key': randomUUID() },
-      data: { organizationId: fixture.organizationId, name: `Browser upload ${width}`, visibility: 'PRIVATE' } });
+      data: { organizationId: fixture.organizationId, name: `Browser upload ${width}${loseReply ? ' recovery' : ''}`, visibility: 'PRIVATE' } });
     expect(boardResponse.status()).toBe(201); const board = (await boardResponse.json()).id;
     const listResponse = await context.request.post(`/boards/${board}/lists`, { headers: { ...headers, 'Idempotency-Key': randomUUID() }, data: { name: 'Browser uploads' } });
     expect(listResponse.status()).toBe(201); const list = (await listResponse.json()).id;
@@ -221,10 +245,11 @@ for (const width of [1280, 390]) {
     const input = page.getByLabel('File to attach', { exact: true }); await expect(input).toBeEnabled();
     await input.setInputFiles({ name, mimeType: 'image/png', buffer: original });
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-    const uploadResponsePromise = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === uploadPath);
+    const lost = loseReply ? await loseUploadReply(context, page, uploadPath) : undefined;
+    const uploadResponsePromise = lost ? lost.reply : page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === uploadPath)
+      .then(async response => { expect(response.status()).toBe(200); return response.json(); });
     await focusAdmittedControl(page.getByRole('button', { name: 'Upload selected file', exact: true })); await page.keyboard.press('Enter');
-    const uploadedResponse = await uploadResponsePromise; expect(uploadedResponse.status()).toBe(200);
-    const uploaded = await uploadedResponse.json();
+    const uploaded = await uploadResponsePromise as { cardVersion: number; attachment: { id: string } };
     expect(uploaded).toMatchObject({ cardVersion: 2, attachment: { displayName: name, mimeType: 'image/png', sizeBytes: original.length, version: 1, scanStatus: 1 } });
     expect(uploaded.attachment.id).toMatch(/^[0-9a-f-]{36}$/);
     // Chromium's request-body mirror omits File bodies. Prove full byte identity
@@ -234,12 +259,29 @@ for (const width of [1280, 390]) {
       'x-attachment-size': String(original.length), 'x-attachment-name': Buffer.from(name).toString('base64'),
       'x-attachment-sha256': createHash('sha256').update(original).digest('hex') });
     expect(writes[0]['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
-    await expect(page.getByText('File attached. Safety scan pending.', { exact: true })).toBeVisible();
+    if (loseReply) await expect(page.getByRole('button', { name: 'Retry original file upload', exact: true })).toBeEnabled();
+    else await expect(page.getByText('File attached. Safety scan pending.', { exact: true })).toBeVisible();
     await expect.poll(async () => {
       const response = await context.request.get(`/cards/${card}/cover/candidates`); expect(response.status()).toBe(200);
       return (await response.json()).items.some((item: { attachmentId: string; attachmentVersion: number }) => item.attachmentId === uploaded.attachment.id && item.attachmentVersion === 3);
     }, { timeout: 90_000 }).toBe(true);
     await waitForBoardDelivery(context.request, board); await expect.poll(admittedCardVersion).toBe(4);
+    if (loseReply) {
+      await expect(input).toBeDisabled();
+      for (const name of ['Save card', 'Manage attachments', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
+      const retry = page.getByRole('button', { name: 'Retry original file upload', exact: true }); await expect(retry).toBeFocused();
+      const recoveredResponsePromise = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === uploadPath);
+      await focusAdmittedControl(retry); await page.keyboard.press('Enter');
+      const recoveredResponse = await recoveredResponsePromise; expect(recoveredResponse.status()).toBe(200);
+      expect(await recoveredResponse.json()).toEqual(uploaded);
+      await expect(page.getByText('File attached. Safety scan pending.', { exact: true })).toBeVisible();
+      expect(writes).toHaveLength(2);
+      for (const name of ['idempotency-key', 'content-type', 'x-card-version', 'x-attachment-size', 'x-attachment-name', 'x-attachment-sha256']) expect(writes[1][name]).toBe(writes[0][name]);
+      const currentResponse = await context.request.get(uploadPath); expect(currentResponse.status()).toBe(200);
+      const current = await currentResponse.json(); expect(current.cardVersion).toBe(4); expect(current.items).toHaveLength(1);
+      expect(current.items[0]).toMatchObject({ id: uploaded.attachment.id, version: 3, scanStatus: 2 });
+      await expect.poll(admittedCardVersion).toBe(4);
+    }
     await focusAdmittedControl(page.getByRole('button', { name: 'Show attachments', exact: true })); await page.keyboard.press('Enter');
     const group = page.getByRole('group', { name: `File attachment ${name}`, exact: true }); await expect(group).toBeVisible();
     await expect(group.getByText('Safety scan complete.', { exact: true })).toBeVisible();
@@ -261,7 +303,7 @@ for (const width of [1280, 390]) {
     expect(download.suggestedFilename()).toBe(name); expect(await download.failure()).toBeNull();
     const downloadedPath = await download.path(); expect(downloadedPath).toBeTruthy(); expect(readFileSync(downloadedPath!)).toEqual(original);
     expect((await context.request.get(`${uploadPath}/${uploaded.attachment.id}/download`)).status()).toBe(200);
-    expect(writes).toHaveLength(1);
+    expect(writes).toHaveLength(loseReply ? 2 : 1);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
   });
 }

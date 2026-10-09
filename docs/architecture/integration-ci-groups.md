@@ -122,6 +122,15 @@ and every following HTTP assertion, with independent cleanup. Earlier observatio
 wording failures are retained; product code, original scope and deadlines stay
 unchanged. Current immutable Linux/full provider/matrix acceptance remains pending.
 
+The mandatory configuration also retains both normal uploads and adds [lost
+committed upload-reply recovery at both sizes](attachment-object-storage.md#lost-browser-upload-reply-recovered-after-actual-worker-publication).
+Only response delivery is interrupted; actual original File requests, Worker
+publication, identical receipt replay, one-file/current-version state, sanitized
+preview, browser download and WCAG audits are verified. Complete native original
+2/2 (93.7 seconds), expanded configuration 6/6 (235.8 seconds), all following HTTP
+assertions and independent cleanup pass. Existing cases and 150-second deadlines
+remain; current immutable/full acceptance is still pending.
+
 ## Strict notification consumer coverage
 
 The assignment/mention/reminder phase now also selects the complete recipient

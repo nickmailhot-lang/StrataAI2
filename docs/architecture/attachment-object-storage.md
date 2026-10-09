@@ -460,3 +460,34 @@ remain. This proves the normal PNG browser workflow; other formats, invalid/
 quarantined input, lost-upload replies, large files, full role/parent/move/copy and
 capacity/performance acceptance remain open, alongside native account/provider
 limits, external operator/backup authority and current full immutable release.
+
+## Lost browser upload reply recovered after actual Worker publication
+
+The mandatory configuration retains both normal upload cases and adds desktop
+and phone original-receipt recovery cases on separate owned Boards/Cards. The
+browser submits its real File normally. Chromium's [Fetch response-stage interception](https://chromedevtools.github.io/devtools-protocol/tot/Fetch/)
+observes the actual committed 200/Pending receipt and fails only its response
+delivery; it never rewrites or proxies the original binary request. No fabricated
+receipt or provider reply is supplied to the application.
+
+The application exposes original-upload recovery. Before retry, the actual Worker
+has scanned, decoded and published at Card/attachment 4/3, and the browser admits
+the newer Card snapshot. File selection and competing Card/attachment/close
+controls stay disabled. Keyboard retry uses the exact original idempotency key,
+hash, name, size, Content-Type and Card revision 1. The real recovery response
+equals the observed initial 2/1 receipt. Current metadata still has exactly one
+attachment, Clean at version 3 and Card revision 4: no second upload effect or
+revision rollback. Both recovered files then pass the existing sanitized browser
+preview, exact actual download and WCAG-tagged delivery checks.
+
+The complete native invocation passes original 2/2 in 93.7 seconds and the whole
+expanded configuration 6/6 in 235.8 seconds, with zero failures/skips/retries/flaky
+cases, all following HTTP assertions and process exit zero. The original normal
+uploads, Board-membership withdrawal, connected/interrupted source-archive peers,
+source deletion, receipt/concurrency and independent Board images remain. Each
+case keeps its 150-second deadline. Browser typechecking/diff checks pass; owned
+containers/database/provider volume/credential files are independently absent.
+Product source is unchanged. Native account/provider and current immutable
+release limits remain; other formats, quarantined/invalid/large inputs, full
+role/parent/move/copy/lifecycle/performance and external operator/backup acceptance
+remain open.

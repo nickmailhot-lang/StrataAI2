@@ -953,6 +953,19 @@ roles, source-archive live peer withdrawal, disconnect recovery, external provid
 capacity/performance and current immutable/full acceptance remain open.
 Estimated PRD-14 work remaining: **33%**.
 
+The [lost browser-upload receipt extension](attachment-object-storage.md#lost-browser-upload-reply-recovered-after-actual-worker-publication)
+retains both normal cases and adds both viewport recovery cases. Only actual
+committed response delivery is lost; the original File request is untouched.
+After real Worker publication/newer admitted Card 4, original-key/hash/name/size/
+revision replay returns the identical initial receipt while current state remains
+one Clean attachment at 4/3. Actual preview/download and WCAG-tagged checks remain.
+Complete original 2/2 (93.7 seconds), expanded configuration 6/6 (235.8 seconds),
+all subsequent HTTP assertions and independent cleanup pass without failures,
+skips, retries or flaky cases. Product source and deadlines remain unchanged.
+Other formats/quarantine/invalid/large input, full role/cross-feature/performance,
+external provider and current immutable acceptance remain open. Estimated PRD-14
+work remaining: **33%**.
+
 The subsequent [distinct Board-member peer extension](attachment-object-storage.md#distinct-board-member-live-cover-removal)
 passes the complete native pipeline at both viewports in 103.3 seconds, with all
 subsequent HTTP checks and independently confirmed cleanup. Its participant joins
