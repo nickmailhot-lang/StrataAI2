@@ -503,6 +503,12 @@ jobs:
           grep -Fxq 'Worker preview runtime verification failed at fixed stage Scratch (preview_decoder_unavailable).' "$report"
           echo 'Root preview setup refuses missing scratch ownership capability.'
 
+      - name: Verify real scanner transport in the exact Worker image
+        timeout-minutes: 3
+        env:
+          STRATAAI_WORKER_IMAGE: strataai-worker:${{ github.sha }}
+        run: bash scripts/ci/test-real-attachment-scanner.sh
+
       - name: Export exact built images
         shell: bash
         run: |

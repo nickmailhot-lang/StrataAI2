@@ -26,6 +26,12 @@ if (args.Contains("--verify-attachment-preview-runtime", StringComparer.Ordinal)
     return;
 }
 
+if (args.Contains("--verify-attachment-scanner-runtime", StringComparer.Ordinal))
+{
+    Environment.ExitCode = args.Length == 1 ? await AttachmentScannerRuntimeVerification.RunAsync() : 2;
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IClock, SystemClock>();

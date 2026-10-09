@@ -14,6 +14,12 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['real scanner image verification omitted', value => { value.jobs['build-images-once'].steps = value.jobs['build-images-once'].steps.filter(step => step.name !== 'Verify real scanner transport in the exact Worker image'); }],
+  ['real scanner image verification replaced by success', value => { value.jobs['build-images-once'].steps.find(step => step.name === 'Verify real scanner transport in the exact Worker image').run = 'true'; }],
+  ['real scanner image verification skipped', value => { value.jobs['build-images-once'].steps.find(step => step.name === 'Verify real scanner transport in the exact Worker image').if = 'false'; }],
+  ['real scanner image verification failure ignored', value => { value.jobs['build-images-once'].steps.find(step => step.name === 'Verify real scanner transport in the exact Worker image')['continue-on-error'] = true; }],
+  ['real scanner uses another Worker image', value => { value.jobs['build-images-once'].steps.find(step => step.name === 'Verify real scanner transport in the exact Worker image').env.STRATAAI_WORKER_IMAGE = 'strataai-worker:latest'; }],
+  ['real scanner verification after export', value => { const steps = value.jobs['build-images-once'].steps; const index = steps.findIndex(step => step.name === 'Verify real scanner transport in the exact Worker image'); steps.push(...steps.splice(index, 1)); }],
   ...['Generate SBOMs', 'Block fixed Critical container vulnerabilities'].map(name =>
     [`security loaded provenance after ${name}`, value => { const steps = value.jobs.security.steps; const index = steps.findIndex(step => step.name === 'Load exact built images'); const [loaded] = steps.splice(index, 1); steps.splice(steps.findIndex(step => step.name === name) + 1, 0, loaded); }]),
   ...['container-integration', 'security'].flatMap(job => [

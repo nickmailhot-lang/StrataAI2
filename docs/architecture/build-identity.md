@@ -119,3 +119,7 @@ malware engine, security/SBOM gates or clean-host release-bundle acceptance.
 [Implementation CI run](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37911544925)
 was still queued when this evidence was recorded; full `required-ci` and retained
 release artifacts remain unverified. ARCH-11 and PRD-14 remain open.
+
+The [actual scanner engine runtime check](attachment-scanner-runtime.md) adds a
+mandatory exact-Worker verification before export, separate from the existing
+protocol-simulator fixture and its completed browser evidence.

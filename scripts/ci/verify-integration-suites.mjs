@@ -169,6 +169,13 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
     assert.ok(step.run.includes('--build-arg STRATAAI_BUILD_CREATED="$STRATAAI_BUILD_CREATED"'));
   }
   const archive = build.steps.find(step => step.name === 'Export exact built images');
+  const realScanner = build.steps.find(step => step.name === 'Verify real scanner transport in the exact Worker image');
+  assert.equal(realScanner?.run, 'bash scripts/ci/test-real-attachment-scanner.sh');
+  assert.equal(realScanner.if, undefined, 'Real scanner image verification is mandatory');
+  assert.equal(realScanner['continue-on-error'] ?? false, false);
+  assert.equal(realScanner.env.STRATAAI_WORKER_IMAGE, 'strataai-worker:${{ github.sha }}');
+  assert.ok(build.steps.indexOf(realScanner) > build.steps.findIndex(step => step.name === 'Build Worker image'));
+  assert.ok(build.steps.indexOf(realScanner) < build.steps.indexOf(archive), 'Real scanner verification precedes export');
   const provenance = build.steps.find(step => step.name === 'Verify exact image provenance before export');
   assert.equal(provenance?.shell, 'bash');
   assert.equal(provenance.if, undefined, 'Image provenance verification must not be conditional');
