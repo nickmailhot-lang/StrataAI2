@@ -386,3 +386,59 @@ The unfiltered persistence executable and fresh full 32-case Board browser
 run are still active; current main CI is queued. No schema, grants or runtime
 behavior change. PRD-01 remains open at **34% estimated work remaining**
 (planning estimate).
+
+### Retry receipt payloads, expiry and reserved keys
+
+Thirteen additional candidates have no runtime payload UPDATE writer. Their
+retention rules are part of the classification: absence of `updated_at` does
+not turn a receipt's `expires_at` into a last-mutation timestamp, and deletion
+after expiry is not described as unconditional append-only history.
+
+| Candidate | Owning insertion and receipt clock | Retention boundary |
+| --- | --- | --- |
+| `identity_login_replays` | [Store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityLoginReplayStore.cs) inserts the original session/key/fingerprint in the owning identity transaction. [Migration 017](../../db/migrations/017_identity_login_replays.sql) supplies database `created_at`. | API UPDATE/DELETE denied; Worker expiry-only cleanup, at most 100 per invocation. Worker cannot read session/fingerprint payload. |
+| `identity_registration_replays` | [Store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityRegistrationReplayStore.cs) inserts the original verification-source/token pointer with database `created_at`; [migration 018](../../db/migrations/018_identity_registration_replays.sql) enforces source/token shape and subject affinity. | Same restricted expiry cleanup; token/key/fingerprint payload is not Worker-readable. |
+| `identity_recovery_request_replays` | [Store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityRecoveryRequestReplayStore.cs) inserts the original operation/token-source receipt; [migration 019](../../db/migrations/019_identity_recovery_request_replays.sql) supplies database `created_at`. | Subject/key/operation identity; expiry-only Worker cleanup with no token/fingerprint disclosure or UPDATE authority. |
+| `identity_token_consumption_replays` | [Store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityTokenConsumptionReplayStore.cs) inserts original token identity and `consumed_at`; [migration 020](../../db/migrations/020_identity_token_consumption_replays.sql) separately supplies receipt `created_at` and checks consumption does not follow receipt creation. | Expiry cleanup is separate from consumption; neither timestamp changes on replay. API UPDATE/DELETE denied, Worker payload access denied. |
+| `identity_revocation_replays` | [Store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityRevocationReplayStore.cs) inserts a completed session/operation receipt with database `created_at`. | [Migration 015](../../db/migrations/015_identity_revocation_replays.sql) permits the API to remove only its expired subject receipt before a new insertion, and Worker bounded global expiry cleanup. A reinserted expired key creates a new receipt; a live receipt is not updated or deleted. |
+| `invitation_creation_replays` | [Invitation store](../../src/StrataAI.Infrastructure/Onboarding/PostgresInvitationStore.cs) inserts a token-free invitation pointer in the authorized Organization transaction; [migration 022](../../db/migrations/022_invitation_creation_replays.sql) supplies database `created_at`. | Expired keys stay reserved. Replay joins the current invitation, whose lifecycle clock remains independently mutable; it does not update the receipt or issue another invitation/token. |
+| `organization_metadata_replays` | [Store](../../src/StrataAI.Infrastructure/Organizations/OrganizationMetadataReplayStores.cs) inserts the original fingerprint/result acknowledgment in the owning transaction; [migration 082](../../db/migrations/082_organization_metadata_replays.sql) supplies database `created_at`. | Expired keys stay reserved; runtime UPDATE/DELETE denied. Privileged expiry fixtures change receipt clocks deliberately and are not runtime mutation paths. |
+| `organization_departure_replays` | [Store](../../src/StrataAI.Infrastructure/Organizations/OrganizationDepartureReplayStores.cs) inserts the original departure acknowledgment; [migration 083](../../db/migrations/083_organization_departure_replays.sql) supplies database `created_at`. | Expired keys stay reserved; no runtime payload UPDATE, DELETE or Worker table access. |
+| `organization_removal_replays` | [Store](../../src/StrataAI.Infrastructure/Organizations/OrganizationRemovalReplayStores.cs) inserts the original fingerprint acknowledgment; [migration 084](../../db/migrations/084_organization_removal_replays.sql) supplies database `created_at`. | Same reserved-key and runtime write boundary; membership state is a separate mutable record. |
+| `organization_creation_replays` | [Store](../../src/StrataAI.Infrastructure/Organizations/OrganizationCreationReplayStores.cs) inserts the original Organization result in the owning transaction; [migration 086](../../db/migrations/086_organization_creation_replays.sql) supplies database `created_at`. | Expired keys stay reserved. Replay does not edit the stored result or create a second Organization. |
+| `organization_deletion_replays` | [Store](../../src/StrataAI.Infrastructure/Organizations/OrganizationDeletionReplayStores.cs) inserts the original acceptance fingerprint; [migration 087](../../db/migrations/087_organization_deletion_replays.sql) supplies database `created_at`. | Expired keys stay reserved; asynchronous deletion request/progress/steps have separate lifecycle rules and are not exempted by this receipt classification. |
+| `board_filter_interaction_replays` | The current [migration-085 capability](../../db/migrations/085_interaction_actor_lock_order.sql) inserts one original source-event pointer and fingerprint, with its own database receipt time and exact 24-hour expiry. | [Migration 077](../../db/migrations/077_board_filter_interaction_replays.sql) refuses every UPDATE. The capability removes at most 100 expired receipts for the admitted actor; it retains source events and live receipts, enforces 1,000-row capacity, and rechecks current Board admission on replay. |
+| `navigation_interaction_replays` | The same current capability inserts a receipt with its own database time, distinct from original navigation-event time. | [Migration 080](../../db/migrations/080_navigation_interaction_replays.sql) refuses every UPDATE. Current actor/target admission, original source identity, expiry, bounded actor cleanup and 1,000-row capacity remain enforced; API/Worker have no direct table-write authority. |
+
+Read-only installed-catalog verification against the isolated schema-127
+persistence database confirms forced RLS on all 13 tables and no UPDATE column
+privilege for either runtime role. Direct DELETE is absent except Worker
+cleanup on the five identity tables and API expiry replacement on revocation
+receipts. Both interaction receipts have enabled UPDATE-refusal triggers.
+The probe reads only catalog metadata in a read-only transaction, not receipt
+rows, and changes no account, source, grants or schema.
+
+The complete original runtime-role gate already passed in the fresh
+schema-127 invocation recorded above. Its identity sections retain their
+original expired/live receipt fixtures, payload-disclosure refusals, missing
+cleanup-scope checks, rollback and bounded 100/100/50/0 cleanup assertions.
+The original search/navigation SQL gate execution is recorded in the earlier
+history classification. This reconciliation does not claim a new execution
+of every Organization or identity HTTP/native retry contract; the unfiltered
+persistence executable remains live and its complete result is still needed.
+
+The classification total becomes **32/51**: 16 unconditional immutable
+history/ownership candidates, two runtime-immutable mention revision tables,
+13 runtime-immutable receipt payloads with the retention rules above, and one
+mutable derived-clock notification table. The remaining **19** are
+`attachment_preview_sweeps`, `attachment_previews`, `attachment_scan_sweeps`,
+`identity_events`, `invitation_mail_intents`,
+`invitation_recipient_authority_revisions`, `invitation_recipient_proofs`,
+`mass_mention_reservations`, `mention_handle_reservations`,
+`organization_deletion_requests`, `organization_deletion_steps`,
+`organization_invitation_acceptances`, `organization_invitation_creations`,
+`organization_invitation_revocations`, `organization_membership_activations`,
+`organization_membership_removals`, `schema_migrations`,
+`work_command_replays` and `work_events`. This is a writer/retention audit,
+not an acceptance percentage or waiver of mutable-record clock provenance.
+PRD-01 remains open at **34% estimated work remaining** (planning estimate).
