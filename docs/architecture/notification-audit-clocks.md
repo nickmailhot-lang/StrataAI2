@@ -117,3 +117,23 @@ preserved; current full release gates remain separate.
 Current immutable-image/full release gates and complete PRD requirements remain
 outstanding. Estimated work remaining stays **34% for PRD-01** and **15% for
 PRD-17** (planning estimates); neither issue is ready for closure.
+
+## Expanded native phase results
+
+The complete expanded strict watch phase passes all seven cases in one
+9.3-minute run, including the activity matrix, five cross-Board access roles and
+personal controls with six native stored-watch clock comparisons. The complete
+assignment/mention/reminder/inbox phase separately passes all nine cases in
+9.4 minutes after the consumer explicitly checks its recovered read control is
+enabled/focused before native Enter. Both runs have zero skips/retries and use
+current compiled strict Production API/separate Worker, current rebuilt MUI assets
+and restricted schema-114 PostgreSQL 17/pgvector. Original source/clock/private
+delivery, receipt, lifecycle, keyboard and accessibility assertions remain.
+
+The inbox consumer's additional full journal-envelope comparison is authorized
+HTTP sync against storage; its live observations retain type/scope checks. The
+[acceptance record](prd-17-acceptance.md#complete-strict-notification-producer-and-consumer-execution)
+keeps the earlier combined 8/9 failure and focused diagnostic, without inferring
+an intermittent cause from this passing invocation. Owned fixtures are removed.
+Current immutable/full release acceptance remains separate; PRD-17 stays open
+at **15% estimated work remaining**.

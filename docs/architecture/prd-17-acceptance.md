@@ -999,3 +999,28 @@ verification flags enabled. This replaces the pending combined local watch-phase
 result; it does not resolve the separate notification-consumer phase failure or
 certify current immutable/full CI. Owned fixtures are removed and original
 services/data preserved. PRD-17 stays open at **15% estimated work remaining**.
+
+## Complete strict notification producer and consumer execution
+
+The fresh expanded notification phase passes all nine cases together in
+9.4 minutes, with no skips, retries or flaky results. Both native widths execute
+assignment, selected mention, confirmed group mention and actual Worker due-fire
+producer scenarios, followed by the complete desktop/phone inbox consumer. The
+consumer explicitly observes its recovered read control enabled/focused before
+native Enter and retains its original deadline, zero-unread expectations,
+original-key/body lost-response recovery, reconnect/cursor checks, timezone
+recovery, stored source/journal/clock comparison, access withdrawal, accessibility
+and overflow assertions. All eight producer cases retain their complete original
+private-delivery and persistence assertions.
+
+This is the complete combined local result that was previously pending, using
+current compiled Production API/separate Worker, rebuilt current MUI assets and
+restricted PostgreSQL 17/pgvector schema 114 under strict verified-account policy.
+The earlier 8/9 failure and focused diagnostic remain recorded above; one passing
+combined invocation does not retrospectively prove the intermittent cause or a
+product-code repair. No assertion is weakened, and temporary diagnostics are not
+shipped. Owned containers and the cloned database are removed.
+
+The separate expanded watch phase also passes all seven cases as recorded above.
+Current immutable/full CI and the complete requirement/DoD map remain required.
+Estimated PRD-17 work remaining stays **15%**; the ticket is open.
