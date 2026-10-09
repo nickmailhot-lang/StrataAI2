@@ -726,3 +726,33 @@ fixture policy; current immutable/full CI, timing/privacy/provider and complete
 PRD-wide acceptance remain separate. Owned fixtures are removed and original
 services/data remain. PRD-02 stays open at **16% estimated work remaining**
 (planning estimate).
+
+## Stale-account refusal body lifetime
+
+Immutable run [37886548645](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37886548645)
+fails the desktop stale-handle scenario at the refusal-body assertion because
+Chromium retires the response handle during sign-in navigation
+(`Network.getResponseBody: No data found for resource with given identifier`).
+The fixture now reads the actual server response through `route.fetch` before
+forwarding that unchanged response to the browser. The browser must still
+receive 401 with the original expected-user header and no replacement cookie;
+the retained server code must be `session_unavailable`. Both complete account
+sync graphs and both handle histories remain exact before/after comparisons.
+Non-command requests fall through to the original preflight interception.
+No application authorization or navigation behavior changes.
+
+An independent complete original eight-case native baseline on 2026-10-09
+finishes **7/8** in 287.01 seconds, with one result per case and zero
+skipped/flaky outcomes or report errors. Its desktop deactivation case times
+out waiting for a command response after keyboard activation; it does not
+reproduce the earlier CI body-handle failure. The two failures remain separate
+evidence. Owned database and environment files are independently absent.
+
+Browser typecheck passes after retaining the refusal body. A fresh complete
+eight-case invocation is running with the original desktop/phone profile,
+logout, deactivation and handle scenarios, deadlines, state comparisons and
+zero test retries. It uses compiled schema-127 Production API through Nginx,
+restricted PostgreSQL and the CI fixture's optional email-verification policy;
+strict mail-delivery acceptance has its separate required tests. Its terminal
+result and current immutable build-once CI remain required. PRD-02 stays open
+at **16% estimated work remaining** (planning estimate).

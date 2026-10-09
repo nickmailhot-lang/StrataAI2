@@ -53,12 +53,22 @@ for (const width of [1280, 390]) {
         const current = await context.request.get('/me'); expect(current.status()).toBe(200);
         expect((await current.json()).id).toBe(replacementState.profile.id);
       }
+      // The real 401 triggers immediate sign-in navigation, which can retire
+      // Chromium's response-body handle before the assertion reads it. Retain
+      // the actual server code before forwarding the unchanged response.
+      let refusalCode: unknown;
+      await page.route(url => url.pathname === path, async route => {
+        if (route.request().method() !== method) return route.fallback();
+        const actual = await route.fetch();
+        refusalCode = (await actual.json()).code;
+        await route.fulfill({ response: actual });
+      });
       const refused = page.waitForResponse(response => new URL(response.url()).pathname === path && response.request().method() === method);
       const save = page.getByRole('button', { name: label, exact: true });
       await expect(save).toBeEnabled(); await save.focus(); await expect(save).toBeFocused(); await page.keyboard.press('Enter');
       const response = await refused; expect(response.status()).toBe(401);
       expect(response.request().headers()['x-strataai-expected-user']).toBe(originalState.profile.id);
-      expect((await response.json()).code).toBe('session_unavailable');
+      expect(refusalCode).toBe('session_unavailable');
       expect(response.headers()['set-cookie']).toBeUndefined();
       await expect(page).toHaveURL(/\/login$/);
       await expect(page.getByText('Private original-account draft', { exact: true })).toHaveCount(0);
