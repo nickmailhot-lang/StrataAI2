@@ -537,3 +537,8 @@ Worker and restricted schema-114 PostgreSQL17/pgvector were used. Owned
 containers/database were removed. This scoped pass does not certify the
 combined 30-case or current immutable/full CI; remaining full acceptance applies.
 Estimated PRD-04 work remaining stays **16%**, PRD-18 **16%**.
+
+
+## Complete combined strict Board verification
+
+The [complete fourteen-file/31-case strict invocation](integration-ci-groups.md#complete-fourteen-file-strict-board-invocation) passes together in 21.7 minutes with zero skips/retries/flaky cases. Current compiled Production API/separate Worker, frozen original-key recovery web, restricted schema-114 PostgreSQL17/pgvector and verified-email enforcement were used; owned fixtures were removed. Original complete scenario assertions and deadlines remain. This is local runtime evidence, not current immutable/full acceptance. Estimated PRD-04 work remaining: **15%**.

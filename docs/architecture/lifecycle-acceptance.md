@@ -1,6 +1,6 @@
 # PRD-18 acceptance audit
 
-Current status (2026-10-08): open, **16% estimated work remaining**. This is a planning estimate. Earlier estimates below record the scope and evidence available at those points; current immutable-image acceptance and the remaining integrated matrix still govern closure.
+Current status (2026-10-09): open, **15% estimated work remaining**. This is a planning estimate. Earlier estimates below record the scope and evidence available at those points; current immutable-image acceptance and the remaining integrated matrix still govern closure.
 
 ## Deleted List child-receipt admission
 
@@ -302,3 +302,8 @@ invocation. Existing child-state, privacy, current-account, original-key, focus
 and WCAG checks remain. See [execution evidence](browser-recovery-ci.md#archive-source-admission-and-navigation-completion-boundaries).
 Estimated PRD-18 work remaining stays **16%** (planning estimate); current immutable
 CI and full lifecycle acceptance still prevent closure.
+
+
+## Complete combined strict Board verification
+
+The [complete fourteen-file/31-case strict invocation](integration-ci-groups.md#complete-fourteen-file-strict-board-invocation) passes together in 21.7 minutes with zero skips/retries/flaky cases. Current compiled Production API/separate Worker, frozen original-key recovery web, restricted schema-114 PostgreSQL17/pgvector and verified-email enforcement were used; owned fixtures were removed. Original complete scenario assertions and deadlines remain. This is local runtime evidence, not current immutable/full acceptance. Estimated PRD-18 work remaining: **15%**.

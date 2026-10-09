@@ -556,3 +556,8 @@ Linux test container is removed. Original staging/byte/session/HTTP assertions
 remain; synthetic publication/storage, PostgreSQL/external-provider and current
 immutable/full acceptance boundaries still apply. Earlier full Windows totals
 included six early returns and cannot prove those checks executed.
+
+
+## Complete combined strict Board verification
+
+The [complete fourteen-file/31-case strict invocation](integration-ci-groups.md#complete-fourteen-file-strict-board-invocation) passes together in 21.7 minutes with zero skips/retries/flaky cases. Current compiled Production API/separate Worker, frozen original-key recovery web, restricted schema-114 PostgreSQL17/pgvector and verified-email enforcement were used; owned fixtures were removed. Original complete scenario assertions and deadlines remain. This is local runtime evidence, not current immutable/full acceptance. Estimated PRD-15 work remaining: **34%**.

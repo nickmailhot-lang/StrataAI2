@@ -481,3 +481,30 @@ Linux test container is removed. Original staging/byte/session/HTTP assertions
 remain; synthetic publication/storage, PostgreSQL/external-provider and current
 immutable/full acceptance boundaries still apply. Earlier full Windows totals
 included six early returns and cannot prove those checks executed.
+
+
+## Complete fourteen-file strict Board invocation
+
+The complete mandatory 14-file/31-case strict Board phase passes together in
+21.7 minutes, with zero failures/skips/retries/flaky cases. It uses the workflow's
+entire explicit file list without test-name filtering: Board canvas/metadata,
+copy, lifecycle, archive-account withdrawal, stars, activity history, background
+client behavior, Organization/Board live recovery, visibility, members, live
+administration, labels and two-client label/filter recovery. Original assertions,
+command counts/identities, focus, keyboard/mobile/Axe checks and deadlines remain.
+
+Runtime: current compiled Production API/separate Worker, frozen original-key
+recovery web and restricted schema-114 PostgreSQL17/pgvector, with verified-email
+policy enforced. Current single-key paging, member removal and label Clear
+fixtures all execute in this same complete invocation. Owned containers and
+database are removed. Background-client publication/PNG fixtures are simulated;
+this run does not establish actual external storage/scanner or full provider
+image publication. The label/filter live case shares one account across two
+browser contexts; cases with distinct accounts retain their own actual sessions.
+
+This replaces the prior failing 30-case combined evidence for the current local
+strict scenario set. It is compiled local runtime evidence, not current immutable
+release/full PRD certification. Current source-platform metadata changes are
+source tests only and do not change the tested product/runtime. All remaining
+functional, provider, capacity, privacy and current full CI requirements still
+apply before issue closure.

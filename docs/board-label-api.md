@@ -434,3 +434,8 @@ lost-response key/body recovery, persistence/order/version, explicit root-label
 delete consent, actual Card association removal, focus and phone assertions
 remain. Exact intermittent cause and current immutable/full acceptance remain
 unproven. Estimated PRD-10 remaining: **35%**.
+
+
+## Complete combined strict Board verification
+
+The [complete fourteen-file/31-case strict invocation](architecture/integration-ci-groups.md#complete-fourteen-file-strict-board-invocation) passes together in 21.7 minutes with zero skips/retries/flaky cases. Current compiled Production API/separate Worker, frozen original-key recovery web, restricted schema-114 PostgreSQL17/pgvector and verified-email enforcement were used; owned fixtures were removed. Original complete scenario assertions and deadlines remain. This is local runtime evidence, not current immutable/full acceptance. Estimated PRD-10 work remaining: **34%**.
