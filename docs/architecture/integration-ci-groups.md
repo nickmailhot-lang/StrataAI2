@@ -112,6 +112,16 @@ following HTTP assertions and independently checked cleanup pass. No filtering,
 deadline relaxation or mutation/revision changes are introduced; current exact-image
 and full matrix acceptance remain pending.
 
+The mandatory lifecycle configuration now also includes [actual browser FILE
+upload/preview/download at both sizes](attachment-object-storage.md#real-browser-file-upload-through-worker-preview-and-download),
+using separate owned Boards/Cards. Actual raw upload, Worker publication, sanitized
+preview, browser download byte identity and two WCAG-tagged form/delivery audits
+are checked without fabricated responses. Complete current native execution
+passes original 2/2 (93.2 seconds), expanded lifecycle/upload 4/4 (150.8 seconds)
+and every following HTTP assertion, with independent cleanup. Earlier observation/
+wording failures are retained; product code, original scope and deadlines stay
+unchanged. Current immutable Linux/full provider/matrix acceptance remains pending.
+
 ## Strict notification consumer coverage
 
 The assignment/mention/reminder phase now also selects the complete recipient

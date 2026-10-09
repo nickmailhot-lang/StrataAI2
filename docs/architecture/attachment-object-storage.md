@@ -420,3 +420,43 @@ and diff checks pass; owned resources and credentials are independently absent.
 This proves Board-member access withdrawal on an open published source, not the
 whole role/parent/move/copy/lifecycle/performance matrix. Native account/provider
 limits, external authority and current immutable/full release acceptance remain.
+
+## Real browser file upload through Worker, preview and download
+
+The same mandatory lifecycle configuration now also runs the primary FILE
+workflow at desktop and phone sizes on separate private Boards/Cards in the
+fixture Organization. Keyboard controls open upload review; the native file
+input receives a real PNG with known trailing metadata. Exactly one actual raw
+upload carries its original size, SHA-256, base64 filename, Card revision 1 and
+idempotency key. The real acknowledgment persists Pending at Card/attachment 2/1
+and the client displays the authoritative success notice. Actual restricted
+Worker scanning and contained decoding publish the eligible source at 4/3.
+
+The attachment disclosure displays the real Clean state. Keyboard preview review
+renders an actual one-pixel PNG with a complete IEND and without the original
+trailing metadata. Keyboard download review exposes the scoped private link;
+activating it produces a real browser download with the correct filename and
+every original byte intact. Upload count remains one. WCAG 2.2 AA-tagged Axe
+checks have zero violations in the selected-file form and completed delivery
+state at both sizes. Neither file metadata, scan/publication state, options nor
+binary replies are fabricated.
+
+Two earlier complete invocations remain failed, with private reports retained.
+The first compares a request-body mirror that returns null for these File uploads;
+exact byte verification now uses server-admitted size/hash and the actual browser
+download. The second expects the wrong success wording; it is corrected to the
+existing “File attached. Safety scan pending.” No product code or deadline is
+changed to obtain the result. The final complete native invocation passes the
+original 2/2 in 93.2 seconds and the expanded lifecycle/upload configuration 4/4
+in 150.8 seconds, zero failures/skips/retries/flaky cases, followed by every
+original HTTP assertion and process exit zero. Owned resources and credential
+files are independently absent. Browser types and diff checks pass; source checks
+confirm the reused local backend images and fresh web build match current product
+source. This is current native evidence, not current immutable release identity.
+
+The original source's revisions, permission loss, connected/reconnecting peer
+archive, deletion, independent Board images and receipt/concurrency assertions
+remain. This proves the normal PNG browser workflow; other formats, invalid/
+quarantined input, lost-upload replies, large files, full role/parent/move/copy and
+capacity/performance acceptance remain open, alongside native account/provider
+limits, external operator/backup authority and current full immutable release.

@@ -53,13 +53,13 @@ digests and scanner/provider details; authorization precedes disclosure.
 
 | Requirement | Current evidence | Remaining work |
 | --- | --- | --- |
-| FR-001 upload size/type | Configurable admission policy; raw HTTP validation; bounded full-byte size/SHA verification; upload-intent claim/recovery and atomic Pending publication; MUI hashing/upload/retry controls; managed/API/PostgreSQL contracts | Complete enabled-file workflow in release images, remaining cross-feature/lifecycle/scenario coverage |
+| FR-001 upload size/type | Configurable admission policy; raw HTTP validation; bounded full-byte size/SHA verification; upload-intent claim/recovery and atomic Pending publication; MUI hashing/upload/retry controls; managed/API/PostgreSQL contracts; executed native desktop/phone browser PNG upload through Worker publication | Complete enabled-file workflow in release images, remaining cross-feature/lifecycle/scenario coverage |
 | FR-002 URL | Authorized idempotent command, forced-RLS persistence, cursor reads, safe MUI links and exact-image URL transaction checks | Complete linked interaction, concurrency, reconnect, accessibility and performance matrix |
 | FR-003 metadata | Scoped variant DTOs; migrations 041/043/044; tenant-safe integrity/RLS; current authorization before paging/admission; stable errors and atomic receipts/audit/events | Preview/cover/deletion state integration, remaining move/copy/archive races and full release acceptance |
 | FR-004 object storage | Official managed S3 adapter, private-owner/policy validation, non-overwrite multipart storage, explicit readiness/configuration refusal; no database BLOB; SDK transport/private-file contracts | Release-image enabled provider workflow, orphan/retention reconciliation and documented operator configuration/smoke evidence |
-| FR-005 controlled downloads | Current Clean/scoped admission, time-bound snapshot, SHA-verified anonymous staging, final/periodic rights checks, private forced-download headers and MUI browser-owned delivery; managed/API/PostgreSQL contracts | Full enabled-file browser/provider acceptance and deletion/cover/reconciliation interactions |
+| FR-005 controlled downloads | Current Clean/scoped admission, time-bound snapshot, SHA-verified anonymous staging, final/periodic rights checks, private forced-download headers and MUI browser-owned delivery; managed/API/PostgreSQL contracts; executed actual native browser downloads with exact original bytes | Full enabled-file browser/provider acceptance and deletion/cover/reconciliation interactions |
 | FR-006 scanning/quarantine | Separate Worker job, scope-only payload, restricted lease-bound SQL capability, complete-byte ClamAV protocol and atomic verdict/Card/audit/event persistence; fail-closed Pending/Rejected/Failed delivery; executed bounded final-attempt/expired-claim recovery | Remaining mutation/operator/rescan coverage and complete current immutable enabled pipeline |
-| FR-007 previews | Linux raster normalization; exact Worker isolated codec/privilege-drop/cancellation verification; durable private derivative jobs and fenced publication; current-authorized controlled PNG delivery and MUI viewer | Complete actual enabled-provider release/browser pipeline and cross-feature acceptance matrix |
+| FR-007 previews | Linux raster normalization; exact Worker isolated codec/privilege-drop/cancellation verification; durable private derivative jobs and fenced publication; current-authorized controlled PNG delivery and MUI viewer; executed actual upload-through-Worker sanitized browser preview at desktop/phone sizes | Complete actual enabled-provider release/browser pipeline and cross-feature acceptance matrix |
 | FR-008 cover | Nullable tenant/Card composite FK; current published-source prerequisite; dual CAS/idempotent commands and atomic audit/outbox; selected-source withdrawal clears once; PUBLIC consent/current anonymous image admission; minimal snapshot hint and MUI controls/display; executed actual upload-through-Worker cover browser workflow | Current immutable/full enabled-provider coverage, remaining cross-feature/concurrency/reconnect matrix and unchanged capacity/performance acceptance |
 | FR-009 deletion | Guarded archive/restore/elevated confirmed soft deletion; current parent/source versions; atomic selected-cover clearing; audit/events; restore does not reselect | Full enabled-provider/browser lifecycle matrix and retention/purge reconciliation |
 | FR-010 untrusted MIME/name | Canonical raw transport validation; server byte classification/full size/SHA checks; quarantine; safe opaque downloads; strict raw image decoder; forged-input/API/provider cases | Successful isolated image admission/publication plus full enabled release/security regression matrix |
@@ -995,3 +995,15 @@ subsequent HTTP assertions and independent cleanup pass without failures/skips/
 retries/flaky cases. Full role/parent/move/copy/lifecycle/capacity/performance,
 external provider and current immutable acceptance remain open. Estimated PRD-14
 work remaining: **33%**.
+
+The [actual browser FILE upload/preview/download workflow](attachment-object-storage.md#real-browser-file-upload-through-worker-preview-and-download)
+passes desktop and phone PNG scenarios with one upload each, real Pending receipt,
+actual Worker publication, Clean disclosure, sanitized pixel rendering and exact
+original bytes in actual browser downloads. Selected-file and completed delivery
+states pass WCAG 2.2 AA-tagged Axe checks. After correcting two test observation/
+wording errors, the complete original 2/2 (93.2 seconds), expanded configuration
+4/4 (150.8 seconds), all subsequent HTTP assertions and independent cleanup pass
+without failures/skips/retries/flaky cases. Earlier failed reports remain retained;
+product code and deadlines are unchanged. Other formats/error/quarantine/retry/
+capacity/role/cross-feature and current immutable/provider acceptance remain open.
+Estimated PRD-14 work remaining: **33%**.

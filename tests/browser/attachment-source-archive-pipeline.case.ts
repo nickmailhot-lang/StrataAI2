@@ -1,8 +1,9 @@
+import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
-import { trackBoardReads } from './boardReadTracker';
+import { trackBoardReads, trackCardVersion } from './boardReadTracker';
 import { focusAdmittedControl } from './keyboardAdmission';
 
 test('PRD-14 private published cover and attachment review withdraw when Board membership is removed at desktop and phone sizes', async ({ context, browser }) => {
@@ -187,3 +188,80 @@ test('PRD-14 actual source archive withdraws the selected cover from distinct me
     expect((await context.request.get(coverPath + '/image')).status()).toBe(404);
   } finally { for (const client of clients) await client.context.close(); }
 });
+
+for (const width of [1280, 390]) {
+  test(`PRD-14 real browser file upload, Worker publication, preview and download at ${width}px`, async ({ page, context }) => {
+    test.setTimeout(150_000);
+    expect(process.env.CI).toBe('true');
+    const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE; expect(path).toBeTruthy();
+    const fixture = JSON.parse(readFileSync(path!, 'utf8')) as { email: string; password: string; organizationId: string };
+    expect(fixture.organizationId).toMatch(/^[0-9a-f-]{36}$/);
+    await page.setViewportSize({ width, height: 844 });
+    const headers = { 'X-StrataAI-Request': '1' };
+    expect((await context.request.post('/auth/login', { headers, data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
+    const boardResponse = await context.request.post('/boards', { headers: { ...headers, 'Idempotency-Key': randomUUID() },
+      data: { organizationId: fixture.organizationId, name: `Browser upload ${width}`, visibility: 'PRIVATE' } });
+    expect(boardResponse.status()).toBe(201); const board = (await boardResponse.json()).id;
+    const listResponse = await context.request.post(`/boards/${board}/lists`, { headers: { ...headers, 'Idempotency-Key': randomUUID() }, data: { name: 'Browser uploads' } });
+    expect(listResponse.status()).toBe(201); const list = (await listResponse.json()).id;
+    const cardResponse = await context.request.post(`/lists/${list}/cards`, { headers: { ...headers, 'Idempotency-Key': randomUUID() }, data: { title: `Browser upload ${width}` } });
+    expect(cardResponse.status()).toBe(201); const card = (await cardResponse.json()).id;
+    for (const id of [board, list, card]) expect(id).toMatch(/^[0-9a-f-]{36}$/);
+    await waitForBoardDelivery(context.request, board);
+    const cardPath = `/app/${fixture.organizationId}/boards/${board}/cards/${card}`;
+    const reads = trackBoardReads(page, board, cardPath), admittedCardVersion = trackCardVersion(page, board, card, cardPath);
+    await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+    const original = Buffer.concat([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==', 'base64'), Buffer.from('PRIVATE BROWSER ORIGINAL TRAILING METADATA')]);
+    const name = `Browser original ${width}.png`, uploadPath = `/cards/${card}/attachments`;
+    const writes: Record<string, string>[] = [];
+    page.on('request', request => {
+      if (request.method() === 'POST' && new URL(request.url()).pathname === uploadPath) writes.push(request.headers());
+    });
+    await focusAdmittedControl(page.getByRole('button', { name: 'Add file attachment', exact: true })); await page.keyboard.press('Enter');
+    const input = page.getByLabel('File to attach', { exact: true }); await expect(input).toBeEnabled();
+    await input.setInputFiles({ name, mimeType: 'image/png', buffer: original });
+    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    const uploadResponsePromise = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === uploadPath);
+    await focusAdmittedControl(page.getByRole('button', { name: 'Upload selected file', exact: true })); await page.keyboard.press('Enter');
+    const uploadedResponse = await uploadResponsePromise; expect(uploadedResponse.status()).toBe(200);
+    const uploaded = await uploadedResponse.json();
+    expect(uploaded).toMatchObject({ cardVersion: 2, attachment: { displayName: name, mimeType: 'image/png', sizeBytes: original.length, version: 1, scanStatus: 1 } });
+    expect(uploaded.attachment.id).toMatch(/^[0-9a-f-]{36}$/);
+    // Chromium's request-body mirror omits File bodies. Prove full byte identity
+    // through admitted size/hash and the actual browser download below.
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toMatchObject({ 'content-type': 'application/octet-stream', 'x-card-version': '1',
+      'x-attachment-size': String(original.length), 'x-attachment-name': Buffer.from(name).toString('base64'),
+      'x-attachment-sha256': createHash('sha256').update(original).digest('hex') });
+    expect(writes[0]['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
+    await expect(page.getByText('File attached. Safety scan pending.', { exact: true })).toBeVisible();
+    await expect.poll(async () => {
+      const response = await context.request.get(`/cards/${card}/cover/candidates`); expect(response.status()).toBe(200);
+      return (await response.json()).items.some((item: { attachmentId: string; attachmentVersion: number }) => item.attachmentId === uploaded.attachment.id && item.attachmentVersion === 3);
+    }, { timeout: 90_000 }).toBe(true);
+    await waitForBoardDelivery(context.request, board); await expect.poll(admittedCardVersion).toBe(4);
+    await focusAdmittedControl(page.getByRole('button', { name: 'Show attachments', exact: true })); await page.keyboard.press('Enter');
+    const group = page.getByRole('group', { name: `File attachment ${name}`, exact: true }); await expect(group).toBeVisible();
+    await expect(group.getByText('Safety scan complete.', { exact: true })).toBeVisible();
+    const previewPath = `${uploadPath}/${uploaded.attachment.id}/preview`;
+    const previewResponsePromise = page.waitForResponse(response => new URL(response.url()).pathname === previewPath && response.request().method() === 'GET');
+    await focusAdmittedControl(group.getByRole('button', { name: 'Show image preview', exact: true })); await page.keyboard.press('Enter');
+    const previewResponse = await previewResponsePromise; expect(previewResponse.status()).toBe(200);
+    const previewBytes = await previewResponse.body();
+    expect(previewBytes.subarray(0, 8)).toEqual(Buffer.from('89504e470d0a1a0a', 'hex'));
+    expect(previewBytes.subarray(-12)).toEqual(Buffer.from('0000000049454e44ae426082', 'hex'));
+    expect(previewBytes.includes(Buffer.from('PRIVATE BROWSER ORIGINAL'))).toBe(false); expect(previewBytes).not.toEqual(original);
+    const preview = group.getByRole('img', { name: `Sanitized preview of ${name}`, exact: true }); await expect(preview).toBeVisible();
+    await expect.poll(() => preview.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
+    await focusAdmittedControl(group.getByRole('button', { name: 'Check file download access', exact: true })); await page.keyboard.press('Enter');
+    const downloadLink = group.getByRole('link', { name: `Download ${name} (opens in a new tab)`, exact: true }); await expect(downloadLink).toBeVisible();
+    await expect(downloadLink).toHaveAttribute('rel', 'noopener noreferrer'); await expect(downloadLink).toHaveAttribute('referrerpolicy', 'no-referrer');
+    const downloadPromise = page.waitForEvent('download', { timeout: 20_000 });
+    await focusAdmittedControl(downloadLink); await page.keyboard.press('Enter'); const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe(name); expect(await download.failure()).toBeNull();
+    const downloadedPath = await download.path(); expect(downloadedPath).toBeTruthy(); expect(readFileSync(downloadedPath!)).toEqual(original);
+    expect((await context.request.get(`${uploadPath}/${uploaded.attachment.id}/download`)).status()).toBe(200);
+    expect(writes).toHaveLength(1);
+    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+  });
+}
