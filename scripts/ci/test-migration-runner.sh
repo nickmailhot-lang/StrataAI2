@@ -850,37 +850,68 @@ run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 125
 route_clock_after_125="$(cat scripts/ci/entity-route-clocks-after-upgrade.sql)"
 query "${route_clock_after_125//entity_route_clock_upgrade_fixture/entity_route_clock_upgrade_125_fixture}" >/dev/null
-cat > "$scratch/migrations/126_serialization_fixture.sql" <<'SQL'
+query "$(cat scripts/ci/notification-stream-clocks-before-upgrade.sql)" >/dev/null
+cp db/migrations/126_notification_stream_clocks.sql "$scratch/migrations/"
+notification_graph_fingerprint() { query "SELECT md5(jsonb_build_object('streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY tenant_id,recipient_id) FROM notification_event_streams s),'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY tenant_id,recipient_id,sequence) FROM notification_events e),'notifications',(SELECT jsonb_agg(to_jsonb(n) ORDER BY tenant_id,id) FROM card_assignment_notifications n))::text);"; }
+refuse_notification_clock_history() {
+ notification_before="$(notification_graph_fingerprint)"
+ if run; then echo 'Incomplete notification clock history was admitted'; exit 1; fi
+ test "$notification_before" = "$(notification_graph_fingerprint)"
+ test "$(query "SELECT count(*) FROM information_schema.columns WHERE table_name='notification_event_streams' AND column_name IN ('created_at','updated_at')")" = 0
+ test "$(query "SELECT count(*) FROM schema_migrations WHERE version='126_notification_stream_clocks'")" = 0
+}
+refuse_notification_clock_history
+query "UPDATE notification_event_streams s SET last_sequence=f.last_sequence FROM notification_stream_clock_upgrade_fixture f WHERE s.tenant_id=f.tenant_id AND s.recipient_id=f.recipient_id;
+ DELETE FROM notification_events WHERE (tenant_id,recipient_id,sequence)=(SELECT tenant_id,recipient_id,sequence FROM notification_event_clock_upgrade_fixture ORDER BY tenant_id,recipient_id,sequence LIMIT 1);" >/dev/null
+refuse_notification_clock_history
+query "INSERT INTO notification_events SELECT f.* FROM notification_event_clock_upgrade_fixture f WHERE NOT EXISTS(SELECT 1 FROM notification_events e WHERE e.tenant_id=f.tenant_id AND e.recipient_id=f.recipient_id AND e.sequence=f.sequence);
+ DELETE FROM notification_event_streams WHERE (tenant_id,recipient_id)=(SELECT tenant_id,recipient_id FROM notification_stream_clock_upgrade_fixture ORDER BY tenant_id,recipient_id LIMIT 1);" >/dev/null
+refuse_notification_clock_history
+query "INSERT INTO notification_event_streams SELECT f.* FROM notification_stream_clock_upgrade_fixture f WHERE NOT EXISTS(SELECT 1 FROM notification_event_streams s WHERE s.tenant_id=f.tenant_id AND s.recipient_id=f.recipient_id);
+ UPDATE notification_events SET created_at='infinity' WHERE (tenant_id,recipient_id,sequence)=(SELECT tenant_id,recipient_id,sequence FROM notification_event_clock_upgrade_fixture ORDER BY tenant_id,recipient_id,sequence LIMIT 1);" >/dev/null
+refuse_notification_clock_history
+query "UPDATE notification_events e SET created_at=f.created_at FROM notification_event_clock_upgrade_fixture f WHERE e.tenant_id=f.tenant_id AND e.recipient_id=f.recipient_id AND e.sequence=f.sequence;" >/dev/null
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 126
+query "$(cat scripts/ci/notification-stream-clocks-after-upgrade.sql)" >/dev/null
+notification_graph_before="$(notification_graph_fingerprint)"
+notification_producer_fixture="$(cat scripts/ci/notification-source-guard-fixture.sql)"
+notification_clock_producers="$(cat scripts/ci/notification-stream-clocks-producers.sql)"
+query "${notification_producer_fixture/ROLLBACK;/$notification_clock_producers
+ROLLBACK;}" >/dev/null
+test "$notification_graph_before" = "$(notification_graph_fingerprint)"
+cat > "$scratch/migrations/127_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('126_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('127_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='126_serialization_fixture'")" = 1
-cat > "$scratch/migrations/127_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='127_serialization_fixture'")" = 1
+cat > "$scratch/migrations/128_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('127_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('128_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='127_failure_fixture'")" = 0
-rm "$scratch/migrations/127_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='128_failure_fixture'")" = 0
+rm "$scratch/migrations/128_failure_fixture.sql"
 run
-cat > "$scratch/migrations/128_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/129_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='128_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/128_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='129_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/129_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

@@ -167,3 +167,10 @@ the canonical route clock guard, retaining caller RLS and the prior admission
 refusals. API/Worker readiness requires ledger 125. See the
 [lookup performance record](card-route-clock-lookup.md) for observed plans and
 completed full migration/deletion/routing verification and remaining release scope.
+
+Migration 126 derives notification counter clocks from its complete private
+journal and refuses incomplete or nonfinite source history. API/Worker readiness
+requires ledger 126. The [notification stream clock record](notification-stream-clocks.md)
+documents completed whole migration/refusal, nine-case native notification and
+126-ledger readiness/security checks, plus pending watch/ordering, capacity and
+immutable-image release verification.

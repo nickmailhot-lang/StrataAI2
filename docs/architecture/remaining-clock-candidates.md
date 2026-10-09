@@ -14,7 +14,7 @@ writer audit, not a classification of every remaining table.
 
 | Candidate | Current writer/source | Finding and next requirement |
 | --- | --- | --- |
-| `notification_event_streams` | [Private journal migration 068](../../db/migrations/068_notification_private_journal.sql) allocates `(tenant_id, recipient_id)` sequence before appending a notification-created/read fact in the same transaction. Runtime callers receive journal/stream reads, with mutations behind the existing trigger capability. | A source-backed clock repair can investigate the sequence-one fact and greatest retained source time. Before implementation, prove complete counter/journal provenance, refusal of missing history, unchanged notification bodies/first-read facts, every real producer and restricted recipient replay. No clock repair is implemented here. |
+| `notification_event_streams` | [Private journal migration 068](../../db/migrations/068_notification_private_journal.sql) allocates `(tenant_id, recipient_id)` sequence before appending a notification-created/read fact in the same transaction. Runtime callers receive journal/stream reads, with mutations behind the existing trigger capability. | The subsequent [clock repair](notification-stream-clocks.md) derives sequence-one/greatest retained source times and passes complete upgrade/refusal/source-producer checks. Full native producer/consumer, capacity and current release proof remain outstanding. |
 | `attachment_preview_sweeps` | [Current lifecycle-aware preview backfill](../../db/migrations/051_attachment_lifecycle.sql) lazily inserts a tenant cursor, then advances it or resets both cursor fields to null at the end of a bounded scan. Source candidates are attachment creation times. | Cursor time is an attachment's time, not sweep creation or its last mutation. End-of-scan reset also loses the last candidate timestamp. Existing jobs are preserved by idempotency identity, but that does not reconstruct historical checkpoint clocks. A truthful legacy provenance/epoch strategy and full backfill recovery proof remain necessary. |
 | `attachment_scan_sweeps` | [Current lifecycle-aware scan recovery](../../db/migrations/052_attachment_lifecycle_scan.sql) uses the same insert/advance/reset shape, scanning retained failed/exhausted scan jobs and admitting actual source/parent state before recovery. | A job's creation, lease expiry or attachment recovery time does not identify when the cursor was first inserted or last reset. Retained job/attachment clocks must not be renamed as sweep clocks. Historical treatment and unchanged scan/recovery/terminal fencing remain unresolved. |
 | `invitation_recipient_authority_revisions` | [Metadata authority](../../db/migrations/105_invitation_recipient_authority.sql), [Board authority](../../db/migrations/107_invitation_recipient_board_authority.sql) and [issuer account authority](../../db/migrations/109_invitation_issuer_account_authority.sql) insert an effect and increment the same private recipient revision. | Retained source/effect identities establish why revisions changed, but effects have no per-recipient publication sequence or their own recorded clock. Trace all source kinds and first/increment provenance before selecting clock semantics. Preserve the email-scoped lookup policy and column-level reader grants; do not substitute the current migration clock. |
@@ -54,8 +54,10 @@ clocks. Before choosing them, verify every stream has complete positive contiguo
 history, every event has its owning stream, and source clocks are finite. Existing
 counter/journal/body identities must remain unchanged on upgrade, repeat and
 refusal. Runtime append, earlier source times, no-op/replay and whole transaction
-rollback need exact source-clock comparisons. No notification counter migration
-or new runtime behavior is introduced by this audit.
+rollback need exact source-clock comparisons. The subsequent
+[notification counter repair](notification-stream-clocks.md) records its own
+implementation and executed evidence; this audit alone does not prove its
+remaining runtime or release requirements.
 
 No runtime clock, schema, grant or job behavior changes in this audit. The
 current schema-125 build and running tests remain unchanged. Full mutable-clock

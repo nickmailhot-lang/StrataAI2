@@ -125,3 +125,14 @@ all original cases, source-root assertions and Linux private-staging coverage;
 there are no filters, retries or deadline increases. Its live controller is
 authoritative until a terminal result exists. Current API success and complete
 immutable-image CI are not yet proved.
+
+Subsequent schema-126 notification counter verification passes the whole
+migration/refusal gate, complete original nine-case native notification phase
+(632.93 seconds, one result per case, no skips/flaky/report errors), original
+tenant/RLS/runtime-role/Reminder SQL gates and expanded readiness checks for
+all 126 independently applied migration entries. The
+[notification counter record](notification-stream-clocks.md) retains the
+failed overlong-host helper attempt, scope, cleanup and pending watch/ordering,
+capacity and release checks. The unchanged complete schema-125 API invocation
+continues against its own original read-only build; it is not restarted or
+promoted to current schema-126 full API proof.

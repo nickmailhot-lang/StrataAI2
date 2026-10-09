@@ -12,7 +12,16 @@ internal static class RuntimeSchemaReadinessContract
         var factories = new[] { api, worker };
         foreach (var factory in factories)
         { await using var complete = await factory.OpenConnectionAsync(ct); }
-        foreach (var version in new[] { "001_foundation", "078_navigation_interaction_sources", "081_navigation_original_recovery", "082_organization_metadata_replays", "083_organization_departure_replays", "084_organization_removal_replays", "085_interaction_actor_lock_order", "086_organization_creation_replays", "087_organization_deletion_replays", "088_organization_deletion_progress","089_organization_deletion_terminal","090_organization_lifecycle_delivery","091_organization_deletion_candidates","092_organization_deletion_pages","093_organization_deletion_discovery","094_organization_metadata_events","095_organization_metadata_delivery","096_organization_metadata_discovery","097_organization_member_addition_events","098_organization_member_removal_events","099_organization_member_invitation_events","100_organization_invitation_revocation_events","101_organization_invitation_acceptance_events","102_invitation_recipient_events","103_invitation_recipient_unpublished_cleanup","104_invitation_recipient_retained_board_admin","105_invitation_recipient_authority","106_invitation_recipient_authority_discovery","107_invitation_recipient_board_authority","108_invitation_recipient_organization_lifecycle","109_invitation_issuer_account_authority","110_invitation_issuer_authority_exhaustion","111_notification_batch_source_guard","112_work_archive_history", "113_invitation_recipient_membership_authority","114_identity_lifecycle_clocks","115_invitation_issuer_job_clocks","116_invitation_authority_page_clocks","117_entity_route_clocks","118_entity_route_clock_admission","119_invitation_route_clocks","120_organization_access_route_clocks","121_organization_event_delivery_clocks","122_organization_metadata_stream_clocks","123_invitation_recipient_stream_clocks","124_organization_deletion_progress_clocks","125_card_route_clock_identity_lookup" })
+        // Exercise every applied ledger entry independently. A selected list
+        // can miss older required migrations while the complete-ledger path passes.
+        var versions = new List<string>();
+        await using (var ledger = new NpgsqlCommand("SELECT version FROM public.schema_migrations ORDER BY version", admin))
+        await using (var rows = await ledger.ExecuteReaderAsync(ct))
+        {
+            while (await rows.ReadAsync(ct)) versions.Add(rows.GetString(0));
+        }
+        if (versions.Count == 0) throw new InvalidOperationException("Runtime readiness ledger fixture was empty.");
+        foreach (var version in versions)
         {
             var hidden = $"contract_missing_{Guid.NewGuid():N}";
             await using var hide = new NpgsqlCommand("UPDATE public.schema_migrations SET version=@hidden WHERE version=@version", admin);
@@ -39,5 +48,6 @@ internal static class RuntimeSchemaReadinessContract
             { await using var recovered = await factory.OpenConnectionAsync(ct); }
         }
         Console.WriteLine("Restricted API/Worker schema readiness: complete ledger accepted, missing required migrations refused, restored ledger recovered.");
+        Console.WriteLine($"Runtime readiness: {versions.Count} migrated ledger entries individually rejected/restored for API and Worker.");
     }
 }

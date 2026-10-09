@@ -28,9 +28,15 @@ admin "INSERT INTO card_assignment_notifications(tenant_id,id,board_id,card_id,e
 test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100000
 test "$(admin "SELECT count(*) FROM notification_events WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100000
 test "$(admin "SELECT last_sequence FROM notification_event_streams WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100000
+counter_clocks() { admin "SELECT isfinite(s.created_at) AND isfinite(s.updated_at) AND s.updated_at>=s.created_at
+ AND s.created_at=(SELECT created_at FROM notification_events WHERE tenant_id='$org' AND recipient_id='$recipient' AND sequence=1)
+ AND s.updated_at=(SELECT max(created_at) FROM notification_events WHERE tenant_id='$org' AND recipient_id='$recipient')
+ AND s.last_sequence=(SELECT count(*) FROM notification_events WHERE tenant_id='$org' AND recipient_id='$recipient')
+ FROM notification_event_streams s WHERE tenant_id='$org' AND recipient_id='$recipient';"; }
+test "$(counter_clocks)" = t
 state() { admin "SELECT md5(jsonb_build_object('notifications',(SELECT md5(string_agg(md5(to_jsonb(n)::text),'' ORDER BY id)) FROM card_assignment_notifications n WHERE tenant_id='$org' AND recipient_id='$recipient'),
  'journal',(SELECT md5(string_agg(md5(to_jsonb(e)::text),'' ORDER BY sequence)) FROM notification_events e WHERE tenant_id='$org' AND recipient_id='$recipient'),
- 'stream',(SELECT last_sequence FROM notification_event_streams WHERE tenant_id='$org' AND recipient_id='$recipient'),
+ 'stream',(SELECT to_jsonb(s) FROM notification_event_streams s WHERE tenant_id='$org' AND recipient_id='$recipient'),
  'events',(SELECT count(*) FROM work_events WHERE tenant_id='$org'),'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'),
  'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$org' AND id='$card'))::text);"; }
 path="/organizations/$org/notifications"
@@ -94,6 +100,7 @@ jq -c '.items[]' "$scratch/concurrent-first.json" >> "$scratch/receipts.jsonl"
 test "$(admin "SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='$org' AND recipient_id='$recipient' AND read_at IS NOT NULL;")" = 30
 test "$(admin "SELECT last_sequence FROM notification_event_streams WHERE tenant_id='$org' AND recipient_id='$recipient';")" = 100030
 test "$(admin "SELECT count(*) FROM notification_events WHERE tenant_id='$org' AND recipient_id='$recipient' AND event_type='NOTIFICATION_READ';")" = 30
+test "$(counter_clocks)" = t
 curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base$path/sync?after=100000" > "$scratch/read-events.json"
 jq -e --arg org "$org" --arg recipient "$recipient" --slurpfile receipts "$scratch/receipts.jsonl" '
  .organizationId==$org and .recipientId==$recipient and .cursor=="100030" and (.hasMore|not) and (.resetRequired|not) and (.events|length)==30 and

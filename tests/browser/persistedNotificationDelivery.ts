@@ -55,6 +55,13 @@ export async function expectPersistedNotificationDelivery(request: APIRequestCon
         (SELECT FROM card_reminders r WHERE r.tenant_id=n.tenant_id AND r.id=e.entity_id AND r.card_id=n.card_id AND r.version=e.entity_version));`);
   expect(sourceCount).toBe(String(stored.length));
   const persistedJournal = JSON.parse(query(`SELECT jsonb_agg(to_jsonb(e) ORDER BY sequence) FROM notification_events e WHERE ${scope};`));
+  // Compare PostgreSQL clocks directly, retaining precision and the actual
+  // producer's journal history rather than a fixture-supplied timestamp.
+  expect(query(`SELECT isfinite(s.created_at) AND isfinite(s.updated_at) AND s.updated_at>=s.created_at
+    AND s.created_at=(SELECT created_at FROM notification_events WHERE ${scope} AND sequence=1)
+    AND s.updated_at=(SELECT max(created_at) FROM notification_events WHERE ${scope})
+    AND s.last_sequence=(SELECT count(*) FROM notification_events WHERE ${scope})
+    FROM notification_event_streams s WHERE ${scope};`)).toBe('t');
   const sync = await request.get(`/organizations/${organizationId}/notifications/sync?after=0`); expect(sync.status()).toBe(200);
   const journal = (await sync.json()).events as PrivateNotificationEnvelope[];
   expect(journal).toHaveLength(stored.length + stored.filter((row: { read_at: string | null }) => row.read_at !== null).length);

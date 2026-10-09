@@ -250,3 +250,12 @@ request. The complete migration gate, populated-history refusal and all seven
 original restricted deletion contracts now pass, including the future-checkpoint
 terminal regression. This proves the repair's local scope; complete mutable-clock
 coverage and current release acceptance remain outstanding.
+
+The subsequent [notification counter clock repair](notification-stream-clocks.md)
+passes the complete migration/refusal/source-admission checks and original
+tenant/RLS/runtime-role/Reminder SQL gates. Its complete native producer/consumer
+phase now passes all nine cases with one attempt each and no skips. Readiness
+verification also passes all 126 independently applied migration removals,
+expanded from the original 48 selected cases. Additional complete watch/ordering
+and current capacity execution remain separate. Neither this local repair nor an incomplete live run establishes
+full clock coverage or current immutable-image release acceptance.
