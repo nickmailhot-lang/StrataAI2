@@ -1,6 +1,6 @@
 # PRD-04 acceptance and closure audit
 
-This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 16%.
+This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 15%.
 
 ## Executed metadata, copy and lifecycle acceptance
 
@@ -542,3 +542,16 @@ Estimated PRD-04 work remaining stays **16%**, PRD-18 **16%**.
 ## Complete combined strict Board verification
 
 The [complete fourteen-file/31-case strict invocation](integration-ci-groups.md#complete-fourteen-file-strict-board-invocation) passes together in 21.7 minutes with zero skips/retries/flaky cases. Current compiled Production API/separate Worker, frozen original-key recovery web, restricted schema-114 PostgreSQL17/pgvector and verified-email enforcement were used; owned fixtures were removed. Original complete scenario assertions and deadlines remain. This is local runtime evidence, not current immutable/full acceptance. Estimated PRD-04 work remaining: **15%**.
+
+
+## Executed source-deletion image ownership
+
+The [Linux source tombstone and Board-image proof](attachment-object-storage.md#source-tombstones-and-independent-board-image-ownership)
+permanently deletes an archived attachment, refuses all three original delivery
+routes without provider reads and refuses current-version restoration, while both
+independent Board background identities continue delivering their shared sanitized
+PNG. The complete original image scenario still verifies archive/corruption/public
+withdrawal/retirement afterward. It passes with zero skips/failures in 7.7 seconds;
+locked build has no warnings/errors and the owned Linux container is removed.
+Synthetic publication/storage, actual source-host sessions/commands/staging/HTTP,
+and immutable/full/provider/backup-erasure limits remain explicit.

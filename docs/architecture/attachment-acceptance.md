@@ -872,3 +872,16 @@ Linux test container is removed. Original staging/byte/session/HTTP assertions
 remain; synthetic publication/storage, PostgreSQL/external-provider and current
 immutable/full acceptance boundaries still apply. Earlier full Windows totals
 included six early returns and cannot prove those checks executed.
+
+
+## Executed source-deletion image ownership
+
+The [Linux source tombstone and Board-image proof](attachment-object-storage.md#source-tombstones-and-independent-board-image-ownership)
+permanently deletes an archived attachment, refuses all three original delivery
+routes without provider reads and refuses current-version restoration, while both
+independent Board background identities continue delivering their shared sanitized
+PNG. The complete original image scenario still verifies archive/corruption/public
+withdrawal/retirement afterward. It passes with zero skips/failures in 7.7 seconds;
+locked build has no warnings/errors and the owned Linux container is removed.
+Synthetic publication/storage, actual source-host sessions/commands/staging/HTTP,
+and immutable/full/provider/backup-erasure limits remain explicit.

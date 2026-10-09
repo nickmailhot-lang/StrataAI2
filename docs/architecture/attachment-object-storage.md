@@ -132,3 +132,30 @@ compilation passes locally; execution is pending Linux CI. These fixtures emulat
 the daemon protocol; they do not prove deployed ClamAV, fresh signatures, scanner
 limits, mounted socket permissions or production provider readiness. Runtime
 registration and deployment acceptance remain open.
+
+
+## Source tombstones and independent Board image ownership
+
+Board background identities are independent, while their immutable published
+preview bytes can have multiple Board owners within the same Organization.
+`BoardBackgroundImage.Preview` retains the existing published preview reference;
+copying creates another Board image identity without implying exclusive byte
+ownership. A source attachment tombstone therefore does not authorize deletion
+of that shared preview object. Provider reconciliation must account for every
+surviving owner before releasing bytes; backup/version-retention authority remains
+separate from immediate irreversible product deletion.
+
+The complete Linux Board-image API source case now permanently deletes its
+already archived source attachment after copying the Board. Original download
+options, download and preview all return 404 without another provider read or
+attachment delivery headers. Restoration with the current tombstone/Card versions
+is refused. Both original and copied Board backgrounds still deliver the expected
+sanitized PNG; the existing archive, corrupt-byte, public/Private withdrawal and
+background retirement checks continue afterward. It passes in 7.7 seconds with
+zero errors/failures/skips/not-run, using a fresh locked Release build with zero
+warnings/errors. The owned no-network Linux source-test container is removed.
+
+Storage and publication metadata are synthetic Demo fixtures; real session,
+lifecycle commands, private Linux byte staging and HTTP checks execute. This is
+source evidence, not physical object erasure, backup expiry, real external
+storage/scanner or current immutable/full release acceptance.

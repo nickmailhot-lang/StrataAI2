@@ -1,6 +1,6 @@
 # PRD-15 acceptance map — open
 
-Current status (2026-10-08): open, **36% estimated work remaining** (planning estimate). Earlier estimates below record their evidence scope.
+Current status (2026-10-09): open, **34% estimated work remaining** (planning estimate). Earlier estimates below record their evidence scope.
 
 Scope is the complete issue #16 specification. This map does not close the
 issue or replace its dependencies (PRD-08, PRD-17 and PRD-24). Source tests,

@@ -12,7 +12,7 @@ public sealed partial class ApiHostTests
     // Synthetic scan/publication projection; real sessions, command rollback,
     // Board-owned identities, private-byte verification and HTTP delivery run.
     [Fact(Skip = "Private staging requires Linux.", SkipUnless = nameof(LinuxPrivateStagingSupported))]
-    public async Task PRD_04_Board_images_own_published_PNGs_copy_independently_and_survive_source_attachment_archive()
+    public async Task PRD_04_Board_images_own_published_PNGs_copy_independently_and_survive_source_attachment_archive_and_deletion()
     {
         var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects();
         var json = new JsonSerializerOptions(JsonSerializerDefaults.Web);
@@ -54,6 +54,28 @@ public sealed partial class ApiHostTests
         Assert.Equal("IMAGE", target.BackgroundType); Assert.Equal(1, target.Version); Assert.NotEqual(board.BackgroundValue, target.BackgroundValue);
         var copyPath = $"/boards/{target.Id}/background/image";
         using (var denied = await member.GetAsync(copyPath, ct)) Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+        // Product deletion withdraws the source without retiring either Board's
+        // independent ownership of the already-published immutable preview.
+        var archivedFile = (await archivedAttachment.Content.ReadFromJsonAsync<AttachmentLifecycleChange>(ct))!;
+        using var deletedAttachment = await Mutate(owner, HttpMethod.Delete,
+            $"/cards/{card.Id}/attachments/{file.Id}?cardVersion={archivedFile.CardVersion}&version={archivedFile.Attachment.Version}&confirmed=true", new { });
+        Assert.Equal(HttpStatusCode.OK, deletedAttachment.StatusCode);
+        var deletedFile = (await deletedAttachment.Content.ReadFromJsonAsync<AttachmentLifecycleChange>(ct))!;
+        var sourceReads = objects.Reads;
+        foreach (var route in new[] { "download-options", "download", "preview" })
+        {
+            using var unavailable = await owner.GetAsync($"/cards/{card.Id}/attachments/{file.Id}/{route}", ct);
+            Assert.Equal(HttpStatusCode.NotFound, unavailable.StatusCode);
+            Assert.Null(unavailable.Content.Headers.ContentDisposition);
+        }
+        Assert.Equal(sourceReads, objects.Reads);
+        using var refusedRestore = await Mutate(owner, HttpMethod.Post, $"/cards/{card.Id}/attachments/{file.Id}/restore",
+            new { cardVersion = deletedFile.CardVersion, version = deletedFile.Attachment.Version });
+        Assert.Equal(HttpStatusCode.NotFound, refusedRestore.StatusCode);
+        using (var retainedSource = await owner.GetAsync(path, ct))
+        { Assert.Equal(HttpStatusCode.OK, retainedSource.StatusCode); Assert.Equal(bytes, await retainedSource.Content.ReadAsByteArrayAsync(ct)); }
+        using (var retainedCopy = await owner.GetAsync(copyPath, ct))
+        { Assert.Equal(HttpStatusCode.OK, retainedCopy.StatusCode); Assert.Equal(bytes, await retainedCopy.Content.ReadAsByteArrayAsync(ct)); }
         using var archivedBoard = await Mutate(owner, HttpMethod.Post, $"/boards/{f.Board}/archive", new { version = 2 }); Assert.Equal(HttpStatusCode.OK, archivedBoard.StatusCode);
         using (var copyImage = await owner.GetAsync(copyPath, ct)) { Assert.Equal(HttpStatusCode.OK, copyImage.StatusCode); Assert.Equal(bytes, await copyImage.Content.ReadAsByteArrayAsync(ct)); }
         using (var sourceImage = await owner.GetAsync(path, ct)) Assert.Equal(HttpStatusCode.NotFound, sourceImage.StatusCode);
