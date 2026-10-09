@@ -426,3 +426,19 @@ The fresh five-case local strict directory invocation is running, not certified
 successful. The separately running complete eighteen-case post-focus-repair
 invocation likewise remains pending. Current immutable/full CI and all remaining
 acceptance are required. Estimated PRD-04 work remaining stays **16%**.
+
+## Older immutable-image command evidence
+
+At `1f672945`, run `37854464485` command job `113595872446` completes
+successfully. Its logs confirm restricted-role private/archived/deleted Board
+discovery and current membership revocation; full-capacity independent Board
+copy with distinct labels, fresh contents, complete-graph publication rollback
+and atomic original-key recovery; and archive directory 50/2 paging with minimal
+fields, deleted exclusion, current administrator admission/demotion and
+nonmember denial. The same job passes supported-scale Board/List/Card
+archive/restore and permanent-deletion commands with retained child/history
+state, exact retries and per-action p95 below 500ms. These are executed older
+immutable-image command boundaries, not current browser rendering budgets or
+a green full release. The older notification job fails the already-corrected
+post-read clock expectation; remaining full browser shards and current CI are
+not certified successful. All current acceptance requirements remain in scope.
