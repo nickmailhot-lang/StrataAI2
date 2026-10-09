@@ -24,6 +24,22 @@ async function review(file = selected()) {
   const input = await screen.findByLabelText('File to attach'); await waitFor(() => expect(input).toBeEnabled());
   fireEvent.change(input, { target: { files: [file] } }); return file;
 }
+it('explains authoritative unsupported contents while preserving the selected File and requiring deliberate discard', async () => {
+  respond(async () => { throw new WorkRequestError(400, null, 'attachment_type_not_allowed'); });
+  const p = props(); render(<FileAttachmentCreateControl {...p} />);
+  const file = await review(new File(['NOT AN ADMITTED FORMAT'], 'Claimed.png', { type: 'image/png' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Upload selected file' }));
+  await screen.findByText('The file contents are not an allowed file type. Your selected file is preserved. Load the current Card before choosing another file.');
+  expect(screen.getByText(/Selected file: Claimed.png/)).toBeVisible();
+  expect(screen.getByLabelText('File to attach')).toBeDisabled();
+  expect(screen.queryByRole('button', { name: 'Retry original file upload' })).not.toBeInTheDocument();
+  expect(writes()).toHaveLength(1); expect(writes()[0][1]!.body).toBe(file);
+  expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true);
+  fireEvent.click(screen.getByRole('button', { name: 'Discard selected file and load latest' }));
+  expect(await screen.findByRole('button', { name: 'Add file attachment' })).toBeEnabled();
+  expect(screen.queryByText(/Selected file:/)).not.toBeInTheDocument();
+  expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false); expect(writes()).toHaveLength(1);
+});
 it('reviews current options and actor, manages keyboard focus and sends actual File with original claims before admitting Pending receipt', async () => {
   respond(); const p = props(); render(<FileAttachmentCreateControl {...p} />);
   expect(workRequest).not.toHaveBeenCalled(); const file = await review();

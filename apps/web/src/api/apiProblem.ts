@@ -15,7 +15,7 @@ const codes = new Set([
   'version_conflict', 'organization_owner_required', 'ownership_changed',
   'organization_not_found', 'session_unavailable', 'organization_storage_unavailable',
   'invalid_access_surface',
-  'attachment_upload_in_progress',
+  'attachment_upload_in_progress', 'attachment_type_not_allowed',
   'invalid_email', 'invalid_invitation_role', 'invalid_invitation_surface',
   'invalid_display_name', 'invalid_version', 'invalid_avatar_url', 'invalid_locale', 'invalid_timezone',
 ]);
@@ -53,7 +53,8 @@ export async function normalizeApiProblem(response: Response): Promise<Response>
   if (response.ok || response.status >= 200 && response.status < 300 || response.status < 200 || response.status > 599) return response;
   const value = await boundedBody(response);
   const candidate = value && typeof value === 'object' && 'code' in value ? value.code : undefined;
-  const code = typeof candidate === 'string' && codes.has(candidate) ? candidate : undefined;
+  const code = typeof candidate === 'string' && codes.has(candidate)
+    && (candidate !== 'attachment_type_not_allowed' || response.status === 400) ? candidate : undefined;
   const headers = new Headers(response.headers);
   headers.delete('Content-Length'); headers.delete('Content-Encoding');
   headers.set('Content-Type', 'application/problem+json');

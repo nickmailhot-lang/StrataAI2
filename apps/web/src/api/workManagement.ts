@@ -82,7 +82,8 @@ export async function workRequest<T>(
         typeof problem === "object" &&
         "code" in problem &&
         (problem.code === "idempotency_key_expired" ||
-          problem.code === "idempotency_key_reused" || problem.code === "attachment_upload_in_progress")
+          problem.code === "idempotency_key_reused" || problem.code === "attachment_upload_in_progress" ||
+          response.status === 400 && problem.code === "attachment_type_not_allowed")
       )
         code = problem.code;
     } catch {

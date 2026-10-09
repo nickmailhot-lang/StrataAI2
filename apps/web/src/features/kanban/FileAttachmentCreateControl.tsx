@@ -113,6 +113,8 @@ function FileControl(props: UrlAttachmentCreateProps) {
         const denied = [401, 403, 404].includes(error.status);
         if (denied) { setDraft(undefined); setIntent(undefined); }
         setBlocked(true); setNotice(denied ? 'This file upload is unavailable. Load the current Card before reviewing another change.'
+          : error.status === 400 && error.code === 'attachment_type_not_allowed'
+            ? 'The file contents are not an allowed file type. Your selected file is preserved. Load the current Card before choosing another file.'
           : 'This file upload is unavailable. Your selected file is preserved. Load the current Card before reviewing another change.');
       }
       else if (posted || intent) { setIntent(command); setNotice('The file upload is unconfirmed. Retry the original file to recover its acknowledgment.'); }

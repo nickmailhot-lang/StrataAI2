@@ -6,6 +6,19 @@ import {
 } from "./workManagement";
 
 afterEach(() => vi.unstubAllGlobals());
+it.each([
+  [400, 'attachment_type_not_allowed', 'attachment_type_not_allowed'],
+  [403, 'attachment_type_not_allowed', undefined],
+  [400, 'private-provider-code', undefined],
+] as const)('admits only the supported file-content validation code at its expected status (%s, %s)', async (status, code, expectedCode) => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ code, title: 'private provider diagnostic', detail: 'private SQL/body' }),
+    { status, headers: { 'Content-Type': 'application/problem+json', 'X-Correlation-ID': 'fixed-test-correlation' } })));
+  const failure = await workRequest('/cards/one/attachments', { method: 'POST' }).catch((error: unknown) => error);
+  expect(failure).toBeInstanceOf(WorkRequestError);
+  expect(failure).toMatchObject({ status, correlationId: 'fixed-test-correlation' });
+  expect((failure as WorkRequestError).code).toBe(expectedCode);
+  expect((failure as Error).message).not.toContain('private');
+});
 it('preserves the fixed live-upload retry code through the safe Problem boundary without server diagnostic text', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 'attachment_upload_in_progress', title: 'private provider diagnostic', detail: 'private SQL/body' }),
     { status: 409, headers: { 'Content-Type': 'application/problem+json' } })));

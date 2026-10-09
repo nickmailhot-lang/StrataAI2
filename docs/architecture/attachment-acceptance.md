@@ -62,7 +62,7 @@ digests and scanner/provider details; authorization precedes disclosure.
 | FR-007 previews | Linux raster normalization; exact Worker isolated codec/privilege-drop/cancellation verification; durable private derivative jobs and fenced publication; current-authorized controlled PNG delivery and MUI viewer; executed PNG/JPEG/WebP upload-through-Worker sanitized browser previews at desktop/phone sizes; Clean PDF preview/options refusal | Complete actual enabled-provider release/browser pipeline, complex inputs and cross-feature acceptance matrix |
 | FR-008 cover | Nullable tenant/Card composite FK; current published-source prerequisite; dual CAS/idempotent commands and atomic audit/outbox; selected-source withdrawal clears once; PUBLIC consent/current anonymous image admission; minimal snapshot hint and MUI controls/display; executed actual upload-through-Worker cover browser workflow; desktop/phone direct Rejected-source and forged-revision cover refusal with unchanged canonical metadata/event cursor | Current immutable/full enabled-provider coverage, remaining cross-feature/concurrency/reconnect matrix and unchanged capacity/performance acceptance |
 | FR-009 deletion | Guarded archive/restore/elevated confirmed soft deletion; current parent/source versions; atomic selected-cover clearing; audit/events; restore does not reselect | Full enabled-provider/browser lifecycle matrix and retention/purge reconciliation |
-| FR-010 untrusted MIME/name | Canonical raw transport validation; server byte classification/full size/SHA checks; quarantine; safe opaque downloads; strict raw image decoder; forged-input/API/provider cases | Successful isolated image admission/publication plus full enabled release/security regression matrix |
+| FR-010 untrusted MIME/name | Canonical raw transport validation; server byte classification/full size/SHA checks; quarantine; safe opaque downloads; strict raw image decoder; forged-input/API/provider cases; native desktop/phone misleading HTML-labelled JPEG admission, safe basename download and sanitized preview/cover; unsupported PNG-labelled bytes refused with unchanged normal state and explicit browser recovery | Full enabled release/security regression matrix, complex hostile encodings and remaining role/lifecycle combinations |
 
 Domain, managed provider, API and restricted PostgreSQL tests cover the
 implemented foundations described above; dated records below identify each
@@ -1094,4 +1094,31 @@ intact; product code and release configuration are unchanged. Small static sampl
 acceptance does not prove invalid/large/complex inputs, additional per-format
 recovery/role/lifecycle cases, deployed providers, current immutable full CI or
 the remaining cross-feature/performance/AC/DoD matrix. The issue remains open.
+Estimated PRD-14 work remaining: **32%**.
+
+## Actual-byte validation and safe browser recovery
+
+The [misleading-label and unsupported-content evidence](attachment-object-storage.md#unsupported-contents-and-misleading-file-labels)
+adds four actual desktop/phone cases without narrowing the enabled phase.
+HTML-labelled JPEG bytes with path-like display names receive authoritative JPEG
+metadata, actual Worker publication, sanitized previews/private covers and exact
+original-byte browser downloads with safe leaf filenames. PNG-labelled unsupported
+bytes receive stable HTTP 400 refusal, leave attachment paging/cover/Board cursor
+unchanged and preserve the selected file for deliberate keyboard discard/latest
+recovery. One POST, unavailable retry/sibling writes, empty-state recovery and
+WCAG-tagged checks are verified at each viewport.
+
+The initial 16/18 result exposed two browser error filters discarding the known
+validation code. Both now admit only this approved HTTP 400 code, with fixed
+user-facing text and no server diagnostic fields. Focused regressions reproduce
+the defect and then pass 46/46; all 1,984 web tests in 142 files pass. Type checks,
+lint, fresh web builds, 91 CI coverage guards and the mandatory verifier pass.
+The complete corrected native invocation passes original 2/2 (100.1s), expanded
+18/18 (721.3s), all subsequent HTTP assertions and independent cleanup, with zero
+unexpected/skipped/flaky results, top-level errors or retries.
+
+Current immutable full CI, deployed provider/real scanner acceptance, complex
+hostile inputs, remaining role/lifecycle combinations, retention/purge and the
+full cross-feature/performance/AC/DoD matrix still require proof. No issue closure
+or broad security/performance acceptance is claimed.
 Estimated PRD-14 work remaining: **32%**.

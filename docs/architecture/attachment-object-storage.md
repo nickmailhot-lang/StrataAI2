@@ -618,3 +618,57 @@ these small static samples. Current immutable full-release CI, deployed provider
 invalid/large/complex encoded inputs, additional per-format recovery/role/lifecycle
 cases and the full cross-feature/performance/AC/DoD matrix still need proof.
 Estimated PRD-14 work remaining: **32%**.
+
+## Unsupported contents and misleading file labels
+
+The browser's file-picker filter is guidance. File MIME labels and extensions do
+not determine admission: the client sends raw bytes as `application/octet-stream`,
+and the server classifies the bytes under the configured upload policy. Display
+names remain metadata. Controlled original downloads use a safe leaf filename,
+attachment disposition and opaque binary delivery; preview and cover delivery use
+verified sanitized PNG derivatives.
+
+An authorized upload refused with HTTP 400 `attachment_type_not_allowed` now
+explains that the file contents are not an allowed type. The selected file stays
+visible; upload/retry and sibling mutations stay unavailable until the user
+chooses **Discard selected file and load latest**. This explicit action clears
+the selection and loads the current Card before another file can be chosen.
+Both shared browser error filters retain this approved code only at HTTP 400;
+unknown codes and server diagnostic fields are still excluded.
+
+The first complete expanded native attempt passed 16/18 cases; both new
+unsupported-content cases reached the expected server refusal but failed the
+specific browser notice because the shared error filters discarded its code.
+That attempt stopped before the subsequent HTTP assertions and cleaned up its
+owned resources. The transport regression reproduces the defect (14 passing,
+one failing); the corrected control regression likewise fails only its new
+notice assertion against the previous control. After both filters and the
+control are corrected, all 46 focused boundary/transport/upload tests and the
+full web suite (1,984 tests in all 142 files) pass. Type checks, lint, fresh web
+builds, 91 CI coverage guards and the ordinary mandatory verifier pass.
+
+Four additional desktop/phone native cases retain the entire previous enabled
+phase. JPEG bytes labelled `text/html` with a path-like `.html` display name are
+classified as JPEG, scanned and published by the separate Worker, rendered as
+sanitized previews/private covers, and downloaded with a safe basename and exact
+original bytes. Unsupported bytes labelled as PNG produce one real raw POST and
+HTTP 400 `attachment_type_not_allowed`; attachment paging, null cover and the
+canonical delivered Board cursor remain unchanged. The browser preserves the
+selected file, blocks upload/retry and sibling writes, and supports keyboard
+discard/latest recovery to the unchanged empty Card without another POST.
+WCAG-tagged checks cover review, refusal and recovered states.
+
+The complete corrected native invocation passes original 2/2 (100.1 seconds),
+expanded 18/18 (721.3 seconds), all subsequent HTTP lifecycle/privacy/ownership
+checks and process exit 0. Both reports have zero unexpected/skipped/flaky results,
+top-level errors and retries. Independent verification confirms no owned
+containers, database, provider volume or credential files remain. The original
+running services are preserved. No case filter, assertion removal, deadline
+extension or retry relaxation is introduced.
+
+This proves the described small local-provider samples and explicit scanner
+protocol fixture, not real malware-engine detection, deployed providers or the
+current immutable full-release CI. Complex/large/adversarial encodings, remaining
+role/recovery/lifecycle combinations, retention/purge reconciliation and the full
+cross-feature/performance/AC/DoD matrix remain open.
+Estimated PRD-14 work remaining: **32%**.
