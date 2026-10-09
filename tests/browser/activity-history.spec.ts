@@ -70,9 +70,17 @@ for (const width of [1280, 390]) {
         hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
       }).format(new Date(instant)), firstInstant));
       const older = cardHistory.getByRole('button', { name: 'Older activity', exact: true }); await expect(older).toBeFocused();
-      await focusAdmittedControl(older); await page.keyboard.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(17);
+      const newer = cardHistory.getByRole('button', { name: 'Newer activity', exact: true });
+      // Foreground recovery can reset a paging generation after focus. Only
+      // activate from the first page; never advance an admitted older page.
+      await expect(async () => {
+        if (await newer.isDisabled()) {
+          await focusAdmittedControl(older); await older.press('Enter', { timeout: 500 });
+        }
+        await expect(cardHistory.getByRole('listitem')).toHaveCount(17, { timeout: 500 });
+      }).toPass({ timeout: 5_000 });
       await expect(cardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1);
-      const newer = cardHistory.getByRole('button', { name: 'Newer activity', exact: true }); await expect(newer).toBeFocused();
+      await expect(newer).toBeFocused();
       await focusAdmittedControl(newer); await page.keyboard.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(50); await expect(older).toBeFocused();
       const peerPage = await peer.newPage(); const cardPath = `${boardPath}/cards/${card}`;
       let disconnected = false; let socket: WebSocketRoute | undefined;

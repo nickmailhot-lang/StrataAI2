@@ -242,8 +242,20 @@ for (const width of [1280, 390]) {
       }).toPass({ timeout: 5_000 });
       await moveMenu.getByRole('option', { name: 'Unnamed label (blue)', exact: true }).press('Enter');
       const moveLabel = management.getByRole('button', { name: 'Move label', exact: true });
-      await pressAdmittedAction(moveLabel);
+      let moveDispatches = 0;
+      page.on('request', request => {
+        if (request.method() === 'POST' && new URL(request.url()).pathname === `/labels/${labels[0]}/move`) moveDispatches++;
+      });
+      // Stop activation on the observed write, even if its reply is still
+      // pending. A missing trace entry alone cannot establish non-dispatch.
+      await expect(async () => {
+        if (moveDispatches === 0) {
+          await focusAdmittedControl(moveLabel); await moveLabel.press('Enter', { timeout: 500 });
+        }
+        await expect.poll(() => moveDispatches, { timeout: 500 }).toBe(1);
+      }).toPass({ timeout: 5_000 });
       await expect(management.getByText('Label change confirmed. Reload labels to continue.', { exact: true })).toBeVisible();
+      expect(moveDispatches).toBe(1);
       const reordered = await context.request.get(`/boards/${board}/labels`); expect(reordered.status()).toBe(200);
       const ordered = (await reordered.json()).items;
       expect(ordered.find((l: { id: string }) => l.id === labels[0]).rank < ordered.find((l: { id: string }) => l.id === labels[1]).rank).toBe(true);

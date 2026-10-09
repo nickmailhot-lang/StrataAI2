@@ -2,6 +2,7 @@ import { registerNotificationAccount as registerVerifiedAccountFixture } from '.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280,390]) {
   test(`PRD-04: private Board copy, lost reply, concurrent source and keyboard navigation at ${width}px`, async ({ page,context }) => {
@@ -33,8 +34,10 @@ for (const width of [1280,390]) {
       const path = `/app/${org}/boards/${source.id}`; await page.goto(path); await other.goto(path);
       await expect(other.getByText('Live updates connected.',{exact:true})).toBeVisible();
       const attempts: { key: string | undefined; body: string | null; id: string }[] = [];
+      let copyDispatches = 0;
       await page.route(`**/boards/${source.id}/copy`,async route => {
         if (route.request().method() !== 'POST') { await route.continue(); return; }
+        copyDispatches++;
         const response = await route.fetch(); expect(response.status()).toBe(201); const acknowledgment = await response.json();
         attempts.push({ key:route.request().headers()['idempotency-key'],body:route.request().postData(),id:acknowledgment.id });
         if (attempts.length===1) {
@@ -53,9 +56,13 @@ for (const width of [1280,390]) {
       await expect(page.getByRole('button',{name:'Cancel Board copy',exact:true})).toHaveCount(0);
       await expect(page.getByRole('button',{name:'Edit Board details',exact:true,includeHidden:true})).toBeDisabled();
       await expect(other.getByRole('heading',{name:'Later source',exact:true})).toBeVisible();
-      await retry.focus(); await page.keyboard.press('Enter');
+      await expect(async () => {
+        if (copyDispatches === 1) await pressAdmittedAction(retry);
+        await expect.poll(() => copyDispatches, { timeout: 500 }).toBe(2);
+      }).toPass({ timeout: 5_000 });
       const open = page.getByRole('link',{name:'Open copied Board',exact:true}); await expect(open).toBeVisible(); await expect(open).toBeFocused();
       expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
+      expect(copyDispatches).toBe(2);
       expect(JSON.parse(attempts[0].body!)).toEqual({name,version:1}); expect(attempts[0].key).toMatch(/^[0-9a-f-]{36}$/);
       const copiedId = attempts[0].id; await waitForBoardDelivery(context.request,copiedId);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);

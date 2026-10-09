@@ -96,3 +96,16 @@ counted individually. These existing platform declarations are unchanged; the
 pending complete Linux invocation must provide its own outcome for those cases.
 Raw case names, arguments and report bodies remain private. The wrapper's
 successful exit alone is not treated as full-scope acceptance evidence.
+
+The complete portable Linux API invocation subsequently finishes **690/691**.
+Independent TRX inspection confirms 691 actual rows and executed cases, zero
+skips/errors/timeouts, and only the diagnosed production-project source-root
+assertion failing. All 24 Windows-excluded private-staging cases execute in this
+Linux invocation. Its report remains private; the owned container is removed.
+This is not a full pass. A fresh full current schema-124 API run uses the
+successful edge-regression build and places its read-only assembly under the
+real source checkout's test-project ancestry. It preserves the original 691
+cases and assertion. Its controller waits for the full current deletion group
+to pass and remove its owned containers/credential files before starting;
+failure of that group leaves the API invocation unstarted. Queuing is not
+execution or passing evidence.

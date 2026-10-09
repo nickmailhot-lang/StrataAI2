@@ -420,3 +420,26 @@ selections, and all three pending fixture changes remain uncommitted pending
 aggregate acceptance. Exact-main CI at `d085edf49d3215deab2aaa88dd2221b93f9c4962`
 is queued in [run 37958606573](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37958606573).
 PRD-01 remains open with **34% estimated work remaining** (planning estimate).
+
+## Complete schema-123 admission verification passed
+
+The fresh complete invocation in
+`board-responsive-schema123-admission-native-20261009` finishes **32/32** across
+all fourteen original files in **1,664.29 seconds**, with zero skips, flaky
+cases or report-level errors and one attempt per case. Both Board-copy recovery
+cases, desktop Card activity paging and phone Label movement now pass alongside
+the original source version, replay keys/bodies, request counts, persisted
+state, history, permission/reconnect, keyboard focus, viewport and accessibility
+assertions. The move additionally requires exactly one observed POST; copy
+requires exactly two dispatched requests. No test deadline or retry policy
+changes, and no product authorization or generation-admission rules change.
+
+Independent checks confirm zero owned containers and databases, removed
+API/Worker credential files and all three original services running. Browser
+types and diff checks pass. The three verified fixture changes are ready to
+commit. This proves the same frozen frontend against compiled schema-123
+API/Worker binaries mounted read-only in local containers. It does not certify
+the later draft schema-124 deletion repair, physical devices or the current
+immutable-image CI/release matrix. Failed schema-121 and prior schema-123
+reports remain retained separately. PRD-01 remains open at **34% estimated work
+remaining** (planning estimate).
