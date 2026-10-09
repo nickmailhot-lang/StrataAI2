@@ -95,3 +95,21 @@ whole-counter oracle. The full watch/order phase is separately running with
 enabled/focused native watch-retry observation. Their terminal results, original
 capacity acceptance, complete current-source verification and immutable
 build-once CI remain outstanding. No ticket is closed.
+
+The captured-dialog-fixed nine-case invocation subsequently finishes **8/9**
+in 633.97 seconds, with exactly one result per original case and zero
+skipped/flaky outcomes or report-level errors. The phone confirmed-group case
+passes its earlier automatic retry focus assertion, then fails a later
+`Comment added.` visibility assertion at `comment-mass-mentions.spec.ts:141`
+while publishing subsequent confirmed mentions. That later failure remains
+unresolved; a complete producer/consumer pass is not inferred. The final
+whole-counter oracle does not execute after browser failure. Owned containers,
+database and environment files are independently absent; private diagnostics
+are retained for the next investigation.
+
+The separate complete schema-127 watch/order phase now passes **12/12** and
+its whole-counter source-clock oracle, as recorded in the
+[clock verification record](notification-stream-clocks.md). This does not
+replace the incomplete nine-case phase, capacity acceptance, current full-source
+verification or immutable build-once release proof. PRD-17 remains open at
+**15% estimated work remaining** (planning estimate).

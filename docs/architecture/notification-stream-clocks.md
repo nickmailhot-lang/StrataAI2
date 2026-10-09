@@ -198,3 +198,30 @@ fresh complete original twelve-case invocation is running on schema 127;
 its terminal result and whole-counter check remain required. This input
 observation repair does not change `WatchControl` product behavior or rewrite
 the earlier failed phase as a pass.
+
+## Terminal schema-127 watch/order and capacity results
+
+The enabled/focused-input invocation finishes **12/12** in 1,257.23 seconds
+on 2026-10-09, with exactly one result per original case, zero skipped/flaky
+outcomes and zero report-level errors. It preserves all five cross-Board roles,
+the watch matrix, personal watch recovery and five command-order cases.
+The successful-exit oracle then checks the whole retained counter graph against
+sequence-one/greatest source clocks. Its owned containers, database and
+environment files are independently absent. The API and Worker use schema 127;
+frontend assets are the frozen pre-comment-focus build. This is local runtime
+proof for that scope, not immutable-image or whole-PRD acceptance.
+
+The original full-count capacity invocation finishes with exit **26** after
+native curl cannot open the concurrent readers' `--data-binary @file` payload
+under disabled MSYS path conversion. The existing adapter translated cookie
+and output paths but omitted payload paths. The activity report remains a
+separate completed result; no notification capacity pass or p95 acceptance is
+claimed from the failed invocation. Its owned runtime is cleaned up and its
+private diagnostics remain retained.
+
+A fresh full invocation uses schema-127 API assets and extends only the private
+Windows adapter to translate those payload-file arguments. A local HTTP
+preflight verifies exact payload bytes for all four supported curl data-file
+options. Original scripts, 100,000 notifications, graph size, sample counts,
+concurrent readers, replay checks and the p95 <500 ms assertion are unchanged.
+The new invocation's terminal report and current build-once CI remain required.
