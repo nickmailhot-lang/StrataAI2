@@ -428,3 +428,16 @@ web assets. These runtime checks, current immutable/full CI and full PRD
 acceptance remain pending. The improvement does not yet establish resolution
 of the intermittent phone history failure. Estimated PRD-15 work remaining
 stays **36%**.
+
+
+## Complete optimized-reader native activity execution
+
+Both unchanged strict activity-history viewport cases pass in 2.5 minutes,
+with zero skips/retries/flaky cases, using rebuilt current Production API and
+separate Worker, frozen visibility-focus web and restricted schema-114
+PostgreSQL17/pgvector. The original 50/17-row paging, actor/UTC, genuine
+Worker/two-client reconnect, preference, admission withdrawal, archive/delete
+and Axe assertions remain. Owned containers/database were removed. This scoped
+pass supports the optimized reader; complete API execution remains live and
+current immutable/full CI, race/capacity and full acceptance remain required.
+Estimated PRD-15 work remaining stays **36%**.

@@ -15,6 +15,31 @@ function mount(fetch: ReturnType<typeof vi.fn>) {
     { initialEntries: [`/app/${org}/archived-boards`] })} />);
 }
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); vi.useRealTimers(); vi.clearAllMocks(); });
+it('recovers an original acknowledgment when live directory invalidation arrives during the retry account check', async () => {
+  let writes = 0; let checks = 0; let hold = false; let release!: (value: Response) => void;
+  const fetch = vi.fn((path: string, init: RequestInit) => {
+    if (path === '/me') {
+      checks++;
+      if (hold) { hold = false; return new Promise<Response>(resolve => { release = resolve; }); }
+      return Promise.resolve(response(profile));
+    }
+    if (init.method === 'POST') return Promise.resolve(response(++writes === 1 ? { detail: 'unconfirmed' }
+      : { ...board, version: 3, lifecycleState: 'active' }, writes === 1 ? 503 : 200));
+    return Promise.resolve(response(writes ? { ...page, items: [] } : page));
+  });
+  mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm restore' }));
+  const retry = await screen.findByRole('button', { name: 'Retry this change' });
+  await waitFor(() => expect(retry).toBeEnabled());
+  hold = true; fireEvent.click(retry); await waitFor(() => expect(release).toBeDefined());
+  act(() => vi.mocked(watchOrganizationBoards).mock.calls.at(-1)![0].reset());
+  await act(async () => release(response(profile)));
+  await screen.findByText('Board restore acknowledged.');
+  const commands = fetch.mock.calls.filter(call => call[1]?.method === 'POST');
+  expect(commands).toHaveLength(2);
+  expect(new Headers(commands[0][1].headers).get('Idempotency-Key')).toBe(new Headers(commands[1][1].headers).get('Idempotency-Key'));
+  expect(commands[1][1].body).toBe(commands[0][1].body); expect(checks).toBeGreaterThan(4);
+});
 it('withdraws cached names immediately on live reset and fences the previous read', async () => {
   let finish!: (value: Response) => void; let older!: (value: Response) => void; let oldSignal: AbortSignal | undefined; let reads = 0;
   const fetch = vi.fn((path: string, init: RequestInit) => {

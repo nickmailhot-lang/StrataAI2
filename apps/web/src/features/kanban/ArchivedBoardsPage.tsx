@@ -118,6 +118,7 @@ function Archive({ org }: { org: string }) {
   async function change() {
     if (write.current || reading || !ready || !review && !intent || !actor.current || !intent && (changed || conflict || deleting && !confirmed)) return;
     const command = intent ?? { board: review!, deleting, key: crypto.randomUUID(), actor: actor.current };
+    const recovering = !!intent;
     if (command.actor !== actor.current) { retire(); return; }
     const action = command.deleting ? 'archive_board_delete' : 'archive_board_restore';
     const started = performance.now(); activityEvent(action, intent ? 'retry' : 'use');
@@ -129,7 +130,10 @@ function Archive({ org }: { org: string }) {
         const before = await workRequest<unknown>('/me', { signal });
         if (!isNotificationProfile(before) || before.id !== command.actor) throw new ChangedArchiveIdentity();
         if (!mounted.current || write.current !== c) throw new ChangedArchiveIdentity();
-        if (reviewEpoch.current !== epoch) throw new Error('Archive review withdrawn');
+        // Live directory recovery retires new consent, but an already submitted
+        // original retains its fixed actor/key/body. The server still re-admits
+        // that original, and both account checks fence acknowledgment disclosure.
+        if (reviewEpoch.current !== epoch && !recovering) throw new Error('Archive review withdrawn');
         submitted = true;
         const receipt = await workRequest<unknown>(command.deleting
         ? `/boards/${command.board.id}?version=${command.board.version}&confirmed=true` : `/boards/${command.board.id}/restore`, {

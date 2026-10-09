@@ -496,3 +496,30 @@ API/separate Worker and restricted schema-114 database; owned containers/databas
 were removed. The chosen external destination regression is component evidence;
 these native cases retain their existing normal copy recovery/navigation scope.
 The complete combined 28-case invocation remains active and uncertified.
+
+
+## Original restore recovery during live directory invalidation
+
+The completed member-focus 28-case phase fails both lifecycle cases at restore
+request count (expected two / actual one), after phone history also fails. A
+previous description called these focus failures based on the source location;
+the structured errors instead establish the count mismatch. Exact native cause
+is not established by that mismatch alone.
+
+A real-MUI regression independently reproduces original retry retirement when
+live directory invalidation arrives during its pre-submit account check:
+24 existing cases pass / one new regression fails before repair. New consent
+still retires on a changed review epoch. An already submitted original instead
+retains its immutable actor/key/body across that directory invalidation, with
+current server authorization and both account checks still required. Account
+withdrawal/unmount cancels the pending command through the existing fences.
+
+The native workflow now explicitly requires `Board restore acknowledged.`
+before reading the empty directory/focus and asserting two identical requests;
+missing rows cannot stand in for this command's receipt. Original deadlines,
+retry identity, command count, role/lifecycle and accessibility checks remain.
+All 37 selected archive/focus components, web/browser types, targeted lint and
+fresh web build pass. Both complete strict native lifecycle scenarios are
+running against rebuilt assets/current compiled API/separate Worker/schema-114
+PostgreSQL. Current immutable/full CI and full acceptance remain required.
+Estimated PRD-04 work remaining stays **16%**.

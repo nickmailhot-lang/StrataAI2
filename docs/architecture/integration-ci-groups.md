@@ -262,7 +262,7 @@ immutable/full CI. Estimated PRD-05 work remaining stays **15%**.
 
 The complete 28-case member-focus invocation finishes with 25 passes / three
 failures in 21.5 minutes, no skips/flaky cases. Phone peer activity fails the
-original 50-row assertion; both lifecycle cases fail at source line 97. This
+original 50-row assertion; both lifecycle cases fail at source line 97 on restore request count (expected two / actual one). This
 run predates the visibility-focus repair and the activity-read optimization.
 All owned containers/database were removed. This is failing combined evidence,
 not a certificate for the expanded mandatory 30-case strict phase.

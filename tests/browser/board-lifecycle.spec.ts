@@ -92,6 +92,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Cancel change', exact: true })).toHaveCount(0);
       await expect(other.getByRole('button', { name: 'Add list', exact: true })).toBeEnabled();
       await pressAdmittedAction(page.getByRole('button', { name: 'Retry this change', exact: true }));
+      await expect(page.getByText('Board restore acknowledged.', { exact: true })).toBeVisible();
       await expect(page.getByText('No administrable archived Boards on this page.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Check current archived boards', exact: true })).toBeFocused();
       expect(restores).toHaveLength(2); expect(restores[1]).toEqual(restores[0]);
