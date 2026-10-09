@@ -253,3 +253,37 @@ Earlier eight-of-nine failures remain retained. The full-count capacity run
 is still live and the current immutable build-once pipeline remains queued;
 neither notification performance nor complete PRD acceptance follows from
 this local producer/consumer pass.
+
+## Terminal full-count capacity verification, schema 127
+
+The original activity/notification capacity invocation with the private
+Windows payload-path and UUID adapters subsequently finishes with exit **0**
+on 2026-10-09. Both canonical scripts match their staged sources after newline
+normalization. Independent report inspection retains the full **200 Lists,
+5,000 active Cards, 100,000 archived Cards, 100,000 activity events and 100,000
+notifications**, 50-item pages and 20 samples per endpoint/operation.
+
+The notification report verifies unique bounded seek, persisted ordering,
+unchanged read state, exact replay, journal reset, 100,000 creation facts and
+30 exact first-read facts. Two concurrent readers retain the original ten
+overlapping selections and first-read identity. Independent nearest-rank
+calculation reproduces mark-read **p95 496.685 ms**, satisfying the unchanged
+**p95 <500 ms** assertion. Individual samples remain in the private report;
+one sample exceeds 500 ms, which the p95 result does not conceal or classify
+as an all-requests bound. The original whole-counter source-clock checks pass.
+
+Activity reads retain their original body-free pages, unique seek and complete
+before/after state fingerprints. Their Board/Card p95 values are respectively
+**1,284.298 ms / 775.954 ms**. These are HTTP read timings, not initial Board
+rendering, cached-detail opening or mutation acknowledgment measurements.
+The notification first-page and seek samples likewise do not prove a UI
+render budget. The fixture is a seeded consumer benchmark, not 100,000 audited
+producer commands.
+
+The compiled schema-127 API and frozen frontend/runtime topology are recorded
+as `local-compiled-runtime`; reports retain source revision `7bbdafa0`, without
+claiming a later frontend or immutable image. Owned containers, database and
+environment files are independently absent. Earlier exit-26 and UUID-helper
+prerequisite failures remain retained. This closes the recorded local capacity
+verification gap for that exact scope; current immutable build-once CI, broader
+performance conditions and complete PRD acceptance remain outstanding.
