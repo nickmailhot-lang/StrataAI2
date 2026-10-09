@@ -756,3 +756,22 @@ restricted PostgreSQL and the CI fixture's optional email-verification policy;
 strict mail-delivery acceptance has its separate required tests. Its terminal
 result and current immutable build-once CI remain required. PRD-02 stays open
 at **16% estimated work remaining** (planning estimate).
+
+The body-retaining complete invocation subsequently finishes **7/8** in
+228.31 seconds, one result per case, with no skipped/flaky outcomes or
+report-level errors. The desktop deactivation case fails the focused-control
+assertion before activation; the other seven scenarios retain their complete
+real-server refusal and unchanged-state checks. This is not a full phase pass.
+The production confirmation dialog deliberately returns focus to Keep account
+active when its entry transition completes, so observing focus before the
+transition settles is insufficient to target the subsequent page-wide key.
+
+The fixture now uses the existing admitted keyboard helper: it observes enabled
+focus within the existing five-second admission budget, retries focus only,
+then sends one Enter activation through the named locator. No sent mutation is
+retried and no role, status, header, cookie, graph or handle-history assertion
+is removed. Browser typecheck passes. A fresh complete original eight-case
+invocation is running with both the retained actual refusal body and this
+targeted keyboard observation; its terminal result and immutable build-once
+proof remain outstanding. The earlier failed reports remain retained rather
+than being rewritten as successful evidence.

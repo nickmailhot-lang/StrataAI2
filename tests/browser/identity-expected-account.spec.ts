@@ -1,4 +1,5 @@
 import { expect, test } from './releaseTest';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   for (const command of ['profile', 'logout', 'deactivate', 'handle'] as const) {
@@ -65,7 +66,7 @@ for (const width of [1280, 390]) {
       });
       const refused = page.waitForResponse(response => new URL(response.url()).pathname === path && response.request().method() === method);
       const save = page.getByRole('button', { name: label, exact: true });
-      await expect(save).toBeEnabled(); await save.focus(); await expect(save).toBeFocused(); await page.keyboard.press('Enter');
+      await pressAdmittedAction(save);
       const response = await refused; expect(response.status()).toBe(401);
       expect(response.request().headers()['x-strataai-expected-user']).toBe(originalState.profile.id);
       expect(refusalCode).toBe('session_unavailable');
