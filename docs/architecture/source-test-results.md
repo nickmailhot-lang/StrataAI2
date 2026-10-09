@@ -85,3 +85,14 @@ architecture assertion is retained rather than hidden by replacing a live run.
 The schema-123 browser invocation has since finished 30/32; its full result,
 cleanup and newly started full verification are recorded in
 [navigation observations](../navigation-observations.md).
+
+The original Windows API invocation subsequently exited successfully. Its
+actual TRX contains **691 case rows: 667 passed and 24 not executed**, with zero
+failures or report errors. This is not a 691/691 pass: all 24 exclusions match
+the existing Linux-only private-staging declarations in attachment download,
+preview, Board background image, moved file, controlled-download permission
+matrix and Card cover delivery tests. The eighteen permission-matrix cases are
+counted individually. These existing platform declarations are unchanged; the
+pending complete Linux invocation must provide its own outcome for those cases.
+Raw case names, arguments and report bodies remain private. The wrapper's
+successful exit alone is not treated as full-scope acceptance evidence.
