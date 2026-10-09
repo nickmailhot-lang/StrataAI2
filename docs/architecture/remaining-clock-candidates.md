@@ -221,3 +221,49 @@ recorded in [notification verification](notification-stream-clocks.md).
 Full mutable-clock coverage, historical provenance, capacity and current
 immutable build-once release acceptance remain outstanding. PRD-01 remains
 open at **34% estimated work remaining** (planning estimate).
+
+### Invitation authority history writer classifications
+
+Eight additional candidates have immutable row payloads after insertion. The
+schema-127 catalog confirms their BEFORE UPDATE/DELETE triggers, and the writer
+audit traces current migration replacements and application/fixture references.
+The shared `protect_invitation_authority_history` has a completion branch only
+for `invitation_recipient_authority_pages`; none of these eight tables uses
+that branch. The recipient event guard unconditionally refuses updates/deletes.
+
+| Candidate | Current insertion and retained provenance | Boundary |
+| --- | --- | --- |
+| `invitation_recipient_events` | [Migration 104](../../db/migrations/104_invitation_recipient_retained_board_admin.sql) admits the original invitation proof, actor and target grant before appending once with `proof.created_at`. | Immutable recipient journal facts; streams remain separate mutable counters. |
+| `invitation_recipient_authority_sources` | [Migration 113](../../db/migrations/113_invitation_recipient_membership_authority.sql) inserts an exact pointer to metadata, Work, Organization lifecycle or issuer sources. Its current view joins the corresponding source identity and `created_at`. | Immutable source pointers. A joined source time is not claimed as the later pointer's publication time. |
+| `invitation_recipient_authority_effects` | [Migration 109](../../db/migrations/109_invitation_issuer_account_authority.sql) inserts each tenant/source/email effect once, before its admitted revision effect. | Immutable deduplication facts, with source identities but no recorded effect-publication time. This does not repair the recipient revision counter's missing clock provenance. |
+| `invitation_issuer_authority_proofs` | The same migration captures actual User deactivation with its admitted version, `updated_at` as `changed_at`, and owning transaction. | Immutable transition proofs; ordinary `identity_events` are not classified wholesale by the conditional deactivation guard. |
+| `invitation_issuer_authority_sources` | The same migration admits the actual identity event against its captured proof and inserts `created_at` with original actor/version/correlation identity. | Immutable canonical source facts, with no inferred legacy events. |
+| `invitation_issuer_authority_effects` | The same publisher inserts a global event/email effect only once across Organizations. | Immutable deduplication facts; their absence of publication sequence/time remains relevant to revision-clock reconstruction. |
+| `invitation_recipient_organization_lifecycle_proofs` | [Migration 108](../../db/migrations/108_invitation_recipient_organization_lifecycle.sql) captures actual ACTIVE→DELETING and DELETING→DELETED transitions with version, admitted `updated_at` and owning transaction. | Immutable transition proofs, separate from mutable deletion progress. |
+| `invitation_recipient_organization_lifecycle_sources` | The same migration validates the request audit or terminal lifecycle event against its exact transition proof before inserting the canonical source. | Immutable source facts with finite `created_at`, not synthetic attribution for historical Organization states. |
+
+The first fresh schema-127 SQL verification attempt stops at the original
+recipient-event gate's runtime-role prerequisite because the private helper
+omitted role provisioning. That failed attempt and private diagnostics remain
+retained; it is not a product refusal or a passing gate. Its owned resources
+are removed. A subsequent fresh isolated PostgreSQL/pgvector invocation applies
+all 127 migrations, provisions the standard restricted API/Worker roles and
+passes all four unchanged original gates:
+[recipient events](../../scripts/ci/test-invitation-recipient-events.sql),
+[recipient authority](../../scripts/ci/test-invitation-recipient-authority.sql),
+[Board authority](../../scripts/ci/test-invitation-recipient-board-authority.sql)
+and [authority discovery](../../scripts/ci/test-invitation-recipient-authority-discovery.sql).
+Staged scripts match source after newline normalization. Owned containers and
+environment files are independently absent. These gates retain their complete
+source/authority/RLS/replay/rollback scopes; they are not a new execution of
+the separate issuer-account or Organization-lifecycle persistence contracts,
+nor native browser/Worker transport or immutable-image release acceptance.
+
+This brings source classification to **13 of the 51** catalog candidates;
+**38** still require complete classification. `invitation_recipient_proofs`
+remains separate: migration 103 permits nested deletion of unpublished proofs
+during owning invitation cleanup, so its guard is not unconditional. The
+mutable recipient-authority revision's missing publication provenance, sweep
+checkpoints and Work-event delivery clocks remain unresolved. No schema,
+grant, clock or runtime behavior changes. PRD-01 stays open at **34% estimated
+work remaining** (planning estimate).
