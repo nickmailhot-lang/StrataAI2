@@ -382,3 +382,17 @@ current compiled Production API/separate Worker, frozen original-key recovery
 web and restricted schema-114 PostgreSQL17/pgvector. Its outcome, exact causes,
 complete API, PostgreSQL races and current immutable/full CI remain pending.
 Estimated PRD-15 work remaining stays **36%**.
+
+
+## Complete single-key activity paging verification
+
+Both complete strict activity-history desktop/phone workflows pass in 175.1
+seconds, with zero skips, retries or flaky cases. The original 180-second
+per-case deadline, restored paging focus, 50/17-row pages, immutable actor/UTC,
+genuine two-account Worker delivery/reconnect, preferences, permission/session
+withdrawal, archive/delete and Axe remain. Paging admission precedes one
+page-level Enter; only focus checks can repeat. Current compiled Production
+API/separate Worker, frozen original-key recovery web and restricted schema-114
+PostgreSQL17/pgvector were used. This scoped result does not establish exact
+intermittent cause, combined/current immutable success or the PostgreSQL
+post-wait/session race acceptance. Estimated PRD-15 remaining: **36%**.
