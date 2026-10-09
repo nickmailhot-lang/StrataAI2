@@ -57,3 +57,5 @@ Docker, AI providers, email providers, or object storage implementations.
   notifications and recurring tasks.
 
 Both are part of one modular-monolith product and share the same domain/application code.
+
+- [Work event delivery clocks and legacy provenance](work-event-clock-audit.md)

@@ -58,7 +58,7 @@ state() { admin "SELECT md5(jsonb_build_object(
   'list_routes',(SELECT jsonb_agg(to_jsonb(r) ORDER BY list_id) FROM list_routes r WHERE tenant_id='$org'),
   'card_routes',(SELECT jsonb_agg(to_jsonb(r) ORDER BY card_id) FROM card_routes r WHERE tenant_id='$org'),
   'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY board_id) FROM work_event_streams s WHERE tenant_id='$org'),
-  'events',(SELECT jsonb_agg(to_jsonb(e)-'ready_at' ORDER BY event_id) FROM work_events e WHERE tenant_id='$org'),
+  'events',(SELECT jsonb_agg(to_jsonb(e)-'ready_at'-'updated_at' ORDER BY event_id) FROM work_events e WHERE tenant_id='$org'),
   'audit',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org'),
   'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY actor_id,key_id) FROM work_command_replays r WHERE tenant_id='$org'),
   'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'))::text);"; }

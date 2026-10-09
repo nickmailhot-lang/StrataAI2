@@ -60,7 +60,7 @@ state() { admin "SELECT md5(jsonb_build_object(
  'associations',(SELECT jsonb_agg(to_jsonb(a) ORDER BY card_id,label_id) FROM card_labels a WHERE tenant_id='$org'),
  'members',(SELECT jsonb_agg(to_jsonb(m) ORDER BY card_id,user_id) FROM card_members m WHERE tenant_id='$org'),
  'notifications',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='$org'),
- 'events',(SELECT jsonb_agg(to_jsonb(e)-'ready_at' ORDER BY board_id,sequence) FROM work_events e WHERE tenant_id='$org'),
+ 'events',(SELECT jsonb_agg(to_jsonb(e)-'ready_at'-'updated_at' ORDER BY board_id,sequence) FROM work_events e WHERE tenant_id='$org'),
  'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY board_id) FROM work_event_streams s WHERE tenant_id='$org'),
  'audit',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org'),
  'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY actor_id,key_id) FROM work_command_replays r WHERE tenant_id='$org'),

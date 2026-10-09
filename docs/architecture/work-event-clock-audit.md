@@ -1,63 +1,86 @@
-# Work event delivery clock audit
+# Work event delivery clocks and legacy provenance
 
-[PRD-01 FOUND-FR-009](prd-01-acceptance.md) still requires an update-clock
-repair for mutable Work event delivery state. The Organization event clock
-repair in [migration 121](organization-event-clocks.md) cannot be copied here
-without addressing different history and delivery rules.
+[PRD-01 FOUND-FR-009](prd-01-acceptance.md) requires audit timestamps for
+mutable entities. [Migration 130](../../db/migrations/130_work_event_update_clocks.sql)
+records `work_events.updated_at` for new sources and every subsequent admitted
+readiness change. Historical activity remains immutable.
 
-## Recorded behavior
+## Source history and delivery
 
-Migration 011 gives `work_events` an immutable event `created_at` and nullable
-mutable `ready_at`, but no `updated_at`. The separate `work_event_streams`
-counter already has both physical audit timestamps. Its absence is not a gap.
+The original `created_at` is the event's admitted source time. New insertion
+initializes `updated_at` to that time, ignoring caller-supplied update clocks.
+A real `ready_at` change records the greatest of the database clock, source
+creation time and prior known update time. Replacing or clearing readiness
+also records an update. Exact no-ops and attempts to change only the audit
+clock preserve the previous clock.
 
-Migration 062's `enforce_activity_event_immutable` compares the entire event
-row as JSON, excluding only `ready_at`. Migration 063 runs that comparison
-after updates so stored generated target references participate in the check.
-Adding an automatically changed clock without adapting this exact comparison
-would make successful publication fail. Excluding a managed clock from the
-payload comparison must retain separate protection against clock tampering;
-immutable identity, attribution, payload and generated references must remain
-protected.
+The original AFTER history trigger remains AFTER UPDATE, so generated target
+references are materialized before comparison. Its comparison excludes only
+readiness and the separately managed update clock. Identity, actor caption,
+metadata, source time, sequence and generated references remain protected;
+a refused payload mutation rolls back its clock and readiness effects too.
+The clock function has a fixed search path and no PUBLIC execute capability.
 
-The deployed role provisioning grants the Worker `UPDATE(ready_at)` and a
-limited set of readable identity/readiness columns. It does not grant payload
-updates or whole-table writes. `PostgresWorkEventDeliveryStore` locks a matching
-unexpired `WORK_EVENT_READY` claim, changes only a pending source, and verifies
-the lease again before committing. Duplicate store delivery preserves readiness.
-Those application checks do not make `ready_at` intrinsically immutable in SQL.
-The existing history guard permits replacing or clearing that field.
+[PostgresWorkEventDeliveryStore](../../src/StrataAI.Infrastructure/WorkManagement/PostgresWorkEventDeliveryStore.cs)
+continues to lock the exact live job/worker/lease claim, update only a pending
+source and check the lease again before committing. Worker privileges remain
+`UPDATE(ready_at)`; no audit-clock or payload write permission is added.
 
-The original `ActivityEventSourceStoreContract` explicitly publishes one
-source, checks journal/discovery readers, then clears its readiness again to
-test the pending barrier. That reset is an administrative fixture operation,
-not a demonstrated production Worker reset. Nonetheless it proves that the
-schema supports more transitions than pending-to-first-publication.
+## Legacy records
 
-Consequently `COALESCE(ready_at, created_at)` would return the original creation
-time after a reset and would lose the time of the last mutation. A legacy
-null readiness value alone cannot distinguish never-published from reset
-history. Historical mutation time must not be invented from migration time,
-current wall time or lease expiry. The eventual repair needs both justified
-legacy provenance and clock maintenance for every admitted delivery-state
-transition, while preserving existing journal/readiness behavior and claim
-fences. This gap remains in the acceptance audit.
+Legacy update clocks remain NULL, meaning unknown. A pending source can have
+been published and reset by an admitted administrative update. A ready source
+can have had its readiness replaced. Neither `COALESCE(ready_at,created_at)`
+nor migration time establishes the last historical mutation time.
 
-## Executed local verification
+The upgrade preserves every original field for pending, ready and previously
+reset sources. A no-op leaves their unknown clocks unknown. A subsequent real
+mutation records that new update without claiming earlier missing history.
+Legacy provenance remains an unresolved part of the full timestamp requirement;
+this prospective repair does not satisfy all of PRD-01.
 
-The unmodified original activity source contract passes against schema 121
-with real PostgreSQL/pgvector, a restricted API login and the complete API/Worker
-required-ledger readiness contract. This includes the publish/reset pending
-barrier, original event identities, bounded 65-event same-time history window
-and cursor/permission checks. Accounts and trusted application context are
-synthetic; the reset is performed by the fixture administrator. This is not
-browser transport, production Worker-reset authority or immutable-image release
-acceptance. Reports are retained privately in
-`work-event-clock-audit-native-20261009`.
+## Verification
 
-The next complete Board browser phase runs the repaired frontend with compiled
-schema-121 API/Worker binaries mounted read-only into local runtime containers.
-Collection verifies all fourteen original files and 32 cases at desktop,
-tablet and mobile widths. Its report is pending; there are no narrowed tests
-or test retries. PRD-01 remains open at **34% estimated work remaining**
-(planning estimate).
+The locked solution build passes with zero warnings and errors. The original
+`--activity-source-only` mode passes against real PostgreSQL/pgvector using
+the compiled schema-130 contracts and restricted API/Worker accounts. It also
+individually removes and restores all 130 required ledger entries for both
+API and Worker readiness. Original activity pagination, discovery, source
+identity and privileged publish/reset barriers remain in scope. This is local
+compiled-runtime evidence, not immutable-image release acceptance.
+
+[The clock SQL gate](../../scripts/ci/test-work-event-update-clocks.sql) checks
+new source clocks, actual column-restricted Worker readiness, no-op/tamper
+handling, reset timestamps and atomic rollback after forbidden history edits.
+[The original attribution gate](../../scripts/ci/test-activity-attribution.sql)
+retains every original mutation, tenant, attribution and generated-reference
+assertion. Payload fingerprints exclude both delivery fields; the dedicated
+clock gate verifies their separate invariants. Copy/move rollback fingerprints
+likewise exclude the two asynchronous delivery fields while retaining the
+complete historical payload.
+
+Upgrade fixtures cover pending, published and reset legacy records. The full
+migration runner, fresh tenant/RLS/runtime-role gates and the new SQL gate are
+passed together (eight complete gates) against a fresh schema-130 database.
+Private reports are outside the repository in
+`work-event-clocks-schema130-upgrade-complete-native-20261009`. The first disposable
+staging attempt retained Windows shell line endings, and the second omitted
+`scripts/migration-stream.sh`; neither failed the product clock checks. Both
+owned test environments were removed, and verification uses a complete staged
+source tree with normalized line endings.
+
+The complete default schema-130 persistence executable is also running without
+mode arguments, filters or case retries. Its original default path does not
+execute every special-mode branch. Existing full schema-129 persistence and
+schema-128 API runs remain active and retain their own evidence boundaries.
+CI run `37996791819` on schema-129 head `a3023bff` passed its full migration
+runner but failed the new sweep SQL gate with permission denied: that gate was
+scheduled before `test-runtime-roles.sh` provisioned Worker capabilities. The
+workflow now runs all three clock gates after the unchanged provisioning and
+runtime-role checks. Clean local verification follows this actual CI order
+without pre-provisioning roles; its terminal result is pending. Current build-once CI must pass before release
+claims can be made.
+
+The prior schema-127 Board browser invocation finished with all 32 original
+cases passing in one attempt each; it does not certify schema 130. PRD-01
+remains open at **34% estimated work remaining** (planning estimate).

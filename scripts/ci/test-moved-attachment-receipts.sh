@@ -51,7 +51,7 @@ done
 state() { admin "SELECT md5(jsonb_build_object(
  'card',(SELECT to_jsonb(c) FROM cards c WHERE tenant_id='$org' AND id='$card'),
  'child',(SELECT to_jsonb(a) FROM attachments a WHERE tenant_id='$org' AND id='$attachment'),
- 'events',(SELECT jsonb_agg(to_jsonb(e)-'ready_at' ORDER BY event_id) FROM work_events e WHERE tenant_id='$org'),
+ 'events',(SELECT jsonb_agg(to_jsonb(e)-'ready_at'-'updated_at' ORDER BY event_id) FROM work_events e WHERE tenant_id='$org'),
  'audits',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a WHERE tenant_id='$org'),
  'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY actor_id,key_id) FROM work_command_replays r WHERE tenant_id='$org'),
  'jobs',(SELECT count(*) FROM background_jobs WHERE tenant_id='$org'))::text);"; }

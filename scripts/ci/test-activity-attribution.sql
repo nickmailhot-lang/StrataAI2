@@ -36,7 +36,7 @@ DO $$ DECLARE mutation text; baseline jsonb; affected integer; BEGIN
  IF (SELECT count(*) FROM work_events)<>1 OR
   (SELECT activity_actor_label FROM work_events)<>'Original name' THEN
   RAISE EXCEPTION 'Activity caption forged or tenant read widened'; END IF;
- SELECT to_jsonb(e)-'ready_at' INTO baseline FROM work_events e;
+ SELECT to_jsonb(e)-'ready_at'-'updated_at' INTO baseline FROM work_events e;
  FOREACH mutation IN ARRAY ARRAY[
   'event_id=gen_random_uuid()','tenant_id=gen_random_uuid()','board_id=gen_random_uuid()',
   'sequence=sequence+1','actor_id=gen_random_uuid()','event_type=''CARD_UPDATED''',
@@ -47,12 +47,12 @@ DO $$ DECLARE mutation text; baseline jsonb; affected integer; BEGIN
    EXECUTE 'UPDATE work_events SET '||mutation;
    RAISE EXCEPTION 'Historical activity mutated: %',mutation;
   EXCEPTION WHEN check_violation OR foreign_key_violation OR insufficient_privilege THEN NULL; END;
-  IF (SELECT to_jsonb(e)-'ready_at' FROM work_events e) IS DISTINCT FROM baseline THEN
+  IF (SELECT to_jsonb(e)-'ready_at'-'updated_at' FROM work_events e) IS DISTINCT FROM baseline THEN
    RAISE EXCEPTION 'Rejected activity mutation changed historical state'; END IF;
  END LOOP;
  UPDATE work_events SET ready_at=clock_timestamp();
  IF (SELECT ready_at IS NOT NULL FROM work_events) IS NOT TRUE OR
-  (SELECT to_jsonb(e)-'ready_at' FROM work_events e) IS DISTINCT FROM baseline THEN
+  (SELECT to_jsonb(e)-'ready_at'-'updated_at' FROM work_events e) IS DISTINCT FROM baseline THEN
   RAISE EXCEPTION 'Worker readiness changed activity identity'; END IF;
  UPDATE work_events SET ready_at=ready_at;
  UPDATE work_events SET activity_actor_label='Foreign' WHERE tenant_id='06200000-0000-0000-0000-000000000002';

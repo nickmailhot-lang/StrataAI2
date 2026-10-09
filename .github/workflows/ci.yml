@@ -308,12 +308,6 @@ jobs:
       - name: Verify account handle receipts, immutable metadata and expired-only cleanup
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-handle-claim-replay-storage.sql
 
-      - name: Verify attachment sweep creation, advancement and reset clocks
-        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-attachment-sweep-clocks.sql
-
-      - name: Verify Work receipt creation, completion and replay clocks
-        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-work-replay-update-clocks.sql
-
       - name: Verify durable upload identity, tenant isolation and publication transitions
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-upload-intent-storage.sql
 
@@ -331,6 +325,15 @@ jobs:
 
       - name: Verify real restricted runtime logins and elevation rejection
         run: scripts/ci/test-runtime-roles.sh
+
+      - name: Verify Work event delivery clocks and immutable history
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-work-event-update-clocks.sql
+
+      - name: Verify attachment sweep creation, advancement and reset clocks
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-attachment-sweep-clocks.sql
+
+      - name: Verify Work receipt creation, completion and replay clocks
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-work-replay-update-clocks.sql
 
       - name: Verify private invitation recipient source, atomic rollback and restricted capabilities
         run: psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-invitation-recipient-events.sql
