@@ -122,3 +122,41 @@ Three negative guards reject omitting any permission file; all 69 guard tests
 pass. Named steps and matrix executions stay at 112 and seven. Native permission
 execution remains pending; see the
 [PRD-05 evidence](prd-05-acceptance.md#strict-native-visibility-and-member-administration).
+
+## Private browser fixture producers remain local to each job
+
+The matrix split left three checks owned only by `commands` even though they
+also prepare four private fixture exports required by the unfiltered native
+suite. `test-invitation-registration.sh` creates invitation signup and Board
+invitation link fixtures, `test-invitation-discovery.sh` creates Organization
+invitation link fixtures, and `test-board-admin-continuity.sh` creates the real
+53-row Board member directory fixture. Their `RUNNER_TEMP` files and
+`GITHUB_ENV` exports, and their corresponding database rows, cannot supply
+another isolated job. Required consumers remain in the full suite; no skip or
+optional fallback replaces this dependency.
+
+All three existing exact-image checks now retain `commands` ownership and also
+run inside every `browser-full` job, after the initial auth fixture and before
+identity mail preparation and full browser execution. Each job creates its own
+files and matching database state; private fixture contents are not transferred
+or added to diagnostic artifacts. Existing script bodies, shell/environment,
+registration policy overrides, restoration and command acceptance checks remain
+unchanged. Source/runtime API/Worker images are still loaded from the same
+exact-SHA archives without rebuilding.
+
+Six regression mutations omit each producer from browser ownership or move it
+after the consumers. The previous verifier accepts them (69 pass / six fail);
+the repaired verifier passes all 75 tests. Workflow syntax and the 112-step
+registry/seven-execution topology pass. These guards prove structural dependency
+coverage; execution of the repaired full-browser jobs remains pending current
+immutable CI. Earlier successful command-only execution of these scripts does
+not establish the repaired browser matrix or complete release success.
+
+The completed older full-browser shard `113595872331` in run `37854464485`
+confirms the fixture gap at runtime: both Board invitation-link and both Board
+member-directory cases fail at their required environment predicates with
+`undefined`. Its six failures also include metadata editor admission timeout
+and a missing Card-label confirmation, which are separate investigation items;
+the fixture ownership correction does not claim to fix them. The current local
+28-case phase additionally records a phone Card activity opening failure and
+continues collecting the remaining cases. No combined pass is claimed.

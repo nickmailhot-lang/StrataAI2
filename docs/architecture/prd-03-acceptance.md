@@ -648,3 +648,13 @@ All 62 workflow guards, browser TypeScript, workflow syntax and complete
 four-shard coverage pass. Current immutable/full CI, all ten functional
 requirements and complete lifecycle/invitation/performance acceptance still
 govern closure. Estimated PRD-03 work remaining stays **8%**.
+
+## Full-browser invitation fixture dependency
+
+The [private fixture producer repair](integration-ci-groups.md#private-browser-fixture-producers-remain-local-to-each-job)
+restores Organization invitation signup/link fixture creation in each isolated
+full-browser job, preserving the original command checks as well. Ephemeral
+private files and database rows remain local to their consuming job. Complete
+native consumers and assertions stay required. All 75 workflow guards pass;
+current repaired immutable execution and full acceptance remain pending.
+Estimated PRD-03 work remaining stays **8%**.

@@ -434,3 +434,14 @@ copy-dialog exit-focus change and is not a combined 28-case or current immutable
 release result. A new complete 28-case phase is running against the new web;
 current immutable/full CI, remaining permission inventory and full acceptance
 remain required. Estimated PRD-05 work remaining stays **15%**.
+
+## Full-browser private fixture dependency repair
+
+The [matrix fixture ownership repair](integration-ci-groups.md#private-browser-fixture-producers-remain-local-to-each-job)
+restores preparation of the Board member directory and Board invitation-link
+fixtures in each isolated full-browser job. Their original commands-only jobs
+cannot provide private files or matching database rows across that boundary.
+Existing complete native consumers remain mandatory; original checks are not
+skipped or weakened. All 75 workflow guards pass, including six regressions for
+missing/late private fixture producers. Current repaired immutable/full browser
+execution remains pending. Estimated PRD-05 work remaining stays **15%**.

@@ -240,6 +240,15 @@ export function verifyIntegrationSuites(workflow, registry) {
       precedes('Strict verified-account Board management and personal preferences', 'Strict verified-account watch producers through native private inboxes');
     }
     if (suite === 'browser-full') {
+      for (const producer of [
+        'Invitation-backed closed registration and atomic expiry against exact release API',
+        'Verified-email invitation discovery and retry-safe acceptance',
+        'Board administrator demotion continuity and atomic recovery',
+      ]) {
+        precedes('Verify production account defaults and prepare isolated auth fixture', producer);
+        precedes(producer, 'Prepare isolated identity mail transport and ephemeral signing keys');
+        precedes(producer, 'Authenticated browser E2E against exact release images');
+      }
       precedes('Prepare isolated identity mail transport and ephemeral signing keys', 'Restore isolated unverified-email account fixture for profile browser tests');
       precedes('Restore isolated unverified-email account fixture for profile browser tests', 'Enable automatic Organization metadata and invitation authority routing for native browser acceptance');
       precedes('Enable automatic Organization metadata and invitation authority routing for native browser acceptance', 'Authenticated browser E2E against exact release images');

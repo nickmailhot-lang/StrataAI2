@@ -96,10 +96,12 @@
     "commands"
   ],
   "Invitation-backed closed registration and atomic expiry against exact release API": [
-    "commands"
+    "commands",
+    "browser-full"
   ],
   "Verified-email invitation discovery and retry-safe acceptance": [
-    "commands"
+    "commands",
+    "browser-full"
   ],
   "Atomic invitation creation retries against exact release API": [
     "commands"
@@ -123,7 +125,8 @@
     "commands"
   ],
   "Board administrator demotion continuity and atomic recovery": [
-    "commands"
+    "commands",
+    "browser-full"
   ],
   "Work command and audit rollback against exact release API": [
     "commands"

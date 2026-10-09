@@ -652,11 +652,11 @@ jobs:
         run: bash scripts/ci/test-identity-registration-retries.sh
 
       - name: Invitation-backed closed registration and atomic expiry against exact release API
-        if: (matrix.suite == 'commands')
+        if: (matrix.suite == 'commands' || matrix.suite == 'browser-full')
         run: bash scripts/ci/test-invitation-registration.sh
 
       - name: Verified-email invitation discovery and retry-safe acceptance
-        if: (matrix.suite == 'commands')
+        if: (matrix.suite == 'commands' || matrix.suite == 'browser-full')
         run: bash scripts/ci/test-invitation-discovery.sh
 
       - name: Atomic invitation creation retries against exact release API
@@ -687,7 +687,7 @@ jobs:
         run: bash scripts/ci/test-board-copy.sh
 
       - name: Board administrator demotion continuity and atomic recovery
-        if: (matrix.suite == 'commands')
+        if: (matrix.suite == 'commands' || matrix.suite == 'browser-full')
         run: scripts/ci/test-board-admin-continuity.sh
 
       - name: Work command and audit rollback against exact release API

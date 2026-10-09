@@ -14,6 +14,18 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ...['Invitation-backed closed registration and atomic expiry against exact release API',
+    'Verified-email invitation discovery and retry-safe acceptance',
+    'Board administrator demotion continuity and atomic recovery'].map(name =>
+    [`full-browser fixture producer omitted: ${name}`, value => { step(value, name).if = "(matrix.suite == 'commands')"; }]),
+  ...['Invitation-backed closed registration and atomic expiry against exact release API',
+    'Verified-email invitation discovery and retry-safe acceptance',
+    'Board administrator demotion continuity and atomic recovery'].map(name =>
+    [`private fixture produced after browser consumers: ${name}`, value => {
+      const steps = integration(value).steps; const producer = step(value, name);
+      steps.splice(steps.indexOf(producer), 1);
+      steps.splice(steps.indexOf(step(value, 'Authenticated browser E2E against exact release images')) + 1, 0, producer);
+    }]),
   ['strict Board visibility consent scenarios omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/board-visibility.spec.ts', ''); }],
   ['strict Board member consent scenarios omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/board-members.spec.ts', ''); }],
   ['strict Board administrator live scenarios omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/board-admin-live.spec.ts', ''); }],
