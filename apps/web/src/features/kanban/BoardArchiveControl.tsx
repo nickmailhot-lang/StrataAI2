@@ -3,6 +3,7 @@ import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typog
 import { Link } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot } from '../../api/workManagement';
 import { activityEvent, activityResult } from './activityTelemetry';
+import { ownsRecoveryFocus } from './focusRecovery';
 
 type Review = { id: string; organizationId: string; name: string; version: number };
 type Intent = Review & { key: string };
@@ -16,6 +17,7 @@ export function BoardArchiveControl({ snapshot, disabled, onBusyChange, onRecove
   const [busy, setBusy] = useState(false); const [conflict, setConflict] = useState(false); const [notice, setNotice] = useState<string>();
   const mounted = useRef(false); const pending = useRef<AbortController | undefined>(undefined);
   const action = useRef<HTMLButtonElement>(null); const focusRequested = useRef(false);
+  const focusOwner = useRef<HTMLDivElement | null>(null);
   const admitted = snapshot.access.canAdminister && snapshot.access.canView && ['active', 'archived'].includes(snapshot.board.lifecycleState);
   const available = admitted && snapshot.board.lifecycleState === 'active' && Number.isSafeInteger(snapshot.board.version) && Number(snapshot.board.version) > 0;
   const changed = !!review && !intent && (!available || snapshot.board.id !== review.id || snapshot.board.organizationId !== review.organizationId
@@ -30,6 +32,9 @@ export function BoardArchiveControl({ snapshot, disabled, onBusyChange, onRecove
     setReview(undefined); setIntent(undefined); setNotice('Board administration is unavailable.');
   }, [admitted, snapshot.board.id, snapshot.board.organizationId, review, intent, onBusyChange]);
   function restoreFocus() {
+    if (!mounted.current || !ownsRecoveryFocus(document.activeElement, focusOwner.current)) {
+      focusRequested.current = false; return;
+    }
     focusRequested.current = disabled || busy;
     if (focusRequested.current) return;
     if (action.current && !action.current.disabled) action.current.focus({ preventScroll: true }); else onReturnFocus();
@@ -75,7 +80,10 @@ export function BoardArchiveControl({ snapshot, disabled, onBusyChange, onRecove
     {!review && notice && <Typography role="status">{notice}</Typography>}
     {admitted && snapshot.board.lifecycleState === 'archived' && <Button component={Link}
       to={`/app/${snapshot.board.organizationId}/archived-boards`} disabled={disabled || busy || !!intent}>Manage archived Boards</Button>}
-    <Dialog open={!!review} onClose={close} disableRestoreFocus fullWidth maxWidth="sm" slotProps={{ transition: { onExited: restoreFocus } }}>
+    <Dialog open={!!review} onClose={close} disableRestoreFocus fullWidth maxWidth="sm" slotProps={{
+      paper: { ref: (node: HTMLDivElement | null) => { if (node) focusOwner.current = node; } },
+      transition: { onExited: restoreFocus },
+    }}>
       <DialogTitle>Archive Board</DialogTitle><DialogContent>
         <Typography sx={{ overflowWrap: 'anywhere' }}>Archive {review?.name}?</Typography>
         <Typography>Archiving makes this Board read-only and hides it from active work. Its Lists and Cards remain associated with it. Current administrators can restore it from Archived boards.</Typography>

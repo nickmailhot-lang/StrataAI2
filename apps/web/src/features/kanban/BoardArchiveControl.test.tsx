@@ -78,3 +78,22 @@ it('cannot start a new archive on an archived Board or without a reviewed revisi
   mounted.rerender(view({ ...props, snapshot: { ...snapshot, board: { ...board, version: undefined } } }));
   expect(screen.queryByRole('button', { name: 'Archive Board' })).not.toBeInTheDocument();
 });
+
+it('preserves a chosen destination while delayed archive focus awaits the current Board read', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply(ack)));
+  const returnFocus = vi.fn(() => screen.getByRole('button', { name: 'Refresh destination' }).focus());
+  const renderControl = (disabled: boolean, archived: boolean) => <MemoryRouter>
+    <button>Refresh destination</button><a href="/another">Chosen destination</a>
+    <BoardArchiveControl {...props} disabled={disabled} onReturnFocus={returnFocus}
+      snapshot={archived ? { ...snapshot, board: ack, access: { ...snapshot.access, canEdit: false, canMove: false } } : snapshot} />
+  </MemoryRouter>;
+  const mounted = render(renderControl(false, false)); submit();
+  await screen.findByText('Board archive acknowledged. Current Board state is being checked.');
+  mounted.rerender(renderControl(true, true));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  const destination = screen.getByRole('link', { name: 'Chosen destination' }); destination.focus();
+  expect(destination).toHaveFocus(); returnFocus.mockClear();
+  mounted.rerender(renderControl(false, true));
+  expect(destination).toHaveFocus(); expect(returnFocus).not.toHaveBeenCalled();
+  expect(screen.getByRole('link', { name: 'Manage archived Boards' })).toBeEnabled();
+});

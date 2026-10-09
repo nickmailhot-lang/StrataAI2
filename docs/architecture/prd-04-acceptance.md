@@ -103,7 +103,7 @@ scoped local passes do not establish current retained-image or full acceptance.
 | BOARD-FR-003: rename and description | BoardMetadataControl owns reviewed revisions, retained drafts, conflict review and bound same-key recovery. `tests/browser/board-metadata.spec.ts` exercises two clients and lost committed replies. | Current-image native execution, permission withdrawal and unchanged protected state on rejected writes. |
 | BOARD-FR-004: approved backgrounds | Fixed named colors plus Board-owned sanitized PNG references; selection uses checked Card attachments, separate Worker publication and explicit public exposure consent. See `board-background-images.md` and `BoardBackgroundImageContract.cs`. | Genuine image pipeline passed at `1655ef8`; staged Organization/membership and anonymous parent withdrawal passed in restricted PostgreSQL at `6fcc174`. Full current-image native/acceptance execution remains required. Synthetic native cases alone do not prove publication. |
 | BOARD-FR-005: independent stars | Retained actor-scoped preferences, optimistic version checks, keyed receipts and separate current preference reads. `test-board-star-preferences.sh` and `tests/browser/board-star.spec.ts` cover persistence and clients. | Current release-image native recovery, independent actors and current grant withdrawal. |
-| BOARD-FR-006: authorized copy | BoardCopyService atomically creates the independent graph, admission, fresh history and receipt. BoardCopyControl validates the original acknowledgment and current destination disclosure separately. Local desktop/phone native recovery now passes. | Execute current retained-image and real image-backed native copy cases; retain late rollback and admission tests. |
+| BOARD-FR-006: authorized copy | BoardCopyService atomically creates the independent graph, admission, fresh history and receipt. BoardCopyControl validates the original acknowledgment and current destination disclosure separately. Local desktop/phone native recovery now passes. | Older immutable-image foundation run `37854464485` passed both genuine image-backed native copy cases using the explicit private filesystem/ICAP test providers. Current retained-image execution, late rollback and admission tests remain required; this does not establish cloud-provider durability. |
 | BOARD-FR-007: defined copy policy | See `board-copy.md`: non-deleted Lists/Cards, labels and checklists copy with new IDs; completion resets; membership, personal preferences, attachment metadata and source history are excluded. Board-owned image ownership copies independently. | Current restricted PostgreSQL full-graph fixture, source invariance, same-key recovery and native semantic assertions. Capacity correctness does not prove rendering latency. |
 | BOARD-FR-008: archive and reopen | Reviewed Board archive and bounded authorized archive directory restore; `test-board-discovery.sh` and `tests/browser/board-lifecycle.spec.ts` cover both transitions. | Current-image desktop/phone keyboard execution, concurrent lifecycle changes and current admission withdrawal. |
 | BOARD-FR-009: confirmed permanent deletion | Archived-only deletion requires elevated admission, reviewed version and explicit irreversible consent. `BoardDeletionConsentTests.cs` and native lifecycle coverage exercise refusal and recovery. | Current-image runtime proof, unchanged child state on refusal, inaccessible deleted-parent routes and retained original receipt semantics. |
@@ -383,8 +383,19 @@ omission mutations fail with the previous verifier (62 pass / three fail); all
 65 guards pass after strengthening. Browser TypeScript, workflow syntax and
 complete 320-case/124-file four-shard coverage pass.
 
-The complete eighteen-case local strict invocation is active and has not yet
-been certified successful. Original source/receipt/concurrency/privacy,
+The complete eighteen-case local strict invocation finished with seventeen
+passes and one desktop lifecycle failure: original archive recovery succeeded,
+but keyboard activation of Manage archived Boards did not navigate. A component
+regression reproduced delayed archive focus restoration overriding an already
+chosen destination (eight existing passes / one new failure). The product now
+checks ownership of the closing dialog before restoring focus, retaining the
+closing paper through its exit transition. All 36 related archive/directory/focus
+tests pass, as do web TypeScript, targeted lint and a fresh production web build.
+Both unchanged desktop/phone lifecycle cases pass in one 1.7-minute invocation
+with zero skips/retries against isolated compiled API/schema-114 fixtures and
+the new web output. Owned containers/database were removed. A fresh complete
+eighteen-case phase is running; its outcome remains unverified.
+This scoped local runtime is not the current immutable-image CI gate. Original source/receipt/concurrency/privacy,
 keyboard/focus, accessibility, viewport and recovery assertions and deadlines
 remain. Stored-background client cases still simulate publication, receipt and
 PNG delivery; they do not replace genuine object-storage/API/Worker publication

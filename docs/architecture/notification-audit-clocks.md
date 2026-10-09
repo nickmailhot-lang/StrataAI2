@@ -137,3 +137,15 @@ keeps the earlier combined 8/9 failure and focused diagnostic, without inferring
 an intermittent cause from this passing invocation. Owned fixtures are removed.
 Current immutable/full release acceptance remains separate; PRD-17 stays open
 at **15% estimated work remaining**.
+
+## Older retained-image clock failure confirmed
+
+Retained-image run `37854464485` at older commit `1f672945` completed its
+notification job with five cross-Board role cases passing and the activity
+matrix failing its thirteen post-read `updatedAt` expectations. Job logs
+confirm the mismatch is the already-corrected expectation: marking read advances
+`updatedAt` to the immutable first-read clock. Commit `a343b9dc` corrects the
+whole-response expectation and independently compares HTTP clocks to storage;
+the complete newer seven-case local strict watch phase above passes. This
+diagnosis does not turn the older failed job or queued current CI into success.
+PRD-17 remains open at **15% estimated work remaining**.
