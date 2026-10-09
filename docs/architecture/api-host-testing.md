@@ -84,3 +84,36 @@ publication failed at the explicit Linux-only private download boundary.
 The original database is preserved as `codex-strataai-contract-20261006`; this
 is not a whole-suite pass. The Windows Linux-container route repairs that
 observed platform incompatibility; its full lifecycle remains to execute.
+
+
+## Explicit Linux private-staging coverage
+
+Six private-file source facts previously returned immediately on non-Linux hosts,
+which reported them as passes without executing their assertions. They now use
+xUnit's explicit `SkipUnless` metadata and the same shared Linux capability as
+the eighteen-case controlled-download permission theory. Linux executes all
+original bodies and assertions; the required `dotnet-quality` job still runs on
+Ubuntu. Product behavior, CI jobs, test deadlines and security checks are unchanged.
+
+The selected seven methods represent 24 cases. A fresh locked Release build has
+zero warnings/errors. Windows correctly reports 24 skipped, zero errors/failures,
+instead of six silent passes plus eighteen declared skips. The complete selected
+Linux execution passes all 24 cases, zero errors/failures/skips/not-run, in 66.8
+seconds. It uses the new compiled source-test assembly in an isolated cached
+ASP.NET Linux runtime container with no network. Only the private copy's generated
+MVC content-root manifest is mapped to the mounted source folder; test assertions
+and compiled assemblies are unchanged. The owned test container is removed.
+
+Coverage includes download authorization across three visibilities/six access
+states, Pending/Clean/quarantine/corruption, archive restoration during byte
+preparation, membership withdrawal before delivery, sanitized previews and covers,
+independently owned Board images, and moved-file current-destination admission.
+Metadata/publication and object storage are explicitly synthetic Demo fixtures;
+private Linux staging, byte integrity, sessions and final HTTP checks are actual
+host code. This does not certify PostgreSQL publication, external storage/scanner,
+full Linux source suites or the current immutable release candidate.
+
+The earlier full Windows API result (673 passed, 18 skipped out of 691) includes
+the six early-return facts. Those six were not executed private-staging evidence;
+the new Linux selection supplies their actual source execution. Keep recorded
+platform, revision, skips and fixture scope alongside every completion claim.

@@ -468,3 +468,16 @@ compiled hosts, not execution of the unchanged mandatory Linux script or
 current immutable release images. The complete expanded strict Board phase
 and current immutable/Linux/full acceptance remain required. Estimated PRD-15
 work remaining: **35%**.
+
+
+## Current explicit Linux private-staging source evidence
+
+The [source platform audit](api-host-testing.md#explicit-linux-private-staging-coverage)
+replaces six silent non-Linux returns with explicit xUnit skips and executes
+those six cases plus the eighteen-row download matrix on Linux. All 24 pass in
+66.8 seconds with no errors/failures/skips/not-run; Windows correctly reports
+24 skips. The fresh locked Release build has zero warnings/errors and the owned
+Linux test container is removed. Original staging/byte/session/HTTP assertions
+remain; synthetic publication/storage, PostgreSQL/external-provider and current
+immutable/full acceptance boundaries still apply. Earlier full Windows totals
+included six early returns and cannot prove those checks executed.

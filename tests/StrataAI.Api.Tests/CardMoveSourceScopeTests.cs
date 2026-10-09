@@ -161,10 +161,9 @@ public sealed partial class ApiHostTests
     // Publication metadata is synthetic, as in the existing private download
     // contracts. Real sessions, move admission, private byte staging and delivery
     // execute normally; this does not claim real Worker preview generation.
-    [Fact]
+    [Fact(Skip = "Private staging requires Linux.", SkipUnless = nameof(LinuxPrivateStagingSupported))]
     public async Task PRD_08_Moved_file_and_preview_keep_private_bytes_and_recheck_current_destination()
     {
-        if (!OperatingSystem.IsLinux()) return;
         var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects(); var selection = new CoverSelectionFixture();
         await using var app = UploadFactory(objects, downloads: true, images: true, covers: selection);
         using var owner = app.CreateClient(); using var member = app.CreateClient(); using var anonymous = app.CreateClient();

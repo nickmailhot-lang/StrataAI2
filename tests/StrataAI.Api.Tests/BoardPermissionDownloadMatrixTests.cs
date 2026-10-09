@@ -9,12 +9,12 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
-    public static bool LinuxControlledDownloadMatrixSupported => OperatingSystem.IsLinux();
+    public static bool LinuxPrivateStagingSupported => OperatingSystem.IsLinux();
 
     // PERM-FR-002/007/008/010: public Board admission is not internal file admission.
     // This fixture declares synthetic Clean metadata/storage; Linux private staging,
     // cookie authorization, final admission and byte delivery use the actual host.
-    [Theory(Skip = "Controlled private staging requires Linux.", SkipUnless = nameof(LinuxControlledDownloadMatrixSupported))]
+    [Theory(Skip = "Controlled private staging requires Linux.", SkipUnless = nameof(LinuxPrivateStagingSupported))]
     [MemberData(nameof(BoardPermissionMatrixCases))]
     public async Task PRD_05_Controlled_download_matrix_preserves_current_organization_and_visibility_admission(string visibility, string role)
     {

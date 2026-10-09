@@ -11,10 +11,9 @@ public sealed partial class ApiHostTests
 {
     // Synthetic scan/publication projection; real sessions, command rollback,
     // Board-owned identities, private-byte verification and HTTP delivery run.
-    [Fact]
+    [Fact(Skip = "Private staging requires Linux.", SkipUnless = nameof(LinuxPrivateStagingSupported))]
     public async Task PRD_04_Board_images_own_published_PNGs_copy_independently_and_survive_source_attachment_archive()
     {
-        if (!OperatingSystem.IsLinux()) return;
         var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects();
         var json = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         json.Converters.Add(new JsonStringEnumConverter());

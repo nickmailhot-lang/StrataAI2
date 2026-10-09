@@ -11,10 +11,9 @@ public sealed partial class ApiHostTests
     // Synthetic publication metadata only. Session/Board authorization, private
     // full-object verification and HTTP delivery execute normally; PostgreSQL
     // publication/grants/RLS have their own restricted-adapter contract.
-    [Fact]
+    [Fact(Skip = "Private staging requires Linux.", SkipUnless = nameof(LinuxPrivateStagingSupported))]
     public async Task PRD_14_Preview_HTTP_requires_published_clean_source_verifies_private_bytes_and_readmits_current_access()
     {
-        if (!OperatingSystem.IsLinux()) return;
         var ct=TestContext.Current.CancellationToken;var objects=new UploadObjects();
         await using var app=UploadFactory(objects,downloads:true,images:true);
         using var owner=app.CreateClient();using var member=app.CreateClient();using var outsider=app.CreateClient();using var anonymous=app.CreateClient();

@@ -47,10 +47,9 @@ public sealed partial class ApiHostTests
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Private staging requires Linux.", SkipUnless = nameof(LinuxPrivateStagingSupported))]
     public async Task PRD_14_Archive_delivery_is_separate_and_refuses_restoration_during_byte_preparation()
     {
-        if (!OperatingSystem.IsLinux()) return;
         var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects(); await using var app = UploadFactory(objects, downloads: true);
         using var owner = app.CreateClient(); using var member = app.CreateClient(); using var outsider = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct); await RegisterAndLogin(outsider);
@@ -92,10 +91,9 @@ public sealed partial class ApiHostTests
         using var tombstone = await member.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, tombstone.StatusCode); Assert.Equal(reads, objects.Reads);
     }
 
-    [Fact]
+    [Fact(Skip = "Private staging requires Linux.", SkipUnless = nameof(LinuxPrivateStagingSupported))]
     public async Task PRD_14_Controlled_download_verifies_bytes_uses_safe_headers_and_refuses_quarantine_corruption_and_revocation()
     {
-        if (!OperatingSystem.IsLinux()) return;
         var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects(); await using var app = UploadFactory(objects, downloads: true);
         using var owner = app.CreateClient(); using var member = app.CreateClient(); using var outsider = app.CreateClient(); using var anonymous = app.CreateClient();
         var f = await NotificationFixture(app, owner, member, ct); await RegisterAndLogin(outsider);

@@ -21,10 +21,9 @@ public sealed partial class ApiHostTests
             Guid? previous, long cardVersion, DateTimeOffset now, CancellationToken ct) => throw new InvalidOperationException("Synthetic selection fixture cannot execute cover commands.");
     }
 
-    [Fact]
+    [Fact(Skip = "Private staging requires Linux.", SkipUnless = nameof(LinuxPrivateStagingSupported))]
     public async Task PRD_14_Selected_cover_HTTP_exposes_only_sanitized_PNG_and_rechecks_public_or_current_member_scope()
     {
-        if (!OperatingSystem.IsLinux()) return;
         var ct = TestContext.Current.CancellationToken; var objects = new UploadObjects(); var selection = new CoverSelectionFixture();
         await using var app = UploadFactory(objects, downloads: true, images: true, covers: selection);
         using var owner = app.CreateClient(); using var member = app.CreateClient(); using var outsider = app.CreateClient(); using var anonymous = app.CreateClient();

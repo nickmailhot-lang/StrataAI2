@@ -858,3 +858,16 @@ The earlier passing run does not establish deterministic execution of the old
 fixture; corrected Linux execution is pending.
 
 Archived Card detail now mounts the existing scope/revision/account-fenced attachment disclosure so retained metadata and URL links remain accessible in the read-only view. No attachment mutation controls are added. A component regression verifies retained checklist and attachment content and immediate removal when admission is withdrawn; 28 focused cases, typecheck and lint pass. This does not establish managed binary-provider or native release acceptance.
+
+
+## Current explicit Linux private-staging source evidence
+
+The [source platform audit](api-host-testing.md#explicit-linux-private-staging-coverage)
+replaces six silent non-Linux returns with explicit xUnit skips and executes
+those six cases plus the eighteen-row download matrix on Linux. All 24 pass in
+66.8 seconds with no errors/failures/skips/not-run; Windows correctly reports
+24 skips. The fresh locked Release build has zero warnings/errors and the owned
+Linux test container is removed. Original staging/byte/session/HTTP assertions
+remain; synthetic publication/storage, PostgreSQL/external-provider and current
+immutable/full acceptance boundaries still apply. Earlier full Windows totals
+included six early returns and cannot prove those checks executed.

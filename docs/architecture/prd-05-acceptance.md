@@ -513,3 +513,16 @@ Worker and restricted schema-114 PostgreSQL17/pgvector. Owned containers/databas
 were removed. This scoped pass does not certify the combined phase, which
 predates this product change and has a phone activity failure, or current
 immutable/full CI. Estimated PRD-05 work remaining stays **15%**.
+
+
+## Current explicit Linux private-staging source evidence
+
+The [source platform audit](api-host-testing.md#explicit-linux-private-staging-coverage)
+replaces six silent non-Linux returns with explicit xUnit skips and executes
+those six cases plus the eighteen-row download matrix on Linux. All 24 pass in
+66.8 seconds with no errors/failures/skips/not-run; Windows correctly reports
+24 skips. The fresh locked Release build has zero warnings/errors and the owned
+Linux test container is removed. Original staging/byte/session/HTTP assertions
+remain; synthetic publication/storage, PostgreSQL/external-provider and current
+immutable/full acceptance boundaries still apply. Earlier full Windows totals
+included six early returns and cannot prove those checks executed.
