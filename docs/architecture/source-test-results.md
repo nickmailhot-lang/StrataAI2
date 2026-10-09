@@ -77,3 +77,11 @@ the retained `(tenant_id, request_id)` deletion request. Its publisher inserts
 request and initial progress in the same owning transaction; page/terminal
 capabilities already maintain update time. That source relationship is the next
 creation-clock repair candidate, not completed acceptance evidence.
+
+Subsequent polling confirms both complete API handles remain live. The Linux
+console continues growing and its running container consumes CPU; the original
+Windows console also grew. Neither has a terminal report yet. The diagnosed
+architecture assertion is retained rather than hidden by replacing a live run.
+The schema-123 browser invocation has since finished 30/32; its full result,
+cleanup and newly started full verification are recorded in
+[navigation observations](../navigation-observations.md).

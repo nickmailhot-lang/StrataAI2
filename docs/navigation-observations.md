@@ -358,3 +358,65 @@ runtime containers. It does not prove schema-120 runtime acceptance, current
 immutable-image CI, physical-device behavior or the entire foundation matrix.
 The exact schema-120 main CI run remains queued at this verification point.
 PRD-01 stays open with **34% estimated work remaining** (planning estimate).
+
+## Schema-121 aggregate result and schema-123 copy recovery verification
+
+The subsequent intact fourteen-file/32-case schema-121 phase finished
+**31/32** in **1,556.81 seconds**, with no skips, flaky cases or report-level
+errors. All desktop/tablet/mobile hierarchy and viewport cases pass. The phone
+Board-copy case reached lost-response recovery, focused its retry control,
+then timed out waiting for the acknowledged copied Board link. Its private
+trace retains an aborted frontend copy response and a successful underlying
+copy fetch; those records alone do not establish whether retry dispatch occurred.
+The full report and trace remain in `board-responsive-schema121-native-20261009`.
+Independent checks confirm zero owned containers/databases, removed API/Worker
+credential files and the original three services running.
+
+The pending fixture repair counts POST requests at the original copy route
+interceptor before fetching each response. It prepares current enabled focus
+and activates the recovery control only while the first dispatch is the sole
+observed request, stopping immediately at the second dispatch. The original
+two acknowledgments, identical idempotency keys/bodies/returned IDs, original
+source version/content, concurrent source change, keyboard focus, persisted
+private copy/checklist/member/star/history, width and accessibility assertions
+remain. An added assertion requires exactly two dispatched copy requests.
+There is no recovery activation after that second dispatch.
+
+Browser types and diff checks pass. A fresh complete fourteen-file/32-case
+phase is active in `board-responsive-schema123-native-20261009`, with the same
+frozen repaired frontend and compiled schema-123 API/Worker binaries mounted
+read-only in local runtime containers. Collection confirms the entire original
+selection; there are no narrowed tests or test retries. This also exercises
+the newer metadata/recipient counter clocks in the browser runtime. The pending
+fixture change remains uncommitted until aggregate verification completes;
+current immutable-image CI and full foundation acceptance remain outstanding.
+
+The intact schema-123 invocation subsequently finished **30/32** in
+**1,407.18 seconds**, with no skips, flaky cases or report-level errors.
+Both desktop and phone Board-copy recovery cases pass with the added exact
+dispatch count and original replay/persistence/focus/accessibility checks.
+Failures occur in activity history and Card labels; their full reports and
+traces remain private. Independent checks confirm zero owned containers and
+databases, removed API/Worker credential files and original services running.
+The copy fixture change remains uncommitted pending complete aggregate
+verification; no newer browser phase is yet started or aggregate pass claimed.
+
+The schema-123 failure locations are now established from the private result:
+desktop Card activity expected 17 older events but still observed 50 at the
+first paging step; phone Label management timed out at the acknowledgment after
+Move label. Trace entries do not establish that either action was dispatched.
+The pending fixtures now repeat read-only paging only while Newer activity is
+disabled, stopping once the older page is admitted; Label movement uses an
+actual page request counter and stops activation at its first POST. It adds an
+exactly-one move-dispatch assertion. The original historical labels, paging
+focus, ordering, version, acknowledgment and persisted deletion checks remain.
+No authorization, protected-generation or product read-admission rules change.
+
+Browser types and diff checks pass. Collection of a fresh full invocation in
+`board-responsive-schema123-admission-native-20261009` confirms all fourteen
+files and 32 cases. This invocation is running with the same read-only frozen
+frontend and schema-123 API/Worker build. There are no test retries or narrowed
+selections, and all three pending fixture changes remain uncommitted pending
+aggregate acceptance. Exact-main CI at `d085edf49d3215deab2aaa88dd2221b93f9c4962`
+is queued in [run 37958606573](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37958606573).
+PRD-01 remains open with **34% estimated work remaining** (planning estimate).
