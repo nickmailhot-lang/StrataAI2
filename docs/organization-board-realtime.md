@@ -359,3 +359,19 @@ restricted C# persistence integration. The fixture now includes the existing
 tenant-scoped routing write capability needed by real Board metadata updates;
 production permissions are unchanged. This proves the reader epoch storage
 foundation, not the still-required wider audience/cursor/transport/UI extension.
+
+## Verified-email native directory admission
+
+All five genuine directory scenarios now use the shared strict account fixture.
+An unchanged ordinary-reader desktop baseline failed immediate login with 403
+instead of its expected 200 under the real verified-email policy. The fixture
+checks pending refusal, verifies only the newly created disposable account and
+logs in normally; real provider delivery remains separately tested. With the
+strict flag absent, ordinary full-suite registration/login is preserved.
+
+The mandatory Board CI phase includes the complete directory file without grep,
+with API/Worker verified policy assertions and normal rate pacing. Real upstream
+frames, canonical Worker event IDs, audience filtering, disconnect recovery,
+role and Organization membership withdrawal remain unchanged. The five-case
+isolated strict runtime invocation is in progress; compilation and workflow
+coverage do not establish a pass or current immutable release acceptance.

@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
@@ -11,8 +12,7 @@ for (const width of [1280, 390]) {
       const accounts = [context, reader].map((_, index) => ({ email: `ordinary-directory-${width}-${index}-${Date.now()}@example.test`,
         password: 'ordinary-directory-correct-horse', displayName: `Ordinary directory actor ${index}` }));
       for (const [index, client] of [context, reader].entries()) {
-        expect((await client.request.post('/auth/register', { headers, data: accounts[index] })).status()).toBe(201);
-        expect((await client.request.post('/auth/login', { headers, data: accounts[index] })).status()).toBe(200);
+        await registerVerifiedAccountFixture(client.request, accounts[index]);
       }
       const organization = await context.request.post('/organizations', { headers, data: { name: 'Ordinary directory admission' } });
       expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
@@ -109,8 +109,7 @@ for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `organization-live-${width}-${Date.now()}@example.test`, password: 'directory-live-correct-horse', displayName: 'Directory administrator' };
-    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    await registerVerifiedAccountFixture(context.request, account);
     const profileReply = await context.request.get('/me'); expect(profileReply.status()).toBe(200);
     const profile = await profileReply.json();
     const organization = await context.request.post('/organizations', { headers, data: { name: 'Directory live fixture' } });
@@ -201,8 +200,7 @@ test('PRD-04/05: phone archive scope excludes other Boards and withdraws review 
   try {
     const accounts = [context, phone].map((_, index) => ({ email: `directory-scope-${index}-${Date.now()}@example.test`, password: 'directory-scope-correct-horse', displayName: `Directory actor ${index}` }));
     for (const [index, client] of [context, phone].entries()) {
-      expect((await client.request.post('/auth/register', { headers, data: accounts[index] })).status()).toBe(201);
-      expect((await client.request.post('/auth/login', { headers, data: accounts[index] })).status()).toBe(200);
+      await registerVerifiedAccountFixture(client.request, accounts[index]);
     }
     const organization = await context.request.post('/organizations', { headers, data: { name: 'Audience admission fixture' } });
     expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;

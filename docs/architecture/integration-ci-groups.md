@@ -106,3 +106,11 @@ the previous guard accepts them (62 pass / three fail), while the strengthened
 suite passes all 65 checks. Browser TypeScript, workflow syntax and the unfiltered
 320-case/124-file complete four-shard coverage pass. See the
 [PRD-04 scope and pending execution](prd-04-acceptance.md#strict-verified-account-board-management-phase).
+
+The strict Board prerequisite is further extended to all five genuine directory
+realtime cases in `organization-board-live.spec.ts`: nine full files / 23 cases.
+The previous eighteen remain intact. Its new omission mutation rejects dropping
+the genuine directory file; all 66 guard tests pass. Real source frames, Worker
+identity/reconnect and private audience withdrawal are independent of simulated
+background client replies. Native verification is pending; see the
+[strict directory evidence](prd-04-acceptance.md#strict-genuine-board-directory-realtime-coverage).

@@ -402,3 +402,27 @@ PNG delivery; they do not replace genuine object-storage/API/Worker publication
 acceptance. Current immutable/full CI, complete role/lifecycle and stored-image
 copy/performance requirements remain. Estimated PRD-04 work remaining stays
 **16%**; the issue is open.
+
+## Strict genuine Board directory realtime coverage
+
+The untouched ordinary-directory desktop case fails under verified-email policy
+at immediate login (expected 200 / actual 403). All five existing genuine
+`organization-board-live.spec.ts` cases now use the shared strict registration
+fixture: fresh registration, pending-account refusal, disposable account
+verification and real login. The optional fixture path preserves ordinary full
+suite registration/login. Server authentication policy is unchanged.
+
+The mandatory strict Board phase now selects nine complete files / 23 cases,
+adding both ordinary-reader cases, both administrator archive cases and the
+phone audience/role/membership-withdrawal scenario to the previous eighteen.
+These cases observe real upstream WebSocket frames and canonical Worker sources,
+original event IDs, disconnect/resume and current private directory withdrawal;
+they do not fabricate event delivery. All original deadlines, retry policy,
+source checks and protected-state assertions remain. A new omission mutation
+fails the previous guard (65 pass / one fail); the strengthened guard passes
+all 66 checks. The 112 named checks and seven matrix executions are retained.
+
+The fresh five-case local strict directory invocation is running, not certified
+successful. The separately running complete eighteen-case post-focus-repair
+invocation likewise remains pending. Current immutable/full CI and all remaining
+acceptance are required. Estimated PRD-04 work remaining stays **16%**.
