@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -7,8 +8,7 @@ for (const width of [1280, 390]) {
     test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 }); await page.emulateMedia({ colorScheme: 'light' });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `board-metadata-${width}-${Date.now()}@example.test`, password: 'metadata-correct-horse-battery', displayName: 'Metadata editor' };
-    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    await registerVerifiedAccountFixture(context.request, account);
     const organization = await context.request.post('/organizations', { headers, data: { name: 'Metadata browser fixture' } });
     expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
     const created = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Original Board', visibility: 'PRIVATE' } });

@@ -361,3 +361,33 @@ version and mutation assertion. Four new mandatory readiness regressions and all
 22 related observer cases pass. See [complete evidence](browser-recovery-ci.md#board-delivery-readiness-follows-the-complete-bounded-history).
 Estimated PRD-04 work remaining stays **16%** (planning estimate). Current immutable
 CI and full-PRD acceptance remain required before closure.
+
+## Strict verified-account Board management phase
+
+The untouched metadata scenario fails strict-policy admission at immediate
+login (expected 200 / actual 403). Eight complete browser files now use the
+existing strict account fixture for fresh registration, pending-account refusal,
+disposable-account verification and actual login: persisted Board workflow,
+metadata, copy, lifecycle, archived-account recovery, personal stars, activity
+history and stored-background client interactions. The optional-verification
+path preserves its registration/login behavior in the unfiltered full suite.
+No product authentication policy is relaxed.
+
+The new mandatory phase selects all eighteen existing cases without a grep,
+requires API/Worker verified-email policy and normal rate pacing, and runs after
+strict Organization departure before watch/notification producers. All 111
+previous named steps remain, plus this phase (112 named steps), within the same
+seven isolated matrix executions. The workflow verifier requires every selected
+file, the strict fixture flag, both host-policy checks and phase ordering. Three
+omission mutations fail with the previous verifier (62 pass / three fail); all
+65 guards pass after strengthening. Browser TypeScript, workflow syntax and
+complete 320-case/124-file four-shard coverage pass.
+
+The complete eighteen-case local strict invocation is active and has not yet
+been certified successful. Original source/receipt/concurrency/privacy,
+keyboard/focus, accessibility, viewport and recovery assertions and deadlines
+remain. Stored-background client cases still simulate publication, receipt and
+PNG delivery; they do not replace genuine object-storage/API/Worker publication
+acceptance. Current immutable/full CI, complete role/lifecycle and stored-image
+copy/performance requirements remain. Estimated PRD-04 work remaining stays
+**16%**; the issue is open.

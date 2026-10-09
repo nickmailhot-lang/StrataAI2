@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -17,8 +18,7 @@ for (const width of [1280, 390]) {
         const credentials = { email: index ? peerEmail : `activity-owner-${width}-${Date.now()}@example.test`,
           password: 'activity-browser-correct-horse', displayName: index ? 'Activity reader' : caption,
           locale: 'en-US', timezone: index ? 'Asia/Tokyo' : 'Pacific/Honolulu' };
-        expect((await client.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
-        expect((await client.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+        await registerVerifiedAccountFixture(client.request, credentials);
       }
       const member = (await (await peer.request.get('/me')).json()).id;
       const orgResult = await context.request.post('/organizations', { headers, data: { name: 'Activity Organization' } });

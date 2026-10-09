@@ -85,3 +85,24 @@ guard (59 pass / three fail) and pass after strengthening (62/62). Browser
 TypeScript, workflow syntax and all 320 cases in four intact-file shards pass.
 See the [Organization acceptance map](prd-03-acceptance.md#strict-verified-account-departure-and-continuity)
 for native execution evidence and remaining release requirements.
+
+## Strict Board management prerequisite
+
+The notification group now runs all eight Board-management/consumer files under
+strict fixture verification after Organization departure and before the existing
+watch/notification producers. Its eighteen cases cover persisted workflow,
+metadata, copy, lifecycle, archived-account recovery, personal stars, activity
+history and the separately bounded stored-background client contract. Both
+actual hosts must report verified-email enforcement. The phase retains normal
+rate pacing, all original case deadlines and retry policy, and selects every
+case in those files without filtering. Stored-background publication/PNG replies
+remain simulated in that client file; real storage/Worker contracts retain their
+independent mandatory gates.
+
+The registry contains 112 named steps, preserving all previous 111 and the
+unchanged seven isolated matrix executions. Three new omission checks remove
+copy cases, disable fixture verification or omit Worker policy verification:
+the previous guard accepts them (62 pass / three fail), while the strengthened
+suite passes all 65 checks. Browser TypeScript, workflow syntax and the unfiltered
+320-case/124-file complete four-shard coverage pass. See the
+[PRD-04 scope and pending execution](prd-04-acceptance.md#strict-verified-account-board-management-phase).

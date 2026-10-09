@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -9,16 +10,14 @@ for (const width of [1280, 390]) {
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `board-star-${width}-${Date.now()}@example.test`, password: 'star-correct-horse-battery', displayName: 'Star owner',
       locale: 'en-US', timezone: 'Pacific/Honolulu' };
-    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    await registerVerifiedAccountFixture(context.request, account);
     const organization = await context.request.post('/organizations', { headers, data: { name: 'Personal star browser fixture' } });
     expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
     const created = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Independent stars', visibility: 'PUBLIC' } });
     expect(created.status()).toBe(201); const board = await created.json();
     const outsider = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 844 } });
     const otherAccount = { ...account, email: `board-star-other-${width}-${Date.now()}@example.test`, displayName: 'Other star account', timezone: 'Asia/Tokyo' };
-    expect((await outsider.request.post('/auth/register', { headers, data: otherAccount })).status()).toBe(201);
-    expect((await outsider.request.post('/auth/login', { headers, data: otherAccount })).status()).toBe(200);
+    await registerVerifiedAccountFixture(outsider.request, otherAccount);
     const restoreWorker = scopedBoardWorker(org);
     try {
       await waitForBoardDelivery(context.request, board.id);

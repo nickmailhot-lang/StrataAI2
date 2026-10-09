@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from "./releaseTest";
 
 for (const viewport of [
@@ -24,16 +25,7 @@ for (const viewport of [
     const email = `board-browser-${Date.now()}@example.test`;
     const password = "board-browser-correct-horse-battery";
     const headers = { "X-StrataAI-Request": "1" };
-    const registration = await context.request.post("/auth/register", {
-      headers,
-      data: { email, password, displayName: "Board browser" },
-    });
-    expect(registration.ok()).toBeTruthy();
-    const login = await context.request.post("/auth/login", {
-      headers,
-      data: { email, password },
-    });
-    expect(login.ok()).toBeTruthy();
+    await registerVerifiedAccountFixture(context.request, { email, password, displayName: "Board browser" });
     await page.goto("/app");
     await expect(
       page.getByText("You have no organizations yet. Create one to begin."),

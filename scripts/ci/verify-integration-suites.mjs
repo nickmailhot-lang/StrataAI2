@@ -64,6 +64,14 @@ export function verifyIntegrationSuites(workflow, registry) {
     ...['api', 'worker'].map(host => `test "$(docker compose -f compose.release.yml exec -T ${host} printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true`),
     'npx playwright test tests/browser/organization-departure.spec.ts tests/browser/organization-departure-account.spec.ts', '',
   ].join('\n'), 'Complete native departure and account replacement require verified admission in both hosts');
+  const strictBoards = job.steps.find(step => step.name === 'Strict verified-account Board management and personal preferences');
+  assert.deepEqual(owners(strictBoards), ['browser-notifications']);
+  assert.deepEqual(strictBoards.env, { STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1', STRATAAI_E2E_RATE_PACING: '1' });
+  assert.equal(strictBoards.run, [
+    'set -euo pipefail',
+    ...['api', 'worker'].map(host => `test "$(docker compose -f compose.release.yml exec -T ${host} printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true`),
+    'npx playwright test tests/browser/board.spec.ts tests/browser/board-metadata.spec.ts tests/browser/board-copy.spec.ts tests/browser/board-lifecycle.spec.ts tests/browser/board-archive-account.spec.ts tests/browser/board-star.spec.ts tests/browser/activity-history.spec.ts tests/browser/board-background-client.spec.ts', '',
+  ].join('\n'), 'Complete native Board management requires verified admission in both hosts');
   const browserCoverage = jobs['web-quality'].steps.find(step => step.name === 'Verify complete browser shard coverage');
   assert.equal(browserCoverage?.run, 'node --test tests/browser-shards.test.mjs\nnode scripts/ci/verify-browser-shards.mjs\n');
   assert.equal(browserCoverage.if, undefined);
@@ -228,6 +236,8 @@ export function verifyIntegrationSuites(workflow, registry) {
       precedes('Identity mail against exact API/Worker images and restricted database role', 'Strict verified-account watch producers through native private inboxes');
       precedes('Desktop and mobile accessible keyboard verification/recovery through Worker delivery', 'Strict verified-account Organization departure and account continuity');
       precedes('Strict verified-account Organization departure and account continuity', 'Strict verified-account watch producers through native private inboxes');
+      precedes('Strict verified-account Organization departure and account continuity', 'Strict verified-account Board management and personal preferences');
+      precedes('Strict verified-account Board management and personal preferences', 'Strict verified-account watch producers through native private inboxes');
     }
     if (suite === 'browser-full') {
       precedes('Prepare isolated identity mail transport and ephemeral signing keys', 'Restore isolated unverified-email account fixture for profile browser tests');

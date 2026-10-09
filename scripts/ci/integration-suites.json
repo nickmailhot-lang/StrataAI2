@@ -284,6 +284,9 @@
   "Strict verified-account Organization departure and account continuity": [
     "browser-notifications"
   ],
+  "Strict verified-account Board management and personal preferences": [
+    "browser-notifications"
+  ],
   "Strict verified-account watch producers through native private inboxes": [
     "browser-notifications"
   ],

@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 
@@ -6,9 +7,8 @@ for (const width of [1280, 390]) for (const deleting of [false, true]) {
     test.setTimeout(90_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `archive-account-${deleting}-${width}-${Date.now()}@example.test`, password: 'archive-account-correct-horse', displayName: 'Archive reviewer' };
-    const registered = await context.request.post('/auth/register', { headers, data: account });
-    expect(registered.status()).toBe(201); const actor = (await registered.json()).user.id;
-    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    const registered = await registerVerifiedAccountFixture(context.request, account);
+    const actor = registered.user.id;
     const organization = await context.request.post('/organizations', { headers, data: { name: 'Archive account fixture' } });
     expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
     const created = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Reviewed archive Board', visibility: 'PRIVATE' } });

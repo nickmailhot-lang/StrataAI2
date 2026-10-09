@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -10,8 +11,7 @@ for (const width of [1280, 390]) {
     test.setTimeout(150_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `board-lifecycle-${width}-${Date.now()}@example.test`, password: 'lifecycle-correct-horse-battery', displayName: 'Lifecycle administrator' };
-    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    await registerVerifiedAccountFixture(context.request, account);
     const actor = (await (await context.request.get('/me')).json()).id;
     const orgReply = await context.request.post('/organizations', { headers, data: { name: 'Board lifecycle fixture' } });
     expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;

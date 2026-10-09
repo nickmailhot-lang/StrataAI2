@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
@@ -12,8 +13,7 @@ for (const width of [1280, 390]) {
     test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
     const headers = { 'X-StrataAI-Request': '1' };
     const credentials = { email: `background-client-${width}-${Date.now()}@example.test`, password: 'background-client-correct-horse', displayName: 'Background owner' };
-    expect((await context.request.post('/auth/register', { headers, data: credentials })).status()).toBe(201);
-    expect((await context.request.post('/auth/login', { headers, data: credentials })).status()).toBe(200);
+    await registerVerifiedAccountFixture(context.request, credentials);
     const org = (await (await context.request.post('/organizations', { headers, data: { name: 'Background client Organization' } })).json()).organization.id;
     const created = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Background Board', visibility: 'PUBLIC' } });
     expect(created.status()).toBe(201); const original = await created.json(); const board = original.id;

@@ -10,10 +10,13 @@ const integration = value => value.jobs['container-integration'];
 const step = (value, name) => integration(value).steps.find(entry => entry.name === name);
 
 test('every mandatory check has an owner and every group uses retained images', () => {
-  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 111 });
+  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 112 });
 });
 
 const mutations = [
+  ['strict Board copy scenarios omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/board-copy.spec.ts', ''); }],
+  ['strict Board fixture verification disabled', value => { delete step(value, 'Strict verified-account Board management and personal preferences').env.STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS; }],
+  ['strict Board Worker policy check omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.split('\n').filter(line => !line.includes('exec -T worker printenv')).join('\n'); }],
   ['strict departure account-replacement cases omitted', value => { const entry = step(value, 'Strict verified-account Organization departure and account continuity'); entry.run = entry.run.replace(' tests/browser/organization-departure-account.spec.ts', ''); }],
   ['strict departure fixture verification disabled', value => { delete step(value, 'Strict verified-account Organization departure and account continuity').env.STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS; }],
   ['strict departure Worker policy check omitted', value => { const entry = step(value, 'Strict verified-account Organization departure and account continuity'); entry.run = entry.run.split('\n').filter(line => !line.includes('exec -T worker printenv')).join('\n'); }],

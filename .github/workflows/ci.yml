@@ -1052,6 +1052,17 @@ jobs:
           test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
           npx playwright test tests/browser/organization-departure.spec.ts tests/browser/organization-departure-account.spec.ts
 
+      - name: Strict verified-account Board management and personal preferences
+        if: (matrix.suite == 'browser-notifications')
+        env:
+          STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: |
+          set -euo pipefail
+          test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
+          npx playwright test tests/browser/board.spec.ts tests/browser/board-metadata.spec.ts tests/browser/board-copy.spec.ts tests/browser/board-lifecycle.spec.ts tests/browser/board-archive-account.spec.ts tests/browser/board-star.spec.ts tests/browser/activity-history.spec.ts tests/browser/board-background-client.spec.ts
+
       - name: Strict verified-account watch producers through native private inboxes
         if: (matrix.suite == 'browser-notifications')
         env:
