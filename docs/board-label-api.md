@@ -304,3 +304,24 @@ trace's missing root Board-label DELETE remains an independent unresolved
 activation investigation. No speculative product notice change is made.
 Current immutable/full CI and complete PRD acceptance still govern closure.
 Estimated PRD-10 work remaining stays **35%** (planning estimate).
+
+
+## Strict label execution retains a phone failure
+
+The complete strict label invocation finishes with one desktop pass and one
+phone failure in 2.0 minutes, with no skips or flaky cases. Both now complete
+verified-account admission. Phone fails the original Clear-filter keyword
+assertion: expected empty, actual `absent`. The trace records enabled/focused
+Clear admission and one Enter, but no actual `change=clear` request; the three
+Apply acknowledgments remain. This is a dispatch/admission investigation, not
+proof of successful Clear losing its result. Owned containers/database were
+removed. The strict fixture correction is validated at setup scope only;
+complete native acceptance is still failing. Estimated PRD-10 work remaining
+stays **35%**.
+
+The still-running combined 28-case phase also reproduces the phone peer-history
+50-row assertion failure after explicit opening focus admission. Protected
+activity reads return real 200 responses; one peer read takes about 4.9 seconds.
+Exact recovery/parent-generation timing remains under investigation. The earlier
+scoped two-case pass does not establish resolution. Estimated PRD-15 work
+remaining stays **36%**; current immutable/full CI remains required.
