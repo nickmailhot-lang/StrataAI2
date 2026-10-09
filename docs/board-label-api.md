@@ -325,3 +325,22 @@ activity reads return real 200 responses; one peer read takes about 4.9 seconds.
 Exact recovery/parent-generation timing remains under investigation. The earlier
 scoped two-case pass does not establish resolution. Estimated PRD-15 work
 remaining stays **36%**; current immutable/full CI remains required.
+
+
+## Passive native keyboard-delivery diagnostic
+
+An isolated copy of both complete label scenarios adds only passive fixed-label
+focus/key/click observations. It preserves the original assertions, deadlines
+and retry policy. Both diagnostic cases fail (zero skips/flaky cases); owned
+containers/database are removed. Desktop Clear is enabled and focused, but the
+subsequent Enter arrives at another element, with no Clear click. Phone Clear
+receives keydown and click before a later failure. This distinguishes keyboard
+delivery from lost-result claims; it does not establish the exact cause.
+
+Installed Playwright source shows `ElementHandle._press` performs another
+`_focus` before keyboard delivery, even after the fixture's explicit focus
+admission. A separate isolated comparison now sends one page-level keyboard
+activation after the unchanged admission checks. Repository helpers and product
+controls remain unchanged while that comparison and the combined Board phase
+run. No successful dispatch, root-label deletion or complete acceptance is
+claimed. Estimated PRD-10 work remaining stays **35%**.
