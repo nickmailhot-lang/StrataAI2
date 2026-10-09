@@ -58,7 +58,12 @@ internal static class InvitationAuditMetadataContract
         }
         async Task Check(InvitationRecord row)
         {
-            await using var query=new NpgsqlCommand("SELECT created_at=@created AND updated_at=@updated AND version=@version FROM invitations WHERE id=@id AND tenant_id=@tenant;",admin);
+            await using var query=new NpgsqlCommand("""
+                SELECT i.created_at=@created AND i.updated_at=@updated AND i.version=@version
+                  AND r.created_at=i.created_at AND r.updated_at=i.updated_at
+                FROM invitations i JOIN invitation_routes r ON r.invitation_id=i.id AND r.tenant_id=i.tenant_id AND r.token_hash=i.token_hash
+                WHERE i.id=@id AND i.tenant_id=@tenant;
+                """,admin);
             query.Parameters.AddWithValue("id",row.Id);query.Parameters.AddWithValue("tenant",tenant);
             query.Parameters.AddWithValue("created",row.CreatedAt);query.Parameters.AddWithValue("updated",row.UpdatedAt);
             query.Parameters.AddWithValue("version",row.Version);Require(await query.ExecuteScalarAsync(ct) is true);
@@ -70,6 +75,20 @@ internal static class InvitationAuditMetadataContract
         var first=await Owned(async()=>{var row=await store.CreateAsync(New(),ct);
             await store.SaveCreationReplayAsync(tenant,owner,key,fingerprint,row.Id,ct);return row;});
         Require(first.Version==1 && first.UpdatedAt==first.CreatedAt);await Check(first);
+        // Recipient-visible Organization labels are publication snapshots.
+        // A later parent rename must not invent an invitation mutation clock.
+        await using(var rename=new NpgsqlCommand("""
+            WITH renamed AS (
+              UPDATE organizations SET name='Invitation route rename fixture',updated_at=clock_timestamp(),version=version+1
+              WHERE id=@tenant RETURNING id,name)
+            SELECT o.name<>r.organization_name AND r.created_at=@created AND r.updated_at=@updated
+            FROM renamed o JOIN invitation_routes r ON r.tenant_id=o.id WHERE r.invitation_id=@id;
+            """,admin))
+        {
+            rename.Parameters.AddWithValue("tenant",tenant);rename.Parameters.AddWithValue("id",first.Id);
+            rename.Parameters.AddWithValue("created",first.CreatedAt);rename.Parameters.AddWithValue("updated",first.UpdatedAt);
+            Require(await rename.ExecuteScalarAsync(ct) is true);
+        }
         Require((await store.FindActiveByTokenHashAsync(first.TokenHash,DateTimeOffset.UtcNow,ct))==first);
         Require((await store.FindActiveByIdForEmailAsync(first.Id,recipient,email.ToUpperInvariant(),DateTimeOffset.UtcNow,ct))==first);
         var replay=await Owned(()=>store.FindCreationReplayAsync(tenant,owner,key,ct));
@@ -91,6 +110,7 @@ internal static class InvitationAuditMetadataContract
             Require(await store.RevokeAsync(tenant,next.Id,DateTimeOffset.UtcNow,ct));
             return OrganizationOperation<bool>.Failure("fixture_refusal");},ct);
         Require(!refused.Succeeded && await Owned(()=>store.FindByIdAsync(tenant,next.Id,ct))==before);
+        await Check(before!);
         Require(await Owned(()=>store.RevokeAsync(tenant,next.Id,DateTimeOffset.UtcNow,ct)));
         var revoked=await Owned(()=>store.FindByIdAsync(tenant,next.Id,ct));Require(revoked is {Version:2});await Check(revoked!);
         Require(!await Owned(()=>store.RevokeAsync(tenant,next.Id,DateTimeOffset.UtcNow,ct)));

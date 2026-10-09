@@ -89,3 +89,40 @@ The locked Release build, complete migration gate through 118 and restricted
 persistence/full required ledger readiness contracts pass. Fixture-only
 migration numbers are now 119–121. Current immutable-image CI and deployed
 upgrade proof remain required.
+
+## Invitation routing clocks
+
+[Migration 119](../../db/migrations/119_invitation_route_clocks.sql) adds
+creation/update clocks to invitation routes from the matching canonical
+invitation identity, Organization and token hash. Migration 099 already owns
+canonical invitation revision clocks. The current synchronization writer is
+`sync_invitation_route` from migration 025; it updates invitation state but
+retains the Organization-name publication snapshot introduced in migration 016.
+Organization renames do not write this route or create an invitation mutation.
+
+The historical backfill locks canonical invitations before their projections.
+It copies persisted clock facts, preserving every previous route field. An
+unmatched source or non-finite/contradictory clock refuses the entire upgrade.
+The BEFORE guard maintains canonical clocks under caller tenant RLS, retains
+42501 for discovery-only writes and rejects invented explicit clock values with
+23514. No runtime grant or SECURITY DEFINER lookup is added. Startup requires
+ledger 119; public routing payloads and bearer/recipient semantics are unchanged.
+
+The complete local migration gate passes through 119: an intentionally orphaned
+route refuses the upgrade with the whole route fingerprint unchanged and both
+new columns and ledger absent, followed by successful repair/repeat application.
+All historical non-clock fields and source clocks are compared, and explicit
+clock replacement and no-op stability are checked in a rolled-back transaction.
+All prior migration, clock, serialization and failure/unrecorded assertions
+remain. Fixture-only migration numbers advance to 120–122.
+
+The restricted invitation metadata contract now compares route clocks with
+canonical creation/acceptance/revocation, refused repeats and owning rollback.
+An administrative fixture rename separately verifies that the retained
+Organization label and invitation clocks do not change. Current compiled-source
+execution passes this expanded contract, restricted authority/readiness and all
+five route types' discovery-write denial checks. The locked Release
+build passes with zero warnings/errors, as do 179 integration/build metadata
+source checks. Current immutable-image CI/deployed verification still governs
+acceptance. Other mutable operational records and recipient revision-counter
+historical delivery clocks remain in the foundation audit.

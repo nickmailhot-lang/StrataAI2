@@ -49,7 +49,7 @@ of this new catalog guard is still required before treating it as release eviden
 ## Runtime migration readiness
 
 Production connections require every named migration through
-`118_entity_route_clock_admission`. The readiness query checks for missing
+`119_invitation_route_clocks`. The readiness query checks for missing
 required ledger entries directly, avoiding a separately maintained numeric total.
 Extra later migrations do not substitute for a missing required entry.
 
@@ -120,3 +120,12 @@ forward repair changes no grants, routing reads or historical clocks. API and
 Worker additionally require ledger 118. The original real restricted routing
 security gate failed before this repair and passes afterward; all four clocked
 route types pass the extended mandatory denial checks.
+
+Migration 119 adds invitation-route clocks from the owning invitation's
+persisted creation/update facts, matching tenant, identity and token hash.
+The publication Organization-name snapshot is retained. Orphaned or invalid
+historical sources refuse the upgrade atomically; the full local migration
+gate proves unchanged history and absent columns/ledger on refusal, then
+successful repair/repeat. API and Worker require ledger 119. See the
+[invitation-route clock record](entity-route-clocks.md#invitation-routing-clocks)
+for writer ownership, runtime metadata checks and remaining release scope.

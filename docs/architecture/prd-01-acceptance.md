@@ -110,6 +110,15 @@ The original gate, full migration gate and restricted ledger-readiness contracts
 pass. Extended denial checks pass for all four clocked route types; current
 immutable-image/deployed proof remains required.
 
+[Invitation routing clocks](entity-route-clocks.md#invitation-routing-clocks)
+adds canonical invitation creation/update facts in migration 119, retaining
+the historical publication Organization label. The local full upgrade gate
+passes orphan-source refusal/rollback, exact historical clocks/body, repeated
+application, no-op and tamper checks. Expanded actual restricted
+creation/acceptance/revocation/rollback and discovery-denial verification passes,
+including unchanged invitation clocks/publication label after a fixture parent
+rename. Other mutable operational history and current release proof remain.
+
 The [recipient page/counter audit](invitation-recipient-authority.md#page-lifecycle-clocks-and-remaining-counter-audit)
 adds explicit managed page creation/update clocks in migration 116 from the
 recorded owning job and first completion. Its complete local migration gate

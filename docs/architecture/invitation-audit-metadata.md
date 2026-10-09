@@ -59,3 +59,12 @@ accepted stored-row return, revocation, refused repeats and rollback. Clean/repe
 forward upgrade, serialized migration runners and failure rollback also pass.
 This establishes the mandatory current-source database gate; the separate
 immutable-image HTTP/browser/Worker and required release gates still govern closure.
+
+The [route clock extension](entity-route-clocks.md#invitation-routing-clocks)
+in migration 119 now projects these canonical clocks into invitation routing.
+The expanded real restricted metadata contract passes creation, acceptance,
+revocation, refused repeats and owning rollback with exact route/canonical
+clock equality. A fixture Organization rename preserves the retained
+publication label and both invitation clocks. Complete current required-ledger
+readiness, the full local migration gate and all five routing discovery-write
+denial cases pass; immutable-image release/deployed upgrade proof remains.
