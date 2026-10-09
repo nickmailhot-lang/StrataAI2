@@ -452,3 +452,37 @@ assertions remain; all 69 verifier guards pass. See the
 [permission acceptance scope](prd-05-acceptance.md#strict-native-visibility-and-member-administration).
 The complete permission invocation and separate eighteen-case management
 post-focus-repair invocation remain pending; no combined 28-case pass is claimed.
+
+## Complete post-archive-focus native management result
+
+The complete eighteen-case strict management rerun passes in 14.2 minutes, with
+zero skips/retries/flaky cases, using the frozen web output containing archive
+focus ownership repair, current compiled strict Production API/separate Worker
+and restricted schema-114 PostgreSQL 17/pgvector. All original source/receipt,
+concurrency, current disclosure, keyboard/focus/mobile and accessibility checks
+remain. The earlier 17/18 failure stays recorded above. Owned containers and
+database were removed. Two background client cases still simulate publication
+and PNG delivery; genuine provider gates retain their separate evidence scope.
+
+The additional five genuine directory cases pass in 3.8 minutes, and the five
+native visibility/member/live-administrator cases pass in 3.5 minutes, separately
+with zero skips/retries/flaky cases and cleanup complete. These are three scoped
+invocations, not a single combined 28-case pass or immutable-image CI success.
+
+## Copy dialog closing-focus ownership
+
+A regression using the real MUI copy dialog reproduces its exit callback moving
+focus from an already chosen external link to Copy Board (13 existing passes /
+one new failure). The copy dialog now checks ownership before restoring focus,
+retaining its closing paper across unmount. Its own closing descendants still
+return to the opener normally; an external destination retains focus. A first
+repair withheld normal copied-link return focus, and the existing test caught
+that error. The corrected repair passes all 26 copy/archive/focus tests,
+including normal return focus, with TypeScript, targeted lint and a fresh web
+build. Original acknowledgment, account/role admission and recovery are unchanged.
+
+Unchanged desktop/phone copy verification and a fresh complete 28-case strict
+phase are running against the new web output; their results are not certified.
+The completed eighteen-case run above predates this copy-focus change. Current
+immutable/full CI and remaining full-PRD acceptance still govern closure.
+Estimated PRD-04 work remaining stays **16%**.

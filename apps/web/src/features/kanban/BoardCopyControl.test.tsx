@@ -162,3 +162,16 @@ it('transmits only fixed copy observations during lost-response recovery', async
   for (const event of events) expect(Object.keys(event).every(key => ['action','kind','count','durationMs'].includes(key))).toBe(true);
   for (const value of [org,id,user,target,'Planning','Private text','Secret diagnostic']) expect(payloads.join('')).not.toContain(value);
 });
+
+it('preserves a chosen destination during the copy dialog exit transition', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : snapshot)));
+  render(<MemoryRouter><a href="/another">Chosen destination</a><BoardCopyControl {...props} /></MemoryRouter>);
+  const destination = screen.getByRole('link', { name: 'Chosen destination' });
+  await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel Board copy' }));
+  destination.focus();
+  expect(destination).toHaveFocus();
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(destination).toHaveFocus();
+  expect(props.onReturnFocus).not.toHaveBeenCalled();
+});

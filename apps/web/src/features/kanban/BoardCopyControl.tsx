@@ -5,6 +5,7 @@ import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot } fr
 import { isNotificationProfile, notificationInstant, notificationUuid } from '../notifications/notificationInbox';
 import { supportedBoardBackground } from './boardBackground';
 import { activityEvent, activityResult } from './activityTelemetry';
+import { ownsRecoveryFocus } from './focusRecovery';
 type Review = { id: string; organizationId: string; name: string; description: string | null;
   version: number; backgroundType: 'COLOR' | 'IMAGE'; backgroundValue: string | null; userId: string };
 type Intent = { review: Review; name: string; key: string };
@@ -46,6 +47,7 @@ function CopyDialog(props: Props) {
   const mounted = useRef(false); const pending = useRef<AbortController | undefined>(undefined); const entry = useRef<HTMLButtonElement>(null);
   const retry = useRef<HTMLButtonElement>(null); const copiedLink = useRef<HTMLAnchorElement>(null); const verify = useRef<HTMLButtonElement>(null);
   const restore = useRef(false);
+  const focusOwner = useRef<HTMLDivElement | null>(null);
   const changed = !!review && !intent && !copy && (board.version !== review.version || board.name !== review.name
     || board.description !== review.description || board.backgroundType !== review.backgroundType || board.backgroundValue !== review.backgroundValue);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort();
@@ -57,6 +59,10 @@ function CopyDialog(props: Props) {
   }
   useEffect(() => { if (!admitted && (open || intent || copy || pending.current)) retire('Board copying is unavailable.'); }, [admitted]);
   function returnFocus() {
+    if (open || !mounted.current || !(ownsRecoveryFocus(document.activeElement, focusOwner.current)
+      || focusOwner.current?.contains(document.activeElement))) {
+      restore.current = false; return;
+    }
     if (entry.current && !entry.current.disabled) entry.current.focus({ preventScroll: true });
     else { restore.current = true; callbacks.current.onReturnFocus(); }
   }
@@ -152,7 +158,10 @@ function CopyDialog(props: Props) {
   return <>
     {available && <Button ref={entry} disabled={props.disabled || busy || !!intent} onClick={() => { activityEvent('board_copy_disclosure','open'); void loadReview(); }}>Copy Board</Button>}
     {!open && notice && <Typography role="status">{notice}</Typography>}
-    <Dialog open={open} onClose={close} disableRestoreFocus fullWidth maxWidth="sm" slotProps={{ transition: { onExited: returnFocus } }}>
+    <Dialog open={open} onClose={close} disableRestoreFocus fullWidth maxWidth="sm" slotProps={{
+      paper: { ref: (node: HTMLDivElement | null) => { if (node) focusOwner.current = node; } },
+      transition: { onExited: returnFocus },
+    }}>
       <DialogTitle>Copy Board</DialogTitle><DialogContent><Stack spacing={2} sx={{ pt: 1 }}>
         <Typography>The new Board is private and uses the source contents at creation. Lists, Cards, labels and checklist work receive new identities, including archived items. Completion resets. Membership, history, personal preferences and attachments are excluded.</Typography>
         {!copy && <TextField autoFocus label="Copied Board name" value={name} disabled={busy || !!intent} onChange={e => setName(e.target.value)} slotProps={{ htmlInput: { maxLength: 160 } }} />}

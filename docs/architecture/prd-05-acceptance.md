@@ -418,3 +418,19 @@ The complete five-case local strict permission invocation is running, not a
 confirmed pass. Current immutable/full CI, remaining operation/lifecycle/role
 inventory and the full PRD acceptance still govern closure. Estimated PRD-05
 work remaining stays **15%** (planning estimate).
+
+## Complete strict native permission execution
+
+All five visibility/member/live-administrator cases pass in one 3.5-minute
+strict invocation, with zero skips/retries/flaky cases. Both viewport member
+consent/conflict/removal and visibility/public read-only scenarios, plus the
+two-administrator genuine live update/reconnect case retain their original
+assertions, deadlines and retry policy. Runtime: current compiled strict
+Production API/separate Worker, rebuilt archive-focus web assets and restricted
+schema-114 PostgreSQL 17/pgvector. Owned containers/database were removed.
+
+This completes that five-case scoped local invocation. It predates the subsequent
+copy-dialog exit-focus change and is not a combined 28-case or current immutable
+release result. A new complete 28-case phase is running against the new web;
+current immutable/full CI, remaining permission inventory and full acceptance
+remain required. Estimated PRD-05 work remaining stays **15%**.
