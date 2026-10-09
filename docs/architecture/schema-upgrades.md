@@ -155,3 +155,15 @@ refuses incomplete journal provenance, and preserves the protected recipient
 lookup RLS. Its event refresh/deferred final-state guard adds no runtime write
 grant. API/Worker require ledger 123. See the [recipient stream clock record](invitation-recipient-stream-clocks.md)
 for populated upgrade, tamper/refusal, canonical revision and runtime scope.
+
+Migration 124 adds Organization deletion checkpoint creation time from
+the retained accepted request, preserving existing update history and refusing
+contradictory legacy clocks. API/Worker readiness requires its ledger. See the
+[checkpoint clock record](organization-deletion-progress-clocks.md) for source
+ownership, guards and completed whole migration/restricted deletion verification.
+
+Migration 125 resolves a Card's unique identity before scope filtering in
+the canonical route clock guard, retaining caller RLS and the prior admission
+refusals. API/Worker readiness requires ledger 125. See the
+[lookup performance record](card-route-clock-lookup.md) for observed plans and
+completed full migration/deletion/routing verification and remaining release scope.

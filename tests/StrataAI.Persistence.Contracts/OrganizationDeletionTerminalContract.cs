@@ -65,14 +65,16 @@ internal static class OrganizationDeletionTerminalContract
                 SELECT o.status,o.version,p.phase,
                  (SELECT count(*) FROM organization_lifecycle_events WHERE tenant_id=@tenant),
                  (SELECT count(*) FROM audit_events WHERE tenant_id=@tenant AND event_type='ORGANIZATION_DELETED'),
-                 (SELECT count(*) FROM background_jobs WHERE tenant_id=@tenant AND job_type='ORGANIZATION_LIFECYCLE_EVENT_READY')
-                FROM organizations o JOIN organization_deletion_progress p ON p.tenant_id=o.id WHERE o.id=@tenant;
+                 (SELECT count(*) FROM background_jobs WHERE tenant_id=@tenant AND job_type='ORGANIZATION_LIFECYCLE_EVENT_READY'),
+                 p.created_at=r.created_at AND isfinite(p.created_at) AND isfinite(p.updated_at) AND p.updated_at>=p.created_at
+                FROM organizations o JOIN organization_deletion_progress p ON p.tenant_id=o.id
+                 JOIN organization_deletion_requests r ON r.tenant_id=p.tenant_id AND r.request_id=p.request_id WHERE o.id=@tenant;
                 """, admin);
             command.Parameters.AddWithValue("tenant", tenant);
             await using var rows = await command.ExecuteReaderAsync(ct);
             Require(await rows.ReadAsync(ct) && rows.GetString(0) == status && rows.GetInt64(1) == 2 + count
                 && rows.GetString(2) == (count == 0 ? "FINALIZE" : "COMPLETE")
-                && rows.GetInt64(3) == count && rows.GetInt64(4) == count && rows.GetInt64(5) == count,
+                && rows.GetInt64(3) == count && rows.GetInt64(4) == count && rows.GetInt64(5) == count && rows.GetBoolean(6),
                 "Terminal state, checkpoint, audit, event and delivery were not atomic.");
         }
         Require(!await Finish(worker, tenant, claim.LeaseId, request), "Non-final stage completed.");
@@ -96,6 +98,9 @@ internal static class OrganizationDeletionTerminalContract
             UPDATE attachments SET lifecycle_state='ARCHIVED',archived_at=now(),updated_at=now(),version=version+1 WHERE id=@attachment;
             UPDATE attachments SET lifecycle_state='DELETED',deleted_by=@actor,deleted_at=now(),updated_at=now(),version=version+1 WHERE id=@attachment;
             """);
+        // A prior checkpoint can be ahead of wall time (for example after clock
+        // correction). Completion must preserve it, including after rollback.
+        await Admin("UPDATE organization_deletion_progress SET updated_at=GREATEST(updated_at,clock_timestamp()+interval '1 day') WHERE tenant_id=@tenant;");
         // Inject expiry after the last queue write, not merely before admission.
         await Admin($"""
             CREATE FUNCTION public.ci_terminal_expiry() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN

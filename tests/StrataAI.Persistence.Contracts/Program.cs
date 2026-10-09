@@ -78,6 +78,18 @@ if (args.Contains("--organization-creation-timestamps-only", StringComparer.Ordi
     await OrganizationCreationTimestampContract.RunAsync(admin,apiConnection,ct);
     return;
 }
+if (args.Contains("--organization-deletion-clocks-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionProgressContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionPublicationContract.RunAsync(admin,apiConnection,ct);
+    await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionCandidatesContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionPagesContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionScaleContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionDiscoveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    return;
+}
 if (args.Contains("--organization-deletion-pages-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);

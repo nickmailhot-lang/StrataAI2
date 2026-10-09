@@ -826,37 +826,61 @@ run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 123
 query "$(cat scripts/ci/recipient-stream-clocks-after-upgrade.sql)" >/dev/null
-cat > "$scratch/migrations/124_serialization_fixture.sql" <<'SQL'
+query "$(cat scripts/ci/deletion-progress-clocks-before-upgrade.sql)" >/dev/null
+cp db/migrations/124_organization_deletion_progress_clocks.sql "$scratch/migrations/"
+deletion_progress_before="$(query "SELECT md5(string_agg(to_jsonb(p)::text,',' ORDER BY tenant_id)) FROM organization_deletion_progress p;")"
+if run; then echo 'Contradictory deletion progress history was admitted'; exit 1; fi
+test "$deletion_progress_before" = "$(query "SELECT md5(string_agg(to_jsonb(p)::text,',' ORDER BY tenant_id)) FROM organization_deletion_progress p;")"
+test "$(query "SELECT count(*) FROM information_schema.columns WHERE table_name='organization_deletion_progress' AND column_name='created_at'")" = 0
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='124_organization_deletion_progress_clocks'")" = 0
+query "DELETE FROM organization_deletion_progress WHERE tenant_id='f2400000-0000-4000-8000-000000000020';" >/dev/null
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 124
+query "$(cat scripts/ci/deletion-progress-clocks-after-upgrade.sql)" >/dev/null
+query "CREATE TABLE entity_route_clock_upgrade_125_fixture(route_kind text,row_key uuid,body jsonb,PRIMARY KEY(route_kind,row_key));
+ INSERT INTO entity_route_clock_upgrade_125_fixture
+ SELECT 'board_routes',board_id,to_jsonb(r)-'created_at'-'updated_at' FROM board_routes r
+ UNION ALL SELECT 'list_routes',list_id,to_jsonb(r)-'created_at'-'updated_at' FROM list_routes r
+ UNION ALL SELECT 'card_routes',card_id,to_jsonb(r)-'created_at'-'updated_at' FROM card_routes r
+ UNION ALL SELECT 'label_routes',label_id,to_jsonb(r)-'created_at'-'updated_at' FROM label_routes r;" >/dev/null
+cp db/migrations/125_card_route_clock_identity_lookup.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 125
+route_clock_after_125="$(cat scripts/ci/entity-route-clocks-after-upgrade.sql)"
+query "${route_clock_after_125//entity_route_clock_upgrade_fixture/entity_route_clock_upgrade_125_fixture}" >/dev/null
+cat > "$scratch/migrations/126_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('124_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('126_serialization_fixture');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='124_serialization_fixture'")" = 1
-cat > "$scratch/migrations/125_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='126_serialization_fixture'")" = 1
+cat > "$scratch/migrations/127_failure_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('125_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('127_failure_fixture');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='125_failure_fixture'")" = 0
-rm "$scratch/migrations/125_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='127_failure_fixture'")" = 0
+rm "$scratch/migrations/127_failure_fixture.sql"
 run
-cat > "$scratch/migrations/126_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/128_unrecorded_fixture.sql" <<'SQL'
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='126_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/126_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='128_unrecorded_fixture'")" = 0
+rm "$scratch/migrations/128_unrecorded_fixture.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

@@ -225,6 +225,9 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Work event delivery clock audit and remaining provenance gap](architecture/work-event-clock-audit.md)
 - [Organization metadata stream clock provenance and guards](architecture/organization-metadata-stream-clocks.md)
 - [Invitation recipient stream clocks, provenance and privacy](architecture/invitation-recipient-stream-clocks.md)
+- [Organization deletion checkpoint clock repair (verification pending)](architecture/organization-deletion-progress-clocks.md)
+- [Card route clock identity lookup and large-graph verification](architecture/card-route-clock-lookup.md)
+- [Remaining mutable-clock candidates and source provenance](architecture/remaining-clock-candidates.md)
 
 ## Keeping this index current
 

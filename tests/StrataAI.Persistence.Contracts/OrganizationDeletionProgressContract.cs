@@ -43,6 +43,14 @@ internal static class OrganizationDeletionProgressContract
         }
         await using (var commit = await api.OpenTenantSessionAsync(tenant, ct))
         { await using var command = Query(commit, insert); await command.ExecuteNonQueryAsync(ct); await commit.CommitAsync(ct); }
+        await using (var clocks = new NpgsqlCommand("""
+            SELECT p.created_at=r.created_at AND isfinite(p.created_at) AND isfinite(p.updated_at) AND p.updated_at>=p.created_at
+            FROM organization_deletion_progress p JOIN organization_deletion_requests r USING(tenant_id,request_id) WHERE p.tenant_id=@tenant;
+            """, admin))
+        {
+            clocks.Parameters.AddWithValue("tenant", tenant);
+            if (await clocks.ExecuteScalarAsync(ct) is not true) throw new InvalidOperationException("Deletion progress lost its exact accepted-request creation clock.");
+        }
         foreach (var factory in new[] { api, worker })
         {
             await using (var own = await factory.OpenTenantSessionAsync(tenant, ct))

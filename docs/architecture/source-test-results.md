@@ -109,3 +109,19 @@ cases and assertion. Its controller waits for the full current deletion group
 to pass and remove its owned containers/credential files before starting;
 failure of that group leaves the API invocation unstarted. Queuing is not
 execution or passing evidence.
+
+The repaired deletion group subsequently times out again in its unchanged
+100,002-card candidate seed. Its owned containers and credential files are
+removed. The current schema-124 API controller exits on that prerequisite
+failure without starting the suite. The full checkout-layout API verification
+therefore remains unexecuted; the earlier 690/691 result remains retained.
+
+The subsequent complete schema-125 deletion group passes all seven original
+contracts, complete runtime readiness and exact checkpoint-clock checks. Its
+containers and credential files are independently confirmed absent. The fresh
+full **691-case current Linux API invocation has now started** with the
+successful schema-125 locked build and corrected checkout ancestry. It retains
+all original cases, source-root assertions and Linux private-staging coverage;
+there are no filters, retries or deadline increases. Its live controller is
+authoritative until a terminal result exists. Current API success and complete
+immutable-image CI are not yet proved.

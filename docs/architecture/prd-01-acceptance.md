@@ -208,6 +208,25 @@ nearest-rank p95, null release revision and independently verified cleanup.
 One local normal/capacity pass is not performance repeatability or full release
 acceptance.
 
+The [Card route clock identity lookup](card-route-clock-lookup.md) addresses
+observed growing-List scans inside the canonical clock read. The full original
+100,002-card deletion candidate fixture and routing isolation checks remain;
+current full verification is pending and no clock, permission or release
+acceptance is inferred from the plan diagnosis alone.
+
+That subsequent full schema-125 deletion verification now passes all seven
+original contracts and complete runtime readiness, including the original large
+candidate seed, full scale graph and restricted discovery. The extended whole
+migration gate and unchanged routing isolation gate pass. The linked record
+retains complete measurements and earlier failures; current immutable-image
+release acceptance remains separate.
+
+The [remaining candidate audit](remaining-clock-candidates.md) records a fresh
+schema-125 catalog and selected notification-counter, sweep-cursor and recipient
+authority writers. Its 52 physical-column candidates are not defect or closure
+counts. Missing historical provenance and unclassified candidates remain;
+no clock semantics are invented or current runtime checks claimed by that audit.
+
 The subsequent [complete responsive Board phase](../navigation-observations.md#complete-schema-119-responsive-board-phase-passed)
 passes **32/32 cases across fourteen files**, including desktop, tablet and
 mobile document-width checks, with one attempt per case and independently
@@ -224,3 +243,10 @@ the complete current build-once release pipeline. Verify no known P0/P1 defects
 and sufficiently complete product behavior documentation. The declared PRD-02,
 03, 04, 06, 08 and 09 dependencies remain; cycle membership does not waive them.
 Estimated work remaining stays **34%** (planning estimate).
+
+The [Organization deletion checkpoint clock repair](organization-deletion-progress-clocks.md)
+addresses a confirmed missing creation column using its immutable accepted
+request. The complete migration gate, populated-history refusal and all seven
+original restricted deletion contracts now pass, including the future-checkpoint
+terminal regression. This proves the repair's local scope; complete mutable-clock
+coverage and current release acceptance remain outstanding.
