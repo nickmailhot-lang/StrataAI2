@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
@@ -13,8 +14,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       for (const [index, client] of [context, recipient].entries()) {
         const data = { email: index ? email : `board-member-owner-${viewport.width}-${Date.now()}@example.test`,
           password: 'browser-board-member-correct-horse', displayName: index ? 'Jordan participant' : 'Board owner' };
-        expect((await client.request.post('/auth/register', { headers, data })).status()).toBe(201);
-        expect((await client.request.post('/auth/login', { headers, data })).status()).toBe(200);
+        await registerVerifiedAccountFixture(client.request, data);
       }
       const organization = await context.request.post('/organizations', { headers, data: { name: 'Member consent' } });
       expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;

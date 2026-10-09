@@ -394,3 +394,27 @@ clock/identity/version checks pass for Card, List and Board watches. This is
 current compiled Production HTTP/restricted PostgreSQL evidence; browser input,
 private transport, provider, capacity and current immutable/full CI remain
 separate. Estimated PRD-05 work remaining stays **15%**; the issue stays open.
+
+## Strict native visibility and member administration
+
+The unchanged desktop visibility scenario fails immediate login under real
+verified-email enforcement (expected 200 / actual 403). Both visibility cases,
+both member-consent cases and the two-administrator live case now use the
+existing shared strict account fixture, proving pending-account refusal,
+verifying only a freshly registered disposable account and logging in normally.
+Ordinary unfiltered full-suite behavior is preserved without the strict flag.
+Production policy is unchanged; provider delivery remains separately tested.
+
+The mandatory Board phase now selects twelve complete files / 28 cases,
+retaining the previous 23 and adding all three permission files. Existing
+public read-only denial, reviewed consent/conflict, same-key recovery, current
+membership/role safeguards, genuine Worker events, two-client reconnect,
+keyboard/focus and mobile assertions retain their deadlines and retry policy.
+Three omission mutations fail against the previous verifier (66 pass / three
+fail); all 69 guards pass after strengthening. Browser TypeScript and workflow
+syntax pass; 112 named steps and seven immutable matrix executions remain.
+
+The complete five-case local strict permission invocation is running, not a
+confirmed pass. Current immutable/full CI, remaining operation/lifecycle/role
+inventory and the full PRD acceptance still govern closure. Estimated PRD-05
+work remaining stays **15%** (planning estimate).

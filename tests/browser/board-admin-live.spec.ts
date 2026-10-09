@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test, type Page, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -18,8 +19,7 @@ test('PRD-05 AC-PERM-05-03: two administrators recover member changes and cancel
     for (const [index, client] of [context, phone].entries()) {
       const data = { email: index ? email : `board-admin-owner-${Date.now()}@example.test`,
         password: 'board-admin-live-correct-horse', displayName: index ? 'Live administrator' : 'Live owner' };
-      expect((await client.request.post('/auth/register', { headers, data })).status()).toBe(201);
-      expect((await client.request.post('/auth/login', { headers, data })).status()).toBe(200);
+      await registerVerifiedAccountFixture(client.request, data);
     }
     const organization = await context.request.post('/organizations', { headers, data: { name: 'Live administration' } });
     expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;

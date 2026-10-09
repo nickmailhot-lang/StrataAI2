@@ -444,3 +444,11 @@ immutable-image command boundaries, not current browser rendering budgets or
 a green full release. The older notification job fails the already-corrected
 post-read clock expectation; remaining full browser shards and current CI are
 not certified successful. All current acceptance requirements remain in scope.
+
+The same mandatory Board phase now also includes the five PRD-05 native
+visibility/member/live-administrator cases (twelve full files / 28 cases), with
+all previous 23 intact. Strict admission and genuine permission/transport
+assertions remain; all 69 verifier guards pass. See the
+[permission acceptance scope](prd-05-acceptance.md#strict-native-visibility-and-member-administration).
+The complete permission invocation and separate eighteen-case management
+post-focus-repair invocation remain pending; no combined 28-case pass is claimed.

@@ -14,6 +14,9 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['strict Board visibility consent scenarios omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/board-visibility.spec.ts', ''); }],
+  ['strict Board member consent scenarios omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/board-members.spec.ts', ''); }],
+  ['strict Board administrator live scenarios omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/board-admin-live.spec.ts', ''); }],
   ['strict Board directory realtime scenarios omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/organization-board-live.spec.ts', ''); }],
   ['strict Board copy scenarios omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/board-copy.spec.ts', ''); }],
   ['strict Board fixture verification disabled', value => { delete step(value, 'Strict verified-account Board management and personal preferences').env.STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS; }],

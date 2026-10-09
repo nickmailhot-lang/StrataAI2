@@ -114,3 +114,11 @@ the genuine directory file; all 66 guard tests pass. Real source frames, Worker
 identity/reconnect and private audience withdrawal are independent of simulated
 background client replies. Native verification is pending; see the
 [strict directory evidence](prd-04-acceptance.md#strict-genuine-board-directory-realtime-coverage).
+
+The strict Board prerequisite additionally retains all five native visibility,
+member-consent and two-administrator live cases: twelve complete files / 28 cases.
+API/Worker verified-email policy checks and normal rate pacing remain required.
+Three negative guards reject omitting any permission file; all 69 guard tests
+pass. Named steps and matrix executions stay at 112 and seven. Native permission
+execution remains pending; see the
+[PRD-05 evidence](prd-05-acceptance.md#strict-native-visibility-and-member-administration).

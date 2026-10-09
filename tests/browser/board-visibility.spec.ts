@@ -1,3 +1,4 @@
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -9,8 +10,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     let restoreWorker = () => {};
     const headers = { 'X-StrataAI-Request': '1' };
     const data = { email: `visibility-owner-${viewport.width}-${Date.now()}@example.test`, password: 'browser-visibility-correct-horse', displayName: 'Visibility owner' };
-    expect((await context.request.post('/auth/register', { headers, data })).status()).toBe(201);
-    expect((await context.request.post('/auth/login', { headers, data })).status()).toBe(200);
+    await registerVerifiedAccountFixture(context.request, data);
     const organization = await context.request.post('/organizations', { headers, data: { name: 'Visibility consent' } });
     expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
     const created = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Visibility review', visibility: 'PRIVATE' } });
