@@ -143,3 +143,9 @@ lifecycle events from their retained creation/first-publication times.
 It preserves history guards, RLS, privileges and leased delivery fences;
 API and Worker require ledger 121. See the [event clock record](organization-event-clocks.md)
 for populated-upgrade, replay/rollback/tamper checks and remaining release scope.
+
+Migration 122 adds source-derived Organization metadata counter clocks and
+refuses missing/gapped journal history. Its event refresh and deferred guard
+preserve existing allocators while requiring retained source facts before
+commit. API and Worker require ledger 122. The [stream clock record](organization-metadata-stream-clocks.md)
+documents provenance, bounded source lookups and verification scope.

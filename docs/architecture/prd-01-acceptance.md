@@ -137,6 +137,11 @@ excluded from FOUND-FR-009.
 
 ## Executed evidence and closure boundary
 
+The [Organization metadata counter clock repair](organization-metadata-stream-clocks.md)
+derives clocks from retained journal facts and requires matching source history
+before commit. Its local migration/runtime verification is scoped separately
+from current immutable-image release and the full mutable-record audit.
+
 The [Work event delivery clock audit](work-event-clock-audit.md) identifies
 a remaining update-clock/provenance gap and verifies the original activity
 source/publish/reset contract on schema 121 with full required-ledger readiness.
