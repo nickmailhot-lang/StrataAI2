@@ -494,3 +494,16 @@ API/separate Worker, frozen original-key recovery web and restricted schema-114
 PostgreSQL17/pgvector were used. This scoped result does not establish exact
 intermittent cause, combined/current immutable success or the PostgreSQL
 post-wait/session race acceptance. Estimated PRD-15 remaining: **36%**.
+
+
+## Complete API source-suite result
+
+The full source API suite completes successfully in 43 minutes 15 seconds:
+691 total, 673 passed, zero failed, 18 skipped. All skips are the Linux-only
+controlled-download role/visibility matrix; this Windows result cannot certify
+those cases. It tests the current bounded activity-reader product, compiled
+before the later additional private-reference assertions; those added
+assertions separately pass in their fresh 11-case source invocation. This
+result and the complete two-case activity keyboard pass do not certify current
+immutable images, Linux-only cases or PostgreSQL post-wait/session races.
+Estimated PRD-15 remaining: **36%**.

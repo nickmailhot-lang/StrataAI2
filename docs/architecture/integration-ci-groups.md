@@ -396,3 +396,39 @@ API/separate Worker, frozen original-key recovery web and restricted schema-114
 PostgreSQL17/pgvector were used. This scoped result does not establish exact
 intermittent cause, combined/current immutable success or the PostgreSQL
 post-wait/session race acceptance. Estimated PRD-15 remaining: **36%**.
+
+
+## Combined strict Board result and single-key label Clear verification
+
+The complete 13-file/30-case strict invocation finishes with 27 passes and
+three failures in 23.4 minutes, zero skips/flaky cases, and removes its owned
+containers/database. Desktop history misses its original actor on Board Older;
+phone member recovery misses its uncertain-removal warning; phone labels retain
+the old keyword after Clear. Traces show no corresponding older Board request,
+member DELETE, or Clear command. This failing combined run predates the newer
+paging/member admission changes and expanded 14-file/31-case requirement.
+
+Label Clear now uses the existing enabled/focused admission followed by one
+page-level Enter, preserving exactly four filter writes and the original
+`change=clear` assertion. Shared keyboard helper, product behavior, other label
+commands and deadlines remain unchanged. Both complete strict label workflows
+pass in 112.2 seconds with zero skips/retries/flaky cases. Current compiled
+Production API/separate Worker, frozen original-key recovery web and restricted
+schema-114 PostgreSQL17/pgvector were used; owned fixtures were removed. Original
+lost-response key/body recovery, persistence/order/version, explicit root-label
+delete consent, actual Card association removal, focus and phone assertions
+remain. Exact intermittent cause and current immutable/full acceptance remain
+unproven. Estimated PRD-10 remaining: **35%**.
+
+
+## Complete API source-suite result
+
+The full source API suite completes successfully in 43 minutes 15 seconds:
+691 total, 673 passed, zero failed, 18 skipped. All skips are the Linux-only
+controlled-download role/visibility matrix; this Windows result cannot certify
+those cases. It tests the current bounded activity-reader product, compiled
+before the later additional private-reference assertions; those added
+assertions separately pass in their fresh 11-case source invocation. This
+result and the complete two-case activity keyboard pass do not certify current
+immutable images, Linux-only cases or PostgreSQL post-wait/session races.
+Estimated PRD-15 remaining: **36%**.

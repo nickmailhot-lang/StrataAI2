@@ -1,7 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { focusAdmittedControl, pressAdmittedAction } from './keyboardAdmission';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
 for (const width of [1280, 390]) {
@@ -166,7 +166,7 @@ for (const width of [1280, 390]) {
       await expect(filters.getByRole('combobox', { name: 'Match filters' })).toHaveText('Match ANY');
       expect(filterChanges).toHaveLength(3);
       const clearFilters = filters.getByRole('button', { name: 'Clear filters', exact: true });
-      await pressAdmittedAction(clearFilters);
+      await focusAdmittedControl(clearFilters); await page.keyboard.press('Enter');
       await expect(filters.getByLabel('Card keyword')).toHaveValue('');
       expect(filterChanges).toHaveLength(4); expect(new URL(filterChanges[3].url).searchParams.get('change')).toBe('clear');
       expect(filterChanges[3].key).not.toBe(filterChanges[2].key);

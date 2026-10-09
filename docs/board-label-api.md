@@ -411,3 +411,26 @@ in 124 intact files across four full shards. Workflow syntax validation passes.
 The already-running 30-case invocation predates this addition and cannot certify
 the expanded 31-case phase. Current immutable/full CI and complete acceptance
 remain required. Estimated PRD-10 work remaining: **35%**; PRD-16: **18%**.
+
+
+## Combined strict Board result and single-key label Clear verification
+
+The complete 13-file/30-case strict invocation finishes with 27 passes and
+three failures in 23.4 minutes, zero skips/flaky cases, and removes its owned
+containers/database. Desktop history misses its original actor on Board Older;
+phone member recovery misses its uncertain-removal warning; phone labels retain
+the old keyword after Clear. Traces show no corresponding older Board request,
+member DELETE, or Clear command. This failing combined run predates the newer
+paging/member admission changes and expanded 14-file/31-case requirement.
+
+Label Clear now uses the existing enabled/focused admission followed by one
+page-level Enter, preserving exactly four filter writes and the original
+`change=clear` assertion. Shared keyboard helper, product behavior, other label
+commands and deadlines remain unchanged. Both complete strict label workflows
+pass in 112.2 seconds with zero skips/retries/flaky cases. Current compiled
+Production API/separate Worker, frozen original-key recovery web and restricted
+schema-114 PostgreSQL17/pgvector were used; owned fixtures were removed. Original
+lost-response key/body recovery, persistence/order/version, explicit root-label
+delete consent, actual Card association removal, focus and phone assertions
+remain. Exact intermittent cause and current immutable/full acceptance remain
+unproven. Estimated PRD-10 remaining: **35%**.
