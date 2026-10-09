@@ -316,7 +316,28 @@ for (const { width, loseReply, rejected } of [
       const candidatesResponse = await context.request.get(`/cards/${card}/cover/candidates`); expect(candidatesResponse.status()).toBe(200);
       expect((await candidatesResponse.json()).items).toEqual([]);
       const coverResponse = await context.request.get(`/cards/${card}/cover`); expect(coverResponse.status()).toBe(200);
-      expect(await coverResponse.json()).toMatchObject({ cardVersion: 3, attachmentId: null, attachmentVersion: null });
+      const beforeCover = await coverResponse.json();
+      expect(beforeCover).toMatchObject({ cardVersion: 3, attachmentId: null, attachmentVersion: null });
+      const beforeSyncResponse = await context.request.get(`/boards/${board}/sync`); expect(beforeSyncResponse.status()).toBe(200);
+      const beforeSync = await beforeSyncResponse.json();
+      expect(beforeSync).toMatchObject({ pending: false, hasMore: false, resetRequired: false });
+      // UI exclusion is not authorization. Submit both the real Rejected
+      // revision and a forged published revision through the ordinary API.
+      for (const attachmentVersion of [2, 3]) {
+        const refused = await context.request.put(`/cards/${card}/cover`, {
+          headers: { ...headers, 'Idempotency-Key': randomUUID() },
+          data: { cardVersion: 3, attachmentId: uploaded.attachment.id, attachmentVersion, publicVisibilityConfirmed: false },
+        });
+        expect(refused.status()).toBe(404); expect(await refused.json()).toMatchObject({ code: 'card_not_found' });
+      }
+      const afterCoverResponse = await context.request.get(`/cards/${card}/cover`); expect(afterCoverResponse.status()).toBe(200);
+      expect(await afterCoverResponse.json()).toEqual(beforeCover);
+      const afterAttachmentResponse = await context.request.get(uploadPath); expect(afterAttachmentResponse.status()).toBe(200);
+      expect(await afterAttachmentResponse.json()).toEqual(current);
+      const afterSyncResponse = await context.request.get(`/boards/${board}/sync`); expect(afterSyncResponse.status()).toBe(200);
+      const afterSync = await afterSyncResponse.json();
+      expect(afterSync).toMatchObject({ cursor: beforeSync.cursor, pending: false, hasMore: false, resetRequired: false });
+      expect((await context.request.get(`/cards/${card}/cover/image`)).status()).toBe(404);
       expect(writes).toHaveLength(1);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       return;

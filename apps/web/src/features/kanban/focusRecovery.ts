@@ -1,11 +1,19 @@
-// MUI can return focus to its marked Dialog paper or outer trap container when
+// MUI can return focus to its Dialog paper, trap container or sentinel when
 // a focused control is disabled/removed. Treat only that same dialog's fallback as lost owned
 // focus; another control or another dialog remains the user's destination.
-export function ownsRecoveryFocus(target: EventTarget | null, owner: HTMLElement | null): boolean {
+export function ownsRecoveryFocus(target: EventTarget | null, owner: HTMLElement | null, capturedDialog: HTMLElement | null = null): boolean {
   if (!owner) return false;
+  // Access refresh can remove the owner while its dialog remains mounted.
+  // A connected owner always identifies its own current dialog directly.
+  const dialog = owner.closest<HTMLElement>('[role="dialog"][data-mui-focusable]')
+    ?? (!owner.isConnected && capturedDialog?.isConnected ? capturedDialog : null);
+  const root = dialog?.closest('.MuiDialog-root');
+  const ownSentinel = root != null && target instanceof HTMLElement
+    && target.matches('div[data-testid="sentinelStart"], div[data-testid="sentinelEnd"]')
+    && target.closest('.MuiDialog-root') === root;
   return target === null || target === document.body || target === owner
-    || target === owner.closest('[role="dialog"][data-mui-focusable]')
-    || target === owner.closest('.MuiDialog-container[role="presentation"]');
+    || ownSentinel || target === dialog
+    || target === dialog?.closest('.MuiDialog-container[role="presentation"]');
 }
 
 // Move an activated control's focus to its own dialog before disabling or

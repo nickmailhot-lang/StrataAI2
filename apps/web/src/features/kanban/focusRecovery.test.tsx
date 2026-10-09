@@ -2,6 +2,23 @@ import { render, screen } from '@testing-library/react';
 import { Dialog } from '@mui/material';
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 
+it('recognizes only the owning installed MUI dialog sentinels as trap fallback', () => {
+  render(<><Dialog open transitionDuration={0}><button>Owned action</button><button>Another action</button></Dialog>
+    <div className="MuiDialog-root" role="presentation"><div data-testid="sentinelStart" tabIndex={0} /></div></>);
+  const owner = screen.getByRole('button', { name: 'Owned action' });
+  const root = owner.closest('.MuiDialog-root')!;
+  const sentinels = root.querySelectorAll('[data-testid="sentinelStart"], [data-testid="sentinelEnd"]');
+  expect(sentinels).toHaveLength(2);
+  for (const sentinel of sentinels) expect(ownsRecoveryFocus(sentinel, owner)).toBe(true);
+  const otherSentinel = [...document.querySelectorAll('[data-testid="sentinelStart"]')].find(node => !root.contains(node))!;
+  expect(ownsRecoveryFocus(otherSentinel, owner)).toBe(false);
+  expect(ownsRecoveryFocus(screen.getByRole('button', { name: 'Another action' }), owner)).toBe(false);
+  const dialog = owner.closest<HTMLElement>('[role="dialog"]')!; owner.remove();
+  for (const sentinel of sentinels) expect(ownsRecoveryFocus(sentinel, owner, dialog)).toBe(true);
+  expect(ownsRecoveryFocus(otherSentinel, owner, dialog)).toBe(false);
+  expect(ownsRecoveryFocus(screen.getByRole('button', { name: 'Another action' }), owner, dialog)).toBe(false);
+});
+
 it('recognizes the installed MUI Dialog fallback but preserves other controls and dialogs', () => {
   render(<><Dialog open transitionDuration={0}><button>Owned action</button><button>Another action</button></Dialog>
     <div role="dialog" data-mui-focusable="" data-testid="other-dialog" /></>);

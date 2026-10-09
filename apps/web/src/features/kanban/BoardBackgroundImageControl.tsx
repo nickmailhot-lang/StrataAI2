@@ -43,7 +43,7 @@ function Control(props: Props) {
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); callbacks.current.onBusyChange(false); callbacks.current.onRecoveryChange(false); }; }, []);
   useEffect(() => { callbacks.current.onRecoveryChange(!!intent); }, [intent]);
   useLayoutEffect(() => {
-    if (disabled || !restore.current || !(ownsRecoveryFocus(document.activeElement, owner.current) || document.activeElement === dialog.current)) return;
+    if (disabled || !restore.current || !ownsRecoveryFocus(document.activeElement, owner.current, dialog.current)) return;
     const target = intent ? retry.current : draft && changed ? discard.current
       : draft && draft.board.visibility === 'PUBLIC' && !draft.confirmed ? consent.current : draft ? confirm.current : primary.current;
     // Acknowledgment can precede another access refresh that disables the
@@ -53,7 +53,7 @@ function Control(props: Props) {
   }, [disabled, intent, draft, review, changed]);
   function focus(element: HTMLElement) { owner.current = element; dialog.current = element.closest('[role="dialog"][data-mui-focusable]'); restore.current = true; parkRecoveryFocus(element); }
   function blur(event: React.FocusEvent<HTMLElement>) {
-    if (event.relatedTarget !== owner.current && !ownsRecoveryFocus(event.relatedTarget, event.currentTarget)) restore.current = false;
+    if (event.relatedTarget !== owner.current && !ownsRecoveryFocus(event.relatedTarget, event.currentTarget, dialog.current)) restore.current = false;
   }
   function current(c: AbortController) { return mounted.current && pending.current === c && !c.signal.aborted; }
   function start(element: HTMLElement) { focus(element); const c = new AbortController(); pending.current = c; setBusy(true); setNotice(undefined); callbacks.current.onBusyChange(true); return c; }

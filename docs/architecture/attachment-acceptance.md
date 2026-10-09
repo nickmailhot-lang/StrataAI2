@@ -60,7 +60,7 @@ digests and scanner/provider details; authorization precedes disclosure.
 | FR-005 controlled downloads | Current Clean/scoped admission, time-bound snapshot, SHA-verified anonymous staging, final/periodic rights checks, private forced-download headers and MUI browser-owned delivery; managed/API/PostgreSQL contracts; executed actual native browser downloads with exact original bytes | Full enabled-file browser/provider acceptance and deletion/cover/reconciliation interactions |
 | FR-006 scanning/quarantine | Separate Worker job, scope-only payload, restricted lease-bound SQL capability, complete-byte ClamAV protocol and atomic verdict/Card/audit/event persistence; fail-closed Pending/Rejected/Failed delivery; executed bounded final-attempt/expired-claim recovery; native desktop/phone browser upload through actual Worker Rejected verdict, real event receipt, textual status and refused controlled delivery | Remaining mutation/operator/rescan coverage, deployed scanner acceptance and complete current immutable enabled pipeline |
 | FR-007 previews | Linux raster normalization; exact Worker isolated codec/privilege-drop/cancellation verification; durable private derivative jobs and fenced publication; current-authorized controlled PNG delivery and MUI viewer; executed actual upload-through-Worker sanitized browser preview at desktop/phone sizes | Complete actual enabled-provider release/browser pipeline and cross-feature acceptance matrix |
-| FR-008 cover | Nullable tenant/Card composite FK; current published-source prerequisite; dual CAS/idempotent commands and atomic audit/outbox; selected-source withdrawal clears once; PUBLIC consent/current anonymous image admission; minimal snapshot hint and MUI controls/display; executed actual upload-through-Worker cover browser workflow | Current immutable/full enabled-provider coverage, remaining cross-feature/concurrency/reconnect matrix and unchanged capacity/performance acceptance |
+| FR-008 cover | Nullable tenant/Card composite FK; current published-source prerequisite; dual CAS/idempotent commands and atomic audit/outbox; selected-source withdrawal clears once; PUBLIC consent/current anonymous image admission; minimal snapshot hint and MUI controls/display; executed actual upload-through-Worker cover browser workflow; desktop/phone direct Rejected-source and forged-revision cover refusal with unchanged canonical metadata/event cursor | Current immutable/full enabled-provider coverage, remaining cross-feature/concurrency/reconnect matrix and unchanged capacity/performance acceptance |
 | FR-009 deletion | Guarded archive/restore/elevated confirmed soft deletion; current parent/source versions; atomic selected-cover clearing; audit/events; restore does not reselect | Full enabled-provider/browser lifecycle matrix and retention/purge reconciliation |
 | FR-010 untrusted MIME/name | Canonical raw transport validation; server byte classification/full size/SHA checks; quarantine; safe opaque downloads; strict raw image decoder; forged-input/API/provider cases | Successful isolated image admission/publication plus full enabled release/security regression matrix |
 
@@ -1052,3 +1052,23 @@ syntax, all 91 integration guards and ordinary mandatory coverage verification
 pass. No product or release configuration change is included. This is not
 current immutable CI or deployed scanner/storage/full matrix acceptance; the
 issue remains open. Estimated PRD-14 work remaining: **33%**.
+
+## Direct rejected-cover refusal and owned recovery focus
+
+The [direct-refusal and dialog-focus evidence](attachment-object-storage.md#rejected-cover-selection-and-owned-dialog-focus-recovery)
+extends both quarantine viewport cases with ordinary cover PUTs using the real
+Rejected revision and a forged published revision. Stable 404 refusal, unchanged
+entire cover/attachment metadata and Board event cursor, and withdrawn cover
+image delivery are required. A native phone recovery-focus failure also prompted
+an installed-MUI regression: concealed controls lose their DOM ancestry, so the
+helper preserves the captured live dialog for its own trap/container/sentinel
+fallback. Other controls/dialogs retain intentional focus.
+
+The corrected before-change run fails 2/19; after repair 308/308 cases in 18
+affected control suites pass. Fresh web build, web/browser typechecking and lint
+pass. The complete native repaired-bundle original 2/2 (91.9s), expanded 8/8
+(295.4s), subsequent HTTP assertions and independent cleanup pass, with no
+unexpected/skipped/flaky cases or retries. All 91 CI coverage guards pass.
+Authorization, receipts and revision fences are unchanged. Current immutable CI,
+deployed-provider and remaining feature acceptance still require proof.
+Estimated PRD-14 work remaining: **33%**.

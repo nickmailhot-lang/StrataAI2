@@ -26,12 +26,12 @@ function CoverControl(props: UrlAttachmentCreateProps) {
     focusOwner.current = owner; focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]'); restoreFocus.current = true; parkRecoveryFocus(owner);
   }
   function blur(event: React.FocusEvent<HTMLElement>) {
-    if (event.relatedTarget !== focusOwner.current && !ownsRecoveryFocus(event.relatedTarget, event.currentTarget)) restoreFocus.current = false;
+    if (event.relatedTarget !== focusOwner.current && !ownsRecoveryFocus(event.relatedTarget, event.currentTarget, focusDialog.current)) restoreFocus.current = false;
   }
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); callbacks.current.onBusyChange(false); callbacks.current.onRecoveryChange(false); }; }, []);
   useEffect(() => { props.onRecoveryChange(!!intent || blocked); }, [intent, blocked, props.onRecoveryChange]);
   useLayoutEffect(() => {
-    if (disabled || !restoreFocus.current || !(ownsRecoveryFocus(document.activeElement, focusOwner.current) || document.activeElement === focusDialog.current)) return;
+    if (disabled || !restoreFocus.current || !ownsRecoveryFocus(document.activeElement, focusOwner.current, focusDialog.current)) return;
     const target = intent ? retry.current : blocked ? discard.current : draft?.candidate && draft.view.isPublic && !draft.confirmed ? consent.current
       : draft ? saveButton.current : primary.current;
     if (target && !target.disabled) { focusOwner.current = target; target.focus({ preventScroll: true }); restoreFocus.current = true; }

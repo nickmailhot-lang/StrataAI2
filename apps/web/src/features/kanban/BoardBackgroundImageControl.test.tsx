@@ -141,3 +141,20 @@ it('retains return-focus ownership through a post-acknowledgment access refresh 
   view.rerender(content(true)); view.rerender(content(false)); expect(other).toHaveFocus();
   expect(writes()).toHaveLength(2); expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body);
 });
+
+it('restores uncertain-command focus after its own MUI sentinel fallback during access refresh', async () => {
+  mock(() => { throw new WorkRequestError(503, null); });
+  const p = props();
+  const content = (unavailable: boolean) => <Dialog open transitionDuration={0}><BoardBackgroundImageControl {...p} unavailable={unavailable} /></Dialog>;
+  const view = render(content(false)); await choose();
+  const confirm = screen.getByRole('button', { name: 'Confirm Board background image' }); confirm.focus(); fireEvent.click(confirm);
+  const retry = await screen.findByRole('button', { name: 'Retry original Board background change' });
+  await waitFor(() => expect(retry).toHaveFocus());
+  view.rerender(content(true));
+  const dialog = screen.getByRole('dialog');
+  const sentinel = dialog.closest('.MuiDialog-root')!.querySelector<HTMLElement>('[data-testid="sentinelStart"]')!;
+  act(() => sentinel.focus());
+  view.rerender(content(false));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Retry original Board background change' })).toHaveFocus());
+  expect(writes()).toHaveLength(1);
+});

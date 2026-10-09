@@ -538,3 +538,42 @@ source is unchanged; current immutable release CI, deployed scanner/storage,
 other supported formats, invalid/large inputs, Failed/rescan/operator coverage,
 remaining role/lifecycle/cross-feature cases and performance acceptance remain
 open. Estimated PRD-14 work remaining: **33%**.
+
+## Rejected cover selection and owned dialog focus recovery
+
+Both quarantine viewport cases now submit ordinary cover PUTs for the actual
+Rejected attachment revision 2 and a forged published revision 3. Each must return
+404 with `card_not_found`. The complete current cover and attachment page must
+remain unchanged, the delivered Board cursor must not advance, and controlled
+cover-image delivery must remain 404. Candidate exclusion alone is not the
+server authorization boundary.
+
+An actual native phone background-recovery focus assertion failed before these
+new assertions were reached. The unchanged focus expectation prompted a focused
+regression against the installed MUI trap. Access refresh removes the retry
+element; its old DOM reference can no longer identify the mounted dialog's trap
+container or sentinels. The focus helper now accepts the captured live dialog for
+a disconnected owner, and recognizes only sentinels in that same MUI dialog root.
+Connected owners identify their own current dialog directly. Board background
+and Card cover recovery supply their captured dialog for layout/blur decisions.
+Another control or dialog remains an intentional focus destination. Authorization,
+receipt bodies/keys and input/revision fences are unchanged.
+
+The corrected regression looks up the current retry element after remount and
+uses the installed sentinel's actual focus fallback. Against the original
+implementation the two-file run fails 2/19, with 17 passing. After repair all 308
+tests in the 18 affected control suites pass; web/browser typechecking, focused
+lint and a fresh production web build pass. Earlier fixture and diagnostic test
+failures remain retained privately. This demonstrates the specific owned-focus
+gap; it does not identify every possible native focus transition or prove the
+remaining feature/release acceptance matrix.
+
+The complete native pipeline using the freshly built repaired web bundle passes
+original 2/2 in 91.9 seconds and expanded 8/8 in 295.4 seconds, with zero
+unexpected/skipped/flaky cases and retry maximum 0. Both rejected cover-write
+variants pass at both widths. All subsequent HTTP lifecycle/privacy/ownership
+assertions and the process exit pass. Independent verification confirms no owned
+containers, database, provider volume or credential files remain. All 91 CI
+coverage guards and ordinary mandatory coverage verification pass. Current
+immutable release CI, deployed providers and the outstanding feature/full matrix
+remain unproven. Estimated PRD-14 work remaining: **33%**.
