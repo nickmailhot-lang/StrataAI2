@@ -168,3 +168,13 @@ exclusions, test retries or deadline increases. The actual terminal report must
 prove its full scope. Native watch/order and 100,000-notification capacity runs
 remain live; current immutable-image CI remains queued. None is promoted from
 an unfinished run or an older successful build to current release acceptance.
+
+The route-repaired full Linux API invocation subsequently passes **697/697**.
+Independent TRX inspection finds 697 actual Passed rows and matching
+total/executed/passed counters, with zero failures, errors, timeouts, aborts,
+excluded or pending cases. Its owned test container is independently absent.
+This compiled build requires schema 126 and predates migration 127; it does
+not certify the later required-ledger change. A fresh complete Linux invocation
+now uses the schema-127 compiled artifacts with the same pinned runtime,
+read-only source/content-root mapping and full unfiltered suite. Its terminal
+report and current immutable build-once pipeline remain required.
