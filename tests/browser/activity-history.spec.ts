@@ -1,4 +1,4 @@
-import { pressAdmittedAction } from './keyboardAdmission';
+import { focusAdmittedControl, pressAdmittedAction } from './keyboardAdmission';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
@@ -70,10 +70,10 @@ for (const width of [1280, 390]) {
         hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZoneName: 'short',
       }).format(new Date(instant)), firstInstant));
       const older = cardHistory.getByRole('button', { name: 'Older activity', exact: true }); await expect(older).toBeFocused();
-      await older.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(17);
+      await focusAdmittedControl(older); await page.keyboard.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(17);
       await expect(cardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1);
       const newer = cardHistory.getByRole('button', { name: 'Newer activity', exact: true }); await expect(newer).toBeFocused();
-      await newer.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(50); await expect(older).toBeFocused();
+      await focusAdmittedControl(newer); await page.keyboard.press('Enter'); await expect(cardHistory.getByRole('listitem')).toHaveCount(50); await expect(older).toBeFocused();
       const peerPage = await peer.newPage(); const cardPath = `${boardPath}/cards/${card}`;
       let disconnected = false; let socket: WebSocketRoute | undefined;
       await peer.routeWebSocket('**/boards/live*', route => {
@@ -147,7 +147,7 @@ for (const width of [1280, 390]) {
       expect((await peer.request.post('/me/deactivate', { headers, data: {} })).status()).toBe(204);
       expect((await peer.request.get(`/cards/${card}/activity`)).status()).toBe(401);
       const boardOlder = boardHistory.getByRole('button', { name: 'Older activity', exact: true });
-      await expect(boardOlder).toBeEnabled(); await boardOlder.press('Enter');
+      await focusAdmittedControl(boardOlder); await page.keyboard.press('Enter');
       await expect(boardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1);
       await expect(boardHistory.getByText('Renamed activity reader updated a Card.', { exact: true })).toHaveCount(0);
     } finally { try { restoreWorker(); } finally { await peer.close(); } }

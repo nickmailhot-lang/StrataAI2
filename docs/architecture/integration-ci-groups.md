@@ -357,3 +357,28 @@ recipient access withdrawal, and unchanged Organization membership. Browser
 TypeScript passes and owned containers/database were removed. This is scoped
 native evidence; the original intermittent cause and combined/current immutable
 acceptance remain unproven. Estimated PRD-05 work remaining stays **15%**.
+
+
+## Activity paging keyboard admission investigation
+
+The current combined desktop history case misses its original historical actor
+on the older Board page. Its retained network trace contains no older Board
+activity request. A fresh complete two-case invocation that admitted only this
+last action fails earlier in both viewports: Card Older remains at 50 rows
+instead of 17, and the desktop trace contains no older Card request. That
+invocation has zero passes, two failures, no skips/flaky cases, lasts 141.4
+seconds, and removes its owned containers/database. It does not prove a server
+paging or actor-label defect, nor resolution of the combined failure.
+
+Card Older/Newer and Board Older now use the existing enabled/focused admission
+checks before one page-level Enter, matching the member-removal fixture's
+single-key delivery. Existing assertions that paging focus is restored remain;
+only focus admission may repeat. Page navigation, commands, 50/17-row checks,
+actor immutability, genuine two-account Worker/reconnect, lifecycle/withdrawal,
+Axe and the 180-second deadlines remain unchanged. The shared keyboard helper
+and product authorization/reset generations remain unchanged. Browser
+TypeScript passes. A fresh complete two-case invocation is running against
+current compiled Production API/separate Worker, frozen original-key recovery
+web and restricted schema-114 PostgreSQL17/pgvector. Its outcome, exact causes,
+complete API, PostgreSQL races and current immutable/full CI remain pending.
+Estimated PRD-15 work remaining stays **36%**.
