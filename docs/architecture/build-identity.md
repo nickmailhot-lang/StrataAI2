@@ -44,6 +44,15 @@ images and missing/different labels fail the build job. Unknown inspection field
 are never printed. Unset source/time arguments on a development build do not
 constitute valid release provenance.
 
+The integration matrix and security job repeat the same complete provenance
+check immediately after loading all three checksum-verified archives, using
+their retained canonical metadata. This refusal happens before topology startup,
+SBOM generation or image vulnerability scanning. Sixteen additional workflow
+mutations protect both consumers against omitted/misordered inspection, foreign
+metadata, skipped/ignored failure and scans before verification. Together with
+the metadata tests, the workflow guard suite now passes 151/151. These are gate
+regressions; the newer workflow still requires its own successful GitHub run.
+
 Seven Python tests cover actual CLI acceptance/refusal, canonical metadata,
 all four labels on each host, malformed/tag/identity failures and non-disclosing
 diagnostics. Seventeen additional workflow mutations protect metadata-derived arguments,

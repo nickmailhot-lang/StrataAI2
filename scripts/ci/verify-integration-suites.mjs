@@ -219,6 +219,19 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(releaseSteps.every(step => !/docker (?:build|buildx build)/.test(step.run ?? '')), 'Bundle cannot rebuild application images');
 
   const security = jobs.security;
+  for (const consumer of [jobs['container-integration'], security]) {
+    const loaded = consumer.steps.find(step => step.name === 'Load exact built images');
+    assert.equal(loaded?.shell, 'bash');
+    assert.equal(loaded.if, undefined, 'Every image consumer must verify loaded provenance');
+    assert.equal(loaded['continue-on-error'] ?? false, false);
+    const lines = loaded.run.replace(/\r\n/g, '\n').trim().split('\n');
+    assert.deepEqual(lines, [
+      'set -euo pipefail',
+      ...['web', 'api', 'worker'].map(host => `gunzip -c image-artifacts/strataai-${host}.tar.gz | docker load`),
+      'docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json',
+      'python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json',
+    ], 'Load every retained archive and verify complete provenance before executing or scanning images');
+  }
   assert.deepEqual(security.needs, ['metadata', 'build-images-once']);
   const securitySteps = security.steps;
   const securityDownload = securitySteps.findIndex(step => step.name === 'Download exact built images');
@@ -236,6 +249,10 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(securityInput.run.includes('cp image-artifacts/build-metadata.json security-artifacts/build-metadata.json'));
   for (const name of ['Install locked web dependencies', 'Load exact built images', 'Generate SBOMs', 'Secret scan', 'Block fixed Critical container vulnerabilities']) {
     assert.ok(securitySteps.findIndex(step => step.name === name) > securityVerify, 'Verify security inputs before audits or image loading');
+  }
+  for (const name of ['Generate SBOMs', 'Block fixed Critical container vulnerabilities']) {
+    assert.ok(securitySteps.findIndex(step => step.name === 'Load exact built images') < securitySteps.findIndex(step => step.name === name),
+      'Verify loaded image provenance before image scans or SBOM generation');
   }
   const securityUpload = securitySteps.find(step => step.name === 'Upload SBOMs and security evidence');
   assert.equal(securityUpload.if, 'always()');

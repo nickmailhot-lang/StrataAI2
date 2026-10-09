@@ -14,6 +14,17 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ...['Generate SBOMs', 'Block fixed Critical container vulnerabilities'].map(name =>
+    [`security loaded provenance after ${name}`, value => { const steps = value.jobs.security.steps; const index = steps.findIndex(step => step.name === 'Load exact built images'); const [loaded] = steps.splice(index, 1); steps.splice(steps.findIndex(step => step.name === name) + 1, 0, loaded); }]),
+  ...['container-integration', 'security'].flatMap(job => [
+    [`${job} loaded provenance omitted`, value => { const entry = value.jobs[job].steps.find(step => step.name === 'Load exact built images'); entry.run = entry.run.split('\n').filter(line => !line.includes('verify-image-labels.py')).join('\n'); }],
+    [`${job} loaded Worker inspection omitted`, value => { const entry = value.jobs[job].steps.find(step => step.name === 'Load exact built images'); entry.run = entry.run.replace('"strataai-worker:${GITHUB_SHA}"', ''); }],
+    [`${job} loaded provenance uses different metadata`, value => { const entry = value.jobs[job].steps.find(step => step.name === 'Load exact built images'); entry.run = entry.run.replace('--metadata image-artifacts/build-metadata.json', '--metadata other.json'); }],
+    [`${job} loaded provenance failure swallowed`, value => { value.jobs[job].steps.find(step => step.name === 'Load exact built images').run += ' || true'; }],
+    [`${job} image loading skipped`, value => { value.jobs[job].steps.find(step => step.name === 'Load exact built images').if = 'false'; }],
+    [`${job} image loading permitted to fail`, value => { value.jobs[job].steps.find(step => step.name === 'Load exact built images')['continue-on-error'] = true; }],
+    [`${job} loaded provenance performed before last archive`, value => { const entry = value.jobs[job].steps.find(step => step.name === 'Load exact built images'); const lines = entry.run.trim().split('\n'); [lines[3], lines[5]] = [lines[5], lines[3]]; entry.run = lines.join('\n'); }],
+  ]),
   ['enabled attachment pipeline replaced by success', value => { step(value, 'Attachment upload and isolated Worker image publication through explicit private test providers').run = 'true'; }],
   ['enabled attachment pipeline errors swallowed', value => { step(value, 'Attachment upload and isolated Worker image publication through explicit private test providers').run += ' || true'; }],
   ['strict two-client label filter recovery omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/label-filter-live.spec.ts', ''); }],
