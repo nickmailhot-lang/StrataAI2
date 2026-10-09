@@ -471,3 +471,21 @@ production assets with schema-127 API/Worker; its terminal result remains
 required. Current immutable build-once CI, the broader role/lifecycle matrix
 and complete PRD acceptance remain outstanding. Estimated PRD-10 work
 remaining stays **34%** (planning estimate).
+
+The repaired complete native invocation subsequently passes **2/2** in
+106.73 seconds. Independent report inspection confirms exactly one passing
+result per desktop/phone case, zero skipped/flaky outcomes and no report-level
+errors. The browser specification is byte-identical to the retained baseline.
+Original lost-response key/body recovery, four deliberate filter writes,
+ordering/version persistence, explicit root-label deletion consent, actual
+Card-association removal, keyboard focus and accessibility assertions remain.
+The owned containers, database and environment files are independently absent.
+The web architecture source gate also passes. Earlier failed evidence remains
+retained; this local pass does not certify immutable-image release acceptance.
+
+A fresh broader invocation now includes the complete current CI Board command:
+all **14 original files / 32 collected cases**, with the repaired production
+frontend and schema-127 compiled API/Worker. It adds no file filters, retries,
+deadline changes or exclusions. Its terminal report and current immutable
+build-once CI remain required before claiming broader acceptance. PRD-10 stays
+open at **34% estimated work remaining** (planning estimate).
