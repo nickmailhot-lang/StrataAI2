@@ -89,7 +89,22 @@ if worker "UPDATE invitation_mail_intents SET recipient_email='attacker@example.
 if api "UPDATE invitation_mail_intents SET state='FAILED'"; then echo 'API changed mail delivery state'; exit 1; fi
 test "$(api 'SELECT count(*) FROM invitation_mail_intents')" = 0
 test "$(api "BEGIN; SET LOCAL app.tenant_id='$tenant'; SELECT count(*) FROM invitation_mail_intents; ROLLBACK;" | grep -E '^[0-9]+$')" = 1
-if api "BEGIN; SET LOCAL app.tenant_id='$tenant'; INSERT INTO invitation_mail_intents SELECT '$other',tenant_id,invitation_id,issuer_id,recipient_email,target_surface,target_role,expires_at,key_id,sender_address,public_origin,provider_account,template_version,state,provider_receipt_id,finished_at,safe_error_code,created_at,version FROM invitation_mail_intents; COMMIT;"; then echo 'Unbound mail job accepted'; exit 1; fi
+# Use a distinct valid invitation so duplicate-invitation uniqueness cannot
+# mask the job-binding FK. Explicit columns survive additive audit migrations.
+psql -X -v ON_ERROR_STOP=1 -c "INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,created_by_user_id,created_at,expires_at)
+ SELECT '$other',tenant_id,invited_email,email_normalized,repeat('b',64),target_surface,target_role,created_by_user_id,created_at,expires_at
+ FROM invitations WHERE id='$invitation';" >/dev/null
+api "BEGIN; SET LOCAL app.tenant_id='$tenant'; DO \$mail_guard\$ BEGIN
+ BEGIN
+  INSERT INTO invitation_mail_intents(job_id,tenant_id,invitation_id,issuer_id,recipient_email,target_surface,target_role,expires_at,key_id,sender_address,public_origin,provider_account,template_version,state,provider_receipt_id,finished_at,safe_error_code,created_at,version,target_board_id,target_board_role)
+   SELECT '$other',tenant_id,'$other',issuer_id,recipient_email,target_surface,target_role,expires_at,key_id,sender_address,public_origin,provider_account,template_version,state,provider_receipt_id,finished_at,safe_error_code,created_at,version,target_board_id,target_board_role
+   FROM invitation_mail_intents;
+  RAISE EXCEPTION 'Unbound mail job accepted';
+ EXCEPTION WHEN foreign_key_violation THEN
+  IF SQLERRM NOT LIKE '%invitation_mail_intents_job_id_tenant_id_issuer_id_fkey%' THEN RAISE; END IF;
+ END;
+ IF (SELECT count(*) FROM invitation_mail_intents)<>1 THEN RAISE EXCEPTION 'Refused mail binding retained effects'; END IF;
+ END \$mail_guard\$; ROLLBACK;" >/dev/null
 for change in "service_identity='other-service'" "safe_metadata='{}'::jsonb" "state='FAILED',worker_id=NULL,lease_id=NULL,lease_expires_at=NULL" "lease_expires_at=now()-interval '1 second'"; do
   psql -X -v ON_ERROR_STOP=1 -c "UPDATE background_jobs SET $change WHERE id='$job';" >/dev/null
   test "$(scoped "SELECT count(*) FROM $load")" = 0

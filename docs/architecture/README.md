@@ -59,3 +59,5 @@ Docker, AI providers, email providers, or object storage implementations.
 Both are part of one modular-monolith product and share the same domain/application code.
 
 - [Work event delivery clocks and legacy provenance](work-event-clock-audit.md)
+
+- [Invitation mail update clocks and delivery boundaries](invitation-mail-update-clocks.md)

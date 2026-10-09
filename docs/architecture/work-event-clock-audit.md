@@ -60,7 +60,7 @@ likewise exclude the two asynchronous delivery fields while retaining the
 complete historical payload.
 
 Upgrade fixtures cover pending, published and reset legacy records. The full
-migration runner, fresh tenant/RLS/runtime-role gates and the new SQL gate are
+migration runner, fresh tenant/RLS/runtime-role gates and the new SQL gate
 passed together (eight complete gates) against a fresh schema-130 database.
 Private reports are outside the repository in
 `work-event-clocks-schema130-upgrade-complete-native-20261009`. The first disposable
@@ -75,7 +75,9 @@ while preparing `OrganizationDeletionCandidatesContract`'s original 100,002
 Card fixture. It did not reach a complete default-suite pass. The failed
 report is retained in `work-event-schema130-full-persistence-native-20261009`;
 its owned containers and environment files were removed. This unresolved
-failure must be investigated; neither the focused activity pass nor the SQL
+failure is also reproduced independently by CI run `37998254598` and
+[the schema-131 diagnostic invocation](invitation-mail-update-clocks.md) is
+collecting private slow nested-query plans; neither the focused activity pass nor the SQL
 gates substitute for the complete suite. No deadline, seed cardinality,
 assertion or case retry was changed. Existing full schema-129 persistence and
 schema-128 API runs remain active with their separate version boundaries.
@@ -84,7 +86,7 @@ CI run `37996791819` on schema-129 head `a3023bff` passed its full migration
 runner but failed the new sweep SQL gate with permission denied: that gate was
 scheduled before `test-runtime-roles.sh` provisioned Worker capabilities. The
 workflow now runs all three clock gates after the unchanged provisioning and
-runtime-role checks. Clean local verification follows this actual CI order
+runtime-role checks. Clean local verification following this actual CI order
 without pre-provisioning roles passed all eight complete gates, including
 the full migration runner through 130 and all three clock gates. Reports:
 `work-event-schema130-ci-order-native-20261009`. Current build-once CI must pass before release
