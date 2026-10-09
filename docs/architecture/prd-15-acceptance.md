@@ -400,3 +400,31 @@ waits and final session/account admission. Results must never be cached across
 those boundaries. No authorization pass, lock or stale-source rejection has been
 removed. Runtime performance and race evidence remain necessary before treating
 this lead as a repair. Estimated PRD-15 work remaining stays **36%**.
+
+
+## Bounded target resolution within each activity admission pass
+
+A real HTTP source regression seeds 51 distinct Card updates, checks 50 distinct
+returned identities plus continuation, and counts actual Board authorization
+calls. Before repair it measures 211 calls and fails the maximum-12 budget.
+An initial Application-only repair still measures 61 because Demo's candidate
+adapter independently resolves each row. The final regression passes within
+12 calls after both use the same bounded target-resolution pass.
+
+A pass reuses only validated ordinary target scope, preserving each event ID.
+The key includes Organization, source Board, target type/ID and event type.
+Private Watch/Reminder references always resolve independently; at most 51
+ordinary scopes are retained. Every sorted Board-gate wait creates a fresh
+pass, and every transaction authorization callback has its own pass. Final
+root, role, account/session admission remains; no authorization boundary or
+lock is removed. A regression checks cached targets do not admit invalid
+actor/version/event type or another tenant. Candidate visibility still precedes
+paging limits.
+
+The final read-cost regression and selected activity source checks pass; the
+complete API suite and both unchanged PostgreSQL-backed native activity cases
+are running against rebuilt current API/separate Worker and frozen visibility
+web assets. These runtime checks, current immutable/full CI and full PRD
+acceptance remain pending. The improvement does not yet establish resolution
+of the intermittent phone history failure. Estimated PRD-15 work remaining
+stays **36%**.

@@ -256,3 +256,19 @@ Worker and restricted schema-114 PostgreSQL17/pgvector. Owned containers/databas
 were removed. This scoped pass does not certify the combined phase, which
 predates this product change and has a phone activity failure, or current
 immutable/full CI. Estimated PRD-05 work remaining stays **15%**.
+
+
+## Completed member-focus combined phase retains lifecycle failures
+
+The complete 28-case member-focus invocation finishes with 25 passes / three
+failures in 21.5 minutes, no skips/flaky cases. Phone peer activity fails the
+original 50-row assertion; both lifecycle cases fail at source line 97. This
+run predates the visibility-focus repair and the activity-read optimization.
+All owned containers/database were removed. This is failing combined evidence,
+not a certificate for the expanded mandatory 30-case strict phase.
+
+The isolated page-level keyboard comparison passes Clear at both widths but
+fails later label-management controls on both cases (zero passes overall).
+Its unchanged assertions/deadlines remain; private diagnostic fixtures were
+removed. The repository keyboard helper is unchanged. Current immutable/full
+CI and exact causes remain required before closure.

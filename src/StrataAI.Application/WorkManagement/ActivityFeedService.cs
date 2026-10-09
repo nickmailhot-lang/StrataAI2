@@ -20,6 +20,11 @@ public sealed class ActivityFeedService(IActivityFeedStore feed, ActivitySourceS
         IReadOnlyList<ActivityEventSource> rows = []; var plans = new List<ActivitySourceScope>();
         async Task<bool> Authorize()
         {
+            // Repeated history rows share a target, not an event identity. Reuse
+            // target discovery only within this admission pass. Private event
+            // references remain independent; nothing survives a Board-gate wait
+            // or the transaction's next authorization callback.
+            var resolve = scopes.CreateReadPass(viewer);
             if (!await work.AcquireOrganizationReadScopeAsync(binding.OrganizationId, viewer, ct)) return false;
             var root = await ResolveRoot(binding, ct); if (root is null) return false;
             if (!prepared)
@@ -33,7 +38,7 @@ public sealed class ActivityFeedService(IActivityFeedStore feed, ActivitySourceS
                     if (!unavailable)
                         foreach (var row in rows)
                         {
-                            var plan = await scopes.ResolveAsync(row, viewer, ct);
+                            var plan = await resolve(row, ct);
                             if (plan is null || kind == ActivityTargetKind.Card &&
                                 (plan.TargetType != "Card" || plan.TargetId != targetId || plan.CurrentBoardId != root.BoardId || plan.ParentListId != root.ListId))
                             { unavailable = true; break; }
@@ -45,12 +50,13 @@ public sealed class ActivityFeedService(IActivityFeedStore feed, ActivitySourceS
                 var gates = unavailable ? new[] { root.BoardId } : plans.SelectMany(plan => new[] { plan.SourceBoardId, plan.CurrentBoardId }).Append(root.BoardId);
                 foreach (var board in gates.Distinct().Order())
                     if (!await work.AcquireBoardReadScopeAsync(binding.OrganizationId, viewer, board, ct)) return false;
+                resolve = scopes.CreateReadPass(viewer);
                 prepared = true;
             }
             if (await ResolveRoot(binding, ct) != plannedRoot) return false;
             if (!unavailable)
                 for (var index = 0; index < plans.Count; index++)
-                    if (await scopes.ResolveAsync(rows[index], viewer, ct) != plans[index]) return false;
+                    if (await resolve(rows[index], ct) != plans[index]) return false;
             return true;
         }
         try

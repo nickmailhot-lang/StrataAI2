@@ -11,6 +11,26 @@ public sealed record ActivitySourceScope(Guid EventId, Guid OrganizationId, Guid
 public sealed class ActivitySourceScopeResolver(IWorkManagementStore work, IOrganizationStore organizations,
     IWorkBoardAuthorization boards, IActivityPrivateTargetStore privateTargets)
 {
+    // Create a fresh pass after every parent-gate wait and final admission.
+    // Private references are never shared between events; the cache is bounded
+    // even when Demo's candidate scan includes more than one response window.
+    public Func<ActivityEventSource, CancellationToken, Task<ActivitySourceScope?>> CreateReadPass(Guid viewer)
+    {
+        var resolved = new Dictionary<(Guid Organization, Guid Board, string Type, Guid Entity, string EventType), ActivitySourceScope>();
+        return async (source, ct) =>
+        {
+            ct.ThrowIfCancellationRequested();
+            if (viewer == Guid.Empty || source.EventId == Guid.Empty || source.OrganizationId == Guid.Empty
+                || source.BoardId == Guid.Empty || source.ActorId == Guid.Empty || source.EntityId == Guid.Empty || source.Version < 1
+                || source.EntityType is "WatchSubscription" or "Reminder") return await ResolveAsync(source, viewer, ct);
+            var key = (source.OrganizationId, source.BoardId, source.EntityType, source.EntityId, source.EventType);
+            if (resolved.TryGetValue(key, out var existing)) return existing with { EventId = source.EventId };
+            var plan = await ResolveAsync(source, viewer, ct);
+            if (plan is not null && resolved.Count < ActivityEventSourceWindow.MaximumRows) resolved.Add(key, plan);
+            return plan;
+        };
+    }
+
     public async Task<ActivitySourceScope?> ResolveAsync(ActivityEventSource source, Guid viewer, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();

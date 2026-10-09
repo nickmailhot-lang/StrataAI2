@@ -13,13 +13,14 @@ internal sealed class InMemoryActivityFeedStore(InMemoryWorkEventStore journal, 
             throw new InvalidOperationException("Activity candidates require the owning Work transaction.");
         ActivityEventSourceWindow.RequireCursor(before?.CreatedAt, before?.EventId);
         var rows = new List<ActivityEventSource>();
+        var resolve = scopes.CreateReadPass(binding.ViewerId);
         foreach (var row in journal.ActivitySources(binding.OrganizationId))
         {
             ct.ThrowIfCancellationRequested();
             if (binding.Kind == ActivityTargetKind.Board && row.BoardId != binding.TargetId ||
                 before is not null && (row.CreatedAt > before.CreatedAt || row.CreatedAt == before.CreatedAt &&
                     string.CompareOrdinal(row.EventId.ToString("N"), before.EventId.ToString("N")) >= 0)) continue;
-            var scope = await scopes.ResolveAsync(row, binding.ViewerId, ct);
+            var scope = await resolve(row, ct);
             if (scope is null || binding.Kind == ActivityTargetKind.Card && (scope.TargetType != "Card" || scope.TargetId != binding.TargetId)) continue;
             rows.Add(row);
         }

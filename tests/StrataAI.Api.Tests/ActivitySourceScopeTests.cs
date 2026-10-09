@@ -42,6 +42,18 @@ public sealed partial class ApiHostTests
         var original = await Resolve(source, f.Recipient);
         Assert.NotNull(original); Assert.Equal(f.Board, original.SourceBoardId); Assert.Equal(f.Board, original.CurrentBoardId);
         Assert.Equal(f.List, original.ParentListId); Assert.Null(original.PrivateOwnerId);
+        await Scope(async () =>
+        {
+            var read = plans.CreateReadPass(f.Recipient);
+            Assert.Equal(original, await read(source, ct));
+            var repeated = source with { EventId = Guid.NewGuid() };
+            Assert.Equal(original with { EventId = repeated.EventId }, await read(repeated, ct));
+            Assert.Null(await read(source with { ActorId = Guid.Empty }, ct));
+            Assert.Null(await read(source with { Version = 0 }, ct));
+            Assert.Null(await read(source with { EventType = "WATCH_CREATED" }, ct));
+            Assert.Null(await read(source with { OrganizationId = Guid.NewGuid() }, ct));
+            return true;
+        });
         Assert.Null(await Resolve(source with { EntityType = "Unknown" }, f.Owner));
         Assert.Null(await Resolve(source with { EventType = "WATCH_CREATED" }, f.Owner));
         Assert.Null(await Resolve(source with { EntityType = "Board", EntityId = Guid.NewGuid() }, f.Owner));
