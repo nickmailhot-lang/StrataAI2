@@ -43,6 +43,9 @@ keyed_json() {
 json() { keyed_json "$(cat /proc/sys/kernel/random/uuid)" "$@"; }
 jq -nc --arg email "image-pipeline-${RANDOM}-${RANDOM}@example.test" '{email:$email,password:"image-pipeline-correct-horse",displayName:"Image pipeline owner"}' > "$scratch/account"
 json -X POST -d "$(cat "$scratch/account")" "$base/auth/register" > "$scratch/registered"
+jq -nc --arg email "image-pipeline-peer-${RANDOM}-${RANDOM}@example.test" '{email:$email,password:"image-pipeline-peer-correct-horse",displayName:"Image pipeline participant"}' > "$scratch/peer-account"
+json -X POST -d "$(cat "$scratch/peer-account")" "$base/auth/register" >/dev/null
+json -c "$scratch/peer-cookies" -X POST -d "$(cat "$scratch/peer-account")" "$base/auth/login" >/dev/null
 json -c "$scratch/cookies" -X POST -d "$(cat "$scratch/account")" "$base/auth/login" >/dev/null
 org=$(json -X POST -d '{"name":"Image pipeline fixture"}' "$base/organizations" | jq -r '.organization.id')
 export STRATAAI_TEST_ATTACHMENT_ORG="$org"
@@ -51,6 +54,13 @@ board=$(json -X POST -d "$(jq -nc --arg org "$org" '{organizationId:$org,name:"O
 list=$(json -X POST -d '{"name":"Source"}' "$base/boards/$board/lists" | jq -r '.id')
 card=$(json -X POST -d '{"title":"Source image"}' "$base/lists/$list/cards" | jq -r '.id')
 for id in "$board" "$list" "$card"; do [[ "$id" =~ ^[0-9a-f-]{36}$ ]]; done
+invitation=$(json -X POST -d "$(jq -nc --arg email "$(jq -r '.email' "$scratch/peer-account")" '{email:$email,surface:"INTERNAL",targetRole:"MEMBER"}')" "$base/organizations/$org/invitations" | jq -r '.id')
+[[ "$invitation" =~ ^[0-9a-f-]{36}$ ]]
+json -b "$scratch/peer-cookies" -X POST "$base/me/invitations/$invitation/accept" >/dev/null
+peer=$(json -b "$scratch/peer-cookies" "$base/me" | jq -r '.id')
+[[ "$peer" =~ ^[0-9a-f-]{36}$ ]]
+test "$peer" != "$(jq -r '.user.id' "$scratch/registered")"
+json -X PATCH -d '{"role":"MEMBER"}' "$base/boards/$board/members/$peer" >/dev/null
 docker compose "${fixture[@]}" up -d --no-deps --force-recreate --wait --wait-timeout 180 worker >/dev/null
 printf '%s' 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==' | base64 -d > "$scratch/original"
 printf '%s' 'PRIVATE ORIGINAL TRAILING METADATA' >> "$scratch/original"
@@ -67,7 +77,7 @@ for attempt in $(seq 1 90); do
 done
 jq -e --arg id "$attachment" '.items|any(.attachmentId==$id and .attachmentVersion==3)' "$scratch/candidates" >/dev/null
 test "$(cat "$scratch/scans")" -ge 1
-jq --arg org "$org" --arg board "$board" --arg card "$card" '{email,password,organizationId:$org,boardId:$board,cardId:$card}' "$scratch/account" > "$scratch/browser-fixture"
+jq --arg org "$org" --arg board "$board" --arg card "$card" --slurpfile peer "$scratch/peer-account" '{email,password,organizationId:$org,boardId:$board,cardId:$card,peer:$peer[0]}' "$scratch/account" > "$scratch/browser-fixture"
 STRATAAI_ATTACHMENT_BROWSER_FIXTURE="$scratch/browser-fixture" STRATAAI_E2E_RATE_PACING=1 STRATAAI_E2E_RELEASE_HEADERS=1 \
   npx playwright test --config playwright.attachment.config.ts
 revision=$(json "$base/boards/$board" | jq -r '.board.version')

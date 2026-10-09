@@ -76,6 +76,13 @@ of the same account. The final native run passes 2/2 in 104.8 seconds and all
 subsequent HTTP assertions. This does not establish distinct-account permissions,
 source-archive live withdrawal or current immutable release success.
 
+The [distinct-member extension](attachment-object-storage.md#distinct-board-member-live-cover-removal)
+now creates and admits an actual different Board MEMBER through invitation and
+membership APIs. Both complete native cases pass in 103.3 seconds, plus every
+subsequent HTTP check and resource cleanup. The release shell supplies separate
+credentials and the browser requires distinct actual profile IDs. Linux exact-image
+execution and the remaining permission/reconnect/lifecycle matrix are pending.
+
 ## Strict notification consumer coverage
 
 The assignment/mention/reminder phase now also selects the complete recipient

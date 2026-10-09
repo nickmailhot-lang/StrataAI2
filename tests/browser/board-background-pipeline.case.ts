@@ -61,7 +61,7 @@ for (const width of [1280, 390]) {
     expect(process.env.CI).toBe('true');
     const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE;
     expect(path).toBeTruthy();
-    const fixture = JSON.parse(readFileSync(path!, 'utf8')) as { email: string; password: string; organizationId: string; boardId: string; cardId: string };
+    const fixture = JSON.parse(readFileSync(path!, 'utf8')) as { email: string; password: string; organizationId: string; boardId: string; cardId: string; peer: { email: string; password: string } };
     for (const id of [fixture.organizationId, fixture.boardId, fixture.cardId]) expect(id).toMatch(/^[0-9a-f-]{36}$/);
     await page.setViewportSize({ width, height: 844 });
     const login = await context.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' },
@@ -154,12 +154,15 @@ for (const width of [1280, 390]) {
       expect(coverBytes.includes(Buffer.from('PRIVATE ORIGINAL'))).toBe(false);
       expect((await visitor.request.get(coverPath)).status()).toBe(401);
     } finally { await visitor.close(); }
-    // A second real session of this verified owner must retire already-rendered
+    // A distinct admitted Board member must retire already-rendered
     // disclosure through actual Worker delivery, without navigation or reload.
     const peerContext = await browser.newContext({ baseURL: new URL(page.url()).origin, viewport: { width, height: 844 } });
     try {
       expect((await peerContext.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' },
-        data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
+        data: { email: fixture.peer.email, password: fixture.peer.password } })).status()).toBe(200);
+      const ownerProfile = await context.request.get('/me'); expect(ownerProfile.status()).toBe(200);
+      const peerProfile = await peerContext.request.get('/me'); expect(peerProfile.status()).toBe(200);
+      expect((await peerProfile.json()).id).not.toBe((await ownerProfile.json()).id);
       await waitForBoardDelivery(context.request, board);
       const peer = await peerContext.newPage(); let peerSequence = 0n;
       peer.on('websocket', socket => {

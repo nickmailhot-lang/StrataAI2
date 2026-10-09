@@ -311,3 +311,24 @@ The original deadlines, command counts, canonical revisions and lifecycle assert
 remain unchanged. Actual source-archive live peer withdrawal, distinct-account
 roles, disconnect recovery, external providers and current full immutable release
 acceptance remain unproven by this run.
+
+## Distinct Board-member live cover removal
+
+The complete enabled fixture now creates a distinct participant account, issues
+an ordinary Organization MEMBER invitation, accepts it as that participant, and
+grants Board MEMBER through the normal API. The peer browser logs in with its own
+credentials and asserts its actual profile ID differs from the owner's. Both
+desktop/phone cases retain the already-rendered PNG, actual Worker/SignalR
+sequence advancement, canonical removal, image 404 and zero-navigation assertions.
+No membership, cover metadata, live frames or image bytes are fabricated.
+
+The complete native invocation passes 2/2 in 103.3 seconds, zero failures/skips/
+retries/flaky cases, followed by every original HTTP lifecycle/concurrency check.
+Owned resources and credential files are independently absent. Both native
+accounts first fail strict login while unverified; only their disposable records
+are administrator-verified before actual login. This is not email-provider proof.
+The release shell uses its existing isolated authentication fixture; browser
+typechecking and shell syntax pass, but that Linux immutable invocation is still
+pending CI. The demonstrated peer is an admitted MEMBER, not a read-only role.
+Permission loss, reconnect, live source archive/delete, other roles/providers,
+performance/capacity and current full release acceptance remain open.

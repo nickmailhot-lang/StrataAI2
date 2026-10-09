@@ -952,3 +952,11 @@ defects are repaired. This uses one verified account in two sessions. Distinct-a
 roles, source-archive live peer withdrawal, disconnect recovery, external providers,
 capacity/performance and current immutable/full acceptance remain open.
 Estimated PRD-14 work remaining: **33%**.
+
+The subsequent [distinct Board-member peer extension](attachment-object-storage.md#distinct-board-member-live-cover-removal)
+passes the complete native pipeline at both viewports in 103.3 seconds, with all
+subsequent HTTP checks and independently confirmed cleanup. Its participant joins
+through actual invitation acceptance and a normal Board MEMBER grant; actual
+profile IDs must differ. The same live withdrawal and zero-navigation checks
+remain. This adds distinct-account collaboration evidence without claiming the
+remaining read-only/permission-loss/reconnect/source-lifecycle matrix or release CI.
