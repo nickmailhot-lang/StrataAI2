@@ -42,13 +42,14 @@ insert_member
 test "$(api 'SELECT count(*) FROM organization_members')" = 0
 test "$(api 'SELECT count(*) FROM user_organization_access')" = 0
 test "$(route "SELECT role||':'||status FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'")" = OWNER:ACTIVE
-# Tenant-scoped divergence still reaches the deferred constraints. A cross-tenant
-# rewrite is now rejected earlier by the route's forced RLS write policy.
+# Missing routes still reach the deferred constraint. Migration 120 rejects
+# invented or mismatched route sources earlier with its canonical clock guard;
+# cross-tenant rewrites retain the forced RLS write-policy refusal.
 reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; DELETE FROM user_organization_access WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503 fk_organization_membership_route
-reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE user_organization_access SET role='ADMIN' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503
-reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE user_organization_access SET status='REMOVED' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23503
+reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE user_organization_access SET role='ADMIN' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23514 'Organization access route clock source is unavailable'
+reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE user_organization_access SET status='REMOVED' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 23514 'Organization access route clock source is unavailable'
 reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; UPDATE user_organization_access SET tenant_id='$other' WHERE user_id='$actor' AND tenant_id='$tenant'; COMMIT;" 42501
-reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; INSERT INTO user_organization_access(user_id,tenant_id,role,status) VALUES ('$stranger','$tenant','OWNER','ACTIVE'); COMMIT;" 23503 fk_organization_route_membership
+reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; INSERT INTO user_organization_access(user_id,tenant_id,role,status) VALUES ('$stranger','$tenant','OWNER','ACTIVE'); COMMIT;" 23514 'Organization access route clock source is unavailable'
 reject "BEGIN; SET LOCAL app.tenant_id='$tenant'; INSERT INTO organization_members(id,tenant_id,user_id,role)
   VALUES (gen_random_uuid(),'$other','$actor','OWNER'); COMMIT;" 42501
 before="$(state)"

@@ -6,6 +6,31 @@ The migration validates existing data and fails rather than silently repairing d
 
 The required PostgreSQL CI fixture uses the actual restricted API login to verify normal trigger synchronization, rollback, rejected route deletion/fabrication/role/status changes, rejected cross-tenant membership insertion, and hidden canonical membership without tenant scope. Migration upgrade/repeat checks and exact-image missing-schema rejection include version 021.
 
+## Clock guard and refusal precedence
+
+Migration 120 requires each inserted or updated route to obtain its clocks from
+the matching canonical membership, including role and status. A fabricated
+route or divergent role/status now fails immediately with SQLSTATE `23514` and
+`Organization access route clock source is unavailable`. Missing-route deletion
+still fails the deferred `fk_organization_membership_route` constraint with
+`23503`; cross-tenant rewrites retain `42501`. The integrity fixture checks these
+specific refusals and compares the complete membership and route rows before
+and after every rejected transaction.
+
+CI run [37950972262](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37950972262)
+failed this fixture because its three divergence assertions still expected the
+older foreign-key refusal. On 2026-10-09, a fresh isolated PostgreSQL 17/pgvector
+database with all 127 migrations reproduced the unchanged fixture's exit 1.
+A second fresh database passed the complete fixture after those three expected
+errors were corrected, including restricted-login insert/update/delete,
+rollback, unchanged rejected state, deferred deletion and tenant isolation.
+The database log independently recorded one source-clock refusal before and
+three after. Both owned containers and environment files were removed.
+
+This repairs a CI assertion for the existing stricter guard. It changes no
+production migration, runtime grant or integrity rule. Current main build-once
+CI and complete PRD acceptance remain outstanding.
+
 ## Canonical Organization read
 
 `GET /organizations/{id}` returns `{organization, role}` using the same record
