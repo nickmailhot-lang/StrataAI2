@@ -89,3 +89,51 @@ retained source clocks. Their terminal result remains pending. The original
 before/after its thirty real read facts and includes the whole counter in
 permission/refusal fingerprints. Its original data counts, timing samples,
 thresholds and HTTP behavior remain; updated capacity execution is still required.
+
+The combined twelve-case phase subsequently finishes **7/12**, with five setup
+failures in the watch/permission/read ordering files, zero skips or flaky outcomes
+and no report errors. All seven original watch cases pass; this is not a complete
+ordering pass. Those five failures stop at the Board-lock gate's echo check:
+the local shim redirected synchronous Docker calls but omitted `spawn`, so the
+real gate subprocess did not reach the owned database. A fresh complete
+twelve-case invocation uses the original proven spawn-aware shim and retains
+every original wait/peer-blocker assertion, command pair and deadline. Its
+result and final whole-counter check remain pending. The failed phase's
+database/environment files are independently absent; its private report remains.
+
+The first local capacity attempts fail in native file handling before consumer
+acceptance, and remain retained separately. Git Bash prepends its bundled curl
+ahead of the injected Windows PATH; explicit child-shell binding selects the
+owned adapter. Curl output and native jq input then require explicit MSYS drive
+path translation. Both adapters now pass a real file input/output preflight
+before a fresh whole activity/notification run. No data count, assertion, sample,
+HTTP deadline or p95 budget changes. The full graph still contains 200 Lists,
+5,000 active Cards and 100,000 archived Cards; its synthetic activity and
+notification scale histories are separate from evidence of audited generation.
+
+The canonical activity/notification scripts now accept an explicit base URL and
+private report directory. CI defaults retain the existing release URL, report
+paths and exact-image topology. Local compiled reports explicitly use
+`local-compiled-runtime`, null release `revision` and a separate `sourceRevision`.
+They cannot be counted as immutable release-image proof. Current capacity
+execution, fresh ordering completion and exact build-once CI remain required.
+
+The current local capacity invocation completes the entire original activity
+script on 200 Lists, 5,000 active Cards, 100,000 archived Cards and 100,000
+synthetic activity sources. Both Board and Card history retain all twenty
+samples, bounded unique pages, body-free results and unchanged read-state
+fingerprints. Independent report inspection verifies declared counts and
+nearest-rank p95 values: **2,856.42 ms** for Board history and **1,256.89 ms** for
+Card history. These are local capacity history-read measurements, not initial
+Board rendering, mutation acknowledgment or normal-data budget certification.
+The report explicitly has null release revision and local compiled topology.
+The subsequent original 100,000-notification insertion is confirmed executing
+in its isolated database; full notification consumer/clock/p95 acceptance remains
+pending. Its live handle is preserved.
+
+Evaluating both actual old/new report expressions with deterministic reporter
+inputs confirms default CI objects are unchanged, and local output uses null
+release identity plus separate source identity while retaining every fixture,
+verification and sample field. Those checks verify formatting/provenance only;
+their inputs are not runtime performance evidence. Both Bash scripts parse,
+and all 234 Node source cases pass with no skips.

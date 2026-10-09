@@ -5,7 +5,10 @@ test "${CI:-}" = true || exit 1
 org=$1; board=$2; card=$3; owner=$4; owner_cookies=$5
 for id in "$org" "$board" "$card" "$owner"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
 test -f "$owner_cookies"
-base=http://localhost:8088; scratch=$(mktemp -d)
+base=${STRATAAI_TEST_BASE_URL:-http://localhost:8088}; scratch=$(mktemp -d)
+topology=${STRATAAI_CAPACITY_TOPOLOGY:-exact-release-images}
+case "$topology" in exact-release-images|local-compiled-runtime) ;; *) exit 1;; esac
+report_directory=${STRATAAI_CAPACITY_ARTIFACTS_DIRECTORY:-artifacts/capacity}
 trap 'rm -rf "$scratch"' EXIT
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 uuid() { cat /proc/sys/kernel/random/uuid; }
@@ -109,13 +112,17 @@ jq -e --arg org "$org" --arg recipient "$recipient" --slurpfile receipts "$scrat
  .eventType=="NOTIFICATION_READ" and .version==2 and .metadata=={} and
  any($receipts[]; .id==$event.entityId and .readAt==$event.createdAt)) and
  ([.events[].eventId]|unique|length)==30' "$scratch/read-events.json" >/dev/null
-revision=${GITHUB_SHA:-}; [[ "$revision" =~ ^[0-9a-f]{40,64}$ ]]; mkdir -p artifacts/capacity
-jq -nc --arg revision "$revision" --slurpfile first "$scratch/first.seconds" --slurpfile seek "$scratch/seek.seconds" --slurpfile read "$scratch/read.seconds" '{schemaVersion:1,revision:$revision,status:"passed",topology:"exact release images through Nginx",
+revision=${GITHUB_SHA:-}; [[ "$revision" =~ ^[0-9a-f]{40,64}$ ]]; mkdir -p "$report_directory"
+jq -nc --arg revision "$revision" --arg topology "$topology" --slurpfile first "$scratch/first.seconds" --slurpfile seek "$scratch/seek.seconds" --slurpfile read "$scratch/read.seconds" '{schemaVersion:1,
+ revision:(if $topology=="exact-release-images" then $revision else null end),
+ status:"passed",
+ topology:(if $topology=="exact-release-images" then "exact release images through Nginx" else $topology end),
  fixture:{lists:200,activeCards:5000,archivedCards:100000,notifications:100000,pageSize:50,samplesPerOperation:20,clients:2,latencyClients:1},
  verified:{uniqueSeek:true,persistedOrder:true,readStateUnchanged:true,exactReplay:true,readCount:30,
  journalCreatedCount:100000,journalReadCount:30,boundedJournalSeek:true,journalReset:true,exactPersistedReadEvents:true,
  concurrentReaders:2,overlappingConcurrentSelection:10,concurrentFirstReadRetained:true},
- milliseconds:{first:($first|map(.*1000)),seek:($seek|map(.*1000)),markRead:($read|map(.*1000)),markReadP95:($read|sort|.[18]*1000)}}' > "$scratch/report.json"
+ milliseconds:{first:($first|map(.*1000)),seek:($seek|map(.*1000)),markRead:($read|map(.*1000)),markReadP95:($read|sort|.[18]*1000)}}
+ | if $topology=="local-compiled-runtime" then .+{sourceRevision:$revision} else . end' > "$scratch/report.json"
 jq -e '.milliseconds.markReadP95<500' "$scratch/report.json" >/dev/null
-mv "$scratch/report.json" artifacts/capacity/notifications.json
+mv "$scratch/report.json" "$report_directory/notifications.json"
 echo 'Exact notification inbox capacity and original read-command replay passed.'

@@ -5,7 +5,10 @@ test "${CI:-}" = true || { echo 'Disposable activity capacity fixture requires C
 org=$1; board=$2; card=$3; owner=$4; cookies=$5
 for id in "$org" "$board" "$card" "$owner"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
 test -f "$cookies"
-base=http://localhost:8088; scratch=$(mktemp -d)
+base=${STRATAAI_TEST_BASE_URL:-http://localhost:8088}; scratch=$(mktemp -d)
+topology=${STRATAAI_CAPACITY_TOPOLOGY:-exact-release-images}
+case "$topology" in exact-release-images|local-compiled-runtime) ;; *) exit 1;; esac
+report_directory=${STRATAAI_CAPACITY_ARTIFACTS_DIRECTORY:-artifacts/capacity}
 trap 'rm -rf "$scratch"' EXIT
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 counts=$(admin "SELECT (SELECT count(*) FROM board_lists WHERE tenant_id='$org' AND board_id='$board')||'/'||
@@ -48,13 +51,15 @@ for kind in boards cards; do
 done
 test "$before" = "$(state)"
 revision=${GITHUB_SHA:-}; [[ "$revision" =~ ^[0-9a-f]{40,64}$ ]]
-mkdir -p artifacts/capacity
+mkdir -p "$report_directory"
 # Only fixed fixture sizes/timings and the immutable build identity are retained.
-jq -nc --arg revision "$revision" --slurpfile boardSamples "$scratch/boards-seconds" --slurpfile cardSamples "$scratch/cards-seconds" \
- '{schemaVersion:1,revision:$revision,topology:"exact release images through Nginx",status:"passed",
+jq -nc --arg revision "$revision" --arg topology "$topology" --slurpfile boardSamples "$scratch/boards-seconds" --slurpfile cardSamples "$scratch/cards-seconds" \
+ '{schemaVersion:1,revision:(if $topology=="exact-release-images" then $revision else null end),
+ topology:(if $topology=="exact-release-images" then "exact release images through Nginx" else $topology end),status:"passed",
  fixture:{lists:200,activeCards:5000,archivedCards:100000,seededActivityEvents:100000,pageSize:50,samplesPerEndpoint:20},
  verified:{boardPages:[50,50],cardPages:[50,50],uniqueSeek:true,bodyFree:true,readStateUnchanged:true},
  milliseconds:{boardSamples:($boardSamples|map(.*1000)),cardSamples:($cardSamples|map(.*1000)),
- boardP95:($boardSamples|sort|.[18]*1000),cardP95:($cardSamples|sort|.[18]*1000)}}' > "$scratch/capacity.json"
-mv "$scratch/capacity.json" artifacts/capacity/activity.json
+ boardP95:($boardSamples|sort|.[18]*1000),cardP95:($cardSamples|sort|.[18]*1000)}}
+ | if $topology=="local-compiled-runtime" then .+{sourceRevision:$revision} else . end' > "$scratch/capacity.json"
+mv "$scratch/capacity.json" "$report_directory/activity.json"
 echo 'Exact activity capacity: 100,000 sources with 200 Lists, 5,000 active/100,000 archived Cards; bounded unique Board/Card seeks, body-free reads and 20 samples per endpoint passed. Timings do not claim a browser rendering budget.'

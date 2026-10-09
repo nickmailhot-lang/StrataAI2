@@ -136,3 +136,19 @@ failed overlong-host helper attempt, scope, cleanup and pending watch/ordering,
 capacity and release checks. The unchanged complete schema-125 API invocation
 continues against its own original read-only build; it is not restarted or
 promoted to current schema-126 full API proof.
+
+That unchanged schema-125 Linux API invocation subsequently finishes **691/691**.
+Independent TRX inspection matches all 691 actual case rows and declared counters:
+zero failures, errors, timeouts, aborts or exclusions. The architecture source-root
+assertion and all 24 Windows-excluded Linux file-delivery cases execute. Its
+owned container is independently absent. Earlier 690/691 and Windows 667/691
+reports remain retained; they are not rewritten as passing evidence.
+
+The newer compiled schema-126 Linux Domain invocation passes **758/758**.
+Actual XML case rows and declared assembly counters agree, with zero failures,
+skips or report errors. The pinned runtime, original full case set, read-only
+compiled artifacts and private report policy remain. A fresh full 691-case Linux
+API invocation has started against that newer build; its live handle remains
+authoritative until a terminal result exists. Neither local suite certifies
+the current immutable-image pipeline, whose metadata job remains queued without
+an assigned runner at the recorded inspection.
