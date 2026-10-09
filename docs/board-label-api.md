@@ -439,3 +439,35 @@ unproven. Estimated PRD-10 remaining: **35%**.
 ## Complete combined strict Board verification
 
 The [complete fourteen-file/31-case strict invocation](architecture/integration-ci-groups.md#complete-fourteen-file-strict-board-invocation) passes together in 21.7 minutes with zero skips/retries/flaky cases. Current compiled Production API/separate Worker, frozen original-key recovery web, restricted schema-114 PostgreSQL17/pgvector and verified-email enforcement were used; owned fixtures were removed. Original complete scenario assertions and deadlines remain. This is local runtime evidence, not current immutable/full acceptance. Estimated PRD-10 work remaining: **34%**.
+
+## Filter recovery focus after Retry removal
+
+On 2026-10-09, the unchanged complete two-case Card-label invocation against
+schema-127 compiled API/Worker and the admitted identity-version frontend
+finishes **1/2** in 110.40 seconds. Desktop passes; phone confirms recovery
+of the lost filter response, then fails the original assertion that Apply
+filters regains focus. Both cases run once, with zero skips, flaky outcomes
+or report-level errors. The failed report and trace remain retained privately;
+owned containers, database and environment files are removed.
+
+Source inspection identifies a concrete recovery gap: `BoardFilterControl`
+captures the originating MUI dialog but omits it when calling the shared
+focus-ownership helper. React removes Retry after the acknowledgment. A
+disconnected Retry can no longer locate its dialog, so the helper cannot
+recognize that same dialog's fallback sentinel. The component now passes the
+captured dialog, preserving the helper's refusal to take another dialog's
+focus. This does not establish the unique cause of the native failure.
+
+Two new regressions exercise the removed owner with its own versus another
+dialog's sentinel. Before the repair, the complete interaction suite passes
+15/16 and fails only the owned-sentinel regression. Afterward, all **55**
+interaction, filter-control and shared focus cases pass with matching actual
+report rows and zero failed/pending cases. Web typecheck, targeted lint and
+the production build pass. The browser cases, original request identities,
+write counts, mutation assertions and deadlines remain unchanged.
+
+A fresh complete desktop/phone native invocation now uses the repaired
+production assets with schema-127 API/Worker; its terminal result remains
+required. Current immutable build-once CI, the broader role/lifecycle matrix
+and complete PRD acceptance remain outstanding. Estimated PRD-10 work
+remaining stays **34%** (planning estimate).

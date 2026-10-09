@@ -128,6 +128,37 @@ it('restores owned keyboard focus to original retry and Apply after recovery', a
   const retry = await screen.findByRole('button', { name: 'Retry original filter change' }); await waitFor(() => expect(retry).toHaveFocus());
   fireEvent.click(retry); await screen.findByRole('link', { name: 'Admitted match — Planning' }); await waitFor(() => expect(apply).toHaveFocus());
 });
+it.each([true, false])('handles a removed retry owner without taking another dialog sentinel (owned=%s)', async owned => {
+  const { state, fetch } = setup(); state.loseFirstResponse = true; mount(); await open();
+  const apply = screen.getByRole('button', { name: 'Apply filters' }); apply.focus(); fireEvent.click(apply);
+  const retry = await screen.findByRole('button', { name: 'Retry original filter change' });
+  await waitFor(() => expect(retry).toHaveFocus());
+  const dialog = retry.closest<HTMLElement>('[role="dialog"][data-mui-focusable]')!;
+  const root = dialog.closest('.MuiDialog-root')!;
+  const sentinel = root.querySelector<HTMLElement>('[data-testid="sentinelEnd"]')!;
+  expect(sentinel).not.toBeNull();
+  const foreignRoot = document.createElement('div'); foreignRoot.className = 'MuiDialog-root';
+  const foreignSentinel = document.createElement('div'); foreignSentinel.dataset.testid = 'sentinelEnd';
+  foreignRoot.append(foreignSentinel); document.body.append(foreignRoot);
+  let active: ReturnType<typeof vi.spyOn> | undefined;
+  const originalFetch = fetch.getMockImplementation()!;
+  const focus = vi.spyOn(apply, 'focus');
+  fetch.mockImplementation(async (path, init) => {
+    const reply = await originalFetch(path, init);
+    if (path.includes('/filter-change?')) {
+      // Native MUI may park focus on its sentinel while React removes Retry.
+      active = vi.spyOn(document, 'activeElement', 'get').mockReturnValue(owned ? sentinel : foreignSentinel);
+    }
+    return reply;
+  });
+  try {
+    fireEvent.click(retry); await screen.findByText('Filter change acknowledged.');
+    await waitFor(() => expect(retry.isConnected).toBe(false));
+    if (owned) await waitFor(() => expect(focus).toHaveBeenCalledWith({ preventScroll: true }));
+    else expect(focus).not.toHaveBeenCalled();
+    expect(state.writes).toBe(2); expect(state.originals.size).toBe(1);
+  } finally { active?.mockRestore(); foreignRoot.remove(); }
+});
 it('refuses a replacement request when another original appears after opening', async () => {
   const { state } = setup(); mount(); await open();
   const original = createBoardFilterChange({ actor, organization: org, board }, 'apply', { keyword: 'Original', labels: [], members: [], match: 'all' });

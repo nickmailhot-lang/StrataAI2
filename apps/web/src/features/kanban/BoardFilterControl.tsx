@@ -61,7 +61,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const storageKey = (actor: string) => `strataai:board-filter:v1:${actor}:${org}:${board}`;
   useLayoutEffect(() => {
     if (!restoreChangeFocus.current || changeBusy || disabled || labelLoading || memberLoading
-      || !open && changeDialog.current || !(ownsRecoveryFocus(document.activeElement, changeOwner.current) || document.activeElement === changeDialog.current)) return;
+      || !open && changeDialog.current || !(ownsRecoveryFocus(document.activeElement, changeOwner.current, changeDialog.current) || document.activeElement === changeDialog.current)) return;
     const target = changeIntent ? retryAction.current : changeAction.current === 'clear' ? (open ? clearAction.current : filterTrigger.current) : applyAction.current;
     if (target && !target.disabled) target.focus({ preventScroll: true });
   }, [changeBusy, disabled, labelLoading, memberLoading, open, changeIntent]);
