@@ -258,3 +258,44 @@ it was not a frozen Git SHA. This is the completed original source-test scope,
 not proof of current-schema PostgreSQL behavior, browser acceptance or an
 immutable current release image. Current build-once CI and the independently
 reproduced later full-persistence timeout still require resolution.
+
+
+## Completed schema-131 diagnostic baseline and route-batching experiment
+
+The original complete default schema-131 persistence executable subsequently
+passes, with successful executable/helper outcome, 68 passing summary markers
+and no unhandled exception. It retains the original default path, arguments,
+counts, concurrency/scale budgets and lack of case retries. All 131 staged
+migrations and role provisioning source match normalized current source;
+owned containers and credential environments are independently absent. Report:
+`invitation-mail-schema131-full-persistence-plans-native-20261009`.
+
+This invocation enables private thresholded nested-query plan logging. Its
+completed original 100,002-Card seed is captured at 17,013.731 ms. That is an
+instrumented local statement observation, not server mutation p95 or a fix
+for the independently reproduced CI timeout. It does not certify schema 132,
+every special-mode branch or immutable current images.
+
+A separate schema-132 database experiment batches Card route INSERT/UPDATE
+projections using statement transition tables. It retains the original
+invoker role, canonical per-route clock guard, forced RLS, grants and row-level
+DELETE behavior. The prototype is isolated outside the checkout and has not
+been adopted as a production migration. It changes no source fixture size,
+command deadline, assertion or retry policy.
+
+Five complete companion checks pass: tenant catalog, RLS, runtime roles,
+original routing isolation and the full original four-route clock/body/tamper/
+no-op/canonical-update assertion script. The current-schema preparation uses
+the existing populated-source fixture and excludes its deliberately orphaned
+pre-clock-upgrade row; the current clock guard already refuses that row.
+All original post-upgrade assertions remain intact. The companion's owned
+container and credential environments are removed. Report:
+`card-route-batch-prototype-security-native-20261009`.
+
+The original complete seven-contract deletion mode with the private prototype
+remains live. It has passed the original 100,002-Card candidate traversal, but
+its full-scale mutation and terminal result are still required. The original
+132-entry readiness mode has run first; the experiment records no new ledger
+version and is not current release certification. Report:
+`card-route-batch-prototype-deletion-native-20261009`. No production route
+migration is adopted on the strength of a partial run.

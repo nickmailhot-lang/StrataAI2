@@ -93,3 +93,10 @@ All six classified mutable candidates now have prospective clock repairs;
 legacy provenance, other entities and the full original PRD/architecture
 acceptance scope remain open. PRD-01 remains open at **34% estimated work
 remaining** (planning estimate).
+
+
+The schema-131 diagnostic default invocation subsequently passes and removes
+its owned resources. Its instrumented local result does not erase the earlier
+local/CI timeout or certify schema 132. The isolated Card route-batching
+experiment and its remaining complete deletion verification are recorded in
+[source test results](source-test-results.md).

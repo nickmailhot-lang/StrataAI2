@@ -87,3 +87,10 @@ The full failure and current CI evidence remain open obligations.
 now have prospective clocks in migration 132. Legacy provenance/full acceptance
 remain unresolved for all six classified mutable candidates. PRD-01 stays open at **34% estimated work
 remaining** (planning estimate).
+
+
+The schema-131 diagnostic default invocation subsequently passes and removes
+its owned resources. Its instrumented local result does not erase the earlier
+local/CI timeout or certify schema 132. The isolated Card route-batching
+experiment and its remaining complete deletion verification are recorded in
+[source test results](source-test-results.md).
