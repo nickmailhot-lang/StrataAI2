@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
-import { trackBoardReads } from './boardReadTracker';
+import { trackBoardReads, trackCardVersion } from './boardReadTracker';
+import { focusAdmittedControl } from './keyboardAdmission';
 
 // Explicit alternate config: never discovered by the ordinary .spec.ts suite.
 // The CI shell fixture supplies a real uploaded/published image and owns the
@@ -14,10 +15,23 @@ test.afterEach(async ({ context }) => {
   // authenticated commands; the failed case remains failed.
   const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE;
   expect(path).toBeTruthy();
-  const fixture = JSON.parse(readFileSync(path!, 'utf8')) as { email: string; password: string; organizationId: string; boardId: string };
+  const fixture = JSON.parse(readFileSync(path!, 'utf8')) as { email: string; password: string; organizationId: string; boardId: string; cardId: string };
   expect(fixture.boardId).toMatch(/^[0-9a-f-]{36}$/);
   expect((await context.request.post('/auth/login', { headers: { 'X-StrataAI-Request': '1' },
     data: { email: fixture.email, password: fixture.password } })).status()).toBe(200);
+  // Retire a selected cover left by a failed assertion using its current
+  // canonical revision. Keep the original case failed and isolate the next one.
+  const coverPath = `/cards/${fixture.cardId}/cover`;
+  const coverResponse = await context.request.get(coverPath); expect(coverResponse.status()).toBe(200);
+  const cover = await coverResponse.json();
+  if (cover.attachmentId !== null) {
+    expect((await context.request.put(coverPath, {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { cardVersion: cover.cardVersion, attachmentId: null, attachmentVersion: null, publicVisibilityConfirmed: false },
+    })).status()).toBe(200);
+    const retired = await context.request.get(coverPath); expect(retired.status()).toBe(200);
+    expect(await retired.json()).toMatchObject({ cardVersion: cover.cardVersion + 1, attachmentId: null });
+  }
   const read = async () => {
     const response = await context.request.get(`/boards/${fixture.boardId}`); expect(response.status()).toBe(200);
     const board = (await response.json()).board;
@@ -42,7 +56,7 @@ test.afterEach(async ({ context }) => {
 });
 
 for (const width of [1280, 390]) {
-  test(`PRD-04 real public consent, publication recovery and image-backed copy at ${width}px`, async ({ page, context }) => {
+  test(`PRD-04 real public consent, publication recovery and image-backed copy at ${width}px`, async ({ page, context, browser }) => {
     test.setTimeout(150_000);
     expect(process.env.CI).toBe('true');
     const path = process.env.STRATAAI_ATTACHMENT_BROWSER_FIXTURE;
@@ -83,7 +97,73 @@ for (const width of [1280, 390]) {
     await waitForBoardDelivery(context.request, board);
     const cardPath = `/app/${org}/boards/${board}/cards/${fixture.cardId}`;
     const reads = trackBoardReads(page, board, cardPath);
+    const admittedCardVersion = trackCardVersion(page, board, fixture.cardId, cardPath);
     await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+    // The source was really uploaded, scanned and decoded by the shell-owned
+    // Worker. Exercise cover disclosure/receipts without fabricating metadata
+    // or image replies; only the first successful command response is lost.
+    const coverPath = `/cards/${fixture.cardId}/cover`;
+    const initialCoverResponse = await context.request.get(coverPath); expect(initialCoverResponse.status()).toBe(200);
+    const initialCover = await initialCoverResponse.json(); expect(initialCover.attachmentId).toBeNull();
+    const refusedCover = await context.request.put(coverPath, {
+      headers: { 'X-StrataAI-Request': '1', 'Idempotency-Key': randomUUID() },
+      data: { attachmentId: candidate.attachmentId, attachmentVersion: candidate.attachmentVersion,
+        cardVersion: initialCover.cardVersion, publicVisibilityConfirmed: false },
+    });
+    expect(refusedCover.status()).toBe(400);
+    expect(await refusedCover.json()).toMatchObject({ code: 'cover_public_confirmation_required' });
+    const coverAfterRefusal = await context.request.get(coverPath); expect(coverAfterRefusal.status()).toBe(200);
+    expect(await coverAfterRefusal.json()).toEqual(initialCover);
+    const coverWrites: { key: string | undefined; body: string | null }[] = [];
+    await page.route('**' + coverPath, async route => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      coverWrites.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
+      const result = await route.fetch(); expect(result.status()).toBe(200);
+      if (coverWrites.length === 1) await route.abort('failed');
+      else await route.fulfill({ response: result });
+    });
+    const coverReview = page.getByRole('button', { name: 'Review Card cover', exact: true });
+    await focusAdmittedControl(coverReview); await page.keyboard.press('Enter');
+    await focusAdmittedControl(page.getByRole('button', { name: 'Use Private original.png as cover', exact: true })); await page.keyboard.press('Enter');
+    const coverConfirm = page.getByRole('button', { name: 'Confirm Card cover', exact: true });
+    await expect(coverConfirm).toBeDisabled();
+    const coverConsent = page.getByRole('checkbox', { name: 'I understand this cover image will be publicly visible', exact: true });
+    await expect(coverConsent).toBeFocused(); await focusAdmittedControl(coverConsent); await page.keyboard.press('Space');
+    await focusAdmittedControl(coverConfirm); await page.keyboard.press('Enter');
+    const coverRetry = page.getByRole('button', { name: 'Retry original cover change', exact: true });
+    await expect(coverRetry).toBeEnabled(); await expect(coverRetry).toBeFocused();
+    for (const name of ['Save card', 'Manage attachments', 'Close']) await expect(page.getByRole('button', { name, exact: true })).toBeDisabled();
+    await focusAdmittedControl(coverRetry); await page.keyboard.press('Enter'); await expect(page.getByText('Card cover updated.', { exact: true })).toBeVisible();
+    expect(coverWrites).toHaveLength(2); expect(coverWrites[1]).toEqual(coverWrites[0]);
+    expect(coverWrites[0].key).toMatch(/^[0-9a-f-]{36}$/i);
+    expect(JSON.parse(coverWrites[0].body!)).toEqual({ attachmentId: candidate.attachmentId,
+      attachmentVersion: candidate.attachmentVersion, cardVersion: initialCover.cardVersion, publicVisibilityConfirmed: true });
+    const coverImage = page.getByRole('img', { name: 'Card cover', exact: true }); await expect(coverImage).toBeVisible();
+    await expect.poll(() => coverImage.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
+    await expect(coverReview).toBeFocused();
+    const selectedCoverResponse = await context.request.get(coverPath); expect(selectedCoverResponse.status()).toBe(200);
+    expect(await selectedCoverResponse.json()).toMatchObject({ cardVersion: initialCover.cardVersion + 1,
+      attachmentId: candidate.attachmentId, attachmentVersion: candidate.attachmentVersion });
+    await expect.poll(admittedCardVersion).toBeGreaterThanOrEqual(initialCover.cardVersion + 1);
+    const visitor = await browser.newContext({ baseURL: new URL(page.url()).origin });
+    try {
+      const publicCoverImage = await visitor.request.get(coverPath + '/image'); expect(publicCoverImage.status()).toBe(200);
+      expect(publicCoverImage.headers()['content-type']).toBe('image/png');
+      const coverBytes = await publicCoverImage.body(); expect(coverBytes.subarray(0, 8)).toEqual(Buffer.from('89504e470d0a1a0a', 'hex'));
+      expect(coverBytes.includes(Buffer.from('PRIVATE ORIGINAL'))).toBe(false);
+      expect((await visitor.request.get(coverPath)).status()).toBe(401);
+    } finally { await visitor.close(); }
+    await focusAdmittedControl(coverReview); await page.keyboard.press('Enter');
+    await focusAdmittedControl(page.getByRole('button', { name: 'Remove Card cover', exact: true })); await page.keyboard.press('Enter');
+    await expect(coverConsent).toHaveCount(0);
+    await focusAdmittedControl(page.getByRole('button', { name: 'Confirm cover removal', exact: true })); await page.keyboard.press('Enter');
+    await expect(page.getByText('Card cover removed.', { exact: true })).toBeVisible(); await expect(coverImage).toHaveCount(0);
+    await expect(coverReview).toBeFocused(); expect(coverWrites).toHaveLength(3);
+    const removedCoverResponse = await context.request.get(coverPath); expect(removedCoverResponse.status()).toBe(200);
+    expect(await removedCoverResponse.json()).toMatchObject({ cardVersion: initialCover.cardVersion + 2, attachmentId: null });
+    await expect.poll(admittedCardVersion).toBeGreaterThanOrEqual(initialCover.cardVersion + 2);
+    expect((await context.request.get(coverPath + '/image')).status()).toBe(404);
+    await page.unroute('**' + coverPath);
     const attempts: { key: string | undefined; body: string | null }[] = [];
     await page.route(`**/boards/${board}/background/image`, async route => {
       expect(route.request().method()).toBe('POST');

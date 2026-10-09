@@ -50,6 +50,21 @@ authorized. The existing complete two-viewport browser invocation and subsequent
 Board archive/public/Private/session/retirement assertions remain. See the
 [owned native equivalent and its provider/CI limits](attachment-object-storage.md#executed-enabled-pipeline-with-published-source-deletion).
 
+The [complete default restricted PostgreSQL contract invocation](attachment-acceptance.md#complete-default-restricted-postgresql-contract-execution)
+also finishes locally without narrowing arguments: zero exit, 67 source-fixed
+completion messages, executed final-attempt scan recovery and the complete large
+Organization deletion workload. Its fixture/HTTP/Worker-process/provider/current
+immutable limits and independently checked cleanup are recorded separately.
+
+Both enabled attachment pipeline viewports now also execute the actual published
+source as a Card cover: PUBLIC refusal/consent, original receipt recovery, native
+PNG rendering, anonymous sanitized bytes/private metadata denial and removal.
+The [complete expanded native equivalent](attachment-object-storage.md#real-upload-through-worker-card-cover-browser-workflow)
+passes 2/2 in 89.2 seconds and all subsequent HTTP checks. Its unchanged 150-second
+case deadlines, complete invocation, original Board-background assertions and
+current immutable/provider limits remain; canonical post-browser Card revision
+is exactly 8, archive 9 and deletion 10.
+
 ## Strict notification consumer coverage
 
 The assignment/mention/reminder phase now also selects the complete recipient

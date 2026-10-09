@@ -220,3 +220,39 @@ remain intact. The final run independently leaves no owned containers, database,
 provider volume or credential files. API/Worker source is unchanged from the
 locally built images; the fresh web bundle includes the focus repair. This scoped
 native result does not establish current full immutable CI.
+
+## Real upload-through-Worker Card cover browser workflow
+
+Both enabled-pipeline browser viewports now also exercise the actually uploaded,
+scanned and published source as a Card cover. A direct PUBLIC command without
+consent is refused without changing canonical cover metadata. Keyboard selection
+requires explicit consent; only the first successful command response is lost.
+Recovery preserves the exact original body/key and yields one canonical revision.
+The browser renders the actual PNG; a fresh anonymous context receives sanitized
+PNG bytes but cannot read private cover metadata. Removal advances one revision,
+withdraws rendered disclosure and makes the image route return 404. Neither cover
+metadata nor image replies are fabricated. Each viewport has exactly three UI
+writes: selection, original receipt recovery and removal.
+
+Initial complete runs expose a lost review key during a foreground refresh and
+return-focus loss after committed recovery; those failed invocations remain
+failures. The keyboard scenario now establishes enabled focus before one page
+activation key and observes the actual canonical Card revision before another
+review. Cover recovery now transfers focus ownership to the restored control in
+a layout effect and retains it across later access refreshes; a user-selected
+different control still cancels recovery. A focused regression covers both paths.
+All 43 cover/background/attachment control cases, web/browser typechecks, focused
+lint, fresh web build, shell syntax and diff checks pass.
+
+The complete expanded two-viewport invocation and all subsequent HTTP pipeline
+assertions then pass with no failures/skips/retries/flaky cases. Canonical Card
+revision is exactly 8 after the two cover selection/removal pairs, 9 after source
+archive and 10 after source deletion; attachment revisions remain 3/4/5. Original
+Board-image concurrency, receipt recovery, retained PNGs, source tombstone,
+Board archive, public/Private, logout/readmission and retirement assertions remain.
+Failed-case cleanup uses current canonical revisions to remove only the owned
+fixture's retained cover before the next viewport, without changing the failed
+result. Final owned containers/database/provider volume/credential files are
+independently absent. Private local storage, scanner protocol simulation,
+administrator test-account verification and current immutable/external-provider/
+full acceptance limits remain as recorded above.

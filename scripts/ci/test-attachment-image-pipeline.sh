@@ -139,10 +139,11 @@ echo 'Owned private PNG bytes, response headers, sanitization and anonymous deni
 # Board ownership and original acknowledgment recovery remain independent.
 json "$base/cards/$card/attachments" > "$scratch/archive-review"
 # Upload, scan completion and preview publication each advance the Card. The
-# reviewed archive command must use the published revision, not the upload's.
-jq -e --arg id "$attachment" '.cardVersion==4 and (.items|any(.id==$id and .version==3))' "$scratch/archive-review" >/dev/null
+# reviewed archive command must also include the two viewport cover selections
+# and removals (four more canonical Card revisions).
+jq -e --arg id "$attachment" '.cardVersion==8 and (.items|any(.id==$id and .version==3))' "$scratch/archive-review" >/dev/null
 json -X POST -d "$(jq -nc --slurpfile review "$scratch/archive-review" '{cardVersion:$review[0].cardVersion,version:3}')" "$base/cards/$card/attachments/$attachment/archive" > "$scratch/archived-attachment"
-jq -e --arg id "$attachment" '.cardVersion==5 and .attachment.id==$id and .attachment.version==4' "$scratch/archived-attachment" >/dev/null
+jq -e --arg id "$attachment" '.cardVersion==9 and .attachment.id==$id and .attachment.version==4' "$scratch/archived-attachment" >/dev/null
 select_image > "$scratch/recovered"
 cmp "$scratch/selected" "$scratch/recovered"
 curl --max-time 60 --fail --silent --show-error -b "$scratch/cookies" "$base/boards/$board/background/image?boardVersion=$selected_version" > "$scratch/retained-preview"
@@ -155,7 +156,7 @@ jq -e --arg source "$(jq -r '.backgroundValue' "$scratch/selected")" '.version==
 delete_card_version=$(jq -r '.cardVersion' "$scratch/archived-attachment")
 delete_attachment_version=$(jq -r '.attachment.version' "$scratch/archived-attachment")
 json -X DELETE "$base/attachments/$attachment?cardId=$card&cardVersion=$delete_card_version&version=$delete_attachment_version&confirmed=true" > "$scratch/deleted-attachment"
-jq -e --arg id "$attachment" '.cardVersion==6 and .attachment.id==$id and .attachment.version==5 and .attachment.lifecycleState==2' "$scratch/deleted-attachment" >/dev/null
+jq -e --arg id "$attachment" '.cardVersion==10 and .attachment.id==$id and .attachment.version==5 and .attachment.lifecycleState==2' "$scratch/deleted-attachment" >/dev/null
 for route in download-options download preview; do
   test "$(curl --max-time 60 --silent --show-error -b "$scratch/cookies" -o /dev/null -w '%{http_code}' "$base/cards/$card/attachments/$attachment/$route")" = 404
 done

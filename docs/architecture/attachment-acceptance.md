@@ -58,9 +58,9 @@ digests and scanner/provider details; authorization precedes disclosure.
 | FR-003 metadata | Scoped variant DTOs; migrations 041/043/044; tenant-safe integrity/RLS; current authorization before paging/admission; stable errors and atomic receipts/audit/events | Preview/cover/deletion state integration, remaining move/copy/archive races and full release acceptance |
 | FR-004 object storage | Official managed S3 adapter, private-owner/policy validation, non-overwrite multipart storage, explicit readiness/configuration refusal; no database BLOB; SDK transport/private-file contracts | Release-image enabled provider workflow, orphan/retention reconciliation and documented operator configuration/smoke evidence |
 | FR-005 controlled downloads | Current Clean/scoped admission, time-bound snapshot, SHA-verified anonymous staging, final/periodic rights checks, private forced-download headers and MUI browser-owned delivery; managed/API/PostgreSQL contracts | Full enabled-file browser/provider acceptance and deletion/cover/reconciliation interactions |
-| FR-006 scanning/quarantine | Separate Worker job, scope-only payload, restricted lease-bound SQL capability, complete-byte ClamAV protocol and atomic verdict/Card/audit/event persistence; fail-closed Pending/Rejected/Failed delivery | Final-attempt crash reconciliation/rescan, remaining mutation races and complete enabled image/operator coverage |
+| FR-006 scanning/quarantine | Separate Worker job, scope-only payload, restricted lease-bound SQL capability, complete-byte ClamAV protocol and atomic verdict/Card/audit/event persistence; fail-closed Pending/Rejected/Failed delivery; executed bounded final-attempt/expired-claim recovery | Remaining mutation/operator/rescan coverage and complete current immutable enabled pipeline |
 | FR-007 previews | Linux raster normalization; exact Worker isolated codec/privilege-drop/cancellation verification; durable private derivative jobs and fenced publication; current-authorized controlled PNG delivery and MUI viewer | Complete actual enabled-provider release/browser pipeline and cross-feature acceptance matrix |
-| FR-008 cover | Nullable tenant/Card composite FK; current published-source prerequisite; dual CAS/idempotent commands and atomic audit/outbox; selected-source withdrawal clears once; PUBLIC consent/current anonymous image admission; minimal snapshot hint and MUI controls/display | Full native execution, real provider/upload-through-Worker integration, concurrency/reconnect and unchanged capacity/performance acceptance |
+| FR-008 cover | Nullable tenant/Card composite FK; current published-source prerequisite; dual CAS/idempotent commands and atomic audit/outbox; selected-source withdrawal clears once; PUBLIC consent/current anonymous image admission; minimal snapshot hint and MUI controls/display; executed actual upload-through-Worker cover browser workflow | Current immutable/full enabled-provider coverage, remaining cross-feature/concurrency/reconnect matrix and unchanged capacity/performance acceptance |
 | FR-009 deletion | Guarded archive/restore/elevated confirmed soft deletion; current parent/source versions; atomic selected-cover clearing; audit/events; restore does not reselect | Full enabled-provider/browser lifecycle matrix and retention/purge reconciliation |
 | FR-010 untrusted MIME/name | Canonical raw transport validation; server byte classification/full size/SHA checks; quarantine; safe opaque downloads; strict raw image decoder; forged-input/API/provider cases | Successful isolated image admission/publication plus full enabled release/security regression matrix |
 
@@ -897,3 +897,40 @@ Deleted attachment delivery/restoration is refused while both independent Board
 image owners retain their sanitized PNG. The private local provider and scanner
 protocol simulator remain explicit; external provider/operator evidence,
 retention reconciliation and current full immutable CI remain open.
+
+## Complete default restricted PostgreSQL contract execution
+
+The freshly compiled `StrataAI.Persistence.Contracts` executable completes its
+entire default invocation against owned schema-114 PostgreSQL with the restricted
+API and Worker roles. No narrowing arguments are supplied. It exits zero and
+emits 67 source-fixed completion messages, including the final upload-persistence
+completion; the owned container/database/credential file are independently absent.
+
+The scan-recovery contract executes Worker-only tenant admission, bounded cursor
+and replica locks, exhausted Failed/expired final claims, live/non-final/stale/
+deleted refusals, retained Clean verdicts, moved-Board atomic effects, replay,
+late terminal-fence rollback and zero provider I/O. Final-attempt recovery is
+implemented and executed; it must no longer be listed as missing implementation.
+Operational rescan/provider evidence and current full immutable acceptance remain.
+
+The same complete invocation also executes the identity/authority/lifecycle,
+search, publication/activity and comment/mention/handle persistence contracts.
+Its large Organization deletion workload processes 5,000 active and 100,000
+archived Cards in 200 Lists: 826 bounded mutation jobs, 105,201 ready work events
+and one ready terminal. The mutation phase takes 3,084,822 ms (51.4 minutes), with
+maximum leased page 1,915 ms. This is actual restricted database execution with
+synthetic actor/storage/scanner fixtures, not HTTP session, separate Worker-process,
+external-provider, whole-product performance or current release-image evidence.
+
+## Executed real Card cover workflow
+
+The [actual uploaded/scanned/published Card-cover workflow](attachment-object-storage.md#real-upload-through-worker-card-cover-browser-workflow)
+passes both desktop/phone cases together in 89.2 seconds with no skips/failures/
+retries/flaky cases, followed by the complete HTTP pipeline assertions. It verifies
+PUBLIC consent, exact original-key recovery, actual browser PNG rendering,
+anonymous sanitized bytes/private metadata refusal, canonical removal and image
+withdrawal. It also exposes and repairs cover return-focus loss across later
+access refreshes; a focused regression protects intentional focus elsewhere.
+All 43 focused controls and source/build checks pass. Current immutable release,
+external provider/operator and full cross-feature/performance acceptance remain
+open. Estimated PRD-14 work remaining: **33%**.

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Button, Dialog } from '@mui/material';
 import { CardCoverControl } from './CardCoverControl';
 import { workRequest, WorkRequestError } from '../../api/workManagement';
@@ -11,6 +11,22 @@ const base = { ...scope, cardVersion: 4, attachmentId: null as string | null, at
 const ack = { ...scope, cardVersion: 5, attachmentId: candidate.attachmentId, attachmentVersion: 3, changed: true };
 const props = () => ({ ...scope, version: 4, editable: true, disabled: false, unavailable: false, onRefresh: vi.fn(), onBusyChange: vi.fn(), onRecoveryChange: vi.fn() });
 const writes = () => vi.mocked(workRequest).mock.calls.filter(([, init]) => !!init?.method);
+it('retains restored cover focus through a later access refresh but respects another Card action', async () => {
+  let attempts = 0; mock(() => { if (++attempts === 1) throw new WorkRequestError(503, null); return ack; });
+  const p = props();
+  const content = (unavailable: boolean) => <Dialog open><CardCoverControl {...p} unavailable={unavailable} /><Button>Another Card action</Button></Dialog>;
+  const view = render(content(false)); await choose();
+  const save = screen.getByRole('button', { name: 'Confirm Card cover' }); act(() => save.focus()); fireEvent.click(save);
+  const retry = await screen.findByRole('button', { name: 'Retry original cover change' });
+  await waitFor(() => expect(retry).toHaveFocus()); fireEvent.click(retry);
+  await screen.findByText('Card cover updated.');
+  const review = screen.getByRole('button', { name: 'Review Card cover' }); await waitFor(() => expect(review).toHaveFocus());
+  view.rerender(content(true)); act(() => screen.getByRole('dialog').focus());
+  view.rerender(content(false)); await waitFor(() => expect(review).toHaveFocus());
+  const other = screen.getByRole('button', { name: 'Another Card action' }); act(() => other.focus());
+  view.rerender(content(true)); view.rerender(content(false)); expect(other).toHaveFocus();
+  expect(writes()).toHaveLength(2); expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body);
+});
 function mock(write: () => unknown = () => ack, view = base) {
   vi.mocked(workRequest).mockImplementation(async (path, init) => path === '/me' ? profile : init?.method ? write()
     : path.includes('/candidates') ? { ...scope, cardVersion: view.cardVersion, items: [candidate], nextCursor: null, canEdit: view.canEdit, isPublic: view.isPublic } : view);

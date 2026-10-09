@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, FormControlLabel, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
@@ -25,14 +25,16 @@ function CoverControl(props: UrlAttachmentCreateProps) {
   function focus(owner: HTMLElement) {
     focusOwner.current = owner; focusDialog.current = owner.closest('[role="dialog"][data-mui-focusable]'); restoreFocus.current = true; parkRecoveryFocus(owner);
   }
-  function blur(event: React.FocusEvent<HTMLElement>) { if (!ownsRecoveryFocus(event.relatedTarget, event.currentTarget)) restoreFocus.current = false; }
+  function blur(event: React.FocusEvent<HTMLElement>) {
+    if (event.relatedTarget !== focusOwner.current && !ownsRecoveryFocus(event.relatedTarget, event.currentTarget)) restoreFocus.current = false;
+  }
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); callbacks.current.onBusyChange(false); callbacks.current.onRecoveryChange(false); }; }, []);
   useEffect(() => { props.onRecoveryChange(!!intent || blocked); }, [intent, blocked, props.onRecoveryChange]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (disabled || !restoreFocus.current || !(ownsRecoveryFocus(document.activeElement, focusOwner.current) || document.activeElement === focusDialog.current)) return;
     const target = intent ? retry.current : blocked ? discard.current : draft?.candidate && draft.view.isPublic && !draft.confirmed ? consent.current
       : draft ? saveButton.current : primary.current;
-    if (target && !target.disabled) { target.focus({ preventScroll: true }); restoreFocus.current = !!intent || blocked; }
+    if (target && !target.disabled) { focusOwner.current = target; target.focus({ preventScroll: true }); restoreFocus.current = true; }
   }, [disabled, draft, intent, blocked, review]);
   async function load(owner: HTMLElement, cursor?: string) {
     if (pending.current || disabled || intent || draft || blocked) return;
