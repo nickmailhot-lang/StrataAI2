@@ -953,6 +953,59 @@ roles, source-archive live peer withdrawal, disconnect recovery, external provid
 capacity/performance and current immutable/full acceptance remain open.
 Estimated PRD-14 work remaining: **33%**.
 
+
+## Mandatory enabled-pipeline selection guards
+
+The [attachment pipeline/configuration guards](integration-ci-groups.md#mandatory-enabled-attachment-pipeline-coverage-guards)
+now reject omitted/filtered phases, swallowed failures, disabled strict shell
+options, wrong fixtures, disabled pacing/release headers, replaced case files and
+unreviewed configuration retry overrides. Eleven new weakening cases fail against
+the previous verifier; after strengthening and adding three environment cases,
+the complete suite passes 91/91. The normal verifier retains four groups/seven
+isolated executions/112 steps. Product and browser scenario source are unchanged;
+this is source-quality structural proof, not execution of current release images
+or the remaining acceptance matrix. Estimated PRD-14 work remaining: **33%**.
+
+## Browser quarantine after actual Worker rejection
+
+The [native browser quarantine cases](attachment-object-storage.md#real-browser-upload-rejected-by-the-worker-scanner-protocol)
+extend the intact mandatory lifecycle phase to eight cases. Desktop and phone
+submit a real PNG carrying an explicit harmless CI-only rejection marker. The
+separate Worker persists Rejected at Card/attachment 3/2. Actual browser SignalR
+receipt reaches the delivered server cursor before review; textual rejection,
+absent delivery controls, direct 404 delivery, omitted storage keys, empty cover
+candidates and null cover are asserted. The existing normal/recovered uploads
+also require real event receipt, and both phases use the existing single keyboard
+activation helper.
+
+The complete native original 2/2 (93.0s), expanded 8/8 (296.4s), subsequent HTTP
+assertions and independent cleanup pass, with no unexpected/skipped/flaky cases.
+Earlier phone failures are retained in private reports. Typechecking, scanner
+syntax, all 91 integration guards and ordinary mandatory coverage verification
+pass. No product or release configuration change is included. This is not
+current immutable CI or deployed scanner/storage/full matrix acceptance; the
+issue remains open. Estimated PRD-14 work remaining: **33%**.
+
+## Direct rejected-cover refusal and owned recovery focus
+
+The [direct-refusal and dialog-focus evidence](attachment-object-storage.md#rejected-cover-selection-and-owned-dialog-focus-recovery)
+extends both quarantine viewport cases with ordinary cover PUTs using the real
+Rejected revision and a forged published revision. Stable 404 refusal, unchanged
+entire cover/attachment metadata and Board event cursor, and withdrawn cover
+image delivery are required. A native phone recovery-focus failure also prompted
+an installed-MUI regression: concealed controls lose their DOM ancestry, so the
+helper preserves the captured live dialog for its own trap/container/sentinel
+fallback. Other controls/dialogs retain intentional focus.
+
+The corrected before-change run fails 2/19; after repair 308/308 cases in 18
+affected control suites pass. Fresh web build, web/browser typechecking and lint
+pass. The complete native repaired-bundle original 2/2 (91.9s), expanded 8/8
+(295.4s), subsequent HTTP assertions and independent cleanup pass, with no
+unexpected/skipped/flaky cases or retries. All 91 CI coverage guards pass.
+Authorization, receipts and revision fences are unchanged. Current immutable CI,
+deployed-provider and remaining feature acceptance still require proof.
+Estimated PRD-14 work remaining: **33%**.
+
 ## Supported-format native browser acceptance
 
 The [complete supported-format browser evidence](attachment-object-storage.md#all-supported-upload-formats-through-the-browser-and-worker)
@@ -1040,56 +1093,4 @@ wording errors, the complete original 2/2 (93.2 seconds), expanded configuration
 without failures/skips/retries/flaky cases. Earlier failed reports remain retained;
 product code and deadlines are unchanged. Other formats/error/quarantine/retry/
 capacity/role/cross-feature and current immutable/provider acceptance remain open.
-Estimated PRD-14 work remaining: **33%**.
-
-## Mandatory enabled-pipeline selection guards
-
-The [attachment pipeline/configuration guards](integration-ci-groups.md#mandatory-enabled-attachment-pipeline-coverage-guards)
-now reject omitted/filtered phases, swallowed failures, disabled strict shell
-options, wrong fixtures, disabled pacing/release headers, replaced case files and
-unreviewed configuration retry overrides. Eleven new weakening cases fail against
-the previous verifier; after strengthening and adding three environment cases,
-the complete suite passes 91/91. The normal verifier retains four groups/seven
-isolated executions/112 steps. Product and browser scenario source are unchanged;
-this is source-quality structural proof, not execution of current release images
-or the remaining acceptance matrix. Estimated PRD-14 work remaining: **33%**.
-
-## Browser quarantine after actual Worker rejection
-
-The [native browser quarantine cases](attachment-object-storage.md#real-browser-upload-rejected-by-the-worker-scanner-protocol)
-extend the intact mandatory lifecycle phase to eight cases. Desktop and phone
-submit a real PNG carrying an explicit harmless CI-only rejection marker. The
-separate Worker persists Rejected at Card/attachment 3/2. Actual browser SignalR
-receipt reaches the delivered server cursor before review; textual rejection,
-absent delivery controls, direct 404 delivery, omitted storage keys, empty cover
-candidates and null cover are asserted. The existing normal/recovered uploads
-also require real event receipt, and both phases use the existing single keyboard
-activation helper.
-
-The complete native original 2/2 (93.0s), expanded 8/8 (296.4s), subsequent HTTP
-assertions and independent cleanup pass, with no unexpected/skipped/flaky cases.
-Earlier phone failures are retained in private reports. Typechecking, scanner
-syntax, all 91 integration guards and ordinary mandatory coverage verification
-pass. No product or release configuration change is included. This is not
-current immutable CI or deployed scanner/storage/full matrix acceptance; the
-issue remains open. Estimated PRD-14 work remaining: **33%**.
-
-## Direct rejected-cover refusal and owned recovery focus
-
-The [direct-refusal and dialog-focus evidence](attachment-object-storage.md#rejected-cover-selection-and-owned-dialog-focus-recovery)
-extends both quarantine viewport cases with ordinary cover PUTs using the real
-Rejected revision and a forged published revision. Stable 404 refusal, unchanged
-entire cover/attachment metadata and Board event cursor, and withdrawn cover
-image delivery are required. A native phone recovery-focus failure also prompted
-an installed-MUI regression: concealed controls lose their DOM ancestry, so the
-helper preserves the captured live dialog for its own trap/container/sentinel
-fallback. Other controls/dialogs retain intentional focus.
-
-The corrected before-change run fails 2/19; after repair 308/308 cases in 18
-affected control suites pass. Fresh web build, web/browser typechecking and lint
-pass. The complete native repaired-bundle original 2/2 (91.9s), expanded 8/8
-(295.4s), subsequent HTTP assertions and independent cleanup pass, with no
-unexpected/skipped/flaky cases or retries. All 91 CI coverage guards pass.
-Authorization, receipts and revision fences are unchanged. Current immutable CI,
-deployed-provider and remaining feature acceptance still require proof.
 Estimated PRD-14 work remaining: **33%**.
