@@ -58,3 +58,22 @@ for restarting it.
 The separate complete schema-123 Board browser phase remains active. Current
 GitHub CI is queued; none of these local reports certify the required current
 build-once integration/security/release matrix.
+
+The live Linux API invocation has reported the architecture test's
+`Assert.NotNull` source-root failure. Its real production projects are mounted,
+but the standalone runner's assembly directory is outside the checkout
+ancestry used by that test's root search. A fresh full-suite harness layout is
+staged with the same read-only assembly under the real checkout's test-project
+path and the same private manifest mapping. The assertion and actual production
+project files remain unchanged. This staged harness has not yet been executed;
+the current Linux API, Windows API and schema-123 browser handles remain live.
+
+A read-only catalog query on the running schema-123 browser database records
+**53 base-table candidates** lacking at least one physical `created_at` or
+`updated_at` column. This is not a defect count: immutable journals, source
+projections and mutable records require separate classification. In particular,
+`organization_deletion_progress` lacks physical creation time but references
+the retained `(tenant_id, request_id)` deletion request. Its publisher inserts
+request and initial progress in the same owning transaction; page/terminal
+capabilities already maintain update time. That source relationship is the next
+creation-clock repair candidate, not completed acceptance evidence.
