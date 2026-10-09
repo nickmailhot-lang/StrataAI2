@@ -465,3 +465,19 @@ component checks, web TypeScript, targeted lint and a fresh Production web
 build pass. The unchanged two-viewport strict member scenarios are running
 against the rebuilt assets; native and current immutable/full CI acceptance
 remain pending. Estimated PRD-05 work remaining stays **15%**.
+
+
+## Complete member entry-focus native verification
+
+Both unchanged strict native member scenarios pass at desktop and phone widths
+against the member entry-focus repair, with zero skips, retries or flaky cases.
+They retain reviewed-version conflict, actual lost PATCH/DELETE replies, one
+removal, warning recovery, authority and Organization-membership invariants,
+keyboard focus and responsive assertions. Current compiled Production API and
+separate Worker, freshly built web assets and restricted schema-114 PostgreSQL
+17/pgvector were used. Owned containers and database were removed.
+
+This scoped result does not establish the prior intermittent phone failure's
+exact cause or a complete combined/full immutable pass. Current CI remains
+queued; complete acceptance still governs closure. Estimated PRD-05 work
+remaining stays **15%**.

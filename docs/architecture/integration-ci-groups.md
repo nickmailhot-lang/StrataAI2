@@ -189,3 +189,19 @@ chosen Confirm focus. The ownership repair passes all 18 member/focus component
 checks; unchanged native member scenarios are running against fresh web assets.
 See [member evidence](prd-05-acceptance.md#preserve-chosen-member-confirmation-during-dialog-entry).
 Current immutable/full matrix acceptance remains pending.
+
+
+## Complete member entry-focus native verification
+
+Both unchanged strict native member scenarios pass at desktop and phone widths
+against the member entry-focus repair, with zero skips, retries or flaky cases.
+They retain reviewed-version conflict, actual lost PATCH/DELETE replies, one
+removal, warning recovery, authority and Organization-membership invariants,
+keyboard focus and responsive assertions. Current compiled Production API and
+separate Worker, freshly built web assets and restricted schema-114 PostgreSQL
+17/pgvector were used. Owned containers and database were removed.
+
+This scoped result does not establish the prior intermittent phone failure's
+exact cause or a complete combined/full immutable pass. Current CI remains
+queued; complete acceptance still governs closure. Estimated PRD-05 work
+remaining stays **15%**.
