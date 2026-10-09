@@ -442,3 +442,58 @@ mutable derived-clock notification table. The remaining **19** are
 `work_command_replays` and `work_events`. This is a writer/retention audit,
 not an acceptance percentage or waiver of mutable-record clock provenance.
 PRD-01 remains open at **34% estimated work remaining** (planning estimate).
+
+### Organization transition proofs, deletion receipts and migration ledger
+
+Eight further candidates have complete source writer/retention classifications.
+Their immutable payload or privileged ledger semantics do not exempt their
+owning mutable entities, jobs or progress records from audit-clock coverage.
+
+| Candidate | Writer and original time | Mutation/retention boundary |
+| --- | --- | --- |
+| `organization_deletion_requests` | [Publisher](../../src/StrataAI.Infrastructure/Organizations/PostgresOrganizationDeletionJobPublisher.cs) inserts the accepted owner/request/version/correlation identity in the owning Organization transaction; [migration 088](../../db/migrations/088_organization_deletion_progress.sql) records database `created_at`. | Enabled BEFORE INSERT/UPDATE/DELETE guard validates insertion against actual DELETING parent and active owner, and unconditionally rejects UPDATE/DELETE. Replay verifies original identity and progress/job presence without editing the request. |
+| `organization_deletion_steps` | [Migration 092](../../db/migrations/092_organization_deletion_pages.sql) inserts each applied bounded page's original checkpoint/candidate/next-step receipt with finite `completed_at`, using the same effect time as the progress transition. | Every UPDATE/DELETE is refused. Replay checks the original request and returns the retained step; it does not restamp it. The separate mutable progress record has its own creation/update clocks from migration 124. |
+| `organization_membership_activations` | [Migration 097](../../db/migrations/097_organization_member_addition_events.sql) captures only an actual ACTIVE insertion or transition, with original membership version and `updated_at` as `activated_at`. | Runtime has no direct INSERT/UPDATE/DELETE access. No unconditional history guard; parent FK has ON DELETE CASCADE. Retained metadata-source FKs restrict deleting a published proof. No legacy activation events are inferred. |
+| `organization_membership_removals` | [Migration 098](../../db/migrations/098_organization_member_removal_events.sql) captures actual ACTIVE→REMOVED with increasing version, previous role and admitted `updated_at` as `removed_at`. | Same private trigger insertion and parent-cascade/published-source FK boundary. Membership edits are not edits to retained removal proofs. |
+| `organization_invitation_creations` | [Migration 099](../../db/migrations/099_organization_member_invitation_events.sql) captures a new internal Organization invitation's actual creation/version/time. | Private trigger insertion only; no runtime direct writes. Parent cascade is permitted subject to published-source FK restriction; old invitations receive no invented creation proofs. |
+| `organization_invitation_revocations` | [Migration 100](../../db/migrations/100_organization_invitation_revocation_events.sql) captures actual unaccepted internal invitation revocation with increasing version, retaining both `revoked_at` and source `updated_at`. | No runtime direct writes or unconditional administrative UPDATE/DELETE guard. Capture does not edit earlier creation proofs or invent legacy revocation attribution. |
+| `organization_invitation_acceptances` | [Migration 101](../../db/migrations/101_organization_invitation_acceptance_events.sql) captures actual unrevoked internal invitation acceptance with increasing version, exact original issuer/email/role affinity, admitted actor and source times. | Same private writer and parent-cascade/published-source FK boundary. Acceptance proof payload does not become a mutable invitation lifecycle record. |
+| `schema_migrations` | [Foundation migration](../../db/migrations/001_foundation.sql) records each committed migration's `version` and `applied_at`; ordered migrations insert their ledger entries within the schema transaction. | Neither runtime role has table INSERT/UPDATE/DELETE authority. This is privileged schema deployment history, outside tenant entity routing, with no unconditional administrative mutation guard. Disposable readiness/refusal fixtures deliberately remove/restore ledger entries. |
+
+Read-only installed-catalog verification on the fresh schema-127 security
+companion database confirms forced RLS on the seven Organization tables,
+enabled UPDATE/DELETE guards on both deletion receipt tables, and no runtime
+UPDATE/DELETE privileges on all eight. Only the API can directly insert the
+deletion request; transition proofs and steps use private owning capabilities.
+Neither runtime can write the migration ledger. Source inspection includes
+current producer replacements and administrative refusal/cleanup fixtures,
+rather than treating a table name or timestamp alias as an invariant.
+
+The complete unfiltered persistence executable has now finished successfully;
+its default-path scope and the subsequent failed populated-database companion
+attempt are recorded separately in [source verification](source-test-results.md).
+All four original companion security/Reminder gates subsequently pass on their
+required fresh database, without changed assertions. This does not imply
+execution of special mode-only persistence branches or current immutable-image
+release acceptance.
+
+The classification total is **40/51**: 18 unconditional immutable
+history/ownership/deletion-receipt candidates, two runtime-immutable mention
+revision tables, 13 receipt payloads with explicit retention rules, five
+private transition-proof tables with parent-cascade boundaries, one privileged
+migration ledger and one mutable derived-clock notification table. **11**
+remain: the two sweeps, preview manifests, identity events, invitation mail
+intents, recipient authority revisions/proofs, mass-mention and handle
+reservations, Work command replays and Work events.
+
+`work_command_replays` is explicitly mutable. The
+[unit of work](../../src/StrataAI.Infrastructure/WorkManagement/PostgresWorkManagementUnitOfWork.cs)
+inserts a pending claim and then UPDATEs `result_json` on success in the same
+owning transaction; [migration 010](../../db/migrations/010_work_command_replays.sql)
+stores receipt `created_at` but no completion/update timestamp. Failed commands
+roll back their claims, and duplicate commands return the retained result after
+current admission without an UPDATE. Atomic commit does not make the payload
+UPDATE disappear or establish the historical completion time. This remains a
+clock/provenance gap; neither expiry nor a guessed entity time is promoted to
+an authoritative legacy completion clock. PRD-01 stays open at **34% estimated
+work remaining** (planning estimate).

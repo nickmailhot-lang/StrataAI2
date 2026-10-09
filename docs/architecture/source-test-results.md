@@ -187,3 +187,39 @@ Linux file-delivery coverage and source/content-root contract. Its owned test
 container is independently absent. This certifies the recorded schema-127
 compiled API build; the later frontend changes and current immutable-image
 pipeline have separate verification requirements.
+
+On 2026-10-09, the schema-127 **unfiltered persistence executable** completes
+successfully against its own fresh PostgreSQL/pgvector database and restricted
+API/Worker logins. The actual invocation has no mode arguments, filters,
+exclusions or test retries; it uses the original compiled contract payload and
+original budgets. Its retained output reaches the final upload-persistence
+success marker, with 68 passing contract-summary lines and no unhandled
+exception. These are summary markers, not 68 independently collected test
+cases. Successful executable exit is evidenced by the helper advancing to its
+subsequent SQL commands; the retained runner log matches executable output.
+This covers the executable's original default path, including its nested
+Worker/preview contracts. Special mode-only branches in
+[Program.cs](../../tests/StrataAI.Persistence.Contracts/Program.cs) require
+their own original command invocations; this result does not assert that every
+supported mode or every PRD acceptance criterion has executed.
+
+The enclosing helper subsequently exits unsuccessfully in the separate
+runtime-role script. That script expects a fresh database and checks exact
+global receipt counts, whereas the completed persistence executable retains
+audit-bearing fixtures and receipt history by design. Its earlier tenant
+schema and RLS scripts complete, but the combined helper is not recorded as
+passing. The failed attempt and private diagnostics remain retained.
+
+A separate fresh schema-127 invocation then passes all four complete unchanged
+original companion gates, in their original prerequisite order:
+[tenant schema](../../scripts/ci/test-tenant-schema.sh),
+[RLS](../../scripts/ci/test-rls.sh),
+[runtime roles](../../scripts/ci/test-runtime-roles.sh) and
+[Reminder delivery SQL](../../scripts/ci/test-card-reminder-delivery.sql).
+All 127 staged migrations and gate scripts match source after normalizing
+both sides' newline encoding. The original counts, scopes, assertions and
+budgets are retained. Both invocations' owned containers and environment
+files are independently confirmed absent. The full 32-case Board browser
+invocation remains active; current immutable build-once release acceptance
+remains outstanding. No SQL assertion is relaxed to accommodate a populated
+contract database.
