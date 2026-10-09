@@ -157,6 +157,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 - [Attachment covers and lifecycle decisions](architecture/attachment-covers-lifecycle.md)
 - [Attachment object storage decision and provider contract](architecture/attachment-object-storage.md)
+- [Actual scanner engine runtime verification](architecture/attachment-scanner-runtime.md)
 - [Explicit local attachment release fixture](attachment-release-fixture.md)
 
 ## Notifications and activity

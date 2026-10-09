@@ -32,7 +32,28 @@ CI requires it in `build-images-once` after the Worker build and before image
 export. Six workflow regressions protect against omission, unconditional success,
 skip, ignored failure, another image or verification after export. Combined
 workflow/metadata checks pass 157/157; the warning-as-error Worker build passes.
-Actual image execution must be recorded separately once terminal results exist.
+Actual image execution is recorded separately below.
+
+## Local exact-image engine evidence, 2026-10-09
+
+At `1176d4929ac5c44471f48ec1ac3034edd47f6b87`, the clean checkout built all three
+application images once with local version `0.1.0-local.1176d492`, one captured UTC
+creation time and source/revision metadata. All three distinct image IDs and all
+four OCI provenance fields matched the explicitly local manifest. This is local
+evidence, without a fabricated workflow run identity.
+
+The complete shell invocation passed against that Worker and the digest-pinned
+real ClamAV engine. Actual readiness, multi-chunk clean input, deterministic
+test-signature detection, empty refusal, cancellation, caller stream ownership
+and clean recovery all passed. The process exited 0; independent Docker inventory
+showed no owned daemon containers or socket volumes remaining afterward.
+
+The complete disposable attachment fixture is also running on those pinned app
+images with the real daemon. Its initial upload has already progressed through
+the restricted Worker, native contained decoder and preview publication. The full
+browser and subsequent HTTP phases are still in progress; no completed result is
+attributed to them here. Official definition coverage, deployed bucket acceptance
+and full current GitHub CI remain separate evidence requirements.
 
 This establishes only the defined engine transport checks. A custom test
 signature does not establish current official signature coverage, malware

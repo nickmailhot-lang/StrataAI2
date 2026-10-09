@@ -10,7 +10,8 @@ scratch=$(mktemp -d)
 cleanup() {
   docker rm -f "$name" >/dev/null 2>&1 || true
   docker volume rm "$volume" >/dev/null 2>&1 || true
-  rm -rf "$scratch"
+  rm -f "$scratch/result"
+  rmdir "$scratch"
 }
 trap cleanup EXIT
 docker volume create "$volume" >/dev/null
