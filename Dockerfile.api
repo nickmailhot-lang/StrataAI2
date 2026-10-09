@@ -30,8 +30,12 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 
 ARG STRATAAI_BUILD_REVISION=development
 ARG STRATAAI_BUILD_VERSION=0.0.0-dev
+ARG STRATAAI_BUILD_SOURCE
+ARG STRATAAI_BUILD_CREATED
 LABEL org.opencontainers.image.revision=$STRATAAI_BUILD_REVISION \
-      org.opencontainers.image.version=$STRATAAI_BUILD_VERSION
+      org.opencontainers.image.version=$STRATAAI_BUILD_VERSION \
+      org.opencontainers.image.source=$STRATAAI_BUILD_SOURCE \
+      org.opencontainers.image.created=$STRATAAI_BUILD_CREATED
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \

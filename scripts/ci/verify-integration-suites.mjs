@@ -159,12 +159,30 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.deepEqual(build.needs, ['metadata', 'source-quality-gate']);
   assert.equal(build.env.STRATAAI_BUILD_REVISION, '${{ needs.metadata.outputs.revision }}');
   assert.equal(build.env.STRATAAI_BUILD_VERSION, '${{ needs.metadata.outputs.version }}');
+  assert.equal(build.env.STRATAAI_BUILD_SOURCE, 'https://github.com/${{ needs.metadata.outputs.repository }}');
+  assert.equal(build.env.STRATAAI_BUILD_CREATED, '${{ needs.metadata.outputs.created_at }}');
   for (const host of ['web', 'api', 'worker']) {
     const step = build.steps.find(value => value.name === `Build ${host === 'api' ? 'API' : host === 'web' ? 'web' : 'Worker'} image`);
     assert.ok(step.run.includes('--build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION"'));
     assert.ok(step.run.includes('--build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION"'));
+    assert.ok(step.run.includes('--build-arg STRATAAI_BUILD_SOURCE="$STRATAAI_BUILD_SOURCE"'));
+    assert.ok(step.run.includes('--build-arg STRATAAI_BUILD_CREATED="$STRATAAI_BUILD_CREATED"'));
   }
   const archive = build.steps.find(step => step.name === 'Export exact built images');
+  const provenance = build.steps.find(step => step.name === 'Verify exact image provenance before export');
+  assert.equal(provenance?.shell, 'bash');
+  assert.equal(provenance.if, undefined, 'Image provenance verification must not be conditional');
+  assert.ok(provenance.run.includes('set -euo pipefail'));
+  assert.match(provenance.run, /docker image inspect\s+"strataai-web:\$\{GITHUB_SHA\}"\s+"strataai-api:\$\{GITHUB_SHA\}"\s+"strataai-worker:\$\{GITHUB_SHA\}"\s+> build-inputs\/image-inspection.json/);
+  assert.ok(provenance.run.includes('python3 scripts/ci/verify-image-labels.py --metadata build-inputs/build-metadata.json --images build-inputs/image-inspection.json'));
+  assert.ok(!provenance.run.includes('||'), 'Image provenance refusal cannot be swallowed');
+  assert.equal(provenance['continue-on-error'] ?? false, false);
+  assert.ok(build.steps.indexOf(provenance) > build.steps.findIndex(step => step.name === 'Build Worker image'));
+  assert.ok(build.steps.indexOf(provenance) < build.steps.indexOf(archive));
+  const sourceProvenance = jobs['web-quality'].steps.find(step => step.name === 'Verify source test report completeness and privacy');
+  assert.equal(sourceProvenance.if, undefined);
+  assert.equal(sourceProvenance['continue-on-error'] ?? false, false);
+  assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'image_labels_test.py'"));
   assert.match(archive.run, /cp build-inputs\/build-metadata.json image-artifacts\/build-metadata.json/);
   assert.match(archive.run, /sha256sum .*build-metadata.json > SHA256SUMS/);
   const bundle = jobs['release-bundle'].steps.find(step => step.name === 'Assemble release bundle');

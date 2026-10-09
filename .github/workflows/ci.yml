@@ -120,6 +120,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
           python3 -m unittest discover -s tests -p 'evidence_artifacts_test.py'
           python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
+          python3 -m unittest discover -s tests -p 'image_labels_test.py'
 
       - name: Unit and component tests
         run: |
@@ -405,6 +406,8 @@ jobs:
     env:
       STRATAAI_BUILD_REVISION: ${{ needs.metadata.outputs.revision }}
       STRATAAI_BUILD_VERSION: ${{ needs.metadata.outputs.version }}
+      STRATAAI_BUILD_SOURCE: https://github.com/${{ needs.metadata.outputs.repository }}
+      STRATAAI_BUILD_CREATED: ${{ needs.metadata.outputs.created_at }}
     steps:
       - uses: actions/checkout@v7
 
@@ -420,15 +423,37 @@ jobs:
 
       - name: Build web image
         run: |
-          docker build             --file Dockerfile.web             --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION"             --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION"             --tag "strataai-web:${GITHUB_SHA}"             .
+          docker build --file Dockerfile.web \
+            --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION" \
+            --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION" \
+            --build-arg STRATAAI_BUILD_SOURCE="$STRATAAI_BUILD_SOURCE" \
+            --build-arg STRATAAI_BUILD_CREATED="$STRATAAI_BUILD_CREATED" \
+            --tag "strataai-web:${GITHUB_SHA}" .
 
       - name: Build API image
         run: |
-          docker build             --file Dockerfile.api             --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION"             --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION"             --tag "strataai-api:${GITHUB_SHA}"             .
+          docker build --file Dockerfile.api \
+            --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION" \
+            --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION" \
+            --build-arg STRATAAI_BUILD_SOURCE="$STRATAAI_BUILD_SOURCE" \
+            --build-arg STRATAAI_BUILD_CREATED="$STRATAAI_BUILD_CREATED" \
+            --tag "strataai-api:${GITHUB_SHA}" .
 
       - name: Build Worker image
         run: |
-          docker build             --file Dockerfile.worker             --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION"             --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION"             --tag "strataai-worker:${GITHUB_SHA}"             .
+          docker build --file Dockerfile.worker \
+            --build-arg STRATAAI_BUILD_REVISION="$STRATAAI_BUILD_REVISION" \
+            --build-arg STRATAAI_BUILD_VERSION="$STRATAAI_BUILD_VERSION" \
+            --build-arg STRATAAI_BUILD_SOURCE="$STRATAAI_BUILD_SOURCE" \
+            --build-arg STRATAAI_BUILD_CREATED="$STRATAAI_BUILD_CREATED" \
+            --tag "strataai-worker:${GITHUB_SHA}" .
+
+      - name: Verify exact image provenance before export
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > build-inputs/image-inspection.json
+          python3 scripts/ci/verify-image-labels.py --metadata build-inputs/build-metadata.json --images build-inputs/image-inspection.json
 
       - name: Validate exact web image edge configuration
         run: docker run --rm --network none --entrypoint nginx "strataai-web:${GITHUB_SHA}" -t

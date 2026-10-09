@@ -15,7 +15,8 @@ The web Docker build supplies `VITE_STRATAAI_BUILD_REVISION` and
 `VITE_STRATAAI_BUILD_VERSION`. Vite validates these and emits the immutable
 `build-metadata.json` asset. Nginx serves it at `/build-metadata.json`; API reports
 its assembly values at `/api/runtime`, Worker at `/runtime`. Each Dockerfile also
-sets standard OCI revision/version labels from the same build arguments.
+sets OCI revision/version labels from the same build arguments, plus source
+repository and creation-time labels from the verified canonical metadata.
 
 `test-build-identity.sh` compares the three running release images' responses and
 OCI labels with the expected CI commit/version. It then starts the exact API and
@@ -23,6 +24,32 @@ Worker images in isolated Demo containers with deliberately false runtime build
 variables, requiring the embedded identifiers to remain correct. This check runs
 before feature fixtures; a mismatch blocks required-ci and the release bundle.
 Images are not rebuilt for these tests or for bundle generation.
+
+## Complete image provenance before export
+
+ARCH-11-FR-040 requires the source repository URL and build timestamp as well as
+revision and version. CI supplies `STRATAAI_BUILD_SOURCE` from the initial
+metadata repository and `STRATAAI_BUILD_CREATED` from its `createdAt`; all three
+Dockerfiles use these arguments in their final runtime-image labels. These
+follow the [OCI annotation keys](https://github.com/opencontainers/image-spec/blob/main/annotations.md):
+`org.opencontainers.image.source` and `org.opencontainers.image.created`.
+The same canonical build timestamp travels with the candidate and its artifacts;
+downstream jobs do not generate new provenance or rebuild images.
+
+After the three builds, before image export, CI inspects those exact tags and
+runs `scripts/ci/verify-image-labels.py` against the original metadata document.
+It requires exactly three distinct image IDs, one expected tag for each host,
+and all four matching provenance labels. Missing, duplicate, extra or mismatched
+images and missing/different labels fail the build job. Unknown inspection fields
+are never printed. Unset source/time arguments on a development build do not
+constitute valid release provenance.
+
+Seven Python tests cover actual CLI acceptance/refusal, canonical metadata,
+all four labels on each host, malformed/tag/identity failures and non-disclosing
+diagnostics. Seventeen additional workflow mutations protect metadata-derived arguments,
+the complete inspection, mandatory verification before export and source tests.
+The combined workflow/metadata tests pass 135/135. This is source-level gate
+evidence; current exact-image execution and full required-ci remain separate.
 
 The SPA also displays its compiled version and full revision in the application
 footer, including authentication and Portal routes. These use the same Vite
