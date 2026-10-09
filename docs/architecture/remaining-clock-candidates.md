@@ -296,3 +296,48 @@ The local full-count notification capacity run is now terminal and passing
 for its recorded seeded-consumer scope. Full mutable-record coverage and
 current immutable build-once release acceptance remain outstanding. PRD-01
 stays open at **34% estimated work remaining** (planning estimate).
+
+### Preview publication and manifest boundary
+
+`attachment_preview_publications` is an immutable publication receipt. Its
+[migration-046 guard](../../db/migrations/046_attachment_preview_publication.sql)
+rejects every update/delete, including no-op updates. Insertion must match the
+original preview manifest/job and the same transaction's audit and Work event:
+actor, attachment/Card/Board identities, admitted versions, `published_at`,
+source creation times and ready-state publication evidence. The current
+`finish_attachment_preview` capability inserts the receipt after admission;
+replay returns the retained publication instead of editing it. Repository-wide
+writer inspection finds this producer and explicit refusal fixtures, with no
+runtime update/delete writer or administrative history-guard bypass.
+
+Read-only installed-metadata verification against the isolated live full
+persistence database on 2026-10-09 confirms all 127 ledger entries, an enabled
+BEFORE INSERT/UPDATE/DELETE row guard, forced RLS, API UPDATE/DELETE denial and
+Worker INSERT/UPDATE/DELETE denial. No publication rows are read or changed by
+that probe. This adds one source-classified immutable receipt: **17/51**
+candidates classified (**16 immutable, one mutable derived-clock table**),
+with **34** still requiring complete classification. It does not substitute
+for executing the original tamper/publication/replay contracts.
+
+`attachment_previews` remains separately bounded. Its
+[manifest guard](../../db/migrations/045_attachment_preview_intents.sql) refuses
+changed fields on UPDATE but accepts exact no-ops, and has no unconditional
+DELETE branch. Runtime writers are private insertion capabilities and runtime
+table writes are denied; a published receipt's FK prevents deleting its owning
+manifest. Those facts do not establish identical deletion semantics for an
+unpublished manifest. It is not counted as a completely classified append-only
+table in the total above, and its `created_at` is not renamed as a job's last
+lease/recovery mutation clock.
+
+A complete **unfiltered** schema-127 persistence executable is now running
+against its own fresh PostgreSQL/pgvector instance with restricted API/Worker
+logins and the original compiled contract payload. It retains every original
+preview, lifecycle, concurrency and scale contract, with no `--only` arguments,
+test filters, exclusions, retries or adjusted budgets. Its terminal result and
+cleanup remain required. The staging comparison initially flagged differing
+Windows newline encodings; independently normalizing both sides confirms all
+127 migration sources match current source. The existing 14-file/32-case Board
+browser invocation also remains live; its recorded lifecycle navigation failure
+must be retained when the whole report becomes terminal. Current immutable
+build-once release acceptance remains outstanding. PRD-01 remains open at
+**34% estimated work remaining** (planning estimate).
