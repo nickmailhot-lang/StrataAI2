@@ -500,3 +500,16 @@ compiled Production API/separate Worker and restricted schema-114 PostgreSQL
 17/pgvector. This component repair does not claim to resolve the separate Clear
 or phone history failures. Current immutable/full CI and complete acceptance
 remain required. Estimated PRD-05 work remaining stays **15%**.
+
+
+## Complete visibility entry-focus native verification
+
+Both unchanged strict visibility scenarios pass at desktop and phone widths,
+with zero skips, retries or flaky cases. Public read-only enforcement, reviewed
+visibility consent/conflict, lost-response recovery, live updates, current
+permission checks, keyboard focus and responsive assertions remain. They use
+fresh visibility-focus web assets, current compiled Production API/separate
+Worker and restricted schema-114 PostgreSQL17/pgvector. Owned containers/database
+were removed. This scoped pass does not certify the combined phase, which
+predates this product change and has a phone activity failure, or current
+immutable/full CI. Estimated PRD-05 work remaining stays **15%**.

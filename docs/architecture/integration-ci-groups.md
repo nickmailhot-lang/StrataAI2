@@ -243,3 +243,16 @@ activity reads return real 200 responses; one peer read takes about 4.9 seconds.
 Exact recovery/parent-generation timing remains under investigation. The earlier
 scoped two-case pass does not establish resolution. Estimated PRD-15 work
 remaining stays **36%**; current immutable/full CI remains required.
+
+
+## Complete visibility entry-focus native verification
+
+Both unchanged strict visibility scenarios pass at desktop and phone widths,
+with zero skips, retries or flaky cases. Public read-only enforcement, reviewed
+visibility consent/conflict, lost-response recovery, live updates, current
+permission checks, keyboard focus and responsive assertions remain. They use
+fresh visibility-focus web assets, current compiled Production API/separate
+Worker and restricted schema-114 PostgreSQL17/pgvector. Owned containers/database
+were removed. This scoped pass does not certify the combined phase, which
+predates this product change and has a phone activity failure, or current
+immutable/full CI. Estimated PRD-05 work remaining stays **15%**.
