@@ -69,16 +69,25 @@ staging attempt retained Windows shell line endings, and the second omitted
 owned test environments were removed, and verification uses a complete staged
 source tree with normalized line endings.
 
-The complete default schema-130 persistence executable is also running without
-mode arguments, filters or case retries. Its original default path does not
-execute every special-mode branch. Existing full schema-129 persistence and
-schema-128 API runs remain active and retain their own evidence boundaries.
+The complete default schema-130 persistence executable ran without mode
+arguments, filters or case retries and failed with an Npgsql read timeout
+while preparing `OrganizationDeletionCandidatesContract`'s original 100,002
+Card fixture. It did not reach a complete default-suite pass. The failed
+report is retained in `work-event-schema130-full-persistence-native-20261009`;
+its owned containers and environment files were removed. This unresolved
+failure must be investigated; neither the focused activity pass nor the SQL
+gates substitute for the complete suite. No deadline, seed cardinality,
+assertion or case retry was changed. Existing full schema-129 persistence and
+schema-128 API runs remain active with their separate version boundaries.
+
 CI run `37996791819` on schema-129 head `a3023bff` passed its full migration
 runner but failed the new sweep SQL gate with permission denied: that gate was
 scheduled before `test-runtime-roles.sh` provisioned Worker capabilities. The
 workflow now runs all three clock gates after the unchanged provisioning and
 runtime-role checks. Clean local verification follows this actual CI order
-without pre-provisioning roles; its terminal result is pending. Current build-once CI must pass before release
+without pre-provisioning roles passed all eight complete gates, including
+the full migration runner through 130 and all three clock gates. Reports:
+`work-event-schema130-ci-order-native-20261009`. Current build-once CI must pass before release
 claims can be made.
 
 The prior schema-127 Board browser invocation finished with all 32 original
