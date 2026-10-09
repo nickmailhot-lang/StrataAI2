@@ -168,3 +168,21 @@ invocation is running against the repaired API and separate Worker. Every
 original scenario, assertion, deadline and the final whole-counter oracle is
 retained. Its terminal result remains required, as do full current-source tests,
 the still-running capacity invocation and current immutable build-once CI.
+
+The repaired complete twelve-case invocation subsequently finishes **11/12**
+in 1,230.01 seconds, with one result per case and zero skipped/flaky outcomes.
+All five cross-Board recipient roles pass, including the two previously failing
+roles; all five observed command-order scenarios also pass. The remaining
+personal-watch control scenario fails at `watch-subscriptions.spec.ts:89`: after
+the lost-response check and native retry gesture, the recovery control remains
+present. That is not a complete phase pass or proof that the control failure is
+resolved. Its failed trace/report are retained. The final whole-counter check
+does not execute after browser failure. Owned containers, database and credential
+files are independently absent.
+
+Migration 127's [retained journal history repair](notification-event-history.md)
+is a separate subsequent change with complete upgrade/refusal, all-127-ledger
+readiness and security proof. Its native producer/consumer run is still live;
+the eleven-case result above uses the original repaired schema-126 build and
+cannot certify schema-127 or immutable-image release acceptance. The personal
+watch retry failure remains an explicit next verification gap.
