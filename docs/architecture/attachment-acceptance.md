@@ -64,16 +64,17 @@ digests and scanner/provider details; authorization precedes disclosure.
 | FR-009 deletion | Guarded archive/restore/elevated confirmed soft deletion; current parent/source versions; atomic selected-cover clearing; audit/events; restore does not reselect | Full enabled-provider/browser lifecycle matrix and retention/purge reconciliation |
 | FR-010 untrusted MIME/name | Canonical raw transport validation; server byte classification/full size/SHA checks; quarantine; safe opaque downloads; strict raw image decoder; forged-input/API/provider cases | Successful isolated image admission/publication plus full enabled release/security regression matrix |
 
-Domain, managed provider, API and restricted PostgreSQL tests now cover the
-implemented foundations described above; the dated job evidence below identifies
-their executed scope. Local compilation passes, but local .NET execution remains
-blocked by Windows Application Control. The latest executed environment-policy
-head 1d4086c passes Linux managed/API, web and restricted PostgreSQL source gates;
-its full immutable-image/release gate remains pending. Historical 6a5f0c9 had an
-isolated-image failure that was subsequently repaired and verified in exact
-Worker images; that dated failure is not the current implementation state.
-Newer heads require their own exact-image results. Source capabilities and simulated
-provider/browser evidence do not prove the complete configured file lifecycle.
+Domain, managed provider, API and restricted PostgreSQL tests cover the
+implemented foundations described above; dated records below identify each
+executed scope. Local .NET execution is now available. The current
+[source platform audit](api-host-testing.md#explicit-linux-private-staging-coverage)
+executes all 24 selected private-staging cases on Linux with no failures/skips,
+plus a fresh locked Release build with no warnings/errors. The earlier full
+Windows API result includes six early-return facts and does not prove those
+assertions executed. Historical source/Worker image results are specific to
+their recorded revisions. Current immutable-image/full CI remains pending;
+source capabilities and simulated provider/browser evidence do not prove the
+complete configured file lifecycle.
 
 All AC-ATTACH-14-01/02/03 and TC-01 through TC-13 remain incomplete until their
 full production/state/client scopes are executed. Audit/events/notifications,
