@@ -183,3 +183,41 @@ owning creation/first-read time. The absent physical `updated_at` does not
 represent an untracked mutable state after this guard. Native schema-127 and
 current release proof remain pending; this classification does not classify
 the other 50 catalog candidates or establish complete foundation acceptance.
+
+### Four additional history-table writer classifications
+
+A read-only schema-127 trigger catalog records 49 noninternal trigger rows
+across 29 candidates. Function names alone do not establish immutability.
+The following four classifications additionally trace the actual function
+bodies, every migration reference, application references and administrative
+fixture transitions. All four guards unconditionally raise SQLSTATE `23514`
+on row UPDATE or DELETE; none provides a runtime mutation branch.
+
+| Candidate | Writer and source clock | Classification and remaining boundary |
+| --- | --- | --- |
+| `board_star_events` | [Migration 071](../../db/migrations/071_board_star_private_journal.sql) appends only actual preference transitions, using the preference's admitted `updated_at`. Unchanged preferences return without an event; legacy preferences acquire no invented events. | Append-only transition facts with a source `created_at`. The original [HTTP/SQL star gate](../../scripts/ci/test-board-star-preferences.sh) covers a refused administrative no-op update and runtime write denial; it was located, not re-executed in this classification run. |
+| `organization_board_events` | [Migration 073](../../db/migrations/073_organization_board_journal.sql) appends `(tenant_id,sequence,event_id)` pointers after actual canonical Board source insertion. Its [reader](../../src/StrataAI.Infrastructure/WorkManagement/PostgresOrganizationBoardEventReader.cs) joins the source event's `created_at` and delivery readiness. | Immutable journal pointers, rather than independently mutable entities with missing clocks. The [ordering fixture](../../scripts/ci/test-organization-board-journal-order.sh) explicitly disables the history trigger for disposable administrative cleanup, then restores it. This exception is not runtime authority. `work_events.ready_at` and its historical delivery-clock gap remain a separate unresolved candidate. |
+| `search_interaction_events` | [Current migration-085 capability](../../db/migrations/085_interaction_actor_lock_order.sql) validates actor/target and exact original source identity, then inserts once using the admitted finite `p_created`. Replays return the original event without editing it. | Append-only actor-owned facts carrying `created_at`. Search stream counters and replay rows are separate candidates; this classification does not exempt their mutation clocks. |
+| `navigation_interaction_events` | The same [current capability migration](../../db/migrations/085_interaction_actor_lock_order.sql) retains original-event recovery, current actor/target admission and finite source time before one insertion. | Append-only actor-owned facts carrying `created_at`. Navigation replay rows and mutable navigation preferences require their own writer analysis. |
+
+On 2026-10-09, a fresh isolated PostgreSQL/pgvector instance applies all 127
+ordered migrations and passes the complete unchanged original
+[Organization journal SQL](../../scripts/ci/test-organization-board-journal.sql),
+[search source SQL](../../scripts/ci/test-search-interaction-sources.sql) and
+[navigation source SQL](../../scripts/ci/test-navigation-interaction-sources.sql)
+gates. These exercise their original source admission, isolation, replay and
+rollback scopes; the Organization/search gates also refuse administrative
+history updates. The navigation gate checks runtime update denial, not every
+administrative mutation. The scripts remain byte-identical after newline
+normalization. The owned container and environment file are removed and
+independently confirmed absent. No production schema, grant or clock changes.
+
+Together with `notification_events`, these are five source-classified immutable
+history candidates from the 51-table physical-column list. The other **46**
+remain subject to complete classification; selected writer traces above are
+not complete classifications. The schema-127 notification producer/consumer
+phase now passes all nine original cases and its whole-counter oracle, as
+recorded in [notification verification](notification-stream-clocks.md).
+Full mutable-clock coverage, historical provenance, capacity and current
+immutable build-once release acceptance remain outstanding. PRD-01 remains
+open at **34% estimated work remaining** (planning estimate).
