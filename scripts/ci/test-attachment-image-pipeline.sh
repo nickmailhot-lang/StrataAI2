@@ -161,7 +161,13 @@ json "$base/cards/$card/attachments" > "$scratch/archive-review"
 # reviewed archive command must also include the two viewport cover selections
 # and removals plus the selected lifecycle cover (five more Card revisions).
 jq -e --arg id "$attachment" '.cardVersion==9 and (.items|any(.id==$id and .version==3))' "$scratch/archive-review" >/dev/null
-json -X POST -d "$(jq -nc --slurpfile review "$scratch/archive-review" '{cardVersion:$review[0].cardVersion,version:3}')" "$base/cards/$card/attachments/$attachment/archive" > "$scratch/archived-attachment"
+archive_key=$(cat /proc/sys/kernel/random/uuid)
+jq --arg key "$archive_key" '. + {archiveKey:$key}' "$scratch/browser-fixture" > "$scratch/archive-browser-fixture"
+STRATAAI_ATTACHMENT_BROWSER_FIXTURE="$scratch/archive-browser-fixture" STRATAAI_E2E_RATE_PACING=1 STRATAAI_E2E_RELEASE_HEADERS=1 \
+  npx playwright test --config playwright.attachment-lifecycle.config.ts
+# Recover the exact command performed while actual peer browsers were open.
+# Reusing its original key must not apply the source archive a second time.
+keyed_json "$archive_key" -X POST -d "$(jq -nc --slurpfile review "$scratch/archive-review" '{cardVersion:$review[0].cardVersion,version:3}')" "$base/cards/$card/attachments/$attachment/archive" > "$scratch/archived-attachment"
 jq -e --arg id "$attachment" '.cardVersion==10 and .attachment.id==$id and .attachment.version==4' "$scratch/archived-attachment" >/dev/null
 json "$base/cards/$card/cover" > "$scratch/lifecycle-cover-withdrawn"
 jq -e '.cardVersion==10 and .attachmentId==null and .attachmentVersion==null' "$scratch/lifecycle-cover-withdrawn" >/dev/null

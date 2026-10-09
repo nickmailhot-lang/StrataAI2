@@ -960,3 +960,14 @@ through actual invitation acceptance and a normal Board MEMBER grant; actual
 profile IDs must differ. The same live withdrawal and zero-navigation checks
 remain. This adds distinct-account collaboration evidence without claiming the
 remaining read-only/permission-loss/reconnect/source-lifecycle matrix or release CI.
+
+The subsequent [actual source-archive peer phase](attachment-object-storage.md#actual-source-archive-with-live-desktop-and-phone-peers)
+also passes with both member viewport sessions already rendering the published
+cover. Actual archive clears it in one canonical revision; live sequence advance,
+withdrawn rendering, normal source-delivery 404 and zero navigation are verified.
+The complete original two cases (111.4 seconds), additional archive case
+(38.2 seconds), original-key archive recovery and every subsequent HTTP lifecycle
+assertion pass without skips/retries/flaky cases. This is API-initiated archive;
+live permanent deletion, permission loss/reconnect, full role/cross-feature and
+current immutable/performance acceptance remain open. Estimated PRD-14 work
+remaining: **33%**.

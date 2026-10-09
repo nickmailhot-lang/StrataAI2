@@ -332,3 +332,34 @@ typechecking and shell syntax pass, but that Linux immutable invocation is still
 pending CI. The demonstrated peer is an admitted MEMBER, not a read-only role.
 Permission loss, reconnect, live source archive/delete, other roles/providers,
 performance/capacity and current full release acceptance remain open.
+
+## Actual source archive with live desktop and phone peers
+
+The mandatory enabled pipeline now has a separate complete browser phase after
+its private lifecycle-cover selection. The owner and distinct admitted member's
+desktop and phone sessions have the actual Worker-published PNG open. An ordinary
+owner API archive command uses reviewed Card/attachment revisions 9/3. Its
+acknowledgment advances once to 10/4 and clears the selected cover atomically.
+Both peer sessions receive actual Worker/SignalR sequence advancement beyond the
+pre-command canonical cursor, withdraw the displayed image, read null cover IDs
+at Card revision 10, and receive image 404. Their normal source download-options,
+download and preview routes also return 404. Both stay on the same Card route with
+zero main-frame navigation. The owner's open page withdraws its image as well.
+
+The following HTTP phase recovers the exact original archive key/body instead
+of issuing a second archive. Existing source deletion at 11/5, restoration refusal,
+independent Board-image retention, concurrency, original Board-image receipts,
+visibility/session and retirement checks remain. The original two cases pass
+together in 111.4 seconds, followed by this complete additional case in 38.2 seconds
+and all remaining HTTP assertions; zero failures/skips/retries/flaky cases and
+process exit zero. Owned containers/database/provider volume/credential files are
+independently absent. Browser types include the new explicit configuration;
+shell syntax and diff checks pass. The mandatory release shell invokes both
+configurations against the same built images, without changing existing deadlines.
+
+This is API-initiated archive with actual observing browser clients, not a new
+keyboard archive-control proof. Native strict disposable-account verification,
+restricted PostgreSQL, separate Worker, local storage and scanner-protocol
+simulation limits remain. Live permanent-deletion/permission-loss/reconnect and
+the complete role/cross-feature/capacity/performance matrix, external provider
+authority and current immutable/full release acceptance remain open.

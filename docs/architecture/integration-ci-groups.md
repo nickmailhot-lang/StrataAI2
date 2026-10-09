@@ -83,6 +83,16 @@ subsequent HTTP check and resource cleanup. The release shell supplies separate
 credentials and the browser requires distinct actual profile IDs. Linux exact-image
 execution and the remaining permission/reconnect/lifecycle matrix are pending.
 
+The mandatory enabled-pipeline shell now invokes a second explicit complete
+configuration, `playwright.attachment-lifecycle.config.ts`, after selecting the
+private lifecycle cover. It checks [source archive with desktop and phone peers](attachment-object-storage.md#actual-source-archive-with-live-desktop-and-phone-peers),
+then recovers the same original archive key/body before continuing all HTTP
+deletion/retention assertions. The current native equivalent passes the original
+2/2 (111.4 seconds), the additional 1/1 (38.2 seconds) and every subsequent HTTP
+assertion with independently verified cleanup. Both configurations retain the
+existing release policies and are browser-typechecked. Linux exact-image execution
+and full release success remain pending.
+
 ## Strict notification consumer coverage
 
 The assignment/mention/reminder phase now also selects the complete recipient
