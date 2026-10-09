@@ -359,3 +359,14 @@ independently verified cleanup, optional verification-policy boundary and all
 has a clear unavailable state, without claiming PRD-80 implementation. Full
 current API and default persistence invocations remain live; immutable CI and
 aggregate acceptance are not inferred from this separate Portal phase.
+
+
+## Public support reference boundary
+
+The [error-reference record](public-error-references.md) documents the previously
+unbounded header projection, the API-aligned identifier validation, failing
+pre-repair regression, 98 selected intermediate component/request passes and
+18 final request-boundary passes including later control-character coverage.
+It retains the distinct scopes and report-placement correction. This does not
+complete all user-visible-error/NFR coverage or current immutable-image release
+acceptance; the full current API/default persistence invocations remain separate.

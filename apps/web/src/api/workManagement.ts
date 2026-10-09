@@ -61,6 +61,11 @@ export class WorkRequestError extends Error {
                     ? "Service temporarily unavailable. Reload to check the latest state before retrying."
                     : "Unable to complete the request. Please try again.",
     );
+    // Match the API correlation middleware. Proxy responses must not turn
+    // arbitrary diagnostic text into a public support reference.
+    this.correlationId = correlationId !== null && correlationId.length > 0 && correlationId.length <= 64
+      && !/[^A-Za-z0-9._-]/.test(correlationId)
+      ? correlationId : null;
   }
 }
 // Only local, fixed validation messages use this type; never API response text.

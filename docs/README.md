@@ -244,3 +244,6 @@ route synchronization, preserved security/clock boundaries and scale verificatio
 
 [Owner Portal screen verification](architecture/portal-screen-verification.md) records four-width admission,
 reflow, unavailable browsing state and the remaining release/feature boundaries.
+
+[Public error correlation references](architecture/public-error-references.md) explains safe support
+identifiers, preserved error privacy and the remaining error-display review.

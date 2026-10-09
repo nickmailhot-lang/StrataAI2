@@ -177,3 +177,24 @@ describe("PRD-07/08-TC-07 retry intent", () => {
     },
   );
 });
+
+
+it('retains the API correlation-reference alphabet and exact 64-character bound', () => {
+  for (const reference of ['a', 'case.A-1_ref', 'a'.repeat(64)])
+    expect(new WorkRequestError(503, reference).correlationId).toBe(reference);
+});
+it('excludes malformed response references without copying diagnostic text into the public error', async () => {
+  for (const reference of ['private:diagnostic', 'first,second', 'reference with spaces', '<private>', 'a'.repeat(65), 'référence']) {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ title: 'private diagnostic', detail: 'private body' }),
+      { status: 503, headers: { 'X-Correlation-ID': reference, 'Content-Type': 'application/problem+json' } })));
+    const failure = await workRequest('/boards/one').catch((reason: unknown) => reason);
+    expect(failure).toBeInstanceOf(WorkRequestError);
+    expect((failure as WorkRequestError).correlationId).toBeNull();
+    expect((failure as Error).message).toBe('Service temporarily unavailable. Reload to check the latest state before retrying.');
+  }
+});
+
+it('applies the reference boundary to constructed errors including trailing line breaks', () => {
+  for (const reference of [null, '', 'safe\n', 'safe\r', 'safe\t'])
+    expect(new WorkRequestError(503, reference).correlationId).toBeNull();
+});
