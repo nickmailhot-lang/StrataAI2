@@ -7,6 +7,8 @@ for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'B
     const issuer = await browser.newContext({ baseURL: test.info().project.use.baseURL });
     const headers = { 'X-StrataAI-Request': '1' }, suffix = `${width}-${surface}-${Date.now()}`;
     const recipient = { email: `expiry-recipient-${suffix}@example.test`, password: 'recipient-expiry-correct-horse', displayName: 'Expiry recipient' };
+    const observations: { step: string; elapsedMs: number }[] = []; const started = Date.now();
+    const observe = (step: string) => observations.push({ step, elapsedMs: Date.now() - started });
     try {
       const owner = { ...recipient, email: `expiry-issuer-${suffix}@example.test`, displayName: 'Expiry issuer' };
       expect((await issuer.request.post('/auth/register', { headers, data: owner })).status()).toBe(201);
@@ -34,12 +36,21 @@ for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'B
       let reads = 0, documents = 0, acceptedSource = false; const writes: string[] = []; let acknowledgment: unknown;
       page.on('websocket', socket => {
         if (!new URL(socket.url()).pathname.startsWith('/invitations/live')) return;
+        observe('recipient_socket_created');
+        socket.on('framesent', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const part of frame.payload.split('\u001e').filter(Boolean)) {
+            const message = JSON.parse(part);
+            if (message.type === 4 && message.target === 'Watch') observe('recipient_watch_requested');
+          }
+        });
         socket.on('framereceived', frame => {
           if (typeof frame.payload !== 'string') return;
           for (const part of frame.payload.split('\u001e').filter(Boolean)) {
             const message = JSON.parse(part);
+            if (message.type === 2 && message.item?.resetRequired === true) observe('recipient_reset_received');
             if (message.type === 2 && message.item?.events?.some((event: { eventType: string }) => event.eventType === 'INVITATION_ACCEPTED'))
-              acceptedSource = true;
+              { acceptedSource = true; observe('acceptance_event_received'); }
           }
         });
       });
@@ -49,12 +60,14 @@ for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'B
       });
       await page.route(url => url.pathname === `/me/invitations/${id}/accept`, async route => {
         writes.push(route.request().url()); const response = await route.fetch(); expect(response.status()).toBe(200);
+        observe('acceptance_response_received');
         if (writes.length === 1) { acknowledgment = await response.json(); await route.abort('timedout'); }
         else { expect(await response.json()).toEqual(acknowledgment); await route.fulfill({ response }); }
       });
       await page.goto('/app/invitations');
       const accept = page.getByRole('button', { name: /^Accept invitation to Recipient expiry scope/ });
       await expect(accept).toBeVisible(); const initialReads = reads;
+      observe('initial_accept_control_visible');
       await page.clock.runFor(1500);
       await expect(page.getByText('No pending invitations on this page.', { exact: true })).toBeVisible();
       await expect(accept).toHaveCount(0); await expect(page.getByRole('heading', { name: 'Recipient expiry scope', exact: true })).toHaveCount(0);
@@ -82,6 +95,9 @@ for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'B
       await page.clock.resume();
       expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    } finally { await issuer.close(); }
+    } finally {
+      await test.info().attach('recipient-stream-order', { body: Buffer.from(JSON.stringify(observations)), contentType: 'application/json' });
+      await issuer.close();
+    }
   });
 }

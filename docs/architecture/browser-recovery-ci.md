@@ -854,10 +854,20 @@ main. Fresh terminal metadata and decoded job logs establish these failures:
   original five-second assertion budget. This establishes the observed missing
   status, not its cause or a repair. Later assertions in that failed case remain
   unproven. The phone case's pass does not substitute for desktop recovery.
+- Subsequent terminal full shard 4/4 job `114079086711`: **75 passed and 5 failed**
+  in 46.5 minutes. Desktop Board recipient-invitation expiry/recovery does not
+  observe the actual committed acceptance invalidation within its original
+  15-second observation budget (`recipient-invitation-expiry.spec.ts:74`). All
+  four permission-order roles fail the complete private-state fingerprint
+  equality after original command replay: MEMBER, Organization reader and public
+  reader at `watch-permission-order.spec.ts:88`, ADMIN at line 156. This establishes
+  observed state inequality; it does not establish which writes caused it or
+  justify removing fields from the oracle. All five failures remain retained.
 
 Foundation job `114079086713` and security pass on that same old candidate;
 these do not establish whole-run success. At the subsequent shard-3 inspection,
-full shard 4/4 remains live; the separately recorded commands gate below passes.
+full shard 4/4 was still live; it subsequently finishes with the five failures
+above. The separately recorded commands gate below passes.
 The failures remain retained; no assertion,
 per-case deadline, role/state matrix, retry policy or mandatory CI dependency is
 weakened. The newer compiled-source/native results are separately scoped in
@@ -865,6 +875,48 @@ weakened. The newer compiled-source/native results are separately scoped in
 [modular-monolith acceptance](arch-03-acceptance.md). They do not replace these
 failed immutable-image scenarios or prove their causes. Current-head CI remains
 required before release acceptance or closure.
+
+The subsequent complete, unchanged Organization-deletion recovery file passes
+**2/2 on their only attempts**, zero skipped/flaky/unexpected results or report
+errors, in **74,630.579 ms**, against compiled schema-133 audit-backend API,
+restricted PostgreSQL and the frozen management-reference web build. This fixture
+retains optional verified-email policy and leaves deletion consumption disabled,
+matching its original pending-operation assertions; the actual API lifecycle
+stream withdraws the second client's content. Exact original request/receipt,
+permission, navigation, state, keyboard and Axe assertions remain. Its owned
+containers, database and credential environments are independently absent.
+Report: `organization-deletion-recovery-schema133-current-native-20261010/report-private.json`.
+It does not reproduce the retained old desktop failure or prove its cause.
+
+The complete four-role permission-order file separately passes **4/4** in a
+private diagnostic invocation (**574,584.102 ms**) and **4/4** without those extra
+read-only oracle snapshots (**627,647.152 ms**). Both retain MEMBER, ADMIN,
+Organization-reader and public-reader roles, all observed lock ordering, complete
+private-state fingerprints, source/receipt replay, denied access, restored access,
+notification/journal counts and original budgets. They use actual automatic
+Worker discovery against fresh restricted schema-133 PostgreSQL and strict
+verified-account fixtures. No protected-state field is removed from an oracle.
+Reports: `watch-permission-order-schema133-diagnostic-native-20261010/report-private.json`
+and `watch-permission-order-schema133-current-native-20261010/report-private.json`.
+Both owned fixture sets are independently absent. These current compiled-source
+passes do not establish why the retained old immutable-image fingerprints differed.
+
+The complete six-case recipient-invitation expiry file instead reproduces a
+failure: **5 passed / 1 failed** in **210,683.334 ms**, at the phone Board
+acceptance-observation assertion. A subsequent passive stream-order diagnostic
+retains **5 passed / 1 failed** in **218,103.992 ms**, at the same assertion.
+Its actual socket and first reset precede the committed acceptance response;
+after that response the failed case receives a second reset and no acceptance
+event. This rules out an initial-subscription bootstrap explanation for that
+observed failure. It does not, alone, prove the second reset's complete cause.
+All cases, assertions and original 120-second/15-second budgets remain; no
+attempt is retried, skipped or rewritten as a pass. Both fixtures' actual
+automatic Worker discovery uses the original optional verified-email policy.
+Owned containers, databases and credential environments are independently absent.
+Reports: `recipient-expiry-schema133-current-native-20261010/report-private.json`
+and `recipient-expiry-stream-order-native-20261010/report-private.json`.
+The private static stream-order attachment remains diagnostic evidence;
+current immutable-image CI and the invitation recovery repair remain required.
 
 
 The unchanged complete invitation-creation deadline file now passes **4/4**
