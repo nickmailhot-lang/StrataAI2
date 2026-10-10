@@ -72,3 +72,32 @@ are independently absent. Report:
 `card-route-batch-schema133-readiness-full-native-20261009`.
 Immutable build-once CI and the full PRD acceptance matrices remain required.
 PRD-01 remains open at **34% estimated work remaining** (planning estimate).
+
+## Complete schema-133 specialized persistence modes
+
+The later compiled audit-backend payload executes all **24/24 declared specialized
+`--…-only` modes**, each once in source declaration order, with exit zero in every
+mode. The terminal report's 24 unique modes exactly match current
+`StrataAI.Persistence.Contracts/Program.cs`; this is 24 complete mode invocations,
+not 24 independently collected cases or a substitute for the separate default
+invocation above. Total mode execution time is **2,321,781.034 ms**.
+
+Coverage includes event/delivery clocks, Board-member events, invitation audit
+metadata and authority/concurrency/lifecycle, identity lifecycle/expiry/recovery/
+registration, all readiness requirements, archive history, attachment publication
+and preview lifecycle, Organization creation timestamps and deletion clocks/pages/
+terminal behavior, activity source, notification batches and comment mentions.
+The original large deletion graph, assertions, concurrency, deadline and retry
+policies remain. No failing case is skipped or rerun to erase evidence.
+
+Every mode gets a fresh database with all 133 migrations and restricted API/Worker
+roles. All **134/134 staged migration/role SQL files** independently match
+normalized current source. The runtime is pinned to .NET 10.0.12 image digest
+`sha256:82e38976e7e8d2321a9cd4609e3bca84e229c1815bd91d0d0999816110f6e55d`.
+Owned PostgreSQL/contract containers and all credential environments are
+independently absent after terminal completion. Private terminal evidence:
+`schema133-all-special-contracts-native-20261010/outcome.json`.
+This strengthens current compiled-source persistence proof; complete API/frontend
+runs, immutable tested-image CI, unresolved historical attribution and full PRD
+acceptance remain separately required. PRD-01 stays open at **34% estimated work
+remaining**; ARCH-03's missing module and execution coverage remains unchanged.
