@@ -70,7 +70,8 @@ import { BoardBackgroundImageControl } from './BoardBackgroundImageControl';
 import { ListCopyControl } from './ListCopyControl';
 import { CardReminderControl } from './CardReminderControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
-import { DndContext, PointerSensor, KeyboardSensor, TraversalOrder, closestCenter, pointerWithin, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, PointerSensor, KeyboardSensor, TraversalOrder, useSensor, useSensors } from '@dnd-kit/core';
+import { kanbanCollisions } from './kanbanCollisions';
 import { ListDragColumn, ListEndTarget, type ListDropRequest } from './ListDragColumn';
 import { ListKeyboardNavigation } from './listKeyboardCoordinates';
 import { cardKeyboardCoordinates } from './cardKeyboardCoordinates';
@@ -586,14 +587,7 @@ function BoardContent() {
       <BoardDateProvider key={`${snapshot.board.organizationId}/${snapshot.board.id}`} snapshot={snapshot} unavailable={snapshotReading || !!loadError}
         onRevalidate={() => { setSnapshotReading(true); setReload(value => value + 1); }}>
       <DndContext sensors={sensors} modifiers={[pointerScrollFrame.modify, dragScroll.observe]} measuring={{ draggable: { measure: dragMeasurement.measure } }} autoScroll={{ order: TraversalOrder.ReversedTreeOrder,
-        canScroll: dragScroll.libraryCanScroll }} collisionDetection={args => {
-        const movingCard = String(args.active.id).startsWith('card:');
-        const droppableContainers = args.droppableContainers.filter(value => {
-          const cardTarget = String(value.id).startsWith('card:') || String(value.id).startsWith('card-end:');
-          return movingCard === cardTarget;
-        });
-        return args.pointerCoordinates ? pointerWithin({ ...args, droppableContainers }) : closestCenter({ ...args, droppableContainers });
-      }}
+        canScroll: dragScroll.libraryCanScroll }} collisionDetection={kanbanCollisions}
         accessibility={{ announcements: listDragAnnouncements(snapshot), screenReaderInstructions: listDragInstructions }} onDragStart={event => {
         pointerScrollFrame.start(event.activatorEvent);
         listKeyboard.start();

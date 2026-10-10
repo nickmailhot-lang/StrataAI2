@@ -8,6 +8,7 @@ export class KanbanAutoScroll {
     currentX: number; currentY: number; id?: number };
   private ancestors: Element[] = [];
   private timer?: number;
+  private lastTick?: number;
   observe: Modifier = ({ scrollableAncestors, transform }) => {
     // Element identities are current even while the library's separately
     // measured rectangle array still belongs to the previous hovered target.
@@ -21,6 +22,7 @@ export class KanbanAutoScroll {
         currentX: event.clientX, currentY: event.clientY,
         id: 'pointerId' in event ? (event as PointerEvent).pointerId : undefined };
       this.pointer.document.addEventListener('pointermove', this.pointerMove);
+      this.lastTick = this.pointer.window?.performance.now();
       this.timer = this.pointer.window?.setInterval(this.scrollNativePointer, 5);
     }
   }
@@ -42,6 +44,12 @@ export class KanbanAutoScroll {
   private scrollNativePointer = () => {
     const pointer = this.pointer, horizontal = this.axis === 'horizontal';
     if (!pointer?.window || !this.axis) return;
+    const now = pointer.window.performance.now();
+    if (!Number.isFinite(now)) return;
+    // Preserve edge speed when rendering delays the nominal five-ms timer.
+    // Bound elapsed time so a resumed background tab cannot catch up in one jump.
+    const elapsed = Math.max(0, Math.min(50, now - (this.lastTick ?? now - 5)));
+    this.lastTick = now;
     for (let index = 0; index < this.ancestors.length; index++) {
       const element = this.ancestors[index];
       if (!element.isConnected || !this.canScroll(element)) continue;
@@ -61,11 +69,13 @@ export class KanbanAutoScroll {
         || cross < (horizontal ? top : left) || cross > (horizontal ? bottom : right)) continue;
       const start = horizontal ? left : top, end = horizontal ? right : bottom;
       const threshold = (end - start) * 0.2;
-      // Match the normal dnd-kit edge rate, bounded to ten pixels per tick.
+      // Match the normal ten-pixels-per-five-ms rate. A single delayed frame
+      // cannot cross more than a quarter of the currently visible viewport.
       // Recompute from the native point on every tick so center input stops
       // immediately even before a React effect or hovered rectangle catches up.
-      const step = point < start + threshold ? -10 * Math.min(1, (start + threshold - point) / threshold)
-        : point > end - threshold ? 10 * Math.min(1, (point - end + threshold) / threshold) : 0;
+      const distance = Math.min(2 * elapsed, (end - start) / 4);
+      const step = point < start + threshold ? -distance * Math.min(1, (start + threshold - point) / threshold)
+        : point > end - threshold ? distance * Math.min(1, (point - end + threshold) / threshold) : 0;
       const offset = horizontal ? element.scrollLeft : element.scrollTop;
       const maximum = horizontal ? element.scrollWidth - element.clientWidth : element.scrollHeight - element.clientHeight;
       if (step < 0 && offset > 0 || step > 0 && offset < maximum) {
@@ -76,7 +86,7 @@ export class KanbanAutoScroll {
   finish() {
     this.pointer?.document.removeEventListener('pointermove', this.pointerMove);
     if (this.timer !== undefined) this.pointer?.window?.clearInterval(this.timer);
-    this.timer = undefined; this.pointer = undefined; this.axis = undefined; this.ancestors = [];
+    this.timer = undefined; this.lastTick = undefined; this.pointer = undefined; this.axis = undefined; this.ancestors = [];
   }
   canScroll = (element: Element) => !!this.axis && element.hasAttribute('data-kanban-scroll')
     && element.getAttribute('data-kanban-scroll-axis') === this.axis;

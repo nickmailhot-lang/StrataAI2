@@ -3,6 +3,7 @@ import type { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { BoardScreen } from './BoardScreen';
+import { AppThemeFixture } from '../../test/AppThemeFixture';
 import { boardCardLocation } from './boardCardLocation';
 import type { BoardSnapshot } from '../../api/workManagement';
 
@@ -53,7 +54,7 @@ it('opens cached Card detail and retires the modal with focus restored to its ca
       { path: '/app/:organizationId/boards/:boardId', element: <BoardScreen /> },
       { path: '/app/:organizationId/boards/:boardId/cards/:cardId', element: <BoardScreen /> },
     ], { initialEntries: ['/app/org/boards/board'] });
-    render(<StrictMode><RouterProvider router={router} /></StrictMode>);
+    render(<StrictMode><RouterProvider router={router} /></StrictMode>, { wrapper: AppThemeFixture });
     await waitFor(() => expect(screen.getByRole('button', { name: `Drag ${card.title} card` })).toBeEnabled());
     act(() => screen.getByRole('link', { name: card.title }).click());
     await screen.findByRole('textbox', { name: 'Card title' });
@@ -74,7 +75,7 @@ it('preserves canvas columns during dialog state changes and replaces them after
   vi.stubGlobal('fetch', vi.fn(async () => reply(current)));
   const router = createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId', element: <BoardScreen /> }],
     { initialEntries: ['/app/org/boards/board'] });
-  render(<RouterProvider router={router} />);
+  render(<RouterProvider router={router} />, { wrapper: AppThemeFixture });
   await waitFor(() => expect(screen.getByRole('button', { name: `Drag ${card.title} card` })).toBeEnabled());
   const original = canvas.items;
   vi.mocked(boardCardLocation).mockClear();
@@ -110,7 +111,7 @@ it('renders provisional drop placement before starting persistence and rolls it 
   vi.stubGlobal('fetch', fetcher);
   const router = createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId', element: <BoardScreen /> }],
     { initialEntries: ['/app/org/boards/board'] });
-  render(<RouterProvider router={router} />);
+  render(<RouterProvider router={router} />, { wrapper: AppThemeFixture });
   await waitFor(() => expect(screen.getByRole('button', { name: `Drag ${card.title} card` })).toBeEnabled());
   const handle = screen.getByRole('button', { name: `Drag ${card.title} card` });
   const activatorEvent = new MouseEvent('pointerdown', { bubbles: true });

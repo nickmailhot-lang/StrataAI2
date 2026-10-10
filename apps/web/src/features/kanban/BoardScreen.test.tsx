@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { BoardScreen } from "./BoardScreen";
+import { AppThemeFixture } from '../../test/AppThemeFixture';
 import type { BoardSnapshot } from "../../api/workManagement";
 import { watchBoard } from "../../api/boardLive";
 vi.mock("../../api/boardLive", () => ({ watchBoard: vi.fn(() => () => {}) }));
@@ -55,7 +56,7 @@ function mount(path = "/app/org-1/boards/board-1") {
     ],
     { initialEntries: [path] },
   );
-  render(<RouterProvider router={router} />);
+  render(<RouterProvider router={router} />, { wrapper: AppThemeFixture });
   return router;
 }
 function response(data: unknown, status = 200) {

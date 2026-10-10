@@ -1,23 +1,41 @@
 import { Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { memo, useCallback, useRef } from 'react';
 import { configurationNumberFields, configurationTextFields, type ConfigurationDraft } from './organizationConfigurationDraft';
 import type { OrganizationConfiguration } from './organizationConfiguration';
 
 export type IntakeOption = { id: string; name: string };
-export function OrganizationConfigurationForm({ draft, onChange, disabled, boards, lists, onBoardChange, onMoreBoards, onMoreLists, intakeBusy = false }:
+const ConfigurationInput = memo(function ConfigurationInput({ fieldKey, label, value, maximum, numeric = false, onChange }:
+  { fieldKey: keyof ConfigurationDraft; label: string; value: unknown; maximum: number; numeric?: boolean;
+    onChange: (key: keyof ConfigurationDraft, value: string) => void }) {
+  return <TextField label={label} value={value}
+    required={!numeric && ['legalName', 'jurisdiction', 'timezone'].includes(fieldKey)}
+    multiline={!numeric && fieldKey === 'civicAddress'}
+    type={!numeric && fieldKey === 'insuranceRenewalDate' ? 'date' : 'text'}
+    slotProps={numeric ? { htmlInput: { inputMode: 'numeric', pattern: '[0-9]*', maxLength: 7 } }
+      : { htmlInput: { maxLength: maximum }, inputLabel: fieldKey === 'insuranceRenewalDate' ? { shrink: true } : undefined }}
+    helperText={numeric ? `Optional; whole number from 1 to ${maximum}.` : undefined}
+    onChange={event => onChange(fieldKey, event.target.value)} />;
+});
+export const OrganizationConfigurationForm = memo(function OrganizationConfigurationForm({ draft, onChange, disabled, boards, lists, onBoardChange, onMoreBoards, onMoreLists, intakeBusy = false }:
   { draft: ConfigurationDraft; onChange: (value: ConfigurationDraft) => void; disabled: boolean; boards: IntakeOption[]; lists: IntakeOption[];
     onBoardChange: (id: string) => void; onMoreBoards?: () => void; onMoreLists?: () => void; intakeBusy?: boolean }) {
-  function field(key: keyof ConfigurationDraft, value: string) { onChange({ ...draft, [key]: value }); }
+  const currentDraft = useRef(draft); currentDraft.current = draft;
+  const currentDisabled = useRef(disabled); currentDisabled.current = disabled;
+  const field = useCallback((key: keyof ConfigurationDraft, value: string) => {
+    // An unchanged input retains its callback across sibling edits. Merge
+    // into the current draft so that retained callback cannot erase them.
+    if (!currentDisabled.current) onChange({ ...currentDraft.current, [key]: value });
+  }, [onChange]);
   return <Stack spacing={3}>
     <Typography>Required legal details are entered explicitly. Configuration does not establish legal compliance.</Typography>
-    <Stack spacing={2}>
-      {configurationTextFields.map(([key, label, maximum]) => <TextField key={key} label={label} value={draft[key]} disabled={disabled}
-        required={['legalName', 'jurisdiction', 'timezone'].includes(key)} multiline={key === 'civicAddress'}
-        type={key === 'insuranceRenewalDate' ? 'date' : 'text'}
-        slotProps={{ htmlInput: { maxLength: maximum }, inputLabel: key === 'insuranceRenewalDate' ? { shrink: true } : undefined }}
-        onChange={event => field(key, event.target.value)} />)}
-      {configurationNumberFields.map(([key, label, maximum]) => <TextField key={key} label={label} value={draft[key]} disabled={disabled}
-        slotProps={{ htmlInput: { inputMode: 'numeric', pattern: '[0-9]*', maxLength: 7 } }}
-        helperText={`Optional; whole number from 1 to ${maximum}.`} onChange={event => field(key, event.target.value)} />)}
+    {/* Native fieldset admission disables every scalar input atomically without
+        rebuilding each MUI control during read/review/acknowledgment transitions. */}
+    <Stack component="fieldset" disabled={disabled} spacing={2} sx={{ border: 0, p: 0, m: 0, minWidth: 0,
+      '&:disabled .MuiInputBase-root, &:disabled .MuiInputLabel-root': { color: 'text.disabled' } }}>
+      {configurationTextFields.map(([key, label, maximum]) => <ConfigurationInput key={key} fieldKey={key} label={label}
+        value={draft[key]} maximum={maximum} onChange={field} />)}
+      {configurationNumberFields.map(([key, label, maximum]) => <ConfigurationInput key={key} fieldKey={key} label={label}
+        value={draft[key]} maximum={maximum} numeric onChange={field} />)}
     </Stack>
     <Box component="fieldset" sx={{ minWidth: 0, p: 2 }} disabled={disabled || intakeBusy}>
       <Typography component="legend">Intake destination</Typography>
@@ -78,7 +96,7 @@ export function OrganizationConfigurationForm({ draft, onChange, disabled, board
       </Stack>
     </Box>
   </Stack>;
-}
+});
 
 export function ConfigurationValues({ configuration, boards, lists }: { configuration: OrganizationConfiguration; boards: IntakeOption[]; lists: IntakeOption[] }) {
   return <Stack spacing={1} sx={{ overflowWrap: 'anywhere' }}>

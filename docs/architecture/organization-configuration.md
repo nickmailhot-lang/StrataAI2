@@ -493,6 +493,23 @@ PostgreSQL configuration/readiness executable. The PostgreSQL check verifies
 the two different captured captions around a rename through the real Activity
 reader. The API check also preserves an administrator's original caption and
 capacity after profile, membership and account withdrawal. Type and lint checks
-pass. Browser assertions for captured Activity presentation have been added;
-their current execution and exact-image release CI remain required. No numbered
-acceptance criterion or linked test scenario is closed by this increment.
+pass. The extended desktop/phone native browser scenarios subsequently passed
+**2/2**, with zero retries, unexpected results, flaky results or skipped cases.
+They verify three captured actor/capacity entries alongside the original
+keyboard review, focus restoration, stale-peer draft preservation, source-only
+realtime frames and logout withdrawal assertions. The fixture used verified
+sessions, Production API/Worker, PostgreSQL and Nginx. Its frozen web bundle also
+included the separately tracked form/drag candidate changes: this is local
+runtime evidence, not clean-main web or exact CI release-image acceptance.
+Exact-image release CI remains required. No numbered acceptance criterion or
+linked test scenario is closed by this increment.
+
+The subsequent frozen Linux frontend suite passed **2,312/2,312** across **154
+files**, with zero failed or pending cases and unchanged deadlines. All 480
+frontend/browser source hashes match the reviewed candidate. Scalar configuration
+inputs retain unchanged MUI controls across sibling edits and read/review notices;
+their callbacks merge into the latest draft. A native disabled fieldset and an
+independent current-disabled callback check block edits during review, including
+synthetic events. The same snapshot includes the separately tested Kanban pointer
+target and elapsed-time scrolling repairs. This full source-suite result does not
+complete the native capacity matrix or exact-image release acceptance.

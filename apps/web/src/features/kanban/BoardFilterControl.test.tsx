@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom';
 import type { ComponentProps } from 'react';
 import { BoardFilterControl } from './BoardFilterControl';
+import { AppThemeFixture } from '../../test/AppThemeFixture';
 import type { BoardSnapshot } from '../../api/workManagement';
 import { filteredBoardCanvas } from './boardFilterCanvas';
 // These fixtures isolate criteria, directories and result reconciliation.
@@ -25,7 +26,7 @@ const response = (value: unknown, status = 200) => new Response(JSON.stringify(v
 const choices = (items = [label], nextCursor: string | null = null) => response({ organizationId: org, boardId: board, items, nextCursor });
 const results = (items = [card], nextCursor: string | null = null) => response({ organizationId: org, boardId: board, items, nextCursor });
 const storage = (id = actor) => `strataai:board-filter:v1:${id}:${org}:${board}`;
-function mount(p: ComponentProps<typeof BoardFilterControl> = props()) { return render(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>); }
+function mount(p: ComponentProps<typeof BoardFilterControl> = props()) { return render(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>, { wrapper: AppThemeFixture }); }
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' })); await screen.findByRole('checkbox', { name: 'Priority (red)' }); }
 beforeEach(() => sessionStorage.clear()); afterEach(() => vi.unstubAllGlobals());
 it('lets an admitted anonymous PUBLIC visitor filter without assignee discovery or another actor criteria', async () => {

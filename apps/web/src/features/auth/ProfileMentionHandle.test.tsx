@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ProfilePage } from './ProfilePage';
+import { AppThemeFixture } from '../../test/AppThemeFixture';
 vi.mock('./identityLive', () => ({ watchIdentity: () => () => {} }));
 afterEach(() => vi.unstubAllGlobals());
 it('blocks competing account commands during handle recovery and preserves unsaved profile edits after confirmation', async () => {
@@ -18,7 +19,7 @@ it('blocks competing account commands during handle recovery and preserves unsav
     if (++writes === 1) throw new Error('Lost reply');
     return json({ userId: id, handle: 'bob', userVersion: 2, handleVersion: 2, changed: true });
   });
-  vi.stubGlobal('fetch', fetchMock); render(<MemoryRouter><ProfilePage /></MemoryRouter>);
+  vi.stubGlobal('fetch', fetchMock); render(<MemoryRouter><ProfilePage /></MemoryRouter>, { wrapper: AppThemeFixture });
   await waitFor(() => expect(screen.getByLabelText(/Display name/)).toHaveValue('Council'));
   fireEvent.change(screen.getByLabelText(/Display name/), { target: { value: 'Preserved draft' } });
   fireEvent.click(screen.getByRole('button', { name: 'Change mention handle' }));
@@ -31,7 +32,9 @@ it('blocks competing account commands during handle recovery and preserves unsav
   fireEvent.submit(screen.getByRole('form', { name: 'Edit profile', hidden: true }));
   expect(fetchMock.mock.calls.filter(([, options]) => options?.method === 'PATCH')).toHaveLength(1);
   fireEvent.click(screen.getByRole('button', { name: 'Retry original handle change' }));
-  await screen.findByText('Handle change confirmed.'); fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+  await screen.findByText('Handle change confirmed.');
+  const close = screen.getByRole('button', { name: 'Close' });
+  await waitFor(() => expect(close).toBeEnabled()); fireEvent.click(close);
   await screen.findByText(/Your profile changed elsewhere. Your edits are preserved/);
   expect(screen.getByLabelText(/Display name/)).toHaveValue('Preserved draft');
   await waitFor(() => expect(screen.getByRole('button', { name: 'Save profile' })).toBeDisabled());

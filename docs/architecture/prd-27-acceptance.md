@@ -43,6 +43,35 @@ or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
 [PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **52%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
+The captured-attribution browser extension subsequently passed both original
+desktop/phone native scenarios with zero retries, flaky results or skips. It
+checks the three captured actor/capacity entries and retains keyboard review,
+focus restoration, stale-peer draft preservation, source-only frames and logout
+withdrawal. This Production-mode local fixture used a frozen web candidate that
+also includes separate form/drag changes; it does not prove clean-main web or
+exact release-image acceptance. The consumer's full API run and those broader
+frontend changes are tracked separately.
+
+Commit `b839803e133bac5bc2e0fb063ed733945053c54d` repairs the stale-review
+test's premature dialog-removal assertion and waits for actual realtime
+subscription before the paging recovery test resets its stream. Both complete
+local regression files pass **72/72**, with no pending tests, preserved deadlines
+and preserved assertions. Type checking and lint pass. The previous exact-head
+CI identified the stale-review assertion as its sole web test failure; the new
+[exact-head CI](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38094841825)
+remains unfinished. No acceptance criterion or scenario is closed, and the
+remaining-work estimate stays **52%**.
+
+The broader reviewed frontend snapshot subsequently passed **2,312/2,312 tests
+across 154 files** in Linux with two workers, zero failures or pending cases, and
+unchanged deadlines. All 480 frontend/browser source hashes match. This verifies
+the configuration form's retained controls, current-draft callback merging and
+review disable/restore behavior alongside the existing workflow and other source
+regressions. The earlier `b839803e` web CI job also completed successfully. Its
+remaining CI jobs, the consumer's unfiltered API suite, native capacity matrix and
+complete release acceptance remain separate obligations; no PRD-wide completion
+is claimed and **52% remaining** is unchanged.
+
 The latest [captured-attribution consumer](organization-configuration.md#captured-attribution-in-private-activity) reads original actor captions and administrative capacity from immutable sources, with bounded tenant IO and current viewer admission checked afterward. It passes 880 Domain cases, four focused API cases, 65 frontend boundary/Activity cases and the restricted PostgreSQL configuration/readiness check. Its browser assertions and exact-image release verification remain pending. It closes no numbered criterion or linked scenario; lifecycle, retention/schema/portal consistency and complete UX/telemetry remain required.
 
 The [configuration foundation and HTTP contract](organization-configuration.md) include Domain validation, Application commands/history, Demo/PostgreSQL stores and configuration read/change/history routes. The focused Linux run passed 34 PRD-27 cases, including 10 HTTP cases; a new local Production HTTP scenario passed on its first attempt with real verified sessions and PostgreSQL. Restricted C# PostgreSQL persistence, foreign-intake scope regression, invariant namespace case/whitespace parity, complete migration upgrade/isolation/atomicity checks and all 137 API/Worker readiness entries also passed. An earlier unfiltered API run passed 774/774 against its recorded source snapshot; it predates the new bounded intake endpoint. The subsequent current unfiltered API run passed 781/781 with zero source-hash mismatches across 637 backend/API-test files. Newer namespace SQL/persistence-contract changes have separate restricted-runtime evidence. Earlier frontend source coverage passed 2,089/2,089 across 142 files with unchanged assertions/deadlines and two workers. MUI/realtime, remaining data/lifecycle review, complete deployed workflow and immutable-image/full acceptance remain unfinished. This supports portions of the requirements and scenarios below; it does not complete them or establish a released configuration workflow.

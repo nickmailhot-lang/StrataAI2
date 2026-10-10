@@ -108,3 +108,32 @@ it('bounds native edge speed outside the viewport and ignores clipped, hidden, d
     board.element.remove(); vi.advanceTimersByTime(10); expect(board.scrollBy).not.toHaveBeenCalled();
   } finally { scroll.finish(); source.remove(); cards.element.remove(); board.element.remove(); vi.useRealTimers(); }
 });
+
+it('preserves native edge progress across delayed ticks without a background catch-up jump or center drift', () => {
+  vi.useFakeTimers();
+  const clock = vi.spyOn(window.performance, 'now').mockReturnValue(0);
+  const scroll = new KanbanAutoScroll(), board = viewport('horizontal', new DOMRect(24, 100, 342, 400));
+  const source = startPointer(scroll, 195, 300);
+  try {
+    observe(scroll, [board.element]);
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 36, clientY: 300 }));
+    clock.mockReturnValue(5); vi.advanceTimersByTime(5);
+    const ordinary = Math.abs(board.scrollBy.mock.calls[0][0]);
+    expect(ordinary).toBeCloseTo(8.24561403508772);
+    clock.mockReturnValue(80); vi.advanceTimersByTime(5);
+    const delayed = Math.abs(board.scrollBy.mock.calls[1][0]);
+    expect(delayed).toBeGreaterThan(ordinary);
+    expect(delayed).toBeLessThanOrEqual(342 / 4);
+    clock.mockReturnValue(100_000); vi.advanceTimersByTime(5);
+    expect(Math.abs(board.scrollBy.mock.calls[2][0])).toBeLessThanOrEqual(342 / 4);
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 195, clientY: 300 }));
+    clock.mockReturnValue(200_000); vi.advanceTimersByTime(5);
+    expect(board.scrollBy).toHaveBeenCalledTimes(3);
+    scroll.finish();
+    source.dispatchEvent(new MouseEvent('pointerdown', { clientX: 195, clientY: 300 }));
+    observe(scroll, [board.element]);
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 36, clientY: 300 }));
+    clock.mockReturnValue(200_005); vi.advanceTimersByTime(5);
+    expect(Math.abs(board.scrollBy.mock.calls[3][0])).toBeCloseTo(ordinary);
+  } finally { scroll.finish(); source.remove(); board.element.remove(); clock.mockRestore(); vi.useRealTimers(); }
+});

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { WorkInputError, WorkRequestError } from '../../api/workManagement';
@@ -55,7 +55,22 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   const actor = useRef<string | undefined>(undefined); const mounted = useRef(false);
   const operation = useRef<AbortController | undefined>(undefined);
   const directoryRead = useRef<AbortController | undefined>(undefined); const boardRead = useRef<AbortController | undefined>(undefined);
-  const current = useRef({ draft, original, review }); current.current = { draft, original, review };
+  const current = useRef({ draft, original, review, busy, authorityCheck, context });
+  current.current = { draft, original, review, busy, authorityCheck, context };
+  // Stable edit callbacks let the form retain its rendered controls through
+  // unrelated notices/history updates while checking current authority and
+  // unresolved submissions whenever an edit actually arrives.
+  const changeDraft = useCallback((value: ConfigurationDraft) => {
+    const state = current.current;
+    if (state.context && !state.authorityCheck && !state.original && !state.busy && !state.review) {
+      setDraft(value); setNotice(undefined);
+    }
+  }, []);
+  const changeBoard = useCallback((id: string) => {
+    const state = current.current;
+    if (state.context && state.draft && !state.authorityCheck && !state.original && !state.busy && !state.review)
+      setDraft({ ...state.draft, intakeBoardId: id, intakeListId: '' });
+  }, []);
   const confirmedRevision = useRef<number | undefined>(undefined); confirmedRevision.current = context?.view.version;
   function error(message: string, reason?: unknown) { setFailure({ message, reference: reason instanceof WorkRequestError ? reason.correlationId : null }); }
   function withdraw(reason: unknown) {
@@ -135,7 +150,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   }
   useEffect(() => { if (context?.actorId) void directory(); }, [context?.actorId]);
   useEffect(() => {
-    boardRead.current?.abort(); setSelectedBoard(undefined); setLists([]); setListCursor(null); setIntakeError(undefined);
+    boardRead.current?.abort(); setSelectedBoard(undefined); setLists(previous => previous.length ? [] : previous); setListCursor(null); setIntakeError(undefined);
     if (!draft?.intakeBoardId || !context?.actorId) { setIntakeBusy(false); return; }
     const controller = new AbortController(); boardRead.current = controller; setIntakeBusy(true);
     void readConfigurationIntakeLists(organizationId, context.actorId, draft.intakeBoardId, controller.signal).then(result => {
@@ -237,9 +252,9 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
           Original submission is unresolved. Its reviewed values, account, revision and retry key are preserved. A current-state read does not confirm that submission.
         </Alert>}
         {intakeError && <Alert severity="warning" action={<Button disabled={busy || intakeBusy} onClick={() => { void directory(); setIntakeReload(value => value + 1); }}>Retry intake discovery</Button>}>{intakeError}</Alert>}
-        <OrganizationConfigurationForm draft={draft} onChange={value => { if (!original && !busy && !review) { setDraft(value); setNotice(undefined); } }}
+        <OrganizationConfigurationForm draft={draft} onChange={changeDraft}
           disabled={busy || !!original || !!review} boards={boardOptions} lists={lists} intakeBusy={intakeBusy}
-          onBoardChange={id => { if (!original && !busy && !review) setDraft({ ...draft, intakeBoardId: id, intakeListId: '' }); }}
+          onBoardChange={changeBoard}
           onMoreBoards={boardCursor ? () => void directory(boardCursor) : undefined}
           onMoreLists={listCursor ? () => void moreLists() : undefined} />
         <Button ref={reviewButton} variant="contained" disabled={busy || !!original || needsCheck || intakeBusy} onClick={() => void prepareReview()}>Review configuration change</Button>
