@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { publicCorrelationReference } from '../../api/correlationReference';
 import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot } from '../../api/workManagement';
 
@@ -7,6 +8,7 @@ const uuid = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}
 type Label = { id: string; organizationId: string; boardId: string; name: string; color: string; rank: string; version: number; deleted: boolean };
 type Page = { items: Label[]; next: string | null; canDelete: boolean };
 type Intent = { kind: 'edit' | 'delete' | 'move'; label: Label; name: string; color: string; before: string | null; key: string };
+type FailureNotice = { message: string; reference: string | null };
 type Props = { snapshot: BoardSnapshot; disabled: boolean; onBusyChange: (busy: boolean) => void;
   onRecoveryChange: (pending: boolean) => void; onRefresh: () => void; onReturnFocus: () => void };
 function label(value: unknown, snapshot: BoardSnapshot): Label {
@@ -31,7 +33,11 @@ export function LabelManageControl({ snapshot, disabled, onBusyChange, onRecover
   const [open, setOpen] = useState(false); const [page, setPage] = useState<Page>(); const [selected, setSelected] = useState<Label>();
   const [name, setName] = useState(''); const [color, setColor] = useState('green'); const [before, setBefore] = useState('');
   const [confirmed, setConfirmed] = useState(false); const [intent, setIntent] = useState<Intent>();
-  const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<string>();
+  const [busy, setBusy] = useState(false); const [notice, setFailure] = useState<FailureNotice>();
+  function setNotice(message?: string, reason?: unknown) {
+    setFailure(message ? { message, reference: reason instanceof WorkRequestError
+      ? publicCorrelationReference(reason.correlationId) : null } : undefined);
+  }
   const pending = useRef<AbortController | undefined>(undefined); const epoch = useRef(0);
   const restoreFocus = useRef(false);
   const available = snapshot.access.canEdit && snapshot.board.lifecycleState === 'active';
@@ -56,7 +62,7 @@ export function LabelManageControl({ snapshot, disabled, onBusyChange, onRecover
       if (ticket === epoch.current) setPage(directory(value, snapshot, after));
     } catch (error) {
       if (ticket !== epoch.current) return;
-      setNotice('Unable to load current labels. Reload labels or refresh the Board.');
+      setNotice('Unable to load current labels. Reload labels or refresh the Board.', error);
       if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) { setOpen(false); onRefresh(); }
     } finally { if (ticket === epoch.current) { pending.current = undefined; setBusy(false); onBusyChange(false); } }
   }
@@ -86,13 +92,13 @@ export function LabelManageControl({ snapshot, disabled, onBusyChange, onRecover
     } catch (error) {
       if (ticket !== epoch.current) return;
       if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
-        setIntent(undefined); setPage(undefined); setSelected(undefined); setOpen(false); onRefresh();
+        setIntent(undefined); setPage(undefined); setSelected(undefined); setNotice(undefined); setOpen(false); onRefresh();
       } else if (error instanceof WorkRequestError && [400, 409].includes(error.status)) {
-        setIntent(undefined); setPage(undefined); setSelected(undefined); setConfirmed(false); setNotice(error.message); onRefresh();
-      } else { setIntent(command); setNotice('The change may have completed. Retry this same change to confirm its result.'); }
+        setIntent(undefined); setPage(undefined); setSelected(undefined); setConfirmed(false); setNotice(error.message, error); onRefresh();
+      } else { setIntent(command); setNotice('The change may have completed. Retry this same change to confirm its result.', error); }
     } finally { if (ticket === epoch.current) { pending.current = undefined; setBusy(false); onBusyChange(false); } }
   }
-  const close = () => { if (!busy && !intent) { setOpen(false); setSelected(undefined); setPage(undefined); } };
+  const close = () => { if (!busy && !intent) { setOpen(false); setSelected(undefined); setPage(undefined); setNotice(undefined); } };
   return <>
     {available && <Button disabled={disabled || busy || !!intent} onClick={() => { setOpen(true); void read(); }}>Manage labels</Button>}
     <Dialog open={open && available} onClose={close} fullWidth maxWidth="sm" disableRestoreFocus slotProps={{ transition: { onExited: () => {
@@ -101,7 +107,9 @@ export function LabelManageControl({ snapshot, disabled, onBusyChange, onRecover
     } } }}>
       <DialogTitle>Manage Board labels</DialogTitle>
       <DialogContent><Stack spacing={2}>
-        {notice && <Alert severity={intent ? 'warning' : 'info'}>{notice}</Alert>}
+        {notice && <Alert severity={intent ? 'warning' : 'info'}><span>{notice.message}</span>
+          {notice.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {notice.reference}</Typography>}
+        </Alert>}
         {busy && <Typography role="status">Loading label change…</Typography>}
         {intent ? <><Typography>Confirm {intent.kind} for {intent.label.name || 'an unnamed label'} ({intent.label.color}).</Typography>
           <Button disabled={disabled || busy} onClick={() => void submit(intent.kind)}>Retry label change</Button></> : <>

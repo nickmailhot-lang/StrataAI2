@@ -92,3 +92,7 @@ implemented core boundaries, missing module coverage and the Demo job-store gap.
 [Label creation support references](../board-label-api.md#label-creation-public-failure-references) records actual response-bound
 identifiers, unchanged rejection state, original retry identity and desktop/phone
 error-dialog accessibility and reflow evidence.
+
+[Label management support references](../board-label-api.md#label-management-public-failure-references)
+records directory-read and real competing-edit refusal coverage, safe reference
+retirement and the retained baseline and verification boundaries.

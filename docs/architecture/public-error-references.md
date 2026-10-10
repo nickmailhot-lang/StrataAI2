@@ -41,3 +41,10 @@ now preserves safe response-bound references with atomic notice retirement,
 extends the public reference boundary to that dialog, without claiming all Work
 controls or full NFR-FR-010/current immutable-image acceptance. Estimated PRD-01
 work remaining stays **34%**.
+
+The [label management consumer](../board-label-api.md#label-management-public-failure-references)
+also binds directory-read and command notices to sanitized response references.
+Its retained missing-reference baselines, 61 selected source passes and four
+actual server-refusal browser passes are recorded separately from pending full
+source and immutable-image verification. Card-label
+consumers and complete user-visible-error coverage still remain required.

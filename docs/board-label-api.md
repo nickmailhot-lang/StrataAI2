@@ -530,8 +530,58 @@ Report: `label-creation-reference-native-20261010/report-private.json`.
 
 Web/browser typechecks, lint and the private build pass. Full browser collection
 retains **333 cases in 127 intact files**, 87/81/83/82 across four shards with no
-case retries; original cases remain. The complete final frontend source suite is
-still running separately; the previous 2,037-case bundle is not relabeled as this
-repair's full source proof. Current immutable-image CI, other label/error consumers
+case retries; original cases remain. The complete final frontend source suite
+subsequently passes **2,045/2,045 actual assertion rows**, zero failed/pending,
+with two file workers and unchanged per-case deadlines. Private report:
+`label-creation-reference-full-web-source-20261010/report-private.json`.
+This is the creation repair's full source proof, before the subsequent management
+consumer changes. Current immutable-image CI, other label/error consumers
 and all original PRD acceptance remain required. PRD-10 stays open at **35%** and
 PRD-01 at **34% estimated work remaining** (planning estimates).
+
+## Label management public failure references
+
+The management dialog now stores each fixed public notice and its sanitized
+response-bound support reference together. Failed directory reads, rejected
+edits and uncertain commands retain only an actual `WorkRequestError` response
+header. Reload, replacement failure, network-only retry, confirmed success,
+selection, closure and permission retirement clear or replace the reference
+alongside its notice. Existing command name/color/version/body/key, explicit
+retry, permission fencing and directory reconciliation remain unchanged.
+
+The new source baseline retains **18 passed / 4 failed**: three missing-reference
+failures and one newly introduced immediate assertion against the closing dialog
+transition. Correcting that test to await the same dialog-removal assertion within
+its original five-second budget yields **19 passed / 3 failed**, isolating the
+three missing-reference regressions. Both reports remain private and retained.
+After the consumer repair, all **61 actual assertions in four complete selected
+files** pass with zero failed/pending cases. This includes both label consumers
+and the request error boundaries. Negatives cover unsafe headers, private bodies,
+network-only reference retirement, exact original-key/body retry and late
+permission-retired responses. Report:
+`label-management-reference-before-native-20261010/source-final-private.json`.
+
+The [four new browser cases](../tests/browser/label-management-reference.spec.ts)
+cover directory-read refusal and real competing-edit conflict at desktop and
+phone widths. Their unchanged-current-application baseline fails **4/4**, each
+at the missing visible reference assertion after confirming the actual API
+400/409 response, exact response header and unchanged protected label directory.
+No response body or reference is fabricated. Baseline report:
+`label-management-reference-before-native-20261010/report-private.json`.
+The rebuilt final native invocation passes **4/4 actual result rows on their only
+attempts**, zero skipped/flaky/unexpected cases, nonzero retries or report errors,
+in **175,991.280 ms**. It uses the compiled schema-133 Production API/separate
+scoped Worker, restricted PostgreSQL, Nginx/CSP and strict verified-account
+fixtures. The actual 64-character response reference is visible, dialog/document
+width and tagged Axe checks pass, explicit reload retires the reference and
+returns the unchanged canonical label directory. Original 90-second case budgets
+and 25-second pacing remain. Both baseline and final owned containers, databases
+and credential environments are independently absent. Report:
+`label-management-reference-native-20261010/report-private.json`.
+The complete frontend source suite still runs separately; its outcome is not
+inferred from selected source or native passes. Web/browser
+typechecks, lint and private build pass. Browser collection retains **337 cases**
+with zero collection errors and the complete shard validator passes.
+Full immutable-image CI, Card-label consumers, label/filter realtime acceptance
+and all original requirements remain required. Estimated work remaining:
+**PRD-10 35%; PRD-01 34%**. Neither ticket is closed.

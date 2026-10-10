@@ -847,10 +847,18 @@ main. Fresh terminal metadata and decoded job logs establish these failures:
   Manage items after revision-4 conflict recovery; desktop Board invitation
   deadline recovery never observes its held command after the eight-second
   profile gate.
+- Subsequent terminal full shard 3/4 job `114079086657`: **78 passed and 1 failed**
+  in 48.0 minutes. The desktop Organization-deletion recovery case receives the
+  actual pending lifecycle frame, but the second client's expected pending-status
+  element is absent at `organization-deletion-retries.spec.ts:97` within the
+  original five-second assertion budget. This establishes the observed missing
+  status, not its cause or a repair. Later assertions in that failed case remain
+  unproven. The phone case's pass does not substitute for desktop recovery.
 
 Foundation job `114079086713` and security pass on that same old candidate;
-these do not establish whole-run success. Other browser/command jobs were still
-live or queued at inspection. The failures remain retained; no assertion,
+these do not establish whole-run success. At the subsequent shard-3 inspection,
+full shard 4/4 remains live; the separately recorded commands gate below passes.
+The failures remain retained; no assertion,
 per-case deadline, role/state matrix, retry policy or mandatory CI dependency is
 weakened. The newer compiled-source/native results are separately scoped in
 [primary-screen reflow](primary-screen-reflow.md) and

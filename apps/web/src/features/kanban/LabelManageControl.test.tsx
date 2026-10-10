@@ -12,6 +12,66 @@ async function open() {
   fireEvent.click(await screen.findByRole('button', { name: 'Edit Priority (green)' }));
 }
 afterEach(() => vi.unstubAllGlobals());
+const failure = (status: number, reference: string) => new Response(JSON.stringify({ detail: 'Private diagnostic body' }),
+  { status, headers: { 'X-Correlation-ID': reference } });
+it('shows the failed directory response reference and retires it on a fresh read', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(failure(400, 'read.reference-01')).mockResolvedValueOnce(directory());
+  vi.stubGlobal('fetch', fetch); render(<LabelManageControl {...props()} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Manage labels' }));
+  await screen.findByText('Reference: read.reference-01');
+  expect(screen.queryByText('Private diagnostic body')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Reload labels' }));
+  await screen.findByRole('button', { name: 'Edit Priority (green)' });
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(2);
+});
+it('binds the conflict reference to its refusal and clears stale editing choices', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(directory()).mockResolvedValueOnce(failure(409, 'conflict.reference-02'))
+    .mockResolvedValueOnce(directory({ items: [{ ...original, version: 5 }] }));
+  vi.stubGlobal('fetch', fetch); const p = props(); render(<LabelManageControl {...p} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Save label' }));
+  await screen.findByText('Reference: conflict.reference-02');
+  expect(screen.queryByLabelText('Label name (optional)')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry label change' })).not.toBeInTheDocument();
+  expect(screen.queryByText('Private diagnostic body')).not.toBeInTheDocument(); expect(p.onRefresh).toHaveBeenCalledTimes(1);
+  fireEvent.click(screen.getByRole('button', { name: 'Reload labels' }));
+  await screen.findByRole('button', { name: 'Edit Priority (green)' }); expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument();
+});
+it('retains the exact uncertain command but replaces its reference on a network-only retry', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(directory()).mockResolvedValueOnce(failure(503, 'uncertain.reference-03'))
+    .mockRejectedValueOnce(new Error('Private network diagnostic')).mockResolvedValueOnce(response({ ...original, version: 5 }));
+  vi.stubGlobal('fetch', fetch); const p = props(); render(<LabelManageControl {...p} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Save label' })); await screen.findByText('Reference: uncertain.reference-03');
+  fireEvent.click(screen.getByRole('button', { name: 'Retry label change' }));
+  await screen.findByRole('button', { name: 'Retry label change' });
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/Private (network diagnostic|diagnostic body)/)).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Retry label change' }));
+  await screen.findByText('Label change confirmed. Reload labels to continue.');
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument();
+  for (const index of [2, 3]) {
+    expect(fetch.mock.calls[index][0]).toBe(fetch.mock.calls[1][0]);
+    expect(fetch.mock.calls[index][1].body).toBe(fetch.mock.calls[1][1].body);
+    expect(new Headers(fetch.mock.calls[index][1].headers).get('Idempotency-Key')).toBe(new Headers(fetch.mock.calls[1][1].headers).get('Idempotency-Key'));
+  }
+});
+it.each(['a'.repeat(65), 'diagnostic text', 'référence', 'one,two'])('withholds malformed directory reference %s', async reference => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(failure(400, reference))); render(<LabelManageControl {...props()} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Manage labels' }));
+  await screen.findByText('Unable to load current labels. Reload labels or refresh the Board.');
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument(); expect(screen.queryByText('Private diagnostic body')).not.toBeInTheDocument();
+});
+it('fences a late response reference after editing permission is retired', async () => {
+  let resolve!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(directory()).mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })));
+  const p = props(); const view = render(<LabelManageControl {...p} />); await open();
+  fireEvent.click(screen.getByRole('button', { name: 'Save label' })); await waitFor(() => expect(resolve).toBeDefined());
+  view.rerender(<LabelManageControl {...p} snapshot={{ ...snapshot, access: { ...snapshot.access, canEdit: false } }} />);
+  await act(async () => resolve(failure(503, 'retired.reference-04')));
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(p.onRefresh).not.toHaveBeenCalled();
+});
 it('renames and recolors at the read revision without submitting a raw rank', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(directory()).mockResolvedValueOnce(response({ ...original, name: 'Urgent', color: 'blue', version: 5 }));
   vi.stubGlobal('fetch', fetch); const p = props(); render(<LabelManageControl {...p} />); await open();
