@@ -637,9 +637,15 @@ Both complete files pass **57/57** after the change; frontend type checking,
 lint and a production build pass. Private reports:
 `frontend-recovery-diagnostic-20261010.json` and
 `frontend-recovery-layout-final-20261010.json`.
-The new complete frontend run remains pending. The independently retained Card
-archive timeout and invitation authority-ordering gap remain unresolved; these
-selected results do not establish full source, browser or release acceptance.
+The subsequent complete frontend invocation passes **2,075/2,075 actual cases
+across 142 files**, zero failures or pending cases, in **1,124,231.467 ms** of
+wall time. Report counters agree with the actual rows; both the previously
+failing attachment assertion and Card archive recovery case pass. Report:
+`frontend-recovery-layout-full-20261010.json`.
+The original 2,073/2 result remains retained. This successful invocation does
+not prove an independent Card archive defect repaired by the attachment change
+or establish native browser/immutable-release acceptance. The invitation
+authority repair remains isolated while its broader backend gates finish.
 Estimated PRD-14 work remaining stays **32%**; the issue remains open.
 
 ## Unsupported contents and misleading file labels

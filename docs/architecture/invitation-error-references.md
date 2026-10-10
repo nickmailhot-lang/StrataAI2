@@ -56,6 +56,23 @@ Report: `recipient-live-checkpoint-full-api-native-20261010/api.trx`.
 These are separate scopes; no full-suite pass is inferred from selected or
 native reference checks.
 Current immutable-image CI and complete NFR/PRD acceptance remain required.
+The independent [CI source invocation for this exact commit](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38024364850)
+passes the complete frontend suite. Retained artifact `11659462203` identifies
+`b54244e26376467191930446b4465fac2606873c` and contains **2,075 actual unique
+normalized passing case rows across 142 classified source files**, zero failures,
+errors or skips; report counters agree. The unchanged CI command invokes the
+complete suite, and its normalizer checks every JUnit case and root counters.
+Private retained copy: `b542-current-web-ci-report-20261010-private.json`.
+This separate successful invocation does not erase the local 2,073/2 result or
+certify the later attachment timing change, current local rerun, browser release
+phases or complete immutable-image gate.
+The complete local invocation after the attachment recovery-publication change
+also now passes **2,075/2,075 actual cases in 142 files**, zero failures or pending
+cases, in **1,124,231.467 ms** of wall time. Actual rows agree with report counters;
+both prior recovery failures pass. Report:
+`frontend-recovery-layout-full-20261010.json`.
+This verifies that invocation separately from the earlier failed one and from
+the passing CI source artifact; immutable-image release acceptance remains open.
 The [later acknowledgement-ordering failure](invitation-recipient-events.md#live-authority-reset-continuity)
 remains open independently. Estimated work remaining: **PRD-01 34%; PRD-03 8%**.
 Neither issue is closed.

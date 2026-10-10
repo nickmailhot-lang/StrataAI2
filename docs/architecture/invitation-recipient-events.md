@@ -563,5 +563,8 @@ The candidate remains isolated and unmerged while all 24 original specialized
 PostgreSQL modes, the complete unfiltered persistence executable and full Linux
 API suite run. No existing case, assertion,
 deadline or retry policy is weakened. Current main's complete frontend rerun
-and immutable-image CI also remain pending. Estimated PRD-03 work remaining:
+now passes **2,075/2,075 actual cases across 142 files**, zero failures/pending
+cases, including both previously failing recovery cases. The original failed
+invocation remains retained. Report: `frontend-recovery-layout-full-20261010.json`.
+Current immutable-image CI remains pending. Estimated PRD-03 work remaining:
 **8%**; no closure is justified by the scoped candidate results.
