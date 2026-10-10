@@ -42,6 +42,27 @@ internal static class OrganizationConfigurationDeliveryContract
         var first = await configuration.ChangeAsync(tenant,actor,new("Private delivery legal name","CA-BC","UTC"),0,Guid.NewGuid(),"configuration-delivery-first",ct);
         var second = await configuration.ChangeAsync(tenant,actor,new("Private later legal name","CA-BC","UTC"),1,Guid.NewGuid(),new string('r',256),ct);
         Require(first.Succeeded && second.Succeeded,"Configuration delivery seed did not commit two source revisions.");
+        var reader = provider.GetRequiredService<IOrganizationConfigurationEventReader>();
+        var unit = provider.GetRequiredService<IOrganizationUnitOfWork>();
+        var sync = provider.GetRequiredService<OrganizationConfigurationSynchronizationService>();
+        var codec = provider.GetRequiredService<IOrganizationConfigurationCursorCodec>();
+        var scope = await unit.ExecuteAsync(tenant,actor,null,false,async () =>
+            OrganizationOperation<OrganizationConfigurationReadScope?>.Success(await reader.GetScopeAsync(tenant,actor,ct)),ct);
+        Require(scope.Succeeded && scope.Value is { Binding.Role: OrganizationRole.Owner },"Restricted configuration recipient lost current Owner admission.");
+        var initialCursor = codec.Encode(scope.Value!.Binding,0);
+        var pending = await sync.ReadAsync(tenant,actor,initialCursor,ct:ct);
+        Require(pending.Succeeded && pending.Value is { Pending: true, ResetRequired: false, Events.Count: 0 },
+            "Unpublished restricted configuration sources reached a recipient.");
+        async Task<OrganizationConfigurationEventBatch> ReadBatch()
+        {
+            var result = await unit.ExecuteAsync(tenant,actor,null,false,async () =>
+                OrganizationOperation<OrganizationConfigurationEventBatch>.Success(await reader.ReadAsync(tenant,0,100,ct)),ct);
+            Require(result.Succeeded,"Restricted configuration source batch lost its owning transaction.");
+            return result.Value!;
+        }
+        var sourceBatch = await ReadBatch();
+        Require(sourceBatch.Head==2 && sourceBatch.Rows.Count==2 && sourceBatch.Rows.All(row=>row.ReadyAt is null),
+            "Restricted configuration stream head/publication admission disagrees with committed sources.");
         // This fixture hosts only the configuration handler, like the dedicated
         // discovery Worker. Other source jobs must remain for their own handlers.
         foreach (var flags in new[] { (Metadata: true, Authority: false), (Metadata: false, Authority: true) })
@@ -105,6 +126,18 @@ internal static class OrganizationConfigurationDeliveryContract
         finally { await Admin("DROP TRIGGER ci_configuration_delivery_expiry ON organization_configuration_events; DROP FUNCTION public.ci_configuration_delivery_expiry();"); }
         await new OrganizationConfigurationDeliveryHandler(store).ExecuteAsync(claim, ct);
         var originalReady = await ReadyAt(); Require(originalReady is not null, "Valid configuration delivery did not become ready.");
+        var publishedBatch = await ReadBatch();
+        var published = publishedBatch.Rows.Single(row=>row.Source.EventId==eventId);
+        Require(published.ReadyAt?.UtcDateTime==originalReady && published.StoredSourceTime==published.ReadyAt
+            && published.Source.CreatedAt>published.ReadyAt,
+            "Real first publication did not exercise finer immutable JSON / PostgreSQL microsecond precision.");
+        var page = await sync.ReadAsync(tenant,actor,initialCursor,ct:ct);
+        Require(page.Succeeded && page.Value is { ResetRequired: false, Pending: true }
+            && page.Value.Events.Count==(published.Source.Version==1?1:0),
+            "Restricted recipient reset a valid precision edge or crossed an unpublished earlier revision.");
+        if (published.Source.Version==1)
+            Require(page.Value!.Events[0].EventId==eventId && page.Value.Events[0].CreatedAt==first.Value!.UpdatedAt,
+                "Restricted replay changed the immutable source identity or finer clock.");
         await new OrganizationConfigurationDeliveryHandler(store).ExecuteAsync(claim, ct);
         Require(await ReadyAt() == originalReady, "Duplicate delivery rewrote readiness.");
         await Admin($"UPDATE public.background_jobs SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE id='{claim.Id:D}'::uuid;");
@@ -136,6 +169,9 @@ internal static class OrganizationConfigurationDeliveryContract
         // A committed event is historical evidence, not a new action by its
         // actor. Departure cannot strand the remaining committed update.
         await Admin($"UPDATE organization_members SET status='REMOVED',version=version+1 WHERE tenant_id='{tenant:D}'::uuid AND user_id='{actor:D}'::uuid;");
+        var withdrawn = await sync.ReadAsync(tenant,actor,initialCursor,ct:ct);
+        Require(!withdrawn.Succeeded && withdrawn.Value is null && withdrawn.ErrorCode=="organization_not_found",
+            "Configuration replay retained a departed recipient grant.");
         var next = await jobs.ClaimAsync(tenant, Guid.NewGuid(), ct) ?? throw new InvalidOperationException("Committed update delivery was missing.");
         var nextEvent = OrganizationLifecycleDeliveryHandler.ParseEventId(next.SafeMetadataJson);
         Require(next.JobType == OrganizationConfigurationDeliveryHandler.Type && nextEvent != eventId,
@@ -153,5 +189,10 @@ internal static class OrganizationConfigurationDeliveryContract
     private sealed class Admission : StrataAI.Application.Identity.ICommandActorAuthorization
     { public Task<bool> VerifyAsync(Guid actorId,CancellationToken cancellationToken=default)=>Task.FromResult(true); }
     private sealed class Clock : StrataAI.Application.Common.IClock
-    { public DateTimeOffset UtcNow => DateTimeOffset.UtcNow; }
+    {
+        // A logical source clock ahead of publication exercises the actual
+        // database GREATEST floor with one immutable 100ns JSON remainder.
+        public DateTimeOffset UtcNow { get; } = new DateTimeOffset(DateTime.UtcNow.Ticks / 10 * 10,
+            TimeSpan.Zero).AddMinutes(5).AddTicks(1);
+    }
 }

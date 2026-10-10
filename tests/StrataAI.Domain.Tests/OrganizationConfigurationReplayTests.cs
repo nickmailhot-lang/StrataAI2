@@ -73,6 +73,37 @@ public sealed class OrganizationConfigurationReplayTests
     }
 
     [Theory]
+    [InlineData(1, 0)]
+    [InlineData(4, 0)]
+    [InlineData(5, 0)]
+    [InlineData(5, 10)]
+    [InlineData(6, 10)]
+    [InlineData(9, 10)]
+    public void PRD_27_Replay_preserves_finer_JSON_source_clock_and_actual_microsecond_publication(int sourceTicks, int storedTicks)
+    {
+        var original = Row(1).Source with { CreatedAt = SourceTime.AddTicks(sourceTicks) };
+        var stored = SourceTime.AddTicks(storedTicks);
+        var candidate = new OrganizationConfigurationEventCandidate(original, stored, stored);
+        var page = OrganizationConfigurationEventWindow.Build(Organization, 0, 1, 1, [candidate]);
+        Assert.False(page.ResetRequired); Assert.Equal(1, page.Position);
+        var delivered = Assert.Single(page.Events);
+        Assert.Same(original, delivered.Source); Assert.Equal(original.CreatedAt, delivered.Source.CreatedAt);
+        Assert.Equal(stored, delivered.ReadyAt); Assert.Equal(stored, delivered.StoredSourceTime);
+        Assert.True(OrganizationConfigurationEventWindow.Build(Organization, 0, 1, 1,
+            [candidate with { ReadyAt = stored.AddTicks(-1) }]).ResetRequired);
+    }
+
+    [Fact]
+    public void PRD_27_Replay_refuses_unproven_stored_clock_precision_or_a_changed_source_clock()
+    {
+        var row = Row(1);
+        foreach (var invalid in new[] { SourceTime.AddTicks(1), SourceTime.AddTicks(10),
+            SourceTime.ToOffset(TimeSpan.FromHours(1)) })
+            Assert.True(OrganizationConfigurationEventWindow.Build(Organization, 0, 1, 1,
+                [row with { StoredSourceTime = invalid }]).ResetRequired);
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(101)]
     public void PRD_27_Replay_requires_bounded_pages(int limit) => Assert.Throws<ArgumentOutOfRangeException>(() =>

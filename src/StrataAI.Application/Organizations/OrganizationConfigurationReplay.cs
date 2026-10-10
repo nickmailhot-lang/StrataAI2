@@ -1,7 +1,7 @@
 namespace StrataAI.Application.Organizations;
 
 public sealed record OrganizationConfigurationEventCandidate(OrganizationConfigurationEvent Source,
-    DateTimeOffset? ReadyAt);
+    DateTimeOffset? ReadyAt, DateTimeOffset? StoredSourceTime = null);
 
 // Configuration versions form their own tenant stream. Its owning reader must
 // admit current Owner/Admin access; this pure window grants no read authority.
@@ -21,10 +21,17 @@ public sealed record OrganizationConfigurationEventWindow(long Position, bool Ha
         foreach (var row in rows)
         {
             var source = row.Source;
+            // PostgreSQL's immutable indexed source clock has microsecond
+            // precision. Its reader proves equality to the original JSON cast;
+            // preserve the finer JSON clock and actual publication separately.
+            var publicationFloor = row.StoredSourceTime ?? source.CreatedAt;
+            if (row.StoredSourceTime is { } stored && (stored.Offset != TimeSpan.Zero
+                || stored.UtcDateTime.Ticks % 10 != 0 || Math.Abs((stored - source.CreatedAt).Ticks) > 5))
+                return Reset();
             if (position == long.MaxValue || source.Version != position + 1 || source.Version > head
                 || source.OrganizationId != organization || source.ActorId == Guid.Empty || source.EventId == Guid.Empty
                 || !identities.Add(source.EventId) || string.IsNullOrWhiteSpace(source.CorrelationId)
-                || source.CorrelationId.Length > 256 || row.ReadyAt < source.CreatedAt)
+                || source.CorrelationId.Length > 256 || row.ReadyAt < publicationFloor)
                 return Reset();
             // Publication may complete out of order. Never consume a later ready
             // revision through an earlier pending one, including page lookahead.

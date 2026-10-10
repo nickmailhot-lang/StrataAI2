@@ -4,18 +4,20 @@ using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
 using StrataAI.Domain.Organizations;
 using StrataAI.Infrastructure.WorkManagement;
+using StrataAI.Application.Common;
 
 namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore organizations,
-    ICommandActorAuthorization actors, DemoWorkTransactionScope scope, IWorkManagementStore work)
-    : IOrganizationConfigurationStore, IDemoOrganizationTransactionParticipant
+    ICommandActorAuthorization actors, DemoWorkTransactionScope scope, IWorkManagementStore work, IClock clock)
+    : IOrganizationConfigurationStore, IOrganizationConfigurationEventReader, IDemoOrganizationTransactionParticipant
 {
     // Serialized snapshots prevent callers from mutating nested private collections in history.
     private readonly Dictionary<Guid, string> _current = [];
     private readonly Dictionary<(Guid Organization, long Version), string> _history = [];
     private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), string> _receipts = [];
     private readonly Dictionary<(Guid Organization, long Version), OrganizationConfigurationEvent> _events = [];
+    private readonly Dictionary<(Guid Organization, long Version), DateTimeOffset> _publications = [];
     private readonly HashSet<Guid> _eventIds = [];
     private readonly Dictionary<(string Jurisdiction, string Identifier), Guid> _identifiers = [];
 
@@ -88,6 +90,16 @@ internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore 
         var identifier = Identifier(record.Configuration);
         if (identifier is { } key && _identifiers.TryGetValue(key, out var owner) && owner != record.OrganizationId)
             return OrganizationConfigurationWriteResult.IdentifierConflict;
+        var source = new OrganizationConfigurationEvent(record.EventId, record.OrganizationId,
+            record.ActorId, record.Version, record.CorrelationId, record.UpdatedAt);
+        if (work is not InMemoryWorkManagementStore audits)
+            throw new InvalidOperationException("Demo configuration audit persistence is unavailable.");
+        // This source fact participates in the same Organization/Work rollback.
+        // Private configuration values never enter the all-member metadata journal.
+        await audits.AppendAuditFactAsync(source.EventId, source.OrganizationId, source.ActorId,
+            source.EventType, source.EntityType, source.EntityId, source.CorrelationId, source.CreatedAt, ct);
+        var publishedAt = clock.UtcNow.ToUniversalTime();
+        if (publishedAt < source.CreatedAt) publishedAt = source.CreatedAt.ToUniversalTime();
         var json = JsonSerializer.Serialize(record);
         var receiptJson = JsonSerializer.Serialize(receipt);
         ct.ThrowIfCancellationRequested();
@@ -95,8 +107,8 @@ internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore 
         if (identifier is { } selected) _identifiers[selected] = record.OrganizationId;
         _current[record.OrganizationId] = json;
         _history.Add((record.OrganizationId, record.Version), json);
-        _events.Add((record.OrganizationId, record.Version), new(record.EventId, record.OrganizationId,
-            record.ActorId, record.Version, record.CorrelationId, record.UpdatedAt));
+        _events.Add((record.OrganizationId, record.Version), source);
+        _publications.Add((record.OrganizationId, record.Version), publishedAt);
         _eventIds.Add(record.EventId);
         _receipts.Add((record.OrganizationId, receipt.ActorId, receipt.Key), receiptJson);
         return OrganizationConfigurationWriteResult.Written;
@@ -105,8 +117,34 @@ internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore 
     public Action CaptureRollback()
     {
         Action[] restore = [DemoRollback.Dictionary(_current), DemoRollback.Dictionary(_history),
-            DemoRollback.Dictionary(_receipts), DemoRollback.Dictionary(_events), DemoRollback.Set(_eventIds), DemoRollback.Dictionary(_identifiers)];
+            DemoRollback.Dictionary(_receipts), DemoRollback.Dictionary(_events), DemoRollback.Dictionary(_publications),
+            DemoRollback.Set(_eventIds), DemoRollback.Dictionary(_identifiers)];
         return () => { foreach (var action in restore) action(); };
+    }
+
+    public async Task<OrganizationConfigurationReadScope?> GetScopeAsync(Guid organization, Guid actor, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        var parent = await organizations.FindOrganizationAsync(organization, ct);
+        var member = await organizations.FindMembershipAsync(organization, actor, ct);
+        return parent?.Status == OrganizationStatus.Active
+            && member is { Active: true, Role: OrganizationRole.Owner or OrganizationRole.Admin }
+            ? new(new(organization, actor, member.Id, member.Version, member.Role), true, true) : null;
+    }
+
+    public async Task<long> GetHeadAsync(Guid organization, CancellationToken ct) =>
+        (await ReadAsync(organization, ct))?.Version ?? 0;
+
+    public async Task<OrganizationConfigurationEventBatch> ReadAsync(Guid organization, long since, int limit, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        if (since < 0 || limit is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(since));
+        var head = await GetHeadAsync(organization, ct);
+        var rows = _events.Where(row => row.Key.Organization == organization && row.Key.Version > since && row.Key.Version <= head)
+            .OrderBy(row => row.Key.Version).Take(limit + 1)
+            .Select(row => new OrganizationConfigurationEventCandidate(row.Value,
+                _publications.TryGetValue(row.Key, out var ready) ? ready : null)).ToArray();
+        return new(head, rows);
     }
 
     private static T Decode<T>(string json) => JsonSerializer.Deserialize<T>(json)

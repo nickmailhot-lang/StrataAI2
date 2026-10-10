@@ -141,14 +141,14 @@ internal static class IdentityRecoveryRollbackContract
                 return true;
             }, false, ct);
             if (failure == "database")
-                await VerifyElapsedConsumptionAsync(admin, unit, identity, context, actor, purpose, retry!, applicationName, Snapshot, ct);
+                await VerifyElapsedConsumptionAsync(admin, unit, identity, context, actor, purpose, retry!, applicationName, connection.Username!, Snapshot, ct);
         }
         Console.WriteLine("Restricted PostgreSQL recovery rollback: six failure/cancellation and two elapsed consumption-expiry cases passed.");
     }
 
     private static async Task VerifyElapsedConsumptionAsync(NpgsqlConnection admin, IIdentityUnitOfWork unit,
         IdentityService identity, RecoveryContext context, Guid actor, IdentityTokenPurpose purpose,
-        string token, string applicationName, Func<Task<string>> snapshot, CancellationToken ct)
+        string token, string applicationName, string runtimeUsername, Func<Task<string>> snapshot, CancellationToken ct)
     {
         static void Require(bool value, string message)
         { if (!value) throw new InvalidOperationException(message); }
@@ -181,11 +181,12 @@ internal static class IdentityRecoveryRollbackContract
             var deadline = DateTimeOffset.UtcNow.AddSeconds(20);
             while (!consuming.IsCompleted && DateTimeOffset.UtcNow < deadline) {
                 await using var probe = new NpgsqlCommand("""
-                    SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE usename='strataai_api_runtime'
+                    SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE usename=@runtimeUsername
                       AND application_name=@application
                       AND wait_event='PgSleep' AND query LIKE '%INSERT INTO identity_token_consumption_replays%');
                     """, admin);
                 probe.Parameters.AddWithValue("application", applicationName);
+                probe.Parameters.AddWithValue("runtimeUsername", runtimeUsername);
                 if (await probe.ExecuteScalarAsync(ct) is true) { observedPublication = true; break; }
                 await Task.Delay(100, ct);
             }

@@ -238,7 +238,7 @@ All **704** backend source hashes match the frozen verification manifest; the
 owned API verification container is removed. The initial test-source syntax
 error was corrected before the passing tests without changing their assertions.
 
-Only the codec is registered. There is no registered coordinator, owning event
+At that increment only the codec was registered. There was no registered coordinator, owning event
 reader or HTTP/SignalR configuration stream yet. Restricted persistence must read
 actual `ready_at`; the old configuration source-event reader does not supply
 publication state. Production timestamp casts were also checked: PostgreSQL
@@ -251,3 +251,43 @@ These are recipient-security components, not a deployed recipient workflow.
 Activity, current authorized transport and client recovery, all lifecycle/data/
 retention/portal/UX/telemetry requirements and complete immutable-image acceptance
 remain in scope. PRD-27 stays open at **60% estimated work remaining**.
+
+## Owning configuration publication readers
+
+The coordinator and owning event reader are now registered in both Demo and
+PostgreSQL modes. Every scope, head and event operation requires the existing
+Organization transaction. Production admission locks the active Organization
+and current Owner/Admin membership; the coordinator also rechecks account and
+membership authority after IO. Readers cannot open an independent replay scope.
+
+Production replay reads actual `ready_at` and validates source identity against
+the immutable indexed columns. PostgreSQL casts prove the stored source clock
+matches the original JSON timestamp. The replay window preserves that original
+JSON clock and the actual publication clock separately, while allowing only the
+database's microsecond rounding. A first publication at the stored source floor
+does not incorrectly reset a valid event whose JSON retains a finer timestamp.
+
+Demo now appends its body-free configuration audit fact in the same rollback
+scope as configuration state, history, receipt and first publication. It retains
+the source event identity, actor, correlation and original clock. Configuration
+values and events do not enter the all-member Organization metadata journal.
+This audit fact does not establish completed configuration Activity delivery.
+
+The full Linux Domain suite passes **847/847** with zero failed, skipped or
+unexecuted cases. The real restricted PostgreSQL configuration/readiness contract
+passes, including an actual Worker publication at the microsecond source floor,
+pending-window behavior and replay denial after role withdrawal. The complete
+unfiltered restricted PostgreSQL persistence executable also passes, with all
+**676** recorded source/schema/contract hashes matching. Its dedicated database
+instance uses the canonical CI runtime roles and is removed after completion.
+Earlier clone fixtures exposed hard-coded identity observation usernames and
+incompatible deletion capability role names. Identity probes now bind the actual
+configured username, preserving the original sleep, expiry, rollback, recovery
+assertions and deadlines. The canonical-role run passes the original complete
+lifecycle and scale scenarios. The complete Linux API suite passes **785/785**,
+with zero failures, errors, timeouts, skips or unexecuted cases and all **714**
+recorded API/Domain source hashes matching. Both new API-host publication cases
+are included; the owned verification container is removed.
+HTTP/SignalR recipient transports,
+client configuration recovery and the remaining full acceptance obligations
+still require implementation. Estimated work remaining remains **60%**.

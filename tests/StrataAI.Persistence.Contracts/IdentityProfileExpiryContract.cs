@@ -95,10 +95,11 @@ internal static class IdentityProfileExpiryContract
                 while (!updating.IsCompleted && DateTimeOffset.UtcNow < deadline)
                 {
                     await using var probe = new NpgsqlCommand("""
-                        SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE usename='strataai_api_runtime'
+                        SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE usename=@runtimeUsername
                           AND application_name=@application AND wait_event='PgSleep' AND query LIKE @query);
                         """, admin);
                     probe.Parameters.AddWithValue("application", applicationName);
+                    probe.Parameters.AddWithValue("runtimeUsername", new NpgsqlConnectionStringBuilder(apiConnection).Username!);
                     probe.Parameters.AddWithValue("query", $"%INSERT INTO {table}%");
                     if (await probe.ExecuteScalarAsync(ct) is true) { observed = true; break; }
                     await Task.Delay(100, ct);

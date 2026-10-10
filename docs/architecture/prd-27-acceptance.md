@@ -6,10 +6,24 @@ purpose-separated role/account/membership-bound encrypted cursor. Fifteen focuse
 coordinator cases, two real API-host cursor cases and **840/840** complete Linux
 Domain cases pass. The complete Linux API run passes **783/783** with zero
 failures, skips or timeouts and all **704** backend source hashes matching.
-Only the codec is registered;
-the owning reader and HTTP/SignalR recipient workflow are still unfinished.
+At that increment only the codec was registered;
+the owning reader and HTTP/SignalR recipient workflow were still unfinished.
 See [recipient admission and cursors](organization-configuration.md#configuration-recipient-admission-and-cursors).
 This does not close any AC or linked scenario; **60% remaining** is unchanged.
+
+The subsequent [owning publication readers](organization-configuration.md#owning-configuration-publication-readers)
+register the coordinator in both modes, read actual restricted PostgreSQL
+publication state and add atomic body-free Demo audit/publication parity. The
+full Linux Domain suite passes **847/847**; the restricted real PostgreSQL
+configuration/readiness contract also passes with a source-clock precision edge
+and withdrawn-recipient replay denial. The complete unfiltered restricted
+PostgreSQL persistence executable also passes with all 676 source/schema/contract
+hashes matching; its dedicated canonical-role fixture is cleaned after completion.
+The complete Linux API suite passes 785/785 with zero failures, skips or timeouts
+and all 714 recorded API/Domain source hashes matching. Configuration Activity, HTTP/SignalR,
+client recovery and the complete
+remaining lifecycle/data/UX/image obligations remain required. **60% remaining**
+is unchanged; no numbered AC or linked scenario is closed by these components.
 
 The separate configuration recovery-window primitive now passes seven focused
 scenarios and **825/825** complete Linux Domain cases, with all 530 recorded

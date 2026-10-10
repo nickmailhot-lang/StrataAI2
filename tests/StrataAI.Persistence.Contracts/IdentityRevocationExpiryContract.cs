@@ -130,10 +130,11 @@ internal static class IdentityRevocationExpiryContract
                 while (!revoking.IsCompleted && DateTimeOffset.UtcNow < deadline)
                 {
                     await using var probe = new NpgsqlCommand("""
-                        SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND application_name=@application
+                        SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE usename=@runtimeUsername AND application_name=@application
                           AND wait_event='PgSleep' AND query LIKE '%INSERT INTO identity_revocation_replays%');
                         """,admin);
                     probe.Parameters.AddWithValue("application",applicationName);
+                    probe.Parameters.AddWithValue("runtimeUsername",new NpgsqlConnectionStringBuilder(apiConnection).Username!);
                     if (await probe.ExecuteScalarAsync(ct) is true) { observed = true; break; }
                     await Task.Delay(100,ct);
                 }
