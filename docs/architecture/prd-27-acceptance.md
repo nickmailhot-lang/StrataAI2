@@ -95,3 +95,17 @@ Uppercase configuration deep links now retain canonical HTTP/realtime/recovery/r
 
 
 The durable-delivery increment adds atomic reference-only configuration jobs, immutable source and first-publication clocks, restricted Worker lease/source capabilities, bounded typed discovery and historical upgrade continuity. Restricted PostgreSQL contracts, all 138 readiness entries, 17 focused handler cases, the full 818-case Linux Domain suite and a real separate automatically routed Worker pass are recorded in [durable configuration Worker delivery](organization-configuration.md#durable-configuration-worker-delivery). The final deep-link frontend source passed 2,216/2,216; the delivery API source has its own full run. Current estimate is **60% remaining**. Required configuration Activity and authorized recipient replay/SignalR are still incomplete, as are the full lifecycle/data/UX/observability and immutable-image obligations. No AC or linked scenario is closed by this increment.
+
+
+## Private recipient transport increment
+
+Private HTTP/SignalR delivery and revision-aware MUI recovery are implemented.
+The dedicated API-host suite passes **12/12**; native desktop/phone cases pass
+**2/2** with actual separate Worker publication, keyboard recovery and session
+revocation. The preceding frontend suite passes **2,279/2,279**; final typed
+frontend and the complete **797-case** API suite are being checked separately.
+See [private configuration realtime and review recovery](organization-configuration.md#private-configuration-realtime-and-review-recovery)
+for precise source scopes and limitations. Activity, suspension/deactivation,
+retention/data/portal consistency, complete UX, telemetry and immutable-image
+acceptance remain unfinished. **60% remaining**; all numbered criteria and
+linked scenarios stay open.

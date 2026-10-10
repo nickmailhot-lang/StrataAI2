@@ -207,6 +207,12 @@ app.MapHub<OrganizationMetadataRealtimeHub>("/organizations/live/metadata", opti
     options.TransportMaxBufferSize = 4096;
 }).RequireAuthorization();
 
+app.MapHub<OrganizationConfigurationRealtimeHub>("/organizations/live/configuration", options =>
+{
+    options.ApplicationMaxBufferSize = 131072;
+    options.TransportMaxBufferSize = 4096;
+}).RequireAuthorization();
+
 app.Run();
 
 public partial class Program;

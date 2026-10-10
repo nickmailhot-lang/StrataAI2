@@ -291,3 +291,53 @@ are included; the owned verification container is removed.
 HTTP/SignalR recipient transports,
 client configuration recovery and the remaining full acceptance obligations
 still require implementation. Estimated work remaining remains **60%**.
+
+
+## Private configuration realtime and review recovery
+
+`GET /organizations/{id}/configuration/events` exposes bounded, private,
+reference-only replay after current administrator admission. Actor-bound
+encrypted cursors retain original source identity and timestamp. Invalid or
+foreign cursor bindings reset to current state without disclosing history;
+malformed page parameters use stable errors after target admission.
+
+The dedicated `/organizations/live/configuration` SignalR stream uses the same
+owning coordinator. It rechecks current session and cursor authority before
+delivery, releases cancelled subscriptions and excludes configuration values
+from messages and logs. Ordinary members cannot subscribe to private events.
+The existing release edge forwards this route.
+
+The MUI page follows both membership metadata and private configuration events.
+A newer revision closes stale review and reloads current authority, preserving
+unsent work and any original uncertain submission. Original bytes, actor, key
+and version are never silently rebased. Keyboard focus returns to the available
+review/recovery action after the read. Older events for an acknowledged revision
+preserve a newer review. Reconnect forces current-state checking. Withdrawal
+clears protected values and offers the permitted recovery action.
+
+The dedicated API-host transport run passed **12/12**, with no failures, skips,
+timeouts or unexecuted cases and all **762** recorded source hashes matching.
+Coverage includes HTTP paging/reset, guessed-target denial, origins, current
+role/session withdrawal, subscription limits and cancellation. The preceding
+client/page run passed **63/63** focused cases, and its complete frontend suite
+passed **2,279/2,279** with **474** matching source hashes. That full run precedes
+a test-only TypeScript query-option correction; final typed-source full-suite
+verification is in progress. Final web/browser type checking, lint and the
+production web build passed.
+
+Both new native desktop/phone browser cases passed on their first attempt,
+without retries or changed deadlines. They use verified sessions, strict
+Production API/Worker, PostgreSQL and Nginx. They observe actual private source
+frames after peer changes, recover stale keyboard review with an unsent draft,
+acknowledge the subsequent human approval and clear private values after peer
+session revocation. All **1,079** recorded source hashes match. Owned containers
+and database fixtures were removed. This does not establish external mail
+delivery or complete immutable-image acceptance.
+
+The complete current **797-case** API suite is executing separately: the prior
+**785-case** suite and the **12-case** transport run are distinct evidence scopes.
+Exact-image CI for the previous main commit is queued. Required Activity
+projection, suspension/deactivation, retention/schema/portal consistency, every
+degraded and accessible branch, telemetry and release acceptance remain open.
+Estimated work remaining: **60%**. No numbered criterion or linked scenario is
+closed from this increment.

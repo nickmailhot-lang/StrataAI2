@@ -6,6 +6,8 @@ import { parseOrganizationConfiguration, type ConfigurationRevision } from './or
 
 const live = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string; invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
 vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: live.watch }));
+const configurationLive = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string; invalidate(version?: number): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
+vi.mock('./organizationConfigurationLive', () => ({ watchOrganizationConfiguration: configurationLive.watch }));
 const organizationId = 'abcdefab-cdef-4abc-8def-abcdefabcdef';
 const actorId = '22222222-2222-4222-8222-222222222222';
 const boardId = '33333333-3333-4333-8333-333333333333';
@@ -61,8 +63,63 @@ function mount(routeId = organizationId) {
 }
 const reviewButton = () => screen.getByRole('button', { name: 'Review configuration change' });
 async function review() { fireEvent.click(reviewButton()); return screen.findByRole('dialog', { name: 'Review configuration change' }); }
-afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); sessionStorage.clear(); live.watch.mockClear(); });
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); sessionStorage.clear(); live.watch.mockClear(); configurationLive.watch.mockClear(); });
 describe('PRD-27 configuration form, human review and recovery', () => {
+  it('keeps an acknowledged save and a new review open when that confirmed revision is delivered later', async () => {
+    const state = fixture(); mount();
+    fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Acknowledged proposal' } });
+    fireEvent.click(within(await review()).getByRole('button', { name: 'Approve configuration change' }));
+    await screen.findByText('Change acknowledged. Current configuration revision 2.');
+    await waitFor(() => expect(reviewButton()).toBeEnabled());
+    act(() => configurationLive.watch.mock.calls.at(-1)![0].invalidate(2));
+    expect(screen.getByText('Change acknowledged. Current configuration revision 2.')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/^Legal name/), { target: { value: 'Next unsent proposal' } });
+    await review(); act(() => configurationLive.watch.mock.calls.at(-1)![0].invalidate(2));
+    expect(screen.getByRole('dialog', { name: 'Review configuration change' })).toBeInTheDocument();
+    expect(state.writes).toHaveLength(1);
+  });
+  it('closes stale review and history after a private source change while preserving the unsent draft', async () => {
+    const state = fixture(); mount();
+    fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Retained unsent configuration' } });
+    fireEvent.click(screen.getByRole('button', { name: 'View configuration history' }));
+    await screen.findByRole('region', { name: 'Configuration history' });
+    await review(); state.current = record(2, 'Changed by another administrator');
+    await waitFor(() => expect(configurationLive.watch).toHaveBeenCalled());
+    act(() => configurationLive.watch.mock.calls.at(-1)![0].invalidate());
+    await screen.findByText('Current revision: 2');
+    expect(screen.queryByRole('dialog', { name: 'Review configuration change' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Configuration history' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/^Legal name/)).toHaveValue('Retained unsent configuration');
+    await waitFor(() => expect(reviewButton()).toHaveFocus());
+    expect(state.writes).toHaveLength(0);
+  });
+
+  it('keeps an uncertain original account, bytes and key through private-stream reset and requires explicit retry', async () => {
+    const state = fixture(); mount();
+    fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Original live recovery proposal' } });
+    state.lost = true; fireEvent.click(within(await review()).getByRole('button', { name: 'Approve configuration change' }));
+    await screen.findByRole('button', { name: 'Retry original submission' });
+    const original = state.writes[0]; state.current = record(3, 'Later authoritative live revision');
+    act(() => configurationLive.watch.mock.calls.at(-1)![0].reset());
+    await screen.findByText('Current revision: 3');
+    expect(screen.getByLabelText(/^Legal name/)).toHaveValue('Original live recovery proposal');
+    expect(reviewButton()).toBeDisabled(); expect(state.writes).toHaveLength(1);
+    const retry = screen.getByRole('button', { name: 'Retry original submission' });
+    await waitFor(() => expect(retry).toBeEnabled()); fireEvent.click(retry);
+    await screen.findByText('Change acknowledged. Current configuration revision 3.');
+    expect(state.writes[1].body).toBe(original.body);
+    expect(new Headers(state.writes[1].headers).get('Idempotency-Key')).toBe(new Headers(original.headers).get('Idempotency-Key'));
+    expect(screen.getByLabelText(/^Legal name/)).toHaveValue('Later authoritative live revision');
+  });
+
+  it('withdraws private values when configuration-stream recovery finds current admin access removed', async () => {
+    const state = fixture(); mount(); await screen.findByLabelText(/^Legal name/);
+    await waitFor(() => expect(configurationLive.watch).toHaveBeenCalled());
+    state.denied = true; act(() => configurationLive.watch.mock.calls.at(-1)![0].unavailable());
+    await screen.findByText('Organization configuration is unavailable to your account.');
+    expect(screen.queryByLabelText(/^Legal name/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Recorded legal name')).not.toBeInTheDocument();
+  });
   it('keeps uppercase UUID deep links in the canonical HTTP, realtime and return context', async () => {
     fixture(); mount(organizationId.toUpperCase());
     await screen.findByLabelText(/^Legal name/);
@@ -109,7 +166,7 @@ describe('PRD-27 configuration form, human review and recovery', () => {
     await waitFor(() => expect(screen.getByLabelText('Intake List')).not.toHaveAttribute('aria-disabled', 'true'));
     fireEvent.mouseDown(screen.getByLabelText('Intake List')); fireEvent.click(await screen.findByRole('option', { name: 'Actual intake List' }));
     fireEvent.click(more); await waitFor(() => expect(screen.queryByRole('button', { name: 'More intake Lists' })).not.toBeInTheDocument());
-    fireEvent.mouseDown(screen.getByLabelText('Intake List'));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Intake List' }));
     expect(await screen.findByRole('option', { name: 'Actual intake List' })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Paged List 1' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('option', { name: 'Later intake List' }));

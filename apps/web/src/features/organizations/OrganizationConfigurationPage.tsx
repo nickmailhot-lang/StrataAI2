@@ -9,6 +9,7 @@ import { ConfigurationChangeIntent, readConfigurationIntakeLists, readConfigurat
   readOrganizationConfigurationHistory } from './organizationConfigurationClient';
 import type { ConfigurationHistory, ConfigurationView, OrganizationConfiguration } from './organizationConfiguration';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
+import { watchOrganizationConfiguration } from './organizationConfigurationLive';
 import { organizationTypeLabel } from './organizationTypes';
 import { completeConfigurationChange, forgetConfigurationChanges, forgetForeignConfigurationChanges,
   restoreConfigurationChange, retainConfigurationChange } from './organizationConfigurationRecovery';
@@ -53,7 +54,8 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   const actor = useRef<string | undefined>(undefined); const mounted = useRef(false);
   const operation = useRef<AbortController | undefined>(undefined);
   const directoryRead = useRef<AbortController | undefined>(undefined); const boardRead = useRef<AbortController | undefined>(undefined);
-  const current = useRef({ draft, original }); current.current = { draft, original };
+  const current = useRef({ draft, original, review }); current.current = { draft, original, review };
+  const confirmedRevision = useRef<number | undefined>(undefined); confirmedRevision.current = context?.view.version;
   function error(message: string, reason?: unknown) { setFailure({ message, reference: reason instanceof WorkRequestError ? reason.correlationId : null }); }
   function withdraw(reason: unknown) {
     operation.current?.abort(); boardRead.current?.abort(); directoryRead.current?.abort();
@@ -94,19 +96,27 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   }, []);
   useEffect(() => {
     if (!context?.actorId) return;
-    const recheck = () => {
+    const recheck = (configuration = false) => {
+      if (current.current.review) focusAfter.current = 'submission';
       refreshQueued.current = true; setAuthorityCheck(true); setNeedsCheck(true); setReview(undefined);
-      setNotice('Organization authority changed. Checking current configuration before approval.'); setInvalidation(value => value + 1);
+      if (configuration) setHistory(undefined);
+      setNotice(configuration ? 'Configuration changed or live recovery is required. Checking current configuration before approval.'
+        : 'Organization authority changed. Checking current configuration before approval.'); setInvalidation(value => value + 1);
     };
-    return watchOrganizationMetadata({ organizationId, userId: context.actorId,
-      invalidate: recheck, reset: recheck, unavailable: recheck });
+    const metadata = watchOrganizationMetadata({ organizationId, userId: context.actorId,
+      invalidate: () => recheck(), reset: () => recheck(), unavailable: () => recheck() });
+    const configuration = watchOrganizationConfiguration({ organizationId, userId: context.actorId,
+      invalidate: version => {
+        if (version === undefined || confirmedRevision.current === undefined || version > confirmedRevision.current) recheck(true);
+      }, reset: () => recheck(true), unavailable: () => recheck(true) });
+    return () => { metadata(); configuration(); };
   }, [organizationId, context?.actorId]);
   useEffect(() => {
     if (!refreshQueued.current || busy || operation.current) return;
     refreshQueued.current = false; void load();
   }, [invalidation, busy]);
   useLayoutEffect(() => {
-    if (busy || !focusAfter.current) return;
+    if (busy || authorityCheck && !unavailable || !focusAfter.current) return;
     const target = unavailable ? heading.current : focusAfter.current === 'history' ? historyHeading.current
       : original ? retryButton.current : needsCheck ? loadButton.current : reviewButton.current;
     if (target) { target.focus(); focusAfter.current = undefined; }

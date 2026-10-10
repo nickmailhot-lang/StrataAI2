@@ -19,6 +19,36 @@ public static class OrganizationConfigurationEndpoints
 
     public static void MapOrganizationConfigurationEndpoints(this RouteGroupBuilder group)
     {
+        group.MapGet("/{organizationId:guid}/configuration/events", async (Guid organizationId,
+            HttpContext context, OrganizationConfigurationService service,
+            OrganizationConfigurationSynchronizationService replay, CancellationToken ct) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = Actor(context); if (actor is null) return Error("session_unavailable");
+            // Private target admission precedes cursor/limit validation, including
+            // guessed targets with malformed query parameters.
+            var admission = await service.ReadAsync(organizationId, actor.Value, ct);
+            if (!admission.Succeeded) return Error(admission.ErrorCode);
+            string? cursor = null; var limit = 50;
+            if (context.Request.Query.TryGetValue("cursor", out var cursors))
+            {
+                if (cursors.Count != 1 || cursors[0] is { Length: > 4096 })
+                    return Error("invalid_configuration_event_cursor");
+                cursor = cursors[0] ?? "";
+            }
+            if (context.Request.Query.TryGetValue("limit", out var limits)
+                && (limits.Count != 1 || !int.TryParse(limits[0], NumberStyles.None,
+                    CultureInfo.InvariantCulture, out limit) || limit is < 1 or > 100))
+                return Error("invalid_sync_limit");
+            try
+            {
+                var result = await replay.ReadAsync(organizationId, actor.Value, cursor, limit, ct);
+                return result.Succeeded ? Results.Ok(result.Value) : Error(result.ErrorCode);
+            }
+            catch (Exception exception) when (!ct.IsCancellationRequested && exception is InvalidOperationException or JsonException)
+            { return Error("configuration_sync_unavailable"); }
+        });
+
         group.MapGet("/{organizationId:guid}/configuration", async (Guid organizationId,
             HttpContext context, OrganizationConfigurationService service, CancellationToken ct) =>
         {
@@ -112,7 +142,7 @@ public static class OrganizationConfigurationEndpoints
         var (status, title) = code switch
         {
             "session_unavailable" => (401, "Your session is no longer available. Sign in again."),
-            "organization_storage_unavailable" or "configuration_source_unavailable" => (503, "The configuration could not be confirmed. Retry shortly."),
+            "organization_storage_unavailable" or "configuration_source_unavailable" or "configuration_sync_unavailable" => (503, "The configuration could not be confirmed. Retry shortly."),
             "version_conflict" => (409, "Configuration changed elsewhere. Review the current revision."),
             "idempotency_key_conflict" => (409, "The retry key belongs to a different configuration change."),
             "idempotency_key_expired" => (409, "The original acknowledgment expired. Review the current configuration."),
@@ -120,6 +150,8 @@ public static class OrganizationConfigurationEndpoints
             "configuration_intake_unavailable" => (400, "Choose an active intake Board and a List belonging to it."),
             "idempotency_key_required" => (400, "A nonempty UUID retry key is required."),
             "invalid_configuration_cursor" => (400, "A positive configuration history revision is required."),
+            "invalid_configuration_event_cursor" => (400, "Use one bounded configuration event cursor."),
+            "invalid_sync_limit" => (400, "A replay page limit from 1 to 100 is required."),
             "invalid_configuration_intake_cursor" => (400, "Use the rank boundary returned by the previous intake List page."),
             "invalid_configuration_request" => (400, "Provide a configuration and its reviewed revision using the supported fields."),
             { } value when value.StartsWith("invalid_configuration_", StringComparison.Ordinal) => (400, "Correct the indicated configuration field."),

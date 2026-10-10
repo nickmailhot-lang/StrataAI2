@@ -42,6 +42,7 @@ public sealed class OrganizationTelemetry
             ("/organizations/{organizationId:guid}/configuration", "GET") => "configuration_read",
             ("/organizations/{organizationId:guid}/configuration", "PATCH") => "configuration_change",
             ("/organizations/{organizationId:guid}/configuration/history", "GET") => "configuration_history",
+            ("/organizations/{organizationId:guid}/configuration/events", "GET") => "configuration_replay",
             ("/organizations/{organizationId:guid}/configuration/intake-boards/{boardId:guid}/lists", "GET") => "configuration_intake_lists",
             _ => null,
         };
@@ -54,7 +55,7 @@ public sealed class OrganizationTelemetry
         or "version_conflict" or "sole_owner" or "insufficient_permission" or "member_not_found"
         or "organization_not_found" or "invalid_sync_limit" or "organization_sync_unavailable" => code,
         "idempotency_key_required" or "idempotency_key_conflict" or "idempotency_key_expired"
-        or "configuration_source_unavailable" or "configuration_identifier_unavailable"
+        or "configuration_source_unavailable" or "configuration_sync_unavailable" or "configuration_identifier_unavailable"
         or "configuration_intake_unavailable" or "invalid_configuration_cursor"
         or "invalid_configuration_request" => code,
         { } value when value.StartsWith("invalid_configuration_", StringComparison.Ordinal) => "invalid_configuration_field",
