@@ -508,3 +508,51 @@ with every actual result row. Report:
 The owned API test container was removed; shared services were preserved.
 This full API result does not resolve the retained native acknowledgement-order
 failure or certify the isolated authority-readiness repair.
+
+## Isolated acceptance authority dependency candidate
+
+The isolated schema-134 candidate binds an accepted recipient journal event to
+the exact `BOARD_MEMBER_ADDED` or `BOARD_MEMBER_ROLE_CHANGED` Work event produced
+by that acceptance transaction. It does not infer causality from the caller's
+correlation ID or elapsed time. A narrow API capability requires the current
+tenant, accepted actor, canonical Invitation/Board/proof and both source rows'
+current transaction identity before recording the immutable relationship.
+The relation has forced tenant RLS, composite tenant foreign keys and immutable
+history protection. API and Worker receive no direct relation read/write grant;
+Worker cannot execute the API binding or recipient-readiness capabilities.
+
+Recipient replay stops at the first unmet dependency without advancing over it
+or skipping later recipient sources. Readiness requires the actual Worker
+authority effect for that source and recipient. Existing protected authority
+resets and transport-owned checkpoint recovery then deliver the real source
+after the new binding is admitted. Ordinary account, cursor and consent fences
+remain intact. No historical relationship is backfilled from unproven legacy
+correlations; the candidate governs actual new acceptance publications.
+
+The complete restricted-PostgreSQL recipient mode now passes with its original
+issuer/replay contracts and the additional actual acceptance regression. New
+checks reject committed/foreign sources, wrong actors/Invitations and private
+table disclosure; a later real Portal invitation deliberately reuses the
+correlation ID and cannot bypass the pending acceptance. After leased Worker
+delivery, the two actual sources arrive in contiguous order exactly once.
+The final locked solution build passes without warnings/errors, and the full
+Domain suite passes **770/770 actual test rows**, zero failures/skips.
+Private reports:
+`recipient-authority-readiness-final-native-20261010/outcome.json` and
+`recipient-authority-readiness-full-domain-native-20261010/domain.xml`.
+
+The first candidate contract invocation passed the ordering checks but failed
+the new timestamp assertion, which incorrectly compared the journal timestamp
+with `accepted_at`. Migrations 102/104 record the proven transition's canonical
+`updated_at`; the corrected regression requires that exact persisted value.
+That failure is retained at
+`recipient-authority-readiness-repair-native-20261010/01-contract-private.txt`.
+A separate Windows test invocation ran zero tests and is excluded from passing
+evidence; the 770 actual rows above come from the original complete Linux runner.
+
+The candidate remains isolated and unmerged while all 24 original specialized
+PostgreSQL modes, the complete unfiltered persistence executable, original six
+browser cases and full Linux API suite run. No existing case, assertion,
+deadline or retry policy is weakened. Current main's complete frontend rerun
+and immutable-image CI also remain pending. Estimated PRD-03 work remaining:
+**8%**; no closure is justified by the scoped candidate results.
