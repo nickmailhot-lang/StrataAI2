@@ -76,4 +76,14 @@ Every named configuration field has a bounded response shape, including nested c
 
 The dedicated browser-boundary suite passed **37/37 cases**; frontend type checking and lint passed. This increment is preparation for the MUI form/review/history workflow. It does not provide a rendered configuration screen, authenticated transport recovery, realtime delivery or complete PRD acceptance. Remaining work estimate stays **75%**.
 
+## Account-bound browser transport
+
+Configuration reads and each history page check the active `/me` profile before and after retrieval. Configuration requests send `X-StrataAI-Expected-Actor`; a changed account refuses the result before it becomes review state. Requested tenant IDs and history versions are validated before dispatch. The shared same-origin API transport retains cookie and CSRF protections, and bounded operations reject hung or cancelled responses before a later request can start.
+
+A reviewed change stores immutable serialized configuration, expected version, Organization, actor and retry key. Caller mutations and mutations of returned review copies cannot change its bytes. Uncertain delivery retains that exact intent for retry. An acknowledgment must match its Organization, actor, next version and reviewed values; a mismatched response cannot establish success. The original acknowledgment can legitimately describe an older revision after another successful change, so the page must perform a fresh authorized read before showing current state. A newer read does not resolve an uncertain original submission. No automatic mutation retries are introduced.
+
+The common Problem boundary admits only fixed configuration codes at their declared HTTP status, including specific actionable field names. Arbitrary field suffixes, server titles/details and rejected private values are discarded. Account withdrawal must clear protected page state; network failure must preserve the draft and original intent. Those page transitions, rendered review, navigation/reload recovery and realtime withdrawal still require implementation and acceptance.
+
+The combined configuration response/transport/shared Problem test run passed **73/73 cases**. Frontend type checking and lint passed. These source tests establish the browser model and transport behavior, not a rendered end-to-end configuration workflow. Estimated PRD-27 work remaining remains **75%**.
+
 Related: [Organization Types](organization-types.md), [Organization transactions](organization-command-transactions.md), [schema upgrades](schema-upgrades.md), [documentation index](../README.md).

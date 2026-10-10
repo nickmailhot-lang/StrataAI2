@@ -6,6 +6,8 @@ The [configuration foundation and HTTP contract](organization-configuration.md) 
 
 The browser response boundary additionally passed 37 focused cases for scoped current revisions, every named field, precise source timestamps, immutable nested review values and bounded descending history. Type checking and lint passed. The [configuration guide](organization-configuration.md#browser-response-boundary) records its scope; the actual MUI form, review, history and authenticated recovery flow remain outstanding. The **75% remaining** estimate is unchanged.
 
+The account-bound browser transport then passed a combined 73-case run with the response boundary and shared Problem tests. It fences reads/history/submissions against account changes, retains immutable reviewed bytes/key for uncertain retries, rejects mismatched acknowledgments and preserves the distinction between original receipt and current state. Fixed configuration errors cross the common Problem boundary only at their declared status. Type checking and lint passed. Rendered page transitions and full acceptance remain outstanding; **75% remaining** is unchanged.
+
 ## Functional requirements and acceptance criteria
 
 | Requirement | Current evidence | Work still required |

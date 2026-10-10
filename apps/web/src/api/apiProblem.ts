@@ -1,3 +1,5 @@
+import { configurationProblemCode } from './configurationProblem';
+
 // ARCH-02-FR-009: all feature clients share one safe Problem boundary.
 // Add a code deliberately when a feature needs it; unknown response text is
 // never a user-facing message, retry key, audit entry or analytics label.
@@ -53,8 +55,8 @@ export async function normalizeApiProblem(response: Response): Promise<Response>
   if (response.ok || response.status >= 200 && response.status < 300 || response.status < 200 || response.status > 599) return response;
   const value = await boundedBody(response);
   const candidate = value && typeof value === 'object' && 'code' in value ? value.code : undefined;
-  const code = typeof candidate === 'string' && codes.has(candidate)
-    && (candidate !== 'attachment_type_not_allowed' || response.status === 400) ? candidate : undefined;
+  const code = configurationProblemCode(candidate, response.status) ?? (typeof candidate === 'string' && codes.has(candidate)
+    && (candidate !== 'attachment_type_not_allowed' || response.status === 400) ? candidate : undefined);
   const headers = new Headers(response.headers);
   headers.delete('Content-Length'); headers.delete('Content-Encoding');
   headers.set('Content-Type', 'application/problem+json');
