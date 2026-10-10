@@ -728,3 +728,14 @@ The typed reader mismatch is normalized; generic storage exceptions remain on
 their original failure path and changed account versions cannot rebind cursors.
 Current exact-commit immutable-image CI and full acceptance still govern closure.
 Estimated PRD-03 work remaining stays **8%**.
+
+
+The integrated read-boundary candidate's complete API project has now passed
+**717/717 unique actual results**, zero failures/errors/timeouts/skips, and its
+complete unfiltered schema-134 persistence executable also completed successfully.
+The five frozen candidate files still match their original manifest. Reports:
+`recipient-read-head-authority-final-full-api-native-20261010/api.trx` and
+`recipient-read-head-authority-full-persistence-native-20261010/outcome.json`.
+These close the previously pending source-suite scopes for the repair committed
+as `f696daf7`; current immutable-image CI remains a separate closure requirement.
+Estimated PRD-03 work remaining stays **8%**.

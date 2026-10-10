@@ -251,6 +251,7 @@ try
         await OrganizationDeletionProgressContract.RunAsync(admin,apiConnection,workerConnection,ct);
         await OrganizationDeletionPublicationContract.RunAsync(admin,apiConnection,ct);
         await OrganizationDeletionTerminalContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await CardRouteClockPlanContract.WarmAndVerifyAsync(admin,ct);
         await OrganizationDeletionCandidatesContract.RunAsync(admin,apiConnection,workerConnection,ct);
         await OrganizationDeletionPagesContract.RunAsync(admin,apiConnection,workerConnection,ct);
         await OrganizationDeletionScaleContract.RunAsync(admin,apiConnection,workerConnection,ct);

@@ -139,3 +139,50 @@ Report: `organization-deletion-candidate-seed-profile-native-20261010/safe-summa
 This is one fresh local observation, not a production latency distribution or
 proof that the CI timeout is repaired. The failed CI run and the separately live
 complete unfiltered candidate invocation remain required evidence.
+
+
+## Cached small-graph plan regression and function-scoped repair
+
+A second distinct CI invocation, run `38028556097` / PostgreSQL job
+`114151279068` on commit `634b3a2f`, fails at the same original candidate fixture
+batch with an Npgsql read timeout. A fresh private probe now reproduces it after
+eight small real Card writes warm the same admin backend: the untouched original
+100,002-Card batch fails after **30,110.368 ms**, with its configured **30-second**
+command timeout. Its original assertions and graph are not reduced or retried.
+
+The paired fresh prototype differs only by a function-scoped index preference
+on `maintain_entity_route_clocks()`. It completes the same original batch in
+**13,869.111 ms** and the full original contract with **100,002 Cards / 100,000
+archived**, 128-row pages and **11,839 ms** traversal time. The failed baseline
+and passing prototype remain separate private reports:
+`organization-deletion-candidate-warm-plan-baseline-native-20261010` and
+`organization-deletion-candidate-warm-plan-index-native-20261010`.
+This supports a cache-sensitive lookup problem; it is not general production
+latency certification.
+
+The production repair adds migration 135 to discourage sequential plans only
+inside the canonical clock function. It retains the exact function body,
+invoker security, fixed search path, grants, RLS and historical values. A new
+mandatory persistence prerequisite warms the backend before the existing full
+candidate graph and checks exact projected clocks and restoration of the
+caller's planner setting. The source-linked production helper plus the complete
+original candidate contract already pass on fresh schema 135.
+
+All original 18 migration/security/routing/clock gates now pass,
+including populated body/guard/ACL preservation through actual migrations 134
+and 135, the unchanged original clock-tampering checks, repeat upgrades and the
+original serialized/failure/unrecorded migration checks. Synthetic fixture
+versions move to 136/137/138 to avoid the real migrations; their sleeps/assertions
+remain. The initial private gate failed before upgrades because its staging
+omitted the root migration helper. The next invocation reached the added checks
+but failed because the pre-117 fixture was incorrectly reused and reseeded
+existing Board IDs. A third preparation attempt retained a fixture-name collision left by the
+original rollback test. All three failed preparations remain private evidence.
+The final fixture snapshots current projections, uses a distinct upgrade fixture
+name and keeps the original refusal assertions. The passing staged source matches
+331 current migration/script files after line-ending normalization. The locked
+solution build has zero warnings/errors and all 787 Domain tests pass.
+The complete API and unfiltered persistence suites on schema 135 and the
+exact-commit pipeline remain separate pending gates. PRD-01 remains open at
+**34% estimated work remaining**; exact-commit immutable-image CI and complete
+acceptance remain required.
