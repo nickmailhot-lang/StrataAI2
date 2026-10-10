@@ -48,3 +48,10 @@ Its retained missing-reference baselines, 61 selected source passes and four
 actual server-refusal browser passes are recorded separately from pending full
 source and immutable-image verification. Card-label
 consumers and complete user-visible-error coverage still remain required.
+
+
+[Card label disclosure and editing](../board-label-api.md#card-label-public-failure-references)
+now preserve response-bound references with atomic notice retirement. Verification
+includes retained source/native missing-reference baselines, 95 selected source
+passes, all 2,067 frontend assertions and six actual server-refusal browser cases.
+Full immutable-image CI and complete user-visible-error acceptance remain pending.

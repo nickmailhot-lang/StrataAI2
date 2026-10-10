@@ -578,10 +578,53 @@ returns the unchanged canonical label directory. Original 90-second case budgets
 and 25-second pacing remain. Both baseline and final owned containers, databases
 and credential environments are independently absent. Report:
 `label-management-reference-native-20261010/report-private.json`.
-The complete frontend source suite still runs separately; its outcome is not
-inferred from selected source or native passes. Web/browser
+The complete frontend source suite subsequently passes **2,053/2,053 actual
+assertion rows in 142 files**, zero failed/pending, with two file workers and
+unchanged per-case deadlines. Report:
+`label-management-reference-native-20261010/full-source-private.json`.
+This proves the management repair's full source scope before subsequent Card-label
+consumer changes. Web/browser
 typechecks, lint and private build pass. Browser collection retains **337 cases**
 with zero collection errors and the complete shard validator passes.
 Full immutable-image CI, Card-label consumers, label/filter realtime acceptance
 and all original requirements remain required. Estimated work remaining:
 **PRD-10 35%; PRD-01 34%**. Neither ticket is closed.
+
+
+## Card label public failure references
+
+Card label disclosure and editing now bind fixed public notices to sanitized
+response references. Replacement failures, network-only retries, confirmed
+recovery, closure and permission retirement clear or replace each reference
+with its notice. Private response bodies and arbitrary exception text remain
+unrendered; original command keys, versions and recovery controls are preserved.
+
+The complete two-file source baseline records **30 passed / 4 failed** actual
+assertions, with all four failures caused by missing references. After repair,
+six complete selected files pass **95/95** assertions. The complete frontend
+suite passes **2,067/2,067** actual rows in 142 files, zero failed/pending, with
+two file workers and original per-case deadlines. Web/browser typechecks, lint
+and the private production build pass.
+
+The [six browser cases](../tests/browser/card-label-reference.spec.ts) cover
+Card label disclosure, option reads and assignment refusals at desktop and
+phone widths. Their valid baseline fails **6/6** at missing references after
+actual API refusal and unchanged canonical-state assertions. Earlier retained
+preparation runs failed on an incorrect API read route or modal-hidden role
+lookup and are excluded from this missing-reference baseline.
+
+The final native run passes **6/6 actual result rows on their only attempts**,
+zero skipped/flaky/unexpected cases, retries or report errors, in
+**227,149.211 ms**. It uses the compiled schema-133 Production API, separate
+scoped Worker, restricted PostgreSQL, Nginx/CSP and verified-account fixtures.
+Actual 400 responses carry the displayed safe reference; complete canonical
+Card label pages and Board snapshots remain unchanged before and after explicit
+recovery. Dialog/document width, keyboard and tagged Axe checks pass. Original
+90-second case limits and 25-second pacing remain. Owned containers and database
+are removed. Private final report:
+`card-label-reference-typed-native-20261010/report-private.json`.
+
+Browser collection retains **343 cases in 129 intact files**, distributed
+87/85/87/84 across the four complete shards. Immutable-image CI, remaining
+error consumers and all original PRD acceptance are still required. Estimated
+work remaining: **PRD-10 35%; PRD-01 34%**. Neither ticket is closed.

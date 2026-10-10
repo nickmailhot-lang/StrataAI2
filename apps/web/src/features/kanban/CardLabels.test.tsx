@@ -7,6 +7,34 @@ const label = (i = 1) => ({ id: `44444444-4444-4444-4444-${String(i).padStart(12
 const page = (items = [label()]) => ({ organizationId: org, boardId: board, cardId: card, cardVersion: 2, canEdit: true, items, nextCursor: null as string | null });
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } });
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+const failure = (status: number, reference: string) => new Response(JSON.stringify({ detail: 'Private label diagnostic' }),
+  { status, headers: { 'X-Correlation-ID': reference } });
+it('replaces read references and retires them on network-only failure and recovery', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(failure(503, 'labels.read-01')).mockResolvedValueOnce(failure(400, 'labels.read-02'))
+    .mockRejectedValueOnce(new Error('Private network diagnostic')).mockResolvedValueOnce(response(page()));
+  vi.stubGlobal('fetch', fetch); render(<CardLabels {...props} />); fireEvent.click(screen.getByText('Show labels'));
+  await screen.findByText('Reference: labels.read-01');
+  fireEvent.click(screen.getByRole('button', { name: 'Retry labels' })); await screen.findByText('Reference: labels.read-02');
+  expect(screen.queryByText('Reference: labels.read-01')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Retry labels' }));
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
+  await waitFor(() => expect(screen.queryByText('Reference: labels.read-02')).not.toBeInTheDocument());
+  await screen.findByRole('alert'); expect(screen.queryByText(/Private (label diagnostic|network diagnostic)/)).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Retry labels' })); await screen.findByLabelText('Important, blue');
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(4);
+});
+it.each(['x'.repeat(65), 'private diagnostic', 'référence', 'one,two'])('withholds unsafe disclosure reference %s', async reference => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(failure(400, reference))); render(<CardLabels {...props} />);
+  fireEvent.click(screen.getByText('Show labels')); await screen.findByRole('alert');
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument(); expect(screen.queryByText('Private label diagnostic')).not.toBeInTheDocument();
+});
+it('fences a late error reference after label access becomes unavailable', async () => {
+  let resolve!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn().mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })));
+  const view = render(<CardLabels {...props} />); fireEvent.click(screen.getByText('Show labels')); await waitFor(() => expect(resolve).toBeDefined());
+  view.rerender(<CardLabels {...props} unavailable />); await act(async () => resolve(failure(503, 'labels.retired-03')));
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument(); expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
 it('loads on demand and exposes readable names and color descriptions', async () => {
   const fetch = vi.fn().mockResolvedValue(response(page([label(), label(2)]))); vi.stubGlobal('fetch', fetch);
   render(<CardLabels {...props} />); expect(fetch).not.toHaveBeenCalled();

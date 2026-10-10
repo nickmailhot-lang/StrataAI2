@@ -10,6 +10,52 @@ const ack = { card: { ...card, organizationId: org, boardId: board, version: 2 }
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Edit Card labels' })); return screen.findByRole('button', { name: 'Add label Priority' }); }
 afterEach(() => vi.unstubAllGlobals());
+const failure = (status: number, reference: string) => new Response(JSON.stringify({ detail: 'Private picker diagnostic' }),
+  { status, headers: { 'X-Correlation-ID': reference } });
+it('shows the failed options response reference and clears it on reload', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(failure(400, 'options.read-01')).mockResolvedValueOnce(response(options));
+  vi.stubGlobal('fetch', fetch); render(<CardLabelPicker {...props()} />); fireEvent.click(screen.getByRole('button', { name: 'Edit Card labels' }));
+  await screen.findByText('Reference: options.read-01'); expect(screen.queryByText('Private picker diagnostic')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Reload label options' })); await screen.findByRole('button', { name: 'Add label Priority' });
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument(); expect(fetch).toHaveBeenCalledTimes(2);
+});
+it('preserves uncertain assignment identity while retiring a reference on network-only retry', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response(options)).mockResolvedValueOnce(failure(503, 'options.change-02'))
+    .mockRejectedValueOnce(new Error('Private network diagnostic')).mockResolvedValueOnce(response(ack));
+  vi.stubGlobal('fetch', fetch); const p = props(); render(<CardLabelPicker {...p} />); fireEvent.click(await open());
+  await screen.findByText('Reference: options.change-02'); fireEvent.click(screen.getByRole('button', { name: 'Retry label change' }));
+  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(3)); await screen.findByRole('button', { name: 'Retry label change' });
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument(); expect(screen.queryByText(/Private (picker diagnostic|network diagnostic)/)).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Retry label change' })); await waitFor(() => expect(p.onRefresh).toHaveBeenCalledTimes(1));
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument();
+  for (const index of [2, 3]) {
+    expect(fetch.mock.calls[index][0]).toBe(fetch.mock.calls[1][0]);
+    expect(fetch.mock.calls[index][1].method).toBe(fetch.mock.calls[1][1].method);
+    expect(new Headers(fetch.mock.calls[index][1].headers).get('Idempotency-Key')).toBe(new Headers(fetch.mock.calls[1][1].headers).get('Idempotency-Key'));
+  }
+});
+it('clears conflict choices with their reference before a current reload', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response(options)).mockResolvedValueOnce(failure(409, 'options.conflict-03')).mockResolvedValueOnce(response(options));
+  vi.stubGlobal('fetch', fetch); const p = props(); render(<CardLabelPicker {...p} />); fireEvent.click(await open());
+  await screen.findByText('Reference: options.conflict-03'); expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false);
+  expect(screen.queryByRole('button', { name: 'Retry label change' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Add label Priority' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Reload label options' })); await screen.findByRole('button', { name: 'Add label Priority' });
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument();
+});
+it.each(['x'.repeat(65), 'private diagnostic', 'référence', 'one,two'])('withholds unsafe option reference %s', async reference => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(failure(400, reference))); render(<CardLabelPicker {...props()} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Edit Card labels' })); await screen.findByRole('alert');
+  expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument(); expect(screen.queryByText('Private picker diagnostic')).not.toBeInTheDocument();
+});
+it('fences a late assignment reference after editing permission is retired', async () => {
+  let resolve!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response(options)).mockReturnValueOnce(new Promise<Response>(done => { resolve = done; })));
+  const p = props(); const view = render(<CardLabelPicker {...p} />); fireEvent.click(await open()); await waitFor(() => expect(resolve).toBeDefined());
+  view.rerender(<CardLabelPicker {...p} snapshot={{ ...snapshot, access: { ...snapshot.access, canEdit: false } }} />);
+  await act(async () => resolve(failure(503, 'options.retired-04'))); expect(screen.queryByText(/^Reference:/)).not.toBeInTheDocument();
+  expect(p.onRefresh).not.toHaveBeenCalled(); expect(screen.queryByRole('button', { name: 'Retry label change' })).not.toBeInTheDocument();
+});
 it('retains returned trigger focus through later admission checks and respects navigation away', async () => {
   const fetch = vi.fn().mockResolvedValueOnce(response(options)).mockResolvedValueOnce(response(ack));
   vi.stubGlobal('fetch', fetch); const p = props();

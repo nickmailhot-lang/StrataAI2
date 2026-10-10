@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { publicCorrelationReference } from '../../api/correlationReference';
 import { Alert, Box, Button, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot, type WorkCard } from '../../api/workManagement';
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
@@ -6,13 +7,18 @@ import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 type Option = { label: { id: string; name: string; color: string }; assigned: boolean };
 type Page = { items: Option[]; nextCursor: string | null; cardVersion: number };
 type Intent = { labelId: string; name: string; assigned: boolean; version: number; key: string };
+type FailureNotice = { message: string; reference: string | null };
 type Props = { cardId: string; card?: WorkCard; snapshot: BoardSnapshot; disabled: boolean;
   onBusyChange: (busy: boolean) => void; onRecoveryChange: (pending: boolean) => void; onRefresh: () => void };
 const uuid = (value: unknown): value is string => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value) && value !== '00000000-0000-0000-0000-000000000000';
 const palette = ['green', 'yellow', 'orange', 'red', 'purple', 'blue', 'sky', 'lime', 'pink', 'black'];
 export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange, onRecoveryChange, onRefresh }: Props) {
   const [open, setOpen] = useState(false); const [page, setPage] = useState<Page>(); const [intent, setIntent] = useState<Intent>();
-  const [notice, setNotice] = useState<string>(); const [busy, setBusy] = useState(false); const [denied, setDenied] = useState(false);
+  const [notice, setFailure] = useState<FailureNotice>(); const [busy, setBusy] = useState(false); const [denied, setDenied] = useState(false);
+  function setNotice(message?: string, reason?: unknown) {
+    setFailure(message ? { message, reference: reason instanceof WorkRequestError
+      ? publicCorrelationReference(reason.correlationId) : null } : undefined);
+  }
   const controller = useRef<AbortController | undefined>(undefined); const epoch = useRef(0); const trigger = useRef<HTMLButtonElement>(null);
   const restoreFocus = useRef(false);
   const retryTrigger = useRef<HTMLButtonElement>(null); const recoverFocus = useRef(false);
@@ -32,6 +38,7 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
   useEffect(() => { onRecoveryChange(!!intent); return () => onRecoveryChange(false); }, [intent, onRecoveryChange]);
   useEffect(() => {
     epoch.current++;
+    setNotice(undefined);
     if (!admitted) { setOpen(false); setPage(undefined); setIntent(undefined); setBusy(false); }
     return () => { epoch.current++; controller.current?.abort(); controller.current = undefined; onBusyChange(false); };
   }, [admitted, cardId, snapshot.board.id, snapshot.board.organizationId, onBusyChange]);
@@ -42,10 +49,10 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
   function failure(error: unknown, command?: Intent) {
     setPage(undefined);
     if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
-      setDenied(true); setIntent(undefined); setNotice('Label editing is unavailable. Refresh the Board to check access.'); onRefresh();
+      setDenied(true); setIntent(undefined); setNotice('Label editing is unavailable. Refresh the Board to check access.', error); onRefresh();
     } else if (command && !(error instanceof WorkRequestError && [400, 409].includes(error.status))) {
-      recoverFocus.current = true; setIntent(command); setNotice('The change may have completed. Retry the same label change to confirm it.');
-    } else { setIntent(undefined); setNotice('Labels changed or could not be loaded. Refresh the Board, then reload label options.'); }
+      recoverFocus.current = true; setIntent(command); setNotice('The change may have completed. Retry the same label change to confirm it.', error);
+    } else { setIntent(undefined); setNotice('Labels changed or could not be loaded. Refresh the Board, then reload label options.', error); }
   }
   async function load(after?: string) {
     if (!admitted || !activeCard || disabled || controller.current || intent || denied) return;
@@ -93,7 +100,9 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
       onClick={() => { restoreFocus.current = false; void load(); }}>Edit Card labels</Button>
     {open && <Stack component="section" aria-label="Edit Card labels" spacing={1}>
       {busy && <Typography role="status">Updating label options…</Typography>}
-      {notice && <Alert severity="warning">{notice}</Alert>}
+      {notice && <Alert severity="warning"><span>{notice.message}</span>
+        {notice.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {notice.reference}</Typography>}
+      </Alert>}
       {intent ? <><Typography>{intent.assigned ? 'Add' : 'Remove'} {intent.name}</Typography><Button ref={retryTrigger} disabled={busy || disabled} onFocus={() => { recoverFocus.current = true; }}
         onBlur={event => { if (!ownsRecoveryFocus(event.relatedTarget, retryTrigger.current)) recoverFocus.current = false; }} onClick={event => void change(undefined, event.currentTarget)}>Retry label change</Button></> : <>
         {current && !notice && page.items.map(option => <Stack key={option.label.id} direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
@@ -103,7 +112,7 @@ export function CardLabelPicker({ cardId, card, snapshot, disabled, onBusyChange
         {current && page.items.length === 0 && <Typography>No Board labels available.</Typography>}
         {!current && !busy && !notice && <Typography>Reload label options for the current Card.</Typography>}
         {current && page.nextCursor && <Button disabled={busy || disabled} onClick={() => void load(page.nextCursor!)}>Next labels</Button>}
-        <Stack direction="row"><Button disabled={busy || disabled || denied} onClick={() => void load()}>Reload label options</Button><Button disabled={busy} onClick={() => { setOpen(false); trigger.current?.focus(); }}>Done editing labels</Button></Stack>
+        <Stack direction="row"><Button disabled={busy || disabled || denied} onClick={() => void load()}>Reload label options</Button><Button disabled={busy} onClick={() => { setOpen(false); setNotice(undefined); trigger.current?.focus(); }}>Done editing labels</Button></Stack>
         {notice && <Button disabled={busy} onClick={onRefresh}>Refresh Board</Button>}
       </>}
     </Stack>}

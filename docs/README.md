@@ -271,3 +271,6 @@ error-dialog accessibility and reflow evidence.
 [Label management support references](board-label-api.md#label-management-public-failure-references)
 records directory-read and real competing-edit refusal coverage, safe reference
 retirement and the retained baseline and verification boundaries.
+
+[Card label support references](board-label-api.md#card-label-public-failure-references)
+records disclosure/editing recovery and its source and native browser evidence.

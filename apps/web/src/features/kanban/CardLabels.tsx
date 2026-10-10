@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { publicCorrelationReference } from '../../api/correlationReference';
 import { Alert, Box, Button, Chip, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 
@@ -40,7 +41,7 @@ function CardLabelContent(props: Props & { open: boolean; onToggle: () => void }
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{ items: Label[]; next: string | null; cursor?: string }>();
   const accumulated = useRef<{ items: Label[]; next: string | null }>({ items: [], next: null });
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<{ message: string; reference: string | null }>();
   const [loading, setLoading] = useState(false);
   const { organizationId, boardId, cardId, version, unavailable } = props;
   useEffect(() => {
@@ -59,9 +60,10 @@ function CardLabelContent(props: Props & { open: boolean; onToggle: () => void }
       }).catch(reason => {
         if (!active) return;
         setResult(undefined);
-        setError(reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)
+        setError({ message: reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)
           ? 'Labels are unavailable. Refresh the Board to check your access.'
-          : 'Unable to load current labels. Refresh the Board or try again.');
+          : 'Unable to load current labels. Refresh the Board or try again.',
+          reference: reason instanceof WorkRequestError ? publicCorrelationReference(reason.correlationId) : null });
       }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; controller.abort(); };
   }, [open, unavailable, organizationId, boardId, cardId, version, cursor, attempt]);
@@ -70,7 +72,9 @@ function CardLabelContent(props: Props & { open: boolean; onToggle: () => void }
     {open && <Stack id={region} component="section" aria-label="Card labels" spacing={1}>
       {unavailable ? <Typography>Refreshing label access…</Typography> : <>
         {loading && <Typography role="status">Loading labels…</Typography>}
-        {error && <Alert severity="warning">{error}</Alert>}
+        {error && <Alert severity="warning"><span>{error.message}</span>
+          {error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}
+        </Alert>}
         {!error && result && <>
           <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>{[...result.items].sort((a, b) => a.rank.localeCompare(b.rank) || a.id.localeCompare(b.id)).map(label =>
             <Chip key={label.id} label={label.name || `${label.color} label`} aria-label={`${label.name || 'Unnamed label'}, ${label.color}`} sx={{ backgroundColor: colors[label.color], color: label.color === 'black' ? '#ffffff' : '#172b4d' }} />)}</Stack>
