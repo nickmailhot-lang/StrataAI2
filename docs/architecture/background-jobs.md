@@ -133,8 +133,13 @@ passes with zero warnings/errors. Private reports:
 after terminal results. Test observation reads actual private stored metadata;
 lease replies alone would not prove refused/no-op state preservation.
 
-The complete API suite on the repaired backend is running independently; the
-prior 711/711 publication-backend result is not relabeled as this repair's full
-suite. Current immutable-image CI and all Demo handlers/future module acceptance
+The complete unfiltered API suite on the repaired backend subsequently passes
+**714/714 actual unique tests and executions**, with matching declared counters
+and zero failed/error/timeout/aborted/pending/unexecuted or other non-passed rows.
+The same pinned Linux runtime and real source/content-root mappings are used;
+the owned test container is independently absent. Private terminal report:
+`demo-job-audit-full-api-native-20261010/api.trx`. This is the repaired backend's
+full proof; the prior 711-case binary is retained separately. Current immutable-image
+CI and all Demo handlers/future module acceptance
 remain required. This prospective process-local repair does not reconstruct
 legacy PostgreSQL audit provenance or satisfy full FOUND-FR-009 by itself.

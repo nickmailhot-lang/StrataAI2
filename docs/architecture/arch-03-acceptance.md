@@ -116,7 +116,10 @@ retry bounds or transaction ownership. Baseline queue class: 7/10, with all thre
 new audit checks failing on absent fields. Repaired complete queue, actual Work
 transaction/reminder and runtime-composition classes: 17/17 unique executions,
 matching counters and zero non-passing results. Locked solution build has zero
-warnings/errors. Full repaired-backend API execution and current immutable-image
-CI remain pending; neither the prior 711-case binary nor the focused classes
-substitute for them. Complete Demo execution/future modules and all original
+warnings/errors. Full repaired-backend API execution subsequently passes all
+**714/714 actual unique tests/executions**, matching declared counters with zero
+non-passed results, in the pinned Linux runtime with real source/content-root
+mappings. Its owned container is independently absent; report:
+`demo-job-audit-full-api-native-20261010/api.trx`. Current immutable-image
+CI remains pending. Complete Demo execution/future modules and all original
 architecture criteria remain. Estimated ARCH-03 work remaining stays **60%**.
