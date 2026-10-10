@@ -109,6 +109,25 @@ describe("PRD-01/03/04 organization discovery", () => {
     expect(screen.getByRole('status')).toHaveTextContent('Organization deletion confirmed complete.');
     expect(screen.queryByRole('button', { name: 'Create board' })).not.toBeInTheDocument();
   });
+  it.each(['PENDING', 'COMPLETED'] as const)('preserves %s lifecycle authority over late ordinary stream callbacks', async state => {
+    const fetcher = vi.fn(async (path: string) => response(path === '/organizations/org-1' ? organizations[0]
+      : { organizationId: 'org-1', items: [], nextCursor: null }));
+    stubFetch(fetcher);
+    mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+    await waitFor(() => expect(metadata.watch).toHaveBeenCalledTimes(1));
+    const metadataBinding = metadata.watch.mock.calls[0][0], boardBinding = live.watch.mock.calls[0][0];
+    act(() => lifecycle.watch.mock.calls[0][0].update(state));
+    const reads = fetcher.mock.calls.length;
+    for (const callback of [metadataBinding.invalidate, metadataBinding.reset, metadataBinding.unavailable,
+      boardBinding.invalidate, boardBinding.reset, boardBinding.unavailable]) {
+      await act(async () => callback());
+      expect(screen.getByRole('status')).toHaveTextContent(state === 'PENDING'
+        ? 'Organization deletion is being confirmed.' : 'Organization deletion confirmed complete.');
+      expect(screen.queryByText('Council')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Create board' })).not.toBeInTheDocument();
+      expect(fetcher.mock.calls).toHaveLength(reads);
+    }
+  });
   it('keeps lifecycle admission after ordinary parent denial and rechecks a disconnected terminal fact', async () => {
     let deleted = false;
     stubFetch(async (path: string) => deleted ? response({}, 404) : response(path === '/organizations/org-1'

@@ -200,6 +200,10 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   useEffect(() => {
     if (!organizationId || !liveActor) return;
     const recover = (message: string) => {
+      // Ordinary stream teardown may report a queued disconnect after the
+      // lifecycle stream has withdrawn graph access. Keep that current fact
+      // until the lifecycle stream itself rechecks it.
+      if (lifecycle.current === 'PENDING' || lifecycle.current === 'COMPLETED') return;
       read.current?.abort(); setData(undefined); setLoadError(undefined);
       setCreating(false); setLiveNotice(message); setReload(value => value + 1);
     };

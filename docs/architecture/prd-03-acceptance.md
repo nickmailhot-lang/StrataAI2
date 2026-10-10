@@ -658,3 +658,38 @@ private files and database rows remain local to their consuming job. Complete
 native consumers and assertions stay required. All 75 workflow guards pass;
 current repaired immutable execution and full acceptance remain pending.
 Estimated PRD-03 work remaining stays **8%**.
+
+## Lifecycle status survives ordinary stream teardown
+
+The completed immutable run
+[38061080373](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38061080373)
+exposed a desktop deletion-completion failure: after the lifecycle stream
+reported `PENDING`, an ordinary metadata disconnect replaced the status with
+"Live Organization updates interrupted. Checking current access."
+
+Organization home now ignores ordinary metadata and Board recovery callbacks
+while its current lifecycle fact is `PENDING` or `COMPLETED`. Private graph
+content stays withdrawn. Lifecycle disconnection still removes that fact and
+rechecks current access; account loss still clears it and navigates to sign-in.
+The ordinary stream cannot overwrite the separate lifecycle authority during
+its own teardown.
+
+Both new pending/completed regression cases fail on the prior behavior and
+pass after the repair. They exercise all six late metadata/Board callbacks,
+status preservation, private content withdrawal and absence of ordinary graph
+reads. All **51/51** Organization home tests, frontend type checking, lint and
+the production web build pass; the separate Worker build has zero warnings or
+errors. The unchanged native desktop/phone deletion-completion file passes
+**2/2**, with zero retries, skips or unexpected results. Both complete cases
+retain their original 150-second deadlines, native consent, lost acknowledgment,
+actual separate Worker discovery, terminal replay and account-loss assertions.
+This uses the current compiled API, rebuilt Worker and web behind Nginx, with
+restricted PostgreSQL/pgvector schema 138; the general CI policy remains optional
+verified email in API and mandatory verification in Worker. All **1,081** source
+hashes match, and owned API/web/Worker containers, database and credential files
+are removed. The complete unfiltered frontend suite passes **2,221/2,221**,
+with zero failures or skips and zero mismatches across its **470** source files.
+The original two-worker invocation, test deadlines and assertions are retained.
+Current immutable success is not claimed from local verification. Other failures in that older browser run,
+current immutable execution and full acceptance remain required. Estimated
+PRD-03 work remaining stays **8%**.
