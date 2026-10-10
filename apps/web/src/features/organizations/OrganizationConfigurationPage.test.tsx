@@ -19,7 +19,7 @@ function record(version: number, legalName = 'Recorded legal name'): Configurati
     createdAt: '2026-10-10T13:00:00.0000001Z', updatedAt: '2026-10-10T13:00:00.0000002Z' };
 }
 function fixture(initial: ConfigurationRevision | null = record(1)) {
-  const state = { current: initial, denied: false, writes: [] as RequestInit[], lost: false, conflicted: false, boardUnavailable: false };
+  const state = { current: initial, denied: false, writes: [] as RequestInit[], lost: false, conflicted: false, boardUnavailable: false, listPages: false };
   const receipts = new Map<string, ConfigurationRevision>();
   vi.stubGlobal('fetch', vi.fn(async (url: string, options: RequestInit = {}) => {
     if (url === '/me') return reply(profile);
@@ -37,9 +37,17 @@ function fixture(initial: ConfigurationRevision | null = record(1)) {
     if (url === path) return reply({ organizationId, version: state.current?.version ?? 0, revision: state.current });
     if (url.startsWith(path + '/history')) return reply({ organizationId, items: state.current ? [state.current] : [], nextBeforeVersion: null });
     if (url === `/organizations/${organizationId}/boards/directory`) return reply({ organizationId, items: [{ id: boardId, name: 'Actual intake Board', version: 1 }], nextCursor: null });
-    if (url === `/boards/${boardId}` && state.boardUnavailable) return reply({}, 503);
-    if (url === `/boards/${boardId}`) return reply({ board: { id: boardId, organizationId, name: 'Actual intake Board', lifecycleState: 'active' },
-      access: { canAdminister: true }, lists: [{ list: { id: listId, organizationId, boardId, name: 'Actual intake List', lifecycleState: 'active' } }] });
+    if (url === `${path}/intake-boards/${boardId}/lists` && state.boardUnavailable) return reply({}, 503);
+    if (url.startsWith(`${path}/intake-boards/${boardId}/lists`) && state.listPages) {
+      const later = url.includes('?afterRank=');
+      return reply({ organizationId, board: { id: boardId, name: 'Actual intake Board', version: 1 },
+        items: later ? [{ id: '66666666-6666-4666-8666-666666666666', name: 'Later intake List', version: 1, rank: String(51).padStart(30, '0') }]
+          : Array.from({ length: 50 }, (_, index) => ({ id: index === 0 ? listId : `77777777-7777-4777-8777-${String(index).padStart(12, '0')}`,
+            name: index === 0 ? 'Actual intake List' : `Paged List ${index}`, version: 1, rank: String(index + 1).padStart(30, '0') })),
+        nextAfterRank: later ? null : String(50).padStart(30, '0') });
+    }
+    if (url === `${path}/intake-boards/${boardId}/lists`) return reply({ organizationId, board: { id: boardId, name: 'Actual intake Board', version: 1 },
+      items: [{ id: listId, name: 'Actual intake List', version: 1, rank: '000000000000000000000000000001' }], nextAfterRank: null });
     throw new Error('Unexpected fixture route');
   }));
   return state;
@@ -54,6 +62,22 @@ const reviewButton = () => screen.getByRole('button', { name: 'Review configurat
 async function review() { fireEvent.click(reviewButton()); return screen.findByRole('dialog', { name: 'Review configuration change' }); }
 afterEach(() => { vi.unstubAllGlobals(); live.watch.mockClear(); });
 describe('PRD-27 configuration form, human review and recovery', () => {
+  it('pages Lists without losing the verified selected destination or retaining every prior page', async () => {
+    const state = fixture(); state.listPages = true; mount(); await screen.findByDisplayValue('Recorded legal name');
+    fireEvent.mouseDown(screen.getByLabelText('Intake Board')); fireEvent.click(await screen.findByRole('option', { name: 'Actual intake Board' }));
+    const more = await screen.findByRole('button', { name: 'More intake Lists' });
+    await waitFor(() => expect(screen.getByLabelText('Intake List')).not.toHaveAttribute('aria-disabled', 'true'));
+    fireEvent.mouseDown(screen.getByLabelText('Intake List')); fireEvent.click(await screen.findByRole('option', { name: 'Actual intake List' }));
+    fireEvent.click(more); await waitFor(() => expect(screen.queryByRole('button', { name: 'More intake Lists' })).not.toBeInTheDocument());
+    fireEvent.mouseDown(screen.getByLabelText('Intake List'));
+    expect(await screen.findByRole('option', { name: 'Actual intake List' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Paged List 1' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('option', { name: 'Later intake List' }));
+    const dialog = await review(); expect(within(dialog).getByText('Later intake List')).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Approve configuration change' }));
+    await screen.findByText(/Change acknowledged. Current configuration revision/);
+    expect(JSON.parse(state.writes[0].body as string)).toMatchObject({ configuration: { intakeBoardId: boardId, intakeListId: '66666666-6666-4666-8666-666666666666' } });
+  });
   it('offers every named field and an explicit empty-state action without fabricated legal values', async () => {
     fixture(null); mount(); expect(await screen.findByText(/No configuration has been recorded/)).toBeInTheDocument();
     for (const label of ['Legal name', 'Jurisdiction', 'Organization timezone (IANA)', 'Corporation or registration identifier', 'Civic address',

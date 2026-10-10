@@ -3,9 +3,9 @@ import { configurationNumberFields, configurationTextFields, type ConfigurationD
 import type { OrganizationConfiguration } from './organizationConfiguration';
 
 export type IntakeOption = { id: string; name: string };
-export function OrganizationConfigurationForm({ draft, onChange, disabled, boards, lists, onBoardChange, onMoreBoards, intakeBusy = false }:
+export function OrganizationConfigurationForm({ draft, onChange, disabled, boards, lists, onBoardChange, onMoreBoards, onMoreLists, intakeBusy = false }:
   { draft: ConfigurationDraft; onChange: (value: ConfigurationDraft) => void; disabled: boolean; boards: IntakeOption[]; lists: IntakeOption[];
-    onBoardChange: (id: string) => void; onMoreBoards?: () => void; intakeBusy?: boolean }) {
+    onBoardChange: (id: string) => void; onMoreBoards?: () => void; onMoreLists?: () => void; intakeBusy?: boolean }) {
   function field(key: keyof ConfigurationDraft, value: string) { onChange({ ...draft, [key]: value }); }
   return <Stack spacing={3}>
     <Typography>Required legal details are entered explicitly. Configuration does not establish legal compliance.</Typography>
@@ -34,6 +34,7 @@ export function OrganizationConfigurationForm({ draft, onChange, disabled, board
           {lists.map(row => <MenuItem key={row.id} value={row.id}>{row.name}</MenuItem>)}
         </TextField>
         {onMoreBoards && <Button disabled={disabled || intakeBusy} onClick={onMoreBoards}>More intake Boards</Button>}
+        {onMoreLists && <Button disabled={disabled || intakeBusy} onClick={onMoreLists}>More intake Lists</Button>}
         <Typography variant="body2">Choose active records in this Organization. Changing the Board clears the selected List.</Typography>
       </Stack>
     </Box>

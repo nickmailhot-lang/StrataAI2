@@ -5,7 +5,7 @@ import { WorkInputError, WorkRequestError } from '../../api/workManagement';
 import { publicCorrelationReference } from '../../api/correlationReference';
 import { OrganizationConfigurationForm, ConfigurationValues, type IntakeOption } from './OrganizationConfigurationForm';
 import { configurationDraft, reviewedDraft, type ConfigurationDraft } from './organizationConfigurationDraft';
-import { ConfigurationChangeIntent, readConfigurationIntakeBoard, readConfigurationIntakeBoards, readOrganizationConfiguration,
+import { ConfigurationChangeIntent, readConfigurationIntakeLists, readConfigurationIntakeBoards, readOrganizationConfiguration,
   readOrganizationConfigurationHistory } from './organizationConfigurationClient';
 import type { ConfigurationHistory, ConfigurationView, OrganizationConfiguration } from './organizationConfiguration';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
@@ -38,6 +38,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   const [history, setHistory] = useState<ConfigurationHistory>();
   const [boards, setBoards] = useState<IntakeOption[]>([]); const [boardCursor, setBoardCursor] = useState<string | null>(null);
   const [selectedBoard, setSelectedBoard] = useState<IntakeOption>(); const [lists, setLists] = useState<IntakeOption[]>([]);
+  const [listCursor, setListCursor] = useState<string | null>(null);
   const [intakeBusy, setIntakeBusy] = useState(false); const [intakeError, setIntakeError] = useState<string>();
   const [intakeReload, setIntakeReload] = useState(0);
   const [busy, setBusy] = useState(false); const [needsCheck, setNeedsCheck] = useState(false); const [unavailable, setUnavailable] = useState(false);
@@ -54,7 +55,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   function withdraw(reason: unknown) {
     operation.current?.abort(); boardRead.current?.abort(); directoryRead.current?.abort();
     actor.current = undefined; setContext(undefined); setDraft(undefined); setReview(undefined); setOriginal(undefined);
-    setHistory(undefined); setBoards([]); setLists([]); setSelectedBoard(undefined); setBoardCursor(null);
+    setHistory(undefined); setBoards([]); setLists([]); setSelectedBoard(undefined); setBoardCursor(null); setListCursor(null);
     setNotice(undefined); setIntakeError(undefined); setUnavailable(true); setBusy(false);
     error('Organization configuration is unavailable to your account.');
     if (reason instanceof WorkRequestError && reason.status === 401) navigate('/login', { replace: true });
@@ -113,18 +114,33 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   }
   useEffect(() => { if (context?.actorId) void directory(); }, [context?.actorId]);
   useEffect(() => {
-    boardRead.current?.abort(); setSelectedBoard(undefined); setLists([]); setIntakeError(undefined);
+    boardRead.current?.abort(); setSelectedBoard(undefined); setLists([]); setListCursor(null); setIntakeError(undefined);
     if (!draft?.intakeBoardId || !context?.actorId) { setIntakeBusy(false); return; }
     const controller = new AbortController(); boardRead.current = controller; setIntakeBusy(true);
-    void readConfigurationIntakeBoard(organizationId, context.actorId, draft.intakeBoardId, controller.signal).then(result => {
-      if (mounted.current && !controller.signal.aborted && boardRead.current === controller) { setSelectedBoard(result.board); setLists(result.lists); }
+    void readConfigurationIntakeLists(organizationId, context.actorId, draft.intakeBoardId, controller.signal).then(result => {
+      if (mounted.current && !controller.signal.aborted && boardRead.current === controller) { setSelectedBoard(result.board); setLists(result.lists); setListCursor(result.nextAfterRank); }
     }).catch((reason: unknown) => {
       if (!mounted.current || controller.signal.aborted || boardRead.current !== controller) return;
-      if (reason instanceof WorkRequestError && reason.status === 401) withdraw(reason);
+      if (denied(reason)) withdraw(reason);
       else { setIntakeError('The selected intake Board or its Lists are unavailable. Clear the destination or choose active records.'); void load(); }
     }).finally(() => { if (boardRead.current === controller) { boardRead.current = undefined; if (mounted.current) setIntakeBusy(false); } });
     return () => controller.abort();
   }, [organizationId, context?.actorId, draft?.intakeBoardId, intakeReload]);
+  async function moreLists() {
+    if (!draft?.intakeBoardId || !context?.actorId || !listCursor || boardRead.current || busy || original || review) return;
+    const controller = new AbortController(); boardRead.current = controller; setIntakeBusy(true); setIntakeError(undefined);
+    const pinned = lists.find(row => row.id === draft.intakeListId);
+    try {
+      const result = await readConfigurationIntakeLists(organizationId, context.actorId, draft.intakeBoardId, controller.signal, listCursor);
+      if (!mounted.current || controller.signal.aborted || boardRead.current !== controller) return;
+      setSelectedBoard(result.board); setLists(pinned && !result.lists.some(row => row.id === pinned.id) ? [pinned, ...result.lists] : result.lists);
+      setListCursor(result.nextAfterRank);
+    } catch (reason) {
+      if (!mounted.current || controller.signal.aborted || boardRead.current !== controller) return;
+      if (denied(reason)) withdraw(reason);
+      else setIntakeError('The next intake List page could not be checked. Your draft and selected destination are preserved.');
+    } finally { if (boardRead.current === controller) { boardRead.current = undefined; if (mounted.current) setIntakeBusy(false); } }
+  }
   const boardOptions = selectedBoard && !boards.some(row => row.id === selectedBoard.id) ? [selectedBoard, ...boards] : boards;
   async function prepareReview() {
     if (!draft || !context || operation.current || original || intakeBusy) return;
@@ -196,7 +212,8 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
         <OrganizationConfigurationForm draft={draft} onChange={value => { if (!original && !busy && !review) { setDraft(value); setNotice(undefined); } }}
           disabled={busy || !!original || !!review} boards={boardOptions} lists={lists} intakeBusy={intakeBusy}
           onBoardChange={id => { if (!original && !busy && !review) setDraft({ ...draft, intakeBoardId: id, intakeListId: '' }); }}
-          onMoreBoards={boardCursor ? () => void directory(boardCursor) : undefined} />
+          onMoreBoards={boardCursor ? () => void directory(boardCursor) : undefined}
+          onMoreLists={listCursor ? () => void moreLists() : undefined} />
         <Button ref={reviewButton} variant="contained" disabled={busy || !!original || needsCheck || intakeBusy} onClick={() => void prepareReview()}>Review configuration change</Button>
         <Button disabled={busy} onClick={() => void historyPage()}>View configuration history</Button>
         {history && <Box component="section" aria-label="Configuration history">

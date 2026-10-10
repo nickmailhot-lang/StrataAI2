@@ -95,6 +95,30 @@ export function readConfigurationIntakeBoards(organizationId: string, actorId: s
     return { items, nextCursor: next };
   });
 }
+export function readConfigurationIntakeLists(organizationId: string, actorId: string, boardId: string, signal: AbortSignal, afterRank?: string) {
+  const selected = identifier(boardId);
+  if (afterRank !== undefined && !/^[0-9]{30}$/.test(afterRank)) throw new WorkInputError('The intake List boundary is unavailable.');
+  return admittedIntake(organizationId, actorId, signal, async (id, expected, bounded) => {
+    const page = await request(`${path(id)}/intake-boards/${selected}/lists${afterRank === undefined ? '' : `?afterRank=${afterRank}`}`, expected, bounded) as Record<string, unknown> | null;
+    const exact = (row: Record<string, unknown>, keys: string[]) => Object.keys(row).length === keys.length && keys.every(key => Object.hasOwn(row, key));
+    const positive = (value: unknown) => Number.isSafeInteger(value) && (value as number) > 0;
+    const board = page?.board as Record<string, unknown> | null;
+    if (!page || !exact(page, ['organizationId', 'board', 'items', 'nextAfterRank']) || page.organizationId !== id
+      || !board || !exact(board, ['id', 'name', 'version']) || board.id !== selected || !positive(board.version)
+      || !Array.isArray(page.items) || page.items.length > 50) throw new WorkRequestError(503, null);
+    const option = intakeOption(board); const seen = new Set<string>(); let previous = afterRank;
+    const lists = page.items.map(value => {
+      const row = value as Record<string, unknown> | null;
+      if (!row || !exact(row, ['id', 'name', 'version', 'rank']) || !positive(row.version)
+        || typeof row.rank !== 'string' || !/^[0-9]{30}$/.test(row.rank) || previous !== undefined && row.rank <= previous)
+        throw new WorkRequestError(503, null);
+      const item = intakeOption(row); if (seen.has(item.id)) throw new WorkRequestError(503, null);
+      seen.add(item.id); previous = row.rank; return item;
+    });
+    if (page.nextAfterRank !== null && (lists.length !== 50 || page.nextAfterRank !== previous)) throw new WorkRequestError(503, null);
+    return { board: option, lists, nextAfterRank: page.nextAfterRank as string | null };
+  });
+}
 export function readConfigurationIntakeBoard(organizationId: string, actorId: string, boardId: string, signal: AbortSignal) {
   const selected = identifier(boardId);
   return admittedIntake(organizationId, actorId, signal, async (id, expected, bounded) => {
