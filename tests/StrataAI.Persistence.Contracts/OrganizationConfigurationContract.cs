@@ -28,6 +28,51 @@ internal static class OrganizationConfigurationContract
     }
     private static bool Same<T>(T left, T right) => JsonSerializer.Serialize(left) == JsonSerializer.Serialize(right);
 
+    private static async Task VerifyIntakePaginationAsync(NpgsqlConnection admin, OrganizationConfigurationService service,
+        Guid tenant, Guid actor, Guid foreignBoard, CancellationToken ct)
+    {
+        var board = Guid.NewGuid();
+        await using (var seed = new NpgsqlCommand("""
+            SELECT set_config('app.tenant_id',@tenant::text,false);
+            INSERT INTO boards(id,tenant_id,name,created_at,updated_at)
+            VALUES(@board,@tenant,'Bounded intake contract',now(),now());
+            INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at)
+            SELECT gen_random_uuid(),@tenant,@board,'Intake contract List '||item,lpad(item::text,30,'0'),now(),now()
+            FROM generate_series(1,53) AS item;
+            SELECT set_config('app.tenant_id','',false);
+            """, admin))
+        {
+            seed.Parameters.AddWithValue("tenant", tenant); seed.Parameters.AddWithValue("board", board);
+            await seed.ExecuteNonQueryAsync(ct);
+        }
+        var first = await service.ReadIntakeListsAsync(tenant, actor, board, null, ct);
+        Require(first.Succeeded && first.Value!.Items.Count == 50 && first.Value.NextAfterRank == first.Value.Items[^1].Rank,
+            "Restricted intake first page did not retain the bounded exclusive cursor.");
+        var second = await service.ReadIntakeListsAsync(tenant, actor, board, first.Value!.NextAfterRank, ct);
+        Require(second.Succeeded && second.Value!.Items.Count == 3 && second.Value.NextAfterRank is null
+            && first.Value.Items.Concat(second.Value.Items).Select(row => row.Id).Distinct().Count() == 53
+            && second.Value.Items.All(row => string.CompareOrdinal(row.Rank, first.Value.NextAfterRank) > 0),
+            "Restricted intake continuation duplicated, skipped or exposed an invalid boundary.");
+        var exhausted = await service.ReadIntakeListsAsync(tenant, actor, board, second.Value!.Items[^1].Rank, ct);
+        Require(exhausted.Succeeded && exhausted.Value!.Items.Count == 0 && exhausted.Value.NextAfterRank is null,
+            "Restricted intake terminal page was not empty.");
+        var foreign = await service.ReadIntakeListsAsync(tenant, actor, foreignBoard, null, ct);
+        Require(!foreign.Succeeded && foreign.Value is null && foreign.ErrorCode == "configuration_intake_unavailable",
+            "Restricted intake disclosed another tenant Board.");
+        await using (var archive = new NpgsqlCommand("""
+            SELECT set_config('app.tenant_id',@tenant::text,false);
+            UPDATE boards SET lifecycle_state='ARCHIVED',version=version+1,updated_at=now() WHERE tenant_id=@tenant AND id=@board;
+            SELECT set_config('app.tenant_id','',false);
+            """, admin))
+        {
+            archive.Parameters.AddWithValue("tenant", tenant); archive.Parameters.AddWithValue("board", board);
+            await archive.ExecuteNonQueryAsync(ct);
+        }
+        var archived = await service.ReadIntakeListsAsync(tenant, actor, board, null, ct);
+        Require(!archived.Succeeded && archived.Value is null && archived.ErrorCode == "configuration_intake_unavailable",
+            "Restricted intake returned an archived Board.");
+    }
+
     public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
     {
         await VerifyNamespaceAsync(apiConnection, ct);
@@ -64,6 +109,7 @@ internal static class OrganizationConfigurationContract
         var store = provider.GetRequiredService<IOrganizationConfigurationStore>();
         var unit = provider.GetRequiredService<IOrganizationUnitOfWork>();
         var organizations = provider.GetRequiredService<IOrganizationStore>();
+        await VerifyIntakePaginationAsync(admin, service, tenant, actor, foreignBoard, ct);
         var empty = await service.ReadAsync(tenant, actor, ct);
         Require(empty.Succeeded && empty.Value is { Version: 0, Revision: null }, "Configuration empty state was fabricated.");
         var substituted = await service.ChangeAsync(tenant, actor,

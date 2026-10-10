@@ -42,6 +42,7 @@ public sealed class OrganizationTelemetry
             ("/organizations/{organizationId:guid}/configuration", "GET") => "configuration_read",
             ("/organizations/{organizationId:guid}/configuration", "PATCH") => "configuration_change",
             ("/organizations/{organizationId:guid}/configuration/history", "GET") => "configuration_history",
+            ("/organizations/{organizationId:guid}/configuration/intake-boards/{boardId:guid}/lists", "GET") => "configuration_intake_lists",
             _ => null,
         };
     internal static void SetError(HttpContext context, string? code) => context.Items[ErrorKey] = code switch

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Persistence;
+using StrataAI.Infrastructure.WorkManagement;
 
 namespace StrataAI.Infrastructure.Organizations;
 
@@ -21,6 +22,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationStore>());
             services.AddSingleton<InMemoryOrganizationConfigurationStore>();
             services.AddSingleton<IOrganizationConfigurationStore>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
+            services.AddSingleton<IOrganizationConfigurationIntakeStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
             services.AddSingleton<InMemoryOrganizationMetadataJournal>();
             services.AddSingleton<Func<InMemoryOrganizationMetadataJournal>>(provider => () => provider.GetRequiredService<InMemoryOrganizationMetadataJournal>());
@@ -61,6 +63,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationLifecycleEventReader, PostgresOrganizationLifecycleEventReader>();
             services.AddSingleton<IOrganizationStore, PostgresOrganizationStore>();
             services.AddSingleton<IOrganizationConfigurationStore, PostgresOrganizationConfigurationStore>();
+            services.AddSingleton<IOrganizationConfigurationIntakeStore, PostgresOrganizationConfigurationIntakeStore>();
             services.AddSingleton<IOrganizationUnitOfWork, PostgresOrganizationUnitOfWork>();
             services.AddSingleton<IOrganizationRemovalReplayStore, PostgresOrganizationRemovalReplayStore>();
             services.AddSingleton<IOrganizationDepartureReplayStore, PostgresOrganizationDepartureReplayStore>();

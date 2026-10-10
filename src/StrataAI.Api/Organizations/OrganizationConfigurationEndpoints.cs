@@ -78,6 +78,23 @@ public static class OrganizationConfigurationEndpoints
                 request.Version, key, context.TraceIdentifier, ct);
             return result.Succeeded ? Results.Ok(result.Value) : Error(result.ErrorCode);
         });
+
+        group.MapGet("/{organizationId:guid}/configuration/intake-boards/{boardId:guid}/lists", async
+            (Guid organizationId, Guid boardId, HttpContext context, OrganizationConfigurationService service, CancellationToken ct) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = Actor(context); if (actor is null) return Error("session_unavailable");
+            var admission = await service.ReadAsync(organizationId, actor.Value, ct);
+            if (!admission.Succeeded) return Error(admission.ErrorCode);
+            string? after = null;
+            if (context.Request.Query.TryGetValue("afterRank", out var values))
+            {
+                if (values.Count != 1) return Error("invalid_configuration_intake_cursor");
+                after = values[0] ?? "";
+            }
+            var result = await service.ReadIntakeListsAsync(organizationId, actor.Value, boardId, after, ct);
+            return result.Succeeded ? Results.Ok(result.Value) : Error(result.ErrorCode);
+        });
     }
 
     private static Guid? Actor(HttpContext context)
@@ -103,6 +120,7 @@ public static class OrganizationConfigurationEndpoints
             "configuration_intake_unavailable" => (400, "Choose an active intake Board and a List belonging to it."),
             "idempotency_key_required" => (400, "A nonempty UUID retry key is required."),
             "invalid_configuration_cursor" => (400, "A positive configuration history revision is required."),
+            "invalid_configuration_intake_cursor" => (400, "Use the rank boundary returned by the previous intake List page."),
             "invalid_configuration_request" => (400, "Provide a configuration and its reviewed revision using the supported fields."),
             { } value when value.StartsWith("invalid_configuration_", StringComparison.Ordinal) => (400, "Correct the indicated configuration field."),
             _ => (404, "The Organization was not found."),

@@ -3,6 +3,7 @@ using System.Text.Json;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Domain.Organizations;
+using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Application.Organizations;
 
@@ -15,7 +16,7 @@ public sealed record OrganizationConfigurationHistoryPage(Guid OrganizationId,
 // for Production, and this command must never enter a nested Organization transaction.
 public sealed class OrganizationConfigurationService(IOrganizationStore organizations,
     IOrganizationConfigurationStore configurations, IOrganizationUnitOfWork unit,
-    ICommandActorAuthorization actors, IClock clock)
+    ICommandActorAuthorization actors, IClock clock, IOrganizationConfigurationIntakeStore intake)
 {
     public Task<OrganizationOperation<OrganizationConfigurationView>> ReadAsync(Guid organization,
         Guid actor, CancellationToken ct = default) => Owned(organization, actor, async () =>
@@ -34,6 +35,36 @@ public sealed class OrganizationConfigurationService(IOrganizationStore organiza
             return OrganizationOperation<OrganizationConfigurationHistoryPage>.Success(new(organization,
                 items, rows.Count > 50 ? items[^1].Version : null));
         }, ct);
+
+    public Task<OrganizationOperation<ConfigurationIntakeListPage>> ReadIntakeListsAsync(Guid organization,
+        Guid actor, Guid board, string? afterRank, CancellationToken ct = default) => Owned(organization, actor, async () =>
+        {
+            // Cursor errors cannot disclose a guessed tenant to an unadmitted actor.
+            if (afterRank is not null && !IntakeRank(afterRank))
+                return OrganizationOperation<ConfigurationIntakeListPage>.Failure("invalid_configuration_intake_cursor");
+            if (board == Guid.Empty)
+                return OrganizationOperation<ConfigurationIntakeListPage>.Failure("configuration_intake_unavailable");
+            var source = await intake.ReadListsAsync(organization, board, afterRank, ct);
+            if (source is null)
+                return OrganizationOperation<ConfigurationIntakeListPage>.Failure("configuration_intake_unavailable");
+            if (source.Board.Id != board || source.Board.Version < 1 || string.IsNullOrWhiteSpace(source.Board.Name)
+                || source.Board.Name.Length > 160 || source.Items.Count > 51)
+                return OrganizationOperation<ConfigurationIntakeListPage>.Failure("configuration_source_unavailable");
+            var previous = afterRank; var identities = new HashSet<Guid>();
+            foreach (var row in source.Items)
+            {
+                if (row.Id == Guid.Empty || !identities.Add(row.Id) || row.Version < 1 || string.IsNullOrWhiteSpace(row.Name)
+                    || row.Name.Length > 160 || !IntakeRank(row.Rank)
+                    || previous is not null && string.CompareOrdinal(row.Rank, previous) <= 0)
+                    return OrganizationOperation<ConfigurationIntakeListPage>.Failure("configuration_source_unavailable");
+                previous = row.Rank;
+            }
+            var items = source.Items.Take(50).ToArray();
+            return OrganizationOperation<ConfigurationIntakeListPage>.Success(new(organization, source.Board,
+                items, source.Items.Count > 50 ? items[^1].Rank : null));
+        }, ct);
+
+    private static bool IntakeRank(string value) => value.Length == RankToken.Width && value.All(char.IsAsciiDigit);
 
     public Task<OrganizationOperation<OrganizationConfigurationRecord>> ChangeAsync(Guid organization, Guid actor,
         OrganizationConfigurationData? data, long expectedVersion, Guid key, string correlationId, CancellationToken ct = default)
