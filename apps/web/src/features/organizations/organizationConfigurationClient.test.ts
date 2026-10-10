@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseOrganizationConfiguration } from './organizationConfiguration';
-import { ConfigurationChangeIntent, readOrganizationConfiguration, readOrganizationConfigurationHistory } from './organizationConfigurationClient';
+import { ConfigurationChangeIntent, readConfigurationIntakeBoard, readConfigurationIntakeBoards, readOrganizationConfiguration, readOrganizationConfigurationHistory } from './organizationConfigurationClient';
 import { WorkRequestError } from '../../api/workManagement';
 
 const organizationId = '11111111-1111-4111-8111-111111111111';
@@ -53,6 +53,43 @@ describe('PRD-27 private account-bound configuration transport', () => {
   it('refuses history after account replacement without returning titles or counts', async () => {
     sequence(profile, { organizationId, items: [revision()], nextBeforeVersion: null }, { ...profile, id: otherId });
     await expect(readOrganizationConfigurationHistory(organizationId, actorId, new AbortController().signal)).rejects.toMatchObject({ status: 401 });
+  });
+  it('admits bounded Board discovery only between current private configuration authorization checks', async () => {
+    const empty = { organizationId, version: 0, revision: null };
+    const fetch = sequence(profile, empty, { organizationId, items: [{ id: otherId, name: 'Actual Board', version: 1 }], nextCursor: null }, empty, profile);
+    expect(await readConfigurationIntakeBoards(organizationId, actorId, new AbortController().signal)).toEqual({ items: [{ id: otherId, name: 'Actual Board' }], nextCursor: null });
+    expect(fetch.mock.calls.map(call => call[0])).toEqual(['/me', `/organizations/${organizationId}/configuration`,
+      `/organizations/${organizationId}/boards/directory`, `/organizations/${organizationId}/configuration`, '/me']);
+  });
+  it('withdraws Board options if administrator authority disappears after directory discovery', async () => {
+    const fetch = vi.fn().mockResolvedValueOnce(response(profile)).mockResolvedValueOnce(response({ organizationId, version: 0, revision: null }))
+      .mockResolvedValueOnce(response({ organizationId, items: [{ id: otherId, name: 'Actual Board', version: 1 }], nextCursor: null }))
+      .mockResolvedValueOnce(response({ code: 'organization_not_found' }, 404)); vi.stubGlobal('fetch', fetch);
+    await expect(readConfigurationIntakeBoards(organizationId, actorId, new AbortController().signal)).rejects.toMatchObject({ status: 404 });
+  });
+  it.each([
+    { organizationId: otherId, items: [], nextCursor: null },
+    { organizationId, items: [{ id: otherId, name: 'Board', version: 0 }], nextCursor: null },
+    { organizationId, items: [{ id: otherId, name: 'Board', version: 1 }], nextCursor: otherId },
+    { organizationId, items: [], nextCursor: 'malformed' },
+  ])('rejects foreign or malformed Board discovery pages before rendering relationship names', async page => {
+    sequence(profile, { organizationId, version: 0, revision: null }, page);
+    await expect(readConfigurationIntakeBoards(organizationId, actorId, new AbortController().signal)).rejects.toMatchObject({ status: 503 });
+  });
+  it('projects only the actual active owning Board/List relationship, discarding Card payloads', async () => {
+    const empty = { organizationId, version: 0, revision: null };
+    sequence(profile, empty, { board: { id: otherId, organizationId, name: 'Board', lifecycleState: 'ACTIVE' }, access: { canAdminister: true },
+      lists: [{ list: { id: key, organizationId, boardId: otherId, name: 'List', lifecycleState: 'ACTIVE' }, cards: [{ title: 'Excluded private Card' }] }] }, empty, profile);
+    const result = await readConfigurationIntakeBoard(organizationId, actorId, otherId, new AbortController().signal);
+    expect(result).toEqual({ board: { id: otherId, name: 'Board' }, lists: [{ id: key, name: 'List' }] });
+    expect(JSON.stringify(result)).not.toContain('Card');
+  });
+  it.each([
+    { organizationId: otherId }, { boardId: key }, { lifecycleState: 'ARCHIVED' },
+  ])('rejects substituted or archived List sources', async patch => {
+    sequence(profile, { organizationId, version: 0, revision: null }, { board: { id: otherId, organizationId, name: 'Board', lifecycleState: 'ACTIVE' },
+      access: { canAdminister: true }, lists: [{ list: { id: key, organizationId, boardId: otherId, name: 'List', lifecycleState: 'ACTIVE', ...patch } }] });
+    await expect(readConfigurationIntakeBoard(organizationId, actorId, otherId, new AbortController().signal)).rejects.toMatchObject({ status: 503 });
   });
   it('retains exact reviewed bytes and key across lost acknowledgment and ignores later caller mutation', async () => {
     const draft = configuration(); const intent = ConfigurationChangeIntent.review(organizationId, actorId, 0, draft, key);

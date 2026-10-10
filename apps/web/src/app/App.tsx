@@ -21,6 +21,7 @@ import { ArchivedCardsPage } from "../features/kanban/ArchivedCardsPage";
 import { ArchivedBoardsPage } from "../features/kanban/ArchivedBoardsPage";
 import { OrganizationHome } from "../features/organizations/OrganizationHome";
 import { OrganizationSettingsPage } from "../features/organizations/OrganizationSettingsPage";
+import { OrganizationConfigurationPage } from "../features/organizations/OrganizationConfigurationPage";
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
 import { OrganizationDeletePage } from "../features/organizations/OrganizationDeletePage";
 import { OrganizationLeavePage } from "../features/organizations/OrganizationLeavePage";
@@ -60,6 +61,7 @@ const routes = [
     children: [
       { index: true, element: <OrganizationHome /> },
       { path: "settings", element: <OrganizationSettingsPage /> },
+      { path: "configuration", element: <OrganizationConfigurationPage /> },
       { path: "notifications", element: <NotificationCenterPage /> },
       { path: "search", element: <GlobalSearchPage /> },
       { path: "archived-boards", element: <ArchivedBoardsPage /> },

@@ -2,6 +2,7 @@ import { apiFetch } from '../../api/apiFetch';
 import { configurationProblemCode } from '../../api/configurationProblem';
 import { boundedWorkRead, workRequest, WorkInputError, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile, notificationUuid } from '../notifications/notificationInbox';
+import type { IntakeOption } from './OrganizationConfigurationForm';
 import { parseConfigurationHistory, parseConfigurationRevision, parseConfigurationView, parseOrganizationConfiguration,
   type OrganizationConfiguration } from './organizationConfiguration';
 
@@ -56,6 +57,62 @@ export function readOrganizationConfigurationHistory(organizationId: string, act
       expected, bounded), id, beforeVersion);
     await actor(bounded, expected); bounded.throwIfAborted(); return result;
   }, signal);
+}
+
+async function admittedIntake<T>(organizationId: string, actorId: string, signal: AbortSignal,
+  read: (organization: string, actor: string, bounded: AbortSignal) => Promise<T>) {
+  const id = identifier(organizationId); const expected = identifier(actorId);
+  return boundedWorkRead(async bounded => {
+    await actor(bounded, expected);
+    parseConfigurationView(await request(path(id), expected, bounded), id);
+    const result = await read(id, expected, bounded);
+    // Board membership alone must not keep a withdrawn administrator's private
+    // configuration picker open. Recheck configuration authority at the end.
+    parseConfigurationView(await request(path(id), expected, bounded), id);
+    await actor(bounded, expected); bounded.throwIfAborted(); return result;
+  }, signal);
+}
+function intakeOption(value: unknown): IntakeOption {
+  const row = value as Record<string, unknown> | null;
+  if (!row || !notificationUuid(row.id) || typeof row.name !== 'string' || !row.name.trim() || row.name.length > 160)
+    throw new WorkRequestError(503, null);
+  return { id: row.id.toLowerCase(), name: row.name };
+}
+export function readConfigurationIntakeBoards(organizationId: string, actorId: string, signal: AbortSignal, after?: string) {
+  const cursor = after === undefined ? undefined : identifier(after);
+  return admittedIntake(organizationId, actorId, signal, async (id, expected, bounded) => {
+    const page = await request(`/organizations/${id}/boards/directory${cursor ? `?after=${cursor}` : ''}`, expected, bounded) as Record<string, unknown> | null;
+    if (!page || page.organizationId !== id || !Array.isArray(page.items) || page.items.length > 50) throw new WorkRequestError(503, null);
+    let previous = cursor;
+    const items = page.items.map(value => {
+      const option = intakeOption(value); const row = value as Record<string, unknown>;
+      if (previous && option.id <= previous || !Number.isSafeInteger(row.version) || (row.version as number) < 1) throw new WorkRequestError(503, null);
+      previous = option.id; return option;
+    });
+    if (page.nextCursor !== null && !notificationUuid(page.nextCursor)) throw new WorkRequestError(503, null);
+    const next = page.nextCursor === null ? null : (page.nextCursor as string).toLowerCase();
+    if (next !== null && (items.length !== 50 || next !== items.at(-1)!.id)) throw new WorkRequestError(503, null);
+    return { items, nextCursor: next };
+  });
+}
+export function readConfigurationIntakeBoard(organizationId: string, actorId: string, boardId: string, signal: AbortSignal) {
+  const selected = identifier(boardId);
+  return admittedIntake(organizationId, actorId, signal, async (id, expected, bounded) => {
+    const snapshot = await request(`/boards/${selected}`, expected, bounded) as Record<string, unknown> | null;
+    const board = snapshot?.board as Record<string, unknown> | null;
+    const access = snapshot?.access as Record<string, unknown> | null;
+    if (!snapshot || !board || board.organizationId !== id || board.id !== selected || board.lifecycleState !== 'ACTIVE'
+      || !access || access.canAdminister !== true || !Array.isArray(snapshot.lists)) throw new WorkRequestError(404, null);
+    const option = intakeOption(board); const seen = new Set<string>();
+    const lists = snapshot.lists.map(value => {
+      const item = value as Record<string, unknown> | null; const list = item?.list as Record<string, unknown> | null;
+      if (!list || list.organizationId !== id || list.boardId !== selected || list.lifecycleState !== 'ACTIVE') throw new WorkRequestError(503, null);
+      const result = intakeOption(list); if (seen.has(result.id)) throw new WorkRequestError(503, null);
+      seen.add(result.id); return result;
+    });
+    // Project only reviewed relationship options; Card data is never retained.
+    return { board: option, lists };
+  });
 }
 
 // A reviewed intent retains exact bytes/key/account across uncertain delivery.
