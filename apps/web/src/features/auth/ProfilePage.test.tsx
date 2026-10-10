@@ -296,3 +296,66 @@ describe('PRD-02 profile management', () => {
     sessionStorage.removeItem(storageKey); sessionStorage.removeItem('unrelated-site-data');
   });
 });
+
+
+it('PRD-02: exposes a safe initial profile-read reference without provider text', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"title":"private-diagnostic"}', { status: 503, headers: { 'X-Correlation-ID': 'profile.read-1' } })));
+  renderProfile(); await screen.findByText('Reference: profile.read-1');
+  expect(screen.getByText('Unable to load your profile.')).toBeVisible();
+  expect(screen.queryByText(/private-diagnostic/)).not.toBeInTheDocument();
+});
+it('PRD-02: pairs a failed background refresh with its own reference and retains edits', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile)).mockResolvedValueOnce(new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'profile.refresh-1' } })));
+  renderProfile(); fireEvent.change(await screen.findByLabelText(/Display name/), { target: { value: 'Unsaved' } });
+  fireEvent(window, new Event('focus'));
+  await screen.findByText('Reference: profile.refresh-1');
+  expect(screen.getByRole('status')).toHaveTextContent('Unable to refresh your profile.');
+  expect(screen.getByLabelText(/Display name/)).toHaveValue('Unsaved');
+});
+it.each(['save', 'logout'])('PRD-02: retains the actual %s refusal reference', async action => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile)).mockResolvedValueOnce(new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'profile.command-1' } })));
+  renderProfile(); await screen.findByLabelText(/Display name/);
+  if (action === 'save') fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+  else fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+  await screen.findByText('Reference: profile.command-1');
+  expect(screen.getByLabelText(/Display name/)).toHaveValue('Council');
+});
+
+
+it('PRD-02: retains the actual malformed acknowledgment reference without accepting a save', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile)).mockResolvedValueOnce(new Response('{}', { status: 200, headers: { 'X-Correlation-ID': 'profile.unconfirmed-1' } })));
+  renderProfile(); fireEvent.change(await screen.findByLabelText(/Display name/), { target: { value: 'Unsaved' } });
+  fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+  await screen.findByText('Reference: profile.unconfirmed-1');
+  expect(screen.getByText(/Unable to confirm your profile save/)).toBeVisible();
+  expect(screen.getByLabelText(/Display name/)).toHaveValue('Unsaved');
+  expect(screen.queryByText('Profile saved.')).not.toBeInTheDocument();
+});
+it('PRD-02: withdraws the current profile and its refused response reference on authorization loss', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile)).mockResolvedValueOnce(new Response('{}', { status: 401, headers: { 'X-Correlation-ID': 'retired.profile-reference' } })));
+  renderProfile(); await screen.findByLabelText(/Display name/);
+  fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+  await screen.findByText('Sign in again');
+  expect(screen.queryByText(/retired.profile-reference/)).not.toBeInTheDocument();
+  expect(screen.queryByLabelText(/Display name/)).not.toBeInTheDocument();
+});
+it('PRD-02: clears the old profile command reference during retry and invents none on network failure', async () => {
+  const fetchMock = vi.fn().mockResolvedValueOnce(syncResponse(profile))
+    .mockResolvedValueOnce(new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'previous.profile-1' } }))
+    .mockRejectedValueOnce(new Error('private-network-detail'));
+  vi.stubGlobal('fetch', fetchMock); renderProfile(); await screen.findByLabelText(/Display name/);
+  fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+  await screen.findByText('Reference: previous.profile-1');
+  fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+  expect(screen.queryByText(/previous.profile-1/)).not.toBeInTheDocument();
+  await screen.findByText(/Unable to confirm your profile save/);
+  expect(screen.queryByText(/Reference:|private-network-detail/)).not.toBeInTheDocument();
+  expect(new Headers(fetchMock.mock.calls[2][1].headers).get('Idempotency-Key')).toBe(new Headers(fetchMock.mock.calls[1][1].headers).get('Idempotency-Key'));
+});
+it('PRD-02: rejects malformed profile response references while retaining fixed public wording', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile)).mockResolvedValueOnce(new Response('{"title":"private-body-detail"}', { status: 503, headers: { 'X-Correlation-ID': 'private:diagnostic' } })));
+  renderProfile(); await screen.findByLabelText(/Display name/);
+  fireEvent.submit(screen.getByRole('form', { name: 'Edit profile' }));
+  await screen.findByText('Unable to save your profile. Please retry.');
+  expect(screen.queryByText(/Reference:|private:diagnostic|private-body-detail/)).not.toBeInTheDocument();
+});

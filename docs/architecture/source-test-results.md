@@ -444,3 +444,13 @@ acknowledgment recovery, original command/body/key checks, keyboard, accessibili
 and width criteria remain. The [identity reference record](identity-error-references.md)
 retains its separate native scope and independently verified fixture cleanup.
 This does not certify every reference-display branch or current immutable CI.
+
+
+## Profile and account support references
+
+The [profile error-reference record](profile-error-references.md) retains six
+pre-repair reference failures, first post-change 314/315 result, correction of
+the new owner-refusal test's dialog-close observation, and final **319/319**
+authentication/API-boundary source passes. Typecheck, lint and private web build
+pass. Original full account/replacement-account browser files are running
+separately; current browser/immutable-image/full acceptance is not inferred.

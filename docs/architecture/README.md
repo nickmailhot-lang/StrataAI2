@@ -78,3 +78,6 @@ support identifiers, account withdrawal and original-save recovery boundaries.
 
 [Authentication and recovery support references](identity-error-references.md) covers
 response-bound references, safe retry/cancellation and executed source checks.
+
+[Profile and account error references](profile-error-references.md) covers
+protected refresh, saves, sign-out, deactivation and retained verification boundaries.

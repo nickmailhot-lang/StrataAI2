@@ -111,3 +111,12 @@ describe('PRD-02/03/18 account deactivation', () => {
     expect(screen.queryByText('Your account is deactivated. Historical activity is preserved.')).not.toBeInTheDocument();
   });
 });
+
+
+it.each([409, 503])('PRD-02/03: pairs a deactivation refusal or uncertain response with its own reference (%s)', async status => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(snapshot()).mockResolvedValueOnce(new Response(JSON.stringify({ code: 'organization_owner_required', title: 'private-diagnostic' }), { status, headers: { 'X-Correlation-ID': 'deactivation.response-1' } })));
+  renderProfile(); await confirm(); await screen.findByText('Reference: deactivation.response-1');
+  expect(screen.queryByText(/private-diagnostic/)).not.toBeInTheDocument();
+  if (status === 409) expect(await screen.findByRole('button', { name: 'Deactivate account' })).toBeEnabled();
+  else expect(screen.getByRole('button', { name: 'Retry deactivation' })).toBeEnabled();
+});

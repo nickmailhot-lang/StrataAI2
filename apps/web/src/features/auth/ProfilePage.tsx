@@ -1,3 +1,5 @@
+import { publicCorrelationReference } from '../../api/correlationReference';
+import { WorkRequestError } from '../../api/workManagement';
 import { apiFetch } from '../../api/apiFetch';
 import { forgetInvitationIntents } from '../organizations/invitationIntent';
 import { formatUserDateTime } from './userDateTime';
@@ -46,21 +48,31 @@ function isProfile(value: unknown): value is UserProfile {
     && typeof user.updatedAt === 'string' && Number.isFinite(Date.parse(user.updatedAt));
 }
 
+type ProfileFailure = { message: string; reference: string | null };
+function ProfileError({ failure, severity = 'error', role }: { failure: ProfileFailure; severity?: 'error' | 'warning'; role?: 'status' }) {
+  return <Alert severity={severity} role={role}><span>{failure.message}</span>{failure.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {failure.reference}</Typography>}</Alert>;
+}
+
 async function profileCommand(path: string, options: RequestInit, controller: AbortController, readBody: boolean) {
   let deadline: ReturnType<typeof setTimeout> | undefined;
   let abort: (() => void) | undefined;
+  let reference: string | null = null; let status = 0;
   try {
     return await Promise.race([
-      apiFetch(path, { ...options, signal: controller.signal }).then(async response => ({
-        status: response.status, ok: response.ok,
-        body: readBody && response.status !== 401 ? await response.json().catch(() => undefined) as unknown : undefined,
-      })),
+      apiFetch(path, { ...options, signal: controller.signal }).then(async response => {
+        status = response.status;
+        reference = publicCorrelationReference(response.headers?.get('X-Correlation-ID') ?? null);
+        return { status, ok: response.ok, reference,
+          body: readBody && response.status !== 401 ? await response.json().catch(() => undefined) as unknown : undefined };
+      }),
       new Promise<never>((_, reject) => {
         abort = () => reject(new Error('Profile command interrupted'));
         controller.signal.addEventListener('abort', abort, { once: true });
         deadline = setTimeout(() => controller.abort(), 15_000);
       }),
     ]);
+  } catch {
+    throw new WorkRequestError(status, reference);
   } finally {
     clearTimeout(deadline);
     if (abort) controller.signal.removeEventListener('abort', abort);
@@ -69,17 +81,26 @@ async function profileCommand(path: string, options: RequestInit, controller: Ab
 
 export function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile>();
-  const [error, setError] = useState<string>();
+  const [error, setFailure] = useState<ProfileFailure>();
+  function setError(message: string | undefined, reference: string | null = null) {
+    setFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
+  }
   const [draft, setDraft] = useState<UserProfile>();
   const [busy, setBusy] = useState(false);
   const [handleDialog, setHandleDialog] = useState(false);
   const [saved, setSaved] = useState(false);
   const [reload, setReload] = useState(0);
   const [conflict, setConflict] = useState(false);
-  const [refreshError, setRefreshError] = useState<string>();
+  const [refreshError, setRefreshFailure] = useState<ProfileFailure>();
+  function setRefreshError(message: string | undefined, reference: string | null = null) {
+    setRefreshFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
+  }
   const [deactivateDialog, setDeactivateDialog] = useState(false);
   const [deactivateUncertain, setDeactivateUncertain] = useState(false);
-  const [deactivateError, setDeactivateError] = useState<string>();
+  const [deactivateError, setDeactivateFailure] = useState<ProfileFailure>();
+  function setDeactivateError(message: string | undefined, reference: string | null = null) {
+    setDeactivateFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
+  }
   const deactivateRetry = useRef<{ key: string; userId: string } | undefined>(undefined);
   const deactivateCancel = useRef<HTMLButtonElement | null>(null);
   const mutationEpoch = useRef(0);
@@ -119,9 +140,9 @@ export function ProfilePage() {
       setConflict(false);
     }
   });
-  const readFailed = useEffectEvent(() => {
-    if (profile) setRefreshError('Unable to refresh your profile. Your changes are preserved; refresh will retry.');
-    else setError('Unable to load your profile.');
+  const readFailed = useEffectEvent((reference: string | null = null) => {
+    if (profile) setRefreshError('Unable to refresh your profile. Your changes are preserved; refresh will retry.', reference);
+    else setError('Unable to load your profile.', reference);
   });
 
   useEffect(() => {
@@ -138,12 +159,16 @@ export function ProfilePage() {
       inFlight = true;
       const epoch = mutationEpoch.current;
       let more = false;
+      let reference: string | null = null;
       const requestController = new AbortController();
       controller = requestController;
       try {
         // Bound the complete read, even if a transport ignores abort or its body stalls.
         const response = await Promise.race([
-          apiFetch(cursor === undefined ? '/me/sync' : `/me/sync?after=${cursor}`, { signal: requestController.signal }).then(async result => ({ status: result.status, ok: result.ok, user: result.ok ? await result.json() : undefined })),
+          apiFetch(cursor === undefined ? '/me/sync' : `/me/sync?after=${cursor}`, { signal: requestController.signal }).then(async result => {
+            reference = publicCorrelationReference(result.headers?.get('X-Correlation-ID') ?? null);
+            return { status: result.status, ok: result.ok, user: result.ok ? await result.json() : undefined };
+          }),
           new Promise<never>((_, reject) => {
             deadline = setTimeout(() => { requestController.abort(); reject(new Error('Profile read timed out')); }, 15_000);
           }),
@@ -162,7 +187,7 @@ export function ProfilePage() {
         for (const id of snapshot.eventIds) seenEvents.add(id);
         while (seenEvents.size > 1000) seenEvents.delete(seenEvents.values().next().value!);
       } catch {
-        if (active && epoch === mutationEpoch.current) readFailed();
+        if (active && epoch === mutationEpoch.current) readFailed(reference);
       } finally {
         clearTimeout(deadline);
         controller = undefined;
@@ -223,17 +248,17 @@ export function ProfilePage() {
           invalid_timezone: 'A valid timezone is required.',
         };
         setError(response.status === 409 ? 'Your profile changed elsewhere.'
-          : typeof problem?.code === 'string' && messages[problem.code] ? messages[problem.code] : 'Unable to save your profile. Please retry.');
+          : typeof problem?.code === 'string' && messages[problem.code] ? messages[problem.code] : 'Unable to save your profile. Please retry.', response.reference);
         return;
       }
       const user = response.body;
-      if (!isProfile(user) || user.id !== submitted.id || user.version <= submitted.version) throw new Error('Invalid profile acknowledgment');
+      if (!isProfile(user) || user.id !== submitted.id || user.version <= submitted.version) throw new WorkRequestError(response.status, response.reference);
       setProfile(user);
       setDraft(user);
       profileRetry.current = undefined;
       setSaved(true);
-    } catch {
-      if (current()) setError('Unable to confirm your profile save. Your changes are preserved; refresh the latest profile or retry.');
+    } catch (reason) {
+      if (current()) setError('Unable to confirm your profile save. Your changes are preserved; refresh the latest profile or retry.', reason instanceof WorkRequestError ? reason.correlationId : null);
     } finally {
       if (mutation.current === controller) mutation.current = undefined;
       if (current()) setBusy(false);
@@ -254,12 +279,12 @@ export function ProfilePage() {
         method: 'POST', credentials: 'include', headers: { 'Idempotency-Key': logoutRetry.current, 'X-StrataAI-Expected-User': profile.id },
       }, controller, false);
       if (!current()) return;
-      if (response.status !== 204 && response.status !== 401) throw new Error('Sign out failed');
+      if (response.status !== 204 && response.status !== 401) throw new WorkRequestError(response.status, response.reference);
       forgetInvitationIntents();
       setProfile(undefined); setDraft(undefined);
       navigate('/login', { replace: true });
-    } catch {
-      if (current()) setError('Unable to sign out. Please retry.');
+    } catch (reason) {
+      if (current()) setError('Unable to sign out. Please retry.', reason instanceof WorkRequestError ? reason.correlationId : null);
     } finally {
       if (mutation.current === controller) mutation.current = undefined;
       if (current()) setBusy(false);
@@ -295,14 +320,14 @@ export function ProfilePage() {
         setDeactivateUncertain(false); setDeactivateDialog(false);
         setDeactivateError(code === 'organization_owner_required'
           ? 'Another active owner must take responsibility for every organization you own before you deactivate your account.'
-          : 'Your organization ownership changed. Review current access before retrying deactivation.');
+          : 'Your organization ownership changed. Review current access before retrying deactivation.', response.reference);
         return;
       }
-      throw new Error('Unconfirmed account deactivation');
-    } catch {
+      throw new WorkRequestError(response.status, response.reference);
+    } catch (reason) {
       if (current()) {
         setDeactivateUncertain(true); setDeactivateDialog(false);
-        setDeactivateError('Unable to confirm account deactivation. Retry the original attempt to check whether it completed.');
+        setDeactivateError('Unable to confirm account deactivation. Retry the original attempt to check whether it completed.', reason instanceof WorkRequestError ? reason.correlationId : null);
       }
     } finally {
       if (mutation.current === controller) mutation.current = undefined;
@@ -313,7 +338,7 @@ export function ProfilePage() {
   if (deactivateUncertain) {
     return <Paper variant="outlined" sx={{ p: 3, maxWidth: 720 }}><Stack spacing={2} aria-busy={busy}>
       <Typography variant="h4" component="h2">Account deactivation</Typography>
-      {deactivateError && <Alert severity="error">{deactivateError}</Alert>}
+      {deactivateError && <ProfileError failure={deactivateError} />}
       <Typography>This account's deactivation still needs confirmation.</Typography>
       {busy && <CircularProgress aria-label="Confirming account deactivation" />}
       <Button type="button" variant="contained" disabled={busy} onClick={() => void deactivate()}>Retry deactivation</Button>
@@ -322,7 +347,7 @@ export function ProfilePage() {
   }
 
   if (error && !profile) {
-    return <Stack spacing={2}><Alert severity="error">{error}</Alert><Button onClick={() => { setError(undefined); setReload(value => value + 1); }}>Retry</Button></Stack>;
+    return <Stack spacing={2}><ProfileError failure={error} /><Button onClick={() => { setError(undefined); setReload(value => value + 1); }}>Retry</Button></Stack>;
   }
 
   if (!profile || !draft) {
@@ -349,9 +374,9 @@ export function ProfilePage() {
           Account: {profile.status}
           {profile.emailVerified ? ' · email verified' : ''}
         </Typography>
-        {error ? <Alert severity="error">{error}</Alert> : null}
-        {deactivateError ? <Alert severity="error">{deactivateError}</Alert> : null}
-        {refreshError ? <Alert severity="warning" role="status">{refreshError}</Alert> : null}
+        {error ? <ProfileError failure={error} /> : null}
+        {deactivateError ? <ProfileError failure={deactivateError} /> : null}
+        {refreshError ? <ProfileError failure={refreshError} severity="warning" role="status" /> : null}
         {conflict ? <Button type="button" disabled={busy} onClick={() => { setError(undefined); setSaved(false); setProfile(undefined); setDraft(undefined); setReload(value => value + 1); }}>Discard edits and load latest profile</Button> : null}
         {saved ? <Alert severity="success" role="status">Profile saved.</Alert> : null}
         <TextField label="Display name" required value={draft.displayName} disabled={busy} onChange={event => { setDraft({ ...draft, displayName: event.target.value }); setSaved(false); }} slotProps={{ htmlInput: { maxLength: 120 } }} autoComplete="nickname" />
