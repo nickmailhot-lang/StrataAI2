@@ -4,6 +4,8 @@
 
 The [configuration foundation and HTTP contract](organization-configuration.md) include Domain validation, Application commands/history, Demo/PostgreSQL stores and configuration read/change/history routes. The focused Linux run passed 34 PRD-27 cases, including 10 HTTP cases; a new local Production HTTP scenario passed on its first attempt with real verified sessions and PostgreSQL. Restricted C# PostgreSQL persistence, foreign-intake scope regression, invariant namespace case/whitespace parity, complete migration upgrade/isolation/atomicity checks and all 137 API/Worker readiness entries also passed. The latest unfiltered API run passed 774/774 against the current API source; its newer namespace SQL/persistence-contract changes have separate restricted-runtime evidence. Complete frontend source coverage passed 2,089/2,089 across 142 files with unchanged assertions/deadlines and two workers. MUI/realtime, remaining data/lifecycle review, complete deployed workflow and immutable-image/full acceptance remain unfinished. This supports portions of the requirements and scenarios below; it does not complete them or establish a released configuration workflow.
 
+The browser response boundary additionally passed 37 focused cases for scoped current revisions, every named field, precise source timestamps, immutable nested review values and bounded descending history. Type checking and lint passed. The [configuration guide](organization-configuration.md#browser-response-boundary) records its scope; the actual MUI form, review, history and authenticated recovery flow remain outstanding. The **75% remaining** estimate is unchanged.
+
 ## Functional requirements and acceptance criteria
 
 | Requirement | Current evidence | Work still required |
