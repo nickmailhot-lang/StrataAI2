@@ -16,36 +16,54 @@ module coverage and aggregate mode/isolation verification, not an assertion coun
 | FR-004: dependency injection | [Production composition tests](../../tests/StrataAI.Api.Tests/RuntimeCompositionTests.cs) resolve 24 implemented core persistence contracts through the actual startup graph. [Project direction guard](../../tests/StrataAI.Api.Tests/ArchitectureBoundaryTests.cs) retains Domain dependency purity. | Extend actual composition/production-construction verification for every added module. Source DI registration is not proof of all future contracts. |
 | FR-005: explicit cross-module write orchestration | Existing Identity/Organization/Work unit-of-work contracts, command scopes, transactional publishers and current migration/RLS gates have scoped verification records. | Every cross-module write path must retain actor/tenant authority, transactional publication, retry/version behavior and rollback; unknown future writers are not accepted by these core proofs. |
 | FR-006: safe stable Problems | Shared API Problem normalization, exception handling and correlation metadata; frontend safe-reference records retain fixed wording and malformed metadata refusal. | Full endpoint/error/code/disclosure review and current immutable-image checks across all modules. |
-| FR-007: retryable external work outside requests | Separate Worker, PostgreSQL jobs/outbox, identity/invitation delivery, Work event handlers and actual scoped browser delivery exist. | Complete remaining external-work modules and Demo/Production contract admission; generic Demo job-store resolution is currently missing, described below. |
+| FR-007: retryable external work outside requests | Separate Worker, PostgreSQL jobs/outbox, identity/invitation delivery, Work event handlers and actual scoped browser delivery exist. | Complete remaining external-work modules and Demo/Production contract admission; the Demo queue repair and remaining execution gaps are described below. |
 | FR-008: shared tenant/security/audit | Organization-scoped stores, forced RLS/composite constraints, actual tenant/runtime-role gates and core API negative tests. | All required modules and mutable clock provenance remain; a passing core isolation suite cannot certify unimplemented endpoints. |
 | FR-009: safe health/runtime/build diagnostics | API host exposes health/runtime metadata and readiness composition; source/private native records exercise current compiled API/Worker. | Verify current exact-image diagnostics/readiness, restart/outage and partial-deployment behavior without secret/content disclosure. |
 | FR-010: unsupported Production configuration refuses startup | Real API startup tests reject missing/empty/unknown runtime mode; Production configuration requires database credentials, with no Demo fallback. | Remaining provider/configuration permutations, all added modules and current exact-image failure paths. |
 | FR-011: no Demo reporting in Production | Current Production composition excludes Demo sample store, Demo hosted services and sample endpoints. | Reporting itself is not demonstrated as a complete Production module; absent reporting is not proof of its required behavior. |
 
-## Concrete Demo composition gap
+## Demo composition and real publication
 
-[Runtime configuration](../../src/StrataAI.Infrastructure/Runtime/RuntimeConfiguration.cs)
-returns from the Demo branch after registering the sample store and dependency
-status. Its generic `IBackgroundJobStore` registration is only in Production.
-The complete Infrastructure registration inventory has no Demo implementation
-of that contract. Existing Demo deletion/reminder/attachment simulations and
-private in-memory publishers do not establish generic claim/complete/fail
-capability. This is a source finding; execution of the new real-host Demo
-composition regression is pending.
+The initial actual-API composition baseline passes **6/7** and fails the new
+Demo case specifically on missing `IBackgroundJobStore`. This confirms the
+registration gap from source inspection; it is not a database failure. The
+private baseline is `demo-composition-baseline-native-20261010`.
 
-Do not hide the gap by removing the background contract from a mode-composition
-manifest, registering a no-op provider, adding folders or declaring all future
-modules out of scope. A repair must preserve real Demo-safe behavior, process-local
-state, Organization isolation, original publisher/transaction ownership and
-lease/retry semantics where supported. Production PostgreSQL and separate Worker
-boundaries must remain. If the intended Demo architecture excludes this contract,
-that requires an explicit resolved architecture decision rather than silent waiver.
+[The process-local job store](../../src/StrataAI.Infrastructure/BackgroundJobs/InMemoryBackgroundJobStore.cs)
+now provides Organization-scoped claim/complete/fail behavior. It retains the
+first publication per Organization/type/key, scheduled availability, two-minute
+leases, exact Organization/job/Worker/lease fences, five attempts, bounded
+exponential retry delay and terminal retirement after the final expired lease.
+Canceled admission does not consume a lease; invalid error codes are refused.
+It keeps no production connection or provider.
+
+The [actual Demo reminder publisher](../../src/StrataAI.Infrastructure/WorkManagement/InMemoryCardReminderJobPublisher.cs)
+uses this store inside its owning Work command. The store participates in the
+same rollback snapshots as the domain mutation. Consumers acquire the same
+Work gate, so an uncommitted publication cannot be claimed and rollback cannot
+restore over concurrent consumer state. Duplicate or terminal keys are retained;
+capacity refusal does not evict keys and admit duplicate effects.
+
+[Queue invariants](../../tests/StrataAI.Api.Tests/DemoBackgroundJobStoreTests.cs)
+and [real Work transaction/HTTP publication](../../tests/StrataAI.Api.Tests/DemoReminderQueueTests.cs)
+cover this behavior. Expanded actual-API composition keeps all 24 core contracts,
+including the background store, and excludes PostgreSQL and production transports
+in Demo. Test-only internal visibility permits direct invariant tests without
+making the transaction scope or publication API public.
+
+This repair does **not** establish complete Demo processing of all job types.
+Deletion and attachment simulators retain their existing paths; the separate
+Worker still refuses generic Organization execution in Demo. Process-local
+queues are not shared across API/Worker processes. Complete Demo handlers and
+future module publication/processing remain acceptance work under ARCH-05/07.
+No no-op binding, provider fallback, reduced manifest or future-module waiver is
+introduced.
 
 ## Acceptance and verification boundaries
 
 - AC-001 requires every supported module's actual Demo-safe composition without
   production dependencies. Current subset tests and source mapping are insufficient
-  for all named modules; the generic background-store gap is open.
+  for all named modules; aggregate Demo execution remains incomplete.
 - AC-002 requires actual Production binding for complete supported module coverage.
   Current startup tests prove implemented core bindings; their unreachable fixture
   database deliberately does not prove real persistence/RLS.
@@ -55,9 +73,29 @@ that requires an explicit resolved architecture decision rather than silent waiv
   Organization. Current real core PostgreSQL/API gates do not cover future modules.
 
 The previous full schema-133 API result is 697/697 on its compiled backend with
-actual source/content-root mappings; its scope is retained in
-[source test results](source-test-results.md). A new Demo-composition regression
-is under development and is not part of that executed count. No new .NET
-build/test pass is claimed here. The frontend full-source and current 32-case
-Board invocations are live independently and do not establish this architecture's
-completion. ARCH-04/05/06/07 dependencies and every DoD requirement remain.
+actual source/content-root mappings; its scope remains in
+[source test results](source-test-results.md). The new **14/14 focused Demo
+architecture cases pass** in the pinned Linux runtime, with 14 actual unique
+executions and matching report counters, zero failed/skipped/pending/error
+results. This includes actual 24-contract Demo composition, real HTTP reminder
+publication/replay, all five real Work transaction outcomes, rollback/consumer
+coordination, 16 concurrent claim contenders, schedule/cancellation, exact lease
+fences, retry/final-crash bounds and invalid error-code refusal. Private report:
+`demo-job-store-final-lease-architecture-native-20261010/api.trx`.
+
+The complete new API suite is still live independently; focused results are not
+full-suite proof. The earlier expanded binary's complete API run is also live
+and retained separately. Current complete Domain source proof passes 758/758
+in the pinned Linux runtime. The latest locked solution builds with zero
+warnings/errors. Expanded-test import and assertion-analyzer build failures are
+retained separately from their corrected builds; no analyzer/assertion/deadline
+is suppressed. The owned focused test container is removed after its terminal
+result.
+
+The complete frontend source suite passes 2,037/2,037 across 142 files with two
+file workers, unchanged per-case deadlines/within-case concurrency and no case
+retry options. This is local source proof, not immutable-image architecture
+acceptance. The current complete original Board phase passes 32/32, with
+independently verified fixture cleanup; its browser scope is separate from
+architecture acceptance. ARCH-04/05/06/07 dependencies and every DoD requirement
+remain.

@@ -21,6 +21,49 @@ public sealed class RuntimeCompositionTests
 {
     // ARCH-05-FR-009: resolve the actual API's startup graph, without substituting
     // stores or connecting to a database. Database/RLS behavior has separate gates.
+    // ARCH-03-AC-001: exercise the real Demo startup graph. This explicit
+    // implemented-core manifest is not a waiver for future module contracts.
+    [Fact]
+    public async Task ARCH_03_Demo_API_resolves_implemented_module_boundaries_without_production_dependencies()
+    {
+        await using var app = new RuntimeCompositionFactory("demo");
+        using var client = app.CreateClient();
+        var services = app.Services;
+        Assert.Equal(RuntimeMode.Demo, services.GetRequiredService<RuntimeDescriptor>().Mode);
+        Assert.Null(services.GetService<PostgresConnectionFactory>());
+        Assert.NotNull(services.GetService<IDemoDataStore>());
+        var contracts = new Type[]
+        {
+            typeof(IIdentityStore), typeof(IIdentityUnitOfWork),
+            typeof(IIdentityProfileReplayStore), typeof(IIdentityLoginReplayStore),
+            typeof(IIdentityTokenConsumptionReplayStore), typeof(IOrganizationStore),
+            typeof(IOrganizationUnitOfWork), typeof(IOrganizationMetadataEventReader),
+            typeof(IOrganizationLifecycleEventReader), typeof(IOrganizationDeletionJobPublisher),
+            typeof(IOrganizationDeletionObservationReader), typeof(IInvitationStore),
+            typeof(IInvitationHistoryStore), typeof(IInvitationRecipientEventReader),
+            typeof(IWorkManagementStore), typeof(IWorkManagementUnitOfWork),
+            typeof(IWorkEventStore), typeof(IWorkEventReader),
+            typeof(INotificationInboxStore), typeof(INotificationRealtimeStore),
+            typeof(IWatchSubscriptionStore), typeof(ICardWatchRecipientStore),
+            typeof(ICardReminderStore), typeof(IBackgroundJobStore),
+        };
+        foreach (var contract in contracts)
+        {
+            var resolved = services.GetRequiredService(contract);
+            var implementation = resolved.GetType();
+            Assert.StartsWith("StrataAI.Infrastructure.", implementation.Namespace!);
+            Assert.True(implementation.Name.StartsWith("InMemory", StringComparison.Ordinal)
+                || implementation.Name.StartsWith("Demo", StringComparison.Ordinal),
+                "Demo persistence contracts must resolve to process-local implementations.");
+        }
+        Assert.Null(services.GetService<IIdentityEmailProvider>());
+        Assert.Null(services.GetService<IInvitationMailPublisher>());
+        using var sample = await client.GetAsync("/api/demo/state", TestContext.Current.CancellationToken);
+        Assert.Equal(HttpStatusCode.OK, sample.StatusCode);
+        var runtime = await client.GetFromJsonAsync<JsonElement>("/api/runtime", TestContext.Current.CancellationToken);
+        Assert.Equal("demo", runtime.GetProperty("mode").GetString());
+    }
+
     [Fact]
     public async Task ARCH_05_Production_API_resolves_implemented_durable_boundaries_without_Demo_fallback()
     {

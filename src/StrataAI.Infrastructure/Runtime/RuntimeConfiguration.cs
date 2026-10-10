@@ -22,6 +22,7 @@ public static class RuntimeConfiguration
 
         if (mode == RuntimeMode.Demo)
         {
+            services.AddDemoBackgroundJobs();
             services.AddSingleton<IDemoDataStore, DemoDataStore>();
             services.AddSingleton<IRuntimeDependencyStatus, DemoRuntimeDependencyStatus>();
             return descriptor;

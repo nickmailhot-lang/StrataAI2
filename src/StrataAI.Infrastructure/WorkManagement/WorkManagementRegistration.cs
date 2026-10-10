@@ -19,7 +19,7 @@ public static class WorkManagementRegistration
         services.AddSingleton<BoardFilterInteractionChangeProducer>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
-            services.AddSingleton<DemoWorkTransactionScope>();
+            StrataAI.Infrastructure.BackgroundJobs.DemoBackgroundJobRegistration.AddDemoBackgroundJobs(services);
             services.AddSingleton<NavigationInteractionEventProducer>();
             services.AddSingleton<NavigationInteractionReplayProducer>();
             services.AddSingleton<InMemoryNavigationInteractionEventStore>();
@@ -63,7 +63,6 @@ public static class WorkManagementRegistration
             services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryCardReminderStore>());
             services.AddSingleton<InMemoryCardReminderJobPublisher>();
             services.AddSingleton<ICardReminderJobPublisher>(provider => provider.GetRequiredService<InMemoryCardReminderJobPublisher>());
-            services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryCardReminderJobPublisher>());
             services.AddSingleton<IAttachmentScanJobPublisher, InMemoryAttachmentScanJobPublisher>();
         }
         else

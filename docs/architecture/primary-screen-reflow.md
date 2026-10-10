@@ -55,6 +55,14 @@ deadlines, within-case concurrency, assertions and case counts remain unchanged,
 and no case retry option is added. This
 local execution topology does not replace default-pool or immutable CI proof.
 
+The subsequent **complete frontend source suite passes 2,037/2,037 across 142
+files**, zero failed or pending, using two file workers. It has no case/file
+filters or added retry option and preserves the original per-case deadlines and
+within-case concurrency. Its private terminal report is
+`frontend-full-wrap-source-20261010/full-report.json`; the earlier default-pool
+timeouts above remain retained. This is local source proof, separate from the
+queued exact-head immutable-image CI.
+
 This improves FOUND-FR-008 coverage for the named routes and long content.
 It does not certify every primary-screen state, Board virtualization/geometry,
 all permission roles, physical devices, WCAG acceptance or current build-once
@@ -62,3 +70,19 @@ CI. The original [account phase](profile-error-references.md) passes separately
 20/20; [Board/Portal evidence](prd-01-acceptance.md) retains its own source and
 runtime boundaries. Full foundation acceptance remains open at **34% estimated
 work remaining** (planning estimate).
+
+## Complete current Board regression phase
+
+The original fourteen-file Board phase on the wrapping frontend passes
+**32/32 on their only attempts**, zero skipped/flaky/unexpected cases or report
+errors, in 1,485,070.052 ms. It uses compiled schema-133 API/Worker, fresh
+restricted PostgreSQL with all migrations through 133, Nginx/CSP and strict
+email verification. The unchanged disposable-account fixture checks first
+login refusal before activating only its own accounts. Original scopes,
+assertions, deadlines, pacing and no-retry settings remain.
+
+Private report: `board-schema133-wrap-full-native-20261010/report-private.json`.
+The owned API/web/Worker containers, database and credential environments are
+independently absent after terminal cleanup. This whole-phase regression is
+separate from four-width primary-screen geometry and exact-image CI; it does
+not establish every Board permission/performance requirement.
