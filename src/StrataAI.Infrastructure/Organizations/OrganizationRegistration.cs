@@ -19,6 +19,9 @@ public static class OrganizationRegistration
             services.AddSingleton<InMemoryOrganizationStore>();
             services.AddSingleton<IOrganizationStore>(provider => provider.GetRequiredService<InMemoryOrganizationStore>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationStore>());
+            services.AddSingleton<InMemoryOrganizationConfigurationStore>();
+            services.AddSingleton<IOrganizationConfigurationStore>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
+            services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
             services.AddSingleton<InMemoryOrganizationMetadataJournal>();
             services.AddSingleton<Func<InMemoryOrganizationMetadataJournal>>(provider => () => provider.GetRequiredService<InMemoryOrganizationMetadataJournal>());
             services.AddSingleton<IOrganizationMetadataEventReader>(provider => provider.GetRequiredService<InMemoryOrganizationMetadataJournal>());
@@ -57,6 +60,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationMetadataEventReader, PostgresOrganizationMetadataEventReader>();
             services.AddSingleton<IOrganizationLifecycleEventReader, PostgresOrganizationLifecycleEventReader>();
             services.AddSingleton<IOrganizationStore, PostgresOrganizationStore>();
+            services.AddSingleton<IOrganizationConfigurationStore, PostgresOrganizationConfigurationStore>();
             services.AddSingleton<IOrganizationUnitOfWork, PostgresOrganizationUnitOfWork>();
             services.AddSingleton<IOrganizationRemovalReplayStore, PostgresOrganizationRemovalReplayStore>();
             services.AddSingleton<IOrganizationDepartureReplayStore, PostgresOrganizationDepartureReplayStore>();
@@ -68,6 +72,7 @@ public static class OrganizationRegistration
         }
 
         services.AddSingleton<OrganizationMetadataSynchronizationService>();
+        services.AddSingleton<OrganizationConfigurationService>();
         services.AddSingleton<TransactionalOrganizationMetadataSynchronization>();
         services.AddSingleton<IOrganizationService, OrganizationService>();
     }

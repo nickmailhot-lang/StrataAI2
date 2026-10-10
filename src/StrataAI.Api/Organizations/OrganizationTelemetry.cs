@@ -39,6 +39,9 @@ public sealed class OrganizationTelemetry
             ("/organizations/{organizationId:guid}/deletion-requests/{requestId:guid}", "GET") => "delete_observation",
             ("/organizations/{organizationId:guid}/metadata-events", "GET") => "metadata_replay",
             ("/organizations/{organizationId:guid}/lifecycle-events", "GET") => "lifecycle_replay",
+            ("/organizations/{organizationId:guid}/configuration", "GET") => "configuration_read",
+            ("/organizations/{organizationId:guid}/configuration", "PATCH") => "configuration_change",
+            ("/organizations/{organizationId:guid}/configuration/history", "GET") => "configuration_history",
             _ => null,
         };
     internal static void SetError(HttpContext context, string? code) => context.Items[ErrorKey] = code switch
@@ -49,6 +52,11 @@ public sealed class OrganizationTelemetry
         or "organization_storage_unavailable" or "invalid_organization_name" or "invalid_organization_logo_url"
         or "version_conflict" or "sole_owner" or "insufficient_permission" or "member_not_found"
         or "organization_not_found" or "invalid_sync_limit" or "organization_sync_unavailable" => code,
+        "idempotency_key_required" or "idempotency_key_conflict" or "idempotency_key_expired"
+        or "configuration_source_unavailable" or "configuration_identifier_unavailable"
+        or "configuration_intake_unavailable" or "invalid_configuration_cursor"
+        or "invalid_configuration_request" => code,
+        { } value when value.StartsWith("invalid_configuration_", StringComparison.Ordinal) => "invalid_configuration_field",
         _ => "other_error",
     };
     internal void Record(HttpContext context, string operation, double seconds, bool threw)

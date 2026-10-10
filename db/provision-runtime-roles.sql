@@ -59,6 +59,10 @@ GRANT UPDATE(watching,updated_at,version) ON watch_subscriptions TO strataai_api
 GRANT SELECT,INSERT ON invitation_creation_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_metadata_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_creation_replays TO strataai_api_runtime;
+GRANT SELECT,INSERT,UPDATE ON organization_configurations TO strataai_api_runtime;
+GRANT SELECT,INSERT ON organization_configuration_history,organization_configuration_receipts TO strataai_api_runtime;
+GRANT SELECT ON organization_configuration_events TO strataai_api_runtime;
+GRANT EXECUTE ON FUNCTION public.organization_configuration_namespace(text) TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_deletion_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_deletion_requests,organization_deletion_progress TO strataai_api_runtime;
 GRANT SELECT(tenant_id,request_id,actor_id,accepted_version) ON organization_deletion_requests TO strataai_worker_runtime;

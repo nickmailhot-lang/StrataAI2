@@ -107,6 +107,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 ## Organizations and access
 
 - [Organization Types, creation classifications and remaining PRD-27 configuration](architecture/organization-types.md)
+- [Organization configuration HTTP contract, private history, Demo and PostgreSQL persistence](architecture/organization-configuration.md)
 - [Full Organization configuration requirement and acceptance map (PRD-27)](architecture/prd-27-acceptance.md)
 - [Organization requirements and acceptance map (PRD-03)](architecture/prd-03-acceptance.md)
 - [Organization deletion Worker stages and completion contract (product integration pending)](architecture/organization-deletion-lifecycle.md)
