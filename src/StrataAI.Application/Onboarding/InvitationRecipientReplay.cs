@@ -52,6 +52,21 @@ public sealed record InvitationRecipientSyncPage(string Cursor, bool HasMore, bo
 public sealed class InvitationRecipientSynchronizationService(IInvitationRecipientEventReader reader,
     IInvitationRecipientCursorCodec cursors)
 {
+    // A transport-owned checkpoint may recover an authority-only change that
+    // invalidated a read or its final delivery guard. Bootstrap remains empty;
+    // signed actor/email/account binding and older authority are still required.
+    public async Task<IdentityOperation<InvitationRecipientSyncPage?>> RecoverLiveReadAsync(Guid actorId,
+        string prior, CancellationToken cancellationToken = default)
+    {
+        var reset = await ReadAsync(actorId, null, cancellationToken: cancellationToken);
+        if (!reset.Succeeded || reset.Value is null)
+            return IdentityOperation<InvitationRecipientSyncPage?>.Failure(reset.ErrorCode ?? "account_unavailable");
+        var recovered = await RecoverLiveCheckpointAsync(actorId, prior, reset.Value.Cursor, cancellationToken);
+        if (!recovered.Succeeded)
+            return IdentityOperation<InvitationRecipientSyncPage?>.Failure(recovered.ErrorCode ?? "account_unavailable");
+        return IdentityOperation<InvitationRecipientSyncPage?>.Success(recovered.Value is { } current
+            ? reset.Value with { Cursor = current } : null);
+    }
     // Only transport-owned, previously delivered checkpoints may use this
     // continuity path. Ordinary HTTP/bootstrap cursor resets remain at head.
     public async Task<IdentityOperation<string?>> RecoverLiveCheckpointAsync(Guid actorId, string prior,
@@ -113,6 +128,16 @@ public sealed class InvitationRecipientSynchronizationService(IInvitationRecipie
 public sealed class TransactionalInvitationRecipientSynchronization(InvitationRecipientSynchronizationService replay,
     IIdentityUnitOfWork transactions, ICommandActorAuthorization actors)
 {
+    public Task<IdentityOperation<InvitationRecipientSyncPage?>> RecoverLiveReadAsync(Guid actorId, string prior,
+        CancellationToken cancellationToken = default)
+        => transactions.ExecuteObservationAsync(actorId, null, async () =>
+        {
+            if (!await actors.VerifyAsync(actorId, cancellationToken))
+                return IdentityOperation<InvitationRecipientSyncPage?>.Failure("session_unavailable");
+            var result = await replay.RecoverLiveReadAsync(actorId, prior, cancellationToken);
+            return await actors.VerifyAsync(actorId, cancellationToken) ? result
+                : IdentityOperation<InvitationRecipientSyncPage?>.Failure("session_unavailable");
+        }, cancellationToken);
     public Task<IdentityOperation<string?>> RecoverLiveCheckpointAsync(Guid actorId, string prior, string reset,
         CancellationToken cancellationToken = default)
         => transactions.ExecuteObservationAsync(actorId, null, async () =>

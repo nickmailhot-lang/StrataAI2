@@ -568,3 +568,56 @@ cases, including both previously failing recovery cases. The original failed
 invocation remains retained. Report: `frontend-recovery-layout-full-20261010.json`.
 Current immutable-image CI remains pending. Estimated PRD-03 work remaining:
 **8%**; no closure is justified by the scoped candidate results.
+
+An additional fresh schema-134 security invocation runs the complete unchanged
+recipient mode and then checks the actual dependency rows. Updates/deletes are
+rejected by immutable-history protection, a foreign-tenant insertion is rejected
+by the composite foreign keys, and the complete dependency history remains
+unchanged. Forced RLS and revoked PUBLIC execution are verified. API calls on a
+wrong route or absent recipient return no readiness; actual Worker calls to both
+API capabilities are denied. Neither runtime role has raw dependency privileges.
+The invocation passes; independent checks confirm zero owned containers and
+credential environments remain. Report:
+`recipient-authority-readiness-security-native-20261010/outcome.json`.
+These extra checks do not replace the still-running broader candidate gates.
+
+## Authority changes at final live delivery
+
+A separate actual API regression changes the Board through the authenticated
+administrator PATCH after a real accepted invitation source has been selected
+and the observation transaction has released its locks, but before final live
+delivery admission. Its account-version control performs an actual recipient
+profile PATCH at the same boundary. The unchanged transport baseline records
+**1 passed / 1 failed**: the authority-only case loses the stream instead of
+recovering, while the account-version control correctly withholds the page.
+
+The transport can now discard an invalidated selected page and recover an empty
+current reset from its own previously delivered checkpoint. The same helper
+also handles a returned `account_unavailable` read failure when an older
+authority binding can still be proven. It bootstraps under owning account
+admission and uses the existing protected prior-authority decoder and head
+bounds. An actor, email, account version, session, expired/tampered token or
+unadmitted checkpoint cannot be rebound. Initial client-supplied cursors remain
+ordinary bootstrap inputs. The final session and current-cursor checks still
+run before delivery; no old-binding source page is released.
+
+The exact two actual-command cases now pass **2/2**, including the account
+control. The entire matching `Invitation_recipient_*` API method scope passes
+**18/18 actual unique cases** with zero failures/errors/timeouts/skips. This is
+a supplemental method scope, not the complete API project. The full Domain
+suite passes **780/780 actual rows**, zero failures/skips, including one new
+read-boundary positive and nine binding/expiry/position refusal cases. Original
+ordinary HTTP/reset contracts, source assertions, eight-second observations and
+retry policies remain unchanged. Private reports:
+`recipient-delivery-boundary-baseline-native-20261010/api.trx`,
+`recipient-delivery-boundary-final-native-20261010/api.trx`,
+`recipient-delivery-boundary-all-recipient-native-20261010/api.trx` and
+`recipient-delivery-boundary-full-domain-native-20261010/domain.xml`.
+
+The schema-134 dependency candidate remains separately isolated with its original
+source inputs frozen for the running backend suites. Its earlier six-case native
+pass does not certify this later transport change or the final combined release.
+Combined PostgreSQL/Worker/browser verification, the complete API project and
+current immutable-image CI remain required. Exception-driven read failures are
+still denied; no arbitrary storage exception is treated as an authority change.
+Estimated PRD-03 work remaining stays **8%**; no issue is closed on these results.

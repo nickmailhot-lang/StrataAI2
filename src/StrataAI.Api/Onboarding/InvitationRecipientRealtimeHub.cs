@@ -38,6 +38,12 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
                 token.ThrowIfCancellationRequested();
                 if (await CurrentActorAsync() != actor) Denied("session_unavailable");
                 var result = await ReadAsync(actor);
+                if (!initial && deliveredCheckpoint is not null && !result.Succeeded && result.ErrorCode == "account_unavailable")
+                {
+                    var recovery = await replay.RecoverLiveReadAsync(actor, deliveredCheckpoint, token);
+                    if (recovery.Succeeded && recovery.Value is { } reset)
+                        result = IdentityOperation<InvitationRecipientSyncPage>.Success(reset);
+                }
                 if (!result.Succeeded || result.Value is null)
                     Denied(result.ErrorCode is "session_unavailable" or "account_unavailable" ? "session_unavailable" : "invitation_sync_unavailable");
                 var page = result.Value!;
@@ -51,7 +57,18 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
                 // Session I/O can outlive the account/email revision used by
                 // replay. Rebind its protected cursor before any delivery.
                 if (await CurrentActorAsync() != actor) Denied("session_unavailable");
-                await RequireCurrentCursorAsync(actor, page.Cursor);
+                if (!await RequireCurrentCursorAsync(actor, page.Cursor))
+                {
+                    if (initial || deliveredCheckpoint is null) Denied("session_unavailable");
+                    var recovery = await replay.RecoverLiveReadAsync(actor, deliveredCheckpoint!, token);
+                    if (!recovery.Succeeded || recovery.Value is null) Denied("session_unavailable");
+                    // Discard the selected old-binding page. Deliver an empty
+                    // admitted reset, then read its source again under the new
+                    // binding; never disclose a page from the invalidated read.
+                    page = recovery.Value!;
+                    if (await CurrentActorAsync() != actor || !await RequireCurrentCursorAsync(actor, page.Cursor))
+                        Denied("session_unavailable");
+                }
                 if (initial || page.ResetRequired || page.Events.Count > 0 || ++heartbeat >= 20)
                 {
                     yield return page;
@@ -92,14 +109,14 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
                 Denied("invitation_sync_unavailable"); throw;
             }
         }
-        async Task RequireCurrentCursorAsync(Guid actor, string current)
+        async Task<bool> RequireCurrentCursorAsync(Guid actor, string current)
         {
             try
             {
                 var admission = await replay.IsCursorCurrentAsync(actor, current, token);
                 if (!admission.Succeeded)
                     Denied(admission.ErrorCode is "session_unavailable" or "account_unavailable" ? "session_unavailable" : "invitation_sync_unavailable");
-                if (!admission.Value) Denied("session_unavailable");
+                return admission.Value;
             }
             catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
             {

@@ -10,6 +10,47 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class InvitationRecipientReplayTests
 {
+    [Fact]
+    public async Task Recipient_live_read_recovery_discards_failed_page_and_rebinds_only_its_delivered_checkpoint()
+    {
+        using var provider = CodecProvider(new Clock()); var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
+        var reader = new Reader(); var service = new InvitationRecipientSynchronizationService(reader, codec);
+        var prior = codec.Encode(Binding, 0); var ct = TestContext.Current.CancellationToken;
+        reader.OnRead = () => reader.Scope = Binding with { AuthorityRevision = 1 };
+        var refused = await service.ReadAsync(Binding.ActorId, prior, cancellationToken: ct);
+        Assert.False(refused.Succeeded); Assert.Null(refused.Value); Assert.Equal("account_unavailable", refused.ErrorCode);
+        var recovered = await service.RecoverLiveReadAsync(Binding.ActorId, prior, ct);
+        Assert.True(recovered.Succeeded); Assert.NotNull(recovered.Value);
+        Assert.True(recovered.Value.ResetRequired); Assert.False(recovered.Value.HasMore); Assert.Empty(recovered.Value.Events);
+        Assert.True(codec.TryDecode(reader.Scope!, recovered.Value.Cursor, out var position)); Assert.Equal(0, position);
+        Assert.Equal(1, reader.Reads); Assert.False(codec.TryDecode(reader.Scope!, prior, out _));
+    }
+    [Theory]
+    [InlineData("actor")]
+    [InlineData("email")]
+    [InlineData("account")]
+    [InlineData("equal")]
+    [InlineData("future")]
+    [InlineData("expired")]
+    [InlineData("tampered")]
+    [InlineData("ahead")]
+    [InlineData("withdrawn")]
+    public async Task Recipient_live_read_recovery_cannot_rebind_unadmitted_identity_or_checkpoint(string kind)
+    {
+        var clock = new Clock(); using var provider = CodecProvider(clock);
+        var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
+        var reader = new Reader { Scope = Binding with { AuthorityRevision = kind == "equal" ? 0 : 1 } };
+        var priorBinding = kind switch {
+            "actor" => Binding with { ActorId = Guid.NewGuid() }, "email" => Binding with { EmailNormalized = "OTHER@EXAMPLE.TEST" },
+            "account" => Binding with { AccountVersion = 2 }, "future" => Binding with { AuthorityRevision = 2 }, _ => Binding };
+        var prior = codec.Encode(priorBinding, kind == "ahead" ? 3 : 0);
+        if (kind == "expired") clock.UtcNow = clock.UtcNow.AddMinutes(15);
+        if (kind == "tampered") prior += "tampered";
+        if (kind == "withdrawn") reader.Scope = null;
+        var result = await new InvitationRecipientSynchronizationService(reader, codec).RecoverLiveReadAsync(
+            Binding.ActorId, prior, TestContext.Current.CancellationToken);
+        Assert.Equal(kind != "withdrawn", result.Succeeded); Assert.Null(result.Value); Assert.Equal(0, reader.Reads);
+    }
     [Theory]
     [InlineData("actor")]
     [InlineData("email")]
