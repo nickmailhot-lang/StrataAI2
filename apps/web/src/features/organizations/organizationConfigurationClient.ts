@@ -3,6 +3,7 @@ import { configurationProblemCode } from '../../api/configurationProblem';
 import { boundedWorkRead, workRequest, WorkInputError, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile, notificationUuid } from '../notifications/notificationInbox';
 import type { IntakeOption } from './OrganizationConfigurationForm';
+import { parseConfigurationActivity } from './organizationConfigurationActivity';
 import { parseConfigurationHistory, parseConfigurationRevision, parseConfigurationView, parseOrganizationConfiguration,
   type OrganizationConfiguration } from './organizationConfiguration';
 
@@ -71,6 +72,13 @@ async function admittedIntake<T>(organizationId: string, actorId: string, signal
     parseConfigurationView(await request(path(id), expected, bounded), id);
     await actor(bounded, expected); bounded.throwIfAborted(); return result;
   }, signal);
+}
+export function readOrganizationConfigurationActivity(organizationId: string, actorId: string, signal: AbortSignal, cursor?: string, beforeVersion?: number) {
+  if (cursor !== undefined && (!/^[A-Za-z0-9_-]{1,4096}$/.test(cursor) || /^\d+$/.test(cursor)))
+    throw new WorkInputError('Reload configuration Activity to obtain a current continuation.');
+  return admittedIntake(organizationId, actorId, signal, async (id, expected, bounded) =>
+    parseConfigurationActivity(await request(`${path(id)}/activity${cursor === undefined ? '' : `?cursor=${encodeURIComponent(cursor)}`}`,
+      expected, bounded), id, beforeVersion));
 }
 function intakeOption(value: unknown): IntakeOption {
   const row = value as Record<string, unknown> | null;

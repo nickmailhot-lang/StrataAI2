@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseOrganizationConfiguration } from './organizationConfiguration';
-import { ConfigurationChangeIntent, readConfigurationIntakeBoard, readConfigurationIntakeBoards, readOrganizationConfiguration, readOrganizationConfigurationHistory } from './organizationConfigurationClient';
+import { ConfigurationChangeIntent, readConfigurationIntakeBoard, readConfigurationIntakeBoards, readOrganizationConfiguration, readOrganizationConfigurationHistory, readOrganizationConfigurationActivity } from './organizationConfigurationClient';
 import { WorkRequestError } from '../../api/workManagement';
 
 const organizationId = '11111111-1111-4111-8111-111111111111';
@@ -23,6 +23,27 @@ function sequence(...values: unknown[]) {
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 describe('PRD-27 private account-bound configuration transport', () => {
+  it('fences Activity sources with current private admission and the original viewer before and after IO', async () => {
+    const current = { organizationId, version: 1, revision: revision() };
+    const fetch = sequence(profile, current, { organizationId, items: [], nextCursor: null }, current, profile);
+    expect(await readOrganizationConfigurationActivity(organizationId, actorId, new AbortController().signal)).toEqual({ items: [], nextCursor: null });
+    expect(fetch.mock.calls.map(call => call[0])).toEqual(['/me', `/organizations/${organizationId}/configuration`,
+      `/organizations/${organizationId}/configuration/activity`, `/organizations/${organizationId}/configuration`, '/me']);
+    expect(new Headers(fetch.mock.calls[2][1].headers).get('X-StrataAI-Expected-Actor')).toBe(actorId);
+  });
+  it('refuses Activity after a changed account and never sends a protected read for a replaced expected viewer', async () => {
+    const current = { organizationId, version: 1, revision: revision() };
+    sequence(profile, current, { organizationId, items: [], nextCursor: null }, current, { ...profile, id: otherId });
+    await expect(readOrganizationConfigurationActivity(organizationId, actorId, new AbortController().signal)).rejects.toMatchObject({ status: 401 });
+    const fetch = sequence({ ...profile, id: otherId });
+    await expect(readOrganizationConfigurationActivity(organizationId, actorId, new AbortController().signal)).rejects.toMatchObject({ status: 401 });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+  it('does not return Activity when final private configuration admission fails', async () => {
+    const fetch = sequence(profile, { organizationId, version: 1, revision: revision() }, { organizationId, items: [], nextCursor: null });
+    fetch.mockResolvedValueOnce(response({ code: 'organization_not_found' }, 404));
+    await expect(readOrganizationConfigurationActivity(organizationId, actorId, new AbortController().signal)).rejects.toMatchObject({ status: 404 });
+  });
   it('fences current reads with the same active account and expected-actor header', async () => {
     const fetch = sequence(profile, { organizationId, version: 1, revision: revision() }, profile);
     expect(await readOrganizationConfiguration(organizationId, new AbortController().signal)).toMatchObject({ actorId, view: { version: 1 } });

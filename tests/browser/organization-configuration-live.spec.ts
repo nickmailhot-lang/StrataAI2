@@ -56,10 +56,20 @@ for (const width of [1280, 390]) {
       await page.keyboard.press('Enter'); await expect(dialog).not.toBeVisible();
       await expect(page.getByText('Change acknowledged. Current configuration revision 3.', { exact: true })).toBeVisible();
       await expect(review).toBeFocused();
+      const activity = page.getByRole('region', { name: 'Configuration Activity', exact: true });
+      const loadActivity = activity.getByRole('button', { name: 'Load configuration Activity' });
+      await loadActivity.focus(); await page.keyboard.press('Enter');
+      await expect(activity.getByRole('heading', { name: 'Configuration Activity', exact: true })).toBeFocused();
+      await expect(activity.getByText('Configuration changed at revision 3', { exact: true })).toBeVisible();
+      await expect(activity.getByText(`Original event reference: ${source.eventId}`, { exact: true })).toBeVisible();
+      await expect(activity.locator('time').filter({ hasText: source.updatedAt })).toBeVisible();
+      await expect(activity.getByText('Changed private legal name', { exact: true })).toHaveCount(0);
+      await expect(activity.getByText('Preserved keyboard proposal', { exact: true })).toHaveCount(0);
       const logout = await peer.request.post('/auth/logout', { headers, data: {} }); expect(logout.status()).toBe(204);
       await expect(page).toHaveURL(/\/login$/);
       await expect(page.getByLabel(/^Legal name/)).toHaveCount(0);
       await expect(page.getByText('Preserved keyboard proposal', { exact: true })).toHaveCount(0);
+      await expect(activity).toHaveCount(0);
     } finally { await peer.close(); restoreWorker(); }
   });
 }

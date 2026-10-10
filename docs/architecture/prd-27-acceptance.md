@@ -121,3 +121,16 @@ UI and event-time role/capacity snapshots remain required alongside full
 lifecycle/data/retention/portal, UX/telemetry and immutable-image acceptance.
 The earlier full 797-case API transport suite remains a separate running scope.
 **60% estimated work remaining**; no criterion or scenario is closed.
+
+The configuration Activity MUI consumer is now implemented with exact source
+validation, current account/private admission before and after IO, protected
+paging boundaries, retry/empty states, cancellation and keyboard focus recovery.
+Its final focused run passes **72/72** and both extended Production desktop/phone
+scenarios pass on their first attempt with actual Worker publication and session
+withdrawal. See [configuration Activity controls](organization-configuration.md#configuration-activity-controls)
+for original source references, 1,085 matching native source hashes and remaining
+limitations. The fresh complete frontend suite is running separately; the prior
+2,279-case result applies to its earlier source. Historical captions/capacity,
+full lifecycle/data/retention/portal, UX/telemetry and immutable-image acceptance
+remain required. Current estimate: **55% remaining**. All numbered criteria and
+linked scenarios stay open.

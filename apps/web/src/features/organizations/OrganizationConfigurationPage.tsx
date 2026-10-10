@@ -10,6 +10,7 @@ import { ConfigurationChangeIntent, readConfigurationIntakeLists, readConfigurat
 import type { ConfigurationHistory, ConfigurationView, OrganizationConfiguration } from './organizationConfiguration';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchOrganizationConfiguration } from './organizationConfigurationLive';
+import { OrganizationConfigurationActivityPanel } from './OrganizationConfigurationActivityPanel';
 import { organizationTypeLabel } from './organizationTypes';
 import { completeConfigurationChange, forgetConfigurationChanges, forgetForeignConfigurationChanges,
   restoreConfigurationChange, retainConfigurationChange } from './organizationConfigurationRecovery';
@@ -243,6 +244,8 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
           onMoreLists={listCursor ? () => void moreLists() : undefined} />
         <Button ref={reviewButton} variant="contained" disabled={busy || !!original || needsCheck || intakeBusy} onClick={() => void prepareReview()}>Review configuration change</Button>
         <Button disabled={busy} onClick={() => void historyPage()}>View configuration history</Button>
+        <OrganizationConfigurationActivityPanel key={`${context.actorId}:${context.view.version}`}
+          organizationId={organizationId} actorId={context.actorId} disabled={busy || !!review} onDenied={withdraw} />
         {history && <Box component="section" aria-label="Configuration history">
           <Typography variant="h5" component="h3" ref={historyHeading} tabIndex={-1}>Configuration history</Typography>
           {!history.items.length && <Typography>No configuration revisions exist in this history page.</Typography>}

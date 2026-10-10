@@ -383,3 +383,47 @@ consumer, historical attribution/capacity work, suspension/deactivation,
 retention/schema/portal consistency, full UX/telemetry and immutable-image release
 acceptance remain open. Estimated work remaining stays **60%**. No numbered
 acceptance criterion or linked scenario is closed by this source projection.
+
+## Configuration Activity controls
+
+The MUI configuration page now offers a separate reference-only Activity panel.
+Administrators can load a page, continue to older changes, retry an unconfirmed
+read or reload from the current head. Each item shows the original revision,
+actor UUID, event UUID and precise source time. Retained configuration values
+remain in the distinct history view. Empty states explain that no changes exist
+in the selected page. Long references wrap on small viewports.
+
+The client confirms the same current account and private configuration access
+before and after Activity IO. Its exact response boundary rejects foreign
+Organization/Board context, private metadata or unexpected fields, duplicate
+UUIDs (including case variants), unsafe versions, invalid clocks and revision
+gaps. Continuations retain the last displayed source boundary and cannot silently
+skip or repeat revisions. Parsed references and pages are immutable.
+
+Unconfirmed reads clear displayed Activity references and offer retry, preserving
+the configuration draft and any original uncertain submission. Permission/session
+denial withdraws the entire private parent context. Authority rechecking unmounts
+the panel and aborts its reads; a confirmed account or revision change starts a
+fresh panel rather than retaining an old continuation. Keyboard reads restore
+the Activity heading while leaving focus alone when the user is editing elsewhere.
+Review dialogs disable new Activity requests.
+
+The final focused configuration/client/Activity run passes **72/72**; web and
+browser type checking, lint and production build pass. All twelve shared HTTP
+architecture/browser-partition verifier tests pass and the mandatory browser
+inventory still includes every case in its intact file. The extended native
+desktop/phone scenarios pass **2/2** on their first attempt, without retries or
+changed deadlines, through verified sessions, strict Production API/Worker,
+PostgreSQL and Nginx. They verify actual source references/timestamps, keyboard
+focus, private-value exclusion and clearing after peer logout, while retaining
+the previous stale-review/draft/realtime assertions. All **1,085** source hashes
+match; owned containers and database fixtures are removed.
+
+A fresh complete frontend suite is running against a frozen **479-file**
+frontend/browser manifest. The preceding complete suite passes **2,279/2,279**
+against its earlier source; it is not the new complete-suite result. The
+unchanged backend has its separate **800-case** API run and current exact-image
+CI remains unfinished. Event-time human captions/governance capacity snapshots,
+suspension/deactivation, remaining retention/schema/portal consistency, complete
+degraded/accessibility/telemetry and release acceptance still require work.
+Estimated work remaining: **55%**. No numbered criterion or scenario is closed.
