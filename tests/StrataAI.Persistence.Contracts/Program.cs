@@ -162,6 +162,7 @@ if (!args.Contains("--notification-batches-only", StringComparer.Ordinal) && !pr
     if (args.Contains("--invitation-issuer-authority-only", StringComparer.Ordinal)) return;
     await InvitationRecipientReplayContract.RunAsync(admin, apiConnection, workerConnection, ct);
     await InvitationRecipientAuthorityReadinessContract.RunAsync(admin, apiConnection, workerConnection, ct);
+    await InvitationRecipientReadBoundaryContract.RunAsync(admin, apiConnection, workerConnection, ct);
     if (args.Contains("--invitation-recipient-only", StringComparer.Ordinal)) return;
     if (args.Contains("--invitation-authority-only", StringComparer.Ordinal))
     {

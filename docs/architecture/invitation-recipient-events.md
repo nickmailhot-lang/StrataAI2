@@ -710,3 +710,21 @@ against that candidate after an older CI run reported a PostgreSQL read timeout
 in the initial large Organization deletion fixture. That CI failure is retained,
 and the large graph and original deadlines remain intact.
 Estimated PRD-03 work remaining stays **8%**; no closure is justified yet.
+
+
+### Integrated read-boundary repair
+
+The combined schema-134 API suite has now passed **717/717 unique actual test
+results**, zero failures/errors/timeouts/skips. Report:
+`recipient-authority-combined-full-api-native-20261010/api.trx`.
+After that source/content-root invocation completed, all five read-boundary
+candidate files were integrated with frozen-hash and baseline-content checks;
+no newer main source change was overwritten. The main locked solution build
+passes with zero warnings/errors. The earlier **787/787 Domain**, complete real
+recipient persistence and **6/6 original native browser** proofs cover the exact
+candidate bytes. Its isolated complete API and unfiltered persistence invocations
+remain live and unchanged, so their results retain their original source inputs.
+The typed reader mismatch is normalized; generic storage exceptions remain on
+their original failure path and changed account versions cannot rebind cursors.
+Current exact-commit immutable-image CI and full acceptance still govern closure.
+Estimated PRD-03 work remaining stays **8%**.

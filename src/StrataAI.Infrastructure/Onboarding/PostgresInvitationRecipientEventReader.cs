@@ -28,7 +28,7 @@ public sealed class PostgresInvitationRecipientEventReader(PostgresConnectionFac
     private async Task RequireAsync(InvitationRecipientCursorBinding binding, CancellationToken cancellationToken)
     {
         if (await GetScopeAsync(binding.ActorId, cancellationToken) != binding)
-            throw new InvalidOperationException("Recipient account admission changed.");
+            throw new InvitationRecipientAdmissionChangedException();
     }
     public async Task<long> GetHeadAsync(InvitationRecipientCursorBinding binding, CancellationToken cancellationToken)
     {

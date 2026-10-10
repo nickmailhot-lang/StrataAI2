@@ -234,6 +234,67 @@ public sealed class InvitationRecipientReplayTests
         using var document = System.Text.Json.JsonDocument.Parse(json);
         Assert.Equal(sequence.ToString(System.Globalization.CultureInfo.InvariantCulture), document.RootElement.GetProperty("sequence").GetString());
     }
+    // PRD-03 / PRD-60: authority-only changes at the actual reader boundary
+    // discard the selected page while retaining ordinary identity fences.
+    [Theory]
+    [InlineData("bootstrap")]
+    [InlineData("page")]
+    [InlineData("reset")]
+    public async Task Recipient_typed_read_boundary_discards_page_and_recovers_owned_authority_checkpoint(string stage)
+    {
+        using var provider = CodecProvider(new Clock()); var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
+        var reader = new Reader(); var service = new InvitationRecipientSynchronizationService(reader, codec);
+        var prior = codec.Encode(Binding, 0); var ct = TestContext.Current.CancellationToken;
+        void Change() {
+            reader.OnHead = null; reader.OnRead = null;
+            reader.Scope = Binding with { AuthorityRevision = 1 };
+            throw new InvitationRecipientAdmissionChangedException();
+        }
+        if (stage == "page") reader.OnRead = Change; else reader.OnHead = Change;
+        var failed = await service.ReadAsync(Binding.ActorId, stage == "bootstrap" ? null : stage == "reset" ? "corrupt" : prior, cancellationToken: ct);
+        Assert.False(failed.Succeeded); Assert.Null(failed.Value); Assert.Equal("account_unavailable", failed.ErrorCode);
+        var recovered = await service.RecoverLiveReadAsync(Binding.ActorId, prior, ct);
+        Assert.True(recovered.Succeeded); Assert.NotNull(recovered.Value); Assert.True(recovered.Value.ResetRequired);
+        Assert.Empty(recovered.Value.Events); Assert.False(recovered.Value.HasMore);
+        Assert.True(codec.TryDecode(reader.Scope!, recovered.Value.Cursor, out var position)); Assert.Equal(0, position);
+        Assert.False(codec.TryDecode(reader.Scope!, prior, out _));
+    }
+    [Fact]
+    public async Task Recipient_typed_read_boundary_cannot_recover_changed_account_version()
+    {
+        using var provider = CodecProvider(new Clock()); var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
+        var reader = new Reader(); var service = new InvitationRecipientSynchronizationService(reader, codec);
+        var prior = codec.Encode(Binding, 0); var ct = TestContext.Current.CancellationToken;
+        reader.OnRead = () => { reader.OnRead = null; reader.Scope = Binding with { AuthorityRevision = 1, AccountVersion = 2 };
+            throw new InvitationRecipientAdmissionChangedException(); };
+        var failed = await service.ReadAsync(Binding.ActorId, prior, cancellationToken: ct);
+        Assert.False(failed.Succeeded); Assert.Null(failed.Value);
+        var recovered = await service.RecoverLiveReadAsync(Binding.ActorId, prior, ct);
+        Assert.True(recovered.Succeeded); Assert.Null(recovered.Value);
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Recipient_generic_storage_exceptions_keep_their_original_failure_path(bool head)
+    {
+        using var provider = CodecProvider(new Clock()); var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
+        var reader = new Reader(); var service = new InvitationRecipientSynchronizationService(reader, codec);
+        var error = new InvalidOperationException("Unrelated storage failure.");
+        if (head) reader.OnHead = () => throw error; else reader.OnRead = () => throw error;
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ReadAsync(Binding.ActorId,
+            head ? null : codec.Encode(Binding, 0), cancellationToken: TestContext.Current.CancellationToken));
+        Assert.Same(error, actual);
+    }
+    [Fact]
+    public async Task Recipient_typed_change_during_checkpoint_recovery_returns_failure_without_cursor()
+    {
+        using var provider = CodecProvider(new Clock()); var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
+        var current = Binding with { AuthorityRevision = 1 }; var reader = new Reader { Scope = current };
+        reader.OnHead = () => throw new InvitationRecipientAdmissionChangedException();
+        var result = await new InvitationRecipientSynchronizationService(reader, codec).RecoverLiveCheckpointAsync(
+            Binding.ActorId, codec.Encode(Binding, 0), codec.Encode(current, 2), TestContext.Current.CancellationToken);
+        Assert.False(result.Succeeded); Assert.Null(result.Value); Assert.Equal("account_unavailable", result.ErrorCode);
+    }
     private static ServiceProvider CodecProvider(Clock clock)
     {
         var services = new ServiceCollection(); services.AddSingleton<IClock>(clock);
@@ -246,11 +307,12 @@ public sealed class InvitationRecipientReplayTests
     {
         public InvitationRecipientCursorBinding? Scope { get; set; } = Binding;
         public Action? OnRead { get; set; }
+        public Action? OnHead { get; set; }
         public int Reads { get; private set; }
         public int ScopeReads { get; private set; }
         public Task<InvitationRecipientCursorBinding?> GetScopeAsync(Guid actorId, CancellationToken cancellationToken)
         { ScopeReads++; return Task.FromResult(Scope); }
-        public Task<long> GetHeadAsync(InvitationRecipientCursorBinding binding, CancellationToken cancellationToken) => Task.FromResult(2L);
+        public Task<long> GetHeadAsync(InvitationRecipientCursorBinding binding, CancellationToken cancellationToken) { OnHead?.Invoke(); return Task.FromResult(2L); }
         public Task<InvitationRecipientEventWindow> ReadAsync(InvitationRecipientCursorBinding binding, long since, int limit, CancellationToken cancellationToken)
         { Reads++; OnRead?.Invoke(); return Task.FromResult(InvitationRecipientEventWindow.Build(since, 2, limit, [Row(1), Row(2)])); }
     }

@@ -45,6 +45,11 @@ public interface IInvitationRecipientEventReader
     Task<InvitationRecipientEventWindow> ReadAsync(InvitationRecipientCursorBinding binding, long since, int limit,
         CancellationToken cancellationToken);
 }
+// Only a verified reader binding mismatch uses this marker. Storage failures
+// and cancellation keep their original exception paths.
+public sealed class InvitationRecipientAdmissionChangedException()
+    : InvalidOperationException("Recipient account admission changed.");
+
 public sealed record InvitationRecipientSyncPage(string Cursor, bool HasMore, bool ResetRequired,
     IReadOnlyList<InvitationRecipientEvent> Events);
 
@@ -72,6 +77,13 @@ public sealed class InvitationRecipientSynchronizationService(IInvitationRecipie
     public async Task<IdentityOperation<string?>> RecoverLiveCheckpointAsync(Guid actorId, string prior,
         string reset, CancellationToken cancellationToken = default)
     {
+        try { return await RecoverLiveCheckpointCoreAsync(actorId, prior, reset, cancellationToken); }
+        catch (InvitationRecipientAdmissionChangedException)
+        { return IdentityOperation<string?>.Failure("account_unavailable"); }
+    }
+    private async Task<IdentityOperation<string?>> RecoverLiveCheckpointCoreAsync(Guid actorId, string prior,
+        string reset, CancellationToken cancellationToken = default)
+    {
         var scope = await reader.GetScopeAsync(actorId, cancellationToken);
         if (actorId == Guid.Empty || scope is null || scope.ActorId != actorId)
             return IdentityOperation<string?>.Failure("account_unavailable");
@@ -94,6 +106,13 @@ public sealed class InvitationRecipientSynchronizationService(IInvitationRecipie
         return IdentityOperation<bool>.Success(cursors.TryDecode(scope, cursor, out _));
     }
     public async Task<IdentityOperation<InvitationRecipientSyncPage>> ReadAsync(Guid actorId, string? cursor,
+        int limit = 50, CancellationToken cancellationToken = default)
+    {
+        try { return await ReadCoreAsync(actorId, cursor, limit, cancellationToken); }
+        catch (InvitationRecipientAdmissionChangedException)
+        { return IdentityOperation<InvitationRecipientSyncPage>.Failure("account_unavailable"); }
+    }
+    private async Task<IdentityOperation<InvitationRecipientSyncPage>> ReadCoreAsync(Guid actorId, string? cursor,
         int limit = 50, CancellationToken cancellationToken = default)
     {
         if (actorId == Guid.Empty) return IdentityOperation<InvitationRecipientSyncPage>.Failure("account_unavailable");
