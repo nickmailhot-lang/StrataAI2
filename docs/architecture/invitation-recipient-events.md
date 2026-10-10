@@ -465,3 +465,37 @@ containers, database and credential environments are removed. Report:
 `recipient-expiry-checkpoint-repair-native-20261010/report-private.json`.
 Estimated PRD-03 work remaining stays **8%**; current immutable-image CI and all
 original requirements remain necessary.
+
+
+A subsequent complete original six-case read-only diagnostic passes **6/6 on
+only attempts**, zero skipped/flaky/unexpected results, retries or report errors,
+in **209,786.533 ms**. It uses the same compiled schema-133 checkpoint API/Worker
+and the invitation-reference frontend. The original cases and budgets remain.
+Fourteen private snapshots at actual reset/acceptance frames execute successfully;
+they identify `BOARD_MEMBER_ADDED` authority sources matching the actual Board
+acceptance actor, tenant and correlation. Because those SQL observations are
+asynchronous, they do not establish whether the Worker effect committed before
+the frame was received. An initial assessment of a separator-escaping fault was
+incorrect: the actual hook contains one escape and did capture those snapshots.
+The passing invocation does not erase the retained later acknowledgement failure
+or prove its ordering defect repaired. Report:
+`recipient-expiry-authority-order-native-20261010/report-private.json`.
+
+An isolated checkout now contains an additional real restricted-PostgreSQL
+regression in the complete recipient contract mode. It performs actual Board
+invitation creation and first membership acceptance with persisted session
+admission, then checks source exposure before claiming/delivering the actual
+membership-authority job. The baseline passes the preceding unchanged issuer
+and recipient contracts, then fails the new invariant: the accepted source is
+already exposed before its actual membership authority delivery. This establishes
+a production ordering gap without fake epochs, frames, timestamps or Worker
+completion. The baseline failure is retained outside the repository at
+`recipient-authority-readiness-baseline-native-20261010/01-contract-private.txt`.
+The new regression and proposed ordering repair remain isolated and unmerged;
+full frontend/API suites keep their original primary-checkout inputs stable.
+
+A redundant second diagnostic preparation failed before browser execution; no
+cases or snapshots from it are counted. Its leftover created web container was
+removed without touching running services. Original automatic Worker delivery,
+empty resets, account/consent fences and acknowledgement assertions remain.
+Estimated PRD-03 work remaining stays **8%**; no closure is justified.

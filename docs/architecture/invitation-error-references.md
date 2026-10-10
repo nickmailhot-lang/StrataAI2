@@ -44,9 +44,15 @@ Private reports: `invitation-reference-source-20261010/baseline-private.json`,
 `invitation-reference-native-20261010/report-private.json`.
 
 Intact four-shard coverage now includes **347 cases in 130 files**, distributed
-87/89/87/84. The complete frontend source suite is still running, as is the full
-API suite for the preceding live-checkpoint repair. These are separate scopes;
-no full-suite result is inferred from selected or native reference checks.
+87/89/87/84. The complete frontend source suite finished with **2,073 passed /
+2 failed / 0 pending across 2,075 cases in 142 files**, in **1,064,975.302 ms**.
+The failures are the existing Card archive recovery timeout and the attachment
+rejection recovery-state assertion; neither is dismissed by the passing
+invitation checks. Report:
+`invitation-reference-source-20261010/full-source-private.json`.
+The full API suite for the preceding live-checkpoint repair remains running.
+These are separate scopes; no full-suite pass is inferred from selected or
+native reference checks.
 Current immutable-image CI and complete NFR/PRD acceptance remain required.
 The [later acknowledgement-ordering failure](invitation-recipient-events.md#live-authority-reset-continuity)
 remains open independently. Estimated work remaining: **PRD-01 34%; PRD-03 8%**.
