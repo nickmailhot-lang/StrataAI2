@@ -1,14 +1,20 @@
+import { publicCorrelationReference } from '../../api/correlationReference';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot } from '../../api/workManagement';
 
 const palette = ['green', 'yellow', 'orange', 'red', 'purple', 'blue', 'sky', 'lime', 'pink', 'black'];
 type Intent = { name: string; color: string; key: string };
+type FailureNotice = { message: string; reference: string | null };
 type Props = { snapshot: BoardSnapshot; disabled: boolean; onBusyChange: (busy: boolean) => void;
   onRecoveryChange: (pending: boolean) => void; onRefresh: () => void; onReturnFocus: () => void };
 export function LabelCreateControl({ snapshot, disabled, onBusyChange, onRecoveryChange, onRefresh, onReturnFocus }: Props) {
   const [open, setOpen] = useState(false); const [name, setName] = useState(''); const [color, setColor] = useState('green');
-  const [intent, setIntent] = useState<Intent>(); const [busy, setBusy] = useState(false); const [notice, setNotice] = useState<string>();
+  const [intent, setIntent] = useState<Intent>(); const [busy, setBusy] = useState(false); const [notice, setFailure] = useState<FailureNotice>();
+  function setNotice(message?: string, reason?: unknown) {
+    setFailure(message ? { message, reference: reason instanceof WorkRequestError
+      ? publicCorrelationReference(reason.correlationId) : null } : undefined);
+  }
   const pending = useRef<AbortController | undefined>(undefined); const epoch = useRef(0);
   const available = snapshot.access.canEdit && snapshot.board.lifecycleState === 'active';
   useEffect(() => { onRecoveryChange(!!intent); return () => onRecoveryChange(false); }, [intent, onRecoveryChange]);
@@ -40,9 +46,9 @@ export function LabelCreateControl({ snapshot, disabled, onBusyChange, onRecover
       if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
         setIntent(undefined); setOpen(false); onRefresh();
       } else if (error instanceof WorkRequestError && [400, 409].includes(error.status)) {
-        setIntent(undefined); setNotice(error.message);
+        setIntent(undefined); setNotice(error.message, error);
       } else {
-        setIntent(command); setNotice('The label may have been created. Retry this same submission to confirm the result.');
+        setIntent(command); setNotice('The label may have been created. Retry this same submission to confirm the result.', error);
       }
     } finally {
       if (admittedEpoch === epoch.current) { pending.current = undefined; setBusy(false); onBusyChange(false); }
@@ -54,7 +60,8 @@ export function LabelCreateControl({ snapshot, disabled, onBusyChange, onRecover
       <DialogTitle>Create Board label</DialogTitle>
       {open && <form onSubmit={event => { event.preventDefault(); void submit(); }}>
         <DialogContent><Stack spacing={2}>
-          {notice && <Alert severity={intent ? 'warning' : 'error'}>{notice}</Alert>}
+          {notice && <Alert severity={intent ? 'warning' : 'error'}><span>{notice.message}</span>
+            {notice.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {notice.reference}</Typography>}</Alert>}
           {intent ? <Typography>Confirm creation of {intent.name || 'an unnamed label'} ({intent.color}).</Typography> : <>
             <TextField autoFocus label="Label name (optional)" value={name} onChange={event => setName(event.target.value)} disabled={busy} slotProps={{ htmlInput: { maxLength: 160 } }} />
             <TextField select label="Label color" value={color} onChange={event => setColor(event.target.value)} disabled={busy}>

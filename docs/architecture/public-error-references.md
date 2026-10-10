@@ -33,3 +33,11 @@ These are scoped source checks, not current immutable-image execution, complete
 user-visible-error reference coverage, or full NFR/foundation acceptance. Current
 CI, full error-consumer review and the remaining PRD requirements remain required.
 PRD-01 stays open at **34% estimated work remaining** (planning estimate).
+
+
+The [label creation consumer](../board-label-api.md#label-creation-public-failure-references)
+now preserves safe response-bound references with atomic notice retirement,
+39/39 selected source passes and two actual server-refusal browser cases. This
+extends the public reference boundary to that dialog, without claiming all Work
+controls or full NFR-FR-010/current immutable-image acceptance. Estimated PRD-01
+work remaining stays **34%**.

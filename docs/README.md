@@ -262,3 +262,8 @@ four-width long-content verification, MUI wrapping and release-collection scope.
 
 [ARCH-03 backend acceptance map](architecture/arch-03-acceptance.md) distinguishes
 implemented core boundaries, missing module coverage and the Demo job-store gap.
+
+
+[Label creation support references](board-label-api.md#label-creation-public-failure-references) records actual response-bound
+identifiers, unchanged rejection state, original retry identity and desktop/phone
+error-dialog accessibility and reflow evidence.

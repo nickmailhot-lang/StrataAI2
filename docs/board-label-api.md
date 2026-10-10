@@ -489,3 +489,49 @@ frontend and schema-127 compiled API/Worker. It adds no file filters, retries,
 deadline changes or exclusions. Its terminal report and current immutable
 build-once CI remain required before claiming broader acceptance. PRD-10 stays
 open at **34% estimated work remaining** (planning estimate).
+
+
+## Label creation public failure references
+
+The MUI label-creation dialog now retains the failing response's safe public
+support reference alongside its fixed user-facing message. Both fields share
+one state update, so a new validation/network notice, a retry, successful
+acknowledgment or permission retirement cannot leave an older reference attached
+to a different message. Only the sanitized `WorkRequestError` response header is
+eligible; arbitrary response bodies, private provider details and network exception
+text are not displayed. Local validation and network-only failures have no
+invented reference. Original unresolved-request name/color/key/body, permission
+fences, explicit retry and focus behavior remain.
+
+The actual baseline passes 8/9: all eight original creation cases pass, while the
+new safe-reference check fails specifically on the missing rendered reference.
+A preceding wrong-working-directory preparation executed no tests and is not
+counted as baseline evidence. After repair, complete label-creation and API
+boundary source scope passes **39/39 in three files**, zero failed/pending, with
+two file workers and unchanged five-second per-case limits. Added negatives cover
+unsafe/empty references, later rejection/reference replacement, network failure,
+local validation and retired/late permission responses. Report:
+`label-creation-references-final-source-20261010/report-private.json`.
+
+The [desktop/phone reference cases](../tests/browser/label-creation-reference.spec.ts)
+pass **2/2 on their only attempts**, zero skipped/flaky/unexpected cases or report
+errors, in **90,936.666 ms**. They run actual schema-133 compiled Production
+API/separate scoped Worker, restricted PostgreSQL, Nginx/CSP and strict verified
+account fixtures. The first routed command deliberately supplies an invalid color
+to the real API and receives an actual 400 response; its actual correlation
+middleware retains the valid 64-character request identifier. The UI renders that
+same response header, preserves the entered name, passes document/dialog width
+and tagged Axe checks, and an independent protected read proves exact unchanged
+label state. The following normal UI command uses a new key after the rejected
+input, creates exactly one canonical version-1 label and retires the reference.
+Original 90-second case limits, 25-second pacing and no-retry settings remain.
+Owned containers, database and credential environments are independently absent.
+Report: `label-creation-reference-native-20261010/report-private.json`.
+
+Web/browser typechecks, lint and the private build pass. Full browser collection
+retains **333 cases in 127 intact files**, 87/81/83/82 across four shards with no
+case retries; original cases remain. The complete final frontend source suite is
+still running separately; the previous 2,037-case bundle is not relabeled as this
+repair's full source proof. Current immutable-image CI, other label/error consumers
+and all original PRD acceptance remain required. PRD-10 stays open at **35%** and
+PRD-01 at **34% estimated work remaining** (planning estimates).
