@@ -134,4 +134,6 @@ GRANT SELECT,INSERT ON invitation_mail_intents TO strataai_api_runtime;
 GRANT EXECUTE ON FUNCTION public.load_invitation_mail(uuid,uuid,uuid,uuid,uuid,boolean), public.finish_invitation_mail(uuid,uuid,uuid,uuid,uuid,text,text,uuid) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.claim_invitation_issuer_authority(uuid),
  public.deliver_invitation_issuer_authority(uuid,uuid,uuid,uuid,uuid,integer) TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.deliver_organization_configuration_event(uuid,uuid,uuid,uuid,uuid,uuid),
+ public.discover_organization_configuration_scopes(uuid,integer),public.claim_organization_configuration_job(uuid) TO strataai_worker_runtime;
 COMMIT;

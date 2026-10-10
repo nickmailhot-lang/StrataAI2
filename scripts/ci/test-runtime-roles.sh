@@ -300,3 +300,10 @@ for function in 'discover_organization_metadata_scopes(uuid,integer)' 'claim_org
  test "$(worker "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = t
  test "$(api "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = f
 done
+
+# Configuration delivery is a typed Worker capability, separate from private reads.
+for function in 'deliver_organization_configuration_event(uuid,uuid,uuid,uuid,uuid,uuid)' 'discover_organization_configuration_scopes(uuid,integer)' 'claim_organization_configuration_job(uuid)'; do
+ test "$(worker "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = t
+ test "$(api "SELECT has_function_privilege(current_user,'$function','EXECUTE')")" = f
+done
+test "$(worker "SELECT has_table_privilege(current_user,'organization_configuration_events','SELECT') OR has_table_privilege(current_user,'organization_configuration_events','UPDATE')")" = f

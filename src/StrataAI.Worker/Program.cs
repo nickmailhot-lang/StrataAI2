@@ -74,6 +74,8 @@ if (runtime.Mode == RuntimeMode.Production)
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationLifecycleDeliveryHandler>();
     builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationMetadataDeliveryStore, StrataAI.Infrastructure.Organizations.PostgresOrganizationMetadataDeliveryStore>();
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationMetadataDeliveryHandler>();
+    builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationConfigurationDeliveryStore, StrataAI.Infrastructure.Organizations.PostgresOrganizationConfigurationDeliveryStore>();
+    builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationConfigurationDeliveryHandler>();
     builder.Services.AddSingleton<IInvitationRecipientAuthorityDeliveryStore, PostgresInvitationRecipientAuthorityDeliveryStore>();
     builder.Services.AddSingleton<IBackgroundJobHandler, InvitationRecipientAuthorityDeliveryHandler>();
     builder.Services.AddSingleton<IIdentityRetryCleanupStore, PostgresIdentityRetryCleanupStore>();
@@ -105,6 +107,19 @@ if (metadataDiscovery)
         StrataAI.Infrastructure.Organizations.PostgresOrganizationMetadataScopeReader>();
     builder.Services.TryAddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
     builder.Services.AddHostedService<OrganizationMetadataDiscoveryWorker>();
+}
+var configurationDiscoverySetting = builder.Configuration["STRATAAI_ORGANIZATION_CONFIGURATION_DISCOVERY_ENABLED"];
+var configurationDiscovery = configurationDiscoverySetting is null ? runtime.Mode == RuntimeMode.Production
+    : bool.TryParse(configurationDiscoverySetting, out var configurationEnabled) ? configurationEnabled
+    : throw new InvalidOperationException("Organization configuration discovery setting must be true or false.");
+if (configurationDiscovery && runtime.Mode != RuntimeMode.Production)
+    throw new InvalidOperationException("Organization configuration discovery requires Production mode.");
+if (configurationDiscovery)
+{
+    builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationConfigurationScopeReader,
+        StrataAI.Infrastructure.Organizations.PostgresOrganizationConfigurationScopeReader>();
+    builder.Services.TryAddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
+    builder.Services.AddHostedService<OrganizationConfigurationDiscoveryWorker>();
 }
 var authorityDiscoverySetting = builder.Configuration["STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED"];
 var authorityDiscovery = authorityDiscoverySetting is null ? runtime.Mode == RuntimeMode.Production

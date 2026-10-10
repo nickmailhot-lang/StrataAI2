@@ -6,10 +6,11 @@ using StrataAI.Infrastructure.Persistence;
 namespace StrataAI.Infrastructure.BackgroundJobs;
 
 public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connections, bool previewJobs = false, bool metadataJobsOnly = false,
-    bool authorityJobsOnly = false) : IBackgroundJobStore
+    bool authorityJobsOnly = false, bool configurationJobsOnly = false) : IBackgroundJobStore
 {
-    private readonly string _claimFunction = metadataJobsOnly && authorityJobsOnly
+    private readonly string _claimFunction = (metadataJobsOnly ? 1 : 0) + (authorityJobsOnly ? 1 : 0) + (configurationJobsOnly ? 1 : 0) > 1
         ? throw new ArgumentException("Only one typed job claim scope is permitted.")
+        : configurationJobsOnly ? "claim_organization_configuration_job"
         : authorityJobsOnly ? "claim_invitation_recipient_authority_job"
         : metadataJobsOnly ? "claim_organization_metadata_job" : "claim_background_job";
     // Infrastructure producers pass their EXISTING domain transaction. This

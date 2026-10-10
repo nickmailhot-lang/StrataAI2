@@ -37,4 +37,7 @@ expect_discovery_failure demo true 'Organization deletion discovery requires Pro
 expect_discovery_failure production invalid 'Organization deletion discovery setting must be true or false.'
 expect_discovery_failure demo true 'Organization metadata discovery requires Production mode.' STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED
 expect_discovery_failure production invalid 'Organization metadata discovery setting must be true or false.' STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED
+expect_discovery_failure demo true 'Organization configuration discovery requires Production mode.' STRATAAI_ORGANIZATION_CONFIGURATION_DISCOVERY_ENABLED
+expect_discovery_failure production invalid 'Organization configuration discovery setting must be true or false.' STRATAAI_ORGANIZATION_CONFIGURATION_DISCOVERY_ENABLED
+
 echo 'Exact Worker image rejects invalid, unbounded, Demo job execution and invalid/Demo deletion discovery. Actual automatic discovery and leased deletion run against PostgreSQL in the Organization command fixture.'

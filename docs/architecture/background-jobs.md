@@ -143,3 +143,6 @@ full proof; the prior 711-case binary is retained separately. Current immutable-
 CI and all Demo handlers/future module acceptance
 remain required. This prospective process-local repair does not reconstruct
 legacy PostgreSQL audit provenance or satisfy full FOUND-FR-009 by itself.
+
+
+Configuration delivery uses the dedicated `ORGANIZATION_CONFIGURATION_EVENT_READY` / `organization-configuration-delivery` handler and `STRATAAI_ORGANIZATION_CONFIGURATION_DISCOVERY_ENABLED` setting. It preserves the committed source actor/correlation, checks lease/source authority before and after first readiness, and routes without preconfigured Organization IDs. The typed claim leaves unrelated provider work untouched; the Worker has no private configuration-history read grant. See [delivery behavior, executed evidence and remaining recipient acceptance](organization-configuration.md#durable-configuration-worker-delivery). Configuration Activity and authorized replay remain separate acceptance work.
