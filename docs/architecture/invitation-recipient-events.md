@@ -656,3 +656,36 @@ The combined complete API suite remains running; scoped browser results do not
 certify the complete project or immutable-image CI.
 Current exact-commit immutable-image CI remains required before closure.
 Estimated PRD-03 work remaining stays **8%**.
+
+
+### Real authority change between reader admission and head selection
+
+A separate restricted-PostgreSQL probe now confirms an additional read-boundary
+race. After actual invitation acceptance, it executes the real leased Worker
+handler and acknowledgment between the real reader's scope discovery and its
+head read. Current main then throws the reader's generic account-admission
+mismatch exception instead of returning the structured refusal that permits
+transport-owned authority continuity. The baseline completes with exit 1 at
+that exact reader guard, without cancellation; its private report is
+`recipient-read-head-authority-baseline-native-20261010/01-contract-private.txt`.
+
+An isolated candidate uses a dedicated admission-change exception only at that
+verified reader mismatch. The Application layer converts only that marker to
+`account_unavailable` with no page or cursor; generic storage exceptions and
+cancellation retain their original paths. Existing recovery still requires the
+same admitted actor, verified email, account version and signed older authority
+checkpoint. Seven new Domain cases cover bootstrap/page/reset refusal, successful
+owned authority recovery, changed-account refusal, generic head/page storage
+exceptions and a second admission change during checkpoint recovery.
+
+Its locked solution build passes with zero warnings/errors, and the complete
+Domain suite passes **787/787 actual rows**, zero failures/skips. Its complete
+original recipient persistence mode also passes with the new real read-boundary
+contract, including the exact persisted accepted event ID/timestamp, refusal of
+the old cursor and no duplicate delivery. Reports:
+`recipient-read-head-authority-final-domain-native-20261010/domain.xml` and
+`recipient-read-head-authority-final-native-20261010/outcome.json`.
+The candidate remains isolated and unmerged while its original complete API and
+six-case native browser scopes run. Primary source remains unchanged for the
+live combined API invocation. Current exact-commit CI and all PRD acceptance
+criteria remain required. Estimated PRD-03 work remaining stays **8%**.
