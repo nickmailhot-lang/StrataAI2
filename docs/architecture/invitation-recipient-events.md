@@ -646,7 +646,13 @@ passes **780/780 actual test rows**, zero failures/skips, and its complete origi
 recipient persistence mode passes with the actual acceptance readiness contract.
 Reports: `recipient-authority-combined-full-domain-native-20261010/domain.xml`
 and `recipient-authority-combined-recipient-native-20261010/outcome.json`.
-The combined complete API suite and original six-case browser invocation are
-still running; candidate-only browser results do not certify that combination.
+The combined original six-case browser invocation now passes **6/6 actual cases
+on six first attempts**, zero retries/report errors, in **191,233.508 ms**, with
+the original **120,000 ms** case limits. Independent checks confirm zero owned
+containers, databases or credential environments and an exact web asset-set
+match with the verified production build. Report:
+`recipient-authority-combined-browser-native-20261010/report-private.json`.
+The combined complete API suite remains running; scoped browser results do not
+certify the complete project or immutable-image CI.
 Current exact-commit immutable-image CI remains required before closure.
 Estimated PRD-03 work remaining stays **8%**.
