@@ -45,6 +45,29 @@ it('refreshes private events without restarting the actor stream and stops on ac
   await waitFor(() => expect(stop).toHaveBeenCalledTimes(1));
   expect(screen.queryByText('You have starred this Board.')).not.toBeInTheDocument();
 });
+it('closes a keyboard-owned Done during a background read and ignores its late private response', async () => {
+  let hold = false; let complete!: (value: Response) => void; let readSignal: AbortSignal | undefined;
+  const pending = new Promise<Response>(resolve => { complete = resolve; });
+  const fetch = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile);
+    if (hold && path.endsWith('/star')) { readSignal = options?.signal as AbortSignal; return pending; }
+    return response(state);
+  });
+  vi.stubGlobal('fetch', fetch); render(<BoardStarControl {...props} />); await open();
+  const done = screen.getByRole('button', { name: 'Done' });
+  await waitFor(() => expect(done).toBeEnabled()); done.focus(); expect(done).toHaveFocus();
+  hold = true; act(() => vi.mocked(watchBoardStars).mock.calls.at(-1)![0].invalidate());
+  await waitFor(() => expect(readSignal).toBeDefined());
+  const dialog = screen.getByRole('dialog'); expect(dialog).toHaveFocus(); expect(done).toBeEnabled();
+  fireEvent.keyDown(dialog, { key: 'Enter' });
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  expect(readSignal!.aborted).toBe(true);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Board starring' })).toHaveFocus());
+  await act(async () => { complete(response({ ...retained, starred: true })); });
+  expect(screen.queryByText('You have starred this Board.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('dialog')).toBeNull();
+  expect(fetch.mock.calls.some(([, options]) => ['PUT', 'DELETE'].includes(options?.method ?? ''))).toBe(false);
+});
 it('ends private event delivery when the current account changes during refresh', async () => {
   const stop = vi.fn(); vi.mocked(watchBoardStars).mockClear(); vi.mocked(watchBoardStars).mockReturnValueOnce(stop);
   let changed = false;

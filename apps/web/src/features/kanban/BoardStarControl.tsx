@@ -147,10 +147,24 @@ function StarDialog(props: Props) {
       if (pending.current === c) { pending.current = undefined; if (mounted.current) { setBusy(false); if (refresh) void load(); } }
     }
   }
-  function close() { if (!busy && !intent.current) { setOpen(false); setSubject(undefined); setCurrent(undefined); actor.current = undefined; setNotice(undefined); } }
+  function close() {
+    if (intent.current) return;
+    // A private refresh can be abandoned. An unconfirmed mutation must retain its recovery path.
+    pending.current?.abort(); pending.current = undefined; setBusy(false);
+    readFocus.current = undefined; restore.current = false;
+    setOpen(false); setSubject(undefined); setCurrent(undefined); actor.current = undefined; setNotice(undefined);
+  }
   return <>
     {admitted && <Button ref={entry} disabled={disabled || busy} onClick={() => { activityEvent('board_star_disclosure', 'open'); setOpen(true); }}>Board starring</Button>}
     <Dialog open={open} onClose={close} disableRestoreFocus fullWidth maxWidth="sm"
+      onKeyDown={event => {
+        const retained = readFocus.current;
+        // Preserve the keyboard's Done action when a refresh parks its focus between focus and Enter.
+        if (event.key === 'Enter' && busy && !intent.current && retained?.kind === 'done'
+          && event.target === retained.dialog && document.activeElement === retained.dialog) {
+          event.preventDefault(); close();
+        }
+      }}
       slotProps={{ transition: { onExited: () => entry.current?.focus({ preventScroll: true }) } }}>
       <DialogTitle>Board starring</DialogTitle><DialogContent>
         <Typography>Stars are personal to your account.</Typography>
@@ -161,7 +175,7 @@ function StarDialog(props: Props) {
           version={historyRevision} unavailable={busy || !admitted || !current}
           onDenied={() => retire('Board starring is unavailable. Check access or sign in.')} />}
       </DialogContent><DialogActions>
-        {!recovery && <Button ref={done} disabled={busy} onClick={close}>Done</Button>}
+        {!recovery && <Button ref={done} disabled={busy && !!intent.current} onClick={close}>Done</Button>}
         {recovery ? <Button ref={retry} disabled={busy || disabled || !admitted || !current} onClick={() => void change()}>Retry same star change</Button>
           : current && <Button ref={action} disabled={busy || disabled || !admitted} onClick={() => void change()}>{current.starred ? 'Unstar Board' : 'Star Board'}</Button>}
       </DialogActions>
