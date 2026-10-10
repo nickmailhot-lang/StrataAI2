@@ -49,6 +49,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 ## Runtime, deployment, and operations
 
 - [Durable Organization job foundation (ARCH-07)](architecture/background-jobs.md)
+- [Demo reminder delivery, processing and audit evidence](architecture/demo-reminder-delivery.md)
 - [Embedded build identity (ARCH-01-AC-002 / ARCH-11)](architecture/build-identity.md)
 - [Assembled release payload startup and graceful restart](architecture/release-bundle-startup.md)
 - [Configuration and secrets](architecture/configuration.md)

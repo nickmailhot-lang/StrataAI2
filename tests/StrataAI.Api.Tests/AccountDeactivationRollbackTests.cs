@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.Identity;
 using StrataAI.Application.WorkManagement;
+using StrataAI.Infrastructure.WorkManagement;
 using Xunit;
 
 namespace StrataAI.Api.Tests;
@@ -35,6 +36,8 @@ public sealed partial class ApiHostTests
         var reader = app.Services.GetRequiredService<IWorkEventReader>();
         var card = await store.CreateCardAsync(f.List, Guid.NewGuid(), "Deactivation rollback Card", null, null, DateTimeOffset.UtcNow, ct);
         Assert.True((await work.SetCardMemberAsync(card.Id, f.Recipient, f.Owner, true, card.Version, "fixture", ct)).Succeeded);
+        var audits = (InMemoryWorkManagementStore)store;
+        var originalAudits = audits.AuditSnapshot(f.Organization);
         var originalCard = await store.FindCardAsync(card.Id, ct);
         var originalUser = await identities.FindUserByIdAsync(f.Recipient, ct);
         var originalIdentityEvents = (await identities.ReadEventsAsync(f.Recipient, 0, ct)).Value!.Events.ToArray();
@@ -54,6 +57,7 @@ public sealed partial class ApiHostTests
         Assert.NotNull(await identities.FindActiveSessionAsync(sessionHash, DateTimeOffset.UtcNow, ct));
         Assert.Equal(originalIdentityEvents, (await identities.ReadEventsAsync(f.Recipient, 0, ct)).Value!.Events.ToArray());
         Assert.Null(await receipts.ReadAsync(f.Recipient, key, ct));
+        Assert.Equal(originalAudits, audits.AuditSnapshot(f.Organization));
         Assert.Equal(originalCard, await store.FindCardAsync(card.Id, ct));
         Assert.Contains((await work.ListCardMembersAsync(card.Id, f.Owner, cancellationToken: ct)).Value!.Items, row => row.UserId == f.Recipient);
         var restoredWork = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
@@ -70,10 +74,18 @@ public sealed partial class ApiHostTests
         Assert.Equal(originalIdentityEvents.Length + 1, (await identities.ReadEventsAsync(f.Recipient, 0, ct)).Value!.Events.Count);
         var committedWork = await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct);
         Assert.Single(committedWork.Events.Skip(originalWork.Events.Count), row => row.Event.EventType == "CARD_MEMBER_REMOVED");
+        var committedAudit = Assert.Single(audits.AuditSnapshot(f.Organization), row => !originalAudits.Contains(row));
+        Assert.Equal(f.Recipient, committedAudit.ActorId);
+        Assert.Equal("CARD_MEMBER_REMOVED", committedAudit.EventType);
+        Assert.Equal("Card", committedAudit.EntityType);
+        Assert.Equal(card.Id, committedAudit.EntityId);
+        Assert.Equal("fixture", committedAudit.CorrelationId);
+        var committedAudits = audits.AuditSnapshot(f.Organization);
         if (keyed)
         {
             Assert.NotNull(await receipts.ReadAsync(f.Recipient, key, ct));
             Assert.True((await Deactivate(ct).WaitAsync(TimeSpan.FromSeconds(10), ct)).Succeeded);
+            Assert.Equal(committedAudits, audits.AuditSnapshot(f.Organization));
             Assert.Equal(committedWork.Cursor, (await reader.ReadAsync(f.Organization, f.Board, 0, 100, ct)).Cursor);
             Assert.Equal(originalIdentityEvents.Length + 1, (await identities.ReadEventsAsync(f.Recipient, 0, ct)).Value!.Events.Count);
         }

@@ -3,7 +3,7 @@ using StrataAI.Application.Organizations;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore organizations, DemoWorkTransactionScope transactionScope) : IWorkManagementStore, ICardDateStore
+internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore organizations, DemoWorkTransactionScope transactionScope, StrataAI.Application.Common.IClock clock) : IWorkManagementStore, ICardDateStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<Guid, BoardRecord> _boards = [];
@@ -817,5 +817,6 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
         Guid entityId,
         string correlationId,
         CancellationToken cancellationToken = default) =>
-        Task.CompletedTask;
+        AppendAuditFactAsync(Guid.NewGuid(), organizationId, actorUserId, eventType, entityType,
+            entityId, correlationId, clock.UtcNow, cancellationToken);
 }

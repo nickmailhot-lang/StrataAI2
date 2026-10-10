@@ -45,7 +45,8 @@ public sealed class RuntimeCompositionTests
             typeof(IWorkEventStore), typeof(IWorkEventReader),
             typeof(INotificationInboxStore), typeof(INotificationRealtimeStore),
             typeof(IWatchSubscriptionStore), typeof(ICardWatchRecipientStore),
-            typeof(ICardReminderStore), typeof(IBackgroundJobStore),
+            typeof(ICardReminderStore), typeof(ICardReminderDeliveryStore),
+            typeof(IDemoCardReminderProcessing), typeof(IBackgroundJobStore),
         };
         foreach (var contract in contracts)
         {

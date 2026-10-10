@@ -186,3 +186,56 @@ The complete API and unfiltered persistence suites on schema 135 and the
 exact-commit pipeline remain separate pending gates. PRD-01 remains open at
 **34% estimated work remaining**; exact-commit immutable-image CI and complete
 acceptance remain required.
+
+
+## Complete schema-135 persistence execution
+
+The complete original unfiltered persistence executable now exits zero against
+fresh restricted PostgreSQL 17/pgvector schema 135. The mandatory eight-write
+warm prerequisite executes exactly once before the unchanged candidate contract.
+That contract traverses **100,002 Cards / 100,000 archived** with its original
+**128-row** page bound in **11,044 ms**, including admin checkpoint staging.
+All original assertions, graph sizes and command/lease deadlines remain.
+Independent checks confirm zero owned persistence containers or credential files.
+Report: `card-clock-plan-schema135-full-persistence-native-20261010/outcome.json`.
+This completes the whole local persistence scope, separate from the earlier
+focused graph proof. The complete API invocation, all 24 specialized modes and
+exact-commit immutable-image CI remain separate pending gates. One local
+observation does not establish a production latency distribution. PRD-01 remains
+open at **34% estimated work remaining**.
+
+
+The same frozen main commit `07227ae46e7516b2280e11dd0041fef58a2b2513`
+subsequently passes **717/717 actual unique API executions**, with matching
+counters and zero failed/error/timeout/aborted/skipped/pending results. All **24
+original specialized persistence modes** also exit zero on fresh restricted
+schema-135 databases, retaining their original assertions and deadlines. All
+1,728 frozen source hashes still match. The specialized fixture containers and
+credential environments are independently absent; the API runner removes its
+owned container after terminal success. Reports:
+`card-clock-plan-schema135-full-api-native-20261010/api.trx` and
+`card-clock-plan-schema135-all-special-native-20261010/outcome.json`.
+This completes those local source/persistence scopes. Current exact-image CI,
+full functional/accessibility/performance acceptance and historical provenance
+remain separate requirements; PRD-01 remains open at **34% estimated remaining**.
+
+
+Older run `38030566992` on `62e7e43f` subsequently terminates with the same
+Npgsql read timeout in PostgreSQL job `114153673602`, step 46. The original
+candidate Admin/RunAsync frames are at lines 23/25; Program frames are 253/369.
+The source-quality and required-ci gates correctly fail afterward. This is a
+third retained pre-135 batch failure, not current-image repair certification.
+The stack still does not identify an individual SQL statement inside the batch.
+The schema-135 local paired reproduction and complete gates above remain separate
+proofs; exact-image execution on the repaired commit is still queued.
+
+## Schema 135 source CI evidence
+
+On current main `07227ae46e7516b2280e11dd0041fef58a2b2513`,
+[CI run 38034403734](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38034403734)
+has completed the PostgreSQL integration job (`114168150704`) successfully.
+Its retained log contains the mandatory eight-small-Card-write canonical route
+warm-up marker exactly once, with no Npgsql read-timeout exception. The .NET and
+frontend quality jobs also complete successfully. The source gate and immutable
+image/release stages remain pending at this check; complete pipeline success is
+not inferred. Original fixtures, statement limits and criteria remain unchanged.

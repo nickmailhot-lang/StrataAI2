@@ -2,6 +2,7 @@ using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.Common;
 using StrataAI.Application.WorkManagement;
+using StrataAI.Infrastructure.WorkManagement;
 
 namespace StrataAI.Infrastructure.Identity;
 
@@ -16,7 +17,8 @@ internal interface IAccountDeactivationOwnership
 // The caller holds the shared Demo account/Organization and Work gates throughout
 // and owns Identity/Work rollback snapshots. This is process-local evidence only.
 internal sealed class InMemoryAccountDeactivationOwnership(IOrganizationStore organizations,
-    IIdentityStore identities, IdentityPolicy policy, IWorkManagementStore work, IWorkEventStore events, IClock clock) : IAccountDeactivationOwnership
+    IIdentityStore identities, IdentityPolicy policy, IWorkManagementStore work, IWorkEventStore events, IClock clock,
+    DemoIdentityTransactionScope identityScope, DemoWorkTransactionScope workScope) : IAccountDeactivationOwnership
 {
     public async Task<AccountOwnershipPlan> PrepareAsync(Guid userId, CancellationToken cancellationToken) =>
         new(userId, await organizations.ListMembershipOrganizationIdsAsync(userId, cancellationToken));
@@ -44,12 +46,17 @@ internal sealed class InMemoryAccountDeactivationOwnership(IOrganizationStore or
 
     public async Task CleanupAssignmentsAsync(AccountOwnershipPlan plan, string correlationId, CancellationToken cancellationToken)
     {
+        if (!identityScope.OwnsWorkCleanup)
+            throw new InvalidOperationException("Demo assignment cleanup requires an owning Identity and Work transaction.");
         var now = clock.UtcNow;
         foreach (var org in plan.OrganizationIds)
+        {
+            using var owning = workScope.Enter(org);
             foreach (var card in await work.RemoveOrganizationCardMemberAssignmentsAsync(org, plan.UserId, now, cancellationToken))
             {
                 await work.AppendAuditAsync(org, plan.UserId, "CARD_MEMBER_REMOVED", "Card", card.Id, correlationId, cancellationToken);
                 await events.AppendAsync(new(Guid.NewGuid(), org, card.BoardId, plan.UserId, "CARD_MEMBER_REMOVED", "Card", card.Id, card.Version, correlationId, now), cancellationToken);
             }
+        }
     }
 }

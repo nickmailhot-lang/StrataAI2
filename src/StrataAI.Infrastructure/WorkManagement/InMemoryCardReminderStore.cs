@@ -14,6 +14,21 @@ internal sealed class InMemoryCardReminderStore : ICardReminderStore, IDemoWorkT
             return () => { lock (_gate) restore(); };
         }
     }
+    internal CardReminder? FindById(Guid organizationId, Guid reminderId)
+    { lock (_gate) return _rows.Values.SingleOrDefault(r => r.OrganizationId == organizationId && r.Id == reminderId); }
+
+    internal CardReminder Fire(CardReminder source, DateTimeOffset effectTime)
+    {
+        lock (_gate)
+        {
+            var key = (source.OrganizationId, source.UserId, source.CardId);
+            if (_rows.GetValueOrDefault(key) != source || source.Status != "SCHEDULED")
+                throw new InvalidOperationException("Demo reminder source changed before delivery.");
+            var fired = source with { Status = "FIRED", Version = checked(source.Version + 1), UpdatedAt = effectTime };
+            _rows[key] = fired; return fired;
+        }
+    }
+
     internal ActivityPrivateTarget? FindActivityTarget(Guid organizationId, Guid reminderId)
     {
         lock (_gate)

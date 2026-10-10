@@ -5,15 +5,16 @@ namespace StrataAI.Infrastructure.Identity;
 internal interface IDemoIdentityTransactionParticipant { Action CaptureRollback(); }
 internal sealed class DemoIdentityTransactionScope
 {
-    private sealed record State(Guid? Subject, Guid CommandId);
+    private sealed record State(Guid? Subject, Guid CommandId, bool WorkCleanup);
     private readonly AsyncLocal<State?> _current = new();
     public bool Active => _current.Value is not null;
     public Guid CommandId => _current.Value?.CommandId ?? Guid.Empty;
     public bool Owns(Guid subject) => subject != Guid.Empty && _current.Value?.Subject == subject;
-    public IDisposable Enter(Guid? subject)
+    internal bool OwnsWorkCleanup => _current.Value?.WorkCleanup == true;
+    public IDisposable Enter(Guid? subject, bool workCleanup = false)
     {
         if (Active) throw new InvalidOperationException("Nested identity transactions are unavailable.");
-        _current.Value = new(subject, Guid.NewGuid()); return new Lease(() => _current.Value = null);
+        _current.Value = new(subject, Guid.NewGuid(), workCleanup); return new Lease(() => _current.Value = null);
     }
     private sealed class Lease(Action release) : IDisposable { public void Dispose() => release(); }
 }

@@ -123,3 +123,49 @@ mappings. Its owned container is independently absent; report:
 `demo-job-audit-full-api-native-20261010/api.trx`. Current immutable-image
 CI remains pending. Complete Demo execution/future modules and all original
 architecture criteria remain. Estimated ARCH-03 work remaining stays **60%**.
+
+
+## Demo reminder consumption and Work audit facts
+
+[The Demo delivery increment](demo-reminder-delivery.md) replaces publication-only
+reminder behavior with exact-lease canonical delivery and a Demo-only hosted
+processor. Work audit writes now retain private immutable facts and owning
+rollback. The actual missing-binding baseline fails before repair; all 30 focused
+cases pass after repair, including actual hosted delivery, post-source rollback,
+concurrent dispatch, backoff and other-job preservation. The core Demo composition
+manifest expands from 24 to 26 contracts without reducing future-module scope.
+The locked build has zero warnings/errors. Complete final API execution passes
+740/740 unique results against frozen backend source; earlier core-only results
+do not certify the hosted increment. Current immutable-image/full acceptance remains required.
+Estimated ARCH-03 work remaining stays **60%**; current immutable-image CI remains required.
+
+## Reminder eligibility and Identity audit boundary
+
+The [delivery evidence](demo-reminder-delivery.md#executed-evidence-and-limits)
+now includes 37 focused passes for current recipient/parent refusal and the
+original five-attempt terminal failure contract. The core-only complete API run
+found eight account-deactivation failures, exposing a missing per-Organization
+Work scope for real audit writes. The increment repairs that boundary under the
+existing owning Identity/Work transaction and adds audit rollback/replay checks.
+The repaired locked build passes, as do all 53 actual unique focused cases.
+The two receipt-expiry cases also pass; all eight original failures individually
+pass across these scopes. Complete execution now passes 740/740 unique API
+results, retaining all 717 prior cases plus 23, with matching counters and frozen
+backend source. Current exact images and aggregate module acceptance remain. This does
+not close AC-001/002 for future modules. Estimated work remaining stays **60%**.
+
+## Required seeded-account Demo native reminder path
+
+The increment appends two real-clock desktop/phone cases to the existing reminder
+browser file, registered only in Demo mode. The existing Demo foundation image
+stage must run them against the loaded API/web images; its integration verifier
+now requires the invocation. Original Production reminder source, deadlines,
+retries and collection remain unchanged. Browser TypeScript and whole
+integration/shard checks pass. Native execution uses the documented seeded
+verified account, the default host, two private inboxes and no datastore/Worker.
+Its corrected browser-edge fixture passes both cases on first attempts, with
+zero skipped/flaky/unexpected results; the complete API proof is 740/740.
+All 154 integration guard tests pass. Owned fixture cleanup is independently
+verified. Current immutable images remain required. This closes no aggregate
+module criterion. Estimated work remaining
+stays **60%**.

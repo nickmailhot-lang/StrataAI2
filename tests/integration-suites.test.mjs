@@ -14,6 +14,13 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['seeded-account Demo reminder execution omitted', value => {
+    const entry = step(value, 'Demo metadata, terminal and recipient lifecycle against exact API and web images');
+    entry.run = entry.run.split('\n').filter(line => !line.includes('demo-reminders-report.json')).join('\n');
+  }],
+  ['seeded-account reminder execution uses Production mode', value => {
+    step(value, 'Demo metadata, terminal and recipient lifecycle against exact API and web images').env.STRATAAI_E2E_RUNTIME_MODE = 'production';
+  }],
   ['startup refusal regressions omitted', value=>{const step=value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage');step.run=step.run.replace('node --test tests/release-bundle-startup.test.mjs','');}],
   ['startup refusal regressions skipped', value=>{value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage').if='false';}],
   ['startup refusal regressions permitted to fail', value=>{value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage')['continue-on-error']=true;}],

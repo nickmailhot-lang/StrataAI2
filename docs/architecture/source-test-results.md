@@ -537,4 +537,50 @@ access, retained Organization membership, keyboard and overflow assertions remai
 Both source manifest files match. Owned runtime/database/credential cleanup is
 independently verified. This does not identify or dismiss the older immutable
 shard's failure, and does not substitute for current immutable/full CI. The
-complete original eight-case invitation-account file is executing separately.
+complete original eight-case invitation-account result is recorded below.
+
+## Current original invitation account browser result
+
+The unchanged complete `invitation-creation-account.spec.ts` passes **8/8 on
+first attempts**, in 235,459.647 ms, with eight unique source spec IDs and no
+skips/flaky/report errors. The retained old shard's one failed source title is
+included and passes individually. Both desktop/phone, Organization/Board, actual
+post-commit account replacement and account-read outage cases retain original
+protected-name/acknowledgment withholding, original saved intent/body/key,
+canonical source/head observation, retry and current-account isolation checks.
+
+This uses compiled schema-135 restricted Production API, frozen MUI output and
+optional verification matching the original file. Both screen/test source hashes
+match; owned containers/database/credential files are independently absent.
+Neither screen nor browser test was changed for this result. The old failure's
+cause remains unproven; current immutable/full CI is still required. These new
+facts will accompany the next code increment rather than trigger a documentation
+only CI run. Timezone focus repair `b324e01c` is pushed with rigorous build-once
+[CI 38040292753](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38040292753)
+queued at the last authoritative check.
+
+## Demo reminder delivery and retained CI follow-up
+
+The [Demo delivery increment](demo-reminder-delivery.md) passes the complete
+740-result API scope with unique execution IDs and matching counters, preserving
+all 717 original results and adding 23. Frozen source hashes and all 744 current
+backend/test files match. Its native seeded-account desktop/phone invocation
+passes 2/2 on first attempts in 184,730.463 ms, with no skipped/flaky/unexpected
+or report errors. Actual 60-second due schedules, default hosted dispatch, two
+private inboxes, receipt replay, frame/journal identity and keyboard read state
+are verified. Three browser/CI manifest hashes match; owned cleanup is independently
+verified. Browser TypeScript, all 154 integration guard tests and intact Production
+shard collection pass. Earlier local fixture setup/selector failures are recorded
+in the linked evidence guide, without increasing original deadlines.
+
+Retained immutable [run 38024364850](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38024364850)
+now has terminal browser shard 3 success and shard 4 failure (80 passed, four
+failed). Its four failures are unchanged `watch-permission-order.spec.ts`
+state-hash equality checks after original keyed Card replay, at lines 88/156.
+Their cause is not established and the original assertions remain. Required CI
+fails and release-bundle publication is skipped for that old commit. Current
+schema-135 source-quality gate succeeds in
+[run 38034403734](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38034403734),
+with build-images-once queued. Current timezone commit CI source jobs remain
+queued after metadata succeeds. Neither observation proves full current release
+acceptance; no issue is closed by this increment.

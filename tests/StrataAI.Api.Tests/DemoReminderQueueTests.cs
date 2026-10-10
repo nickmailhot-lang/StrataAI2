@@ -13,7 +13,12 @@ public sealed partial class ApiHostTests
 {
     private sealed class DemoQueueTestClock : IClock
     {
-        public DateTimeOffset UtcNow { get; set; } = DateTimeOffset.UtcNow;
+        private long _utcTicks = DateTimeOffset.UtcNow.UtcTicks;
+        public DateTimeOffset UtcNow
+        {
+            get => new(Interlocked.Read(ref _utcTicks), TimeSpan.Zero);
+            set => Interlocked.Exchange(ref _utcTicks, value.UtcTicks);
+        }
     }
 
     [Theory]
@@ -100,5 +105,132 @@ public sealed partial class ApiHostTests
         Assert.Equal(state.Reminder.Id, references.ReminderId); Assert.Equal(state.Reminder.Generation, references.Generation);
         Assert.True(await queue.CompleteAsync(f.Organization, claimed.Id, claimed.LeaseId, worker, ct));
         Assert.Null(await queue.ClaimAsync(f.Organization, worker, ct));
+    }
+
+    // ARCH-03-AC-001 / ARCH-05-AC-001 / DATE-FR-007: publication is not delivery.
+    [Fact]
+    public async Task ARCH_03_Demo_real_reminder_claim_delivers_once_with_current_canonical_source()
+    {
+        var ct = TestContext.Current.CancellationToken; var clock = new DemoQueueTestClock();
+        await using var app = new ApiFactory(configureServices: services => services.AddSingleton<IClock>(clock));
+        using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        var f = await NotificationFixture(app, owner, recipient, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Demo delivered reminder", null, null, clock.UtcNow, ct);
+        using var dates = await Mutate(owner, HttpMethod.Patch, $"/cards/{card.Id}/dates",
+            new CardDatesInput(null, clock.UtcNow.AddDays(2).ToString("O"), "UTC", true, false, 1));
+        Assert.Equal(HttpStatusCode.OK, dates.StatusCode);
+        using var response = await Mutate(recipient, HttpMethod.Post, $"/cards/{card.Id}/reminders",
+            new CardReminderInput("1_HOUR", true, 2, 0), Guid.NewGuid().ToString());
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var state = await response.Content.ReadFromJsonAsync<CardReminderState>(ct);
+        Assert.NotNull(state?.Reminder);
+        var reminders = app.Services.GetRequiredService<ICardReminderStore>();
+        var notifications = app.Services.GetRequiredService<IWorkNotificationStore>();
+        Assert.DoesNotContain(await notifications.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct),
+            n => n.NotificationType == "REMINDER_FIRED");
+        clock.UtcNow = state.Reminder.TriggerAt!.Value;
+        var queue = app.Services.GetRequiredService<IBackgroundJobStore>(); var worker = Guid.NewGuid();
+        var claim = await queue.ClaimAsync(f.Organization, worker, ct); Assert.NotNull(claim);
+        var delivery = app.Services.GetRequiredService<ICardReminderDeliveryStore>();
+        var handler = new CardReminderDeliveryHandler(delivery);
+        await handler.ExecuteAsync(claim, ct);
+        await handler.ExecuteAsync(claim, ct); // Actual unacknowledged effect recovery.
+        var fired = await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct);
+        Assert.NotNull(fired); Assert.Equal("FIRED", fired.Status);
+        Assert.Equal(state.Reminder.Generation, fired.Generation);
+        Assert.Equal(state.Reminder.Version + 1, fired.Version);
+        Assert.Equal(state.Reminder.CreatedAt, fired.CreatedAt);
+        Assert.Equal(clock.UtcNow, fired.UpdatedAt);
+        var notification = Assert.Single(await notifications.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct),
+            n => n.NotificationType == "REMINDER_FIRED");
+        Assert.Equal(claim.Id, notification.EventId); Assert.Equal(claim.Id, notification.Id);
+        Assert.Equal(f.Recipient, notification.RecipientId); Assert.Equal(claim.ActorId, notification.ActorId);
+        Assert.Equal(card.Id, notification.CardId); Assert.Equal(card.BoardId, notification.BoardId);
+        Assert.Equal(2, notification.CardVersion); Assert.Equal(clock.UtcNow, notification.CreatedAt);
+        var audit = Assert.Single(Assert.IsType<StrataAI.Infrastructure.WorkManagement.InMemoryWorkManagementStore>(work)
+            .AuditSnapshot(f.Organization), a => a.Id == claim.Id);
+        Assert.Equal("REMINDER_FIRED", audit.EventType); Assert.Equal("Reminder", audit.EntityType);
+        Assert.Equal(state.Reminder.Id, audit.EntityId); Assert.Equal(claim.ActorId, audit.ActorId);
+        Assert.Equal(claim.CorrelationId, audit.CorrelationId); Assert.Equal(clock.UtcNow, audit.CreatedAt);
+        Assert.True(await queue.CompleteAsync(f.Organization, claim.Id, claim.LeaseId, worker, ct));
+        Assert.Equal(CardReminderDeliveryResult.LeaseLost,
+            await delivery.DeliverAsync(claim, CardReminderAttempt.Parse(claim.SafeMetadataJson), ct));
+        Assert.Null(await queue.ClaimAsync(f.Organization, worker, ct));
+        Assert.Equal(fired, await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct));
+        Assert.Single(await notifications.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct),
+            n => n.NotificationType == "REMINDER_FIRED");
+    }
+
+    [Theory]
+    [InlineData("tenant")]
+    [InlineData("worker")]
+    [InlineData("lease")]
+    [InlineData("actor")]
+    [InlineData("metadata")]
+    [InlineData("expired")]
+    [InlineData("generation")]
+    [InlineData("complete")]
+    public async Task ARCH_03_Demo_reminder_refuses_changed_claim_or_canonical_source_without_effects(string mode)
+    {
+        var ct = TestContext.Current.CancellationToken; var clock = new DemoQueueTestClock();
+        await using var app = new ApiFactory(configureServices: services => services.AddSingleton<IClock>(clock));
+        using var owner = app.CreateClient(); using var recipient = app.CreateClient();
+        var f = await NotificationFixture(app, owner, recipient, ct);
+        var work = app.Services.GetRequiredService<IWorkManagementStore>();
+        var card = await work.CreateCardAsync(f.List, Guid.NewGuid(), "Demo refused reminder", null, null, clock.UtcNow, ct);
+        using var dates = await Mutate(owner, HttpMethod.Patch, $"/cards/{card.Id}/dates",
+            new CardDatesInput(null, clock.UtcNow.AddDays(2).ToString("O"), "UTC", true, false, 1));
+        Assert.Equal(HttpStatusCode.OK, dates.StatusCode);
+        using var response = await Mutate(recipient, HttpMethod.Post, $"/cards/{card.Id}/reminders",
+            new CardReminderInput("1_HOUR", true, 2, 0), Guid.NewGuid().ToString());
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var state = await response.Content.ReadFromJsonAsync<CardReminderState>(ct);
+        Assert.NotNull(state); Assert.NotNull(state.Reminder);
+        if (mode == "generation")
+        {
+            using var change = await Mutate(recipient, HttpMethod.Post, $"/cards/{card.Id}/reminders",
+                new CardReminderInput("AT_DUE", true, 2, state.Reminder.Version), Guid.NewGuid().ToString());
+            Assert.Equal(HttpStatusCode.OK, change.StatusCode);
+        }
+        if (mode == "complete")
+        {
+            using var change = await Mutate(owner, HttpMethod.Patch, $"/cards/{card.Id}/dates",
+                new CardDatesInput(null, state.Reminder.DueAt!.Value.ToString("O"), "UTC", true, true, 2));
+            Assert.Equal(HttpStatusCode.OK, change.StatusCode);
+        }
+        clock.UtcNow = state.Reminder.TriggerAt!.Value;
+        var queue = app.Services.GetRequiredService<IBackgroundJobStore>();
+        var claim = await queue.ClaimAsync(f.Organization, Guid.NewGuid(), ct); Assert.NotNull(claim);
+        var altered = mode switch
+        {
+            "tenant" => claim with { OrganizationId = Guid.NewGuid() },
+            "worker" => claim with { WorkerId = Guid.NewGuid() },
+            "lease" => claim with { LeaseId = Guid.NewGuid() },
+            "actor" => claim with { ActorId = Guid.NewGuid() },
+            "metadata" => claim with { SafeMetadataJson = System.Text.Json.JsonSerializer.Serialize(new
+                { reminderId = state.Reminder.Id, generation = state.Reminder.Generation + 1 }) },
+            _ => claim,
+        };
+        if (mode == "expired") clock.UtcNow = claim.LeaseExpiresAt;
+        var reminders = app.Services.GetRequiredService<ICardReminderStore>();
+        var notifications = app.Services.GetRequiredService<IWorkNotificationStore>();
+        var beforeReminder = await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct);
+        var beforeNotifications = await notifications.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct);
+        var concrete = Assert.IsType<StrataAI.Infrastructure.WorkManagement.InMemoryWorkManagementStore>(work);
+        var beforeAudits = concrete.AuditSnapshot(f.Organization);
+        var delivery = app.Services.GetRequiredService<ICardReminderDeliveryStore>();
+        Assert.Equal(mode is "generation" or "complete" ? CardReminderDeliveryResult.Superseded : CardReminderDeliveryResult.LeaseLost,
+            await delivery.DeliverAsync(altered, CardReminderAttempt.Parse(altered.SafeMetadataJson), ct));
+        Assert.Equal(beforeReminder, await reminders.FindAsync(f.Organization, f.Recipient, card.Id, ct));
+        Assert.Equal(beforeNotifications, await notifications.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct));
+        Assert.Equal(beforeAudits, concrete.AuditSnapshot(f.Organization));
+        Assert.DoesNotContain(await notifications.ListCardNotificationsAsync(f.Organization, f.Recipient, cancellationToken: ct),
+            n => n.NotificationType == "REMINDER_FIRED");
+        if (mode is not ("expired" or "generation" or "complete"))
+        {
+            await new CardReminderDeliveryHandler(delivery).ExecuteAsync(claim, ct);
+            Assert.True(await queue.CompleteAsync(f.Organization, claim.Id, claim.LeaseId, claim.WorkerId, ct));
+        }
     }
 }

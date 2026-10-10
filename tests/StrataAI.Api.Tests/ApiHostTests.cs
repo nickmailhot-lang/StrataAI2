@@ -314,15 +314,18 @@ public sealed partial class ApiHostTests
 }
 
 internal sealed class ApiFactory(string mode = "demo", Action<IServiceCollection>? configureServices = null, string environment = "Testing",
-    bool demoDeletionDispatch = false) : WebApplicationFactory<Program>
+    bool demoDeletionDispatch = false, bool demoReminderDispatch = false) : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment(environment);
         // Unit/source fixtures control committed simulation explicitly. Separate
         // automatic-dispatch tests opt in; normal Demo startup enables it.
-        builder.ConfigureServices(services => services.AddSingleton(
-            new StrataAI.Infrastructure.Organizations.DemoOrganizationDeletionSimulationOptions(demoDeletionDispatch)));
+        builder.ConfigureServices(services =>
+        {
+            services.AddSingleton(new StrataAI.Infrastructure.Organizations.DemoOrganizationDeletionSimulationOptions(demoDeletionDispatch));
+            services.AddSingleton(new StrataAI.Infrastructure.WorkManagement.DemoCardReminderProcessingOptions(demoReminderDispatch));
+        });
         if (configureServices is not null) builder.ConfigureServices(configureServices);
     }
 

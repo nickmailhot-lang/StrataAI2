@@ -101,6 +101,15 @@ internal sealed class InMemoryWorkNotificationStore(DemoWorkTransactionScope sco
         return Task.CompletedTask;
     }
 
+    internal Task AppendReminderAsync(CardNotification notification, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!scope.Owns(notification.OrganizationId) || notification.NotificationType != "REMINDER_FIRED" ||
+            notification.Id == Guid.Empty || notification.Id != notification.EventId || notification.RecipientId == Guid.Empty)
+            throw new InvalidOperationException("Demo reminder notification requires its originating transaction.");
+        return Append(notification);
+    }
+
     private Task Append(CardNotification? item)
     {
         if (item is null) return Task.CompletedTask;

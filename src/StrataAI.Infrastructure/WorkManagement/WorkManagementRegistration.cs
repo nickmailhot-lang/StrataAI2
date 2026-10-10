@@ -61,6 +61,11 @@ public static class WorkManagementRegistration
             services.AddSingleton<InMemoryCardReminderStore>();
             services.AddSingleton<ICardReminderStore>(provider => provider.GetRequiredService<InMemoryCardReminderStore>());
             services.AddSingleton<IDemoWorkTransactionParticipant>(provider => provider.GetRequiredService<InMemoryCardReminderStore>());
+            services.AddSingleton<ICardReminderDeliveryStore, InMemoryCardReminderDeliveryStore>();
+            services.AddSingleton<CardReminderDeliveryHandler>();
+            services.AddSingleton<IDemoCardReminderProcessing, InMemoryCardReminderProcessing>();
+            services.AddSingleton(new DemoCardReminderProcessingOptions());
+            services.AddHostedService<DemoCardReminderProcessingHost>();
             services.AddSingleton<InMemoryCardReminderJobPublisher>();
             services.AddSingleton<ICardReminderJobPublisher>(provider => provider.GetRequiredService<InMemoryCardReminderJobPublisher>());
             services.AddSingleton<IAttachmentScanJobPublisher, InMemoryAttachmentScanJobPublisher>();

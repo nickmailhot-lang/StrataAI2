@@ -330,6 +330,12 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
     if (suite.startsWith('browser-')) {
       precedes('Verify production account defaults and prepare isolated auth fixture', 'Install browser test dependencies');
     }
+    if (suite === 'browser-foundation') {
+      const demo = steps.find(step => step.name === 'Demo metadata, terminal and recipient lifecycle against exact API and web images');
+      assert.equal(demo?.env?.STRATAAI_E2E_RUNTIME_MODE, 'demo');
+      assert.ok(demo.run.includes("PLAYWRIGHT_JSON_OUTPUT_FILE=test-results/demo-reminders-report.json npx playwright test tests/browser/card-reminders.spec.ts --grep 'Demo seeded account' --reporter=list,json"),
+        'The same retained Demo images must execute both seeded-account real-clock reminder cases');
+    }
     if (suite === 'browser-notifications') {
       precedes('Prepare isolated identity mail transport and ephemeral signing keys', 'Identity mail against exact API/Worker images and restricted database role');
       precedes('Identity mail against exact API/Worker images and restricted database role', 'Strict verified-account watch producers through native private inboxes');

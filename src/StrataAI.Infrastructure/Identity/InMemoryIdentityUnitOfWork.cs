@@ -93,7 +93,7 @@ internal sealed class InMemoryIdentityUnitOfWork(ICommandActorAuthorization acto
             // Account/Organization -> Work is the shared lock order. Both gates must
             // remain held while restoring global snapshots after cleanup/receipt failure.
             if (includeWork) { await gate.WorkCommands.WaitAsync(cancellationToken); workHeld = true; }
-            using var owning = scope.Enter(actor);
+            using var owning = scope.Enter(actor, workCleanup: includeWork);
             rollback = participants.Select(participant => participant.CaptureRollback())
                 .Concat(includeWork ? workParticipants.Select(participant => participant.CaptureRollback()) : []).ToArray();
             var result = await operation(); cancellationToken.ThrowIfCancellationRequested();
