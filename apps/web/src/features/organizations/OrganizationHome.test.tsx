@@ -291,6 +291,9 @@ describe("PRD-01/03/04 organization discovery", () => {
     });
     mount('/app/org-1'); await screen.findByRole('link', { name: first.name });
     const next = screen.getByRole('button', { name: 'Next Board page' }); next.focus();
+    // The first page may render before its live admission probe completes.
+    // Reset the actual subscribed stream rather than an absent callback.
+    await waitFor(() => expect((stream === 'metadata' ? metadata : live).watch).toHaveBeenCalled());
     act(() => (stream === 'metadata' ? metadata : live).watch.mock.calls[0][0].reset());
     await waitFor(() => expect(finish).toBeDefined());
     expect(screen.queryByText(first.name)).not.toBeInTheDocument();

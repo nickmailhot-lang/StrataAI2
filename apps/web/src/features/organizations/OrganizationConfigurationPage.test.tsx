@@ -1,5 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import { appTheme } from '../../theme/appTheme';
 import { validateOrganizationMetadataSync } from './organizationMetadataSync';
 import { OrganizationConfigurationPage } from './OrganizationConfigurationPage';
 import { parseOrganizationConfiguration, type ConfigurationRevision } from './organizationConfiguration';
@@ -59,10 +61,16 @@ function mount(routeId = organizationId) {
   const router = createMemoryRouter([{ path: '/app/:organizationId/configuration', element: <OrganizationConfigurationPage /> },
     { path: '/login', element: <h1>Sign in</h1> }, { path: '/app/:organizationId', element: <h1>Organization destination</h1> }],
   { initialEntries: [`/app/${routeId}/configuration`] });
-  render(<RouterProvider router={router} />); return router;
+  // Exercise the same shared input styles and control behavior as the app.
+  render(<ThemeProvider theme={appTheme}><CssBaseline /><RouterProvider router={router} /></ThemeProvider>); return router;
 }
 const reviewButton = () => screen.getByRole('button', { name: 'Review configuration change' });
-async function review() { fireEvent.click(reviewButton()); return screen.findByRole('dialog', { name: 'Review configuration change' }); }
+async function review() {
+  // The fields render before the owning intake/read checks finish. Clicking
+  // a disabled Review button is a no-op, rather than the reviewed workflow.
+  await waitFor(() => expect(reviewButton()).toBeEnabled());
+  fireEvent.click(reviewButton()); return screen.findByRole('dialog', { name: 'Review configuration change' });
+}
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); sessionStorage.clear(); live.watch.mockClear(); configurationLive.watch.mockClear(); });
 describe('PRD-27 configuration form, human review and recovery', () => {
   it('keeps an acknowledged save and a new review open when that confirmed revision is delivered later', async () => {
@@ -81,13 +89,15 @@ describe('PRD-27 configuration form, human review and recovery', () => {
   it('closes stale review and history after a private source change while preserving the unsent draft', async () => {
     const state = fixture(); mount();
     fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Retained unsent configuration' } });
-    fireEvent.click(screen.getByRole('button', { name: 'View configuration history' }));
+    const history = await screen.findByRole('button', { name: 'View configuration history' });
+    await waitFor(() => expect(history).toBeEnabled()); fireEvent.click(history);
     await screen.findByRole('region', { name: 'Configuration history' });
     await review(); state.current = record(2, 'Changed by another administrator');
     await waitFor(() => expect(configurationLive.watch).toHaveBeenCalled());
     act(() => configurationLive.watch.mock.calls.at(-1)![0].invalidate());
     await screen.findByText('Current revision: 2');
-    expect(screen.queryByRole('dialog', { name: 'Review configuration change' })).not.toBeInTheDocument();
+    // The replacement state and the MUI exit transition finish independently.
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Review configuration change' })).not.toBeInTheDocument());
     expect(screen.queryByRole('region', { name: 'Configuration history' })).not.toBeInTheDocument();
     expect(screen.getByLabelText(/^Legal name/)).toHaveValue('Retained unsent configuration');
     await waitFor(() => expect(reviewButton()).toHaveFocus());
