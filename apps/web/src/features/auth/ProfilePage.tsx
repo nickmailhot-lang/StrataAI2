@@ -6,7 +6,7 @@ import { formatUserDateTime } from './userDateTime';
 import { validateIdentitySync } from './identitySync';
 import { watchIdentity } from './identityLive';
 import { MentionHandleDialog } from './MentionHandleDialog';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -51,6 +51,25 @@ function isProfile(value: unknown): value is UserProfile {
 type ProfileFailure = { message: string; reference: string | null };
 function ProfileError({ failure, severity = 'error', role }: { failure: ProfileFailure; severity?: 'error' | 'warning'; role?: 'status' }) {
   return <Alert severity={severity} role={role}><span>{failure.message}</span>{failure.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {failure.reference}</Typography>}</Alert>;
+}
+
+function DeactivationRecovery({ failure, busy, retry, signIn }: { failure?: ProfileFailure; busy: boolean; retry(): void; signIn(): void }) {
+  const [ready, setReady] = useState(false); const retryButton = useRef<HTMLButtonElement>(null);
+  // The confirmation Modal owns aria-hidden on its surrounding root. Its
+  // passive unmount cleanup must finish before announcing the replacement
+  // recovery screen and its accessible action together.
+  useEffect(() => setReady(true), []);
+  useLayoutEffect(() => { if (ready && !busy) retryButton.current?.focus(); }, [ready, busy]);
+  return <Paper variant="outlined" sx={{ p: 3, maxWidth: 720 }}><Stack spacing={2} aria-busy={busy}>
+    {!ready ? <CircularProgress aria-label="Preparing deactivation recovery" /> : <>
+      <Typography variant="h4" component="h2">Account deactivation</Typography>
+      {failure && <ProfileError failure={failure} />}
+      <Typography>This account's deactivation still needs confirmation.</Typography>
+      {busy && <CircularProgress aria-label="Confirming account deactivation" />}
+      <Button type="button" variant="contained" ref={retryButton} disabled={busy} onClick={retry}>Retry deactivation</Button>
+      <Button type="button" disabled={busy} onClick={signIn}>Go to sign in</Button>
+    </>}
+  </Stack></Paper>;
 }
 
 async function profileCommand(path: string, options: RequestInit, controller: AbortController, readBody: boolean) {
@@ -336,14 +355,7 @@ export function ProfilePage() {
   }
 
   if (deactivateUncertain) {
-    return <Paper variant="outlined" sx={{ p: 3, maxWidth: 720 }}><Stack spacing={2} aria-busy={busy}>
-      <Typography variant="h4" component="h2">Account deactivation</Typography>
-      {deactivateError && <ProfileError failure={deactivateError} />}
-      <Typography>This account's deactivation still needs confirmation.</Typography>
-      {busy && <CircularProgress aria-label="Confirming account deactivation" />}
-      <Button type="button" variant="contained" disabled={busy} onClick={() => void deactivate()}>Retry deactivation</Button>
-      <Button type="button" disabled={busy} onClick={() => navigate('/login', { replace: true })}>Go to sign in</Button>
-    </Stack></Paper>;
+    return <DeactivationRecovery failure={deactivateError} busy={busy} retry={() => void deactivate()} signIn={() => navigate('/login', { replace: true })} />;
   }
 
   if (error && !profile) {

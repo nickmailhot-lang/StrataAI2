@@ -120,3 +120,13 @@ it.each([409, 503])('PRD-02/03: pairs a deactivation refusal or uncertain respon
   if (status === 409) expect(await screen.findByRole('button', { name: 'Deactivate account' })).toBeEnabled();
   else expect(screen.getByRole('button', { name: 'Retry deactivation' })).toBeEnabled();
 });
+
+it('PRD-02/03: reveals an accessible focused recovery action when the uncertainty reference is announced', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(snapshot()).mockResolvedValueOnce(new Response('{}', {
+    status: 503, headers: { 'X-Correlation-ID': 'deactivation.recovery-focus' },
+  })));
+  renderProfile(); await confirm(); await screen.findByText('Reference: deactivation.recovery-focus');
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  const retry = screen.getByRole('button', { name: 'Retry deactivation' }); expect(retry).toBeEnabled(); expect(retry).toHaveFocus();
+  expect(screen.queryByText(profile.email)).not.toBeInTheDocument(); expect(screen.queryByLabelText('Display name')).not.toBeInTheDocument();
+});

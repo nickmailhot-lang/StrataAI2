@@ -1,5 +1,11 @@
 # Profile and account error references
 
+## Accessible deactivation recovery
+
+The exact `8a172a7c` web CI run failed the unchanged deactivation 503 reference/retry assertion: the retry control was present in a root still marked `aria-hidden`, leaving no accessible roles after the confirmation Dialog was removed. The recovery screen now publishes its error reference and retry controls after the prior Modal's unmount cleanup, and focuses the available retry action. It preserves the original deactivation intent, error wording/reference pairing, server/account boundaries and original assertions/deadlines. An added regression checks that the announced reference has an accessible, enabled and focused retry control while private profile fields remain absent.
+
+The combined configuration/profile focused run passed 138 cases before the later intake-retry addition. Type checking and lint passed. This source evidence does not establish every browser recovery branch or exact-image CI acceptance; those gates remain required.
+
 Profile initial reads, protected refreshes, saves, sign-out and deactivation
 now pair existing fixed wording with the validated response reference using
 the [public identifier contract](public-error-references.md). Each independent
