@@ -422,3 +422,13 @@ result remains retained, with the missing scoped Worker and keyboard-focus
 preconditions corrected while preserving original assertions and deadlines.
 All 323 browser cases remain collected into four complete file partitions.
 Settings response references do not complete other screens or immutable CI.
+
+
+## Authentication and recovery support references
+
+The [identity error-reference record](identity-error-references.md) retains six
+pre-repair failures, the initial 244/244 authentication pass and final
+309/309 authentication/API-boundary source pass after additional malformed,
+network, unreadable-acknowledgment and retry/cancellation coverage. Typecheck,
+lint and private web build pass. This does not substitute for current native
+browser or immutable-image CI acceptance.

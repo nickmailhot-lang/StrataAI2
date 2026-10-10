@@ -58,3 +58,47 @@ describe('PRD-02-TC-06/PRD-60-TC-07 recovery acknowledgment safety', () => {
     expect(screen.queryByText(/private-provider-password-details/)).not.toBeInTheDocument();
   });
 });
+
+
+it.each(cases)('PRD-02: $name displays the actual safe failure reference and preserves its details', async testCase => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"title":"private-provider-detail"}', {
+    status: 503, headers: { 'X-Correlation-ID': 'recovery.response-1' },
+  })));
+  mount(testCase);
+  await screen.findByText('Reference: recovery.response-1');
+  expect(screen.queryByText(/private-provider-detail/)).not.toBeInTheDocument();
+  testCase.fields.forEach((field, i) => expect(screen.getByLabelText(new RegExp(`^${field}`))).toHaveValue(testCase.values[i]));
+});
+
+
+it.each(cases)('PRD-02: $name rejects malformed references and invents none after a network failure', async testCase => {
+  const fetch = vi.fn().mockResolvedValueOnce(new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'private:diagnostic' } }))
+    .mockRejectedValueOnce(new Error('network diagnostic'));
+  vi.stubGlobal('fetch', fetch); mount(testCase);
+  await screen.findByRole('alert');
+  expect(screen.queryByText(/Reference:|private:diagnostic/)).not.toBeInTheDocument();
+  fireEvent.submit(screen.getByRole('form', { name: testCase.form }));
+  await act(async () => { await Promise.resolve(); });
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(screen.queryByText(/Reference:|network diagnostic/)).not.toBeInTheDocument();
+});
+it.each(cases)('PRD-02: $name retains the response reference if its success body cannot be read', async testCase => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: testCase.status, ok: true, headers: new Headers({ 'X-Correlation-ID': 'unreadable.response-1' }),
+    json: () => Promise.reject(new Error('private body error')) }));
+  mount(testCase); await screen.findByText('Reference: unreadable.response-1');
+  expect(screen.queryByText(/private body error/)).not.toBeInTheDocument();
+  expect(screen.queryByText(new RegExp(testCase.success))).not.toBeInTheDocument();
+});
+it.each(cases)('PRD-02: $name retires the old reference when retry starts and fences a late response after close', async testCase => {
+  let complete: ((response: Response) => void) | undefined;
+  const fetch = vi.fn().mockResolvedValueOnce(new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'previous.response-1' } }))
+    .mockImplementationOnce(() => new Promise<Response>(resolve => { complete = resolve; }));
+  vi.stubGlobal('fetch', fetch); const view = mount(testCase);
+  await screen.findByText('Reference: previous.response-1');
+  fireEvent.submit(screen.getByRole('form', { name: testCase.form }));
+  expect(screen.queryByText(/previous.response-1/)).not.toBeInTheDocument();
+  expect(fetch.mock.calls[1][1].headers.get('Idempotency-Key')).toBe(fetch.mock.calls[0][1].headers.get('Idempotency-Key'));
+  view.unmount();
+  await act(async () => { complete?.(new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'late.response-1' } })); });
+  expect(screen.queryByText(/late.response-1/)).not.toBeInTheDocument();
+});

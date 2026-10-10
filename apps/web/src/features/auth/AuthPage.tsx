@@ -1,3 +1,4 @@
+import { publicCorrelationReference } from '../../api/correlationReference';
 import { apiFetch } from '../../api/apiFetch';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -27,7 +28,10 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string>();
+  const [error, setFailure] = useState<{ message: string; reference: string | null }>();
+  function setError(message: string | undefined, reference: string | null = null) {
+    setFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
+  }
   const [notice, setNotice] = useState<string | undefined>(() => location.state?.accountDeactivated === true
     ? 'Your account is deactivated. Historical activity is preserved.' : undefined);
   const [verificationNeeded, setVerificationNeeded] = useState(false);
@@ -50,6 +54,7 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
     if (attempt.current?.body !== body || attempt.current.mode !== mode) attempt.current = { mode, body, key: crypto.randomUUID() };
     const current = () => pending.current === controller && !controller.signal.aborted;
     let deadline: ReturnType<typeof setTimeout> | undefined;
+    let reference: string | null = null;
     setSubmitting(true);
     setError(undefined);
     setNotice(undefined);
@@ -67,6 +72,7 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
           signal: controller.signal,
         },
       );
+          reference = publicCorrelationReference(response.headers?.get('X-Correlation-ID') ?? null);
           const result: unknown = await response.json().catch(() => ({}));
           return { response, result };
         })(),
@@ -79,7 +85,7 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
       if (!response.ok) {
         const problem = result as ApiProblem;
         if (response.status === 429) {
-          setError('Too many attempts. Please wait before retrying with the same details.');
+          setError('Too many attempts. Please wait before retrying with the same details.', reference);
           return;
         }
         const messages: Record<string, string> = {
@@ -93,7 +99,7 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
           identity_delivery_unavailable: 'Verification email is temporarily unavailable. Please retry later.',
           invalid_or_expired_invitation: 'This invitation is unavailable or does not match your email. Reopen the original invitation or sign in with an existing account.',
         };
-        setError(messages[problem.code ?? ''] ?? 'Authentication could not be confirmed. Please try again.');
+        setError(messages[problem.code ?? ''] ?? 'Authentication could not be confirmed. Please try again.', reference);
         setExpiredAttempt(problem.code === 'idempotency_key_expired' && mode === 'login');
         setVerificationNeeded(problem.code === 'email_verification_required' || (mode === 'register' && problem.code === 'idempotency_key_expired'));
         return;
@@ -123,7 +129,7 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
       if (onAuthenticated) onAuthenticated();
       else navigate('/app');
     } catch {
-      if (pending.current === controller) setError(`${mode === 'login' ? 'Sign-in' : 'Registration'} could not be confirmed. Retry with the same details to confirm this attempt.`);
+      if (pending.current === controller) setError(`${mode === 'login' ? 'Sign-in' : 'Registration'} could not be confirmed. Retry with the same details to confirm this attempt.`, reference);
     } finally {
       clearTimeout(deadline);
       if (pending.current === controller) { pending.current = undefined; setSubmitting(false); }
@@ -153,7 +159,7 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
             <Tab value="register" label="Register" disabled={submitting} />
           </Tabs>
 
-          {error ? <Alert severity="error">{error}</Alert> : null}
+          {error ? <Alert severity="error"><span>{error.message}</span>{error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}</Alert> : null}
           {expiredAttempt ? <Button disabled={submitting} onClick={() => { attempt.current = undefined; setExpiredAttempt(false); setError(undefined); }}>Start a new sign-in attempt</Button> : null}
           {notice ? <Alert severity="success" role="status">{notice}</Alert> : null}
           {verificationNeeded ? <Button component={Link} to="/verify-email">Request a verification link</Button> : null}

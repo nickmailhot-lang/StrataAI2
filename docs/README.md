@@ -250,3 +250,6 @@ identifiers, preserved error privacy and the remaining error-display review.
 
 [Organization settings error references](architecture/organization-settings-error-references.md) records response-bound
 support identifiers, account withdrawal and original-save recovery boundaries.
+
+[Authentication and recovery support references](architecture/identity-error-references.md) covers
+response-bound references, safe retry/cancellation and executed source checks.

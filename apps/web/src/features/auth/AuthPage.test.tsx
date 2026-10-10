@@ -188,3 +188,54 @@ describe('PRD-02 authentication UI', () => {
     ).toBeInTheDocument();
   });
 });
+
+
+describe('PRD-02 authentication support references', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it.each(['login', 'register'])('pairs %s errors with the actual safe response reference', async mode => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ title: 'private-provider-detail' }), {
+      status: 503, headers: { 'X-Correlation-ID': 'auth.response-1' },
+    })));
+    render(<MemoryRouter><AuthPage /></MemoryRouter>);
+    if (mode === 'register') {
+      fireEvent.click(screen.getByRole('tab', { name: 'Register' }));
+      fireEvent.change(screen.getByLabelText(/^Display name/), { target: { value: 'Person' } });
+    }
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'person@example.test' } });
+    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: 'correct-private-password' } });
+    fireEvent.click(screen.getByRole('button', { name: mode === 'login' ? 'Sign in' : 'Create account' }));
+    await screen.findByText('Reference: auth.response-1');
+    expect(screen.getByText('Authentication could not be confirmed. Please try again.')).toBeVisible();
+    expect(screen.queryByText(/private-provider-detail/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/^Password/)).toHaveValue('correct-private-password');
+  });
+});
+
+
+it('PRD-02: retains a received response reference for an unreadable login acknowledgment', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, status: 200, headers: new Headers({ 'X-Correlation-ID': 'login.unreadable-1' }),
+    json: () => Promise.reject(new Error('private-body')) }));
+  render(<MemoryRouter><AuthPage /></MemoryRouter>);
+  fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'person@example.test' } });
+  fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: 'correct-private-password' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+  await screen.findByText('Reference: login.unreadable-1');
+  expect(screen.getByText(/Retry with the same details/)).toBeVisible();
+  expect(screen.queryByText(/private-body/)).not.toBeInTheDocument();
+  vi.unstubAllGlobals();
+});
+it('PRD-02: clears a prior refusal reference on retry and rejects malformed new metadata', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(new Response('{}', { status: 429, headers: { 'X-Correlation-ID': 'login.refusal-1' } }))
+    .mockResolvedValueOnce(new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'private:diagnostic' } }));
+  vi.stubGlobal('fetch', fetch); render(<MemoryRouter><AuthPage /></MemoryRouter>);
+  fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: 'person@example.test' } });
+  fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: 'correct-private-password' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+  await screen.findByText('Reference: login.refusal-1');
+  fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+  expect(screen.queryByText(/login.refusal-1/)).not.toBeInTheDocument();
+  await screen.findByText('Authentication could not be confirmed. Please try again.');
+  expect(screen.queryByText(/Reference:|private:diagnostic/)).not.toBeInTheDocument();
+  expect(new Headers(fetch.mock.calls[1][1].headers).get('Idempotency-Key')).toBe(new Headers(fetch.mock.calls[0][1].headers).get('Idempotency-Key'));
+  vi.unstubAllGlobals();
+});

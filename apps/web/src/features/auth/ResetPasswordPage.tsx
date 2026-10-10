@@ -1,3 +1,4 @@
+import { publicCorrelationReference } from '../../api/correlationReference';
 import { useEffect, useState } from 'react';
 import { Alert, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -11,7 +12,10 @@ export function ResetPasswordPage() {
   const [confirmation, setConfirmation] = useState('');
   const { busy, request } = useRecoveryRequest();
   const [completed, setCompleted] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setFailure] = useState<{ message: string; reference: string | null }>();
+  function setError(message: string | undefined, reference: string | null = null) {
+    setFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
+  }
   useEffect(() => {
     // Fragments never reach Nginx/API logs; remove even the fragment from history.
     if (location.hash || location.search) navigate(location.pathname, { replace: true });
@@ -29,14 +33,14 @@ export function ResetPasswordPage() {
       setPassword('');
       setConfirmation('');
     } else {
-      setError(recoveryError(result.value, 'Password reset could not be confirmed. Your details are preserved. Retry or sign in with the new password if the earlier request completed.'));
+      setError(recoveryError(result.value, 'Password reset could not be confirmed. Your details are preserved. Retry or sign in with the new password if the earlier request completed.'), result.reference);
       if (result.status === 400 && recoveryObject(result.value).code === 'invalid_or_expired_token') setToken('');
     }
   }
   return <Container maxWidth="sm" sx={{ py: 6 }}><Paper variant="outlined" sx={{ p: 3 }}>
     <Stack component="form" onSubmit={submit} spacing={3} aria-label="Reset password" aria-busy={busy}>
       <Typography variant="h4" component="h1">Choose a new password</Typography>
-      {error ? <Alert severity="error">{error}</Alert> : null}
+      {error ? <Alert severity="error"><span>{error.message}</span>{error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}</Alert> : null}
       {completed ? <Alert severity="success" role="status">Password reset. Sign in with your new password.</Alert> : token ? <>
         <TextField label="New password" type="password" autoComplete="new-password" required disabled={busy} value={password} onChange={event => setPassword(event.target.value)} helperText="Use at least 12 characters. The server enforces your organization's policy." slotProps={{ htmlInput: { minLength: 12 } }} />
         <TextField label="Confirm new password" type="password" autoComplete="new-password" required disabled={busy} value={confirmation} onChange={event => setConfirmation(event.target.value)} />

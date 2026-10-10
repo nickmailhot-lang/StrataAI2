@@ -1,3 +1,4 @@
+import { publicCorrelationReference } from '../../api/correlationReference';
 import { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../../api/apiFetch';
 
@@ -20,6 +21,7 @@ export function useRecoveryRequest() {
     }
     let deadline: ReturnType<typeof setTimeout> | undefined;
     let cancelled: (() => void) | undefined;
+    let reference: string | null = null;
     try {
       const result = await Promise.race([
         (async () => {
@@ -27,8 +29,9 @@ export function useRecoveryRequest() {
           if (issuance || consumption) headers['Idempotency-Key'] = attempt.current!.key;
           const response = await apiFetch(path, { method: 'POST', headers,
             body: serialized, signal: controller.signal });
+          reference = publicCorrelationReference(response.headers?.get('X-Correlation-ID') ?? null);
           const value: unknown = await response.json();
-          return { status: response.status, value };
+          return { status: response.status, value, reference };
         })(),
         new Promise<never>((_, reject) => {
           cancelled = () => reject(new Error('Recovery request cancelled'));
@@ -42,7 +45,7 @@ export function useRecoveryRequest() {
         && (path !== '/auth/verify-email' || recoveryObject(result.value).emailVerified === true)) attempt.current = undefined;
       return result;
     } catch {
-      return pending.current === controller ? { status: 0, value: null } : undefined;
+      return pending.current === controller ? { status: 0, value: null, reference } : undefined;
     } finally {
       clearTimeout(deadline);
       if (cancelled) controller.signal.removeEventListener('abort', cancelled);
