@@ -50,7 +50,9 @@ The failures are the existing Card archive recovery timeout and the attachment
 rejection recovery-state assertion; neither is dismissed by the passing
 invitation checks. Report:
 `invitation-reference-source-20261010/full-source-private.json`.
-The full API suite for the preceding live-checkpoint repair remains running.
+The full API suite for the preceding live-checkpoint repair finished with
+**715/715 actual unique tests passed**, zero failures, errors, timeouts or skips.
+Report: `recipient-live-checkpoint-full-api-native-20261010/api.trx`.
 These are separate scopes; no full-suite pass is inferred from selected or
 native reference checks.
 Current immutable-image CI and complete NFR/PRD acceptance remain required.

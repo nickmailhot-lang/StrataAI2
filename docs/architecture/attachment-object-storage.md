@@ -619,6 +619,29 @@ invalid/large/complex encoded inputs, additional per-format recovery/role/lifecy
 cases and the full cross-feature/performance/AC/DoD matrix still need proof.
 Estimated PRD-14 work remaining: **32%**.
 
+## File rejection recovery publication
+
+The complete 2,075-case frontend invocation retained an attachment rejection
+assertion failure: the rejected-file state was visible before the parent's
+recovery callback had been observed. The same complete attachment and Board
+test files subsequently passed **57/57** without a source change, establishing
+that the full-suite failure must remain recorded as timing-sensitive.
+
+File upload recovery now publishes its retained-intent/blocked state in a
+layout effect, before paint. This lets the parent fence competing commands
+before displaying a retained selected file or original retry. The actual File,
+actor, digest, idempotency key, account checks, explicit discard and original
+request remain unchanged. No test assertion, case or deadline is relaxed.
+
+Both complete files pass **57/57** after the change; frontend type checking,
+lint and a production build pass. Private reports:
+`frontend-recovery-diagnostic-20261010.json` and
+`frontend-recovery-layout-final-20261010.json`.
+The new complete frontend run remains pending. The independently retained Card
+archive timeout and invitation authority-ordering gap remain unresolved; these
+selected results do not establish full source, browser or release acceptance.
+Estimated PRD-14 work remaining stays **32%**; the issue remains open.
+
 ## Unsupported contents and misleading file labels
 
 The browser's file-picker filter is guidance. File MIME labels and extensions do

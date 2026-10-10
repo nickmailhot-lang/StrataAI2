@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ownsRecoveryFocus } from './focusRecovery';
 import { Alert, Button, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
@@ -38,7 +38,9 @@ function FileControl(props: UrlAttachmentCreateProps) {
   useEffect(() => { mounted.current = true; return () => {
     mounted.current = false; pending.current?.abort(); callbacks.current.onBusyChange(false); callbacks.current.onRecoveryChange(false);
   }; }, []);
-  useEffect(() => { props.onRecoveryChange(!!intent || blocked); }, [intent, blocked, props.onRecoveryChange]);
+  // Publish retained-request recovery before paint so the parent fences other
+  // commands before the selected-file rejection/retry state becomes visible.
+  useLayoutEffect(() => { props.onRecoveryChange(!!intent || blocked); }, [intent, blocked, props.onRecoveryChange]);
   useEffect(() => { if (props.unavailable || !props.editable) pending.current?.abort(); }, [props.unavailable, props.editable]);
   useEffect(() => {
     if (!focusRequested.current || busy || props.disabled || props.unavailable || !props.editable) return;

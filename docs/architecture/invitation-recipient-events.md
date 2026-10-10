@@ -499,3 +499,12 @@ cases or snapshots from it are counted. Its leftover created web container was
 removed without touching running services. Original automatic Worker delivery,
 empty resets, account/consent fences and acknowledgement assertions remain.
 Estimated PRD-03 work remaining stays **8%**; no closure is justified.
+
+The complete unchanged Linux API suite for the checkpoint repair has now
+finished successfully: **715/715 actual unique test rows passed**, zero failures,
+errors, timeouts, aborted or unexecuted tests. The retained TRX counters agree
+with every actual result row. Report:
+`recipient-live-checkpoint-full-api-native-20261010/api.trx`.
+The owned API test container was removed; shared services were preserved.
+This full API result does not resolve the retained native acknowledgement-order
+failure or certify the isolated authority-readiness repair.
