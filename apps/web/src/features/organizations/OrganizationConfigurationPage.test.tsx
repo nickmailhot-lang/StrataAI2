@@ -38,8 +38,8 @@ function fixture(initial: ConfigurationRevision | null = record(1)) {
     if (url.startsWith(path + '/history')) return reply({ organizationId, items: state.current ? [state.current] : [], nextBeforeVersion: null });
     if (url === `/organizations/${organizationId}/boards/directory`) return reply({ organizationId, items: [{ id: boardId, name: 'Actual intake Board', version: 1 }], nextCursor: null });
     if (url === `/boards/${boardId}` && state.boardUnavailable) return reply({}, 503);
-    if (url === `/boards/${boardId}`) return reply({ board: { id: boardId, organizationId, name: 'Actual intake Board', lifecycleState: 'ACTIVE' },
-      access: { canAdminister: true }, lists: [{ list: { id: listId, organizationId, boardId, name: 'Actual intake List', lifecycleState: 'ACTIVE' } }] });
+    if (url === `/boards/${boardId}`) return reply({ board: { id: boardId, organizationId, name: 'Actual intake Board', lifecycleState: 'active' },
+      access: { canAdminister: true }, lists: [{ list: { id: listId, organizationId, boardId, name: 'Actual intake List', lifecycleState: 'active' } }] });
     throw new Error('Unexpected fixture route');
   }));
   return state;

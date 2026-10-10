@@ -101,12 +101,12 @@ export function readConfigurationIntakeBoard(organizationId: string, actorId: st
     const snapshot = await request(`/boards/${selected}`, expected, bounded) as Record<string, unknown> | null;
     const board = snapshot?.board as Record<string, unknown> | null;
     const access = snapshot?.access as Record<string, unknown> | null;
-    if (!snapshot || !board || board.organizationId !== id || board.id !== selected || board.lifecycleState !== 'ACTIVE'
+    if (!snapshot || !board || board.organizationId !== id || board.id !== selected || board.lifecycleState !== 'active'
       || !access || access.canAdminister !== true || !Array.isArray(snapshot.lists)) throw new WorkRequestError(404, null);
     const option = intakeOption(board); const seen = new Set<string>();
     const lists = snapshot.lists.map(value => {
       const item = value as Record<string, unknown> | null; const list = item?.list as Record<string, unknown> | null;
-      if (!list || list.organizationId !== id || list.boardId !== selected || list.lifecycleState !== 'ACTIVE') throw new WorkRequestError(503, null);
+      if (!list || list.organizationId !== id || list.boardId !== selected || list.lifecycleState !== 'active') throw new WorkRequestError(503, null);
       const result = intakeOption(list); if (seen.has(result.id)) throw new WorkRequestError(503, null);
       seen.add(result.id); return result;
     });
