@@ -427,3 +427,41 @@ CI remains unfinished. Event-time human captions/governance capacity snapshots,
 suspension/deactivation, remaining retention/schema/portal consistency, complete
 degraded/accessibility/telemetry and release acceptance still require work.
 Estimated work remaining: **55%**. No numbered criterion or scenario is closed.
+
+
+## Retained configuration attribution
+
+Migration 139 captures the actor caption, Organization administrative capacity,
+membership UUID and membership revision on each new immutable configuration
+source. The database derives these fields from the active Owner/Admin rather
+than accepting caller-supplied attribution. `ORGANIZATION_OWNER` and
+`ORGANIZATION_ADMIN` describe the actual configuration permission; governance
+titles do not grant that permission. Caption validation uses an explicit actor
+UUID fallback when a name cannot be retained safely.
+
+Legacy sources retain their original actor UUID and every original source field.
+Their caption is `Historical actor <UUID>`, their capacity is `UNRECORDED`, and
+both membership snapshot fields remain absent. The upgrade deliberately changes
+the current profile name before backfill and proves it is not borrowed as
+historical evidence. Tenant/actor membership identity is constrained; the stored
+historical membership revision remains independent of subsequent role changes.
+
+Attribution is private to the retained configuration journal. Existing event
+JSON, metadata broadcasts and Activity responses do not gain these fields in
+this increment. Dedicated caption/capacity readers, Demo parity and accessible
+Activity presentation remain required. Worker readiness transitions preserve all
+source fields, including attribution; even an elevated mutation cannot replace
+them. Forced RLS and private capture-function privileges remain intact.
+
+The restricted PostgreSQL configuration/readiness executable passes, including
+two source-time captions around a profile rename, captured Owner membership and
+capacity, and rejection of a forged attribution/readiness update. All 139
+readiness entries are exercised. The original complete migration runner passes
+clean/repeat/forward upgrades, concurrent serialization and failure rollback,
+including its unchanged earlier upgrade checks and the new historical backfill
+fixture. Both database runs used 1,817 frozen source hashes that match the staged
+source. The full Domain executable passes against the completed current build.
+API regression checks remain running; exact-image CI is still unfinished. No
+numbered criterion or linked scenario is closed. Estimated PRD work remaining
+stays **55%**, including lifecycle, retention/schema/portal consistency,
+attribution consumers, complete UX/telemetry and release acceptance.

@@ -40,6 +40,9 @@ internal static class OrganizationConfigurationDeliveryContract
         await using var provider = services.BuildServiceProvider();
         var configuration = Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance<OrganizationConfigurationService>(provider);
         var first = await configuration.ChangeAsync(tenant,actor,new("Private delivery legal name","CA-BC","UTC"),0,Guid.NewGuid(),"configuration-delivery-first",ct);
+        Require(first.Succeeded,"Configuration attribution first source did not commit.");
+        await using(var rename=new NpgsqlCommand("UPDATE users SET display_name='Renamed configuration owner',version=version+1,updated_at=clock_timestamp() WHERE id=@actor",admin))
+        { rename.Parameters.AddWithValue("actor",actor);Require(await rename.ExecuteNonQueryAsync(ct)==1,"Attribution fixture actor rename failed."); }
         var second = await configuration.ChangeAsync(tenant,actor,new("Private later legal name","CA-BC","UTC"),1,Guid.NewGuid(),new string('r',256),ct);
         Require(first.Succeeded && second.Succeeded,"Configuration delivery seed did not commit two source revisions.");
         var reader = provider.GetRequiredService<IOrganizationConfigurationEventReader>();
@@ -49,6 +52,34 @@ internal static class OrganizationConfigurationDeliveryContract
         var scope = await unit.ExecuteAsync(tenant,actor,null,false,async () =>
             OrganizationOperation<OrganizationConfigurationReadScope?>.Success(await reader.GetScopeAsync(tenant,actor,ct)),ct);
         Require(scope.Succeeded && scope.Value is { Binding.Role: OrganizationRole.Owner },"Restricted configuration recipient lost current Owner admission.");
+        await using(var attribution=new NpgsqlCommand("""
+            SELECT version,activity_actor_label,acting_capacity,source_membership_id,source_membership_version
+            FROM organization_configuration_events WHERE tenant_id=@tenant ORDER BY version;
+            """,admin))
+        {
+            attribution.Parameters.AddWithValue("tenant",tenant);await using var rows=await attribution.ExecuteReaderAsync(ct);
+            for(var version=1;version<=2;version++)
+            {
+                Require(await rows.ReadAsync(ct) && rows.GetInt64(0)==version
+                    && rows.GetString(1)==(version==1?"Configuration delivery owner":"Renamed configuration owner")
+                    && rows.GetString(2)=="ORGANIZATION_OWNER" && rows.GetGuid(3)==scope.Value!.Binding.MembershipId
+                    && rows.GetInt64(4)==scope.Value.Binding.MembershipVersion,
+                    "Configuration source attribution used a current caption or fabricated administrative capacity.");
+            }
+            Require(!await rows.ReadAsync(ct),"Configuration attribution duplicated a source.");
+        }
+        var forgeryDenied=false;
+        await using(var forged=new NpgsqlCommand("""
+            UPDATE organization_configuration_events SET activity_actor_label='Forged source caption',
+            acting_capacity='ORGANIZATION_ADMIN',source_membership_version=source_membership_version+1,
+            ready_at=created_at WHERE tenant_id=@tenant AND version=1;
+            """,admin))
+        {
+            forged.Parameters.AddWithValue("tenant",tenant);
+            try {await forged.ExecuteNonQueryAsync(ct);}
+            catch(PostgresException error) when(error.SqlState==PostgresErrorCodes.CheckViolation){forgeryDenied=true;}
+        }
+        Require(forgeryDenied,"Readiness transition admitted rewritten historical configuration attribution.");
         var initialCursor = codec.Encode(scope.Value!.Binding,0);
         var pending = await sync.ReadAsync(tenant,actor,initialCursor,ct:ct);
         Require(pending.Succeeded && pending.Value is { Pending: true, ResetRequired: false, Events.Count: 0 },
