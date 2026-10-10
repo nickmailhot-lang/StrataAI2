@@ -44,7 +44,7 @@ test('direct assignments and focus scrolling delegate unchanged and retain only 
   assert.equal(node.scrollLeft, 64945); assert.equal(f.calls[1][2], options);
   const evidence = f.samples();
   assert.deepEqual(evidence.samples[0], { at: 12, kind: 'scrollLeft', axis: 'horizontal', left: 40, top: 7,
-    arguments: [64945], pointer: { x: 195, y: 471 } });
+    arguments: [64945], pointer: { x: 195, y: 471 }, viewport: null });
   assert.equal(evidence.samples[1].kind, 'scrollIntoView');
   assert.doesNotMatch(JSON.stringify(evidence), /secret|private-content|nearest/);
 });
@@ -70,4 +70,17 @@ test('option accessors are evaluated only by the original operation', () => {
   const f = fixture(), node = new f.Element(); let reads = 0;
   node.scrollBy({ get left() { reads++; return 211; }, top: 0 });
   assert.equal(reads, 1); assert.deepEqual(f.samples().samples[0].arguments, [null, 0]);
+});
+
+test('scroll geometry retains only finite viewport numbers and never private rectangle fields', () => {
+  const f = fixture(), node = new f.Element();
+  node.clientWidth = 342; node.clientHeight = 500;
+  node.getBoundingClientRect = () => ({ left: 24, right: 366, top: 80, bottom: Infinity, privateBody: 'secret' });
+  node.scrollBy(-8, 0);
+  assert.equal(f.samples().schema, 2);
+  assert.deepEqual(f.samples().samples[0].viewport, { left: 24, right: 366, top: 80, bottom: null, width: 342, height: 500 });
+  assert.doesNotMatch(JSON.stringify(f.samples()), /secret|privateBody/);
+  node.getBoundingClientRect = () => { throw new Error('Geometry failure'); };
+  assert.equal(node.scrollBy(-8, 0), 'native-result');
+  assert.equal(f.samples().samples[1].viewport, null);
 });

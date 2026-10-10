@@ -2,10 +2,12 @@
 // Numerical diagnostics only; never retain entity IDs, content or credentials.
 export function installCapacityScrollDiagnostics() {
   type Sample = { at: number; kind: string; axis: string; left: number; top: number;
-    arguments: (number | null)[]; pointer: { x: number; y: number } | null };
+    arguments: (number | null)[]; pointer: { x: number; y: number } | null;
+    viewport: { left: number | null; top: number | null; right: number | null; bottom: number | null;
+      width: number | null; height: number | null } | null };
   const target = window as unknown as { __capacityScrollDiagnostics?: { schema: number; dropped: number; samples: Sample[] } };
   if (target.__capacityScrollDiagnostics) return;
-  const evidence = { schema: 1, dropped: 0, samples: [] as Sample[] };
+  const evidence = { schema: 2, dropped: 0, samples: [] as Sample[] };
   target.__capacityScrollDiagnostics = evidence;
   let pointer: { x: number; y: number } | null = null;
   document.addEventListener('pointermove', event => { pointer = { x: event.clientX, y: event.clientY }; });
@@ -19,8 +21,14 @@ export function installCapacityScrollDiagnostics() {
     try {
       const axis = element.getAttribute('data-kanban-scroll-axis');
       if (!element.hasAttribute('data-kanban-scroll') || axis !== 'horizontal' && axis !== 'vertical') return;
+      let viewport: Sample['viewport'] = null;
+      try {
+        const rect = element.getBoundingClientRect();
+        viewport = { left: numeric(rect.left), top: numeric(rect.top), right: numeric(rect.right),
+          bottom: numeric(rect.bottom), width: numeric(element.clientWidth), height: numeric(element.clientHeight) };
+      } catch { /* Geometry failure must not suppress the numerical operation evidence. */ }
       evidence.samples.push({ at: window.performance.now(), kind, axis, left: element.scrollLeft,
-        top: element.scrollTop, arguments: args, pointer });
+        top: element.scrollTop, arguments: args, pointer, viewport });
       if (evidence.samples.length > 2048) { evidence.samples.shift(); evidence.dropped++; }
     } catch { /* Keep the original browser operation authoritative. */ }
   };

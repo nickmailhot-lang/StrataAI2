@@ -1,5 +1,24 @@
 # Kanban release evidence
 
+## Current phone pointer-scroll investigation
+
+[CI run 38061080373](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38061080373)
+passed its source, image-build and security jobs, but its browser-foundation job
+failed the 390px large-Board pointer transfer: the observed empty destination
+was outside the viewport before release. Retained numerical diagnostics show
+scroll increments increasing from approximately 8px to 121px and then 210px as
+the pointer returned to the center. This is evidence of the failure, not yet a
+confirmed cause or a completed repair.
+
+Capacity scroll diagnostics now retain finite numerical viewport edges and
+client dimensions alongside native scroll operations and pointer coordinates.
+They exclude entity identifiers, text, credentials and rectangle metadata;
+geometry-read failures preserve native delegation and the remaining operation
+evidence. All six diagnostic contracts and browser TypeScript pass. The original
+capacity cases retain their assertions, 150-second deadline, zero retries and
+200-List/5,000-active-Card/100,000-archived-Card fixture. A fresh isolated native
+reproduction is running; it is not counted as passing release evidence.
+
 ## Keyboard destination recovery and current capacity evidence
 
 Two earlier runs ended in the large-Board rank/browser gate. At `19cb9916`,
