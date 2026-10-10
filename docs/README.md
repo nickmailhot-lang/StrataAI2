@@ -259,3 +259,6 @@ protected refresh, saves, sign-out, deactivation and retained verification bound
 
 [Primary-screen long-name reflow](architecture/primary-screen-reflow.md) records
 four-width long-content verification, MUI wrapping and release-collection scope.
+
+[ARCH-03 backend acceptance map](architecture/arch-03-acceptance.md) distinguishes
+implemented core boundaries, missing module coverage and the Demo job-store gap.
