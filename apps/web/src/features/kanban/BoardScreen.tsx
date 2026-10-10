@@ -585,8 +585,8 @@ function BoardContent() {
       )}
       <BoardDateProvider key={`${snapshot.board.organizationId}/${snapshot.board.id}`} snapshot={snapshot} unavailable={snapshotReading || !!loadError}
         onRevalidate={() => { setSnapshotReading(true); setReload(value => value + 1); }}>
-      <DndContext sensors={sensors} modifiers={[pointerScrollFrame.modify]} measuring={{ draggable: { measure: dragMeasurement.measure } }} autoScroll={{ order: TraversalOrder.ReversedTreeOrder,
-        canScroll: dragScroll.canScroll }} collisionDetection={args => {
+      <DndContext sensors={sensors} modifiers={[pointerScrollFrame.modify, dragScroll.observe]} measuring={{ draggable: { measure: dragMeasurement.measure } }} autoScroll={{ order: TraversalOrder.ReversedTreeOrder,
+        canScroll: dragScroll.libraryCanScroll }} collisionDetection={args => {
         const movingCard = String(args.active.id).startsWith('card:');
         const droppableContainers = args.droppableContainers.filter(value => {
           const cardTarget = String(value.id).startsWith('card:') || String(value.id).startsWith('card-end:');

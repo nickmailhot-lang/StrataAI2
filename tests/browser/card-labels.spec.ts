@@ -223,16 +223,22 @@ for (const width of [1280, 390]) {
       await expect(management.getByRole('button', { name: 'Reload labels', exact: true })).toBeEnabled();
       const editUrgent = management.getByRole('button', { name: 'Edit Urgent (purple)', exact: true });
       const reloadLabels = management.getByRole('button', { name: 'Reload labels', exact: true });
-      await expect(async () => {
-        if (!await editUrgent.isVisible()) {
-          await expect(reloadLabels).toBeEnabled({ timeout: 500 });
-          await reloadLabels.focus({ timeout: 500 }); await expect(reloadLabels).toBeFocused({ timeout: 500 });
-          await expect(reloadLabels).toBeEnabled({ timeout: 500 }); await reloadLabels.press('Enter', { timeout: 500 });
-        }
-        await expect(editUrgent).toBeEnabled({ timeout: 500 });
-      }).toPass({ timeout: 5_000 });
-      await pressAdmittedAction(editUrgent);
       const moveBefore = management.getByRole('combobox', { name: 'Move label before' });
+      // Reload and editor opening are reads/local selection, not commands.
+      // Establish the actual current editor after foreground admission can
+      // withdraw an unsubmitted activation. Never repeat a move or deletion.
+      async function openUrgentEditor() {
+        await expect(async () => {
+          if (!await moveBefore.isVisible()) {
+            const action = await editUrgent.isVisible() ? editUrgent : reloadLabels;
+            await expect(action).toBeEnabled({ timeout: 500 });
+            await action.focus({ timeout: 500 }); await expect(action).toBeFocused({ timeout: 500 });
+            await expect(action).toBeEnabled({ timeout: 500 }); await action.press('Enter', { timeout: 500 });
+          }
+          await expect(moveBefore).toBeEnabled({ timeout: 500 });
+        }).toPass({ timeout: 5_000 });
+      }
+      await openUrgentEditor();
       const moveMenu = page.getByRole('listbox', { name: 'Move label before', exact: true });
       await expect(async () => {
         if (!await moveMenu.isVisible()) {
@@ -260,9 +266,7 @@ for (const width of [1280, 390]) {
       const ordered = (await reordered.json()).items;
       expect(ordered.find((l: { id: string }) => l.id === labels[0]).rank < ordered.find((l: { id: string }) => l.id === labels[1]).rank).toBe(true);
       expect(ordered.find((l: { id: string }) => l.id === labels[0]).version).toBe(3);
-      await expect(management.getByRole('button', { name: 'Reload labels', exact: true })).toBeEnabled();
-      await pressAdmittedAction(management.getByRole('button', { name: 'Reload labels', exact: true }));
-      await pressAdmittedAction(editUrgent);
+      await openUrgentEditor();
       await expect(management.getByRole('button', { name: 'Delete label', exact: true })).toBeDisabled();
       const consent = management.getByRole('checkbox', { name: 'Confirm removal from all Cards' });
       await pressAdmittedAction(consent, 'Space'); await expect(consent).toBeChecked();

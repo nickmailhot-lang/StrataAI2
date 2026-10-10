@@ -33,6 +33,58 @@ the original native acceptance assertions and deadlines remain unchanged. The
 library's separately updated ancestor and rectangle arrays remain a possible
 mechanism to investigate, not a confirmed diagnosis of the CI failure.
 
+### Observed ancestor/rectangle mismatch
+
+A subsequent isolated diagnostic bundle instruments only the library's numeric
+auto-scroll measurements; it adds no product instrumentation or private entity
+data to the repository. All three original throttled capacity cases pass. In
+the tablet case, the actual Board is 472px wide, with edges at 272px and 744px,
+and the native pointer remains at 284px. The library's current three-ancestor
+array temporarily uses its previous four-rectangle array: the Board at index
+one is paired with a former 320px column rectangle. Three captured calculations
+produce speeds of 20.625, 71.25 and 126.09375 pixels per tick as that obsolete
+rectangle moves away from the native point.
+
+This directly confirms the mismatched measurement and excessive calculated
+speed in a local execution. It does not establish that all three calculations
+produced scroll operations, or reproduce the earlier failing phone CI case.
+The phone and desktop diagnostic executions have no such overspeed samples.
+The rejected guard remains rejected because its tablet acceptance failed.
+Current immutable-image acceptance remains required before claiming a repair.
+
+### Native-pointer controller acceptance
+
+The replacement controller takes current ancestor Element identities from the
+drag modifier and reads their live, clipped DOM geometry on each native-pointer
+tick. It bounds edge scrolling to ten pixels per five-millisecond tick and stops
+when the native point returns to the center, without waiting for the library's
+next rectangle measurement or React effect. Native direction uses actual pointer
+travel; keyboard scrolling continues through the existing dnd-kit path. Drag
+completion, cancellation, replacement and unmount retire the timer/listener.
+No library patch or diagnostic instrumentation is included in product assets.
+
+Ten focused controller/pointer-frame/measurement cases pass, alongside web types,
+lint and build. A fresh compiled-source Production API/separate Worker/Nginx and
+restricted schema-138 PostgreSQL run passes all three original capacity cases at
+fourfold CPU throttling: desktop 1280px (1.6 minutes), tablet 768px (1.5 minutes)
+and phone 390px (1.4 minutes), 5.8 minutes total. It preserves the 150-second
+scenario deadlines, zero retries, 200 Lists, 5,017 initial active Cards, 100,000
+archived Cards and complete archived-row fingerprint. Keyboard targets, pointer
+cancellation and persisted moves, unchanged siblings, mounted-row bounds,
+detail/focus recovery and accessibility assertions remain. All 462 captured
+source hashes match after completion; owned fixture cleanup completed.
+
+The complete unfiltered web rerun subsequently passes **2,219/2,219 across 148
+files**, with no pending cases and zero mismatches across all 470 captured source
+files. It runs after the native fixtures finish. The preceding complete run's
+unchanged List-copy case timed out at its original five-second limit; its full
+17-case file then passed independently, and now passes within the complete
+rerun. No deadline, assertion or retry was changed to obtain either pass.
+
+This proves the recorded local source scope. Current immutable build-once CI
+remains a separate requirement. No PRD acceptance criterion is closed from
+these three passing capacity cases or the complete source suite.
+
 ## Keyboard destination recovery and current capacity evidence
 
 Two earlier runs ended in the large-Board rank/browser gate. At `19cb9916`,

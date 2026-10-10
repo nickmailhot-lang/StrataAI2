@@ -37,8 +37,19 @@ for (const width of [1280, 390]) {
       await page.goto(route); await peer.goto(route);
       for (const target of [page, peer]) await expect(target.getByText('Live updates connected.', { exact: true })).toBeVisible();
       async function edit(target: Page, text = 'Initial preparation') {
-        const manage = target.getByRole('button', { name: 'Manage checklists', exact: true }); await pressAdmittedAction(manage);
+        const manage = target.getByRole('button', { name: 'Manage checklists', exact: true });
         const items = target.getByRole('button', { name: 'Manage items in Preparations', exact: true });
+        // Opening this current directory is read-only. A parent admission can
+        // withdraw its unsubmitted activation; observe the resulting current
+        // items before continuing. The later save commands remain single sends.
+        await expect(async () => {
+          if (!await items.isVisible()) {
+            await expect(manage).toBeEnabled({ timeout: 500 });
+            await manage.focus({ timeout: 500 }); await expect(manage).toBeFocused({ timeout: 500 });
+            await expect(manage).toBeEnabled({ timeout: 500 }); await manage.press('Enter', { timeout: 500 });
+          }
+          await expect(items).toBeEnabled({ timeout: 500 });
+        }).toPass({ timeout: 5_000 });
         await pressAdmittedAction(items);
         const review = target.getByRole('button', { name: 'Review checklist items', exact: true }); await pressAdmittedAction(review);
         const item = target.getByRole('button', { name: `Edit item: ${text}`, exact: true });

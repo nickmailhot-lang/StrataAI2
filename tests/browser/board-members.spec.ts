@@ -67,8 +67,23 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await expect(page.getByText(/This membership changed|Board membership changed/).first()).toBeVisible();
       await expect(page.getByRole('button', { name: 'Check current members' })).toBeEnabled();
       await page.getByRole('button', { name: 'Check current members' }).focus(); await page.keyboard.press('Enter');
-      await page.getByRole('button', { name: 'Make member: Jordan participant' }).focus(); await page.keyboard.press('Enter');
-      await page.getByRole('button', { name: 'Confirm member change' }).focus(); await page.keyboard.press('Enter');
+      const roleReview = page.getByRole('dialog', { name: 'Change Board role?', exact: true });
+      // Current membership delivery can cancel unsubmitted consent after the
+      // directory read. Reopen that review with current enabled focus, then
+      // send its mutation confirmation once, as in the removal flow below.
+      await expect(async () => {
+        if (!await roleReview.isVisible()) {
+          const makeMember = page.getByRole('button', { name: 'Make member: Jordan participant', exact: true });
+          await expect(makeMember).toBeEnabled({ timeout: 500 });
+          await makeMember.focus({ timeout: 500 }); await expect(makeMember).toBeFocused({ timeout: 500 });
+          await expect(makeMember).toBeEnabled({ timeout: 500 }); await makeMember.press('Enter', { timeout: 500 });
+        }
+        const confirm = roleReview.getByRole('button', { name: 'Confirm member change', exact: true });
+        await expect(confirm).toBeEnabled({ timeout: 500 });
+        await confirm.focus({ timeout: 500 }); await expect(confirm).toBeFocused({ timeout: 500 });
+        await expect(confirm).toBeEnabled({ timeout: 500 });
+      }).toPass({ timeout: 5_000 });
+      await roleReview.getByRole('button', { name: 'Confirm member change', exact: true }).press('Enter');
       await expect(page.getByText(/The member change could not be confirmed/)).toBeVisible();
       await page.getByRole('button', { name: 'Check current members' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Make administrator: Jordan participant' })).toBeVisible(); expect(roles).toBe(2);
@@ -80,10 +95,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         expect(route.request().headers()['if-match']).toBe(`"${currentVersion + 1}"`);
         expect((await route.fetch()).status()).toBe(204); await route.abort('timedout');
       });
-      await focusAdmittedControl(page.getByRole('button', { name: 'Remove from Board: Jordan participant', exact: true }));
-      await page.keyboard.press('Enter');
       const removalReview = page.getByRole('dialog', { name: 'Remove Board membership?', exact: true });
-      await expect(removalReview).toBeVisible();
       // A live directory read cancels unsubmitted consent. Reopen that review
       // after current admission; send the destructive confirmation only once.
       await expect(async () => {
@@ -93,6 +105,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
           await remove.focus({ timeout: 500 }); await expect(remove).toBeFocused({ timeout: 500 });
           await expect(remove).toBeEnabled({ timeout: 500 }); await remove.press('Enter', { timeout: 500 });
         }
+        await expect(removalReview).toBeVisible({ timeout: 500 });
         const confirm = removalReview.getByRole('button', { name: 'Confirm member change', exact: true });
         await expect(confirm).toBeEnabled({ timeout: 500 });
         await confirm.focus({ timeout: 500 }); await expect(confirm).toBeFocused({ timeout: 500 });

@@ -997,3 +997,72 @@ browser jobs on the same run remain failed, so successful commands/foundation/
 security do not establish whole-run `required-ci`, release bundle or current
 main acceptance. Current immutable-image CI and full original ticket criteria
 still govern closure.
+
+## Current directory-opening admission
+
+The retained `44a7232c` immutable-image run
+[38061080373](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38061080373)
+has additional terminal browser failures. Shard one fails desktop Board-member
+role consent and phone label editor opening. Shard two passes 84 scenarios and
+fails desktop checklist reopening after discard; its two general-mail cases are
+intentionally handled by the separate mail scope. The commands and notifications
+jobs pass, but these results do not establish successful required CI.
+
+The member trace reaches Confirm focus without the current role-review dialog.
+The label trace lacks the selected editor. The checklist trace presses Manage
+checklists after discard, but the resulting current directory is absent. These
+observations identify missing admission transitions; they do not independently
+establish the precise event that withdrew each unsubmitted opening.
+
+The affected browser workflows now observe the actual current role consent,
+label editor or checklist directory before proceeding. Bounded reactivation is
+limited to read-only directory/local-review opening. Role Confirm, label moves
+and deletion, checklist saves and their original exact versions, keys, bodies,
+write counts and persistence assertions are retained. The original five-second
+admission budgets, scenario deadlines and zero-retry policy remain.
+
+An initial strict four-case member/label execution passes both member cases and
+the phone label case, but desktop labels fail at a later directory reload after
+the move. Its final snapshot has the confirmed notice and Reload control, with
+no label directory, selected editor or loading state. The follow-up shares the
+current-directory/editor admission for both ordering and deletion preparation;
+it does not reactivate either command. That four-case follow-up finishes **3/4**:
+both label cases and desktop membership pass, while phone membership fails at
+the initial removal-dialog visibility check before its existing bounded consent
+reopening can run. The trace contains zero member DELETE requests. That visibility
+assertion now executes inside the same five-second consent-opening budget,
+before admitting its Confirm control; destructive confirmation remains outside
+the opening loop. Both failing invocations are retained.
+
+The final complete member/label invocation passes **4/4 on single attempts**:
+membership desktop 15.8 seconds and phone 14.4 seconds, labels desktop 27.1
+seconds and phone 26.5 seconds, 3.1 minutes including existing rate pacing.
+This separate run uses verified-account fixtures with actual API/Worker email
+enforcement enabled, compiled schema-138 Production API/separate Worker,
+restricted PostgreSQL and the same candidate web bundle through Nginx. All
+470 captured source hashes match after completion, and owned containers/database
+are independently absent. This supersedes the local failing opening scopes,
+without establishing the unique cause of the older immutable failures.
+
+The complete current checklist file passes **2/2 on single attempts**: desktop
+27.1 seconds and phone 22.8 seconds, 1.7 minutes including existing rate pacing.
+It uses compiled schema-138 Production API/separate Worker, restricted PostgreSQL,
+Nginx and the candidate native-pointer web bundle. The API retains the original
+general checklist-CI fixture's verification policy; it is not represented as a
+strict verified-account run. Conflict/dirty-draft retention, canonical versions,
+socket recovery, post-reconnect delivery, lost acknowledgment, revocation and
+accessibility assertions remain. All 470 captured source hashes match afterward;
+owned containers/database are independently absent.
+
+Two initial follow-up helpers fail before any browser case because their private
+configuration dependency link is missing; those setup failures are retained.
+Corrected helpers collect all four member/label and two checklist cases before
+execution. The current complete web run records **2,218 passed / one failed**:
+an unchanged List-copy case exceeds its original five-second limit. Its complete
+unchanged 17-case file subsequently passes in isolation. A fresh complete web
+run then passes **2,219/2,219 across 148 files**, with no pending cases and
+zero mismatches across all 470 captured source files. It executes after the
+native fixtures finish and includes the unchanged List-copy file. Current
+immutable-image acceptance remains required; neither these local browser cases
+nor the complete source suite closes a ticket. Planning estimates remain
+PRD-04 **15%**, PRD-05 **14%**, PRD-10 **35%** and PRD-13 **33%** work remaining.
