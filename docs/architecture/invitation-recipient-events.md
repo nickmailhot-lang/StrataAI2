@@ -550,9 +550,18 @@ That failure is retained at
 A separate Windows test invocation ran zero tests and is excluded from passing
 evidence; the 770 actual rows above come from the original complete Linux runner.
 
+The original complete PostgreSQL/automatic-Worker browser invocation now passes
+**6/6 actual cases on six first attempts**, zero retries or report errors, in
+**218,224.105 ms**, with the original **120,000 ms** case limits. This includes
+the previously failing acknowledgement link. The web asset set exactly matches
+the verified production build; independent checks confirm zero owned containers,
+databases or credential environments remain. Report:
+`recipient-authority-readiness-browser-native-20261010/report-private.json`.
+The preceding failed invocations remain retained independently.
+
 The candidate remains isolated and unmerged while all 24 original specialized
-PostgreSQL modes, the complete unfiltered persistence executable, original six
-browser cases and full Linux API suite run. No existing case, assertion,
+PostgreSQL modes, the complete unfiltered persistence executable and full Linux
+API suite run. No existing case, assertion,
 deadline or retry policy is weakened. Current main's complete frontend rerun
 and immutable-image CI also remain pending. Estimated PRD-03 work remaining:
 **8%**; no closure is justified by the scoped candidate results.
