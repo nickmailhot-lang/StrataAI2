@@ -33,6 +33,13 @@ export const appTheme = createTheme({
         root: { overflowWrap: 'anywhere' },
       },
     },
+    MuiCardContent: {
+      styleOverrides: {
+        // Card titles can be plain text rather than Typography. Keep complete
+        // canonical labels inside the preview instead of clipping at the Card.
+        root: { overflowWrap: 'anywhere' },
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
         // Non-empty keyframes retain MUI's autofill notification in production.
@@ -68,7 +75,8 @@ export const appTheme = createTheme({
       styleOverrides: {
         // Enabled text/background colors must become readable together. Preserve
         // shadow/border animation without tweening exempt disabled-state colors.
-        root: ({ theme }) => ({ transition: theme.transitions.create(['box-shadow', 'border-color']) }),
+        root: ({ theme }) => ({ overflowWrap: 'anywhere',
+          transition: theme.transitions.create(['box-shadow', 'border-color']) }),
       },
     },
     MuiAvatar: {

@@ -562,3 +562,14 @@ unchanged image-backed copy browser viewports and HTTP concurrency/lifecycle
 checks with strict verified-account hosts. Both Board image owners survive actual
 published-source deletion. The explicit local provider and scanner simulator do
 not establish external-provider operations or current full immutable acceptance.
+
+
+The [final Board/Card long-label reflow phase](primary-screen-reflow.md#board-and-card-long-label-reflow)
+passes 4/4 at desktop/tablet/mobile CSS widths with real schema-133 Production
+API/Worker/PostgreSQL, complete canonical preview and action labels, intrinsic
+column/drop-target/dialog guards and keyboard Card deep-link/focus restoration.
+The final complete frontend source suite passes 2,037/2,037 with unchanged
+per-case deadlines, two file workers and no retries. Earlier clipping/fixture
+failures and the first 2,034/2,037 source result remain retained. This does not
+replace current immutable/full CI or complete PRD acceptance. Estimated PRD-04
+work remaining stays **15%**; the ticket remains open.

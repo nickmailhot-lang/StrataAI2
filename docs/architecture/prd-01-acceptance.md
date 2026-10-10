@@ -269,3 +269,12 @@ deduplication requirements. The full schema-126 pre-route-repair Linux API suite
 also passes all 691 cases; [its source record](source-test-results.md) separates
 that proof from the six-case route repair and fresh full current invocation.
 No foundation or release requirement is waived; the estimate remains **34%**.
+
+
+The [final Board/Card long-label reflow phase](primary-screen-reflow.md#board-and-card-long-label-reflow)
+adds four passing viewport cases for complete previews, List actions/drop targets,
+keyboard metadata dialogs and Card deep-link/focus restoration. Final complete
+frontend source proof passes 2,037/2,037; baseline clipping and intermediate
+fixture/source failures remain documented separately. This is local runtime/source
+proof, not full FOUND-FR-008, accessibility or current immutable CI acceptance.
+Estimated PRD-01 work remaining stays **34%**; the ticket remains open.

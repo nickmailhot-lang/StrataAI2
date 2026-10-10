@@ -83,9 +83,15 @@ coordination, 16 concurrent claim contenders, schedule/cancellation, exact lease
 fences, retry/final-crash bounds and invalid error-code refusal. Private report:
 `demo-job-store-final-lease-architecture-native-20261010/api.trx`.
 
-The complete new API suite is still live independently; focused results are not
-full-suite proof. The earlier expanded binary's complete API run is also live
-and retained separately. Current complete Domain source proof passes 758/758
+The complete final API suite now passes **711/711**, with 711 unique execution
+IDs and matching declared counters, zero failed/error/timeout/aborted/pending
+or unexecuted results. The terminal process exits zero. It uses the final locked
+backend in the pinned .NET 10.0.12 Linux runtime and four actual source/content-root
+mappings; this is compiled source proof, not a release-image claim. Private report:
+`demo-job-store-final-full-api-native-20261010/api.trx`. The earlier expanded
+binary independently passes 705/705 and remains retained separately; it does
+not substitute for the final 711-case run. Both owned API test containers are
+absent after terminal cleanup. Current complete Domain source proof passes 758/758
 in the pinned Linux runtime. The latest locked solution builds with zero
 warnings/errors. Expanded-test import and assertion-analyzer build failures are
 retained separately from their corrected builds; no analyzer/assertion/deadline

@@ -86,3 +86,61 @@ The owned API/web/Worker containers, database and credential environments are
 independently absent after terminal cleanup. This whole-phase regression is
 separate from four-width primary-screen geometry and exact-image CI; it does
 not establish every Board permission/performance requirement.
+
+
+## Board and Card long-label reflow
+
+The added [four-width Board/Card cases](../../tests/browser/board-screen-reflow.spec.ts)
+exercise real private Boards with 100-character unbroken Board, List and Card
+labels at 1280/768/390/320 CSS pixels. They verify complete Card-preview text,
+intrinsic preview/drop-target/column/action widths, four enabled List/Card
+controls, document and open-dialog widths, keyboard Board edit/List rename
+cancellation, real Card deep-link opening/closing and restored canvas focus.
+The final protected Board read verifies the original labels and entity IDs.
+Intentional horizontal canvas scrolling remains supported.
+
+The initial native phase fails **0/4** on Card-preview intrinsic overflow;
+complete text and document width checks before it pass, while subsequent actions
+are not reached. The 768-pixel result also retains two diagnostics without source
+locations; their cause is unclassified. CardContent now wraps plain canonical
+titles, and MUI Button labels wrap without changing their existing transitions.
+The next phase records **3/4**: the desktop Board-edit field is absent after the
+keyboard action, after the geometry checks passed. The fixture then waits for
+both protected Board reads and the workspace's admitted non-busy state before
+acting. The following phase passes **4/4**, but predates the stronger drop-target
+and whole-column guards and does not prove those guards.
+
+With those final guards, all four widths fail again on the List-end drop-target's
+unbroken label. The actual drop Box now wraps complete text. The final native
+phase passes **4/4 on their only attempts**, zero skipped/flaky/unexpected cases
+or report errors, in **148,235.747 ms**. It uses compiled schema-133 Production
+API/separate Worker, fresh restricted PostgreSQL, strict email verification and
+Nginx/CSP. Original 90-second case budgets, 25-second pacing and no-retry settings
+remain. Independently checked terminal cleanup finds zero owned containers,
+databases or credential environments for the admitted and both column phases.
+All intermediate private reports remain separate:
+`board-screen-reflow-before-native-20261010`,
+`board-screen-reflow-after-native-20261010`,
+`board-screen-reflow-admitted-native-20261010`,
+`board-column-reflow-before-native-20261010` and
+`board-column-reflow-after-native-20261010`.
+
+The first complete source invocation on the CardContent/Button repair records
+**2,034/2,037**, with three existing five-second test deadline failures. The
+report is retained at `frontend-full-board-wrap-source-20261010/full-report.json`;
+concurrent compilation/API/browser workloads are not established as the sole
+cause. The complete final source invocation including the drop-target repair
+passes **2,037/2,037 actual assertions across 142 files**, zero failed/pending,
+with the same two file workers, original deadlines, within-case concurrency,
+unfiltered scope and no retry options. Its report is
+`frontend-full-board-column-wrap-source-20261010/full-report.json`.
+Final web/browser typechecks, lint, build and whitespace checks pass. Browser
+collection contains **331 cases in 126 intact files**, 83/83/83/82 across four
+shards, retaining original cases and single-file ownership.
+
+These results cover the named Board/Card states and four CSS viewports. They do
+not replace full permission, accessibility, physical-device, performance or
+current immutable-image CI acceptance. The previous 32-case Board phase above
+used the earlier Typography-only frontend; it is not relabeled as this final
+frontend's complete regression. PRD-01 remains open at **34% estimated work
+remaining** and PRD-04 at **15%** (planning estimates).
