@@ -1,5 +1,14 @@
 # Organization Types and configuration acceptance — PRD-27
 
+The separate configuration recovery-window primitive now passes seven focused
+scenarios and **825/825** complete Linux Domain cases, with all 530 recorded
+backend/Domain-test source hashes matching after completion. It blocks pending
+revisions and invalid/missing sources without borrowing the general all-member
+Organization stream. It has no recipient admission, owning reader, HTTP or
+SignalR registration yet. See [configuration replay window](organization-configuration.md#configuration-replay-window)
+for the exact scope and retained setup failures. Full acceptance remains open
+at **60% remaining**; no criterion or scenario is retired from this primitive.
+
 The delivery source's subsequent unfiltered Linux API report passed **781/781**
 without skipped, timed-out or aborted cases; all **641** backend/API-test source
 hashes matched after completion and its owned container was removed. The

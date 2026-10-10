@@ -172,3 +172,36 @@ also passed. These results establish their source/persistence scopes, not
 configuration recipient replay, complete PRD acceptance or a green image gate.
 
 The final canonical-deep-link frontend suite subsequently passed **2,216/2,216 across 148 files**, with zero mismatches across its 308-file frontend/browser manifest. The new delivery C# source has a separate unfiltered API run; immutable-image CI and complete PRD acceptance remain required. Estimated work remaining is **60%**. Configuration-specific authorized replay/SignalR and Activity, Demo authoritative audit parity, suspension/deactivation with historical access, remaining schema/retention/portal consistency, unsent/degraded/permission-loss branches, full accessibility/performance/telemetry and operator acceptance stay in scope. Worker readiness is a publication fact, not a grant to an active member.
+
+## Configuration replay window
+
+The Application layer now has a separate, pure configuration event-window
+builder. Configuration versions supply its tenant sequence; it does not borrow
+the all-member Organization metadata stream or audience. A current Owner/Admin
+read scope is still required from the future owning reader/coordinator. This
+builder grants no read authority and has no HTTP or SignalR registration.
+
+Only a contiguous ready prefix advances the cursor position. A pending revision
+blocks later publication, including page lookahead; missing, reordered, duplicate
+or future history resets the entire window. Foreign tenant sources, invalid
+source identity/correlation and a delivery time preceding the source time also
+reset. Pages are bounded to 100 with one lookahead row. The original body-free
+source event and its source clock are retained separately from delivery-ready
+time; this type carries no configuration revision fields. Result arrays are
+copied so the returned window does not retain a mutable caller list.
+
+Seven focused scenarios pass, and the complete compiled-source Linux Domain
+suite passes **825/825**, with no failures, errors, skips or unexecuted cases.
+All **530** captured backend/Domain-test source hashes match after completion;
+the readonly test container is removed. Build succeeds without warnings. The
+first focused invocation used an unsupported runner flag, and a new artifacts
+directory initially lacked restored assets; both setup failures are retained.
+Correct runner arguments and normal restore/build precede the passing runs;
+no assertion, deadline or retry changes are involved.
+
+This supplies the ordering/readiness primitive required by recipient recovery.
+Current Owner/Admin admission before and after IO, purpose-separated account and
+membership-bound cursors, the restricted owning reader, HTTP/SignalR projection,
+Activity and Demo parity, and complete current release acceptance remain
+unfinished. The estimate remains **60% remaining** and no numbered acceptance
+criterion or linked scenario is closed by this increment.
