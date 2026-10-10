@@ -279,6 +279,55 @@ describe("PRD-01/03/04 organization discovery", () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it.each(['metadata', 'boards'] as const)('keeps focused paging available during %s recovery and retires the superseded read', async stream => {
+    const first = { id: '44444444-4444-4444-8444-444444444444', name: 'First page Board', version: 1 };
+    const later = { id: '55555555-5555-4555-8555-555555555555', name: 'Later page Board', version: 2 };
+    let firstReads = 0, finish!: (value: Response) => void;
+    stubFetch(async path => {
+      if (path === '/organizations/org-1') return response(organizations[0]);
+      if (path.includes('?after=')) return response({ organizationId: 'org-1', items: [later], nextCursor: null });
+      if (++firstReads === 2) return new Promise<Response>(resolve => { finish = resolve; });
+      return response({ organizationId: 'org-1', items: [first], nextCursor: first.id });
+    });
+    mount('/app/org-1'); await screen.findByRole('link', { name: first.name });
+    const next = screen.getByRole('button', { name: 'Next Board page' }); next.focus();
+    act(() => (stream === 'metadata' ? metadata : live).watch.mock.calls[0][0].reset());
+    await waitFor(() => expect(finish).toBeDefined());
+    expect(screen.queryByText(first.name)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next Board page' })).toBe(next);
+    expect(next).toHaveFocus();
+    fireEvent.click(next);
+    await screen.findByRole('link', { name: later.name });
+    await act(async () => finish(response({ organizationId: 'org-1', items: [first], nextCursor: first.id })));
+    expect(screen.queryByText(first.name)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Next Board page' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'First Board page' })).toHaveFocus();
+  });
+  it.each(['PENDING', 'COMPLETED', 'account'] as const)('withdraws retained paging when lifecycle admission changes to %s', async state => {
+    const first = { id: '44444444-4444-4444-8444-444444444444', name: 'Private page Board', version: 1 };
+    stubFetch(async path => response(path === '/organizations/org-1' ? organizations[0]
+      : { organizationId: 'org-1', items: [first], nextCursor: first.id }));
+    mount('/app/org-1'); await screen.findByRole('link', { name: first.name });
+    screen.getByRole('button', { name: 'Next Board page' }).focus();
+    act(() => state === 'account' ? lifecycle.watch.mock.calls[0][0].accountUnavailable()
+      : lifecycle.watch.mock.calls[0][0].update(state));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Next Board page' })).not.toBeInTheDocument());
+    expect(screen.queryByText(first.name)).not.toBeInTheDocument();
+    if (state === 'account') expect(screen.getByRole('heading', { name: 'Sign in destination' })).toBeVisible();
+  });
+  it('withdraws the retained continuation if fresh Organization admission is denied', async () => {
+    const first = { id: '44444444-4444-4444-8444-444444444444', name: 'Private page Board', version: 1 };
+    let denied = false;
+    stubFetch(async path => denied ? response({}, 404) : response(path === '/organizations/org-1' ? organizations[0]
+      : { organizationId: 'org-1', items: [first], nextCursor: first.id }));
+    mount('/app/org-1'); await screen.findByRole('link', { name: first.name });
+    await waitFor(() => expect(metadata.watch).toHaveBeenCalledTimes(1));
+    screen.getByRole('button', { name: 'Next Board page' }).focus();
+    denied = true; act(() => metadata.watch.mock.calls[0][0].reset());
+    await screen.findByRole('alert');
+    expect(screen.queryByRole('button', { name: 'Next Board page' })).not.toBeInTheDocument();
+    expect(screen.queryByText(first.name)).not.toBeInTheDocument();
+  });
   it('replaces Board pages and returns to the first page without accumulating names', async () => {
     const first = { id: '44444444-4444-4444-8444-444444444444', name: 'First page Board', version: 1 };
     const later = { id: '55555555-5555-4555-8555-555555555555', name: 'Later page Board', version: 2 };

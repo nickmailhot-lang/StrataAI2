@@ -1036,3 +1036,28 @@ fresh full native watch/order, full current API source tests and the original
 results above retain their original scope and cannot substitute for current
 immutable-image or complete PRD acceptance. The ticket remains open at **15%
 estimated work remaining** (planning estimate).
+
+## Current schema-138 permission-order verification
+
+At main `c6a5bef81755b3cbcf19b3c3d6d4115f221a4113`, the complete unchanged
+`watch-permission-order.spec.ts` passes **4/4** unique Member, Admin,
+Organization Reader and Public Reader cases, with zero retries, skips or
+unexpected results, in 441,689 ms. The original 180-second case deadlines,
+observed Board lock ordering, exact protected-state hashes, original keyed
+Card replay, retained watches, denied notification reads, individual/bulk read
+races and permission restoration assertions are retained.
+
+This invocation uses current compiled Production API/separate Worker behind
+Nginx with restricted PostgreSQL/pgvector schema 138 and automatic metadata
+discovery. It exercises the general CI policy: API optional verified email,
+Worker mandatory verification. All **772** relevant backend/schema/browser
+source hashes match; this is an HTTP/SQL scenario without frontend rendering.
+Owned containers, temporary database and credential files are removed. Earlier
+local setup failures had mismatched strict-account policy and an asynchronous
+lock process outside the owned database; correcting the private adapter kept
+the original tests and their assertions unchanged.
+
+This does not identify or dismiss the older immutable full-state hash failures.
+Current exact-commit build-once CI, integrated notification/watch acceptance
+and all remaining PRD requirements are still required. Estimated PRD-17 work
+remaining stays **15%**. The issue remains open.

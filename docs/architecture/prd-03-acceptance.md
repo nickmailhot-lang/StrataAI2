@@ -693,3 +693,43 @@ The original two-worker invocation, test deadlines and assertions are retained.
 Current immutable success is not claimed from local verification. Other failures in that older browser run,
 current immutable execution and full acceptance remain required. Estimated
 PRD-03 work remaining stays **8%**.
+
+## Keyboard paging across live recovery
+
+The unchanged Board-directory native scenario reproduced the older immutable
+failure after Next was focused and global Enter was pressed. Retained network
+evidence shows that the API correctly returns 50 Boards and the one-Board final
+page, while the screen remains on its first page. Ordinary live reconciliation
+unmounted the focused paging control while withdrawing the private directory.
+
+Organization home now retains the continuation control for the same page during
+fresh admission. The control remains the same DOM element and keeps keyboard
+focus; Organization and Board names stay withdrawn until the account and tenant
+reads pass again. The continuation route confers no authority. Advancing the
+page cancels the old read and does not reuse its later response. Fresh denial,
+account loss and pending/completed lifecycle states retire the continuation;
+an earlier page cannot provide a later page's Next control.
+
+Both new metadata/Board recovery cases fail before the repair and pass after it.
+All **57/57** focused Organization home cases pass, including four retained-page
+admission/lifecycle withdrawal cases and the original account/focus checks.
+One new test initially invoked its mocked subscription before setup completed;
+waiting for that subscription corrected the test prerequisite without changing
+its denial assertions. Type checking, lint and the production web build pass.
+
+The complete unchanged native Organization/Board directory file passes **2/2**
+with zero retries, skips or unexpected results. It retains all 51 real
+Organization writes, all 51 Board writes, desktop and phone keyboard gestures,
+multiline names, focus, full page replacement and direct navigation assertions,
+as well as its original 120-second deadlines. Current API/Worker/web run behind
+Nginx against restricted PostgreSQL/pgvector schema 138, with the general CI
+API optional-verification and Worker mandatory-verification policy. All **933**
+runtime/browser source hashes match. The broader original manifest also records
+the one test-only prerequisite edit; runtime and original native tests did not
+change during the run. Owned fixture containers, database and credential files
+are removed. The complete unfiltered frontend suite passes **2,227/2,227**
+against the final test source, with zero failures/skips and all **470** frontend
+source hashes matching. The original two-worker invocation and test deadlines
+are retained. Current exact-commit immutable execution, other browser
+failures and full acceptance remain required. Estimated PRD-03 work remaining
+stays **8%**.

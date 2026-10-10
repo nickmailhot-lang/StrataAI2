@@ -104,6 +104,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const [loadError, setLoadError] = useState<Error>();
   const [reload, setReload] = useState(0);
   const [cursor, setCursor] = useState<string>();
+  // Continuation routes confer no authority. Keep their controls mounted during
+  // same-page admission recovery while private directory content is withdrawn.
+  const [paging, setPaging] = useState<{ after?: string; next: string | null }>();
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
@@ -158,11 +161,13 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
         actor.current = after.id; setLiveActor(after.id);
         if (organizationId) setLifecycleActor(after.id);
         setData({ organizations, boards, nextCursor });
+        setPaging({ after: cursor, next: nextCursor });
         setLoadError(undefined);
         setLiveNotice(value => value ? "Current Board access checked." : undefined);
       }
     }, controller.signal).catch((reason: unknown) => {
       if (controller.signal.aborted) return;
+      setPaging(undefined);
       setLiveActor(undefined); setData(undefined);
       if (reason instanceof WorkRequestError && reason.status === 401) {
         actor.current = undefined; setLifecycleActor(undefined); lifecycle.current = undefined; setLifecycleState(undefined);
@@ -179,7 +184,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   useEffect(() => {
     if (!organizationId || !lifecycleActor) return;
     const withdraw = () => {
-      read.current?.abort(); setData(undefined); setLoadError(undefined); setError(undefined); setCreating(false); setLiveActor(undefined);
+      read.current?.abort(); setData(undefined); setPaging(undefined); setLoadError(undefined); setError(undefined); setCreating(false); setLiveActor(undefined);
     };
     return watchOrganizationLifecycle({ organizationId, userId: lifecycleActor,
       update: state => {
@@ -229,6 +234,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
     (item) => item.organization.id === organizationId,
   )?.organization;
   const ownRole = data?.organizations.find(item => item.organization.id === organizationId)?.role;
+  const nextCursor = paging?.after === cursor ? paging?.next : undefined;
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -391,9 +397,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             )}
           </>
         )}
-        {(data || cursor) && <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
+        {lifecycleState !== 'PENDING' && lifecycleState !== 'COMPLETED' && (data || cursor || nextCursor) && <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
           {cursor && <Button ref={firstPage} disabled={creating && !organizationId} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setLoadError(undefined); setCreating(false); setCursor(undefined); }}>First {organizationId ? "Board" : "Organization"} page</Button>}
-          {data?.nextCursor && <Button ref={nextPage} disabled={creating && !organizationId} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setCreating(false); setCursor(data.nextCursor!); }}>Next {organizationId ? "Board" : "Organization"} page</Button>}
+          {nextCursor && <Button ref={nextPage} disabled={creating && !organizationId} onClick={() => { pageFocus.current = true; read.current?.abort(); setData(undefined); setCreating(false); setCursor(nextCursor); }}>Next {organizationId ? "Board" : "Organization"} page</Button>}
         </Stack>}
         {creating && !organizationId && liveActor && <OrganizationCreationDialog actorId={liveActor}
           onCancel={() => { creationFocus.current = true; setCreating(false); setData(undefined); setReload(value => value + 1); }}

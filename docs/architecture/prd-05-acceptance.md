@@ -548,3 +548,12 @@ included six early returns and cannot prove those checks executed.
 ## Complete combined strict Board verification
 
 The [complete fourteen-file/31-case strict invocation](integration-ci-groups.md#complete-fourteen-file-strict-board-invocation) passes together in 21.7 minutes with zero skips/retries/flaky cases. Current compiled Production API/separate Worker, frozen original-key recovery web, restricted schema-114 PostgreSQL17/pgvector and verified-email enforcement were used; owned fixtures were removed. Original complete scenario assertions and deadlines remain. This is local runtime evidence, not current immutable/full acceptance. Estimated PRD-05 work remaining: **14%**.
+
+The [current schema-138 permission-order invocation](prd-17-acceptance.md#current-schema-138-permission-order-verification)
+passes the complete unchanged four-role HTTP/SQL file under the general CI API
+optional-verification and Worker mandatory-verification policy, retaining real
+observed locks, exact protected-state hashes and original replay/withdrawal/read
+race assertions. All 772 relevant source hashes match and owned fixtures are
+removed. It does not explain the older immutable hash failures or replace
+current exact-image/full acceptance. Estimated PRD-05 work remaining stays
+**14%**; the issue remains open.
