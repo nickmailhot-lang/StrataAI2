@@ -1,5 +1,12 @@
 # Organization Types and configuration acceptance — PRD-27
 
+The delivery source's subsequent unfiltered Linux API report passed **781/781**
+without skipped, timed-out or aborted cases; all **641** backend/API-test source
+hashes matched after completion and its owned container was removed. The
+delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
+source/persistence evidence without closing Activity, recipient replay/SignalR
+or complete immutable-image acceptance. The estimate remains **60% remaining**.
+
 [PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Estimated work remaining: **60%**. This map preserves the complete ticket scope; classification, configuration storage/HTTP and the initial MUI workflow are increments, not complete tenant configuration acceptance.
 
 The [configuration foundation and HTTP contract](organization-configuration.md) include Domain validation, Application commands/history, Demo/PostgreSQL stores and configuration read/change/history routes. The focused Linux run passed 34 PRD-27 cases, including 10 HTTP cases; a new local Production HTTP scenario passed on its first attempt with real verified sessions and PostgreSQL. Restricted C# PostgreSQL persistence, foreign-intake scope regression, invariant namespace case/whitespace parity, complete migration upgrade/isolation/atomicity checks and all 137 API/Worker readiness entries also passed. An earlier unfiltered API run passed 774/774 against its recorded source snapshot; it predates the new bounded intake endpoint. The subsequent current unfiltered API run passed 781/781 with zero source-hash mismatches across 637 backend/API-test files. Newer namespace SQL/persistence-contract changes have separate restricted-runtime evidence. Earlier frontend source coverage passed 2,089/2,089 across 142 files with unchanged assertions/deadlines and two workers. MUI/realtime, remaining data/lifecycle review, complete deployed workflow and immutable-image/full acceptance remain unfinished. This supports portions of the requirements and scenarios below; it does not complete them or establish a released configuration workflow.

@@ -163,4 +163,12 @@ The delivery handler passed **17 focused cases** and the full compiled-source Li
 
 The initial discovery contract exposed an ambiguous unqualified SQL column; its failed run is retained, and discovery now routes through one indexed current row per Organization. An initial Windows Domain execution retained 16 failures involving local socket binding and timezone behavior; the unmodified Linux suite passed all 818. A source snapshot preparation attempt exceeded a Windows path limit before launching fixtures; the corrected shorter owned path was used for upgrade proof. These failures do not replace or weaken original assertions/deadlines.
 
+The separate unfiltered Linux API run completed **781/781**, with no failed,
+skipped, timed-out or aborted cases. All **641** recorded backend/API-test source
+files matched the worktree after completion. Its owned test container was
+removed and existing services were preserved. The delivery commit's PostgreSQL
+job in [CI run 38068687893](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38068687893)
+also passed. These results establish their source/persistence scopes, not
+configuration recipient replay, complete PRD acceptance or a green image gate.
+
 The final canonical-deep-link frontend suite subsequently passed **2,216/2,216 across 148 files**, with zero mismatches across its 308-file frontend/browser manifest. The new delivery C# source has a separate unfiltered API run; immutable-image CI and complete PRD acceptance remain required. Estimated work remaining is **60%**. Configuration-specific authorized replay/SignalR and Activity, Demo authoritative audit parity, suspension/deactivation with historical access, remaining schema/retention/portal consistency, unsent/degraded/permission-loss branches, full accessibility/performance/telemetry and operator acceptance stay in scope. Worker readiness is a publication fact, not a grant to an active member.
