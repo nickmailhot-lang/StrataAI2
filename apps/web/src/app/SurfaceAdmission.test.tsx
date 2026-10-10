@@ -14,6 +14,21 @@ function mount(surface: 'INTERNAL' | 'PORTAL' = 'INTERNAL', fallback = false) {
 const response = (organizationId: string, surface = 'INTERNAL') => new Response(JSON.stringify({ organizationId, surface }));
 
 describe('ARCH-02 current surface admission', () => {
+  it.each(['INTERNAL', 'PORTAL'] as const)('admits uppercase UUID routes using the canonical response without crossing surfaces (%s)', async surface => {
+    const id = 'abcdefab-cdef-4abc-8def-abcdefabcdef';
+    const fetcher = vi.fn((url: string) => { void url; return Promise.resolve(response(id, surface)); });
+    vi.stubGlobal('fetch', fetcher);
+    const router = createMemoryRouter([{ path: '/:organizationId', element:
+      <SurfaceAdmission surface={surface}><Content /></SurfaceAdmission> }], { initialEntries: [`/${id.toUpperCase()}`] });
+    render(<RouterProvider router={router} />);
+    expect(await screen.findByText(`Admitted ${id.toUpperCase()}`)).toBeVisible();
+    expect(fetcher.mock.calls[0][0]).toBe(`/organizations/${id}/surface-access?surface=${surface}`);
+    fetcher.mockImplementation(() => Promise.resolve(response(id, surface === 'INTERNAL' ? 'PORTAL' : 'INTERNAL')));
+    fireEvent.focus(window);
+    expect(await screen.findByText('Access could not be checked. Try again.')).toBeInTheDocument();
+    expect(screen.queryByText(`Admitted ${id.toUpperCase()}`)).not.toBeVisible();
+  });
+
   it('hides a retained MUI dialog and keeps its draft through explicit transport recovery', async () => {
     vi.useFakeTimers();
     function Draft() {

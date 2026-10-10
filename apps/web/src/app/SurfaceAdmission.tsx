@@ -11,7 +11,8 @@ type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previous
 export function SurfaceAdmission({ surface, children, deniedContent }: {
   surface: 'INTERNAL' | 'PORTAL'; children: ReactNode; deniedContent?: ReactNode;
 }) {
-  const { organizationId } = useParams();
+  const { organizationId: routeId } = useParams();
+  const organizationId = routeId?.toLowerCase();
   const scope = `${surface}:${organizationId ?? ''}`;
   const [result, setResult] = useState<Result>();
   const [retry, setRetry] = useState(0);

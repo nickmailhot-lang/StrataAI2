@@ -45,8 +45,9 @@ for (const width of [1280, 390]) {
           await route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ code: 'configuration_source_unavailable' }) });
         } else await route.fulfill({ response });
       });
-      await page.goto(destination);
+      await page.goto(`/app/${organizationId.toUpperCase()}/configuration`);
       await waitForInitialAuthority();
+      await expect(page.getByRole('link', { name: 'Back to Organization', exact: true })).toHaveAttribute('href', `/app/${organizationId}`);
       for (const [label, value] of [['Legal name', 'Original reviewed legal name'], ['Jurisdiction', 'CA-BC'], ['Organization timezone (IANA)', 'UTC']])
         await page.getByLabel(new RegExp('^' + label.replace(/[()]/g, '\\$&'))).fill(value);
       await page.getByRole('button', { name: 'Review configuration change', exact: true }).click();

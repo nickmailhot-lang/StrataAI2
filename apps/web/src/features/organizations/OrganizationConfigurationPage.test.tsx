@@ -1,11 +1,12 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import { validateOrganizationMetadataSync } from './organizationMetadataSync';
 import { OrganizationConfigurationPage } from './OrganizationConfigurationPage';
 import { parseOrganizationConfiguration, type ConfigurationRevision } from './organizationConfiguration';
 
-const live = vi.hoisted(() => ({ watch: vi.fn<(options: { invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
+const live = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string; invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
 vi.mock('./organizationMetadataLive', () => ({ watchOrganizationMetadata: live.watch }));
-const organizationId = '11111111-1111-4111-8111-111111111111';
+const organizationId = 'abcdefab-cdef-4abc-8def-abcdefabcdef';
 const actorId = '22222222-2222-4222-8222-222222222222';
 const boardId = '33333333-3333-4333-8333-333333333333';
 const listId = '44444444-4444-4444-8444-444444444444';
@@ -52,16 +53,29 @@ function fixture(initial: ConfigurationRevision | null = record(1)) {
   }));
   return state;
 }
-function mount() {
+function mount(routeId = organizationId) {
   const router = createMemoryRouter([{ path: '/app/:organizationId/configuration', element: <OrganizationConfigurationPage /> },
     { path: '/login', element: <h1>Sign in</h1> }, { path: '/app/:organizationId', element: <h1>Organization destination</h1> }],
-  { initialEntries: [`/app/${organizationId}/configuration`] });
+  { initialEntries: [`/app/${routeId}/configuration`] });
   render(<RouterProvider router={router} />); return router;
 }
 const reviewButton = () => screen.getByRole('button', { name: 'Review configuration change' });
 async function review() { fireEvent.click(reviewButton()); return screen.findByRole('dialog', { name: 'Review configuration change' }); }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); sessionStorage.clear(); live.watch.mockClear(); });
 describe('PRD-27 configuration form, human review and recovery', () => {
+  it('keeps uppercase UUID deep links in the canonical HTTP, realtime and return context', async () => {
+    fixture(); mount(organizationId.toUpperCase());
+    await screen.findByLabelText(/^Legal name/);
+    await waitFor(() => expect(live.watch).toHaveBeenCalled());
+    const options = live.watch.mock.calls.at(-1)![0];
+    expect(options.organizationId).toBe(organizationId);
+    expect(validateOrganizationMetadataSync({ organizationId, userId: actorId,
+      page: { cursor: 'opaque-canonical-cursor', events: [], hasMore: false, pending: false, resetRequired: false } },
+    options.organizationId, options.userId, new Map())).not.toBeNull();
+    expect(screen.getByRole('link', { name: 'Back to Organization' })).toHaveAttribute('href', `/app/${organizationId}`);
+    expect(reviewButton()).toBeEnabled();
+  });
+
   it('restores an unresolved original after remount without rebasing it to a newer current revision or automatically sending', async () => {
     const state = fixture(); mount();
     fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Original reviewed proposal' } });

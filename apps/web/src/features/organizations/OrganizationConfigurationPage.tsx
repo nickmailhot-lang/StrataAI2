@@ -29,7 +29,8 @@ function commandFailure(error: unknown) {
 }
 export function OrganizationConfigurationPage() {
   const { organizationId } = useParams();
-  return <ConfigurationPage key={organizationId} organizationId={organizationId ?? ''} />;
+  const canonicalId = organizationId?.toLowerCase() ?? '';
+  return <ConfigurationPage key={canonicalId} organizationId={canonicalId} />;
 }
 function ConfigurationPage({ organizationId }: { organizationId: string }) {
   const navigate = useNavigate();
