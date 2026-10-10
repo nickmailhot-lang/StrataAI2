@@ -85,6 +85,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Invitation command transactions](architecture/invitation-command-transactions.md)
 - [Retry-safe invitation creation](architecture/invitation-creation-retries.md)
 - [Verified-email invitation discovery and acceptance](architecture/invitation-discovery.md)
+- [Invitation support references and verified recovery evidence](architecture/invitation-error-references.md)
 - [Private invitation recipient source, protected SignalR replay and browser transport contract](architecture/invitation-recipient-events.md)
 - [Invitation parent/issuer authority invalidation and bounded Worker dispatch](architecture/invitation-recipient-authority.md)
 - [Account profile management (PRD-02)](architecture/profile-management.md)

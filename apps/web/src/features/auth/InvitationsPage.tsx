@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, CircularProgress, Container, Paper, Stack, Typography } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { publicCorrelationReference } from '../../api/correlationReference';
 import { watchInvitationRecipient, type InvitationRecipientInvalidation } from './invitationRecipientLive';
 
 type Invitation = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string; boardTarget?: { boardId: string; role: 'ADMIN' | 'MEMBER' } | null; boardName?: string | null };
@@ -36,7 +37,11 @@ async function request(path: string, controller: AbortController, method = 'GET'
       controller.signal.addEventListener('abort', abort, { once: true });
     });
     return await Promise.race([
-      apiFetch(path, { method, signal: controller.signal }).then(async response => ({ status: response.status, body: response.ok ? await response.json() as unknown : undefined })),
+      apiFetch(path, { method, signal: controller.signal }).then(async response => {
+        const reference = publicCorrelationReference(response.headers?.get('X-Correlation-ID') ?? null);
+        try { return { status: response.status, body: response.ok ? await response.json() as unknown : undefined, reference }; }
+        catch { throw new InvitationResponseFailure(reference); }
+      }),
       interrupted,
     ]);
   } finally {
@@ -44,12 +49,19 @@ async function request(path: string, controller: AbortController, method = 'GET'
   }
 }
 
-class AccountUnavailable extends Error { constructor(readonly status: number) { super('Invitation account unavailable'); } }
+class InvitationResponseFailure extends Error { constructor(readonly reference: string | null) { super('Invitation response unavailable'); } }
+class AccountUnavailable extends Error { constructor(readonly status: number, readonly reference: string | null = null) { super('Invitation account unavailable'); } }
+function failureReference(reason: unknown) {
+  return reason instanceof InvitationResponseFailure || reason instanceof AccountUnavailable ? reason.reference : null;
+}
 
 export function InvitationsPage() {
   const [page, setPage] = useState<Page>();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setFailure] = useState<{ message: string; reference: string | null }>();
+  function setError(message?: string, reference: string | null = null) {
+    setFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
+  }
   const [accepted, setAccepted] = useState<Invitation>();
   const [uncertain, setUncertain] = useState<Invitation>();
   const current = useRef<AbortController | undefined>(undefined);
@@ -71,19 +83,19 @@ export function InvitationsPage() {
       const response = await request('/me', controller);
       if (!valid(controller)) throw new AccountUnavailable(503);
       const id = (response.body as { id?: unknown } | undefined)?.id;
-      if (response.status === 401) throw new AccountUnavailable(401);
+      if (response.status === 401) throw new AccountUnavailable(401, response.reference);
       if (response.status !== 200 || typeof id !== 'string' || !uuid.test(id) || id === '00000000-0000-0000-0000-000000000000')
-        throw new AccountUnavailable(503);
-      if (expected && id !== expected) throw new AccountUnavailable(401);
+        throw new AccountUnavailable(503, response.reference);
+      if (expected && id !== expected) throw new AccountUnavailable(401, response.reference);
       return id;
     } catch (reason) {
-      throw reason instanceof AccountUnavailable ? reason : new AccountUnavailable(503);
+      throw reason instanceof AccountUnavailable ? reason : new AccountUnavailable(503, failureReference(reason));
     }
   }
-  function withdrawAccount(status: number) {
+  function withdrawAccount(status: number, reference: string | null = null) {
     setPage(undefined); setAccepted(undefined); setAccountReady(false);
     if (status === 401) { setUncertain(undefined); navigate('/login', { replace: true }); }
-    else setError('Unable to confirm the reviewed account. Refresh invitations before continuing.');
+    else setError('Unable to confirm the reviewed account. Refresh invitations before continuing.', reference);
   }
   async function load(after?: string) {
     if (current.current) return;
@@ -104,13 +116,13 @@ export function InvitationsPage() {
       reviewedActor.current = actor; setAccountReady(true);
       if (!mounted.current || current.current !== controller) return;
       if (response.status === 401) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); navigate('/login', { replace: true }); return; }
-      if (response.status === 403) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); setError('Verify your email before viewing invitations.'); return; }
-      if (response.status !== 200 || !validPage(response.body) || (after && response.body.nextCursor !== null && response.body.nextCursor.toLowerCase() <= after.toLowerCase())) throw new Error('Invalid invitation page');
+      if (response.status === 403) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); setError('Verify your email before viewing invitations.', response.reference); return; }
+      if (response.status !== 200 || !validPage(response.body) || (after && response.body.nextCursor !== null && response.body.nextCursor.toLowerCase() <= after.toLowerCase())) throw new InvitationResponseFailure(response.reference);
       setPage(response.body);
     } catch (reason) {
       if (mounted.current && current.current === controller && started === epoch.current) {
-        if (reason instanceof AccountUnavailable) withdrawAccount(reason.status);
-        else setError('Unable to load invitations. Please refresh and try again.');
+        if (reason instanceof AccountUnavailable) withdrawAccount(reason.status, reason.reference);
+        else setError('Unable to load invitations. Please refresh and try again.', failureReference(reason));
       }
     } finally {
       clearTimeout(deadline);
@@ -154,7 +166,7 @@ export function InvitationsPage() {
           clearTimeout(bootstrap); setConnecting(false);
           setAdmissionFailed(true);
           setAnnouncement('Invitation updates unavailable. Refresh invitations before continuing.');
-          withdrawAccount(reason instanceof AccountUnavailable ? reason.status : 503);
+          withdrawAccount(reason instanceof AccountUnavailable ? reason.status : 503, failureReference(reason));
         }
       } finally {
         if (current.current === admission) current.current = undefined;
@@ -170,6 +182,7 @@ export function InvitationsPage() {
   function expire() {
     if (document.activeElement?.closest('[data-invitation-disclosure]')) refreshButton.current?.focus();
     epoch.current++; refreshQueued.current = true;
+    setError(undefined);
     setPage(undefined); setAccepted(undefined); setAccountReady(false);
     setReloadVersion(value => value + 1);
   }
@@ -210,13 +223,13 @@ export function InvitationsPage() {
       if (response.status === 400 || response.status === 403 || response.status === 404 || response.status === 409) {
         setUncertain(undefined);
         setPage(previous => previous && { ...previous, items: previous.items.filter(item => item.id !== invitation.id) });
-        setError('This invitation is no longer available to your account. Refresh to check current invitations.'); return;
+        setError('This invitation is no longer available to your account. Refresh to check current invitations.', response.reference); return;
       }
       const ack = response.body as { invitationId?: string; organizationId?: string; surface?: string; targetRole?: string; boardTarget?: Invitation['boardTarget'] } | undefined;
       if (response.status !== 200 || ack?.invitationId !== invitation.id || ack.organizationId !== invitation.organizationId
         || ack.surface !== invitation.surface || ack.targetRole !== invitation.targetRole
         || (invitation.boardTarget == null ? ack.boardTarget != null
-          : ack.boardTarget?.boardId !== invitation.boardTarget.boardId || ack.boardTarget?.role !== invitation.boardTarget.role)) throw new Error('Invalid invitation acknowledgment');
+          : ack.boardTarget?.boardId !== invitation.boardTarget.boardId || ack.boardTarget?.role !== invitation.boardTarget.role)) throw new InvitationResponseFailure(response.reference);
       setAccepted(invitation);
       setUncertain(undefined);
       setPage(previous => previous && { ...previous, items: previous.items.filter(item => item.id !== invitation.id) });
@@ -224,8 +237,8 @@ export function InvitationsPage() {
       if (mounted.current && current.current === controller) {
         if (submitted) { setUncertain(invitation); setPage(undefined); }
         if (started === epoch.current) {
-          if (reason instanceof AccountUnavailable) withdrawAccount(reason.status);
-          else setError('Unable to confirm acceptance. You can retry this invitation safely.');
+          if (reason instanceof AccountUnavailable) withdrawAccount(reason.status, reason.reference);
+          else setError('Unable to confirm acceptance. You can retry this invitation safely.', failureReference(reason));
         }
       }
     } finally {
@@ -239,7 +252,9 @@ export function InvitationsPage() {
     <Typography variant="h4" component="h1">Your invitations</Typography>
     <Typography>Invitations matching your verified email appear here.</Typography>
     <Typography role="status" aria-live="polite" aria-atomic="true">{announcement}</Typography>
-    {error && <Alert severity="error">{error}</Alert>}
+    {error && <Alert severity="error"><span>{error.message}</span>
+      {error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}
+    </Alert>}
     {accepted && <Alert severity="success" data-invitation-disclosure>Invitation to {accepted.organizationName} accepted. <Link to={accepted.surface === 'PORTAL' ? `/portal/${accepted.organizationId}` : `/app/${accepted.organizationId}${accepted.boardTarget ? `/boards/${accepted.boardTarget.boardId}` : ''}`}>Open {accepted.surface === 'PORTAL' ? 'Owner Portal' : accepted.boardTarget ? 'Board' : 'organization'}</Link></Alert>}
     {(busy || connecting) && <CircularProgress aria-label="Loading invitation request" />}
     {uncertain && <Paper variant="outlined" sx={{ p: 2 }}><Stack spacing={1}>

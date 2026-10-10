@@ -55,3 +55,10 @@ now preserve response-bound references with atomic notice retirement. Verificati
 includes retained source/native missing-reference baselines, 95 selected source
 passes, all 2,067 frontend assertions and six actual server-refusal browser cases.
 Full immutable-image CI and complete user-visible-error acceptance remain pending.
+
+
+[Invitation disclosure and acceptance](invitation-error-references.md) now bind
+fixed public notices to safe actual response references. Retained missing-reference
+baselines, 75 selected source passes and four real server-refusal browser passes
+establish this consumer repair; full source and immutable-image evidence remain
+separate requirements. Live acknowledgement ordering remains incomplete.

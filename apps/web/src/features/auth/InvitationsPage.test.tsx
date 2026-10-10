@@ -419,3 +419,51 @@ it.each(['before', 'after'])('bounds account confirmation %s acceptance and fenc
   expect(screen.queryByRole('link', { name: 'Open Owner Portal' })).not.toBeInTheDocument();
   expect(screen.queryByText('Council')).not.toBeInTheDocument(); expect(commands).toHaveLength(phase === 'before' ? 0 : 1);
 });
+it('preserves the actual discovery refusal reference and retires it after explicit recovery', async () => {
+  stableFetch(vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ detail: 'private invitation detail' }),
+    { status: 503, headers: { 'X-Correlation-ID': 'invitation.discovery-1' } }))
+    .mockResolvedValue(reply({ items: [], nextCursor: null })));
+  mount(); await screen.findByText('Unable to load invitations. Please refresh and try again.');
+  await screen.findByText('Reference: invitation.discovery-1');
+  expect(screen.queryByText(/private invitation detail/)).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh invitations' }));
+  await screen.findByText('No pending invitations on this page.');
+  expect(screen.queryByText(/Reference:/)).not.toBeInTheDocument();
+});
+it('binds a rejected acceptance to its own response reference without exposing the body', async () => {
+  stableFetch(vi.fn().mockResolvedValueOnce(reply({ items: [invitation], nextCursor: null }))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ detail: 'private rejected invitation' }),
+      { status: 409, headers: { 'X-Correlation-ID': 'invitation.rejected-1' } })));
+  mount(); fireEvent.click(await screen.findByRole('button', { name: /^Accept invitation to/ }));
+  await screen.findByText('This invitation is no longer available to your account. Refresh to check current invitations.');
+  await screen.findByText('Reference: invitation.rejected-1');
+  expect(screen.queryByText(/private rejected invitation/)).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry invitation acceptance' })).not.toBeInTheDocument();
+});
+it('replaces an uncertain acceptance reference with a network-only notice on original-ID retry', async () => {
+  const writes: string[] = [];
+  stableFetch(vi.fn(async (input: string, init: RequestInit) => {
+    if (init.method !== 'POST') return reply({ items: [invitation], nextCursor: null });
+    writes.push(input);
+    if (writes.length === 1) return new Response('{}', { status: 503, headers: { 'X-Correlation-ID': 'invitation.uncertain-1' } });
+    throw new Error('private network diagnostic');
+  }) as typeof fetch);
+  mount(); fireEvent.click(await screen.findByRole('button', { name: /^Accept invitation to/ }));
+  await screen.findByText('Reference: invitation.uncertain-1');
+  const retry = screen.getByRole('button', { name: 'Retry invitation acceptance' });
+  await waitFor(() => expect(retry).toBeEnabled()); fireEvent.click(retry);
+  await screen.findByText('Unable to confirm acceptance. You can retry this invitation safely.');
+  await waitFor(() => expect(retry).toBeEnabled());
+  expect(writes).toHaveLength(2); expect(writes[0]).toBe(writes[1]);
+  expect(screen.queryByText(/Reference:|private network diagnostic/)).not.toBeInTheDocument();
+});
+it.each(['unsafe header', 'unsafe,header', 'unicode-é', 'x'.repeat(65)])('withholds unsafe invitation response references: %s', async reference => {
+  stableFetch(vi.fn().mockResolvedValue(new Response('{}', { status: 503, headers: { 'X-Correlation-ID': reference } })));
+  mount(); await screen.findByText('Unable to load invitations. Please refresh and try again.');
+  expect(screen.queryByText(/Reference:/)).not.toBeInTheDocument();
+});
+it('keeps the actual response reference when success JSON cannot be read', async () => {
+  stableFetch(vi.fn().mockResolvedValue(new Response('{', { status: 200, headers: { 'X-Correlation-ID': 'invitation.unreadable-1' } })));
+  mount(); await screen.findByText('Unable to load invitations. Please refresh and try again.');
+  await screen.findByText('Reference: invitation.unreadable-1');
+});
