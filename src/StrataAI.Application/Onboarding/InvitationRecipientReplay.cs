@@ -10,6 +10,7 @@ public interface IInvitationRecipientCursorCodec
 {
     string Encode(InvitationRecipientCursorBinding binding, long position);
     bool TryDecode(InvitationRecipientCursorBinding binding, string token, out long position);
+    bool TryDecodePriorAuthority(InvitationRecipientCursorBinding binding, string token, out long position);
 }
 public sealed record InvitationRecipientEvent(Guid EventId, string EventType,
     [property: JsonNumberHandling(JsonNumberHandling.WriteAsString)] long Sequence, DateTimeOffset CreatedAt);
@@ -51,6 +52,24 @@ public sealed record InvitationRecipientSyncPage(string Cursor, bool HasMore, bo
 public sealed class InvitationRecipientSynchronizationService(IInvitationRecipientEventReader reader,
     IInvitationRecipientCursorCodec cursors)
 {
+    // Only transport-owned, previously delivered checkpoints may use this
+    // continuity path. Ordinary HTTP/bootstrap cursor resets remain at head.
+    public async Task<IdentityOperation<string?>> RecoverLiveCheckpointAsync(Guid actorId, string prior,
+        string reset, CancellationToken cancellationToken = default)
+    {
+        var scope = await reader.GetScopeAsync(actorId, cancellationToken);
+        if (actorId == Guid.Empty || scope is null || scope.ActorId != actorId)
+            return IdentityOperation<string?>.Failure("account_unavailable");
+        if (!cursors.TryDecode(scope, reset, out var resetPosition)
+            || !cursors.TryDecodePriorAuthority(scope, prior, out var priorPosition)
+            || priorPosition > resetPosition)
+            return IdentityOperation<string?>.Success(null);
+        var head = await reader.GetHeadAsync(scope, cancellationToken);
+        if (await reader.GetScopeAsync(actorId, cancellationToken) != scope)
+            return IdentityOperation<string?>.Failure("account_unavailable");
+        if (resetPosition > head) return IdentityOperation<string?>.Success(null);
+        return IdentityOperation<string?>.Success(cursors.Encode(scope, priorPosition));
+    }
     public async Task<IdentityOperation<bool>> IsCursorCurrentAsync(Guid actorId, string cursor,
         CancellationToken cancellationToken = default)
     {
@@ -94,6 +113,14 @@ public sealed class InvitationRecipientSynchronizationService(IInvitationRecipie
 public sealed class TransactionalInvitationRecipientSynchronization(InvitationRecipientSynchronizationService replay,
     IIdentityUnitOfWork transactions, ICommandActorAuthorization actors)
 {
+    public Task<IdentityOperation<string?>> RecoverLiveCheckpointAsync(Guid actorId, string prior, string reset,
+        CancellationToken cancellationToken = default)
+        => transactions.ExecuteObservationAsync(actorId, null, async () =>
+        {
+            if (!await actors.VerifyAsync(actorId, cancellationToken)) return IdentityOperation<string?>.Failure("session_unavailable");
+            var result = await replay.RecoverLiveCheckpointAsync(actorId, prior, reset, cancellationToken);
+            return await actors.VerifyAsync(actorId, cancellationToken) ? result : IdentityOperation<string?>.Failure("session_unavailable");
+        }, cancellationToken);
     public Task<IdentityOperation<bool>> IsCursorCurrentAsync(Guid actorId, string cursor, CancellationToken cancellationToken = default)
         => transactions.ExecuteObservationAsync(actorId, null, async () =>
         {

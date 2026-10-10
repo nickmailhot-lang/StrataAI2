@@ -13,6 +13,54 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Fact]
+    public async Task Invitation_recipient_live_authority_change_recovers_actual_accepted_source_after_empty_reset()
+    {
+        var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
+        using var owner = app.CreateClient(); using var member = app.CreateClient();
+        var f = await NotificationFixture(app, owner, member, ct);
+        var profile = await member.GetFromJsonAsync<JsonElement>("/me", ct);
+        var email = profile.GetProperty("email").GetString()!;
+        using var createdBoard = await Mutate(owner, HttpMethod.Post, "/boards", new
+        { organizationId = f.Organization, name = "Live checkpoint Board", visibility = "PRIVATE" });
+        Assert.Equal(HttpStatusCode.Created, createdBoard.StatusCode);
+        var board = (await createdBoard.Content.ReadFromJsonAsync<JsonElement>(ct)).GetProperty("id").GetGuid();
+        var invite = await app.Services.GetRequiredService<BoardInvitationService>().CreateAsync(
+            board, f.Owner, email, BoardRole.Member, "live-checkpoint-create", ct);
+        Assert.True(invite.Succeeded);
+        using var socket = await LiveSocket(app, f.RecipientCookie, "/invitations/live");
+        await SendFrame(socket, new { type = 4, invocationId = "watch", target = "Watch", arguments = new string?[] { null } });
+        var initial = await StreamItem(socket);
+        Assert.True(initial.GetProperty("resetRequired").GetBoolean()); Assert.Empty(initial.GetProperty("events").EnumerateArray());
+        var prior = initial.GetProperty("cursor").GetString()!;
+        var replay = app.Services.GetRequiredService<TransactionalInvitationRecipientSynchronization>();
+        Assert.True((await replay.IsCursorCurrentAsync(f.Recipient, prior, ct)).Value);
+        // Demo invitation member grants deliberately publish their recipient
+        // source without the separate production Worker's authority delivery.
+        // Use an actual administrator command to exercise that delivery boundary.
+        using var authority = await Mutate(owner, HttpMethod.Patch, $"/boards/{board}",
+            new { name = "Changed live checkpoint Board", version = 1 });
+        Assert.Equal(HttpStatusCode.OK, authority.StatusCode);
+        Assert.False((await replay.IsCursorCurrentAsync(f.Recipient, prior, ct)).Value);
+        using var accepted = await Mutate(member, HttpMethod.Post, $"/me/invitations/{invite.Value!.Invitation.Id}/accept", new { });
+        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+        // The old token must stay invalid even when the live stream recovers
+        // a subsequent real invitation source across the authority reset.
+        Assert.False((await replay.IsCursorCurrentAsync(f.Recipient, prior, ct)).Value);
+        var history = await owner.GetFromJsonAsync<JsonElement>($"/boards/{board}/invitations", ct);
+        var canonical = Assert.Single(history.GetProperty("items").EnumerateArray());
+        var reset = await StreamItem(socket);
+        Assert.True(reset.GetProperty("resetRequired").GetBoolean()); Assert.Empty(reset.GetProperty("events").EnumerateArray());
+        var recovered = await StreamItem(socket);
+        Assert.False(recovered.GetProperty("resetRequired").GetBoolean());
+        var source = Assert.Single(recovered.GetProperty("events").EnumerateArray());
+        Assert.Equal("INVITATION_ACCEPTED", source.GetProperty("eventType").GetString());
+        Assert.Equal(canonical.GetProperty("acceptedAt").GetDateTimeOffset(), source.GetProperty("createdAt").GetDateTimeOffset());
+        Assert.Equal(new[] { "createdAt", "eventId", "eventType", "sequence" }, source.EnumerateObject().Select(p => p.Name).Order());
+        Assert.DoesNotContain(email, recovered.GetRawText()); Assert.DoesNotContain(board.ToString(), recovered.GetRawText());
+        Assert.DoesNotContain(f.Organization.ToString(), recovered.GetRawText());
+    }
+
     [Theory]
     [InlineData("expectedActorId=bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb")]
     [InlineData("expectedActorId=00000000-0000-0000-0000-000000000000")]

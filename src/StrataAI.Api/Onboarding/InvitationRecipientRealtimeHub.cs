@@ -32,7 +32,7 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
             if (reviewed is { Count: > 0 } && (reviewed.Value.Count != 1
                 || !Guid.TryParse(reviewed.Value[0], out var expected) || expected == Guid.Empty || expected != actor))
                 Denied("session_unavailable");
-            var initial = true; var heartbeat = 0;
+            var initial = true; var heartbeat = 0; string? deliveredCheckpoint = null;
             while (true)
             {
                 token.ThrowIfCancellationRequested();
@@ -41,6 +41,13 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
                 if (!result.Succeeded || result.Value is null)
                     Denied(result.ErrorCode is "session_unavailable" or "account_unavailable" ? "session_unavailable" : "invitation_sync_unavailable");
                 var page = result.Value!;
+                if (!initial && page.ResetRequired && deliveredCheckpoint is not null)
+                {
+                    var recovery = await replay.RecoverLiveCheckpointAsync(actor, deliveredCheckpoint, page.Cursor, token);
+                    if (!recovery.Succeeded) Denied(recovery.ErrorCode is "session_unavailable" or "account_unavailable"
+                        ? "session_unavailable" : "invitation_sync_unavailable");
+                    if (recovery.Value is { } recovered) page = page with { Cursor = recovered };
+                }
                 // Session I/O can outlive the account/email revision used by
                 // replay. Rebind its protected cursor before any delivery.
                 if (await CurrentActorAsync() != actor) Denied("session_unavailable");
@@ -48,6 +55,7 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
                 if (initial || page.ResetRequired || page.Events.Count > 0 || ++heartbeat >= 20)
                 {
                     yield return page;
+                    deliveredCheckpoint = page.Cursor;
                     heartbeat = 0;
                 }
                 initial = false; cursor = page.Cursor;

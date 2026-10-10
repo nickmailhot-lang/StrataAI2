@@ -10,6 +10,64 @@ namespace StrataAI.Domain.Tests;
 
 public sealed class InvitationRecipientReplayTests
 {
+    [Theory]
+    [InlineData("actor")]
+    [InlineData("email")]
+    [InlineData("account")]
+    [InlineData("equal")]
+    [InlineData("future")]
+    [InlineData("expired")]
+    [InlineData("tampered")]
+    public void Recipient_live_authority_continuity_refuses_changed_identity_or_invalid_checkpoint(string change)
+    {
+        var clock = new Clock(); using var provider = CodecProvider(clock);
+        var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
+        var prior = Binding with { AuthorityRevision = 1 }; var current = Binding with { AuthorityRevision = 2 };
+        var token = codec.Encode(prior, 7);
+        current = change switch
+        {
+            "actor" => current with { ActorId = Guid.NewGuid() },
+            "email" => current with { EmailNormalized = "OTHER@EXAMPLE.TEST" },
+            "account" => current with { AccountVersion = current.AccountVersion + 1 },
+            "equal" => current with { AuthorityRevision = 1 },
+            "future" => current with { AuthorityRevision = 0 }, _ => current
+        };
+        if (change == "expired") clock.UtcNow = clock.UtcNow.AddMinutes(15);
+        if (change == "tampered") token += "tampered";
+        Assert.False(codec.TryDecodePriorAuthority(current, token, out _));
+    }
+    [Fact]
+    public async Task Recipient_live_authority_continuity_rebinds_only_previous_position_without_history_read()
+    {
+        using var provider = CodecProvider(new Clock()); var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
+        var reader = new Reader { Scope = Binding with { AuthorityRevision = 1 } };
+        var service = new InvitationRecipientSynchronizationService(reader, codec); var ct = TestContext.Current.CancellationToken;
+        var prior = codec.Encode(Binding, 1); var reset = codec.Encode(reader.Scope, 2);
+        Assert.False(codec.TryDecode(reader.Scope, prior, out _));
+        var recovered = await service.RecoverLiveCheckpointAsync(Binding.ActorId, prior, reset, ct);
+        Assert.True(recovered.Succeeded); Assert.NotNull(recovered.Value);
+        Assert.True(codec.TryDecode(reader.Scope, recovered.Value, out var position)); Assert.Equal(1, position);
+        Assert.Equal(0, reader.Reads);
+        var ordinary = await service.ReadAsync(Binding.ActorId, prior, cancellationToken: ct);
+        Assert.True(ordinary.Succeeded); Assert.True(ordinary.Value!.ResetRequired); Assert.Empty(ordinary.Value.Events);
+        Assert.True(codec.TryDecode(reader.Scope, ordinary.Value.Cursor, out position)); Assert.Equal(2, position);
+    }
+    [Theory]
+    [InlineData("futurePrior")]
+    [InlineData("futureReset")]
+    [InlineData("wrongReset")]
+    [InlineData("account")]
+    public async Task Recipient_live_authority_continuity_refuses_unadmitted_or_ahead_of_head_positions(string kind)
+    {
+        using var provider = CodecProvider(new Clock()); var codec = provider.GetRequiredService<IInvitationRecipientCursorCodec>();
+        var reader = new Reader { Scope = Binding with { AuthorityRevision = 1 } };
+        var service = new InvitationRecipientSynchronizationService(reader, codec);
+        var priorBinding = kind == "account" ? Binding with { AccountVersion = 2 } : Binding;
+        var prior = codec.Encode(priorBinding, kind == "futurePrior" ? 3 : 1);
+        var reset = kind == "wrongReset" ? "corrupt" : codec.Encode(reader.Scope, kind == "futureReset" ? 3 : 2);
+        var result = await service.RecoverLiveCheckpointAsync(Binding.ActorId, prior, reset, TestContext.Current.CancellationToken);
+        Assert.True(result.Succeeded); Assert.Null(result.Value); Assert.Equal(0, reader.Reads);
+    }
     private static readonly InvitationRecipientCursorBinding Binding = new(Guid.NewGuid(), "RECIPIENT@EXAMPLE.TEST", 1);
     private static InvitationRecipientEvent Row(long sequence) => new(Guid.NewGuid(), "INVITATION_CREATED", sequence, DateTimeOffset.UtcNow);
 

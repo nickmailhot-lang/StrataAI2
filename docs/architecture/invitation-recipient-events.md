@@ -408,3 +408,60 @@ remain. Both cases pass in the final four-case recipient invocation. The origina
 baseline failed all four recipient cases. See
 [routing and interruption evidence](browser-recovery-ci.md#current-board-membership-authority-and-actual-recipient-interruption)
 for current runtime scope and release limits.
+
+
+## Live authority-reset continuity
+
+An already admitted recipient stream now retains its last delivered protected
+checkpoint across an authority-only change. The stream still emits an empty
+reset, then reads actual subsequent invitation sources from the previous
+position under the current authority binding. No invitation event is fabricated
+from an authority change or reset. Ordinary HTTP/bootstrap resets retain their
+existing current-head behavior.
+
+The recovery path is transport-owned: an arbitrary initial client cursor cannot
+request it. Protected tokens must have the same actor, normalized verified email
+and account version, a strictly older nonnegative authority revision, a valid
+unexpired payload and a position no later than the admitted reset or actual
+current head. The owning identity observation rechecks actor authorization and
+scope; fresh session/current-cursor admission still precedes live delivery.
+Changed identity, account version, malformed/expired tokens, future authority and
+future positions cannot recover history through this path.
+
+The initial API regression incorrectly expected Demo acceptance alone to rotate
+recipient authority. Its retained failure occurs at that expectation, not at
+source recovery. Demo intentionally publishes acceptance directly and excludes
+its member event from administrative authority projection; production has the
+separate Worker delivery. The corrected regression uses a real administrator
+Board update followed by real invitation acceptance. Its pre-repair baseline
+confirms invalidation and an empty reset, then fails at the subsequent actual
+source read within the original eight-second budget. The repaired invocation
+passes, including exact canonical acceptance timestamp and the four-field safe
+envelope. Baseline and repaired reports remain private:
+`recipient-live-checkpoint-authority-baseline-native-20261010/api.trx` and
+`recipient-live-checkpoint-repair-native-20261010/api.trx`.
+
+The final locked solution build passes with no warnings/errors. The complete
+final Domain suite passes **770/770 actual test rows**, zero failures/skips;
+this includes unchanged ordinary cursor/reset contracts and new continuity
+security positives/negatives. Private report:
+`recipient-live-checkpoint-full-domain-native-20261010/domain.xml`.
+Full API, original six-case PostgreSQL/Worker browser recovery and current
+immutable-image CI evidence remain required. No ticket is closed on these
+scoped results.
+
+
+The complete original six-case PostgreSQL/automatic-Worker invocation after
+this transport repair records **5 passed / 1 failed**, zero skipped/flaky cases,
+retries or report errors, in **202,515.373 ms**. All six reach the actual
+acceptance-event observation. The desktop Board case then fails at the required
+visible Open Board acknowledgement link (`recipient-invitation-expiry.spec.ts:90`).
+Its private static order shows acceptance source delivery followed by an
+additional authority reset. The original command and live invalidation fencing
+are preserved; this later acknowledgement recovery remains incomplete and must
+not be reported as full browser acceptance. The earlier phone missing-source
+failure and this later desktop failure are retained separately. Owned native
+containers, database and credential environments are removed. Report:
+`recipient-expiry-checkpoint-repair-native-20261010/report-private.json`.
+Estimated PRD-03 work remaining stays **8%**; current immutable-image CI and all
+original requirements remain necessary.
