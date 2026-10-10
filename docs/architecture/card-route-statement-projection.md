@@ -124,3 +124,18 @@ focused invitation and browser proofs. No timeout increase, graph reduction or
 retry has been introduced. Current exact-commit immutable-image CI and the full
 PRD acceptance criteria remain required; PRD-01's estimated remaining work stays
 **34%**.
+
+
+A subsequent private copy of the **complete original candidate contract**, with
+only initial-batch timing added, now passes using the same Npgsql client path.
+Removing that instrumentation reproduces the original source exactly; its SQL,
+assertions, graph, parameter handling and lease/deadline budgets are unchanged.
+The initial fixture batch takes **22,403.856 ms** with the actual configured
+Npgsql command timeout still **30 seconds**. The remaining original contract
+passes with **100,002 Cards / 100,000 archived**, the same **128-row** page bound,
+including private-free references, role/lease/identity fences and parent traversal.
+Independent checks confirm zero owned containers or credential environments.
+Report: `organization-deletion-candidate-seed-profile-native-20261010/safe-summary.json`.
+This is one fresh local observation, not a production latency distribution or
+proof that the CI timeout is repaired. The failed CI run and the separately live
+complete unfiltered candidate invocation remain required evidence.
