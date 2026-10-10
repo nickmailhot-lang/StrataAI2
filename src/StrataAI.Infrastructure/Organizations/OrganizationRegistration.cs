@@ -14,6 +14,7 @@ public static class OrganizationRegistration
         RuntimeDescriptor runtime)
     {
         services.AddSingleton<IOrganizationMetadataCursorCodec, DataProtectedOrganizationMetadataCursorCodec>();
+        services.AddSingleton<IOrganizationConfigurationCursorCodec, DataProtectedOrganizationConfigurationCursorCodec>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.TryAddSingleton<InMemoryAccountOrganizationGate>();

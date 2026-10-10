@@ -1,5 +1,16 @@
 # Organization Types and configuration acceptance — PRD-27
 
+Recipient-security components now include an owning-transaction coordinator with
+current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
+purpose-separated role/account/membership-bound encrypted cursor. Fifteen focused
+coordinator cases, two real API-host cursor cases and **840/840** complete Linux
+Domain cases pass. The complete Linux API run passes **783/783** with zero
+failures, skips or timeouts and all **704** backend source hashes matching.
+Only the codec is registered;
+the owning reader and HTTP/SignalR recipient workflow are still unfinished.
+See [recipient admission and cursors](organization-configuration.md#configuration-recipient-admission-and-cursors).
+This does not close any AC or linked scenario; **60% remaining** is unchanged.
+
 The separate configuration recovery-window primitive now passes seven focused
 scenarios and **825/825** complete Linux Domain cases, with all 530 recorded
 backend/Domain-test source hashes matching after completion. It blocks pending

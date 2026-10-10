@@ -205,3 +205,49 @@ membership-bound cursors, the restricted owning reader, HTTP/SignalR projection,
 Activity and Demo parity, and complete current release acceptance remain
 unfinished. The estimate remains **60% remaining** and no numbered acceptance
 criterion or linked scenario is closed by this increment.
+
+## Configuration recipient admission and cursors
+
+The Application coordinator now owns an Organization transaction before every
+scope, head or event read. It verifies the authenticated command actor and
+requires an active owning Organization, active membership, exact tenant/actor
+identity, nonempty membership identity, positive membership revision and current
+Owner/Admin role. Current authority is checked again after head/event IO; an
+account withdrawal, lifecycle change, demotion, membership replacement, revision
+change or even an allowed-role change discards the entire page. Ordinary members
+and invalid scopes cannot read the private stream head or events.
+
+Bootstrap and invalid/foreign cursors return a current reset cursor with no
+historical payload, after the same post-IO admission. Published reads use the
+separate configuration readiness window. A cursor-currentness operation performs
+its own owning transaction and repeats scope verification after decoding, for
+the later SignalR session-IO/yield boundary.
+
+The registered cursor codec has its own Data Protection purpose, separate from
+general Organization metadata. It binds tenant, account, membership identity,
+membership revision and Owner/Admin role, expires after 15 minutes, and rejects
+tampering, invalid positions and unauthorized bindings. Configuration and general
+Organization cursors cannot be exchanged even with otherwise matching IDs.
+
+Fifteen focused coordinator cases and both real API-host encrypted-cursor cases
+pass. The complete compiled-source Linux Domain suite passes **840/840**, with
+zero failures, errors, skips or unexecuted cases. API and Domain builds have zero
+warnings/errors. The complete unfiltered compiled-source Linux API suite passes
+**783/783**, with zero failures, errors, timeouts, skips or unexecuted cases.
+All **704** backend source hashes match the frozen verification manifest; the
+owned API verification container is removed. The initial test-source syntax
+error was corrected before the passing tests without changing their assertions.
+
+Only the codec is registered. There is no registered coordinator, owning event
+reader or HTTP/SignalR configuration stream yet. Restricted persistence must read
+actual `ready_at`; the old configuration source-event reader does not supply
+publication state. Production timestamp casts were also checked: PostgreSQL
+stores microseconds while immutable JSON source timestamps can retain finer
+precision. The eventual reader must preserve the original JSON source clock and
+actual stored publication clock without inventing either. Demo still requires
+authoritative audit/publication parity before its events can be called ready.
+
+These are recipient-security components, not a deployed recipient workflow.
+Activity, current authorized transport and client recovery, all lifecycle/data/
+retention/portal/UX/telemetry requirements and complete immutable-image acceptance
+remain in scope. PRD-27 stays open at **60% estimated work remaining**.
