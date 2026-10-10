@@ -890,3 +890,22 @@ This scoped local pass does not establish the old immutable failure's cause or
 full Checklist/release acceptance. The three original Board-member, Board-metadata
 and Card-label files now run independently on current compiled backend/frontend,
 with strict verification and unchanged scenario assertions/deadlines.
+
+
+The subsequent unchanged complete Board-member/metadata/Card-label phase passes
+**6/6 on their only attempts**, zero skipped/flaky/unexpected outcomes or report
+errors, in **299,464.072 ms**. Original conflict and committed/lost-response
+recovery, exact request/count/state checks, keyboard focus and geometry/assertion
+budgets remain. It uses the current final frontend with compiled schema-133
+publication-backend API/Worker (before the later Demo queue audit repair), fresh
+restricted PostgreSQL, Nginx/CSP and strict verified-account fixture policy.
+Owned containers, database and credential environments are independently absent.
+Private report: `board-ci-failures-schema133-current-native-20261010/report-private.json`.
+Together with the separately executed 4-case invitation and 2-case checklist files,
+this covers the five original source files containing the observed old browser
+failures. These were separate complete invocations, not one combined 12-case run.
+All retain single attempts and original deadlines. None reproduces the old
+immutable failures or proves their causes; current exact-image/full-release
+acceptance remains required. No fixture or product admission is weakened on
+that inference. PRD-04 stays open at **15%**, PRD-05 at **15%**, PRD-10 at **35%**
+estimated work remaining (planning estimates).

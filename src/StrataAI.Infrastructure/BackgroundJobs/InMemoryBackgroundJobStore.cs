@@ -14,7 +14,8 @@ namespace StrataAI.Infrastructure.BackgroundJobs;
 internal sealed class InMemoryBackgroundJobStore(IClock clock, DemoWorkTransactionScope scope,
     InMemoryAccountOrganizationGate gate) : IBackgroundJobStore, IDemoWorkTransactionParticipant
 {
-    private sealed record Entry(NewBackgroundJob Job, DateTimeOffset CreatedAt, DateTimeOffset AvailableAt,
+    private sealed record Entry(NewBackgroundJob Job, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset AvailableAt,
+        long Version = 1,
         string State = "PENDING", int Attempts = 0, Guid? Lease = null, Guid? Worker = null,
         DateTimeOffset? LeaseExpiresAt = null);
     private readonly Dictionary<(Guid Organization, string Type, string Key), Entry> _rows = new();
@@ -40,7 +41,8 @@ internal sealed class InMemoryBackgroundJobStore(IClock clock, DemoWorkTransacti
         if (_rows.ContainsKey(key)) return;
         if (_rows.Count >= 10000 || _rows.Values.Any(row => row.Job.Id == job.Id))
             throw new InvalidOperationException("Demo job publication is unavailable.");
-        _rows.Add(key, new(job, clock.UtcNow, job.AvailableAt ?? clock.UtcNow));
+        var now = clock.UtcNow;
+        _rows.Add(key, new(job, now, now, job.AvailableAt ?? now));
     }
 
     public Action CaptureRollback()
@@ -58,14 +60,16 @@ internal sealed class InMemoryBackgroundJobStore(IClock clock, DemoWorkTransacti
             var now = clock.UtcNow;
             foreach (var row in _rows.Where(row => row.Key.Organization == organizationId
                 && row.Value.State == "RUNNING" && row.Value.LeaseExpiresAt <= now && row.Value.Attempts >= 5).ToArray())
-                _rows[row.Key] = row.Value with { State = "FAILED", Lease = null, Worker = null, LeaseExpiresAt = null };
+                _rows[row.Key] = row.Value with { State = "FAILED", UpdatedAt = now, Version = row.Value.Version + 1,
+                    Lease = null, Worker = null, LeaseExpiresAt = null };
             var candidate = _rows.Where(row => row.Key.Organization == organizationId && row.Value.Attempts < 5
                 && (row.Value.State == "PENDING" && row.Value.AvailableAt <= now
                     || row.Value.State == "RUNNING" && row.Value.LeaseExpiresAt <= now))
                 .OrderBy(row => row.Value.AvailableAt).ThenBy(row => row.Value.CreatedAt).ThenBy(row => row.Value.Job.Id)
                 .FirstOrDefault();
             if (candidate.Value is not { } pending) return null;
-            var claimed = pending with { State = "RUNNING", Attempts = pending.Attempts + 1,
+            var claimed = pending with { State = "RUNNING", UpdatedAt = now, Version = pending.Version + 1,
+                Attempts = pending.Attempts + 1,
                 Lease = Guid.NewGuid(), Worker = workerId, LeaseExpiresAt = now.AddMinutes(2) };
             _rows[candidate.Key] = claimed;
             var job = claimed.Job;
@@ -94,10 +98,12 @@ internal sealed class InMemoryBackgroundJobStore(IClock clock, DemoWorkTransacti
         {
             var entry = _rows.FirstOrDefault(row => row.Key.Organization == organizationId && row.Value.Job.Id == jobId);
             var row = entry.Value;
-            if (row is null || row.State != "RUNNING" || row.Lease != leaseId || row.Worker != workerId || row.LeaseExpiresAt <= clock.UtcNow)
+            var now = clock.UtcNow;
+            if (row is null || row.State != "RUNNING" || row.Lease != leaseId || row.Worker != workerId || row.LeaseExpiresAt <= now)
                 return false;
             _rows[entry.Key] = row with { State = errorCode is null ? "SUCCEEDED" : row.Attempts >= 5 ? "FAILED" : "PENDING",
-                AvailableAt = errorCode is null ? row.AvailableAt : clock.UtcNow.AddSeconds(Math.Min(3600, 30 * Math.Pow(2, row.Attempts - 1))),
+                UpdatedAt = now, Version = row.Version + 1,
+                AvailableAt = errorCode is null ? row.AvailableAt : now.AddSeconds(Math.Min(3600, 30 * Math.Pow(2, row.Attempts - 1))),
                 Lease = null, Worker = null, LeaseExpiresAt = null };
             return true;
         }

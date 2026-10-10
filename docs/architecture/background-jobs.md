@@ -104,3 +104,37 @@ missing-scope denial, atomic rollback, duplicate publication, lease fencing,
 delayed retry, terminal failure, successful completion, and crash recovery.
 Application tests additionally cover dispatcher scope/service rejection, leased
 completion, shutdown, deadline cancellation, safe provider errors and lost leases.
+
+
+## Demo queue audit state
+
+The process-local [Demo store](../../src/StrataAI.Infrastructure/BackgroundJobs/InMemoryBackgroundJobStore.cs)
+now retains `CreatedAt`, `UpdatedAt` and a revision for each mutable queue record.
+New publication captures one actual clock instant for both timestamps and starts
+at revision 1. An admitted lease claim/reclaim, retry, completion or final expired
+lease retirement captures its actual mutation instant and increments the revision
+once. Creation time remains the first publication's time; schedule and lease
+expiry do not substitute for audit times. Duplicate/terminal publication, foreign
+Organization/Worker/lease completion, canceled claim and exhausted-terminal reads
+leave the audit state unchanged. Existing transaction snapshots restore clocks and
+revision along with payload/lease state. No public diagnostics route or provider
+is added; these are process-local metadata, reset with the owning API process.
+Existing two-minute leases, five attempts, tenant/work gate and idempotency remain.
+
+Before repair, the complete queue invariant class passes 7/10: all seven previous
+cases pass and the three new audit cases fail on missing stored fields. After
+repair, all three complete queue, reminder/actual-transaction and runtime-composition
+classes pass **17/17**, with 17 unique executions and matching counters, zero
+failed/error/timeout/aborted/pending/unexecuted results, in the pinned .NET 10.0.12
+Linux runtime with real source/content-root mappings. The locked solution build
+passes with zero warnings/errors. Private reports:
+`demo-job-audit-baseline-native-20261010/api.trx` and
+`demo-job-audit-focused-native-20261010/api.trx`. Owned test containers are removed
+after terminal results. Test observation reads actual private stored metadata;
+lease replies alone would not prove refused/no-op state preservation.
+
+The complete API suite on the repaired backend is running independently; the
+prior 711/711 publication-backend result is not relabeled as this repair's full
+suite. Current immutable-image CI and all Demo handlers/future module acceptance
+remain required. This prospective process-local repair does not reconstruct
+legacy PostgreSQL audit provenance or satisfy full FOUND-FR-009 by itself.

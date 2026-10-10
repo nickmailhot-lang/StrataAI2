@@ -278,3 +278,13 @@ frontend source proof passes 2,037/2,037; baseline clipping and intermediate
 fixture/source failures remain documented separately. This is local runtime/source
 proof, not full FOUND-FR-008, accessibility or current immutable CI acceptance.
 Estimated PRD-01 work remaining stays **34%**; the ticket remains open.
+
+
+The [Demo background-job audit repair](background-jobs.md#demo-queue-audit-state)
+adds actual first-publication/update timestamps and revisions to the new mutable
+process-local queue. Claims, retries, completion and final expiry record admitted
+mutations; duplicate/refused/canceled operations and rollback preserve the original
+audit state. Baseline 7/10 and repaired complete three-class 17/17 results are
+separate; full repaired API/current immutable CI remain pending. This does not
+resolve legacy persisted provenance or full FOUND-FR-009. Estimated PRD-01 work
+remaining stays **34%**, and the ticket remains open.

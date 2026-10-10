@@ -83,7 +83,8 @@ coordination, 16 concurrent claim contenders, schedule/cancellation, exact lease
 fences, retry/final-crash bounds and invalid error-code refusal. Private report:
 `demo-job-store-final-lease-architecture-native-20261010/api.trx`.
 
-The complete final API suite now passes **711/711**, with 711 unique execution
+The complete publication-backend API suite (before the subsequent audit repair
+below) passes **711/711**, with 711 unique execution
 IDs and matching declared counters, zero failed/error/timeout/aborted/pending
 or unexecuted results. The terminal process exits zero. It uses the final locked
 backend in the pinned .NET 10.0.12 Linux runtime and four actual source/content-root
@@ -105,3 +106,17 @@ acceptance. The current complete original Board phase passes 32/32, with
 independently verified fixture cleanup; its browser scope is separate from
 architecture acceptance. ARCH-04/05/06/07 dependencies and every DoD requirement
 remain.
+
+
+## Demo queue audit follow-up
+
+The [Demo audit repair](background-jobs.md#demo-queue-audit-state) closes the new
+queue record's creation/update/revision gap without changing lease admission,
+retry bounds or transaction ownership. Baseline queue class: 7/10, with all three
+new audit checks failing on absent fields. Repaired complete queue, actual Work
+transaction/reminder and runtime-composition classes: 17/17 unique executions,
+matching counters and zero non-passing results. Locked solution build has zero
+warnings/errors. Full repaired-backend API execution and current immutable-image
+CI remain pending; neither the prior 711-case binary nor the focused classes
+substitute for them. Complete Demo execution/future modules and all original
+architecture criteria remain. Estimated ARCH-03 work remaining stays **60%**.

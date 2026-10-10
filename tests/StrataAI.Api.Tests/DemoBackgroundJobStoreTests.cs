@@ -135,4 +135,90 @@ public sealed class DemoBackgroundJobStoreTests
         var claimed = Assert.Single(claims, claim => claim is not null); Assert.NotNull(claimed);
         Assert.Equal(job.Id, claimed.Id); Assert.Equal(1, claimed.AttemptCount);
     }
+
+    // Audit state is internal infrastructure, not a new public diagnostics route.
+    // Observe the actual stored record; successful lease responses alone cannot
+    // prove refused/no-op operations preserved its clocks and revision.
+    private static (DateTimeOffset Created, DateTimeOffset Updated, long Version) Audit(Fixture fixture, Guid id)
+    {
+        var field = typeof(InMemoryBackgroundJobStore).GetField("_rows", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        var rows = Assert.IsAssignableFrom<System.Collections.IDictionary>(field.GetValue(fixture.Store));
+        var row = Assert.Single(rows.Values.Cast<object>(), value => ((NewBackgroundJob)value.GetType().GetProperty("Job")!.GetValue(value)!).Id == id);
+        object Value(string name)
+        {
+            var property = row.GetType().GetProperty(name); Assert.NotNull(property);
+            return property.GetValue(row)!;
+        }
+        return (Assert.IsType<DateTimeOffset>(Value("CreatedAt")), Assert.IsType<DateTimeOffset>(Value("UpdatedAt")), Assert.IsType<long>(Value("Version")));
+    }
+
+    [Fact]
+    public async Task FOUND_FR_009_Demo_job_audit_tracks_admitted_changes_and_preserves_refusals_duplicates_and_rollback()
+    {
+        var f = new Fixture(); var ct = TestContext.Current.CancellationToken;
+        var worker = Guid.NewGuid(); var job = Job(Guid.NewGuid()); var created = f.Clock.UtcNow;
+        f.Publish(job); Assert.Equal((created, created, 1L), Audit(f, job.Id));
+        f.Clock.UtcNow = created.AddMinutes(1); f.Publish(job with { Id = Guid.NewGuid() });
+        Assert.Equal((created, created, 1L), Audit(f, job.Id));
+        Assert.Null(await f.Store.ClaimAsync(Guid.NewGuid(), worker, ct));
+        Assert.Equal((created, created, 1L), Audit(f, job.Id));
+        using (var cancelled = new CancellationTokenSource())
+        {
+            cancelled.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => f.Store.ClaimAsync(job.OrganizationId, worker, cancelled.Token));
+        }
+        var lease = await f.Store.ClaimAsync(job.OrganizationId, worker, ct); Assert.NotNull(lease);
+        var claimed = Audit(f, job.Id); Assert.Equal((created, f.Clock.UtcNow, 2L), claimed);
+        f.Clock.UtcNow = f.Clock.UtcNow.AddSeconds(1);
+        Assert.False(await f.Store.CompleteAsync(job.OrganizationId, job.Id, Guid.NewGuid(), worker, ct));
+        Assert.False(await f.Store.CompleteAsync(Guid.NewGuid(), job.Id, lease.LeaseId, worker, ct));
+        Assert.False(await f.Store.CompleteAsync(job.OrganizationId, job.Id, lease.LeaseId, Guid.NewGuid(), ct));
+        Assert.Equal(claimed, Audit(f, job.Id));
+        var rollback = f.Store.CaptureRollback();
+        Assert.True(await f.Store.FailAsync(job.OrganizationId, job.Id, lease.LeaseId, worker, "delivery_unavailable", ct));
+        Assert.Equal((created, f.Clock.UtcNow, 3L), Audit(f, job.Id));
+        rollback(); Assert.Equal(claimed, Audit(f, job.Id));
+        Assert.True(await f.Store.CompleteAsync(job.OrganizationId, job.Id, lease.LeaseId, worker, ct));
+        var finished = Audit(f, job.Id); Assert.Equal((created, f.Clock.UtcNow, 3L), finished);
+        f.Clock.UtcNow = f.Clock.UtcNow.AddHours(1); f.Publish(job);
+        Assert.False(await f.Store.CompleteAsync(job.OrganizationId, job.Id, lease.LeaseId, worker, ct));
+        Assert.Null(await f.Store.ClaimAsync(job.OrganizationId, worker, ct));
+        Assert.Equal(finished, Audit(f, job.Id));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FOUND_FR_009_Demo_job_retry_and_final_expiry_have_actual_update_clocks(bool crash)
+    {
+        var f = new Fixture(); var ct = TestContext.Current.CancellationToken;
+        var job = Job(Guid.NewGuid()); var worker = Guid.NewGuid(); var created = f.Clock.UtcNow; f.Publish(job);
+        long version = 1;
+        for (var attempt = 1; attempt <= 5; attempt++)
+        {
+            f.Clock.UtcNow = f.Clock.UtcNow.AddSeconds(1);
+            var lease = await f.Store.ClaimAsync(job.OrganizationId, worker, ct); Assert.NotNull(lease);
+            Assert.Equal((created, f.Clock.UtcNow, ++version), Audit(f, job.Id));
+            f.Clock.UtcNow = crash ? lease.LeaseExpiresAt : f.Clock.UtcNow.AddSeconds(1);
+            if (crash)
+            {
+                Assert.False(await f.Store.CompleteAsync(job.OrganizationId, job.Id, lease.LeaseId, worker, ct));
+                if (attempt == 5)
+                {
+                    Assert.Null(await f.Store.ClaimAsync(job.OrganizationId, worker, ct));
+                    Assert.Equal((created, f.Clock.UtcNow, ++version), Audit(f, job.Id));
+                }
+            }
+            else
+            {
+                Assert.True(await f.Store.FailAsync(job.OrganizationId, job.Id, lease.LeaseId, worker, "delivery_unavailable", ct));
+                Assert.Equal((created, f.Clock.UtcNow, ++version), Audit(f, job.Id));
+                f.Clock.UtcNow = f.Clock.UtcNow.AddSeconds(30 * Math.Pow(2, attempt - 1));
+            }
+        }
+        var terminal = Audit(f, job.Id); f.Clock.UtcNow = f.Clock.UtcNow.AddDays(1);
+        Assert.Null(await f.Store.ClaimAsync(job.OrganizationId, worker, ct)); Assert.Equal(terminal, Audit(f, job.Id));
+    }
+
 }

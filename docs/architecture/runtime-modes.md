@@ -227,3 +227,17 @@ startup runner also passed all twelve actual host cases locally using current
 compiled assemblies mounted read-only in cached runtime images. This is current
 host behavior evidence, not current retained-image identity or whole-release
 acceptance. The exact-image invocation is mandatory in container integration.
+
+
+### Demo queue publication and audit isolation
+
+Demo's actual reminder producer publishes to an Organization-scoped process-local
+queue inside the owning Work transaction. Rollback restores payload, lease and
+audit state together. The queue retains original idempotency identity, scheduled
+availability, bounded retries, tenant/Worker/lease fences and actual
+[creation/update/revision metadata](background-jobs.md#demo-queue-audit-state).
+API restart resets this queue; Demo sample-catalog reset does not reset accounts
+or private queue state. The separate Worker does not share API memory or execute
+generic Organization jobs in Demo. Existing deletion/attachment simulation paths
+and complete Demo handlers/future module coverage remain separate unfinished
+acceptance work; Production never selects this store.
