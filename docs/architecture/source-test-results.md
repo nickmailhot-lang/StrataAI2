@@ -470,3 +470,71 @@ browser cases remain collected across four intact file partitions. Source
 timeouts are retained alongside the complete two-file-worker **321/321** source
 pass (22 files, unchanged five-second case deadlines/within-case concurrency).
 No default-pool/immutable CI or full primary-screen acceptance is inferred.
+
+## Retained immutable browser failures on b54244e
+
+The [immutable run for b54244e](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38024364850)
+passed its commands, foundation browser and notification browser groups. Its
+first complete-browser shard has **85 expected and 2 unexpected out of 87**, with
+zero flaky/skipped cases, verified from the embedded report in the retained
+artifact. `board-date-policy.spec.ts:63` fails the original Save-button focus
+assertion after acknowledgment recovery. `board-members.spec.ts:71` remains in
+the second confirmation action until the original 90-second case budget expires;
+the cleanup then reaches the source frame at line 112. Retained traces show no
+mutating HTTP request over five seconds; this does not establish the cause of
+either UI failure. These files/screens matched that head when inspected. The
+timezone draft below subsequently repairs a reproduced focus defect; the member
+screen failure remains unresolved.
+
+The second complete-browser shard's machine-readable retained artifact confirms
+**86 expected, 1 unexpected and 2 skipped out of 89**, with zero flaky cases. The
+material assertion frame is `invitation-creation-account.spec.ts:60`. The other two complete-browser shards
+remain active at the latest authoritative check. These partial successes do not
+make the run green; original case deadlines, retries and assertions remain.
+Current main's separate schema-135 pipeline is in progress.
+
+## Timezone policy focus recovery draft
+
+A delayed live read after actual command acknowledgment replaces the focused
+Save action. The new source regression demonstrates loss of focus against the
+unchanged screen: corrected baseline **18/19 passed**, with only the positive
+focus-preservation case failing. The first new fixture attempt failed because
+its deferred read had not started; it was corrected by observing that read,
+without changing existing test deadlines or assertions.
+
+The draft remembers focus only when the replaced policy action owns it, and
+restores it after fresh admission. The second new case confirms another control's
+focus remains where the user put it. The complete policy source file passes
+**19/19**, with no skipped cases. Typecheck, lint and private web build pass.
+The complete original timezone-policy native browser file passes **2/2 on its
+only attempts**, in 111,365.703 ms, with no skips/flaky/report errors and matching
+unique source IDs. Desktop and phone keyboard recovery, exact original retry
+references, current live dates and accessibility assertions remain unchanged.
+This fixture uses the compiled schema-135 restricted Production API and separate
+Worker, the frozen repaired web output, and optional email verification matching
+the original file; it does not claim strict verification or immutable image CI.
+The three-file source manifest matches the executed build/test scope. Fixture
+cleanup is independently verified: no owned containers/database or credential
+files remain; shared PostgreSQL is still running. Complete frontend execution
+passes **2,077/2,077 reported assertions across 142 files**, with matching declared
+totals, zero failures/skips/pending results and original case deadlines. Only two
+file workers are used; original within-case concurrency is unchanged. The JSON
+report omits execution IDs and parameterized cases share 25 title groups; unique
+execution identity is not inferred from titles. Comparing file/title
+multiplicities with the retained 2,075-result report proves none removed and
+exactly the two new focus regressions added. The policy source still matches its
+separate executed build/browser manifest. Other retained browser failures remain
+unresolved.
+
+## Current original Board membership browser result
+
+The entire unchanged `board-members.spec.ts` passes **2/2 on first attempts** in
+83,322.066 ms, with zero skips/flaky/report errors, against the compiled current
+schema-135 restricted Production API, separate scoped Worker, frozen MUI web
+output and required verified-email policy. Original role conflict, lost
+committed reply, exact body/version/key checks, one removal, denied former member
+access, retained Organization membership, keyboard and overflow assertions remain.
+Both source manifest files match. Owned runtime/database/credential cleanup is
+independently verified. This does not identify or dismiss the older immutable
+shard's failure, and does not substitute for current immutable/full CI. The
+complete original eight-case invitation-account file is executing separately.

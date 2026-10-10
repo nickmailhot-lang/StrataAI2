@@ -133,3 +133,25 @@ it('admits the policy after StrictMode retires its first pending profile read', 
   expect(mock).toHaveBeenCalledTimes(3);
   expect(screen.getByRole('textbox')).toHaveValue('');
 });
+
+it.each([true, false])('preserves recovered action focus through a following live read without taking another control focus: %s', async keepAction => {
+  const next = { ...board, version: 5, dateTimezoneOverride: 'Pacific/Honolulu' };
+  let resolve!: (value: unknown) => void;
+  mock.mockResolvedValueOnce(profile).mockResolvedValueOnce(scope())
+    .mockResolvedValueOnce(profile).mockResolvedValueOnce(scope())
+    .mockResolvedValueOnce({ board: next, changed: true })
+    .mockResolvedValueOnce(profile).mockResolvedValueOnce(scope(next))
+    .mockImplementationOnce(() => new Promise(done => { resolve = done; }))
+    .mockResolvedValueOnce(scope(next));
+  mount(); await choose();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Save timezone policy' })).toHaveFocus());
+  const back = screen.getByRole('link', { name: 'Back to Board' });
+  if (!keepAction) back.focus();
+  act(() => live.invalidate!());
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  await waitFor(() => expect(resolve).toBeTypeOf('function'));
+  await act(async () => resolve(profile));
+  await waitFor(() => expect(screen.getByRole('textbox')).toHaveValue('Pacific/Honolulu'));
+  if (keepAction) expect(screen.getByRole('button', { name: 'Save timezone policy' })).toHaveFocus();
+  else { expect(back).toHaveFocus(); expect(screen.getByRole('button', { name: 'Save timezone policy' })).not.toHaveFocus(); }
+});

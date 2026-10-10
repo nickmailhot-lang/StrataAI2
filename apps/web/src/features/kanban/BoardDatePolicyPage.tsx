@@ -32,6 +32,9 @@ function Policy({ org, id }: { org: string; id: string }) {
   const base = `/boards/${encodeURIComponent(id)}`;
   const loadCurrent = useEffectEvent(() => void load());
   const invalidate = useEffectEvent(() => {
+    // The fresh read replaces this action node. Restore its existing keyboard
+    // focus after admission; leave focus on other controls where the user put it.
+    if (action.current && document.activeElement === action.current) focusRequested.current = true;
     setBoard(undefined); setDraft('');
     if (intent) return;
     setNotice('Board settings changed. Checking the current timezone policy.');
