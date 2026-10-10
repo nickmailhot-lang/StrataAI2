@@ -16,8 +16,22 @@ They exclude entity identifiers, text, credentials and rectangle metadata;
 geometry-read failures preserve native delegation and the remaining operation
 evidence. All six diagnostic contracts and browser TypeScript pass. The original
 capacity cases retain their assertions, 150-second deadline, zero retries and
-200-List/5,000-active-Card/100,000-archived-Card fixture. A fresh isolated native
-reproduction is running; it is not counted as passing release evidence.
+200-List/5,000-active-Card/100,000-archived-Card fixture.
+
+Fresh isolated native runs of the unchanged production bundle passed all three
+original widths (1280/768/390px), first at normal speed and then with fourfold CPU
+throttling. The original rank/replay checks and complete archived-record
+fingerprint checks passed, and owned containers, databases and environment files
+were removed. Horizontal increments stayed below 10px in both runs. These local
+results do not reproduce or repair the earlier immutable-image failure.
+
+A candidate geometry guard was rejected: although its focused regression
+refused a Board paired with a previous column rectangle, its real throttled
+tablet case stopped scrolling before observing a later empty destination.
+Desktop and phone passed. This evidence does not justify shipping that guard;
+the original native acceptance assertions and deadlines remain unchanged. The
+library's separately updated ancestor and rectangle arrays remain a possible
+mechanism to investigate, not a confirmed diagnosis of the CI failure.
 
 ## Keyboard destination recovery and current capacity evidence
 
