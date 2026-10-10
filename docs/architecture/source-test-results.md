@@ -432,3 +432,15 @@ pre-repair failures, the initial 244/244 authentication pass and final
 network, unreadable-acknowledgment and retry/cancellation coverage. Typecheck,
 lint and private web build pass. This does not substitute for current native
 browser or immutable-image CI acceptance.
+
+
+## Current strict identity browser result
+
+The original desktop/phone identity-mail cases pass **2/2 on their only attempt**
+in 191,585.785 ms with zero skips/flaky cases/report errors, on the current
+identity-reference frontend and compiled schema-133 restricted API/Worker
+runtime. Required verification, real Worker-delivered links, lost provider/browser
+acknowledgment recovery, original command/body/key checks, keyboard, accessibility
+and width criteria remain. The [identity reference record](identity-error-references.md)
+retains its separate native scope and independently verified fixture cleanup.
+This does not certify every reference-display branch or current immutable CI.

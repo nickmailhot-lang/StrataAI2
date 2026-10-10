@@ -805,3 +805,15 @@ speculative fixture repair. Its owned containers, database and environment
 files are independently absent. Current immutable-image CI and the other
 PRD-02 acceptance gaps remain outstanding; estimated work remaining stays
 **16%** (planning estimate).
+
+
+## Current identity-reference frontend verification
+
+[Authentication/recovery support references](identity-error-references.md) now
+retain 309/309 source/API-boundary passes and the original complete **2/2**
+strict-verification desktop/phone identity-mail browser phase on compiled
+schema-133 API/Worker. Delivered-token/provider retry, lost-response command
+recovery, keyboard, accessibility and cleanup are independently recorded.
+This supplies current local browser evidence for that scope, without replacing
+invitation/profile/full-policy or current immutable-image CI acceptance.
+Estimated PRD-02 work remaining stays **16%**; the issue remains open.
