@@ -1,6 +1,6 @@
 # Organization configuration — PRD-27
 
-This describes configuration under implementation for [PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28). Estimated work remaining: **60%**. Domain validation, Application commands, Demo transactions, PostgreSQL persistence, configuration HTTP routes and the MUI form/review/history increment now have focused source evidence. Deployed browser acceptance, navigation/reload recovery, authorized realtime delivery, suspension/deactivation, the remaining data/lifecycle review and full acceptance remain required. This is not a released configuration workflow. See the [complete acceptance map](prd-27-acceptance.md).
+This describes configuration under implementation for [PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28). Estimated work remaining: **52%**. Domain validation, Application commands, Demo transactions, PostgreSQL persistence, private replay/Activity, and MUI review/history/recovery have focused evidence. Activity now displays captured actor names and administrative capacity rather than current profile or membership values. Suspension/deactivation, retention/schema/portal consistency, complete UX/telemetry, and release acceptance remain required. This is not a released configuration workflow. See the [complete acceptance map](prd-27-acceptance.md).
 
 ## Reviewed configuration and historical meaning
 
@@ -447,9 +447,9 @@ historical evidence. Tenant/actor membership identity is constrained; the stored
 historical membership revision remains independent of subsequent role changes.
 
 Attribution is private to the retained configuration journal. Existing event
-JSON, metadata broadcasts and Activity responses do not gain these fields in
-this increment. Dedicated caption/capacity readers, Demo parity and accessible
-Activity presentation remain required. Worker readiness transitions preserve all
+JSON and metadata broadcasts remain reference-only. Private Activity responses
+now carry the captured actor label and capacity through the consumer described
+below. Worker readiness transitions preserve all
 source fields, including attribution; even an elevated mutation cannot replace
 them. Forced RLS and private capture-function privileges remain intact.
 
@@ -463,5 +463,36 @@ fixture. Both database runs used 1,817 frozen source hashes that match the stage
 source. The full Domain executable passes against the completed current build.
 API regression checks remain running; exact-image CI is still unfinished. No
 numbered criterion or linked scenario is closed. Estimated PRD work remaining
-stays **55%**, including lifecycle, retention/schema/portal consistency,
-attribution consumers, complete UX/telemetry and release acceptance.
+was **55%** at the producer increment. The consumer increment below reduces the
+current estimate to **52%**; lifecycle, retention/schema/portal consistency,
+complete UX/telemetry and release acceptance remain required.
+
+## Captured attribution in private Activity
+
+`GET /organizations/{id}/configuration/activity` projects `actorLabel` and
+`actingCapacity` from immutable configuration event sources. A single bounded
+tenant query resolves at most 51 history identities; it does not join current
+accounts or memberships to invent historical names or roles. The projection
+requires an exact Organization/event/actor/revision match, valid attribution,
+and a complete unique source window. Missing, malformed, duplicated or foreign
+facts return `configuration_source_unavailable`, with no partial page. Current
+viewer account, administrative role and membership epoch are checked again after
+history and attribution IO.
+
+Demo writes capture the account caption and actual Owner/Admin membership identity
+and revision in the same rollback participation as configuration history. Later
+profile changes, role reduction or historical actor deactivation do not rewrite
+that capture. PostgreSQL uses migration 139's trigger-owned capture. Legacy facts
+remain explicitly `UNRECORDED`; the MUI Activity panel displays that absence
+instead of borrowing a current role. Private configuration values and source
+membership IDs/revisions are not added to the Activity wire response.
+
+The reviewed frozen consumer snapshot passes all 880 Domain cases, all four
+focused Activity API cases, 65 client/Activity regressions, and the restricted
+PostgreSQL configuration/readiness executable. The PostgreSQL check verifies
+the two different captured captions around a rename through the real Activity
+reader. The API check also preserves an administrator's original caption and
+capacity after profile, membership and account withdrawal. Type and lint checks
+pass. Browser assertions for captured Activity presentation have been added;
+their current execution and exact-image release CI remain required. No numbered
+acceptance criterion or linked test scenario is closed by this increment.

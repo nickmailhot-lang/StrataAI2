@@ -6,7 +6,8 @@ namespace StrataAI.Application.Organizations;
 // A configuration change is Organization activity. It has no source Board;
 // an intake Board is a configured relationship, never its disclosure audience.
 public sealed record OrganizationConfigurationActivityItem(Guid EventId, Guid OrganizationId,
-    Guid ActorId, long Version, string CorrelationId, DateTimeOffset CreatedAt)
+    Guid ActorId, long Version, string CorrelationId, DateTimeOffset CreatedAt,
+    string ActorLabel, string ActingCapacity)
 {
     private static readonly IReadOnlyDictionary<string, object?> Empty =
         new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>());
@@ -26,7 +27,8 @@ public interface IOrganizationConfigurationActivityCursorCodec
 
 public sealed class OrganizationConfigurationActivityService(IOrganizationConfigurationStore history,
     IOrganizationConfigurationEventReader admission, IOrganizationConfigurationActivityCursorCodec cursors,
-    IOrganizationUnitOfWork unit, ICommandActorAuthorization actors)
+    IOrganizationUnitOfWork unit, ICommandActorAuthorization actors,
+    IOrganizationConfigurationAttributionReader attribution)
 {
     public Task<OrganizationOperation<OrganizationConfigurationActivityPage>> ReadAsync(Guid organization,
         Guid actor, string? cursor, CancellationToken ct = default)
@@ -63,11 +65,23 @@ public sealed class OrganizationConfigurationActivityService(IOrganizationConfig
                     || source.UpdatedAt < source.CreatedAt || source.OrganizationVersion < 1)
                     return Unavailable();
                 previous = source.Version;
-                if (items.Count < 50)
-                    items.Add(new(source.EventId, organization, source.ActorId, source.Version,
-                        source.CorrelationId, source.UpdatedAt));
             }
-            // Current private admission is checked after the history IO. Role,
+            var captured = await attribution.ReadAttributionAsync(organization, rows.Select(row => row.EventId).ToArray(), ct);
+            if (captured.Count != rows.Count || captured.Any(row => !row.Valid || row.OrganizationId != organization)
+                || captured.Select(row => row.EventId).Distinct().Count() != captured.Count) return Unavailable();
+            var byEvent = captured.ToDictionary(row => row.EventId);
+            foreach (var source in rows)
+            {
+                if (!byEvent.TryGetValue(source.EventId, out var fact) || fact.ActorId != source.ActorId || fact.Version != source.Version)
+                    return Unavailable();
+            }
+            foreach (var source in rows.Take(50))
+            {
+                var fact = byEvent[source.EventId];
+                items.Add(new(source.EventId, organization, source.ActorId, source.Version,
+                    source.CorrelationId, source.UpdatedAt, fact.ActorLabel, fact.ActingCapacity));
+            }
+            // Current private admission is checked after the history/attribution IO. Role,
             // lifecycle or account withdrawal cannot leave a readable old page.
             var current = await Scope(organization, actor, ct);
             if (current is null) return Denied();

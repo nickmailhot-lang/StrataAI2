@@ -9,8 +9,32 @@ namespace StrataAI.Infrastructure.Organizations;
 // checks current Owner/Admin before and after IO. Every persistence operation
 // borrows that tenant transaction; no global routing or independent commit.
 internal sealed class PostgresOrganizationConfigurationEventReader(PostgresConnectionFactory connections)
-    : IOrganizationConfigurationEventReader
+    : IOrganizationConfigurationEventReader, IOrganizationConfigurationAttributionReader
 {
+    public async Task<IReadOnlyList<OrganizationConfigurationAttribution>> ReadAttributionAsync(Guid organization,
+        IReadOnlyList<Guid> eventIds, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        if (eventIds.Count > 51 || eventIds.Any(id => id == Guid.Empty) || eventIds.Distinct().Count() != eventIds.Count)
+            throw new ArgumentException("Configuration attribution requires one bounded source window.");
+        if (eventIds.Count == 0) return Array.Empty<OrganizationConfigurationAttribution>();
+        await using var session = await connections.OpenTenantSessionAsync(organization, ct);
+        await using var query = new NpgsqlCommand("""
+            SELECT event_id,actor_id,version,activity_actor_label,acting_capacity,
+              source_membership_id,source_membership_version
+            FROM organization_configuration_events
+            WHERE tenant_id=@tenant AND event_id=ANY(@events);
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organization);
+        query.Parameters.AddWithValue("events", eventIds.ToArray());
+        List<OrganizationConfigurationAttribution> result = [];
+        await using var rows = await query.ExecuteReaderAsync(ct);
+        while (await rows.ReadAsync(ct))
+            result.Add(new(organization, rows.GetGuid(0), rows.GetGuid(1), rows.GetInt64(2), rows.GetString(3), rows.GetString(4),
+                rows.IsDBNull(5) ? null : rows.GetGuid(5), rows.IsDBNull(6) ? null : rows.GetInt64(6)));
+        return result;
+    }
+
     public async Task<OrganizationConfigurationReadScope?> GetScopeAsync(Guid organization, Guid actor, CancellationToken ct)
     {
         RequireScope(organization, ct);

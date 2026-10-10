@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.Organizations;
+using StrataAI.Application.Identity;
 using StrataAI.Domain.Organizations;
 using Xunit;
 
@@ -10,6 +11,38 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
+    [Fact]
+    public async Task PRD_27_configuration_activity_keeps_original_names_and_capacity_after_profile_role_and_account_withdrawal()
+    {
+        var ct=TestContext.Current.CancellationToken; await using var app=new ApiFactory();
+        using var owner=app.CreateClient(); await RegisterAndLogin(owner);
+        var (_,parent)=await ConfigurationParent(owner,"Historical attribution parent",ct);
+        using var administrator=app.CreateClient(); await RegisterAndLogin(administrator);
+        var profile=await administrator.GetFromJsonAsync<JsonElement>("/me",ct);
+        var actor=profile.GetProperty("id").GetGuid();
+        using(var named=await Mutate(administrator,HttpMethod.Patch,"/me",new {displayName="Original configuration administrator",version=profile.GetProperty("version").GetInt64()}))
+            Assert.Equal(HttpStatusCode.OK,named.StatusCode);
+        var members=app.Services.GetRequiredService<IOrganizationStore>();
+        await members.AddOrRestoreMemberAsync(parent.Id,actor,OrganizationRole.Admin,DateTimeOffset.UtcNow,ct);
+        var changes=app.Services.GetRequiredService<OrganizationConfigurationService>();
+        var first=await changes.ChangeAsync(parent.Id,actor,new("Historical legal details","CA-BC","UTC"),0,Guid.NewGuid(),"Historical attribution",ct);
+        Assert.True(first.Succeeded);
+        profile=await administrator.GetFromJsonAsync<JsonElement>("/me",ct);
+        using(var renamed=await Mutate(administrator,HttpMethod.Patch,"/me",new {displayName="Later configuration administrator",version=profile.GetProperty("version").GetInt64()}))
+            Assert.Equal(HttpStatusCode.OK,renamed.StatusCode);
+        var second=await changes.ChangeAsync(parent.Id,actor,new("Later legal details","CA-BC","UTC"),1,Guid.NewGuid(),"Later attribution",ct);
+        Assert.True(second.Succeeded);
+        await members.AddOrRestoreMemberAsync(parent.Id,actor,OrganizationRole.Member,DateTimeOffset.UtcNow,ct);
+        Assert.True(await app.Services.GetRequiredService<IIdentityStore>().DeactivateUserAsync(actor,DateTimeOffset.UtcNow,ct));
+        using var response=await owner.GetAsync($"/organizations/{parent.Id}/configuration/activity",ct);
+        Assert.Equal(HttpStatusCode.OK,response.StatusCode);
+        var page=(await response.Content.ReadFromJsonAsync<OrganizationConfigurationActivityPage>(ct))!;
+        Assert.Equal(new[]{"Later configuration administrator","Original configuration administrator"},page.Items.Select(row=>row.ActorLabel));
+        Assert.All(page.Items,row=>{Assert.Equal(actor,row.ActorId);Assert.Equal("ORGANIZATION_ADMIN",row.ActingCapacity);Assert.Empty(row.Metadata);});
+        var wire=await response.Content.ReadAsStringAsync(ct);
+        Assert.DoesNotContain("Historical legal details",wire);Assert.DoesNotContain("Later legal details",wire);
+    }
+
     [Fact]
     public async Task PRD_27_configuration_activity_projects_retained_sources_without_values_and_binds_private_paging()
     {

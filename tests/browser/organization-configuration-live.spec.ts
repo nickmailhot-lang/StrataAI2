@@ -61,6 +61,7 @@ for (const width of [1280, 390]) {
       await loadActivity.focus(); await page.keyboard.press('Enter');
       await expect(activity.getByRole('heading', { name: 'Configuration Activity', exact: true })).toBeFocused();
       await expect(activity.getByText('Configuration changed at revision 3', { exact: true })).toBeVisible();
+      await expect(activity.getByText('Recorded actor: Configuration realtime owner; Organization owner.', { exact: true })).toHaveCount(3);
       await expect(activity.getByText(`Original event reference: ${source.eventId}`, { exact: true })).toBeVisible();
       await expect(activity.locator('time').filter({ hasText: source.updatedAt })).toBeVisible();
       await expect(activity.getByText('Changed private legal name', { exact: true })).toHaveCount(0);

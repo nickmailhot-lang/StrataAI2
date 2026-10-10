@@ -26,6 +26,8 @@ public sealed class OrganizationConfigurationActivityTests
             Assert.Equal(original[i].CorrelationId, item.CorrelationId); Assert.Null(item.BoardId);
             Assert.Equal(Organization, item.EntityId); Assert.Equal("OrganizationConfiguration", item.EntityType);
             Assert.Empty(item.Metadata);
+            Assert.Equal("Original administrative caption", item.ActorLabel);
+            Assert.Equal("ORGANIZATION_OWNER", item.ActingCapacity);
         }
         var wire = JsonSerializer.Serialize(page.Value);
         Assert.DoesNotContain("Never disclose", wire); Assert.DoesNotContain("Private address", wire);
@@ -50,6 +52,7 @@ public sealed class OrganizationConfigurationActivityTests
     {
         var f = new Fixture(3); var historicalActor = Guid.NewGuid();
         f.Store.Rows = f.Store.Rows.Select(row => row with { ActorId = historicalActor }).ToList();
+        foreach (var key in f.Store.Facts.Keys.ToArray()) f.Store.Facts[key] = f.Store.Facts[key] with { ActorId = historicalActor };
         // Auth admits only the current viewer. Historical source actors need
         // not retain accounts, memberships or their former operational grant.
         var result = await f.Read(); Assert.True(result.Succeeded);
@@ -118,11 +121,71 @@ public sealed class OrganizationConfigurationActivityTests
         var excess = await f.Read(); Assert.Equal("configuration_source_unavailable", excess.ErrorCode); Assert.Null(excess.Value);
     }
 
+    [Theory]
+    [InlineData("missing")][InlineData("extra")][InlineData("duplicate")][InlineData("foreign")]
+    [InlineData("actor")][InlineData("version")][InlineData("caption")][InlineData("control")]
+    [InlineData("capacity")][InlineData("membership")][InlineData("epoch")][InlineData("legacy-forgery")]
+    public async Task PRD_27_Activity_refuses_missing_or_mismatched_immutable_attribution(string corruption)
+    {
+        var f = new Fixture(3);
+        f.Store.RewriteFacts = rows => corruption switch
+        {
+            "missing" => rows.Skip(1).ToArray(),
+            "extra" => rows.Append(rows[0] with { EventId = Guid.NewGuid() }).ToArray(),
+            "duplicate" => new[] { rows[1], rows[1], rows[2] },
+            _ => rows.Select((row, index) => index != 0 ? row : corruption switch
+            {
+                "foreign" => row with { OrganizationId = Guid.NewGuid() },
+                "actor" => row with { ActorId = Guid.NewGuid() },
+                "version" => row with { Version = row.Version + 1 },
+                "caption" => row with { ActorLabel = " " },
+                "control" => row with { ActorLabel = "caption\ncontrol" },
+                "capacity" => row with { ActingCapacity = "COUNCIL_MEMBER" },
+                "membership" => row with { SourceMembershipId = Guid.Empty },
+                "epoch" => row with { SourceMembershipVersion = 0 },
+                _ => row with { ActingCapacity = "UNRECORDED" }
+            }).ToArray()
+        };
+        var result = await f.Read(); Assert.False(result.Succeeded); Assert.Null(result.Value);
+        Assert.Equal("configuration_source_unavailable", result.ErrorCode);
+    }
+
+    [Fact]
+    public async Task PRD_27_Activity_keeps_captured_capacity_independent_of_current_viewer_role_and_epoch()
+    {
+        var f = new Fixture(3);
+        f.Reader.Scope = f.Reader.Scope! with { Binding = f.Reader.Scope!.Binding with { Role = OrganizationRole.Admin, MembershipVersion = 8 } };
+        var result = await f.Read(); Assert.True(result.Succeeded);
+        Assert.All(result.Value!.Items, row => {
+            Assert.Equal("Original administrative caption", row.ActorLabel);
+            Assert.Equal("ORGANIZATION_OWNER", row.ActingCapacity);
+        });
+        var legacy = f.Store.Facts.Keys.First();
+        f.Store.Facts[legacy] = f.Store.Facts[legacy] with { ActorLabel = "Historical actor " + Actor,
+            ActingCapacity = "UNRECORDED", SourceMembershipId = null, SourceMembershipVersion = null };
+        var retained = await f.Read(); Assert.True(retained.Succeeded);
+        Assert.Equal("UNRECORDED", retained.Value!.Items.Single(row => row.EventId == legacy).ActingCapacity);
+    }
+
+    [Theory][InlineData(false)][InlineData(true)]
+    public async Task PRD_27_Activity_rechecks_admission_after_attribution_io(bool epoch)
+    {
+        var f = new Fixture(3); f.Store.OnAttributionRead = () => {
+            if (epoch) f.Reader.Scope = f.Reader.Scope! with { Binding = f.Reader.Scope!.Binding with { MembershipVersion = 2 } };
+            else f.Auth.Active = false;
+        };
+        var result = await f.Read(); Assert.False(result.Succeeded); Assert.Null(result.Value);
+        Assert.Equal(epoch ? "configuration_source_unavailable" : "organization_not_found", result.ErrorCode);
+    }
+
     private sealed class Fixture
     {
         public Unit Unit {get;} = new(); public Auth Auth {get;} = new(); public Codec Codec {get;} = new();
         public Reader Reader {get;} public Store Store {get;} public OrganizationConfigurationActivityService Service {get;}
-        public Fixture(int count) {Reader=new(Unit) {Head=count}; Store=new(Unit) {Rows=Enumerable.Range(1,count).Reverse().Select(i=>Source(i)).ToList()}; Service=new(Store,Reader,Codec,Unit,Auth);}
+        public Fixture(int count) {Reader=new(Unit) {Head=count}; Store=new(Unit) {Rows=Enumerable.Range(1,count).Reverse().Select(i=>Source(i)).ToList()};
+            foreach(var row in Store.Rows) Store.Facts.Add(row.EventId,new(Organization,row.EventId,row.ActorId,row.Version,
+                "Original administrative caption","ORGANIZATION_OWNER",Guid.NewGuid(),1));
+            Service=new(Store,Reader,Codec,Unit,Auth,Store);}
         public Task<OrganizationOperation<OrganizationConfigurationActivityPage>> Read(string? cursor=null) => Service.ReadAsync(Organization,Actor,cursor,TestContext.Current.CancellationToken);
     }
     private sealed class Unit : IOrganizationUnitOfWork
@@ -151,8 +214,17 @@ public sealed class OrganizationConfigurationActivityTests
         public Task<long> GetHeadAsync(Guid org,CancellationToken ct){Assert.True(unit.Inside);HeadReads++;return Task.FromResult(Head);}
         public Task<OrganizationConfigurationEventBatch> ReadAsync(Guid org,long since,int limit,CancellationToken ct)=>throw new NotSupportedException();
     }
-    private sealed class Store(Unit unit) : IOrganizationConfigurationStore
+    private sealed class Store(Unit unit) : IOrganizationConfigurationStore, IOrganizationConfigurationAttributionReader
     {
+        public Dictionary<Guid,OrganizationConfigurationAttribution> Facts {get;}=[];
+        public Func<IReadOnlyList<OrganizationConfigurationAttribution>,IReadOnlyList<OrganizationConfigurationAttribution>>? RewriteFacts {get;set;}
+        public Action? OnAttributionRead {get;set;}
+        public Task<IReadOnlyList<OrganizationConfigurationAttribution>> ReadAttributionAsync(Guid org,IReadOnlyList<Guid> eventIds,CancellationToken ct)
+        {
+            Assert.True(unit.Inside); Assert.Equal(Organization,org); Assert.InRange(eventIds.Count,0,51); OnAttributionRead?.Invoke();
+            IReadOnlyList<OrganizationConfigurationAttribution> rows=eventIds.Select(id=>Facts[id]).ToArray();
+            return Task.FromResult(RewriteFacts?.Invoke(rows)??rows);
+        }
         public List<OrganizationConfigurationRecord> Rows {get;set;}=[]; public Action? OnRead {get;set;} public int Reads {get;private set;} public bool IgnoreBound {get;set;}
         public List<long?> Boundaries {get;}=[];
         public Task<IReadOnlyList<OrganizationConfigurationRecord>> ReadHistoryAsync(Guid org,long? before,CancellationToken ct)

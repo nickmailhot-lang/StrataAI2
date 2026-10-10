@@ -96,6 +96,10 @@ internal static class OrganizationConfigurationDeliveryContract
             && activityPage.Value.Items[1].EventId==first.Value!.EventId
             && activityPage.Value.Items.All(item=>item.ActorId==actor && item.BoardId is null && item.Metadata.Count==0),
             "Configuration Activity altered original source attribution or invented a Board audience.");
+        Require(activityPage.Value.Items[0].ActorLabel=="Renamed configuration owner"
+            && activityPage.Value.Items[1].ActorLabel=="Configuration delivery owner"
+            && activityPage.Value.Items.All(item=>item.ActingCapacity=="ORGANIZATION_OWNER"),
+            "Restricted Activity replaced captured configuration names or capacity with current account facts.");
         Require(!System.Text.Json.JsonSerializer.Serialize(activityPage.Value).Contains("Private",StringComparison.Ordinal),
             "Configuration Activity disclosed private revision values.");
         var activityCursor=activityCodec.Encode(scope.Value.Binding,2);

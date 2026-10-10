@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
 import { WorkRequestError } from '../../api/workManagement';
 import { readOrganizationConfigurationActivity } from './organizationConfigurationClient';
-import type { ConfigurationActivityPage } from './organizationConfigurationActivity';
+import { configurationActingCapacityLabel, type ConfigurationActivityPage } from './organizationConfigurationActivity';
 
 export function OrganizationConfigurationActivityPanel({ organizationId, actorId, disabled, onDenied }: {
   organizationId: string; actorId: string; disabled: boolean; onDenied: (reason: unknown) => void;
@@ -46,6 +46,7 @@ export function OrganizationConfigurationActivityPanel({ organizationId, actorId
         <Typography role="status">{page.items.length ? `${page.items.length} configuration changes in this page.` : 'No configuration changes exist in this Activity page.'}</Typography>
         {page.items.map(item => <Box key={item.eventId}>
           <Typography variant="h6" component="h4">Configuration changed at revision {item.version}</Typography>
+          <Typography>Recorded actor: {item.actorLabel}; {configurationActingCapacityLabel(item.actingCapacity)}.</Typography>
           <Typography>Original actor reference: {item.actorId}</Typography>
           <Typography>Original event reference: {item.eventId}</Typography>
           <Typography>Recorded at: <time dateTime={item.createdAt}>{item.createdAt}</time></Typography>

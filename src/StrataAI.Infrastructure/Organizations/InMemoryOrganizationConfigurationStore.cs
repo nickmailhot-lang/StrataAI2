@@ -9,8 +9,8 @@ using StrataAI.Application.Common;
 namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore organizations,
-    ICommandActorAuthorization actors, DemoWorkTransactionScope scope, IWorkManagementStore work, IClock clock)
-    : IOrganizationConfigurationStore, IOrganizationConfigurationEventReader, IDemoOrganizationTransactionParticipant
+    ICommandActorAuthorization actors, DemoWorkTransactionScope scope, IWorkManagementStore work, IClock clock, IIdentityStore identities)
+    : IOrganizationConfigurationStore, IOrganizationConfigurationEventReader, IOrganizationConfigurationAttributionReader, IDemoOrganizationTransactionParticipant
 {
     // Serialized snapshots prevent callers from mutating nested private collections in history.
     private readonly Dictionary<Guid, string> _current = [];
@@ -18,6 +18,7 @@ internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore 
     private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), string> _receipts = [];
     private readonly Dictionary<(Guid Organization, long Version), OrganizationConfigurationEvent> _events = [];
     private readonly Dictionary<(Guid Organization, long Version), DateTimeOffset> _publications = [];
+    private readonly Dictionary<(Guid Organization, Guid Event), OrganizationConfigurationAttribution> _attributions = [];
     private readonly HashSet<Guid> _eventIds = [];
     private readonly Dictionary<(string Jurisdiction, string Identifier), Guid> _identifiers = [];
 
@@ -92,6 +93,14 @@ internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore 
             return OrganizationConfigurationWriteResult.IdentifierConflict;
         var source = new OrganizationConfigurationEvent(record.EventId, record.OrganizationId,
             record.ActorId, record.Version, record.CorrelationId, record.UpdatedAt);
+        var account = await identities.FindUserByIdAsync(record.ActorId, ct);
+        if (account?.Status != AccountStatus.Active) return OrganizationConfigurationWriteResult.InvalidSource;
+        var caption = account.DisplayName;
+        if (string.IsNullOrEmpty(caption) || caption.Length > 160 || caption.Any(char.IsControl)) caption = "Member " + record.ActorId;
+        var attribution = new OrganizationConfigurationAttribution(record.OrganizationId, record.EventId, record.ActorId,
+            record.Version, caption, membership.Role == OrganizationRole.Owner ? "ORGANIZATION_OWNER" : "ORGANIZATION_ADMIN",
+            membership.Id, membership.Version);
+        if (!attribution.Valid) return OrganizationConfigurationWriteResult.InvalidSource;
         if (work is not InMemoryWorkManagementStore audits)
             throw new InvalidOperationException("Demo configuration audit persistence is unavailable.");
         // This source fact participates in the same Organization/Work rollback.
@@ -108,6 +117,7 @@ internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore 
         _current[record.OrganizationId] = json;
         _history.Add((record.OrganizationId, record.Version), json);
         _events.Add((record.OrganizationId, record.Version), source);
+        _attributions.Add((record.OrganizationId, record.EventId), attribution);
         _publications.Add((record.OrganizationId, record.Version), publishedAt);
         _eventIds.Add(record.EventId);
         _receipts.Add((record.OrganizationId, receipt.ActorId, receipt.Key), receiptJson);
@@ -118,8 +128,18 @@ internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore 
     {
         Action[] restore = [DemoRollback.Dictionary(_current), DemoRollback.Dictionary(_history),
             DemoRollback.Dictionary(_receipts), DemoRollback.Dictionary(_events), DemoRollback.Dictionary(_publications),
-            DemoRollback.Set(_eventIds), DemoRollback.Dictionary(_identifiers)];
+            DemoRollback.Set(_eventIds), DemoRollback.Dictionary(_identifiers), DemoRollback.Dictionary(_attributions)];
         return () => { foreach (var action in restore) action(); };
+    }
+
+    public Task<IReadOnlyList<OrganizationConfigurationAttribution>> ReadAttributionAsync(Guid organization,
+        IReadOnlyList<Guid> eventIds, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        if (eventIds.Count > 51 || eventIds.Any(id => id == Guid.Empty) || eventIds.Distinct().Count() != eventIds.Count)
+            throw new ArgumentException("Configuration attribution requires one bounded source window.");
+        return Task.FromResult<IReadOnlyList<OrganizationConfigurationAttribution>>(eventIds
+            .Select(id => _attributions.GetValueOrDefault((organization, id))).OfType<OrganizationConfigurationAttribution>().ToArray());
     }
 
     public async Task<OrganizationConfigurationReadScope?> GetScopeAsync(Guid organization, Guid actor, CancellationToken ct)

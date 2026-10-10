@@ -25,6 +25,7 @@ public static class OrganizationRegistration
             services.AddSingleton<InMemoryOrganizationConfigurationStore>();
             services.AddSingleton<IOrganizationConfigurationStore>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
             services.AddSingleton<IOrganizationConfigurationEventReader>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
+            services.AddSingleton<IOrganizationConfigurationAttributionReader>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
             services.AddSingleton<IOrganizationConfigurationIntakeStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
             services.AddSingleton<InMemoryOrganizationMetadataJournal>();
@@ -66,7 +67,9 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationLifecycleEventReader, PostgresOrganizationLifecycleEventReader>();
             services.AddSingleton<IOrganizationStore, PostgresOrganizationStore>();
             services.AddSingleton<IOrganizationConfigurationStore, PostgresOrganizationConfigurationStore>();
-            services.AddSingleton<IOrganizationConfigurationEventReader, PostgresOrganizationConfigurationEventReader>();
+            services.AddSingleton<PostgresOrganizationConfigurationEventReader>();
+            services.AddSingleton<IOrganizationConfigurationEventReader>(provider => provider.GetRequiredService<PostgresOrganizationConfigurationEventReader>());
+            services.AddSingleton<IOrganizationConfigurationAttributionReader>(provider => provider.GetRequiredService<PostgresOrganizationConfigurationEventReader>());
             services.AddSingleton<IOrganizationConfigurationIntakeStore, PostgresOrganizationConfigurationIntakeStore>();
             services.AddSingleton<IOrganizationUnitOfWork, PostgresOrganizationUnitOfWork>();
             services.AddSingleton<IOrganizationRemovalReplayStore, PostgresOrganizationRemovalReplayStore>();

@@ -1,21 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { parseConfigurationActivity } from './organizationConfigurationActivity';
+import { configurationActingCapacityLabel, parseConfigurationActivity } from './organizationConfigurationActivity';
 const org = '11111111-1111-4111-8111-111111111111', actor = '22222222-2222-4222-8222-222222222222';
 function row(version = 1) { return { eventId: `33333333-3333-4333-8333-${String(version).padStart(12, '0')}`, organizationId: org,
-  actorId: actor, boardId: null, eventType: 'ORGANIZATION_CONFIGURATION_CHANGED', entityType: 'OrganizationConfiguration', entityId: org,
+  actorId: actor, actorLabel: 'Captured configuration administrator', actingCapacity: 'ORGANIZATION_ADMIN',
+  boardId: null, eventType: 'ORGANIZATION_CONFIGURATION_CHANGED', entityType: 'OrganizationConfiguration', entityId: org,
   version, correlationId: 'Original source', createdAt: '2026-10-10T13:00:00.0000001Z', metadata: {} }; }
 const page = (items: unknown[] = [row()]) => ({ organizationId: org, items, nextCursor: null });
 describe('PRD-27 configuration Activity response boundary', () => {
   it('retains precise original source references in immutable projections', () => {
     const parsed = parseConfigurationActivity(page(), org);
     expect(parsed.items[0]).toMatchObject({ actorId: actor, createdAt: '2026-10-10T13:00:00.0000001Z', version: 1 });
+    expect(parsed.items[0]).toMatchObject({ actorLabel: 'Captured configuration administrator', actingCapacity: 'ORGANIZATION_ADMIN' });
     expect(Object.isFrozen(parsed)).toBe(true); expect(Object.isFrozen(parsed.items)).toBe(true); expect(Object.isFrozen(parsed.items[0])).toBe(true);
     expect(parseConfigurationActivity(page([]), org).items).toEqual([]);
   });
   it.each([{ organizationId: actor }, { actorId: '' }, { boardId: actor }, { eventType: 'ORGANIZATION_UPDATED' },
     { metadata: { legalName: 'Private' } }, { legalName: 'Private' }, { version: Number.MAX_SAFE_INTEGER + 1 },
-    { createdAt: 'not-a-clock' }, { correlationId: 'Bad\nsource' }])('refuses malformed or private source fields %j', change => {
+    { createdAt: 'not-a-clock' }, { correlationId: 'Bad\nsource' }, { actorLabel: '' }, { actorLabel: ' ' },
+    { actorLabel: 'Bad\ncaption' }, { actorLabel: 'a'.repeat(161) }, { actingCapacity: 'COUNCIL_MEMBER' },
+    { actingCapacity: undefined }, { actorLabel: undefined }])('refuses malformed or private source fields %j', change => {
     expect(() => parseConfigurationActivity(page([{ ...row(), ...change }]), org)).toThrow();
+  });
+  it('keeps legacy attribution explicitly unrecorded without borrowing a current caption or capacity', () => {
+    const parsed = parseConfigurationActivity(page([{ ...row(), actorLabel: `Historical actor ${actor}`, actingCapacity: 'UNRECORDED' }]), org);
+    expect(parsed.items[0].actorLabel).toBe(`Historical actor ${actor}`);
+    expect(configurationActingCapacityLabel(parsed.items[0].actingCapacity)).toBe('Capacity was not recorded');
   });
   it('refuses duplicate identities, skipped revisions, foreign envelopes and unbounded or numeric continuations', () => {
     for (const value of [page([row(), row()]), page([row(3), row(1)]), { ...page(), organizationId: actor },

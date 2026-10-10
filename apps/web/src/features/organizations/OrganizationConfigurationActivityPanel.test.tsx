@@ -6,6 +6,7 @@ const reader = vi.hoisted(() => vi.fn());
 vi.mock('./organizationConfigurationClient', () => ({ readOrganizationConfigurationActivity: reader }));
 const org = '11111111-1111-4111-8111-111111111111', actor = '22222222-2222-4222-8222-222222222222';
 const item = (version = 2) => ({ eventId: `33333333-3333-4333-8333-${String(version).padStart(12, '0')}`, actorId: actor,
+  actorLabel: 'Captured administrative name', actingCapacity: 'ORGANIZATION_ADMIN',
   version, correlationId: 'Source', createdAt: '2026-10-10T13:00:00.0000001Z' });
 afterEach(() => reader.mockReset());
 describe('PRD-27 private configuration Activity controls', () => {
@@ -14,6 +15,7 @@ describe('PRD-27 private configuration Activity controls', () => {
     render(<OrganizationConfigurationActivityPanel organizationId={org} actorId={actor} disabled={false} onDenied={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Load configuration Activity' }));
     await screen.findByText('Configuration changed at revision 2');
+    expect(screen.getByText('Recorded actor: Captured administrative name; Organization administrator.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Configuration Activity' })).toHaveFocus();
     expect(screen.getByText(item().createdAt)).toHaveAttribute('datetime', item().createdAt);
     fireEvent.click(screen.getByRole('button', { name: 'Older configuration Activity' }));
