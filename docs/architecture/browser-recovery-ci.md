@@ -829,3 +829,64 @@ independently of HTML-report body attachment storage. This focused proof does
 not exercise authentication, Worker transport or current immutable release.
 Owned capacity services/database are removed and original services/data remain.
 Current exact-image validation and the original phone defect are still pending.
+
+
+## Retained immutable-image run 37999375942, 2026-10-10 inspection
+
+This run tests commit `b9f397836e759bb41cbfe47fbd3d2095c24eee80`, not current
+main. Fresh terminal metadata and decoded job logs establish these failures:
+
+- Browser-notifications job `114079086668`: both Board-member viewport cases
+  exceed their original 90-second budgets in Worker restoration at the test's
+  finally block. Earlier assertions cannot be inferred from the timeout alone.
+- Full shard 1/4 job `114079086680`: phone Board-member lost-response recovery
+  does not display the expected uncertainty message; desktop Board metadata
+  cannot fill the missing dialog field before its original 120-second deadline;
+  phone Card-label move selection is disabled at its enabled-control assertion.
+- Full shard 2/4 job `114079086672`: phone checklist collaboration cannot admit
+  Manage items after revision-4 conflict recovery; desktop Board invitation
+  deadline recovery never observes its held command after the eight-second
+  profile gate.
+
+Foundation job `114079086713` and security pass on that same old candidate;
+these do not establish whole-run success. Other browser/command jobs were still
+live or queued at inspection. The failures remain retained; no assertion,
+per-case deadline, role/state matrix, retry policy or mandatory CI dependency is
+weakened. The newer compiled-source/native results are separately scoped in
+[primary-screen reflow](primary-screen-reflow.md) and
+[modular-monolith acceptance](arch-03-acceptance.md). They do not replace these
+failed immutable-image scenarios or prove their causes. Current-head CI remains
+required before release acceptance or closure.
+
+
+The unchanged complete invitation-creation deadline file now passes **4/4**
+on current schema-133 compiled API/Worker and the final long-label frontend,
+in **124,693.767 ms**, one result per original Organization/Board and desktop/phone
+case, zero skipped/flaky/unexpected outcomes or report errors. Optional email
+verification matches this full-browser fixture policy; strict provider acceptance
+remains separate. The separate Worker uses actual automatic discovery in the
+fresh restricted PostgreSQL database. Original aggregate deadline, eight-second
+profile gate, 7,001 ms command hold, identical original key/body, single committed
+invitation, fresh-admission recovery and Axe assertions are unchanged. Owned
+containers, database and credential environments are independently absent.
+Private report: `invitation-deadline-schema133-current-native-20261010/report-private.json`.
+This does not reproduce the old immutable-image failure or prove its cause; no
+speculative product/fixture repair is made. Current immutable-image acceptance
+and the separate checklist collaboration investigation remain required.
+
+
+The unchanged complete checklist collaboration file subsequently passes **2/2**
+on current schema-133 compiled API/separate scoped Worker/final frontend,
+in **105,148.847 ms**, one result per original desktop/phone case and zero
+skipped/flaky/unexpected outcomes or report errors. It preserves both real
+clients, submitted contributor conflict with server 409, dirty text/completion,
+revision-4 reopening, actual socket outage/reconnect and missed completion,
+real committed/lost-reply mutation, membership revocation, denied original-key
+replay/new writes and exact unchanged owner-visible content, keyboard and Axe.
+Optional email verification is this fixture's original policy. Owned containers,
+database and credential environments are independently absent. Private report:
+`checklist-collaboration-schema133-current-native-20261010/report-private.json`.
+This scoped local pass does not establish the old immutable failure's cause or
+full Checklist/release acceptance. The three original Board-member, Board-metadata
+and Card-label files now run independently on current compiled backend/frontend,
+with strict verification and unchanged scenario assertions/deadlines.

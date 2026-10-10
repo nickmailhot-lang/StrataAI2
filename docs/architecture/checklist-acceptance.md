@@ -256,3 +256,21 @@ execution; the three original containers/database were preserved. Local normal
 desktop acceptance now passes, but current immutable-image release acceptance,
 large client capacity and the other full-ticket gaps still prevent closure.
 Estimated PRD-13 work remaining is **33%** (planning estimate).
+
+
+## Current complete collaboration baseline, 2026-10-10
+
+The [unchanged two-client desktop/phone file](../../tests/browser/checklist-collaboration.spec.ts)
+passes **2/2**, one attempt per case, zero skips/flaky/unexpected/report errors,
+in 105,148.847 ms on compiled schema-133 Production API/separate scoped Worker,
+fresh restricted PostgreSQL and current long-label frontend. Both real clients,
+submitted server-409 conflict, retained draft/completion, revision-4 reopen,
+actual socket outage/reconnect and recovered completion, committed/lost-response
+item mutation, revoked membership, denied original-key receipt/new writes,
+exact unchanged owner-visible canonical state and tagged Axe remain unchanged.
+Owned containers, database and credential environments are independently absent.
+This optional-verification local baseline does not reproduce the old immutable
+phone failure or prove its cause. Full command/lifecycle/capacity/performance,
+current immutable-image and all original PRD acceptance remain required.
+Estimated PRD-13 work remaining stays **33%** (planning estimate); issue stays open.
+See [retained CI investigation](browser-recovery-ci.md#retained-immutable-image-run-37999375942-2026-10-10-inspection).

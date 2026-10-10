@@ -831,3 +831,12 @@ passes and selected **321/321** two-file-worker source passes, with unchanged
 per-case deadlines. Earlier default-pool timeouts remain retained. These are
 local scoped results, not complete default-pool/immutable-image acceptance.
 Estimated PRD-02 work remaining stays **16%**; the issue remains open.
+
+
+The [unchanged current invitation deadline phase](browser-recovery-ci.md#retained-immutable-image-run-37999375942-2026-10-10-inspection)
+passes all four original Organization/Board desktop/phone cases on compiled
+schema-133 API/Worker/current frontend, preserving aggregate deadlines, reserved
+request identity and recovery. Independently verified cleanup is complete. This
+does not reproduce or resolve the old immutable CI failure by inference; current
+immutable/full acceptance remains required. Estimated PRD-02 work remaining
+stays **16%**; the ticket remains open.
