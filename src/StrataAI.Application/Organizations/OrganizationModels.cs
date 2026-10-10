@@ -26,7 +26,12 @@ public sealed record OrganizationRecord(
     OrganizationStatus Status,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    long Version);
+    long Version)
+{
+    // Older persisted receipts omitted classification. They remain Generic;
+    // new creation explicitly records its requested type or the Strata default.
+    public string Type { get; init; } = StrataAI.Domain.Organizations.OrganizationTypes.Legacy;
+}
 
 public sealed record OrganizationMembership(
     Guid Id,

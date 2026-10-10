@@ -107,8 +107,12 @@ public sealed class OrganizationService(
 
     public Task<OrganizationOperation<OrganizationSummary>> CreateAsync(
         Guid actorUserId, string name, string? description, string correlationId,
-        CancellationToken cancellationToken = default, Guid? idempotencyKey = null)
+        CancellationToken cancellationToken = default, Guid? idempotencyKey = null, string? type = null)
     {
+        var explicitType = type is not null;
+        type ??= StrataAI.Domain.Organizations.OrganizationTypes.Default;
+        if (!StrataAI.Domain.Organizations.OrganizationTypes.IsSupported(type))
+            return Task.FromResult(OrganizationOperation<OrganizationSummary>.Failure("invalid_organization_type"));
         if (idempotencyKey == Guid.Empty)
             return Task.FromResult(OrganizationOperation<OrganizationSummary>.Failure("invalid_idempotency_key"));
         // A creation has no existing tenant. Derive its private transaction scope
@@ -120,9 +124,11 @@ public sealed class OrganizationService(
         return unitOfWork.ExecuteAsync(organizationId, actorUserId, null, true, async () =>
         {
             if (idempotencyKey is not Guid requestKey)
-                return await CreateCoreAsync(organizationId, actorUserId, name, description, correlationId, cancellationToken);
+                return await CreateCoreAsync(organizationId, actorUserId, name, description, type, correlationId, cancellationToken);
             var fingerprint = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
-                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { name, description })));
+                type == StrataAI.Domain.Organizations.OrganizationTypes.Default
+                    ? System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { name, description })
+                    : System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { name, description, type })));
             var replay = await creationReplays.ReadAsync(organizationId, actorUserId, requestKey, cancellationToken);
             if (replay is not null)
             {
@@ -133,11 +139,13 @@ public sealed class OrganizationService(
                     return OrganizationOperation<OrganizationSummary>.Failure("organization_not_found");
                 if (replay.Fingerprint != fingerprint)
                     return OrganizationOperation<OrganizationSummary>.Failure("idempotency_conflict");
+                if (explicitType && replay.Result.Organization.Type != type)
+                    return OrganizationOperation<OrganizationSummary>.Failure("idempotency_conflict");
                 if (replay.ExpiresAt <= clock.UtcNow)
                     return OrganizationOperation<OrganizationSummary>.Failure("idempotency_expired");
                 return OrganizationOperation<OrganizationSummary>.Success(replay.Result);
             }
-            var result = await CreateCoreAsync(organizationId, actorUserId, name, description, correlationId, cancellationToken);
+            var result = await CreateCoreAsync(organizationId, actorUserId, name, description, type, correlationId, cancellationToken);
             if (result.Succeeded && result.Value is not null)
                 await creationReplays.SaveAsync(organizationId, actorUserId, requestKey,
                     new(fingerprint, result.Value, clock.UtcNow.AddHours(24)), cancellationToken);
@@ -254,6 +262,7 @@ public sealed class OrganizationService(
         Guid actorUserId,
         string name,
         string? description,
+        string type,
         string correlationId,
         CancellationToken cancellationToken = default)
     {
@@ -270,7 +279,7 @@ public sealed class OrganizationService(
             normalizedName,
             NormalizeOptional(description),
             clock.UtcNow,
-            cancellationToken);
+            cancellationToken, type);
 
         await store.AppendAuditAsync(
             organization.Id,

@@ -4,7 +4,7 @@ import { OrganizationCreationDialog } from './OrganizationCreationDialog';
 const actor = '22222222-2222-4222-8222-222222222222';
 const org = '55555555-5555-4555-8555-555555555555';
 const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'UTC' };
-const original = { organization: { id: org, name: 'Original Organization', description: '', status: 0, version: 1, ownerUserId: actor }, role: 0 };
+const original = { organization: { id: org, name: 'Original Organization', description: '', status: 0, version: 1, ownerUserId: actor, type: 'STRATA' }, role: 0 };
 const current = { organization: { ...original.organization, name: 'Later Organization', version: 2 }, role: 2 };
 function response(value: unknown, status = 200) { return new Response(JSON.stringify(value), { status }); }
 function mount() {
@@ -18,6 +18,58 @@ function create() {
   fireEvent.click(screen.getByRole('button', { name: /^Create$/ }));
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+
+it('submits the Strata default as part of the immutable creation intent', async () => {
+  const fetcher = vi.fn(async (path: string, options?: RequestInit) => path === '/me' ? response(profile)
+    : options?.method === 'POST' ? response({ ...original, organization: { ...original.organization, type: 'STRATA' } }, 201)
+      : response({ ...current, organization: { ...current.organization, type: 'STRATA' } }));
+  vi.stubGlobal('fetch', fetcher); const view = mount(); create();
+  await waitFor(() => expect(view.onCreated).toHaveBeenCalledWith(org));
+  const writes = fetcher.mock.calls.filter(([, options]) => options?.method === 'POST');
+  expect(writes).toHaveLength(1);
+  expect(JSON.parse(writes[0][1]!.body as string)).toEqual({ name: 'Original Organization', description: '', type: 'STRATA' });
+});
+
+it('retains the selected type and original body/key after an uncertain creation', async () => {
+  let writes = 0;
+  const typed = { ...original, organization: { ...original.organization, type: 'HOA' } };
+  const fetcher = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile);
+    if (options?.method === 'POST') { if (++writes === 1) throw new TypeError('Lost acknowledgment'); return response(typed, 201); }
+    return response(typed);
+  });
+  vi.stubGlobal('fetch', fetcher); const view = mount();
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Organization type' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Homeowners association' })); create();
+  const retry = await screen.findByRole('button', { name: 'Retry original creation' });
+  expect(screen.getByRole('combobox', { name: 'Organization type' })).toHaveAttribute('aria-disabled', 'true');
+  fireEvent.click(retry); await waitFor(() => expect(view.onCreated).toHaveBeenCalledWith(org));
+  const calls = fetcher.mock.calls.filter(([, options]) => options?.method === 'POST');
+  expect(calls).toHaveLength(2); expect(calls[0][1]!.body).toBe(calls[1][1]!.body);
+  expect(JSON.parse(calls[0][1]!.body as string).type).toBe('HOA');
+  expect((calls[0][1]!.headers as Headers).get('Idempotency-Key')).toBe((calls[1][1]!.headers as Headers).get('Idempotency-Key'));
+});
+
+it.each([undefined, 'UNKNOWN', 'STRATA'])('withholds creation navigation for a mismatched type acknowledgment (%s)', async acknowledgedType => {
+  let writes = 0;
+  const typed = { ...original, organization: { ...original.organization, type: 'HOA' } };
+  const fetcher = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return response(profile);
+    if (options?.method === 'POST') return response(++writes === 1
+      ? { ...original, organization: { ...original.organization, type: acknowledgedType } } : typed, 201);
+    return response(typed);
+  });
+  vi.stubGlobal('fetch', fetcher); const view = mount();
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Organization type' }));
+  fireEvent.click(await screen.findByRole('option', { name: 'Homeowners association' })); create();
+  const retry = await screen.findByRole('button', { name: 'Retry original creation' });
+  expect(view.onCreated).not.toHaveBeenCalled();
+  fireEvent.click(retry); await waitFor(() => expect(view.onCreated).toHaveBeenCalledWith(org));
+  const calls = fetcher.mock.calls.filter(([, options]) => options?.method === 'POST');
+  expect(calls).toHaveLength(2); expect(calls[0][1]!.body).toBe(calls[1][1]!.body);
+  expect(JSON.parse(calls[0][1]!.body as string).type).toBe('HOA');
+  expect((calls[0][1]!.headers as Headers).get('Idempotency-Key')).toBe((calls[1][1]!.headers as Headers).get('Idempotency-Key'));
+});
 
 it('retries the immutable original account/body/key and checks later canonical membership before opening', async () => {
   let writes = 0;

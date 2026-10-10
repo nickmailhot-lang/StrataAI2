@@ -14,7 +14,9 @@ before creating an Organization. Existing callers without a key retain their
 one-request creation behavior; they cannot recover a lost acknowledgment.
 
 A keyed request binds the exact name and description, including differences
-between null and empty values. The first successful response is a 201 with
+between null and empty values, and the reviewed [Organization Type](organization-types.md).
+Default Strata retains the prior name/description fingerprint for compatibility;
+other classifications also bind the type. The first successful response is a 201 with
 Location and the original Organization summary. A matching retry returns the
 same original summary and does not recreate the Organization, owner membership
 or creation audit. Changed input returns `idempotency_conflict`. Expired receipts

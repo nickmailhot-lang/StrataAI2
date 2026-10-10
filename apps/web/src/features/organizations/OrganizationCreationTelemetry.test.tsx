@@ -5,7 +5,7 @@ import { configureActivityTelemetry, flushActivityTelemetry } from '../kanban/ac
 const actor = '22222222-2222-4222-8222-222222222222';
 const org = '55555555-5555-4555-8555-555555555555';
 const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'UTC' };
-const original = { organization: { id: org, name: 'Private creation name', description: 'Private creation body', status: 0, version: 1, ownerUserId: actor }, role: 0 };
+const original = { organization: { id: org, name: 'Private creation name', description: 'Private creation body', status: 0, version: 1, ownerUserId: actor, type: 'STRATA' }, role: 0 };
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 function mount() {
   const onCreated = vi.fn();

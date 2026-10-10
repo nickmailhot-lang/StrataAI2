@@ -155,7 +155,7 @@ public static class OrganizationEndpoints
                     request.Name,
                     request.Description,
                     context.TraceIdentifier,
-                    cancellationToken, idempotencyKey);
+                    cancellationToken, idempotencyKey, request.Type);
 
                 if (!result.Succeeded || result.Value is null)
                 {
@@ -378,6 +378,8 @@ public static class OrganizationEndpoints
     private static IResult ErrorFor(string? errorCode) =>
         errorCode switch
         {
+            "invalid_organization_type" => Problem(StatusCodes.Status400BadRequest, errorCode,
+                "Choose a supported Organization type."),
             "invalid_idempotency_key" => Problem(StatusCodes.Status400BadRequest, errorCode, "A nonempty UUID retry key is required."),
             "idempotency_conflict" => Problem(StatusCodes.Status409Conflict, errorCode, "The retry key belongs to a different Organization change."),
             "idempotency_expired" => Problem(StatusCodes.Status409Conflict, errorCode, "The original acknowledgment has expired. Review current settings."),

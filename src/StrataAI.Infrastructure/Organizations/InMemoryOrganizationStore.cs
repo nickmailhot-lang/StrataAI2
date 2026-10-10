@@ -65,8 +65,11 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
         string name,
         string? description,
         DateTimeOffset createdAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string type = StrataAI.Domain.Organizations.OrganizationTypes.Default)
     {
+        if (!StrataAI.Domain.Organizations.OrganizationTypes.IsSupported(type))
+            throw new ArgumentException("Unsupported Organization type.", nameof(type));
         lock (_sync)
         {
             var organization = new OrganizationRecord(
@@ -78,7 +81,7 @@ internal sealed partial class InMemoryOrganizationStore(IIdentityStore identitie
                 OrganizationStatus.Active,
                 createdAt,
                 createdAt,
-                1);
+                1) { Type = type };
 
             _organizations[organizationId] = organization;
             _members[(organizationId, actorUserId)] =

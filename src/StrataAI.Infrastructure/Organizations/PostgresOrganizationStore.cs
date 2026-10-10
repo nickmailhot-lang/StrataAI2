@@ -66,8 +66,11 @@ internal sealed class PostgresOrganizationStore(
         string name,
         string? description,
         DateTimeOffset createdAt,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string type = StrataAI.Domain.Organizations.OrganizationTypes.Default)
     {
+        if (!StrataAI.Domain.Organizations.OrganizationTypes.IsSupported(type))
+            throw new ArgumentException("Unsupported Organization type.", nameof(type));
         await using var session =
             await connectionFactory.OpenTenantSessionAsync(
                 organizationId,
@@ -78,18 +81,19 @@ internal sealed class PostgresOrganizationStore(
             """
             INSERT INTO organizations(
                 id, name, description, owner_user_id, status,
-                created_at, updated_at, version)
+                created_at, updated_at, version, organization_type)
             VALUES (
                 @id, @name, @description, @owner_user_id, 'ACTIVE',
-                @created_at, @updated_at, 1)
+                @created_at, @updated_at, 1, @organization_type)
             RETURNING id, name, description, logo_url, owner_user_id,
-                status, created_at, updated_at, version;
+                status, created_at, updated_at, version, organization_type;
             """,
             session.Connection,
             session.Transaction))
         {
             organizationCommand.Parameters.AddWithValue("id", organizationId);
             organizationCommand.Parameters.AddWithValue("name", name);
+            organizationCommand.Parameters.AddWithValue("organization_type", type);
             organizationCommand.Parameters.AddWithValue(
                 "description",
                 description is null ? DBNull.Value : description);
@@ -287,7 +291,7 @@ internal sealed class PostgresOrganizationStore(
               AND status IN ('ACTIVE','ARCHIVED')
             RETURNING
                 id, name, description, logo_url, owner_user_id,
-                status, created_at, updated_at, version;
+                status, created_at, updated_at, version, organization_type;
             """,
             session.Connection,
             session.Transaction);
@@ -520,7 +524,7 @@ internal sealed class PostgresOrganizationStore(
             """
             SELECT
                 id, name, description, logo_url, owner_user_id,
-                status, created_at, updated_at, version
+                status, created_at, updated_at, version, organization_type
             FROM organizations
             WHERE id = @id;
             """,
@@ -547,7 +551,7 @@ internal sealed class PostgresOrganizationStore(
             ParseStatus(reader.GetString(5)),
             reader.GetFieldValue<DateTimeOffset>(6),
             reader.GetFieldValue<DateTimeOffset>(7),
-            reader.GetInt64(8));
+            reader.GetInt64(8)) { Type = reader.GetString(9) };
     }
 
     private static OrganizationRole ParseRole(string role) =>

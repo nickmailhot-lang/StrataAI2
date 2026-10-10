@@ -27,6 +27,7 @@ import { watchOrganizationBoards } from "../kanban/organizationBoardLive";
 import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchOrganizationLifecycle, type OrganizationLifecycleState } from './organizationLifecycleLive';
 import { OrganizationCreationDialog } from './OrganizationCreationDialog';
+import { organizationTypeLabel } from './organizationTypes';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 
 type OrganizationSummary = {
@@ -35,6 +36,7 @@ type OrganizationSummary = {
     name: string;
     description: string | null;
     status: number;
+    type?: string;
   };
   role: number;
 };
@@ -312,6 +314,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
           <CircularProgress aria-label={organizationId ? "Loading boards" : "Loading organizations"} />
         ) : (
           <>
+            {organization && organizationTypeLabel(organization.type) && (
+              <Typography>Organization type: {organizationTypeLabel(organization.type)}</Typography>
+            )}
             {organization?.description && (
               <Typography>{organization.description}</Typography>
             )}

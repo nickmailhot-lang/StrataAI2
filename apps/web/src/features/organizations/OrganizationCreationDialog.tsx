@@ -1,24 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { boundedWorkRead } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
+import { organizationTypes } from './organizationTypes';
 
-type Intent = { actor: string; key: string; body: string };
+type Intent = { actor: string; key: string; body: string; type: string };
 const uuid = (value: unknown): value is string => typeof value === 'string'
   && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value)
   && value !== '00000000-0000-0000-0000-000000000000';
-function summary(value: unknown, originalActor?: string): string | undefined {
+function summary(value: unknown, originalActor?: string, originalType?: string): string | undefined {
   if (!value || typeof value !== 'object') return;
   const item = value as { organization?: { id?: unknown; name?: unknown; description?: unknown; status?: unknown;
-    version?: unknown; ownerUserId?: unknown }; role?: unknown };
+    version?: unknown; ownerUserId?: unknown; type?: unknown }; role?: unknown };
   const org = item.organization;
   if (!org || !uuid(org.id) || typeof org.name !== 'string' || !org.name.trim() || org.name.length > 160
     || org.description !== null && typeof org.description !== 'string' || org.status !== 0
     || !Number.isSafeInteger(org.version) || (org.version as number) < 1 || ![0, 1, 2].includes(item.role as number)
-    || originalActor && (org.ownerUserId !== originalActor || org.version !== 1 || item.role !== 0)) return;
+    || !organizationTypes.some(([type]) => org.type === type)
+    || originalActor && (org.ownerUserId !== originalActor || org.version !== 1 || item.role !== 0)
+    || originalType && org.type !== originalType) return;
   return org.id;
 }
 
@@ -27,6 +30,7 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
   actorId: string; onCancel(): void; onCreated(id: string): void;
 }) {
   const [name, setName] = useState(''); const [description, setDescription] = useState('');
+  const [type, setType] = useState('STRATA');
   const [intent, setIntent] = useState<Intent>(); const intentRef = useRef<Intent | undefined>(undefined);
   const [busy, setBusy] = useState(false); const [error, setError] = useState<string>();
   const [stopped, setStopped] = useState(false);
@@ -57,7 +61,7 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
       setError('Enter a name of up to 160 characters.'); return;
     }
     const original = intentRef.current ?? { actor: actorId, key: crypto.randomUUID(),
-      body: JSON.stringify({ name: name.trim(), description }) };
+      body: JSON.stringify({ name: name.trim(), description, type }), type };
     intentRef.current = original; setIntent(original);
     const controller = new AbortController(); active.current = controller; setBusy(true); setError(undefined);
     activityEvent('organization_creation', recover ? 'retry' : 'use');
@@ -78,7 +82,7 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
           intentRef.current = undefined; setIntent(undefined); setName(''); setDescription(''); setStopped(true);
           setError('The original creation could not be acknowledged. Return to the directory and check current Organizations before starting another creation.'); return;
         }
-        const id = result.status === 201 ? summary(result.body, original.actor) : undefined;
+        const id = result.status === 201 ? summary(result.body, original.actor, original.type) : undefined;
         if (!id) throw new Error('Creation acknowledgment unavailable');
         // An original receipt is historical: admit present membership/state separately.
         const canonical = await request(`/organizations/${id}`, {}, signal); if (!current(controller)) return;
@@ -109,6 +113,10 @@ export function OrganizationCreationDialog({ actorId, onCancel, onCreated }: {
       <DialogContent>
         {error && <Alert severity="error">{error}</Alert>}
         {!stopped && <>
+          <TextField select name="type" label="Organization type" fullWidth margin="normal" value={type}
+            onChange={event => setType(event.target.value)} disabled={busy || !!intent}>
+            {organizationTypes.map(([value, label]) => <MenuItem key={value} value={value}>{label}</MenuItem>)}
+          </TextField>
           <TextField name="name" label="Name" autoFocus required fullWidth margin="normal" value={name}
             onChange={event => setName(event.target.value)} disabled={busy || !!intent} slotProps={{ htmlInput: { maxLength: 160 } }} />
           <TextField name="description" label="Description" fullWidth multiline minRows={2} margin="normal" value={description}

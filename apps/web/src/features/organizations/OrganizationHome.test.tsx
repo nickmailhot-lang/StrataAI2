@@ -57,6 +57,18 @@ function mount(path = "/app") {
 beforeEach(() => sessionStorage.clear());
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 describe("PRD-01/03/04 organization discovery", () => {
+  it.each([
+    ['STRATA', 'Strata'], ['HOA', 'Homeowners association'], ['CONDOMINIUM', 'Condominium'],
+    ['COOPERATIVE', 'Cooperative'], ['PROPERTY_MANAGEMENT_COMPANY', 'Property management company'],
+    ['GENERIC', 'General organization'],
+  ])('displays the canonical Organization classification %s', async (type, label) => {
+    stubFetch(async path => response(path === '/organizations/org-1'
+      ? { ...organizations[0], organization: { ...organizations[0].organization, type } }
+      : { organizationId: 'org-1', items: [], nextCursor: null }));
+    mount('/app/org-1');
+    expect(await screen.findByText(`Organization type: ${label}`)).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Council' })).toBeVisible();
+  });
   it('recovers a terminal source on a fresh deep link whose ordinary graph is already unavailable', async () => {
     const fetcher = vi.fn(async () => response({}, 404)); stubFetch(fetcher);
     mount('/app/org-1'); await screen.findByRole('alert');
@@ -343,7 +355,7 @@ describe("PRD-01/03/04 organization discovery", () => {
   });
   it("creates an organization and opens its current authorized board list", async () => {
     const id = '55555555-5555-4555-8555-555555555555';
-    const created = { ...organizations[0], organization: { ...organizations[0].organization, id, version: 1, ownerUserId: profile.id } };
+    const created = { ...organizations[0], organization: { ...organizations[0].organization, id, version: 1, ownerUserId: profile.id, type: 'STRATA' } };
     const fetcher = vi.fn(async (path: string, options?: RequestInit) => {
       if (options?.method === 'POST') return response(created, 201);
       if (path === '/organizations/directory') return response({ items: [], nextCursor: null });
@@ -358,7 +370,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     expect(router.state.location.pathname).toBe(`/app/${id}`);
     const call = fetcher.mock.calls.find(([, options]) => options?.method === 'POST')!;
     expect(call[0]).toBe(`/organizations?expectedActorId=${profile.id}`);
-    expect(JSON.parse(call[1]!.body as string)).toEqual({ name: 'Council', description: '' });
+    expect(JSON.parse(call[1]!.body as string)).toEqual({ name: 'Council', description: '', type: 'STRATA' });
     const headers = call[1]!.headers as Headers;
     expect(headers.get('X-StrataAI-Request')).toBe('1'); expect(headers.get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
   });

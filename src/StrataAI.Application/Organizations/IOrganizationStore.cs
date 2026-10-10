@@ -23,7 +23,8 @@ public interface IOrganizationStore
         string name,
         string? description,
         DateTimeOffset createdAt,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string type = StrataAI.Domain.Organizations.OrganizationTypes.Default);
 
     Task<IReadOnlyList<OrganizationSummary>> ListOrganizationsForUserAsync(
         Guid userId,
