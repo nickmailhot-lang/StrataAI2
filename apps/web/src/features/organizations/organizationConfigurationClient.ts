@@ -157,6 +157,26 @@ export class ConfigurationChangeIntent {
   static review(organizationId: string, actorId: string, expectedVersion: number, configuration: OrganizationConfiguration, key = crypto.randomUUID()) {
     return new ConfigurationChangeIntent(organizationId, actorId, expectedVersion, configuration, key);
   }
+  recoveryRecord() {
+    return { organizationId: this.organizationId, actorId: this.actorId, key: this.key, body: this.#body };
+  }
+  static restore(value: unknown) {
+    const row = value as Record<string, unknown> | null;
+    if (!row || Object.keys(row).sort().join(',') !== 'actorId,body,key,organizationId'
+      || typeof row.body !== 'string' || new TextEncoder().encode(row.body).length > 98_304)
+      throw new WorkInputError('The saved configuration submission is unavailable.');
+    let parsed: unknown;
+    try { parsed = JSON.parse(row.body); } catch { throw new WorkInputError('The saved configuration submission is unavailable.'); }
+    const body = parsed as Record<string, unknown> | null;
+    if (!body || Object.keys(body).sort().join(',') !== 'configuration,version' || typeof body.version !== 'number')
+      throw new WorkInputError('The saved configuration submission is unavailable.');
+    const restored = new ConfigurationChangeIntent(identifier(row.organizationId), identifier(row.actorId), body.version,
+      parseOrganizationConfiguration(body.configuration), identifier(row.key));
+    // Reject altered encodings, extra/duplicate fields and noncanonical values;
+    // restoring must preserve the original request bytes rather than rebase it.
+    if (restored.#body !== row.body) throw new WorkInputError('The saved configuration submission is unavailable.');
+    return restored;
+  }
   reviewedConfiguration(): OrganizationConfiguration {
     return parseOrganizationConfiguration((JSON.parse(this.#body) as { configuration: unknown }).configuration);
   }

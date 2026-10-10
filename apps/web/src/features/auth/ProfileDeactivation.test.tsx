@@ -31,6 +31,8 @@ describe('PRD-02/03/18 account deactivation', () => {
 
   it.each(['organization_owner_required', 'ownership_changed'])('preserves edits on %s and reuses the refused intent after fresh confirmation', async code => {
     const pendingInvitation = 'strataai:invitation-create:v1:actor:organization';
+    const pendingConfiguration = 'strataai:configuration-change:v1:actor:organization';
+    sessionStorage.setItem(pendingConfiguration, 'pending original configuration');
     sessionStorage.setItem(pendingInvitation, 'pending private invitation input');
     const fetchMock = vi.fn().mockResolvedValueOnce(snapshot())
       .mockResolvedValueOnce(new Response(JSON.stringify({ code, title: 'Private organization detail must not appear' }), { status: 409 }))
@@ -42,10 +44,12 @@ describe('PRD-02/03/18 account deactivation', () => {
     await screen.findByText(code === 'organization_owner_required' ? /Another active owner must/ : /Your organization ownership changed/);
     expect(screen.getByLabelText(/Display name/)).toHaveValue('Preserved draft');
     expect(sessionStorage.getItem(pendingInvitation)).toBe('pending private invitation input');
+    expect(sessionStorage.getItem(pendingConfiguration)).toBe('pending original configuration');
     expect(screen.queryByText('Private organization detail must not appear')).not.toBeInTheDocument();
     await confirm();
     await screen.findByText('Your account is deactivated. Historical activity is preserved.');
     expect(sessionStorage.getItem(pendingInvitation)).toBeNull();
+    expect(sessionStorage.getItem(pendingConfiguration)).toBeNull();
     expect(new Headers(fetchMock.mock.calls[2][1].headers).get('Idempotency-Key')).toBe(new Headers(fetchMock.mock.calls[1][1].headers).get('Idempotency-Key'));
   });
 

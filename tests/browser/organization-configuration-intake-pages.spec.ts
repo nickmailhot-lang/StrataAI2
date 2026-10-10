@@ -43,7 +43,9 @@ for (const width of [1280, 390]) {
           }
         });
       });
-      page.on('request', request => { if (new URL(request.url()).pathname === `/api/boards/${boardId}`) fullBoardReads++; });
+      page.on('request', request => {
+        if ([`/boards/${boardId}`, `/api/boards/${boardId}`].includes(new URL(request.url()).pathname)) fullBoardReads++;
+      });
       await page.goto(`/app/${organizationId}/configuration`);
       await expect.poll(() => initialMetadata).toBe(true);
       if (initialRecheck)

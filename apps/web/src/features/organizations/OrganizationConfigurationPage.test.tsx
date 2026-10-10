@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationConfigurationPage } from './OrganizationConfigurationPage';
 import { parseOrganizationConfiguration, type ConfigurationRevision } from './organizationConfiguration';
@@ -60,8 +60,34 @@ function mount() {
 }
 const reviewButton = () => screen.getByRole('button', { name: 'Review configuration change' });
 async function review() { fireEvent.click(reviewButton()); return screen.findByRole('dialog', { name: 'Review configuration change' }); }
-afterEach(() => { vi.unstubAllGlobals(); live.watch.mockClear(); });
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); sessionStorage.clear(); live.watch.mockClear(); });
 describe('PRD-27 configuration form, human review and recovery', () => {
+  it('restores an unresolved original after remount without rebasing it to a newer current revision or automatically sending', async () => {
+    const state = fixture(); mount();
+    fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Original reviewed proposal' } });
+    state.lost = true;
+    fireEvent.click(within(await review()).getByRole('button', { name: 'Approve configuration change' }));
+    await screen.findByRole('button', { name: 'Retry original submission' });
+    expect(state.writes).toHaveLength(1); const body = state.writes[0].body;
+    const originalKey = new Headers(state.writes[0].headers).get('Idempotency-Key');
+    cleanup(); state.current = record(3, 'Later authoritative name'); mount();
+    await screen.findByText('Current revision: 3');
+    expect(screen.getByLabelText(/^Legal name/)).toHaveValue('Original reviewed proposal');
+    expect(reviewButton()).toBeDisabled(); expect(state.writes).toHaveLength(1);
+    const retry = await screen.findByRole('button', { name: 'Retry original submission' });
+    await waitFor(() => expect(retry).toBeEnabled()); fireEvent.click(retry);
+    await screen.findByText('Change acknowledged. Current configuration revision 3.');
+    expect(state.writes).toHaveLength(2); expect(state.writes[1].body).toBe(body);
+    expect(new Headers(state.writes[1].headers).get('Idempotency-Key')).toBe(originalKey);
+    expect(screen.getByLabelText(/^Legal name/)).toHaveValue('Later authoritative name'); expect(sessionStorage.length).toBe(0);
+  });
+  it('prevents the mutation when the browser cannot retain the original', async () => {
+    const state = fixture(); mount(); await screen.findByLabelText(/^Legal name/);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {});
+    fireEvent.click(within(await review()).getByRole('button', { name: 'Approve configuration change' }));
+    await screen.findByText(/This browser could not retain the original configuration submission/);
+    expect(state.writes).toHaveLength(0); expect(screen.getByLabelText(/^Legal name/)).toHaveValue('Recorded legal name');
+  });
   it('pages Lists without losing the verified selected destination or retaining every prior page', async () => {
     const state = fixture(); state.listPages = true; mount(); await screen.findByDisplayValue('Recorded legal name');
     fireEvent.mouseDown(screen.getByLabelText('Intake Board')); fireEvent.click(await screen.findByRole('option', { name: 'Actual intake Board' }));
