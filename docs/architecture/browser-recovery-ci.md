@@ -909,3 +909,31 @@ immutable failures or proves their causes; current exact-image/full-release
 acceptance remains required. No fixture or product admission is weakened on
 that inference. PRD-04 stays open at **15%**, PRD-05 at **15%**, PRD-10 at **35%**
 estimated work remaining (planning estimates).
+
+
+## Retained immutable commands proof for schema 131
+
+Job `114079086712` in run `37999375942` subsequently completes successfully
+on commit `b9f397836e759bb41cbfe47fbd3d2095c24eee80`. Its actual 117-step metadata
+and decoded log were inspected against that exact commit's
+`integration-suites.json`, rather than current main. Of the manifest's 86
+commands-scoped steps, **83 execute successfully**. The remaining three are
+Capture container state and logs, Prepare Upload integration diagnostics and
+Upload integration diagnostics; all three are explicitly `if: failure()` in
+that candidate's workflow and correctly skip on this successful job. Other
+skipped steps belong to separate browser suite scopes. No required commands
+execution is missing or unexpectedly skipped.
+
+Successful steps include archive checksum/load and embedded identity verification,
+startup/configuration refusal, actual profile/authentication/registration/invitation
+commands, Board grants/admin/copy/member receipts, automatic recipient and issuer
+Worker routing/restart, terminal search/inbox withdrawal, labels/assignments/watch/
+mentions/movement/copy/dates/attachments/checklists, atomic rollback/replay,
+leased Worker readiness and fixed-capacity lifecycle/notification/deletion gates.
+These are executed older-candidate steps, not a new count of individual test cases.
+That candidate's highest migration is **131**; it does not prove migrations
+132/133, the later Demo publication/audit repairs or current frontend. Three
+browser jobs on the same run remain failed, so successful commands/foundation/
+security do not establish whole-run `required-ci`, release bundle or current
+main acceptance. Current immutable-image CI and full original ticket criteria
+still govern closure.
