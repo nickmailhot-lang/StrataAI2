@@ -48,7 +48,7 @@ public sealed class PostgresInvitationRecipientEventReader(PostgresConnectionFac
         await using var session = await connections.OpenRoutingSessionAsync(cancellationToken);
         await session.SetLookupAsync(RoutingLookup.InvitationRecipient, binding.EmailNormalized, cancellationToken);
         await using var query = new NpgsqlCommand("""
-            SELECT event_id,event_type,sequence,created_at FROM invitation_recipient_events
+            SELECT event_id,event_type,sequence,created_at,invitation_recipient_event_ready(sequence) FROM invitation_recipient_events
              WHERE email_normalized=@email AND sequence>@since AND sequence<=@head ORDER BY sequence LIMIT @limit;
             """, session.Connection, session.Transaction);
         query.Parameters.AddWithValue("email", binding.EmailNormalized); query.Parameters.AddWithValue("since", since);
@@ -56,7 +56,16 @@ public sealed class PostgresInvitationRecipientEventReader(PostgresConnectionFac
         List<InvitationRecipientEvent> rows = [];
         await using (var row = await query.ExecuteReaderAsync(cancellationToken))
             while (await row.ReadAsync(cancellationToken))
+            {
+                if (!row.GetBoolean(4))
+                {
+                    // Stop at the first actual unmet dependency; never skip a
+                    // source or advance its checkpoint. Build still detects gaps.
+                    head = row.GetInt64(2) - 1;
+                    break;
+                }
                 rows.Add(new(row.GetGuid(0), row.GetString(1), row.GetInt64(2), row.GetFieldValue<DateTimeOffset>(3)));
+            }
         return InvitationRecipientEventWindow.Build(since, head, limit, rows);
     }
 }

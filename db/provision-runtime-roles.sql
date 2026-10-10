@@ -45,6 +45,8 @@ GRANT SELECT ON organization_metadata_events,organization_metadata_event_streams
 GRANT SELECT(email_normalized,last_sequence) ON invitation_recipient_streams TO strataai_api_runtime;
 GRANT SELECT(email_normalized,sequence,event_id,event_type,created_at) ON invitation_recipient_events TO strataai_api_runtime;
 GRANT SELECT(email_normalized,revision) ON invitation_recipient_authority_revisions TO strataai_api_runtime;
+GRANT EXECUTE ON FUNCTION public.bind_invitation_recipient_authority_dependency(uuid,uuid,uuid,uuid) TO strataai_api_runtime;
+GRANT EXECUTE ON FUNCTION public.invitation_recipient_event_ready(bigint) TO strataai_api_runtime;
 GRANT EXECUTE ON FUNCTION public.deliver_invitation_recipient_authority(uuid,uuid,uuid,uuid,uuid,uuid,integer) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.discover_invitation_recipient_authority_scopes(uuid,integer) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.claim_invitation_recipient_authority_job(uuid) TO strataai_worker_runtime;

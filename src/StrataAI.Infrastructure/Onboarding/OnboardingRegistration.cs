@@ -36,6 +36,7 @@ public static class OnboardingRegistration
         {
             services.AddSingleton<IInvitationStore, PostgresInvitationStore>();
             services.AddSingleton<IInvitationRecipientEventReader, PostgresInvitationRecipientEventReader>();
+            services.AddSingleton<IInvitationRecipientAuthorityDependencyPublisher, PostgresInvitationRecipientAuthorityDependencyPublisher>();
         }
 
         services.AddSingleton<InvitationRecipientSynchronizationService>();

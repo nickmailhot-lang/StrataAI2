@@ -621,3 +621,32 @@ Combined PostgreSQL/Worker/browser verification, the complete API project and
 current immutable-image CI remain required. Exception-driven read failures are
 still denied; no arbitrary storage exception is treated as an authority change.
 Estimated PRD-03 work remaining stays **8%**; no issue is closed on these results.
+
+
+### Integration of acceptance dependencies with final delivery recovery
+
+The previously isolated schema-134 candidate is now integrated with the final
+transport-delivery recovery above. Its ten source files still matched the frozen
+candidate byte for byte before integration; none had a newer conflicting main
+change. The candidate's complete Linux API suite passed **715/715 unique actual
+test results**, with zero failed, skipped, timed-out or error results. All **24/24
+original specialized PostgreSQL modes** and the **complete unfiltered schema-134
+persistence executable** completed successfully. Independent cleanup checks found
+zero owned database fixture containers and zero remaining credential environments.
+The long organization-deletion clock mode completed normally with its original
+assertions; it was not restarted or replaced with a shorter scope.
+
+Reports remain private outside the repository:
+`recipient-authority-readiness-full-api-native-20261010/api.trx`,
+`recipient-readiness-schema134-all-special-native-20261010/outcome.json`, and
+`recipient-readiness-schema134-full-persistence-native-20261010/outcome.json`.
+
+The combined locked solution build passes. The combined complete Domain suite
+passes **780/780 actual test rows**, zero failures/skips, and its complete original
+recipient persistence mode passes with the actual acceptance readiness contract.
+Reports: `recipient-authority-combined-full-domain-native-20261010/domain.xml`
+and `recipient-authority-combined-recipient-native-20261010/outcome.json`.
+The combined complete API suite and original six-case browser invocation are
+still running; candidate-only browser results do not certify that combination.
+Current exact-commit immutable-image CI remains required before closure.
+Estimated PRD-03 work remaining stays **8%**.

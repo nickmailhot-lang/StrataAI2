@@ -16,7 +16,8 @@ public sealed class InvitationService(
     IClock clock,
     IOrganizationUnitOfWork unitOfWork, IIdentityUnitOfWork identityCommands, ICommandActorAuthorization actors,
     IWorkManagementStore work, IdentityPolicy policy, IWorkEventStore events,
-    IInvitationMailPublisher? mail = null) : IInvitationService
+    IInvitationMailPublisher? mail = null,
+    IInvitationRecipientAuthorityDependencyPublisher? authorityDependencies = null) : IInvitationService
 {
     private static readonly TimeSpan InvitationLifetime = TimeSpan.FromDays(7);
 
@@ -416,8 +417,12 @@ public sealed class InvitationService(
             {
                 await organizationStore.AppendAuditAsync(invitation.OrganizationId, actorUserId, memberEvent,
                     "Board", targetBoard.Id, correlationId, cancellationToken);
-                await events.AppendAsync(new(Guid.NewGuid(), invitation.OrganizationId, targetBoard.Id, actorUserId,
-                    memberEvent, "Board", targetBoard.Id, targetBoard.Version, correlationId, clock.UtcNow), cancellationToken);
+                var memberSource = new WorkEvent(Guid.NewGuid(), invitation.OrganizationId, targetBoard.Id, actorUserId,
+                    memberEvent, "Board", targetBoard.Id, targetBoard.Version, correlationId, clock.UtcNow);
+                await events.AppendAsync(memberSource, cancellationToken);
+                if (authorityDependencies is not null && !await authorityDependencies.BindAsync(
+                    invitation.OrganizationId, actorUserId, invitation.Id, memberSource.EventId, cancellationToken))
+                    return InvitationOperation<AcceptedInvitation>.Failure("invitation_storage_unavailable");
             }
             await events.AppendAsync(new(Guid.NewGuid(), invitation.OrganizationId, targetBoard.Id, actorUserId,
                 "INVITATION_ACCEPTED", "Board", targetBoard.Id, targetBoard.Version, correlationId, clock.UtcNow), cancellationToken);
