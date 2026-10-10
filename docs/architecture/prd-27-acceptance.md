@@ -109,3 +109,15 @@ for precise source scopes and limitations. Activity, suspension/deactivation,
 retention/data/portal consistency, complete UX, telemetry and immutable-image
 acceptance remain unfinished. **60% remaining**; all numbered criteria and
 linked scenarios stay open.
+
+The final typed frontend source subsequently passes **2,279/2,279**, with all
+**475** frontend/browser hashes matching. A private configuration Activity source
+projection now adds current administrative admission, stable descending paging
+and purpose-separated encrypted continuations. Full Linux Domain **865/865**,
+three API-host cases and the restricted PostgreSQL configuration/readiness
+contract pass against their recorded sources. See [configuration Activity source projection](organization-configuration.md#configuration-activity-source-projection)
+for exact scope, original attribution and retained fixture limitations. Activity
+UI and event-time role/capacity snapshots remain required alongside full
+lifecycle/data/retention/portal, UX/telemetry and immutable-image acceptance.
+The earlier full 797-case API transport suite remains a separate running scope.
+**60% estimated work remaining**; no criterion or scenario is closed.

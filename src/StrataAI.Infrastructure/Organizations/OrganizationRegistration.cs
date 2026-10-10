@@ -15,6 +15,7 @@ public static class OrganizationRegistration
     {
         services.AddSingleton<IOrganizationMetadataCursorCodec, DataProtectedOrganizationMetadataCursorCodec>();
         services.AddSingleton<IOrganizationConfigurationCursorCodec, DataProtectedOrganizationConfigurationCursorCodec>();
+        services.AddSingleton<IOrganizationConfigurationActivityCursorCodec, DataProtectedOrganizationConfigurationActivityCursorCodec>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.TryAddSingleton<InMemoryAccountOrganizationGate>();
@@ -80,6 +81,7 @@ public static class OrganizationRegistration
         services.AddSingleton<OrganizationMetadataSynchronizationService>();
         services.AddSingleton<OrganizationConfigurationService>();
         services.AddSingleton<OrganizationConfigurationSynchronizationService>();
+        services.AddSingleton<OrganizationConfigurationActivityService>();
         services.AddSingleton<TransactionalOrganizationMetadataSynchronization>();
         services.AddSingleton<IOrganizationService, OrganizationService>();
     }

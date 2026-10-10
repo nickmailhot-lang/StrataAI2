@@ -321,8 +321,9 @@ Coverage includes HTTP paging/reset, guessed-target denial, origins, current
 role/session withdrawal, subscription limits and cancellation. The preceding
 client/page run passed **63/63** focused cases, and its complete frontend suite
 passed **2,279/2,279** with **474** matching source hashes. That full run precedes
-a test-only TypeScript query-option correction; final typed-source full-suite
-verification is in progress. Final web/browser type checking, lint and the
+a test-only TypeScript query-option correction. The subsequent final typed-source
+run passed **2,279/2,279** with all **475** recorded source hashes matching.
+Final web/browser type checking, lint and the
 production web build passed.
 
 Both new native desktop/phone browser cases passed on their first attempt,
@@ -341,3 +342,44 @@ projection, suspension/deactivation, retention/schema/portal consistency, every
 degraded and accessible branch, telemetry and release acceptance remain open.
 Estimated work remaining: **60%**. No numbered criterion or linked scenario is
 closed from this increment.
+
+## Configuration Activity source projection
+
+`GET /organizations/{id}/configuration/activity` provides a current administrator
+with a private, newest-first page of up to 50 immutable source references. Its
+purpose-separated encrypted continuation binds the Organization, viewer,
+membership identity/version and administrative role. Live replay cursors cannot
+be used as Activity continuations. Historical rows are read through the owning
+Organization transaction and indexed configuration revision history; account,
+membership and lifecycle admission is checked again after history IO.
+
+This Activity projection uses the atomically retained configuration source.
+It does not depend on separate Worker publication readiness or create another
+mutable journal. Each item preserves the original event UUID, actor UUID,
+version, correlation and precise source timestamp. It carries empty safe
+metadata and an explicitly absent Board: the configured intake Board never
+becomes the audience for private Organization configuration. Private values,
+parent names and current account captions are excluded. Historical actor UUIDs
+remain interpretable even when that actor cannot act anymore; event-time human
+captions and governance role/capacity snapshots still require their own source
+contract and are not fabricated from a current account lookup.
+
+The full final Linux Domain suite passes **865/865**, with zero failures, errors
+or skips and all **532** recorded source hashes matching. Three API-host cases
+pass, including a real 53-revision owning producer and private paging/cursor
+separation; all **639** applicable source hashes match. The restricted PostgreSQL
+configuration/readiness executable passes with **1,810** matching source hashes,
+original fine source clocks, cursor purpose separation and Activity denial
+after membership withdrawal. Its existing lease, rollback, publication, Worker
+private-read denial and tenant isolation checks remain in place. Owned fixtures
+are removed. An initial contract compilation exposed a nullable test reference;
+the correction preserves the original source assertion and the final build
+has zero warnings/errors.
+
+The earlier **797-case** API suite is still running against its frozen transport
+source; it does not include these three new Activity cases. Current complete
+API/image acceptance is tracked separately. The configuration Activity MUI
+consumer, historical attribution/capacity work, suspension/deactivation,
+retention/schema/portal consistency, full UX/telemetry and immutable-image release
+acceptance remain open. Estimated work remaining stays **60%**. No numbered
+acceptance criterion or linked scenario is closed by this source projection.

@@ -19,6 +19,30 @@ public static class OrganizationConfigurationEndpoints
 
     public static void MapOrganizationConfigurationEndpoints(this RouteGroupBuilder group)
     {
+        group.MapGet("/{organizationId:guid}/configuration/activity", async (Guid organizationId,
+            HttpContext context, OrganizationConfigurationService service,
+            OrganizationConfigurationActivityService activity, CancellationToken ct) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = Actor(context); if (actor is null) return Error("session_unavailable");
+            var admission = await service.ReadAsync(organizationId, actor.Value, ct);
+            if (!admission.Succeeded) return Error(admission.ErrorCode);
+            string? cursor = null;
+            if (context.Request.Query.TryGetValue("cursor", out var values))
+            {
+                if (values.Count != 1 || values[0] is not { Length: > 0 and <= 4096 })
+                    return Error("invalid_configuration_activity_cursor");
+                cursor = values[0];
+            }
+            try
+            {
+                var result = await activity.ReadAsync(organizationId, actor.Value, cursor, ct);
+                return result.Succeeded ? Results.Ok(result.Value) : Error(result.ErrorCode);
+            }
+            catch (Exception exception) when (!ct.IsCancellationRequested && exception is InvalidOperationException or JsonException)
+            { return Error("configuration_source_unavailable"); }
+        });
+
         group.MapGet("/{organizationId:guid}/configuration/events", async (Guid organizationId,
             HttpContext context, OrganizationConfigurationService service,
             OrganizationConfigurationSynchronizationService replay, CancellationToken ct) =>
@@ -151,6 +175,7 @@ public static class OrganizationConfigurationEndpoints
             "idempotency_key_required" => (400, "A nonempty UUID retry key is required."),
             "invalid_configuration_cursor" => (400, "A positive configuration history revision is required."),
             "invalid_configuration_event_cursor" => (400, "Use one bounded configuration event cursor."),
+            "invalid_configuration_activity_cursor" => (400, "Reload configuration Activity to obtain a current private continuation."),
             "invalid_sync_limit" => (400, "A replay page limit from 1 to 100 is required."),
             "invalid_configuration_intake_cursor" => (400, "Use the rank boundary returned by the previous intake List page."),
             "invalid_configuration_request" => (400, "Provide a configuration and its reviewed revision using the supported fields."),

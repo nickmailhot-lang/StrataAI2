@@ -53,6 +53,28 @@ internal static class OrganizationConfigurationDeliveryContract
         var pending = await sync.ReadAsync(tenant,actor,initialCursor,ct:ct);
         Require(pending.Succeeded && pending.Value is { Pending: true, ResetRequired: false, Events.Count: 0 },
             "Unpublished restricted configuration sources reached a recipient.");
+        // Activity is a projection of the atomically retained source, not a
+        // claim that the separate Worker's publication has already occurred.
+        var activity = provider.GetRequiredService<OrganizationConfigurationActivityService>();
+        var activityCodec = provider.GetRequiredService<IOrganizationConfigurationActivityCursorCodec>();
+        var activityPage = await activity.ReadAsync(tenant,actor,null,ct);
+        Require(activityPage.Succeeded && activityPage.Value is { Items.Count: 2, NextCursor: null },
+            "Restricted configuration Activity did not retain both committed sources.");
+        Require(activityPage.Value!.Items[0].EventId==second.Value!.EventId
+            && activityPage.Value.Items[0].CreatedAt==second.Value.UpdatedAt
+            && activityPage.Value.Items[1].EventId==first.Value!.EventId
+            && activityPage.Value.Items.All(item=>item.ActorId==actor && item.BoardId is null && item.Metadata.Count==0),
+            "Configuration Activity altered original source attribution or invented a Board audience.");
+        Require(!System.Text.Json.JsonSerializer.Serialize(activityPage.Value).Contains("Private",StringComparison.Ordinal),
+            "Configuration Activity disclosed private revision values.");
+        var activityCursor=activityCodec.Encode(scope.Value.Binding,2);
+        var activityOlder=await activity.ReadAsync(tenant,actor,activityCursor,ct);
+        Require(activityOlder.Succeeded && activityOlder.Value is { Items.Count:1 }
+            && activityOlder.Value.Items[0].EventId==first.Value!.EventId,
+            "Restricted Activity continuation changed its immutable source boundary.");
+        var foreignPurpose=await activity.ReadAsync(tenant,actor,initialCursor,ct);
+        Require(!foreignPurpose.Succeeded && foreignPurpose.ErrorCode=="invalid_configuration_activity_cursor",
+            "Configuration live cursor crossed into private Activity paging.");
         async Task<OrganizationConfigurationEventBatch> ReadBatch()
         {
             var result = await unit.ExecuteAsync(tenant,actor,null,false,async () =>
@@ -172,6 +194,10 @@ internal static class OrganizationConfigurationDeliveryContract
         var withdrawn = await sync.ReadAsync(tenant,actor,initialCursor,ct:ct);
         Require(!withdrawn.Succeeded && withdrawn.Value is null && withdrawn.ErrorCode=="organization_not_found",
             "Configuration replay retained a departed recipient grant.");
+        var withdrawnActivity=await activity.ReadAsync(tenant,actor,activityCursor,ct);
+        Require(!withdrawnActivity.Succeeded && withdrawnActivity.Value is null
+            && withdrawnActivity.ErrorCode=="organization_not_found",
+            "Configuration Activity retained a departed administrator grant.");
         var next = await jobs.ClaimAsync(tenant, Guid.NewGuid(), ct) ?? throw new InvalidOperationException("Committed update delivery was missing.");
         var nextEvent = OrganizationLifecycleDeliveryHandler.ParseEventId(next.SafeMetadataJson);
         Require(next.JobType == OrganizationConfigurationDeliveryHandler.Type && nextEvent != eventId,
