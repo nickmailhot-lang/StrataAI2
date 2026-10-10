@@ -454,3 +454,19 @@ the new owner-refusal test's dialog-close observation, and final **319/319**
 authentication/API-boundary source passes. Typecheck, lint and private web build
 pass. Original full account/replacement-account browser files are running
 separately; current browser/immutable-image/full acceptance is not inferred.
+
+
+## Current profile/account and four-width reflow results
+
+The complete original account and replacement-account files pass **20/20 on
+their only attempt** in 567,120.012 ms, with zero skips/flaky cases/report errors.
+The [profile reference record](profile-error-references.md) retains optional
+verification policy and independently confirmed runtime cleanup.
+
+The [primary-screen reflow record](primary-screen-reflow.md) retains four
+pre-repair failures caused by a 3,442-pixel profile document, the shared MUI
+wrapping repair and complete **4/4** native repaired phase. All 327 release
+browser cases remain collected across four intact file partitions. Source
+timeouts are retained alongside the complete two-file-worker **321/321** source
+pass (22 files, unchanged five-second case deadlines/within-case concurrency).
+No default-pool/immutable CI or full primary-screen acceptance is inferred.

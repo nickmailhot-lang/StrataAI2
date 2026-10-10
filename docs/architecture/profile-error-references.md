@@ -34,14 +34,17 @@ private web build pass. Private source reports: `profile-error-references-202610
 ## Browser and acceptance boundary
 
 The complete original `account.spec.ts` and `identity-expected-account.spec.ts`
-files are running together against the current profile frontend bundle, compiled
+files pass together **20/20 on their only attempt**, with zero skipped, flaky,
+unexpected cases or report errors, in 567,120.012 ms, against the profile frontend bundle, compiled
 schema-133 API/Worker, actual restricted PostgreSQL and Nginx/CSP. This phase uses
 the original optional-verification policy for these account cases; the separate
 [strict identity-mail phase](identity-error-references.md) is not silently reused
 as current profile evidence. Original assertions, deadlines, fixture pacing and
 no-case-retry policy remain. Private report:
-`profile-error-reference-browser-native-20261010`. The browser invocation is
-nonterminal; no pass or cleanup is claimed yet.
+`profile-error-reference-browser-native-20261010`. Owned API/web/Worker containers,
+fresh database and credential environments are independently absent after
+terminal cleanup. These files retain their full original scope; their passing
+result does not execute every newly added reference-display branch.
 
 These source checks do not establish every profile/reference browser branch or
 immutable-image CI acceptance. Invitation and other primary-screen consumers

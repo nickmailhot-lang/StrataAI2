@@ -26,6 +26,13 @@ export const appTheme = createTheme({
     },
   },
   components: {
+    MuiTypography: {
+      styleOverrides: {
+        // Preserve complete canonical names and account addresses at narrow
+        // widths, including unbroken words. Do not clip or truncate the text.
+        root: { overflowWrap: 'anywhere' },
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
         // Non-empty keyframes retain MUI's autofill notification in production.

@@ -817,3 +817,17 @@ recovery, keyboard, accessibility and cleanup are independently recorded.
 This supplies current local browser evidence for that scope, without replacing
 invitation/profile/full-policy or current immutable-image CI acceptance.
 Estimated PRD-02 work remaining stays **16%**; the issue remains open.
+
+
+## Current profile/account and long-content browser verification
+
+The complete original account and expected-account files pass **20/20** on
+the profile-reference frontend and compiled schema-133 runtime, with optional
+verification policy and independently verified cleanup. The
+[profile reference record](profile-error-references.md) retains this exact scope.
+The subsequent [four-width reflow record](primary-screen-reflow.md) records
+actual long persisted names, the shared MUI wrapping repair, **4/4** native
+passes and selected **321/321** two-file-worker source passes, with unchanged
+per-case deadlines. Earlier default-pool timeouts remain retained. These are
+local scoped results, not complete default-pool/immutable-image acceptance.
+Estimated PRD-02 work remaining stays **16%**; the issue remains open.

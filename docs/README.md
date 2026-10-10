@@ -256,3 +256,6 @@ response-bound references, safe retry/cancellation and executed source checks.
 
 [Profile and account error references](architecture/profile-error-references.md) covers
 protected refresh, saves, sign-out, deactivation and retained verification boundaries.
+
+[Primary-screen long-name reflow](architecture/primary-screen-reflow.md) records
+four-width long-content verification, MUI wrapping and release-collection scope.
