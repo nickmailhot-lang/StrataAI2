@@ -689,3 +689,24 @@ The candidate remains isolated and unmerged while its original complete API and
 six-case native browser scopes run. Primary source remains unchanged for the
 live combined API invocation. Current exact-commit CI and all PRD acceptance
 criteria remain required. Estimated PRD-03 work remaining stays **8%**.
+
+
+The complete final-delivery API invocation has now completed successfully:
+**717/717 unique actual test results passed**, zero failures/errors/timeouts/skips.
+It uses the immutable private 634b3a2f source snapshot and its matching compiled
+payload, so later main or isolated edits cannot change its source/content-root
+inputs. Report: `recipient-delivery-boundary-full-api-native-20261010/api.trx`.
+This confirms the complete API project for that delivery fix, separately from
+the schema-134 combined and read-boundary candidate API runs, which remain live.
+
+The isolated read-boundary candidate's original six-case native browser suite
+also now passes **6/6 actual cases on six first attempts**, zero retries/report
+errors, in **191,402.375 ms**, with the original **120,000 ms** case limits.
+Independent checks confirm zero owned containers/databases/credential environments
+and exact web assets from the verified production build. Report:
+`recipient-read-head-authority-final-browser-native-20261010/report-private.json`.
+The full unfiltered persistence executable is additionally running unchanged
+against that candidate after an older CI run reported a PostgreSQL read timeout
+in the initial large Organization deletion fixture. That CI failure is retained,
+and the large graph and original deadlines remain intact.
+Estimated PRD-03 work remaining stays **8%**; no closure is justified yet.

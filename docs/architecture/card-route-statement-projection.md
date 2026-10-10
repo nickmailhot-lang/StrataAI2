@@ -101,3 +101,26 @@ This strengthens current compiled-source persistence proof; complete API/fronten
 runs, immutable tested-image CI, unresolved historical attribution and full PRD
 acceptance remain separately required. PRD-01 stays open at **34% estimated work
 remaining**; ARCH-03's missing module and execution coverage remains unchanged.
+
+
+## Later CI failure in the original large candidate fixture
+
+CI run [38026680592](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38026680592)
+for commit `36b9427c` failed PostgreSQL job `114142443195` in the complete default
+C# persistence invocation. Migration/security/isolation SQL steps through that
+point passed. The failure is `NpgsqlException` wrapping a read `TimeoutException`
+at the first `OrganizationDeletionCandidatesContract` fixture batch, before
+candidate traversal: `OrganizationDeletionCandidatesContract.cs:23/25` and that
+revision's `Program.cs:252`. The batch includes the original **100,002 Cards**
+and **200 Lists**. The stack does not identify which statement within the batch
+consumed the deadline; a specific trigger or host cause is not yet established.
+
+The later complete schema-134 local invocation passed that same full candidate
+traversal with **100,002 Cards / 100,000 archived**, original 128-row page bounds
+and **55,545 ms** traversal time. This does not erase or explain the CI failure.
+The read-boundary candidate's complete unfiltered persistence executable is now
+running with the original graph, assertions and deadlines, separately from its
+focused invitation and browser proofs. No timeout increase, graph reduction or
+retry has been introduced. Current exact-commit immutable-image CI and the full
+PRD acceptance criteria remain required; PRD-01's estimated remaining work stays
+**34%**.
