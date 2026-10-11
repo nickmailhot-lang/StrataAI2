@@ -7,6 +7,7 @@ import { isNotificationProfile } from '../features/notifications/notificationInb
 import { lifecycleUuid } from '../features/organizations/operationalLifecycle';
 import { watchOperationalLifecycle } from '../features/organizations/operationalLifecycleLive';
 import { forgetOrganizationRetentionPolicyChanges } from '../features/records/retentionPolicyRecovery';
+import { forgetOrganizationRetentionSourceClassifications } from '../features/records/retentionSourceRecovery';
 
 type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previouslyAdmitted?: boolean };
 
@@ -33,8 +34,10 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
     // The outer boundary can retire the policy page before its own denial
     // effect runs. Clear only this Organization after definitive internal denial;
     // transport uncertainty and independent Portal grants retain original work.
-    if (surface === 'INTERNAL' && organizationId && result?.scope === scope && result.status === 'denied')
+    if (surface === 'INTERNAL' && organizationId && result?.scope === scope && result.status === 'denied') {
       forgetOrganizationRetentionPolicyChanges(organizationId);
+      forgetOrganizationRetentionSourceClassifications(organizationId);
+    }
   }, [surface, organizationId, scope, result]);
   const theme = useTheme();
   const surfaceTheme = useMemo(() => ({ ...theme, components: {

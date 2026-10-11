@@ -1407,3 +1407,35 @@ expected-actor refusal and Organization denial before body consumption, and
 recovers exact original results after a Card move. These are handler/owning-store
 checks, not proof of a mapped Production HTTP route or completed MUI workflow.
 Public activation and full immutable-image acceptance remain unfinished.
+
+## Classification client and retained original recovery
+
+The source client validates exact review projections, retained source lifecycles,
+Card/Comment/Attachment relationships, safe revisions and precise UTC source
+timestamps. A confirmed classification intent privately owns immutable original
+request bytes and its UUID retry key. Restoration validates the complete bounded
+recovery record and requires byte-for-byte canonical identity; another source or
+key cannot overwrite an unresolved original in the same actor/Organization scope.
+
+Submission uses the authenticated actor fence and the normal same-origin CSRF
+transport. It sends one bounded request without a fresh source review: current
+and original Board authority remain the owning server command's responsibility.
+Successful acknowledgment requires the exact original source, original Board,
+revision, category, jurisdiction and actor, with valid event/UTC registration
+evidence. A changed actor after delivery or a malformed/substituted response
+does not acknowledge success or clear the original. Network failure and timeout
+preserve the retained request for an explicit retry with identical bytes.
+
+Confirmed sign-out/account withdrawal clears source recovery. Definitive internal
+Organization denial clears only that Organization; transport uncertainty and
+independent Portal denial preserve internal originals. Storage is bounded to 32
+scopes and cannot evict a pending original to make room for another Organization.
+
+Local verification on 2026-10-11: **63/63 focused source-client, SurfaceAdmission
+and ProfilePage cases passed**, including lost acknowledgment recovery, exact
+byte identity despite later source movement/drafts, altered receipt refusal,
+actor changes before/after delivery, bounded timeout, corrupt/competing recovery,
+and scoped withdrawal/sign-out preservation/cleanup. Frontend type checking,
+lint and web compilation passed (the existing bundle-size advisory remains).
+These results do not prove a completed source-context MUI control, mapped
+Production/Demo workflow or retained immutable-image release acceptance.
