@@ -159,6 +159,52 @@ source parity, runtime activation, HTTP/MUI, domain delivery and disposition
 integration remain outstanding. This adapter does not complete hold enforcement
 or any PRD-70 acceptance criterion.
 
+## Record authorization required before hold activation
+
+The current hold scope contains only Organization, class, category and record ID;
+the producer registry captures kind and an exact child Card relationship, but no
+original Board authorization context. These identify a record; they do not prove
+permission to its historical private classification, hold reason or acknowledgment
+after a Card moves. The native store's scope probes do not resolve this gap.
+
+The existing [attachment receipt admission](../../src/StrataAI.Application/WorkManagement/AttachmentAdmission.cs)
+provides the relevant owning pattern: plan original and current Board gates,
+acquire them in stable order, and re-read authoritative relationships before
+disclosing the immutable acknowledgment. Hold/source authorization must preserve
+that boundary rather than treating access to the current destination as permission
+to all original private history.
+
+Before registering a real resolver and enabling either runtime, implement:
+
+- Trusted, persisted authorization context for private classification and record
+  hold application. Capture the relevant original source/parent Board identities
+  from the admitted producer, not request fields or free-form audit metadata.
+  Retain their tenant-safe referential meaning across moves and archive.
+- Minimal private reference lookup before reading classification details, hold
+  reasons or receipt result bodies. Under the existing Organization transaction,
+  authorize the original classification/application gates and the current producer
+  gates, then re-resolve after waits and before disclosure/commit. Roles, governance
+  titles, a UUID match and the scope completeness flag are not this permission.
+- Explicit producer admission for Card, Comment and Attachment, including exact
+  current child/parent identity and archive/deletion states. Audit records need
+  the originating module's retained authorization context; an arbitrary AuditEvent
+  or its safe metadata cannot grant access to a protected originating object.
+  Governance, external Correspondence and AI require their real owning producers.
+- An authoritative producer version/context for human review and a stable conflict
+  result if that evidence changes. Original command recovery must retain its
+  captured context while rechecking current actor/session and current source
+  authority; it must not silently adopt a destination's permissions.
+- Demo/Production parity and executed original/current Board move, archive,
+  confidentiality, permission withdrawal, concurrent source change, historical
+  attribution and lost-response retry cases. Preserve independent Portal admission
+  and explicitly scoped system/offboarding permissions.
+
+These are implementation prerequisites, not an approved scope reduction. Do not
+fabricate historical gates for legacy rows from their current Board. Existing
+unactivated foundation rows without sufficient trusted context need a defined,
+authorized recovery/migration contract or must refuse disclosure. No permissive
+scope resolver or new public capability is introduced by this review.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines
