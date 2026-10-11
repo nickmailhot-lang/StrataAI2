@@ -1153,3 +1153,12 @@ original-receipt replay, invalid/stale rejection, inactivity/restoration, foreig
 and anonymous denial. It runs against the built release API in the command job.
 Local native restricted Production evidence is recorded in the
 [acceptance map](prd-27-acceptance.md#organization-scoped-adoption-and-committed-use).
+
+
+The maintained usage script subsequently passed unchanged against a locally
+built release Dockerfile API image from `96fdcd61`, with fresh restricted
+PostgreSQL and no application-output overlay. The complete current frontend
+suite passed 2,384/2,384 with unchanged source. See
+[built API-image fixture evidence](prd-27-acceptance.md#maintained-usage-fixture-against-a-built-api-image)
+for the immutable image ID, local build version, source provenance and remaining
+whole-release gates.

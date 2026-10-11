@@ -578,3 +578,43 @@ run** retains unchanged frontend sources. Current full regressions, complete
 exact-image CI, retention/hold and remaining data/permission consistency are
 still required. **24% estimated PRD-27 work remaining**; no numbered acceptance
 criterion or linked scenario closes solely from this increment.
+
+
+## Maintained usage fixture against a built API image
+
+The release `Dockerfile.api` was built once from a `git archive` of main commit
+`96fdcd614d84e9b75197e8cba95af3d970683a94`, using the locked dependency restore
+and Release publish stages. No application build-output mount was used in the
+subsequent runtime. The image's OCI revision label matches the frozen commit;
+its immutable local image ID is
+`sha256:38976589952e829e1bc966769d055bf96874b99c924f93a21992ab9df45b498b`.
+The local build uses the explicit version `0.1.0-local.usage`; this is not a
+promoted GitHub release artifact. All **1,892 captured repository files match**
+at build completion and after the fixture.
+
+The unchanged maintained `test-organization-configuration-usage.sh` runs
+successfully against that image with fresh ordered migrations, canonical
+restricted runtime roles and actual authenticated HTTP. A temporary client
+shares the API's network namespace, so Secure cookie behavior is exercised at
+localhost without changing application cookie settings. Its Docker CLI invokes
+the existing release Compose PostgreSQL service in the uniquely labeled fixture
+project. This checks the exact three-field response and private/no-store
+headers, zero/first/later committed use, an original retry returning revision
+one while current usage stays two, rejected stale/invalid commands, both
+suspension and deactivation with restored unchanged counts, foreign denial and
+anonymous denial. All assertions and the maintained script remain unchanged.
+The temporary client, API/schema/PostgreSQL services, database, roles and
+credential files were removed; the original PostgreSQL instance was preserved.
+The local API image is retained for inspection and reuse.
+
+The complete current frontend regression has also terminated **2,384/2,384**,
+zero failed/pending cases, with all **335 frontend hashes matching**. Its owned
+container was removed. Both previously confirmed-live API runs still execute:
+the 837-case run retains its earlier backend scope, while the 842-case run
+captures the usage increment. Pending API execution and queued GitHub metadata
+jobs cannot establish release acceptance. This is actual built API-image
+execution of the usage fixture, not complete web/API/Worker image integration,
+security/SBOM, Collector ingestion or the required CI gate. PRD-70's legal hold,
+policy, disposition, redaction and export implementations remain absent; retained
+configuration history does not establish them. **24% estimated PRD-27 work
+remaining**, unchanged; no numbered criterion or linked scenario is closed.
