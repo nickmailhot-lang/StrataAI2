@@ -1302,3 +1302,31 @@ All **381 captured hashes matched**. Its synthetic fixtures now follow migration
 146 without numbering collisions. These are local database/source results;
 current build-once immutable-image acceptance remains required. PRD-70 remains
 open at **80% estimated work remaining**.
+
+## Policy recovery after outer Organization withdrawal
+
+Definitive internal Organization admission denial now clears saved private policy
+submissions for that Organization, even when the outer boundary retires the policy
+page before its own denial effect runs. Original submissions for other
+Organizations remain available. Transport uncertainty preserves the original
+retry intent, and independent Portal denial does not erase internal policy work.
+
+An older release trace showed the desktop withdrawal scenario waiting 111 seconds
+to focus a policy refresh button after the outer boundary had removed the page.
+The fresh unchanged maintained replay reproduced the boundary ordering: three
+cases passed, while the desktop scenario waited for the page-specific denial
+message after the outer denial was already visible. The maintained scenario now
+requires definitive outer denial and absence of the protected refresh control;
+its private-display, saved-recovery removal, original-key refusal, retained
+server result and no-horizontal-overflow assertions remain required.
+
+The repaired scenario passed all **four desktop/phone cases** on 2026-10-11 in
+99.3 seconds, with no skipped, unexpected or flaky cases. The actual restricted
+API/Worker replay used verified accounts and preserved the keyboard confirmation,
+WCAG checks, lost acknowledgment, reload, exact original retry and immutable
+history assertions. All **1,364 native** and **1,957 hosted captured hashes
+matched**. The separate checkout also passed **44 focused tests**, frontend and
+browser type checks, lint, production web build and fresh full-solution compilation
+with zero .NET warnings/errors. These are local source results; exact-head
+build-once image acceptance remains required. PRD-70 remains open at **80%
+estimated work remaining**.

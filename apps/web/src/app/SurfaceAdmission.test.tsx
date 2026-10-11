@@ -122,6 +122,41 @@ function mount(surface: 'INTERNAL' | 'PORTAL' = 'INTERNAL', fallback = false) {
 }
 const response = (organizationId: string, surface = 'INTERNAL') => new Response(JSON.stringify({ organizationId, surface }));
 
+it('clears this Organization private policy recovery when the outer boundary withdraws the page', async () => {
+  const key = `strataai:retention-policy-change:v1:${liveActor}:${liveOrg}`;
+  const other = `strataai:retention-policy-change:v1:${liveActor}:44444444-4444-4444-8444-444444444444`;
+  sessionStorage.setItem(key, 'unresolved private original'); sessionStorage.setItem(other, 'other Organization original');
+  try {
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile)) : response(liveOrg)));
+    mountLive(); await screen.findByText(`Admitted ${liveOrg}`); await waitFor(() => expect(operational.options).toBeDefined());
+    act(() => operational.options!.denied(404, false));
+    expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
+    await waitFor(() => expect(sessionStorage.getItem(key)).toBeNull());
+    expect(sessionStorage.getItem(other)).toBe('other Organization original');
+  } finally { sessionStorage.clear(); }
+});
+it('preserves unresolved policy recovery through transport uncertainty until fresh authority resolves', async () => {
+  const key = `strataai:retention-policy-change:v1:${liveActor}:${liveOrg}`;
+  sessionStorage.setItem(key, 'unresolved private original'); let calls = 0;
+  try {
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile))
+      : ++calls === 1 ? response(liveOrg) : new Promise<Response>(() => {})));
+    mountLive(); await screen.findByText(`Admitted ${liveOrg}`); await waitFor(() => expect(operational.options).toBeDefined());
+    act(() => operational.options!.unavailable());
+    expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeVisible();
+    expect(sessionStorage.getItem(key)).toBe('unresolved private original');
+  } finally { sessionStorage.clear(); }
+});
+it('does not discard internal policy recovery when the separate Portal is denied', async () => {
+  const key = `strataai:retention-policy-change:v1:${liveActor}:${liveOrg}`;
+  sessionStorage.setItem(key, 'unresolved internal original');
+  try {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 404 }))); mountLive('PORTAL');
+    await screen.findByText('Access to this Organization surface is unavailable.');
+    expect(sessionStorage.getItem(key)).toBe('unresolved internal original');
+  } finally { sessionStorage.clear(); }
+});
+
 describe('ARCH-02 current surface admission', () => {
   it.each(['INTERNAL', 'PORTAL'] as const)('admits uppercase UUID routes using the canonical response without crossing surfaces (%s)', async surface => {
     const id = 'abcdefab-cdef-4abc-8def-abcdefabcdef';

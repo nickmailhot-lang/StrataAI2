@@ -148,8 +148,11 @@ for (const width of [1280, 390]) {
       const membership = (await member.json()).member;
       expect((await owner.request.delete(`/organizations/${organization}/members/${admin.user.id}?expectedVersion=${membership.version}`,
         { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() } })).status()).toBe(204);
-      await keyboardClick(page, page.getByRole('button', { name: 'Refresh policies', exact: true }));
-      await expect(page.getByText('Retention policies are no longer available with your current access.', { exact: true })).toBeVisible();
+      // Current Organization admission may retire the page before its refresh
+      // control can be focused. Require the authoritative outer denial instead
+      // of trying to operate a protected page after membership withdrawal.
+      await expect(page.getByText('Access to this Organization surface is unavailable.', { exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Refresh policies', exact: true })).toHaveCount(0);
       await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByRole('button', { name: 'Recover original policy submission', exact: true })).toHaveCount(0);
       const visible = await page.locator('body').innerText();
       for (const value of [rule.source, 'Original administrator private proposal', 'Later authoritative private source', 'Pending private proposal before withdrawal']) expect(visible).not.toContain(value);

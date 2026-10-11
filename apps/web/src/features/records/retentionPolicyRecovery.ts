@@ -54,6 +54,17 @@ export function forgetRetentionPolicyChanges(actor?: string, organization?: stri
     }
   } catch { /* Account withdrawal/sign-out cannot depend on browser storage. */ }
 }
+export function forgetOrganizationRetentionPolicyChanges(organization: string) {
+  if (!notificationUuid(organization)) return;
+  const suffix = `:${organization.toLowerCase()}`;
+  try {
+    for (let index = sessionStorage.length - 1; index >= 0; index--) {
+      const candidate = sessionStorage.key(index);
+      if (candidate?.startsWith(prefix) && candidate.endsWith(suffix)
+        && notificationUuid(candidate.slice(prefix.length, -suffix.length))) sessionStorage.removeItem(candidate);
+    }
+  } catch { /* Definitive withdrawal cannot depend on browser storage. */ }
+}
 export function forgetForeignRetentionPolicyChanges(storage: Storage, actor: string) {
   key(actor, actor);
   try {

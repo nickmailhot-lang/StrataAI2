@@ -6,6 +6,7 @@ import { boundedWorkRead, workRequest, WorkRequestError } from '../api/workManag
 import { isNotificationProfile } from '../features/notifications/notificationInbox';
 import { lifecycleUuid } from '../features/organizations/operationalLifecycle';
 import { watchOperationalLifecycle } from '../features/organizations/operationalLifecycleLive';
+import { forgetOrganizationRetentionPolicyChanges } from '../features/records/retentionPolicyRecovery';
 
 type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previouslyAdmitted?: boolean };
 
@@ -28,6 +29,13 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
   const [content, setContent] = useState<HTMLDivElement | null>(null);
   const container = useCallback(() => content, [content]);
   const admitted = result?.scope === scope && result.status === 'admitted';
+  useEffect(() => {
+    // The outer boundary can retire the policy page before its own denial
+    // effect runs. Clear only this Organization after definitive internal denial;
+    // transport uncertainty and independent Portal grants retain original work.
+    if (surface === 'INTERNAL' && organizationId && result?.scope === scope && result.status === 'denied')
+      forgetOrganizationRetentionPolicyChanges(organizationId);
+  }, [surface, organizationId, scope, result]);
   const theme = useTheme();
   const surfaceTheme = useMemo(() => ({ ...theme, components: {
     ...theme.components,
