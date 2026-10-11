@@ -240,7 +240,7 @@ public sealed class OrganizationOperationalLifecycleTests
 
     [Theory]
     [InlineData("account")] [InlineData("late_account")] [InlineData("membership")]
-    [InlineData("epoch")] [InlineData("role")] [InlineData("version")]
+    [InlineData("epoch")] [InlineData("role")] [InlineData("version")] [InlineData("name")]
     public async Task PRD_27_FR007_Review_withdrawal_or_changed_revision_returns_no_protected_result(string change)
     {
         var f = new Fixture();
@@ -254,13 +254,14 @@ public sealed class OrganizationOperationalLifecycleTests
                 "membership" => f.Store.Scope! with { MembershipActive = false },
                 "epoch" => f.Store.Scope! with { MembershipVersion = 4 },
                 "role" => f.Store.Scope! with { Role = OrganizationRole.Admin },
+                "name" => f.Store.Scope! with { OrganizationName = "Changed Organization" },
                 _ => f.Store.Scope! with { Version = 8 },
             };
         };
         var result = await f.Service.ReviewAsync(Organization, Actor, TestContext.Current.CancellationToken);
         Assert.False(result.Succeeded); Assert.Null(result.Value); Assert.Equal(0, f.Store.Writes); Assert.Empty(f.Store.Sources);
         Assert.Equal(change.Contains("account", StringComparison.Ordinal) ? "session_unavailable"
-            : change == "version" ? "version_conflict" : "organization_not_found", result.ErrorCode);
+            : change is "version" or "name" ? "version_conflict" : "organization_not_found", result.ErrorCode);
     }
 
     private sealed class Fixture
@@ -303,7 +304,7 @@ public sealed class OrganizationOperationalLifecycleTests
     {
         public Unit Unit { get; set; } = null!;
         public OrganizationOperationalLifecycleScope? Scope { get; set; } = new(Organization, OrganizationStatus.Active,
-            7, Now.AddHours(-1), Actor, "Original administrator", Guid.NewGuid(), 3, OrganizationRole.Owner, true);
+            7, Now.AddHours(-1), Actor, "Original administrator", Guid.NewGuid(), 3, OrganizationRole.Owner, true, "Reviewed Organization");
         public OrganizationOperationalLifecycleReceipt? Receipt { get; set; }
         public List<OrganizationOperationalLifecycleTransition> Sources { get; } = [];
         public int ScopeReads { get; private set; } public int ReceiptReads { get; private set; } public int Writes { get; private set; }

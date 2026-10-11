@@ -23,7 +23,7 @@ public static class OrganizationOperationalLifecycleEndpoints
             if (!result.Succeeded) return Error(result.ErrorCode);
             var review = result.Value!;
             return Results.Ok(new { review.OrganizationId, review.ActorId, Status = State(review.Status),
-                review.Version, review.UpdatedAt, review.ActingCapacity });
+                review.Version, review.UpdatedAt, review.ActingCapacity, review.Name });
         });
         group.MapPatch("/{organizationId:guid}/operational-lifecycle", async (Guid organizationId,
             HttpContext context, OrganizationOperationalLifecycleService service, CancellationToken ct) =>

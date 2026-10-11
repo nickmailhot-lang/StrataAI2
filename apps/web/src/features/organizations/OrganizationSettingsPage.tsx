@@ -192,6 +192,7 @@ function Settings({ organizationId }: { organizationId: string }) {
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to={`/app/${organizationId}`}>Organization boards</Button>
     <Typography component="h1" variant="h4">Organization settings</Typography>
+    {record && record.role <= 1 && <Button component={Link} to={`/app/${organizationId}/operational-lifecycle`}>Organization lifecycle</Button>}
     {error && <Alert severity="error"><span>{error.message}</span>{error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}</Alert>}
     {notice && <Alert severity="success" role="status">{notice}</Alert>}
     {liveNotice && <Typography role="status">{liveNotice}</Typography>}

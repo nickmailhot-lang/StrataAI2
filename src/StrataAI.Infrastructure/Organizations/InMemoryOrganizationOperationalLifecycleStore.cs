@@ -24,7 +24,7 @@ internal sealed class InMemoryOrganizationOperationalLifecycleStore(InMemoryOrga
         var caption = account.DisplayName;
         if (string.IsNullOrWhiteSpace(caption) || caption.Length > 160 || caption.Any(char.IsControl)) caption = "Member " + actor;
         return new(organization, parent.Status, parent.Version, parent.UpdatedAt, actor, caption,
-            member.Id, member.Version, member.Role, member.Active);
+            member.Id, member.Version, member.Role, member.Active, parent.Name);
     }
 
     public Task<OrganizationOperationalLifecycleReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct)

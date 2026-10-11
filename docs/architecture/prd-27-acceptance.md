@@ -215,3 +215,17 @@ failure evidence. Current full API and exact-head image CI are separate pending
 scopes. MUI confirmation/retry/conflicts, inactive historical and portal access,
 Worker delivery/replay, concurrency and remaining acceptance remain unfinished.
 **52% estimated work remaining**; no criterion or scenario is closed.
+
+
+## Operational lifecycle MUI increment
+
+Named Organization/state/revision review, explicit keyboard/phone confirmation,
+permission withdrawal and original-request uncertainty/reload recovery are now
+implemented. Final focused frontend 23/23, full Domain 919/919, focused API 8/8,
+restricted PostgreSQL contracts and two actual Demo desktop/phone browser cases
+pass. See [operational lifecycle review and confirmation screen](organization-configuration.md#operational-lifecycle-review-and-confirmation-screen)
+for exact evidence scope and retained failures. Final full frontend, older full
+API scopes and current exact-image CI remain separate pending results. Inactive
+historical reads, independent portal consistency, Worker delivery/replay/realtime,
+Production concurrency and remaining acceptance obligations are unfinished.
+**50% estimated work remaining**; no criterion or scenario is closed.

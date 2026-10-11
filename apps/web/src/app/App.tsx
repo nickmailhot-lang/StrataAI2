@@ -24,6 +24,7 @@ import { OrganizationSettingsPage } from "../features/organizations/Organization
 import { OrganizationConfigurationPage } from "../features/organizations/OrganizationConfigurationPage";
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
 import { OrganizationDeletePage } from "../features/organizations/OrganizationDeletePage";
+import { OrganizationOperationalLifecyclePage } from "../features/organizations/OrganizationOperationalLifecyclePage";
 import { OrganizationLeavePage } from "../features/organizations/OrganizationLeavePage";
 import { OrganizationInvitationPage, BoardInvitationPage } from "../features/organizations/OrganizationInvitationPage";
 import { OrganizationInvitationHistoryPage, BoardInvitationHistoryPage } from "../features/organizations/OrganizationInvitationHistoryPage";
@@ -43,6 +44,7 @@ const routes = [
   // Deletion withdraws normal surface access. The operation independently
   // authorizes its review/receipt and must retain an unresolved original intent.
   { path: "/app/:organizationId/delete", element: <OrganizationDeletePage /> },
+  { path: "/app/:organizationId/operational-lifecycle", element: <OrganizationOperationalLifecyclePage /> },
   { path: "/invitation", element: <InvitationLinkPage /> },
   { path: "/verify-email", element: <VerifyEmailPage /> },
   { path: "/forgot-password", element: <PasswordRecoveryPage /> },

@@ -334,6 +334,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               {organizationId && organization?.status === 0 && <Button component={Link} to={`/app/${organizationId}/archived-boards`}>Archived boards</Button>}
               {organizationId && organization?.status === 0 && ownRole !== undefined && <Button component={Link} to={`/app/${organizationId}/leave`}>Leave Organization</Button>}
               {organizationId && organization?.status === 0 && ownRole === 0 && <Button component={Link} to={`/app/${organizationId}/delete`}>Request Organization deletion</Button>}
+              {organizationId && organization?.status === 0 && (ownRole === 0 || ownRole === 1) && <Button component={Link} to={`/app/${organizationId}/operational-lifecycle`}>Organization lifecycle</Button>}
               {organizationId && organization?.status === 0 && ownRole !== undefined && ownRole <= 1 && (
                 <Button component={Link} to={`/app/${organizationId}/settings`}>Organization settings</Button>
               )}

@@ -1,14 +1,14 @@
 namespace StrataAI.Application.Organizations;
 
 public sealed record OrganizationOperationalLifecycleReview(Guid OrganizationId, Guid ActorId,
-    OrganizationStatus Status, long Version, DateTimeOffset UpdatedAt, string ActingCapacity);
+    OrganizationStatus Status, long Version, DateTimeOffset UpdatedAt, string ActingCapacity, string Name);
 
 // This admission is for reviewed lifecycle commands only. It does not admit
 // operational writes, restore withdrawn memberships or authorize portal reads.
 public sealed record OrganizationOperationalLifecycleScope(Guid OrganizationId,
     OrganizationStatus Status, long Version, DateTimeOffset UpdatedAt, Guid ActorId,
     string ActorLabel, Guid MembershipId, long MembershipVersion, OrganizationRole Role,
-    bool MembershipActive)
+    bool MembershipActive, string OrganizationName = "")
 {
     public bool Admitted(Guid organization, Guid actor) => OrganizationId == organization
         && organization != Guid.Empty && ActorId == actor && actor != Guid.Empty

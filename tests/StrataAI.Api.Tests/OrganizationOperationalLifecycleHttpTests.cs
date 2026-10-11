@@ -19,6 +19,7 @@ public sealed partial class ApiHostTests
         Assert.True(initial.Headers.CacheControl!.Private); Assert.True(initial.Headers.CacheControl.NoStore);
         var review = await initial.Content.ReadFromJsonAsync<JsonElement>(ct);
         Assert.Equal("ACTIVE", review.GetProperty("status").GetString()); Assert.Equal(actor, review.GetProperty("actorId").GetGuid());
+        Assert.Equal(parent.Name, review.GetProperty("name").GetString());
         var revision = review.GetProperty("version").GetInt64(); var key = Guid.NewGuid().ToString("D");
         using var suspended = await Mutate(owner, HttpMethod.Patch, route, new { status = "SUSPENDED", version = revision }, key);
         Assert.Equal(HttpStatusCode.OK, suspended.StatusCode); var original = await suspended.Content.ReadFromJsonAsync<JsonElement>(ct);

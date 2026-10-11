@@ -19,7 +19,8 @@ public sealed class OrganizationOperationalLifecycleService(IOrganizationOperati
             if (!await actors.VerifyAsync(actor, ct))
                 return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("session_unavailable");
             var scope = await store.ReadScopeAsync(organization, actor, ct);
-            if (scope?.Admitted(organization, actor) != true)
+            if (scope?.Admitted(organization, actor) != true || string.IsNullOrWhiteSpace(scope.OrganizationName)
+                || scope.OrganizationName.Length > 160 || scope.OrganizationName.Any(char.IsControl))
                 return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("organization_not_found");
             if (!await actors.VerifyAsync(actor, ct))
                 return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("session_unavailable");
@@ -27,14 +28,15 @@ public sealed class OrganizationOperationalLifecycleService(IOrganizationOperati
             if (current?.Admitted(organization, actor) != true || current.MembershipId != scope.MembershipId
                 || current.MembershipVersion != scope.MembershipVersion || current.Role != scope.Role)
                 return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("organization_not_found");
-            if (current.Status != scope.Status || current.Version != scope.Version || current.UpdatedAt != scope.UpdatedAt)
+            if (current.Status != scope.Status || current.Version != scope.Version || current.UpdatedAt != scope.UpdatedAt
+                || current.OrganizationName != scope.OrganizationName)
                 return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("version_conflict");
             if (!await actors.VerifyAsync(actor, ct))
                 return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("session_unavailable");
             ct.ThrowIfCancellationRequested();
             return OrganizationOperation<OrganizationOperationalLifecycleReview>.Success(new(organization, actor,
                 current.Status, current.Version, current.UpdatedAt,
-                current.Role == OrganizationRole.Owner ? "ORGANIZATION_OWNER" : "ORGANIZATION_ADMIN"));
+                current.Role == OrganizationRole.Owner ? "ORGANIZATION_OWNER" : "ORGANIZATION_ADMIN", current.OrganizationName));
         }, ct);
     }
 

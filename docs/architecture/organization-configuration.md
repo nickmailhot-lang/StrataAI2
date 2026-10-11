@@ -753,3 +753,72 @@ remaining data/retention and accessible/telemetry/release acceptance remain
 unfinished. Local tests do not prove the published immutable images; exact-head
 CI is required. PRD-27 remains **52% estimated work remaining**; no numbered
 criterion or scenario is closed.
+
+
+## Operational lifecycle review and confirmation screen
+
+The MUI screen at `/app/{organizationId}/operational-lifecycle` has independent
+current administrative admission, allowing review/reactivation after Active-only
+internal operational access ends. Organization home/settings link current
+administrators to it. Uppercase links canonicalize before HTTP requests. The
+review now includes the authorized Organization name; both server and client
+reject a name/revision change across review IO rather than confirming a different
+target. The confirmation captures the visible name, state, revision and requested
+state and explains retained records and operational consequences.
+
+The dialog starts on Cancel, retains the captured review through closing and
+restores focus to its launcher, result, retry or reload control. Phone controls
+retain the same review/confirmation actions without horizontal document overflow.
+Account and retained-parent administrative permission are checked before and
+after IO. Session/account switches or permission withdrawal remove protected
+review/acknowledgment UI; session withdrawal returns to sign-in. Server enforcement
+remains authoritative.
+
+Uncertain writes retain only the original Organization/actor/revision/state/
+capacity and retry key in browser session storage. No Organization name, private
+configuration, caption, credential or response body is stored. Reload requires
+fresh account/administrative admission, then offers an explicit retry of the same
+request. Another change cannot begin while that original intent is unresolved.
+Storage failure prevents submission. Malformed successful responses, 429 and
+server/transport failures remain uncertain; 400/409 require a fresh review and
+confirmation. A recovered older receipt is labeled as its original acknowledgment,
+and current lifecycle must be loaded separately before another change. Bodies,
+captions, capacity, source times and review boundaries are validated before use;
+server diagnostic text is never rendered.
+
+Executed final evidence: **23/23 focused frontend cases**, type checking, lint and
+production build pass. **919/919 full Linux Domain cases**, all 798 backend/test
+source hashes matching, include changed-name review refusal. Eight focused
+API-host lifecycle cases and the restricted PostgreSQL lifecycle/readiness
+contract pass for the name-bearing review. Separate final full frontend and older
+full API source runs remain active; their results must retain their frozen source
+scope. No current full-suite or immutable-image success is inferred from focused
+cases.
+
+Two native Chromium cases pass against the actual Linux Demo API and built MUI
+app, at desktop 1280×900 and phone 390×844. Both authenticate the seeded
+`demo@strataai.test` account using the documented Demo password, create a fresh
+Organization, verify visible named confirmation and keyboard Cancel/Confirm focus,
+interrupt the response after a real committed suspension, reload and recover the
+original request, review/reactivate, and reject confirmation after actual logout.
+The phone screenshot was inspected. All 1,125 captured backend/frontend/test
+source hashes match; owned terminal API fixtures were stopped and removed.
+These are Demo workflow proofs, not Production/portal/Worker acceptance.
+
+Retained failures: the initial focused run passed 16/20, exposing result/retry
+focus handoff and premature background-control queries during dialog exit. The
+focus/confirmation implementation and transition-aware checks were repaired;
+the expanded final run passes 23/23. An earlier full Domain run omitted the
+newly added name-change case because its binary predated that edit; the test
+project was rebuilt without incremental reuse before the final complete run.
+An initial native setup used a network mode
+that could not publish its local port; its disposable fixture was removed, the
+port setup corrected and both corrected runs passed. Earlier scope results remain
+historical evidence rather than current-source claims.
+
+Required remaining work includes permission-specific inactive historical reads,
+independent portal consistency, durable lifecycle Worker delivery/discovery/replay
+and authorized realtime recovery, full Production concurrent-write/session-loss
+acceptance, remaining data/retention, UX/telemetry and exact-image release evidence.
+PRD-27 estimate is now **50% work remaining**. No numbered AC or linked scenario
+is closed by this partial workflow.
