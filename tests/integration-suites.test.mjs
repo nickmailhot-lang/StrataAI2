@@ -10,7 +10,7 @@ const integration = value => value.jobs['container-integration'];
 const step = (value, name) => integration(value).steps.find(entry => entry.name === name);
 
 test('every mandatory check has an owner and every group uses retained images', () => {
-  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 123 });
+  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 124 });
 });
 
 const mutations = [
@@ -30,6 +30,7 @@ const mutations = [
     'Archived records and configuration history across operational lifecycle changes',
     'Organization configuration tenant-scoped usage',
     'Retention policy authorized commands and private history against exact release API',
+    'Strict verified-account source classification and original recovery',
   ].flatMap(name => [
     [`${name} replaced by success`, value => { step(value, name).run = 'true'; }],
     [`${name} errors swallowed`, value => { step(value, name).run += ' || true'; }],
@@ -86,6 +87,9 @@ const mutations = [
   ['enabled attachment pipeline replaced by success', value => { step(value, 'Attachment upload and isolated Worker image publication through explicit private test providers').run = 'true'; }],
   ['enabled attachment pipeline errors swallowed', value => { step(value, 'Attachment upload and isolated Worker image publication through explicit private test providers').run += ' || true'; }],
   ['strict two-client label filter recovery omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/label-filter-live.spec.ts', ''); }],
+  ['strict source classification fixture verification disabled', value => { delete step(value, 'Strict verified-account source classification and original recovery').env.STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS; }],
+  ['strict source classification Worker policy check omitted', value => { const entry = step(value, 'Strict verified-account source classification and original recovery'); entry.run = entry.run.split('\n').filter(line => !line.includes('exec -T worker printenv')).join('\n'); }],
+  ['strict source classification cases filtered', value => { step(value, 'Strict verified-account source classification and original recovery').run += ' --grep card'; }],
   ['strict Board label workflows omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/card-labels.spec.ts', ''); }],
   ...['Invitation-backed closed registration and atomic expiry against exact release API',
     'Verified-email invitation discovery and retry-safe acceptance',

@@ -1553,3 +1553,39 @@ size advisory remains. These
 are component/transport tests, not Production browser or WCAG acceptance. Actual
 desktop/mobile keyboard/AA flows and immutable-image CI acceptance remain open,
 alongside the other unfinished RECORDS requirements. PRD-70 remains open.
+
+## Maintained Production source classification browser acceptance
+
+`tests/browser/retention-source-classification.spec.ts` exercises the actual
+Card, Comment and Attachment entry points at **1280px and 390px**. Its disposable
+verified Owner creates the three sources through actual commands. Each reviewed
+classification requires keyboard confirmation and a category; no jurisdiction
+is inferred. The fixture replaces only the first already-committed reply with
+503, reloads the source view, and recovers the exact original command. Both POST
+bodies, retry keys and authoritative receipts must be identical. Receipts retain
+the actual actor, source identity/revision and original Board, with three distinct
+event identities. Classification leaves the operational Card revision unchanged.
+
+The reviewed form passes the maintained WCAG 2.2 AA axe tag set and horizontal
+overflow check at both widths; keyboard focus enters the category and returns to
+original recovery after the uncertain reply. This is automated browser evidence,
+not a claim of complete screen-reader or all-RECORDS accessibility acceptance.
+
+Local Production verification on 2026-10-11: **2/2 maintained browser cases
+passed**, using actual PostgreSQL, API and separate Worker with verified-account
+admission. **1,377 browser-capture and 1,970 native-capture source hashes matched**.
+Temporary API/Worker, PostgreSQL fixture, roles, databases and private credentials
+were removed; the original local PostgreSQL data was preserved. A fresh complete
+.NET solution build passed with zero warnings/errors before the capture.
+
+The strict verified-account release-image phase explicitly runs this specification;
+the complete browser suite also collects it in the existing four intact-file
+shards. Local mandatory integration verification covers **124 registered steps**
+across four groups/seven isolated executions; browser collection covers **374
+cases in 143 files**, distributed **95/94/95/90** across the four shards. Retained
+Workflow/partition regressions passed **212/212** cases, including refusal of a
+skipped, filtered, ignored or weakened verified-account classification phase.
+Browser TypeScript and whitespace checks passed. Retained
+immutable-image CI, source classification browser move/withdrawal cases, and the
+unfinished hold/redaction/privacy/export/disposition/offboarding behavior remain
+required. PRD-70 stays open.

@@ -335,6 +335,9 @@
   "Strict verified-account Board management and personal preferences": [
     "browser-notifications"
   ],
+  "Strict verified-account source classification and original recovery": [
+    "browser-notifications"
+  ],
   "Strict verified-account watch producers through native private inboxes": [
     "browser-notifications"
   ],

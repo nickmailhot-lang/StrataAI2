@@ -114,6 +114,15 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
     ...['api', 'worker'].map(host => `test "$(docker compose -f compose.release.yml exec -T ${host} printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true`),
     strictCommand, '',
   ].join('\n'), 'Strict producer and consumer coverage requires verified accounts in both hosts');
+  const strictSources = job.steps.find(step => step.name === 'Strict verified-account source classification and original recovery');
+  assert.deepEqual(owners(strictSources), ['browser-notifications']);
+  assert.deepEqual(strictSources.env, { STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1', STRATAAI_E2E_RATE_PACING: '1' });
+  assert.equal(strictSources.run, [
+    'set -euo pipefail',
+    'test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true',
+    'test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true',
+    'npx playwright test tests/browser/retention-source-classification.spec.ts', '',
+  ].join('\n'));
   const strictWatches = job.steps.find(step => step.name === 'Strict verified-account watch producers through native private inboxes');
   assert.deepEqual(owners(strictWatches), ['browser-notifications']);
   assert.deepEqual(strictWatches.env, { STRATAAI_E2E_VERIFY_WATCH_ACCOUNTS: '1', STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1', STRATAAI_E2E_RATE_PACING: '1' });
@@ -367,6 +376,8 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
       precedes('Strict verified-account Organization departure and account continuity', 'Strict verified-account watch producers through native private inboxes');
       precedes('Strict verified-account Organization departure and account continuity', 'Strict verified-account Board management and personal preferences');
       precedes('Strict verified-account Board management and personal preferences', 'Strict verified-account watch producers through native private inboxes');
+      precedes('Strict verified-account Board management and personal preferences', 'Strict verified-account source classification and original recovery');
+      precedes('Strict verified-account source classification and original recovery', 'Strict verified-account watch producers through native private inboxes');
     }
     if (suite === 'browser-full') {
       for (const producer of [

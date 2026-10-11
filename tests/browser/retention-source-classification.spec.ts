@@ -1,0 +1,94 @@
+import AxeBuilder from '@axe-core/playwright';
+import { expect, test, type Page } from './releaseTest';
+import { registerNotificationAccount } from './notificationAccountFixture';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads } from './boardReadTracker';
+
+const headers = { 'X-StrataAI-Request': '1' };
+async function press(page: Page, name: string) {
+  const button = page.getByRole('button', { name, exact: true });
+  await expect(button).toBeEnabled(); await button.focus(); await page.keyboard.press('Enter');
+}
+async function sourceEntry(page: Page, kind: string) {
+  if (kind === 'cardComment') await press(page, 'Review Card comments');
+  if (kind === 'attachment') await press(page, 'Show attachments');
+  await press(page, `Retention classification for this ${kind === 'card' ? 'Card' : kind === 'cardComment' ? 'Comment' : 'Attachment'}`);
+}
+
+for (const width of [1280, 390]) {
+  test(`PRD-70 actual three-source keyboard classification and exact original reload recovery at ${width}px`, async ({ page, context }) => {
+    test.setTimeout(180_000); await page.setViewportSize({ width, height: 844 });
+    const account = await registerNotificationAccount(context.request, {
+      email: `source-classification-${width}-${crypto.randomUUID()}@example.test`,
+      password: 'source-classification-fixture-horse', displayName: 'Classification Owner',
+    }, process.env.STRATAAI_E2E_RUNTIME_MODE !== 'demo');
+    const created = await context.request.post('/organizations', { headers, data: { name: 'Source classification fixture' } });
+    expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
+    const boardResponse = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Reviewed source Board', visibility: 'PRIVATE' } });
+    expect(boardResponse.status()).toBe(201); const board = (await boardResponse.json()).id;
+    const listResponse = await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Source List' } });
+    expect(listResponse.status()).toBe(201); const list = (await listResponse.json()).id;
+    const cardResponse = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Actual retained source Card' } });
+    expect(cardResponse.status()).toBe(201); const card = (await cardResponse.json()).id;
+    const commentResponse = await context.request.post(`/cards/${card}/comments`, {
+      headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { content: 'Actual source comment', cardVersion: 1 },
+    });
+    expect(commentResponse.status()).toBe(200);
+    const comments = await context.request.get(`/cards/${card}/comments`); expect(comments.status()).toBe(200);
+    const comment = (await comments.json()).items[0];
+    const attachmentResponse = await context.request.post(`/cards/${card}/attachments/url`, {
+      headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+      data: { title: 'Actual source attachment', url: 'https://example.test/retained-source', cardVersion: 2 },
+    });
+    expect(attachmentResponse.status()).toBe(200);
+    const attachments = await context.request.get(`/cards/${card}/attachments`); expect(attachments.status()).toBe(200);
+    const attachment = (await attachments.json()).items[0];
+    const restoreWorker = scopedBoardWorker(org);
+    try {
+      await waitForBoardDelivery(context.request, board);
+      const cardPath = `/app/${org}/boards/${board}/cards/${card}`;
+      const reads = trackBoardReads(page, board, cardPath), events: string[] = [];
+      for (const source of [{ kind: 'card', id: card, version: 3 },
+        { kind: 'cardComment', id: comment.id, version: comment.version },
+        { kind: 'attachment', id: attachment.id, version: attachment.version }]) {
+        const path = `/organizations/${org}/retention-sources/${source.kind}/${source.id}/classification`;
+        const matches = (url: URL) => url.pathname === path;
+        const writes: { body: string; key: string; receipt: unknown }[] = [];
+        await page.route(matches, async route => {
+          const request = route.request(); expect(request.method()).toBe('POST');
+          const response = await route.fetch(); expect(response.status()).toBe(200);
+          writes.push({ body: request.postData()!, key: request.headers()['idempotency-key'], receipt: await response.json() });
+          if (writes.length === 1) await route.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"work_storage_unavailable"}' });
+          else await route.fulfill({ response });
+        });
+        const before = reads(); await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(before + 2);
+        await sourceEntry(page, source.kind); await press(page, 'Review source classification');
+        const category = page.getByRole('textbox', { name: 'Record category', exact: false });
+        await expect(category).toBeFocused(); await page.keyboard.insertText(`reviewed.${source.kind}`);
+        await expect(page.getByRole('button', { name: 'Confirm classification', exact: true })).toBeDisabled();
+        const confirm = page.getByRole('checkbox', { name: 'I reviewed the source evidence and confirm this classification', exact: true });
+        await confirm.focus(); await page.keyboard.press('Space');
+        expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await press(page, 'Confirm classification');
+        const retry = page.getByRole('button', { name: 'Retry original classification', exact: true });
+        await expect(retry).toBeFocused(); expect(writes).toHaveLength(1);
+        const beforeReload = reads(); await page.reload(); await expect.poll(reads).toBeGreaterThanOrEqual(beforeReload + 2);
+        await sourceEntry(page, source.kind); await press(page, 'Retry original classification');
+        await expect(page.getByText('Classification confirmed. The original source and audit evidence are preserved.', { exact: true })).toBeVisible();
+        expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
+        expect(JSON.parse(writes[0].body)).toMatchObject({ confirmed: true, category: `reviewed.${source.kind}`, jurisdiction: null,
+          review: { organizationId: org, kind: source.kind, recordId: source.id, cardId: card, boardId: board, cardVersion: 3, sourceVersion: source.version } });
+        const receipt = writes[0].receipt as { actorId: string; eventId: string; reference: object };
+        expect(receipt.actorId).toBe(account.user.id);
+        expect(receipt.reference).toMatchObject({ organizationId: org, recordId: source.id, kind: source.kind, originalBoardId: board, sourceVersion: source.version });
+        events.push(receipt.eventId);
+        await page.unroute(matches);
+      }
+      expect(new Set(events).size).toBe(3);
+      const snapshot = await context.request.get(`/boards/${board}`); expect(snapshot.status()).toBe(200);
+      expect((await snapshot.json()).lists.flatMap((item: { cards: { id: string; version: number }[] }) => item.cards)
+        .find((item: { id: string }) => item.id === card).version).toBe(3);
+    } finally { restoreWorker(); }
+  });
+}
