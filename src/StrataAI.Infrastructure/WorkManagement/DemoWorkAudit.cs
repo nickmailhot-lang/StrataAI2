@@ -8,9 +8,11 @@ internal sealed record DemoWorkAuditFact(Guid Id, Guid OrganizationId, Guid Acto
 {
     public DemoRetentionAuditMetadata? RetentionMetadata { get; init; }
     public DemoRetentionHoldAuditMetadata? HoldMetadata { get; init; }
+    public DemoRetentionSourceAuditMetadata? SourceMetadata { get; init; }
 }
 internal sealed record DemoRetentionAuditMetadata(long Version, string RecordClass, string Action, string ActingCapacity);
 internal sealed record DemoRetentionHoldAuditMetadata(long Version, string Status, string ScopeKind, string ActingCapacity);
+internal sealed record DemoRetentionSourceAuditMetadata(string RecordClass, string SourceKind, string ActingCapacity);
 
 internal sealed partial class InMemoryWorkManagementStore
 {
@@ -24,7 +26,8 @@ internal sealed partial class InMemoryWorkManagementStore
 
     internal Task AppendAuditFactAsync(Guid id, Guid organizationId, Guid actorId, string eventType,
         string entityType, Guid entityId, string correlationId, DateTimeOffset createdAt, CancellationToken ct,
-        DemoRetentionAuditMetadata? retentionMetadata = null, DemoRetentionHoldAuditMetadata? holdMetadata = null)
+        DemoRetentionAuditMetadata? retentionMetadata = null, DemoRetentionHoldAuditMetadata? holdMetadata = null,
+        DemoRetentionSourceAuditMetadata? sourceMetadata = null)
     {
         ct.ThrowIfCancellationRequested();
         var configurationSource = eventType == "ORGANIZATION_CONFIGURATION_CHANGED"
@@ -33,7 +36,14 @@ internal sealed partial class InMemoryWorkManagementStore
             && entityType == "Organization" && entityId == organizationId;
         var retentionSource = eventType == "RECORD_RETENTION_POLICY_CHANGED" && entityType == "RECORD_RETENTION_POLICY";
         var holdSource = eventType is "RETENTION_HOLD_APPLIED" or "RETENTION_HOLD_RELEASED" && entityType == "RETENTION_HOLD";
-        var organizationSource = configurationSource || lifecycleSource || retentionSource || holdSource;
+        var classificationSource = eventType == "RECORD_RETENTION_SOURCE_REGISTERED" && entityType == "RECORD_RETENTION_SOURCE";
+        var organizationSource = configurationSource || lifecycleSource || retentionSource || holdSource || classificationSource;
+        if (classificationSource != (sourceMetadata is not null) || sourceMetadata is { } source
+            && (source.RecordClass is not ("OPERATIONAL_WORK" or "DOCUMENT")
+                || source.SourceKind is not ("CARD" or "CARD_COMMENT" or "ATTACHMENT")
+                || (source.SourceKind == "ATTACHMENT") != (source.RecordClass == "DOCUMENT")
+                || source.ActingCapacity is not ("ORGANIZATION_OWNER" or "ORGANIZATION_ADMIN")))
+            throw new InvalidOperationException("Demo retention source audit metadata is invalid.");
         if (holdSource != (holdMetadata is not null) || holdMetadata is { } hold
             && (hold.Version < 1 || hold.Status != (eventType == "RETENTION_HOLD_APPLIED" ? "ACTIVE" : "RELEASED")
                 || hold.ScopeKind is not ("ORGANIZATION" or "CLASS" or "CATEGORY" or "RECORD")
@@ -52,7 +62,7 @@ internal sealed partial class InMemoryWorkManagementStore
             || organizationSource && (!transactionScope.OwnsOrganizationCommand(organizationId) || correlationId.Any(char.IsControl)))
             throw new InvalidOperationException("Demo audit requires an owning command and valid source references.");
         var fact = new DemoWorkAuditFact(id, organizationId, actorId, eventType, entityType, entityId,
-            correlationId, createdAt.ToUniversalTime()) { RetentionMetadata = retentionMetadata, HoldMetadata = holdMetadata };
+            correlationId, createdAt.ToUniversalTime()) { RetentionMetadata = retentionMetadata, HoldMetadata = holdMetadata, SourceMetadata = sourceMetadata };
         lock (_sync)
         {
             if (_audits.TryGetValue(id, out var original))

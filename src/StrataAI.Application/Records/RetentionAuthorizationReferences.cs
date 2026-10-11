@@ -14,12 +14,15 @@ public sealed record RetentionHoldReference(Guid OrganizationId, Guid HoldId, lo
     short? ContextVersion, Guid? ClassificationBoardId, Guid? ApplicationBoardId,
     long? ApplicationSourceVersion);
 
-public interface IRetentionAuthorizationReferences
+public interface IRetentionSourceReferenceReader
 {
     // Read only identities needed to plan admission before private classification,
     // reason or receipt bodies. Re-read after gates/locks and before disclosure.
     Task<RetentionSourceReference?> ReadSourceAsync(Guid organization, RetentionRecordClass recordClass,
         Guid record, CancellationToken ct);
+}
+public interface IRetentionAuthorizationReferences : IRetentionSourceReferenceReader
+{
     Task<RetentionHoldReference?> ReadHoldAsync(Guid organization, Guid hold, CancellationToken ct);
     // Actor/key lookup retains the exact original history version after release.
     Task<RetentionHoldReference?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct);

@@ -7,7 +7,7 @@ namespace StrataAI.Application.Records;
 
 // Unregistered. Callers must own the Organization transaction and re-read their
 // current/original receipt hint before private detail disclosure and commit.
-public sealed class RetentionWorkAuthorization(IRetentionAuthorizationReferences references,
+public sealed class RetentionWorkAuthorization(IRetentionSourceReferenceReader references,
     IRetentionWorkSourceReferences sources, IWorkManagementStore work, IWorkBoardAuthorization boards,
     IOrganizationStore organizations, ICommandActorAuthorization actors) : IRetentionHoldScopeAuthorization
 {

@@ -348,6 +348,47 @@ stale release and retry. Owned terminal fixtures were removed. PRD-70 remains op
 at 82% estimated work remaining; this is command ordering and owning persistence
 evidence, not full HTTP/session/privacy or immutable-image release acceptance.
 
+### Trusted Demo source capture
+
+[InMemoryRetentionSourceStore.cs](../../src/StrataAI.Infrastructure/Records/InMemoryRetentionSourceStore.cs)
+adds immutable Demo classification/reference storage for the three real work
+producers. It reads minimal parent/Board/List identities, versions and lifecycle
+from the actual Demo Card, Comment and Attachment dictionaries under the owning
+Organization transaction. Category and optional jurisdiction are explicit values.
+Original Board and source revision are captured from those admitted producers;
+they are not accepted from a caller or reconstructed after a move. Captured
+classification provenance retains the actor label and membership/version/capacity.
+
+Capture requires current active account, active Organization Owner/Admin, exact
+membership provenance, valid UTC source/registration clocks, reviewed source/Card
+versions and existing Board view/administer permission. It re-reads producer
+identity/version/lifecycle after the gate and rechecks actor admission. Unsupported
+origin kinds, unknown/foreign sources, invalid provenance or stale revisions refuse
+capture. Existing classification identities cannot be rewritten. The shared work
+resolver now depends only on the source-reference reader, so it can use either
+storage adapter without needing private hold-body access.
+
+Classification and the typed three-field source audit fact participate in the
+existing Demo Organization rollback. Audit metadata contains only record class,
+source kind and acting capacity, excluding category, jurisdiction, Board IDs and
+source content. The source store is unregistered; it is a storage primitive, not
+the public review/idempotency workflow. Demo hold-application/history context
+capture, complete source-binding parity, Production classification command parity,
+broad and remaining producer admission and runtime activation still require work.
+
+Verification: fresh solution compilation passed with zero warnings/errors. The
+focused Linux Records API suite passed 32/32, no failed or unexecuted cases, with
+847 backend/test hashes unchanged. Its maintained Demo source case uses actual
+producer dictionaries and Board permissions for all three kinds; verifies original
+classification context/current route after a move, exact parents, immutable
+classification, forged membership/stale revision/unsupported origin refusal,
+wrong-class/unknown reference refusal, safe metadata and atomic classification/audit
+rollback. The complete native PostgreSQL hold/readiness contract also passed all
+145 migration refusal/restoration cases for two restricted hosts with 1,944 captured
+repository hashes unchanged. Owned fixtures were removed. PRD-70 stays open at
+82% estimated work remaining; these checks do not establish full Demo/Production
+workflow parity, HTTP/session acceptance or immutable-image release completion.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines
