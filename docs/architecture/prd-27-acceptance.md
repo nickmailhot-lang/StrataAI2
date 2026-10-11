@@ -1,6 +1,6 @@
 # Organization Types and configuration acceptance — PRD-27
 
-PRD-27 remains open, with **32% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest Portal isolation and restricted PostgreSQL concurrency results are recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
+PRD-27 remains open, with **31% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest terminal-history and distinct-account realtime results are recorded at the end. Complete exact-image CI, retention/reference consistency, UX and observability requirements are still required.
 
 Recipient-security components now include an owning-transaction coordinator with
 current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
@@ -43,7 +43,7 @@ delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
 source/persistence evidence without closing Activity, recipient replay/SignalR
 or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
-[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **32%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
+[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **31%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
 Source CI recorded for `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
 passes **880/880 Domain tests** and **801/801 API host tests**, with zero failed
@@ -408,3 +408,13 @@ Both Production history cases now continue through automatic Organization deleti
 The final hosted run uses a disposable PostgreSQL instance with canonical restricted API/Worker role names, fresh ordered migrations and a freshly rebuilt Worker. It passes both terminal cases alongside expiry, logout ordering, intake/history preservation, Portal and leased Worker delivery/restart. All **1876 captured repository source files match** at completion. Owned API/Worker/schema/PostgreSQL containers, database, roles and credential files were removed; original PostgreSQL was unchanged. The first terminal attempt used random roles in the shared PostgreSQL fixture, progressed through graph jobs but failed its bounded completion check: terminal SQL guards require the canonical Worker login. The corrected isolated fixture keeps those guards intact and uses the release role identities. The earlier attempt also predates the refreshed Worker compilation; it is retained as failed setup evidence.
 
 The maintained [history release fixture](../../scripts/ci/test-organization-operational-lifecycle-history.sh) now waits for actual Worker DELETED status, verifies retained graph identities/archive clocks, compares immutable configuration/lifecycle sources and requires current-owner terminal denial. Bash syntax and diff checks pass. Execution of the expanded step against retained release images and the current full API regression remain pending. Complete remaining retention/data/permission consistency, UX/observability and release acceptance are still required. **32% estimated work remaining**; no numbered criterion or linked scenario is closed by this increment alone.
+
+## Distinct Owner/Admin configuration realtime and session isolation
+
+The maintained [distinct-account browser cases](../../tests/browser/organization-configuration-distinct-accounts.spec.ts) register separate Owner and Admin accounts, assert distinct user IDs and accept an actual INTERNAL/ADMIN invitation. The Admin changes revision 1 while the Owner has an unsent draft and open MUI review. An actual configuration SignalR source closes the stale review, preserves the draft and restores keyboard focus. The Owner reviews authoritative revision 2 and approves revision 3. Configuration Activity records two Owner entries and one Admin entry with their captured names and capacities; private legal values are absent from realtime frames and Activity.
+
+Admin logout must return 204, deny that account's subsequent `/me` request and leave the Owner's `/me` and configuration authority available. A separate Owner logout then withdraws the private form and Activity. The original same-account browser-context case remains separate coverage.
+
+Both maintained desktop (1280px) and phone (390px) cases pass locally with zero retries, flaky results or skips. All **1309 captured backend/test/browser/web source files match** at completion. The native fixture uses freshly built API/web assets, actual HTTP sessions and WebSocket upgrades, and explicit Demo mode with verified accounts. It proves these browser/session assertions in Demo mode; it does not prove Production Worker publication or immutable release-image execution. Its owned API container and browser/proxy were cleaned up. Browser typechecking, web typecheck/build, workflow parsing and diff checks pass. Current Production suite collection includes **362 cases across 138 files**; collection is not execution.
+
+CI explicitly includes the new file in the Demo browser foundation and automatically collects it in Production browser shards. The exact-head image pipeline and full current-source frontend/API regressions remain pending at this increment. Complete retention/reference/data consistency, UX/observability and release acceptance remain required. **31% estimated work remaining**; no numbered acceptance criterion or linked scenario is closed by this increment alone.
