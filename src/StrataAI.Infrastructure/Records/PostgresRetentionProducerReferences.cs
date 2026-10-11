@@ -5,7 +5,7 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Records;
 
-// Unregistered. Minimal owning-transaction evidence before first classification;
+// Minimal owning-transaction evidence before first classification;
 // the Application must authorize the actual Board and re-read after its locks.
 internal sealed class PostgresRetentionProducerReferences(PostgresConnectionFactory connections) : IRetentionProducerReferences
 {

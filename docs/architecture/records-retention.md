@@ -1472,3 +1472,50 @@ These are component/transport tests; actual browser keyboard/mobile/AA proof
 is still required. The control is not yet composed into shipping Card/Comment/
 Attachment views. Production/Demo provider composition, canonical capabilities,
 mapped HTTP/native proof and immutable-image release acceptance remain open.
+
+## Mapped classification API and provider activation
+
+The following activation supersedes the earlier unmapped-boundary stage. The
+authenticated Organization group now maps:
+
+- `GET /organizations/{organizationId}/retention-sources/{kind}/{recordId}/review`
+- `POST /organizations/{organizationId}/retention-sources/{kind}/{recordId}/classification`
+
+Supported kinds are `card`, `cardComment` and `attachment`. Both modes resolve
+the owning review/classification services. Demo shares one source store across
+command/reference/current-producer interfaces and includes it in Organization
+rollback; Production uses the PostgreSQL source, producer and reference adapters.
+Legal-hold commands/readers are not activated by this composition.
+
+Canonical runtime provisioning now grants the API **SELECT/INSERT only** on
+`record_retention_sources` and `record_retention_source_receipts`. It grants no
+source/receipt capability to the Worker and no API update/delete/column mutation
+capability. Native fixtures revoke only their additional prospective mutation
+grants, preserving canonical rights between contracts. Existing installations
+must rerun `db/provision-runtime-roles.sql` after the ordered migrations. The
+schema remains at migration 146; activation does not backfill classifications,
+invent historical commands or widen Worker access.
+
+Local verification on 2026-10-11:
+
+- Fresh whole-solution build: zero warnings/errors.
+- **37/37 focused compiled-host Records cases passed**, with zero failures,
+  skips, timeouts, aborts or unexecuted cases; **860 captured backend/test hashes
+  matched**. The actual mapped Demo HTTP test reviews and confirms all three
+  producers, verifies cache/privacy/confirmation/actor/tenant boundaries, exact
+  original retry and changed-input/new-key refusal, moves the owning Card and
+  recovers identical original responses with exactly three audit facts.
+- The actual Production host resolves the complete real classification provider
+  graph using the established deliberately unreachable composition fixture;
+  disconnected readiness remains unavailable rather than falling back to Demo.
+  This is provider/host proof, not a database-backed Production HTTP flow.
+- Native PostgreSQL contracts passed the canonical minimum-capability assertions,
+  immutable receipt/source graph, owning classification and rollback, with both
+  restricted API/Worker hosts passing all **146 migration readiness entries**;
+  **1,967 captured hashes matched**. Owned temporary containers/credentials were
+  removed; original PostgreSQL data was preserved.
+
+Full API regression and retained immutable-image CI acceptance are still required.
+The MUI control remains to be composed into actual Card/Comment/Attachment views,
+then verified through maintained Production browser keyboard/mobile/AA flows.
+Other RECORDS requirements remain unfinished; PRD-70 stays open.

@@ -540,8 +540,7 @@ internal static class RetentionHoldPersistenceContract
             await using var restore = new NpgsqlCommand("""
                 REVOKE SELECT,INSERT,UPDATE ON record_retention_holds FROM strataai_api_runtime;
                 REVOKE SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts FROM strataai_api_runtime;
-                REVOKE SELECT,INSERT,UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;
-                REVOKE SELECT,INSERT ON record_retention_source_receipts FROM strataai_api_runtime;
+                REVOKE UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;
                 """, admin);
             await restore.ExecuteNonQueryAsync(CancellationToken.None);
         }

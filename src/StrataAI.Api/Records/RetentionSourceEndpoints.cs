@@ -37,8 +37,7 @@ public sealed record ClassifyRetentionSourceRequest(
     [property: JsonRequired] string? Jurisdiction,
     [property: JsonRequired] bool Confirmed);
 
-// Not mapped into the shipping host until both provider compositions, canonical
-// runtime grants and the maintained review/recovery interface are verified.
+// Both provider compositions own the same review/confirmation/recovery boundary.
 public static class RetentionSourceEndpoints
 {
     private static readonly JsonSerializerOptions Options = CreateOptions();

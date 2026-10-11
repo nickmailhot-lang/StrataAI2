@@ -1,6 +1,6 @@
 using Npgsql;
 
-// PRD-70-TC-05/07/15: prospective database graph, not command/runtime activation.
+// PRD-70-TC-05/07/15: canonical minimum capabilities and immutable receipt graph.
 internal static class RetentionSourceReceiptContract
 {
     private const string SourceSql = """
@@ -22,10 +22,15 @@ internal static class RetentionSourceReceiptContract
         var at = DateTimeOffset.UtcNow.AddMinutes(-1); at = at.AddTicks(-(at.Ticks % 10));
         var fingerprint = new string('A', 64);
         await using (var capabilities = new NpgsqlCommand("""
-            SELECT NOT EXISTS(SELECT FROM (VALUES('strataai_api_runtime'),('strataai_worker_runtime')) r(role)
-              WHERE has_table_privilege(r.role,'record_retention_source_receipts','SELECT,INSERT,UPDATE,DELETE'));
+            SELECT bool_and(has_table_privilege('strataai_api_runtime',r.relation,'SELECT')
+              AND has_table_privilege('strataai_api_runtime',r.relation,'INSERT')
+              AND NOT has_table_privilege('strataai_api_runtime',r.relation,'UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+              AND NOT has_any_column_privilege('strataai_api_runtime',r.relation,'UPDATE,REFERENCES')
+              AND NOT has_table_privilege('strataai_worker_runtime',r.relation,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+              AND NOT has_any_column_privilege('strataai_worker_runtime',r.relation,'SELECT,INSERT,UPDATE,REFERENCES'))
+            FROM (VALUES('record_retention_sources'),('record_retention_source_receipts')) r(relation);
             """, admin))
-            Require(await capabilities.ExecuteScalarAsync(ct) is true, "Receipt migration activated a runtime capability.");
+            Require(await capabilities.ExecuteScalarAsync(ct) is true, "Canonical classification runtime capabilities differ from API SELECT/INSERT only.");
         try
         {
             await using (var seed = new NpgsqlCommand("""
@@ -132,7 +137,7 @@ internal static class RetentionSourceReceiptContract
         }
         finally
         {
-            await using var revoke = new NpgsqlCommand("REVOKE SELECT,INSERT,UPDATE(command_key) ON record_retention_sources FROM strataai_api_runtime; REVOKE SELECT,INSERT,UPDATE,DELETE ON record_retention_source_receipts FROM strataai_api_runtime;", admin);
+            await using var revoke = new NpgsqlCommand("REVOKE UPDATE(command_key) ON record_retention_sources FROM strataai_api_runtime; REVOKE UPDATE,DELETE ON record_retention_source_receipts FROM strataai_api_runtime;", admin);
             await revoke.ExecuteNonQueryAsync(CancellationToken.None);
         }
         void Parameters(NpgsqlCommand command)

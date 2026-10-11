@@ -62,6 +62,9 @@ GRANT SELECT,INSERT ON organization_creation_replays TO strataai_api_runtime;
 GRANT SELECT ON record_retention_policies,record_retention_policy_history,record_retention_policy_receipts TO strataai_api_runtime;
 GRANT INSERT,UPDATE ON record_retention_policies TO strataai_api_runtime;
 GRANT INSERT ON record_retention_policy_history,record_retention_policy_receipts TO strataai_api_runtime;
+-- Explicit human classification owns immutable source/receipt insertion only.
+-- The separate Worker cannot read or mutate this private command graph.
+GRANT SELECT,INSERT ON record_retention_sources,record_retention_source_receipts TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON organization_configurations TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_configuration_history,organization_configuration_receipts TO strataai_api_runtime;
 GRANT SELECT ON organization_configuration_events TO strataai_api_runtime;

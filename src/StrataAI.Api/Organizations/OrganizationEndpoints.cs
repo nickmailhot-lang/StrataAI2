@@ -10,6 +10,7 @@ public static class OrganizationEndpoints
         var group = app.MapGroup("/organizations").RequireAuthorization().AddEndpointFilter<OrganizationTelemetryResultFilter>();
         group.MapOrganizationConfigurationEndpoints();
         StrataAI.Api.Records.RetentionPolicyEndpoints.MapRetentionPolicyEndpoints(group);
+        StrataAI.Api.Records.RetentionSourceEndpoints.MapRetentionSourceEndpoints(group);
         group.MapOrganizationOperationalLifecycleEndpoints();
         group.MapGet("/{organizationId:guid}/lifecycle-events", async (Guid organizationId, Guid? expectedActorId,
                 HttpContext context, IOrganizationLifecycleEventReader reader, CancellationToken cancellationToken) =>

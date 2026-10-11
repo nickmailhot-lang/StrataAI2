@@ -6,7 +6,8 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.Records;
 
-// Unregistered until actual source admission and Demo parity exist. No new grants.
+// Source/current-producer hints participate in the owning classification command.
+// Hold readers remain private primitives; no hold runtime capability is granted.
 internal sealed class PostgresRetentionAuthorizationReferences(PostgresConnectionFactory connections)
     : IRetentionAuthorizationReferences, IRetentionWorkSourceReferences
 {

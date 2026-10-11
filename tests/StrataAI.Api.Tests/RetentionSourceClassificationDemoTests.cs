@@ -25,11 +25,7 @@ public sealed partial class ApiHostTests
     public async Task PRD_70_Classification_command_recovers_original_results_and_rolls_back_receipt_source_and_audit()
     {
         var ct = TestContext.Current.CancellationToken;
-        await using var app = new ApiFactory(configureServices: services =>
-        {
-            services.AddSingleton<InMemoryRetentionSourceStore>();
-            services.AddSingleton<IDemoOrganizationTransactionParticipant>(p => p.GetRequiredService<InMemoryRetentionSourceStore>());
-        });
+        await using var app = new ApiFactory();
         using var owner = app.CreateClient(); await RegisterAndLogin(owner);
         var (actor, parent) = await ConfigurationParent(owner, "Classification commands", ct);
         var catalog = app.Services.GetRequiredService<InMemoryRetentionSourceStore>();

@@ -4,7 +4,7 @@ using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Application.Records;
 
-// Unregistered. Owning-transaction admission before first classification review.
+// Owning-transaction admission before first classification review.
 // Callers must retain this exact evidence as their write precondition and repeat
 // admission before disclosure/commit; this does not authorize a private body alone.
 public sealed class RetentionProducerAuthorization(IRetentionProducerReferences producers,

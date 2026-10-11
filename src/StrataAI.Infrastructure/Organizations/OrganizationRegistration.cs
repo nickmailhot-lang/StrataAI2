@@ -4,6 +4,7 @@ using StrataAI.Application.Organizations;
 using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.WorkManagement;
+using StrataAI.Infrastructure.Records;
 
 namespace StrataAI.Infrastructure.Organizations;
 
@@ -100,6 +101,7 @@ public static class OrganizationRegistration
         services.AddSingleton<OrganizationOperationalLifecycleReplayService>();
         services.AddSingleton<OrganizationConfigurationService>();
         services.AddSingleton<StrataAI.Application.Records.RetentionPolicyService>();
+        services.AddStrataAiRetentionSources(runtime);
         services.AddSingleton<OrganizationConfigurationSynchronizationService>();
         services.AddSingleton<OrganizationConfigurationActivityService>();
         services.AddSingleton<TransactionalOrganizationMetadataSynchronization>();

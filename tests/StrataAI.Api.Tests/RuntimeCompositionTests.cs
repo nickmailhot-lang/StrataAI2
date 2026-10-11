@@ -163,7 +163,7 @@ public sealed class RuntimeCompositionTests
         Assert.Contains("STRATAAI_RUNTIME_MODE", failure.ToString());
     }
 
-    private sealed class RuntimeCompositionFactory(string? mode, bool enableMail = false) : WebApplicationFactory<Program>
+    internal sealed class RuntimeCompositionFactory(string? mode, bool enableMail = false) : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Development");
 

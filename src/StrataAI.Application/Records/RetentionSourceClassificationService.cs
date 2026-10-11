@@ -7,8 +7,8 @@ using StrataAI.Domain.Records;
 
 namespace StrataAI.Application.Records;
 
-// Backend-private until HTTP review/confirmation and both host compositions are
-// verified. Review is exact source evidence, never a retained permission grant.
+// The HTTP boundary requires explicit review/confirmation. Review is exact
+// source evidence, never a retained permission grant in either provider mode.
 public sealed class RetentionSourceClassificationService(IRetentionSourceCommandStore sources,
     RetentionProducerAuthorization producers, RetentionWorkAuthorization classified,
     IOrganizationStore organizations, ICommandActorAuthorization actors, IOrganizationUnitOfWork unit, IClock clock)

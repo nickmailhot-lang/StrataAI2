@@ -4,7 +4,7 @@ using StrataAI.Domain.Records;
 
 namespace StrataAI.Application.Records;
 
-// Unregistered, backend-private review command. This is exact producer evidence,
+// Owning source review command. This is exact producer evidence,
 // not a bearer grant, HTTP projection, classification or permission to read bodies.
 public sealed class RetentionSourceReviewService(IRetentionProducerReferences producers,
     IRetentionSourceReferenceReader classifications, RetentionProducerAuthorization authorization,

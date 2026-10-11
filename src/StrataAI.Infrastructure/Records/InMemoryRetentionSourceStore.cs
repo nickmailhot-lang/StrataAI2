@@ -11,8 +11,8 @@ namespace StrataAI.Infrastructure.Records;
 
 internal sealed record DemoRetentionSourceClassification(RetentionSourceReference Reference, RetentionSourceWrite Source, string ActorLabel);
 
-// Unregistered storage primitive. Human review, exact retry and Production command
-// parity remain required; no HTTP seed or guessed historical source is accepted.
+// Demo command storage participates in the owning Organization rollback.
+// No automatic seed or guessed historical classification is accepted.
 internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizations, IIdentityStore identities,
     ICommandActorAuthorization actors, IWorkManagementStore work, IWorkBoardAuthorization boards,
     DemoWorkTransactionScope scope, IClock clock) : IRetentionSourceCommandStore, IRetentionWorkSourceReferences, IRetentionProducerReferences,

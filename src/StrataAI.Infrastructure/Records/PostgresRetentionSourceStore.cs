@@ -9,7 +9,7 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Records;
 
-// Unregistered. Immutable classification and trigger-owned safe audit share the
+// Immutable classification and trigger-owned safe audit share the
 // existing Organization transaction. No automatic producer classification.
 internal sealed class PostgresRetentionSourceStore(PostgresConnectionFactory connections,
     IOrganizationStore organizations, IIdentityStore identities, ICommandActorAuthorization actors,
