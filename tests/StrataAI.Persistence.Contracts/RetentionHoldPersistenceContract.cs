@@ -9,6 +9,8 @@ using StrataAI.Infrastructure.Identity;
 using StrataAI.Infrastructure.Organizations;
 using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.Records;
+using StrataAI.Application.WorkManagement;
+using StrataAI.Infrastructure.WorkManagement;
 
 // PRD-70: real owning PostgreSQL adapter/transaction and Application commands.
 // Admission/scope probes are fixture contracts, not confidentiality or HTTP proof.
@@ -20,6 +22,24 @@ internal static class RetentionHoldPersistenceContract
     {
         public bool Allowed { get; set; } = true;
         public Task<bool> VerifyAsync(RetentionHoldScope scope, Guid actor, CancellationToken ct) => Task.FromResult(Allowed);
+    }
+    private sealed class ChangedSource(IRetentionWorkSourceReferences inner) : IRetentionWorkSourceReferences
+    {
+        private int reads;
+        public async Task<RetentionWorkSourceReference?> ReadAsync(Guid organization, RetentionRecordClass kind, Guid record, CancellationToken ct)
+        {
+            var value = await inner.ReadAsync(organization, kind, record, ct);
+            return ++reads > 1 && value is not null ? value with { CardVersion = value.CardVersion + 1 } : value;
+        }
+    }
+    private sealed class BoardGate(IWorkBoardAuthorization inner, Guid? denied = null) : IWorkBoardAuthorization
+    {
+        public List<Guid> Gates { get; } = [];
+        public Task<WorkOperation<BoardSyncScope>> GetSyncScopeAsync(Guid board, Guid? actor, CancellationToken ct = default)
+        {
+            Gates.Add(board);
+            return board == denied ? Task.FromResult(WorkOperation<BoardSyncScope>.Failure("board_not_found")) : inner.GetSyncScopeAsync(board, actor, ct);
+        }
     }
     private sealed class AfterWrite(IRetentionHoldStore inner, Action after) : IRetentionHoldStore
     {
@@ -254,6 +274,55 @@ internal static class RetentionHoldPersistenceContract
                 return OrganizationOperation<bool>.Success(true);
             }, ct);
             Require(stamped.Succeeded, "Native stamped reference lookup unit failed.");
+            var workStore = new PostgresWorkManagementStore(db);
+            // Only the existing GetSyncScopeAsync admission path is used. Its
+            // event/notification/reminder mutation collaborators are not invoked.
+            IWorkBoardAuthorization actualBoards = new WorkManagementService(workStore, organizations, clock,
+                null!, policy, null!, null!, null!, null!);
+            async Task<bool> Authorize(Func<RetentionWorkAuthorization, Task<bool>> action,
+                IWorkBoardAuthorization? boardAuthorization = null, IRetentionWorkSourceReferences? sourceReferences = null)
+            {
+                var result = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
+                    OrganizationOperation<bool>.Success(await action(new(references, sourceReferences ?? references,
+                        workStore, boardAuthorization ?? actualBoards, organizations, actors))), ct);
+                Require(result.Succeeded, "Native retained source authorization fixture failed.");
+                return result.Value;
+            }
+            foreach (var item in new[] { (card, RetentionRecordClass.OperationalWork), (comment, RetentionRecordClass.OperationalWork), (attachment, RetentionRecordClass.Document) })
+                Require(await Authorize(a => a.VerifySourceAsync(tenant, item.Item2, item.Item1, actor, ct)),
+                    "Native actual retained producer admission failed.");
+            Require(!await Authorize(a => a.VerifySourceAsync(tenant, RetentionRecordClass.Audit, source, actor, ct)),
+                "Native unresolved Audit origin gained work authority.");
+            Require(!await Authorize(a => a.VerifySourceAsync(tenant, RetentionRecordClass.OperationalWork, card, Guid.NewGuid(), ct)),
+                "Native retained source authority admitted a nonmember.");
+            Require(!await Authorize(async a => await a.VerifyHoldAsync((await references.ReadHoldAsync(tenant, workHold, ct))!
+                with { RecordId = null, ContextVersion = null, ClassificationBoardId = null, ApplicationBoardId = null, ApplicationSourceVersion = null }, actor, ct)),
+                "Native work-record authority substituted for broad retention administration.");
+            var gatePlan = new BoardGate(actualBoards);
+            Require(await Authorize(a => a.VerifySourceAsync(tenant, RetentionRecordClass.OperationalWork, card, actor, ct), gatePlan)
+                && gatePlan.Gates.SequenceEqual(new[] { board, destination }.Order()),
+                "Native original/current Board plan was incomplete or unordered.");
+            Require(!await Authorize(a => a.VerifySourceAsync(tenant, RetentionRecordClass.OperationalWork, card, actor, ct), new BoardGate(actualBoards, board)),
+                "Native historical Board refusal was bypassed by destination access.");
+            Require(!await Authorize(a => a.VerifySourceAsync(tenant, RetentionRecordClass.OperationalWork, card, actor, ct), new BoardGate(actualBoards, destination)),
+                "Native current Board refusal was bypassed by historical access.");
+            Require(!await Authorize(a => a.VerifySourceAsync(tenant, RetentionRecordClass.OperationalWork, card, actor, ct),
+                sourceReferences: new ChangedSource(references)), "Native changed source revision passed its final fence.");
+            await using (var archive = new NpgsqlCommand("""
+                UPDATE boards SET lifecycle_state='ARCHIVED',archived_at=statement_timestamp(),updated_at=statement_timestamp(),version=version+1 WHERE id=@board;
+                UPDATE cards SET board_id=@board,list_id=@list,lifecycle_state='ARCHIVED',archived_at=statement_timestamp(),updated_at=statement_timestamp(),version=version+1 WHERE id=@card;
+                """, admin))
+            {
+                archive.Parameters.AddWithValue("board", board); archive.Parameters.AddWithValue("card", card);
+                archive.Parameters.AddWithValue("list", list);
+                await archive.ExecuteNonQueryAsync(ct);
+            }
+            Require(await Authorize(a => a.VerifySourceAsync(tenant, RetentionRecordClass.OperationalWork, card, actor, ct)),
+                "Native retained archived source became inaccessible to its current administrator.");
+            Require(await Authorize(async a => await a.VerifyHoldAsync((await references.ReadHoldAsync(tenant, workHold, ct))!, actor, ct)),
+                "Native retained hold application gates failed after archive.");
+            Require(!await Authorize(async a => await a.VerifyHoldAsync((await references.ReadHoldAsync(tenant, workHold, ct))!, actor, ct),
+                new BoardGate(actualBoards, destination)), "Native application Board refusal was bypassed after a later source move.");
             Console.WriteLine("Native hold adapter: actual restricted owning apply/release, original recovery, current release lookup, actor-bound receipts, late scope rollback and reclaimed key passed; scope/admission are fixture probes.");
         }
         finally

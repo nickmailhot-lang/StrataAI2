@@ -274,6 +274,46 @@ readiness contract passed for both restricted hosts with all 1,940 captured
 repository files unchanged. Owned fixtures were removed. This is reference storage
 evidence, not a completed confidentiality resolver or hold enforcement acceptance.
 
+### Work producer authorization
+
+[RetentionWorkAuthorization.cs](../../src/StrataAI.Application/Records/RetentionWorkAuthorization.cs)
+adds owning authorization for the three existing work producers. It first checks
+current actor admission and active Organization Owner/Admin membership. It resolves
+only typed private references, plans classification/application/current Board gates
+in distinct UUID order, acquires the existing Board read-scope locks, and uses the
+existing Board permission implementation for view and administer decisions.
+Retained archived Boards, Cards, Lists and Attachments remain available to their
+current administrator; deleted or unsupported producer states refuse admission.
+The reader selects only current parent/List/Board relationships, versions and
+lifecycle states, without titles, comment content or Attachment URLs/object keys.
+After the gates, the resolver re-reads both classification and current source and
+refuses changed parent, route, version or lifecycle evidence, then rechecks actor
+and Organization authority.
+
+Record hold authorization retains the application Board even when a later move
+returns the source to its classification Board. This work resolver does not grant
+broad Organization/class/category retention administration or infer Audit origins
+from safe metadata. Governance, Correspondence and AI still require real owning
+modules; missing historical context remains a refusal. Callers must re-read the
+exact current/original receipt reference before private body disclosure and commit.
+The resolver remains unregistered, is not yet wired into the hold command service,
+and does not establish Demo parity, session/Portal admission, human review or
+disposition enforcement. Dedicated broad-scope admission and authorized recovery
+for missing/deleted legacy evidence remain required; no scope waiver is implied.
+
+The maintained native contract passed actual PostgreSQL source relationship reads,
+existing Board permission code and owning locks for Card, Comment and Attachment,
+sorted original/current gates, retained application gates after another move, and
+archived source/Board access. Negative controls passed nonmember and unresolved
+Audit refusal, separate historical/current/application gate denial, changed revision
+refusal and rejection of broad-scope substitution. Gate denial and changed-version
+controls are explicit decorators around the real adapters; session admission remains
+a fixture probe. Fresh whole-solution build passed with zero warnings/errors. The
+complete native hold contract and all 145 ledger refusal/restoration cases passed
+for both restricted hosts with all 1,941 captured repository hashes unchanged.
+Owned disposable fixtures were removed. PRD-70 remains open with approximately
+82% of its full work remaining.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines

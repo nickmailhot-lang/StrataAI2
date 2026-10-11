@@ -1,4 +1,5 @@
 using StrataAI.Domain.Records;
+using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Application.Records;
 
@@ -22,4 +23,15 @@ public interface IRetentionAuthorizationReferences
     Task<RetentionHoldReference?> ReadHoldAsync(Guid organization, Guid hold, CancellationToken ct);
     // Actor/key lookup retains the exact original history version after release.
     Task<RetentionHoldReference?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct);
+}
+
+public sealed record RetentionWorkSourceReference(RetentionSourceReference Classification,
+    Guid CardId, Guid BoardId, Guid ListId, long CardVersion, long ListVersion,
+    long SourceVersion, WorkItemLifecycleState CardState, WorkItemLifecycleState ListState,
+    WorkItemLifecycleState SourceState);
+public interface IRetentionWorkSourceReferences
+{
+    // Current relationship/version/lifecycle only; no Card, Comment or file body.
+    Task<RetentionWorkSourceReference?> ReadAsync(Guid organization, RetentionRecordClass recordClass,
+        Guid record, CancellationToken ct);
 }

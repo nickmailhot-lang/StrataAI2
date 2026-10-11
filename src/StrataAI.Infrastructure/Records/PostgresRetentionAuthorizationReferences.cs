@@ -2,12 +2,13 @@ using Npgsql;
 using StrataAI.Application.Records;
 using StrataAI.Domain.Records;
 using StrataAI.Infrastructure.Persistence;
+using StrataAI.Application.WorkManagement;
 
 namespace StrataAI.Infrastructure.Records;
 
 // Unregistered until actual source admission and Demo parity exist. No new grants.
 internal sealed class PostgresRetentionAuthorizationReferences(PostgresConnectionFactory connections)
-    : IRetentionAuthorizationReferences
+    : IRetentionAuthorizationReferences, IRetentionWorkSourceReferences
 {
     private const string HoldFields = "h.tenant_id,h.hold_id,h.version,h.record_class,(h.category IS NOT NULL),h.record_id,h.authorization_context_version,h.classification_board_id,h.application_board_id,h.application_source_version ";
 
@@ -41,6 +42,41 @@ internal sealed class PostgresRetentionAuthorizationReferences(PostgresConnectio
         ReadAsync(organization, hold, null, null, ct);
     public Task<RetentionHoldReference?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) =>
         ReadAsync(organization, null, actor, key, ct);
+
+    public async Task<RetentionWorkSourceReference?> ReadAsync(Guid organization, RetentionRecordClass recordClass,
+        Guid record, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        var classification = await ReadSourceAsync(organization, recordClass, record, ct);
+        if (classification is null || classification.Kind == RetentionProducerKind.AuditEvent) return null;
+        await using var session = await connections.OpenTenantSessionAsync(organization, ct);
+        await using var command = new NpgsqlCommand("""
+            SELECT c.id,c.board_id,c.list_id,c.version,l.version,
+              CASE r.source_kind WHEN 'CARD' THEN c.version WHEN 'CARD_COMMENT' THEN m.version ELSE a.version END,
+              c.lifecycle_state,l.lifecycle_state,
+              CASE r.source_kind WHEN 'CARD' THEN c.lifecycle_state
+                WHEN 'CARD_COMMENT' THEN CASE WHEN m.deleted_at IS NULL THEN 'ACTIVE' ELSE 'DELETED' END
+                ELSE a.lifecycle_state END
+            FROM record_retention_sources r
+            JOIN cards c ON c.tenant_id=r.tenant_id
+              AND c.id=CASE WHEN r.source_kind='CARD' THEN r.record_id ELSE r.parent_card_id END
+            JOIN board_lists l ON(l.tenant_id,l.id,l.board_id)=(c.tenant_id,c.list_id,c.board_id)
+            LEFT JOIN card_comments m ON r.source_kind='CARD_COMMENT'
+              AND(m.tenant_id,m.id,m.card_id)=(r.tenant_id,r.record_id,r.parent_card_id)
+            LEFT JOIN attachments a ON r.source_kind='ATTACHMENT'
+              AND(a.tenant_id,a.id,a.card_id)=(r.tenant_id,r.record_id,r.parent_card_id)
+            WHERE r.tenant_id=@tenant AND r.record_class=@class AND r.record_id=@record
+              AND(r.source_kind='CARD' OR r.source_kind='CARD_COMMENT' AND m.id IS NOT NULL
+                OR r.source_kind='ATTACHMENT' AND a.id IS NOT NULL);
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organization);
+        command.Parameters.AddWithValue("class", recordClass == RetentionRecordClass.OperationalWork ? "OPERATIONAL_WORK" : recordClass.ToString().ToUpperInvariant());
+        command.Parameters.AddWithValue("record", record);
+        await using var row = await command.ExecuteReaderAsync(ct);
+        return await row.ReadAsync(ct) ? new(classification, row.GetGuid(0), row.GetGuid(1), row.GetGuid(2),
+            row.GetInt64(3), row.GetInt64(4), row.GetInt64(5), State(row, 6), State(row, 7), State(row, 8)) : null;
+    }
+    private static WorkItemLifecycleState State(NpgsqlDataReader row, int index) => Enum.Parse<WorkItemLifecycleState>(row.GetString(index), true);
 
     private async Task<RetentionHoldReference?> ReadAsync(Guid organization, Guid? hold, Guid? actor, Guid? key, CancellationToken ct)
     {
