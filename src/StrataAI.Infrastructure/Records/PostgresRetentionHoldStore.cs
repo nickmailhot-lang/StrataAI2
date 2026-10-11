@@ -17,6 +17,9 @@ internal sealed class PostgresRetentionHoldStore(PostgresConnectionFactory conne
 {
     private const string Fields = "h.hold_id,h.tenant_id,h.version,h.record_class,h.category,h.record_id,h.status,h.reason,h.applied_by,h.applied_at,h.released_by,h.released_at";
     private const string Current = " FROM record_retention_holds p JOIN record_retention_hold_history h ON(h.tenant_id,h.hold_id,h.version)=(p.tenant_id,p.id,p.version) ";
+    private readonly PostgresRetentionAuthorizationReferences references = new(connections);
+    public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct) => references.ReadHoldAsync(organization, hold, ct);
+    public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => references.ReadReceiptAsync(organization, actor, key, ct);
 
     public async Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct)
     {

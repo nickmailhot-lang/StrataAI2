@@ -14,6 +14,10 @@ public sealed partial class ApiHostTests
     {
         public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct) =>
             throw new NotSupportedException("Command probe does not establish complete owning hold lookup.");
+        public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct) => Task.FromResult(Reference(Current));
+        public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => Task.FromResult(Reference(Receipt?.Key == key ? Receipt.Result : null));
+        private static RetentionHoldReference? Reference(RetentionHold? hold) => hold is null ? null : new(hold.OrganizationId, hold.Id,
+            hold.Version, hold.RecordClass, hold.Category is not null, hold.RecordId, null, null, null, null);
         public RetentionHold? Current { get; set; }
         public RetentionHoldReceipt? Receipt { get; set; }
         public RetentionHoldWrite? LastWrite { get; private set; }
@@ -31,10 +35,48 @@ public sealed partial class ApiHostTests
     private sealed class HoldScopeProbe : IRetentionHoldScopeAuthorization
     {
         public bool Allowed { get; set; } = true;
+        public bool ReferenceAllowed { get; set; } = true;
+        public Task<bool> VerifyAsync(RetentionHoldReference reference, Guid actor, CancellationToken ct) => Task.FromResult(Allowed && ReferenceAllowed);
         public int Reads { get; private set; }
         public RetentionHoldScope? LastScope { get; private set; }
         public Task<bool> VerifyAsync(RetentionHoldScope scope, Guid actor, CancellationToken ct)
         { Reads++; LastScope = scope; return Task.FromResult(Allowed); }
+    }
+
+    [Fact]
+    public async Task PRD_70_hold_reference_denial_precedes_private_bodies_retry_and_stale_release()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); await RegisterAndLogin(owner);
+        var (actor, parent) = await ConfigurationParent(owner, "Private reference gates", ct);
+        var store = new HoldProbe(); var scopes = new HoldScopeProbe(); var clock = new ConfigurationCommandClock();
+        var service = ActivatorUtilities.CreateInstance<RetentionHoldService>(app.Services, store, scopes, clock);
+        var scope = new RetentionHoldScope(parent.Id, RetentionRecordClass.Governance, "decisions", Guid.NewGuid());
+        var id = Guid.NewGuid(); var key = Guid.NewGuid();
+        Assert.True((await service.ApplyAsync(parent.Id, actor, id, scope, "Private evidence", key, "apply", ct)).Succeeded);
+        var reads = store.Reads; var writes = store.Writes;
+        scopes.ReferenceAllowed = false;
+        Assert.Equal("retention_hold_not_found", (await service.ReadAsync(parent.Id, actor, id, ct)).ErrorCode);
+        Assert.Equal("retention_hold_not_found", (await service.ReleaseAsync(parent.Id, actor, id, 999, Guid.NewGuid(), "stale", ct)).ErrorCode);
+        Assert.Equal("retention_hold_not_found", (await service.ApplyAsync(parent.Id, actor, id, scope, "Private evidence", key, "retry", ct)).ErrorCode);
+        Assert.Equal(reads, store.Reads); Assert.Equal(writes, store.Writes);
+    }
+
+    [Fact]
+    public async Task PRD_70_hold_changed_reference_refuses_private_read_acknowledgment()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var owner = app.CreateClient(); await RegisterAndLogin(owner);
+        var (actor, parent) = await ConfigurationParent(owner, "Reference changes", ct);
+        var store = new HoldProbe(); var scopes = new HoldScopeProbe(); var clock = new ConfigurationCommandClock();
+        var service = ActivatorUtilities.CreateInstance<RetentionHoldService>(app.Services, store, scopes, clock);
+        var id = Guid.NewGuid();
+        Assert.True((await service.ApplyAsync(parent.Id, actor, id,
+            new(parent.Id, RetentionRecordClass.Governance, null, Guid.NewGuid()), "Private evidence", Guid.NewGuid(), "apply", ct)).Succeeded);
+        var writes = store.Writes;
+        store.AfterRead = () => store.Current = store.Current! with { Version = store.Current.Version + 1 };
+        Assert.Equal("retention_hold_source_unavailable", (await service.ReadAsync(parent.Id, actor, id, ct)).ErrorCode);
+        Assert.Equal(writes, store.Writes);
     }
 
     [Fact]

@@ -22,6 +22,7 @@ internal static class RetentionHoldPersistenceContract
     {
         public bool Allowed { get; set; } = true;
         public Task<bool> VerifyAsync(RetentionHoldScope scope, Guid actor, CancellationToken ct) => Task.FromResult(Allowed);
+        public Task<bool> VerifyAsync(RetentionHoldReference reference, Guid actor, CancellationToken ct) => Task.FromResult(Allowed);
     }
     private sealed class ChangedSource(IRetentionWorkSourceReferences inner) : IRetentionWorkSourceReferences
     {
@@ -41,9 +42,22 @@ internal static class RetentionHoldPersistenceContract
             return board == denied ? Task.FromResult(WorkOperation<BoardSyncScope>.Failure("board_not_found")) : inner.GetSyncScopeAsync(board, actor, ct);
         }
     }
+    private sealed class PrivateReadGuard(IRetentionHoldStore inner) : IRetentionHoldStore
+    {
+        public int Reads { get; private set; }
+        public int Writes { get; private set; }
+        public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadReferenceAsync(organization, hold, ct);
+        public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => inner.ReadReceiptReferenceAsync(organization, actor, key, ct);
+        public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct) => throw new NotSupportedException();
+        public Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct) { Reads++; return inner.ReadAsync(organization, hold, ct); }
+        public Task<RetentionHoldReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) { Reads++; return inner.ReadReceiptAsync(organization, actor, key, ct); }
+        public Task<RetentionHoldWriteResult> WriteAsync(long expected, RetentionHoldWrite write, CancellationToken ct) { Writes++; return inner.WriteAsync(expected, write, ct); }
+    }
     private sealed class AfterWrite(IRetentionHoldStore inner, Action after) : IRetentionHoldStore
     {
         public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct) => inner.ReadApplicableAsync(record, ct);
+        public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadReferenceAsync(organization, hold, ct);
+        public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => inner.ReadReceiptReferenceAsync(organization, actor, key, ct);
         public Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadAsync(organization, hold, ct);
         public Task<RetentionHoldReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => inner.ReadReceiptAsync(organization, actor, key, ct);
         public async Task<RetentionHoldWriteResult> WriteAsync(long expected, RetentionHoldWrite write, CancellationToken ct)
@@ -323,6 +337,26 @@ internal static class RetentionHoldPersistenceContract
                 "Native retained hold application gates failed after archive.");
             Require(!await Authorize(async a => await a.VerifyHoldAsync((await references.ReadHoldAsync(tenant, workHold, ct))!, actor, ct),
                 new BoardGate(actualBoards, destination)), "Native application Board refusal was bypassed after a later source move.");
+            var realAuthorization = new RetentionWorkAuthorization(references, references, workStore, actualBoards, organizations, actors);
+            var realStore = new PostgresRetentionHoldStore(db, organizations, identities, actors, realAuthorization, clock);
+            var realService = new RetentionHoldService(organizations, realStore, realAuthorization, unit, actors, clock);
+            Require((await realService.ReadAsync(tenant, actor, workHold, ct)).Succeeded, "Native real reference-admitted private read failed.");
+            var releasedWork = await realService.ReleaseAsync(tenant, actor, workHold, 1, Guid.NewGuid(), "real-reference-release", ct);
+            Require(releasedWork.Succeeded && releasedWork.Value is { Version: 2, Status: RetentionHoldStatus.Released },
+                "Native real reference-admitted release failed.");
+            Require((await realService.ApplyAsync(tenant, actor, workHold, new(tenant, RetentionRecordClass.OperationalWork, null, card),
+                "Private work reason", workKey, "real-original-recovery", ct)).Value is { Version: 1, Status: RetentionHoldStatus.Active },
+                "Native real admission lost original Apply receipt history.");
+            var deniedAuthorization = new RetentionWorkAuthorization(references, references, workStore,
+                new BoardGate(actualBoards, destination), organizations, actors);
+            var privateGuard = new PrivateReadGuard(realStore);
+            var deniedService = new RetentionHoldService(organizations, privateGuard, deniedAuthorization, unit, actors, clock);
+            Require((await deniedService.ReadAsync(tenant, actor, workHold, ct)).ErrorCode == "retention_hold_not_found"
+                && (await deniedService.ReleaseAsync(tenant, actor, workHold, 999, Guid.NewGuid(), "private-stale", ct)).ErrorCode == "retention_hold_not_found"
+                && (await deniedService.ApplyAsync(tenant, actor, workHold, new(tenant, RetentionRecordClass.OperationalWork, null, card),
+                    "Private work reason", workKey, "private-retry", ct)).ErrorCode == "retention_hold_not_found"
+                && privateGuard.Reads == 0 && privateGuard.Writes == 0,
+                "Native application gate denial occurred after private body reads or disclosed a revision conflict.");
             Console.WriteLine("Native hold adapter: actual restricted owning apply/release, original recovery, current release lookup, actor-bound receipts, late scope rollback and reclaimed key passed; scope/admission are fixture probes.");
         }
         finally

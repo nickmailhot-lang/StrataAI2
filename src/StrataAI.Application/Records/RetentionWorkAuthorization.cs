@@ -9,8 +9,12 @@ namespace StrataAI.Application.Records;
 // current/original receipt hint before private detail disclosure and commit.
 public sealed class RetentionWorkAuthorization(IRetentionAuthorizationReferences references,
     IRetentionWorkSourceReferences sources, IWorkManagementStore work, IWorkBoardAuthorization boards,
-    IOrganizationStore organizations, ICommandActorAuthorization actors)
+    IOrganizationStore organizations, ICommandActorAuthorization actors) : IRetentionHoldScopeAuthorization
 {
+    public Task<bool> VerifyAsync(RetentionHoldReference reference, Guid actor, CancellationToken ct) => VerifyHoldAsync(reference, actor, ct);
+    public Task<bool> VerifyAsync(RetentionHoldScope scope, Guid actor, CancellationToken ct) =>
+        scope.RecordClass is { } kind && scope.RecordId is { } record
+            ? VerifySourceAsync(scope.OrganizationId, kind, record, actor, ct) : Task.FromResult(false);
     public async Task<bool> VerifySourceAsync(Guid organization, RetentionRecordClass recordClass,
         Guid record, Guid actor, CancellationToken ct)
     {

@@ -296,8 +296,8 @@ broad Organization/class/category retention administration or infer Audit origin
 from safe metadata. Governance, Correspondence and AI still require real owning
 modules; missing historical context remains a refusal. Callers must re-read the
 exact current/original receipt reference before private body disclosure and commit.
-The resolver remains unregistered, is not yet wired into the hold command service,
-and does not establish Demo parity, session/Portal admission, human review or
+The resolver remains unregistered. It now implements the hold command admission
+interface, but does not establish Demo parity, session/Portal admission, human review or
 disposition enforcement. Dedicated broad-scope admission and authorized recovery
 for missing/deleted legacy evidence remain required; no scope waiver is implied.
 
@@ -313,6 +313,40 @@ complete native hold contract and all 145 ledger refusal/restoration cases passe
 for both restricted hosts with all 1,941 captured repository hashes unchanged.
 Owned disposable fixtures were removed. PRD-70 remains open with approximately
 82% of its full work remaining.
+
+### Reference admission before private command reads
+
+The hold command/store contracts now distinguish minimal current/original receipt
+references from private bodies. Read, release and receipt recovery authorize the
+retained reference before loading reasons, category values or acknowledgments.
+The body must match its reference's Organization, hold identity, exact version,
+class, record identity and category scope shape. The reference is re-read and
+authorization rechecked before acknowledgment. Successful writes additionally
+re-read the new authoritative reference/body under admission before the owning
+transaction may commit; denial or a mismatched acknowledgment rolls back the graph.
+Original Apply recovery still reads the original receipt version after release.
+
+The Production store uses the persisted context reader. The actual work resolver
+implements the required reference and source-scope admission methods, and the
+maintained native contract now injects it into the actual hold commands and store.
+Demo reference reads preserve exact history/version and explicitly absent context;
+they never manufacture it from current routes. Demo work-source capture is still
+required before the real resolver can authorize Demo record holds. Broad and
+other producer admission, runtime registration, HTTP/MUI and enforcement remain
+pending; fixture probes for these incomplete scopes grant no deployed capability.
+
+Verification: fresh solution build passed with zero warnings/errors. The focused
+Linux API Records suite passed 31/31, no failed or unexecuted cases, with 844 backend
+and test hashes unchanged. New maintained cases prove reference denial precedes
+private body reads, retries and stale release conflicts, and changed references
+refuse acknowledgment. The complete actual native hold/readiness contract passed
+all 145 migration refusal/restoration cases for both restricted hosts, with 1,941
+repository hashes unchanged. Native real-admission commands passed archived-source
+read/release and original Apply recovery; an application-Board denial control
+produced safe not-found outcomes with zero private reads and zero writes for read,
+stale release and retry. Owned terminal fixtures were removed. PRD-70 remains open
+at 82% estimated work remaining; this is command ordering and owning persistence
+evidence, not full HTTP/session/privacy or immutable-image release acceptance.
 
 ## Policy and decision semantics
 

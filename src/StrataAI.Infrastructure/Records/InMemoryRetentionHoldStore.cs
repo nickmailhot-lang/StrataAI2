@@ -20,6 +20,21 @@ internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organization
     private readonly Dictionary<(Guid Organization, Guid Hold, long Version), DemoRetentionHoldRevision> _history = [];
     private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), RetentionHoldReceipt> _receipts = [];
     private readonly HashSet<Guid> _eventIds = [];
+    public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        return Task.FromResult(Reference(_current.GetValueOrDefault((organization, hold))));
+    }
+    public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        return Task.FromResult(Reference(_receipts.GetValueOrDefault((organization, actor, key))?.Result));
+    }
+    // Historical producer context is unavailable until Demo source capture exists.
+    // Never synthesize it from a current Card route. Real work authorization refuses it.
+    private static RetentionHoldReference? Reference(RetentionHold? hold) => hold is null ? null
+        : new(hold.OrganizationId, hold.Id, hold.Version, hold.RecordClass, hold.Category is not null,
+            hold.RecordId, null, null, null, null);
 
     public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct)
     {
