@@ -1,10 +1,11 @@
 # Records retention contracts — PRD-70
 
 [PRD-70](https://github.com/nickmailhot-lang/StrataAI2/issues/71) remains open.
-Estimated work remaining: **86%**. Domain contracts, private policy storage,
+Estimated work remaining: **84%**. Domain contracts, private policy storage,
 transactional Demo parity and authorized policy HTTP commands/reads are implemented
-and locally tested. MUI policy administration, runtime holds, redaction, export
-and disposition workflows remain incomplete. This shared boundary is also required by
+and locally tested. The internal MUI policy create/edit/review and retry workflow
+is implemented with component coverage; browser/release acceptance, runtime
+holds, redaction, export and disposition workflows remain incomplete. This shared boundary is also required by
 [PRD-20](https://github.com/nickmailhot-lang/StrataAI2/issues/21) and the remaining
 [PRD-27 acceptance](prd-27-acceptance.md). Retained configuration history alone
 cannot establish legal-hold behavior.
@@ -171,7 +172,7 @@ then-canonical read-only provisioning. That capture predates the runtime command
 activation below. The Worker still has no policy access; this earlier local
 compiled harness is not maintained release-image or complete HTTP acceptance.
 
-## Internal MUI policy browsing
+## Internal MUI policy administration
 
 The internal route `/app/{organizationId}/retention-policies` now reads private
 current policies and retained history. Active Organization Owners/Admins receive
@@ -179,7 +180,8 @@ the navigation link; the separate Owner Portal has no new retention route.
 The screen shows explicit class/category/jurisdiction, anchor, elapsed days,
 action and source/notes, plus original actor label/capacity and UTC revision time.
 It clearly states that recorded policies do not yet enable retention enforcement
-or automatic disposition. Creation/edit/review controls remain pending.
+or automatic disposition. Authorized users can create and edit policies through
+an explicit draft and confirmation dialog.
 
 The browser client validates exact response shapes, owning identities, bounded
 pages and seek boundaries, safe versions, class/action/period rules, retained
@@ -193,13 +195,53 @@ responses. Metadata invalidation and window focus recheck private access.
 MUI controls provide source-aware history names, bounded next-page navigation,
 loading/empty/degraded/refused states and fixed safe retry text. Opening history
 moves focus to its heading; closing returns focus to the originating connected
-control. Authority refusal withdraws private policy/history values. No policy
-source is written to browser storage. The initial 17 client/screen tests and the
+control. Authority refusal withdraws private policy/history values. Private read
+results are not written to browser storage. The initial 17 client/screen tests and the
 final 74-case targeted client/screen/Organization-home regression passed; web
 typecheck, complete lint and production build passed. The build retains the
 existing bundle-size advisory. These checks do not establish desktop/mobile
-browser, screen-reader, full frontend, live policy publication or mutation-review
-acceptance; those remain required before closure.
+browser, screen-reader, full frontend or live policy publication acceptance;
+those remain required before closure.
+
+[RetentionPolicyEditor](../../apps/web/src/features/records/RetentionPolicyEditor.tsx)
+starts a new policy with explicit class, anchor, action and reviewed source; it
+does not invent a jurisdiction or retention duration. Existing applicability is
+fixed for the retained identity. Local field errors explain supported rules and
+focus the first invalid control. The review dialog shows exact applicability,
+rule, action and source/notes, reviewed/next revisions and the enforcement
+limitation. Confirmation requires an explicit source/applicability acknowledgment;
+returning to edit requires another review.
+
+The editor retains unsent work in memory during degraded admission checks and
+hides private dialog content until current access is confirmed. An explicit
+Discard draft clears unsent work; Close and retain work keeps it on this page.
+Another target cannot silently replace an existing draft. Confirmed submissions
+are verified in tab-local session recovery before network delivery and are
+restored only after owning admission. Uncertain delivery offers Retry original
+submission with the original bytes and key, including after navigation/reload.
+A definitive refusal offers Review current policy; a successful fresh admitted
+read and matching recovery cleanup return to the preserved draft for explicit
+comparison and a new approval/revision/key. Read/storage failures retain the
+original and do not automatically rebase or acknowledge it.
+
+Metadata/window-focus rechecks hide the open private editor while admission is
+pending. Confirmed access withdrawal clears draft, selected source and retained
+submission, aborts ongoing IO and fences late responses. Acknowledgment refreshes
+the directory separately, so a later current revision replaces an older original
+receipt in the screen. Successful refresh and denial focus the page heading;
+MUI supplies dialog focus trapping/restoration and responsive wrapped actions.
+Unsent drafts are not persisted across route unmounts; reviewed original
+submissions have the tab-local recovery contract described below.
+
+Maintained editor/page cases cover explicit creation, field validation and focus,
+source review, edit revision guards, preserved unsent work, lost acknowledgment
+across navigation, stale conflict with degraded reconciliation and a new reviewed
+key, access withdrawal during in-flight IO, late-response fences, corrupt and
+unwritable storage, metadata invalidation, later current state and page focus.
+The records/Profile/Organization-home/Problem regression passed **147/147 cases**;
+web typecheck, full lint and production build passed. These are component/client
+checks, not actual desktop/mobile browser or screen-reader acceptance. Realtime
+policy publication and the remaining PRD scope are still required.
 
 ## Reviewed browser submission and recovery contract
 
@@ -220,10 +262,10 @@ replacement, corrupt/foreign records and failed storage writes instead of
 discarding unresolved work. No later read acknowledges an unresolved submission.
 The helpers accept browser storage explicitly; the policy browsing screen still
 does not persist private read results. Sign-out and confirmed account deactivation
-clear retained policy submissions. A future editor must retain its original
-before sending, restore only after current owning admission, clear foreign
-account/withdrawn authority scopes, and clear completion only for the matching
-acknowledgment or explicitly reviewed definitive refusal.
+clear retained policy submissions. The editor retains its original before
+sending, restores only after current owning admission, clears foreign account/
+withdrawn authority scopes, and clears completion only for the matching
+acknowledgment or a fresh read after an explicitly reviewed definitive refusal.
 
 Known retention Problem codes are admitted through a status-bound allowlist;
 raw diagnostic bodies and unsafe correlation references are excluded. Maintained
@@ -234,8 +276,9 @@ The focused records/Profile/Problem regression passed **79/79 cases**; web
 typecheck, full source lint and production build passed. The build retains the
 existing bundle-size advisory. These are maintained client/component checks,
 not browser or complete frontend acceptance.
-The create/edit form, confirmation dialog, conflict reconciliation and browser
-acceptance remain pending; this client contract alone does not satisfy them.
+The editor now integrates this contract as described above. Actual browser and
+complete release acceptance remain pending; client/component coverage alone
+does not satisfy them.
 
 ## Transactional Demo storage evidence
 
@@ -320,7 +363,7 @@ source, changed applicability, nonmonotonic clocks and invalid historical
 attribution. A missing policy returns a fixed not-found result; seeking below
 revision one returns an authorized empty page. These are Application read models;
 The current HTTP surface uses these seek boundaries and private headers. The
-internal MUI browsing route is documented above; mutation review remains pending.
+internal MUI administration route and mutation review are documented above.
 
 Fresh whole-solution compilation passed with zero warnings/errors; **11/11 focused
 Linux cases** passed with **826 backend/test hashes matching**. New maintained
@@ -363,7 +406,7 @@ or linked scenario. Required remaining work includes:
   runtime adapters, with Demo parity and policy selector acceptance.
 - Owning transaction admission, explicit elevated authorization, review/concurrency,
   complete hold lookup and current lock ordering across every disposition path.
-- Applied/released hold commands, policy selector/retirement rules, MUI policy review,
+- Applied/released hold commands, policy selector/retirement rules, MUI policy review browser acceptance,
   cross-session domain publication and authorized replay after membership changes.
 - Independent governance preservation; controlled redaction and authorized original
   access; privacy deletion/anonymization versus retained governance/audit sources.
@@ -382,5 +425,9 @@ The later `retcmd3-full` API capture has now completed **846/846 cases**, withou
 failed, skipped, aborted or timed-out cases. It captured 822 backend/test files;
 six captured files changed by completion. It predates later adapter, pagination
 and HTTP activation changes, so it is historical regression evidence only.
+The separate `retdemo2-full` API capture completed **850/850 cases**, with zero
+failed/skipped/aborted/timed-out cases. It captured 825 backend/test files; eight
+captured files changed by completion. It predates pagination and HTTP activation
+and is also historical regression evidence only.
 The current backend `rethttp1-full` capture remains running. Exact-head release
 CI remains queued and no release acceptance is claimed.

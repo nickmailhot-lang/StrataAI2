@@ -4,19 +4,8 @@ import { Link, useParams } from 'react-router-dom';
 import { WorkRequestError } from '../../api/workManagement';
 import { watchOrganizationMetadata } from '../organizations/organizationMetadataLive';
 import { readRetentionHistory, readRetentionPolicies, type PolicyHistory, type PolicyPage, type RetentionPolicy } from './retentionPolicyClient';
+import { PolicyRule, recordClasses as classes, RetentionPolicyEditor, type PolicyEditorCommand } from './RetentionPolicyEditor';
 
-const classes = { operationalWork: 'Operational work', governance: 'Governance', audit: 'Audit', correspondence: 'Correspondence', document: 'Document', ai: 'AI' };
-const anchors = { created: 'creation', archived: 'archive', closed: 'closure', approved: 'approval' };
-const actions = { preserve: 'Preserve', delete: 'Delete when eligible', anonymize: 'Anonymize when eligible' };
-function Rule({ policy }: { policy: RetentionPolicy }) {
-  return <Stack spacing={1}>
-    <Typography>{classes[policy.recordClass]} · {policy.category}</Typography>
-    <Typography>{policy.jurisdiction ?? 'Organization-wide applicability'}</Typography>
-    <Typography>{policy.retentionDays === null ? 'Indefinite preservation' : `${policy.retentionDays} elapsed UTC days after ${anchors[policy.anchor]}`} · {actions[policy.action]}</Typography>
-    <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>Source: {policy.source}</Typography>
-    {policy.notes && <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>Notes: {policy.notes}</Typography>}
-  </Stack>;
-}
 export function RetentionPoliciesPage() {
   const { organizationId } = useParams();
   return <PolicyScreen key={organizationId} organizationId={organizationId ?? ''} />;
@@ -25,12 +14,19 @@ function PolicyScreen({ organizationId }: { organizationId: string }) {
   const [directory, setDirectory] = useState<PolicyPage>(); const [actorId, setActorId] = useState<string>();
   const [history, setHistory] = useState<PolicyHistory>(); const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>(); const [denied, setDenied] = useState(false);
+  const [editor, setEditor] = useState<PolicyEditorCommand | null>(null); const editorSequence = useRef(0);
   const request = useRef<AbortController | null>(null); const epoch = useRef(0);
   const heading = useRef<HTMLHeadingElement | null>(null); const historyTrigger = useRef<HTMLButtonElement | null>(null);
+  const pageHeading = useRef<HTMLHeadingElement | null>(null); const focusAfterRefresh = useRef(false);
   useEffect(() => { if (history) heading.current?.focus(); }, [history]);
+  useEffect(() => {
+    if (directory && focusAfterRefresh.current) { focusAfterRefresh.current = false; pageHeading.current?.focus(); }
+    if (denied) pageHeading.current?.focus();
+  }, [directory, denied]);
   const withdraw = useCallback(() => { setDirectory(undefined); setHistory(undefined); }, []);
   const failure = useCallback((value: unknown) => {
     withdraw(); const lost = value instanceof WorkRequestError && [401, 403, 404].includes(value.status);
+    if (lost) setEditor(null);
     setDenied(lost); setError(lost ? 'Retention policies are no longer available with your current access.' : 'Retention policies could not be confirmed. Retry when the connection is available.');
   }, [withdraw]);
   const load = useCallback(async (after?: string, expected?: string) => {
@@ -60,15 +56,20 @@ function PolicyScreen({ organizationId }: { organizationId: string }) {
     } catch (value) { if (!controller.signal.aborted && current === epoch.current) failure(value); }
     finally { if (!controller.signal.aborted && current === epoch.current) setBusy(false); }
   };
+  const edit = (policy: RetentionPolicy | null) => setEditor({ sequence: ++editorSequence.current, policy });
   return <Container maxWidth="md" sx={{ py: 3 }}>
     <Stack spacing={2}>
-      <Typography variant="h4" component="h1">Retention policies</Typography>
+      <Typography ref={pageHeading} tabIndex={-1} variant="h4" component="h1">Retention policies</Typography>
       <Typography>Explicit policies describe which records are preserved and when another action may become eligible. A policy alone does not authorize disposition or override a hold.</Typography>
       <Alert severity="info" role="note">Policies are recorded for review. Retention enforcement and automatic disposition are not available yet.</Alert>
       <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
         <Button component={Link} to={`/app/${organizationId}`}>Back to Organization</Button>
         <Button disabled={busy} onClick={() => void load(undefined, actorId)}>Refresh policies</Button>
+        {directory && <Button disabled={busy} onClick={() => edit(null)}>Create policy</Button>}
       </Stack>
+      {actorId && <RetentionPolicyEditor key={actorId} organizationId={organizationId} actorId={actorId} admitted={!!directory && !busy && !denied}
+        denied={denied} command={editor} completed={() => { focusAfterRefresh.current = true; void load(undefined, actorId); }}
+        accessLost={value => { ++epoch.current; request.current?.abort(); setBusy(false); setEditor(null); failure(value); }} />}
       {busy && <Box role="status"><CircularProgress size={20} aria-label="Loading retention policies" /> Loading policies</Box>}
       {error && <Alert severity={denied ? 'warning' : 'error'}>{error}</Alert>}
       {error && !denied && <Button onClick={() => void load(undefined, actorId)}>Retry policy read</Button>}
@@ -76,7 +77,8 @@ function PolicyScreen({ organizationId }: { organizationId: string }) {
       {directory?.items.map(policy => <Paper key={policy.id} component="section" aria-label={`${classes[policy.recordClass]} policy ${policy.category}, ${policy.jurisdiction ?? 'Organization-wide'}`} variant="outlined" sx={{ p: 2 }}>
         <Stack spacing={1}>
           <Typography variant="h6" component="h2">{policy.category} · Revision {policy.version}</Typography>
-          <Rule policy={policy} />
+          <PolicyRule policy={policy} />
+          <Button disabled={busy} onClick={() => edit(policy)} aria-label={`Edit policy for ${classes[policy.recordClass]} ${policy.category}, ${policy.jurisdiction ?? 'Organization-wide'}`}>Edit policy</Button>
           <Button disabled={busy} onClick={event => { historyTrigger.current = event.currentTarget; void showHistory(policy.id); }} aria-label={`View history for ${classes[policy.recordClass]} ${policy.category}, ${policy.jurisdiction ?? 'Organization-wide'}`}>View history</Button>
         </Stack>
       </Paper>)}
@@ -88,7 +90,7 @@ function PolicyScreen({ organizationId }: { organizationId: string }) {
           {history.items.map(row => <Box key={row.eventId}>
             <Typography variant="h6" component="h3">Revision {row.policy.version}</Typography>
             <Typography>{row.actorLabel} · {row.actingCapacity === 0 ? 'Organization owner' : 'Organization administrator'} · {new Date(row.policy.updatedAt).toLocaleString(undefined, { timeZone: 'UTC' })} UTC</Typography>
-            <Rule policy={row.policy} />
+            <PolicyRule policy={row.policy} />
           </Box>)}
           {history.nextBeforeVersion !== null && <Button disabled={busy} onClick={() => void showHistory(history.policyId, history.nextBeforeVersion!)}>Older history</Button>}
           <Button onClick={() => { setHistory(undefined); if (historyTrigger.current?.isConnected) historyTrigger.current.focus(); }}>Close history</Button>

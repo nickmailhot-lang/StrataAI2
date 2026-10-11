@@ -144,6 +144,15 @@ export function readRetentionHistory(organizationId: string, actorId: string, po
     await finalAdmission(organization, expected, bounded); return page;
   }, signal);
 }
+export function readRetentionPolicy(organizationId: string, actorId: string, policyId: string, signal: AbortSignal) {
+  const organization = id(organizationId); const expected = id(actorId); const policy = id(policyId);
+  return boundedWorkRead(async bounded => {
+    await actor(bounded, expected); await finalAdmission(organization, expected, bounded);
+    const result = parseRetentionPolicy(await request(`/organizations/${organization}/retention-policies/${policy}`, expected, bounded), organization);
+    if (result.id !== policy) return unavailable();
+    await finalAdmission(organization, expected, bounded); return result;
+  }, signal);
+}
 
 // A reviewed change owns its original request bytes. Later reads, navigation,
 // timeouts and retries must not replace its identity, revision or retry key.
