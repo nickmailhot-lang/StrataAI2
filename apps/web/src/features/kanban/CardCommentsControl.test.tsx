@@ -26,6 +26,13 @@ async function review() {
   await screen.findByRole('button', { name: 'Add comment' });
   await waitFor(() => expect(watchIdentity).toHaveBeenCalled());
 }
+it('exposes classification from an admitted undeleted comment only with Board administration', async () => {
+  mock(); const context = props(), ui = render(<CardCommentsControl {...context} canAdminister />); await review();
+  expect(screen.getByRole('button', { name: 'Retention classification for this Comment' })).toBeEnabled();
+  expect(writes()).toHaveLength(0);
+  ui.rerender(<CardCommentsControl {...context} canAdminister={false} />);
+  expect(screen.queryByRole('button', { name: 'Retention classification for this Comment' })).not.toBeInTheDocument();
+});
 async function create() { await review(); fireEvent.click(screen.getByRole('button', { name: 'Add comment' })); fireEvent.change(screen.getByRole('textbox', { name: 'New comment' }), { target: { value: row.content } }); }
 beforeEach(() => { vi.mocked(workRequest).mockReset(); vi.mocked(watchIdentity).mockReset().mockImplementation(() => vi.fn()); });
 afterEach(() => { configureActivityTelemetry(false); vi.unstubAllGlobals(); });

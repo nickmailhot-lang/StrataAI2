@@ -14,6 +14,16 @@ function admit(metadata: (path: string, options: RequestInit) => Promise<Respons
   vi.stubGlobal('fetch', vi.fn((path: string, options: RequestInit) => path.endsWith('/me') ? Promise.resolve(respond(profile)) : metadata(path, options)));
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
+it('exposes classification from admitted attachment metadata only for Board administrators', async () => {
+  const fetch = vi.fn().mockResolvedValue(respond(page)); admit(fetch);
+  const ui = render(<CardAttachments {...props} canAdminister />);
+  fireEvent.click(screen.getByRole('button', { name: 'Show attachments' }));
+  await screen.findByRole('link', { name: 'External reference (opens in a new tab)' });
+  expect(screen.getByRole('button', { name: 'Retention classification for this Attachment' })).toBeEnabled();
+  expect(fetch).toHaveBeenCalledOnce();
+  ui.rerender(<CardAttachments {...props} canAdminister={false} />);
+  expect(screen.queryByRole('button', { name: 'Retention classification for this Attachment' })).not.toBeInTheDocument();
+});
 
 it.each([[1, 'Safety scan pending. File access is unavailable.'], [2, 'Safety scan complete.'],
   [3, 'File rejected by the safety scan. File access is unavailable.'], [4, 'Safety scan failed. File access is unavailable.']])('renders admitted file metadata and textual scan status %s without fetching or linking private bytes', async (scanStatus, status) => {

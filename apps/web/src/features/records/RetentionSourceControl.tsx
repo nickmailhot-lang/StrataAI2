@@ -4,7 +4,7 @@ import { WorkInputError, WorkRequestError } from '../../api/workManagement';
 import { readRetentionSourceReview, RetentionSourceClassificationIntent, type RetentionSourceKind,
   type RetentionSourceReceipt, type RetentionSourceReview } from './retentionSourceClient';
 import { completeRetentionSourceClassification, forgetRetentionSourceClassifications,
-  restoreRetentionSourceClassification, retainRetentionSourceClassification } from './retentionSourceRecovery';
+  forgetRetentionSourceClassificationForSource, restoreRetentionSourceClassification, retainRetentionSourceClassification } from './retentionSourceRecovery';
 import { ownsRecoveryFocus, parkRecoveryFocus } from '../kanban/focusRecovery';
 
 export type RetentionSourceControlProps = {
@@ -47,7 +47,7 @@ function SourceControl(props: RetentionSourceControlProps) {
     if (props.authority !== 'admitted') {
       ++epoch.current; controller.current?.abort(); setBusy(false);
       if (props.authority === 'denied') {
-        forgetRetentionSourceClassifications(props.actorId, props.organizationId);
+        forgetRetentionSourceClassificationForSource(props.actorId, props.organizationId, props.kind, props.recordId);
         setReview(undefined); setCategory(''); setJurisdiction(''); setConfirmed(false); setIntent(undefined);
         setError(undefined); setNotice(undefined); setCategoryError(undefined); setBlocked(false); setRefused(false);
       }
@@ -66,7 +66,11 @@ function SourceControl(props: RetentionSourceControlProps) {
   }
   function failure(value: unknown, pending: boolean) {
     if (value instanceof WorkRequestError && [401, 403, 404].includes(value.status)) {
-      forgetRetentionSourceClassifications(props.actorId, props.organizationId);
+      if (value.status === 401) forgetRetentionSourceClassifications(props.actorId, props.organizationId);
+      else {
+        const source = pending && intent ? intent.reviewed().review : { kind: props.kind, recordId: props.recordId };
+        forgetRetentionSourceClassificationForSource(props.actorId, props.organizationId, source.kind, source.recordId);
+      }
       setBlocked(true);
       setReview(undefined); setCategory(''); setJurisdiction(''); setConfirmed(false); setIntent(undefined);
       setNotice(undefined); setError(undefined); callbacks.current.accessLost(value); return;

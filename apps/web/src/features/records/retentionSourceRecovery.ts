@@ -1,6 +1,7 @@
 import { WorkInputError } from '../../api/workManagement';
 import { notificationUuid } from '../notifications/notificationInbox';
 import { RetentionSourceClassificationIntent } from './retentionSourceClient';
+import type { RetentionSourceKind } from './retentionSourceClient';
 
 const prefix = 'strataai:retention-source-classification:v1:';
 function scope(actor: string, organization: string) {
@@ -53,4 +54,30 @@ export function forgetOrganizationRetentionSourceClassifications(organization: s
       if (key?.startsWith(prefix) && key.endsWith(suffix) && notificationUuid(key.slice(prefix.length, -suffix.length))) sessionStorage.removeItem(key);
     }
   } catch { /* Definitive Organization withdrawal cannot depend on browser storage. */ }
+}
+export function forgetRetentionSourceClassificationForSource(actor: string, organization: string,
+  kind: RetentionSourceKind, recordId: string) {
+  try {
+    const original = restoreRetentionSourceClassification(sessionStorage, actor, organization);
+    if (!original) return;
+    const review = original.reviewed().review;
+    if (review.kind === kind && review.recordId === recordId.toLowerCase()) completeRetentionSourceClassification(sessionStorage, original);
+  } catch { /* Unknown/corrupt recovery remains closed until it can be verified. */ }
+}
+export function forgetRetentionSourceClassificationsForCard(actor: string, organization: string, cardId: string) {
+  try {
+    const original = restoreRetentionSourceClassification(sessionStorage, actor, organization);
+    if (original?.reviewed().review.cardId === cardId.toLowerCase()) completeRetentionSourceClassification(sessionStorage, original);
+  } catch { /* Unknown recovery remains closed until it can be verified. */ }
+}
+export function hasRetentionSourceRecovery(organization: string) {
+  if (!notificationUuid(organization)) return false;
+  const suffix = `:${organization.toLowerCase()}`;
+  try {
+    for (let index = 0; index < sessionStorage.length; index++) {
+      const key = sessionStorage.key(index);
+      if (key?.startsWith(prefix) && key.endsWith(suffix) && notificationUuid(key.slice(prefix.length, -suffix.length))) return true;
+    }
+  } catch { /* No original is exposed by an unavailable storage inventory. */ }
+  return false;
 }

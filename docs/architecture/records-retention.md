@@ -1519,3 +1519,37 @@ Full API regression and retained immutable-image CI acceptance are still require
 The MUI control remains to be composed into actual Card/Comment/Attachment views,
 then verified through maintained Production browser keyboard/mobile/AA flows.
 Other RECORDS requirements remain unfinished; PRD-70 stays open.
+
+## Classification entry points in actual source views
+
+The source-view integration supersedes the standalone-control stage above.
+Active Card details and archived Card details now expose the MUI classification
+disclosure using the actual Card identity and revision. Admitted, undeleted
+Comment rows and admitted Attachment metadata rows expose their own source
+identity and revision while retaining the owning Card/Board context. Archived
+classification does not enable operational editing or change a Card revision.
+
+Opening the disclosure checks the current account, Organization Owner/Admin
+authority and current Board view/administration authority before mounting the
+source review. Identity invalidation and parent-context changes retire admission;
+uncertain access hides private work and preserves the original command/draft.
+Hiding and reopening a disclosure preserves its unsent draft. The server remains
+authoritative for each review, confirmation and original-command retry.
+
+Recovery cleanup distinguishes definitive Organization/account withdrawal from
+denial on one source or Board. Source denial clears only its matching original;
+confirmed Board withdrawal clears the owning Card family, preserving an original
+for an unrelated Card. A Card boundary stays mounted when administration rights
+disappear, allowing a bounded Organization authority check even if its disclosure
+was never opened. An uncertain parent permission snapshot starts no withdrawal
+probe and cannot erase the retained original.
+
+Local verification on 2026-10-11: **90/90 focused component/client cases passed**,
+covering all three real source-view consumers, strict original command delivery,
+source-scoped cleanup, Organization role withdrawal before disclosure, Card-family
+cleanup, and uncertain parent withdrawal both before and after admission. Frontend
+types, changed-file lint and the production web build passed; the existing bundle
+size advisory remains. These
+are component/transport tests, not Production browser or WCAG acceptance. Actual
+desktop/mobile keyboard/AA flows and immutable-image CI acceptance remain open,
+alongside the other unfinished RECORDS requirements. PRD-70 remains open.

@@ -6,10 +6,12 @@ import { ActivityHistoryControl } from './ActivityHistoryControl';
 import { CardCommentsControl } from './CardCommentsControl';
 import { CardChecklists } from './CardChecklists';
 import { CardAttachments } from './CardAttachments';
+import { SourceRetentionEntry } from '../records/SourceRetentionEntry';
 
 type Scope = { organizationId: string; boardId: string; cardId: string };
 type Detail = Scope & { title: string; description: string | null; version: number };
 type Props = Scope & { unavailable: boolean; refreshSequence: string; reconnectSequence: number;
+  canAdminister?: boolean;
   onDenied: (error: Error) => void; onRefresh: () => void };
 const ignore = () => {};
 export function parseArchivedCardDetail(value: unknown, scope: Scope): Detail {
@@ -53,11 +55,14 @@ function Reader(props: Props) {
     <Alert severity="info">This Card or its List is archived. Details are read-only.</Alert>
     <Typography component="h3" variant="h6" sx={{ overflowWrap: 'anywhere' }}>{detail.title}</Typography>
     {detail.description && <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{detail.description}</Typography>}
+    <SourceRetentionEntry organizationId={props.organizationId} boardId={props.boardId}
+      cardId={props.cardId} cardVersion={detail.version} kind="card" recordId={props.cardId} sourceVersion={detail.version}
+      canAdminister={props.canAdminister ?? false} unavailable={props.unavailable} onRefresh={props.onRefresh} />
     <CardChecklists {...props} version={detail.version} />
     <CardAttachments {...props} version={detail.version} />
     <ActivityHistoryControl organizationId={props.organizationId} boardId={props.boardId} kind="CARD" targetId={props.cardId}
       unavailable={false} refreshSequence={props.refreshSequence} onDenied={props.onDenied} />
-    <CardCommentsControl {...props} version={detail.version} editable={false} disabled={false} canAdminister={false}
+    <CardCommentsControl {...props} version={detail.version} editable={false} disabled={false} canAdminister={props.canAdminister ?? false}
       onBusyChange={ignore} onRecoveryChange={ignore} />
   </Stack>;
 }

@@ -82,6 +82,16 @@ describe('PRD-70 source-context review and acknowledgment recovery control', () 
     expect(screen.queryByText('Private jurisdiction')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Review source classification' })).not.toBeInTheDocument();
   });
+  it('preserves another source original when the current source authority is denied', async () => {
+    const intent = RetentionSourceClassificationIntent.review(actor, review, 'private.category', 'Private jurisdiction', true, key);
+    retainRetentionSourceClassification(sessionStorage, intent);
+    const ui = render(<RetentionSourceControl {...props()} recordId={list} cardId={list} />);
+    await screen.findByRole('button', { name: 'Retry original classification' });
+    ui.rerender(<RetentionSourceControl {...props()} recordId={list} cardId={list} authority="denied" />);
+    await screen.findByText('Source classification access is unavailable.');
+    expect(restoreRetentionSourceClassification(sessionStorage, actor, organization)?.key).toBe(key);
+    expect(screen.queryByText('private.category')).not.toBeInTheDocument();
+  });
   it('blocks new delivery when recovery storage is corrupt', async () => {
     sessionStorage.setItem(`strataai:retention-source-classification:v1:${actor}:${organization}`, 'corrupt');
     const fetch = transport(); render(<RetentionSourceControl {...props()} />);

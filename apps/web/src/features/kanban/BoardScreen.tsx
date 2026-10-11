@@ -32,6 +32,7 @@ import { CardAttachments } from './CardAttachments';
 import { AttachmentManageControl } from './AttachmentManageControl';
 import { CardCoverControl } from './CardCoverControl';
 import { CardCommentsControl } from './CardCommentsControl';
+import { SourceRetentionEntry } from '../records/SourceRetentionEntry';
 import { ActivityHistoryControl } from './ActivityHistoryControl';
 import { CardCoverImage } from './CardCoverImage';
 import { UrlAttachmentCreateControl } from './UrlAttachmentCreateControl';
@@ -752,6 +753,7 @@ function BoardContent() {
               : cardId ? <ArchivedCardDetail organizationId={organizationId} boardId={boardId} cardId={cardId}
               unavailable={snapshotReading || !!loadError || !snapshot || busy} refreshSequence={`${reload}/${reconnectSequence}`}
               reconnectSequence={reconnectSequence} onDenied={clearDeniedScope}
+              canAdminister={snapshot.access.canAdminister}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
               : <Alert severity="info">This card is unavailable in this board.</Alert>
           ) : (
@@ -787,6 +789,7 @@ function BoardContent() {
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
             {cardId && <CardAttachments organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+              canAdminister={snapshot.access.canAdminister}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardChecklists reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
@@ -816,6 +819,10 @@ function BoardContent() {
               unavailable={snapshotReading || !!loadError}
               disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || commentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setCoverRecovery}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+            {cardId && <SourceRetentionEntry organizationId={snapshot.board.organizationId}
+              boardId={snapshot.board.id} cardId={card.id} cardVersion={card.version} kind="card" recordId={card.id}
+              sourceVersion={card.version} canAdminister={snapshot.access.canAdminister} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <CardCommentsControl reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               canAdminister={snapshot.access.canAdminister}

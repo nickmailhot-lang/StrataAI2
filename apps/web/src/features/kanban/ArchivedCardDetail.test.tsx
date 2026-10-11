@@ -8,6 +8,15 @@ const detail = { ...scope, title: 'Archived <script>🙂', description: 'Read-on
 const props = { ...scope, unavailable: false, refreshSequence: '1', reconnectSequence: 0, onDenied: vi.fn(), onRefresh: vi.fn() };
 const reply = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 afterEach(() => vi.unstubAllGlobals());
+it('offers explicit classification of an admitted archived Card independently from operational editing', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => String(input) === '/me' ? reply(profile) : reply(detail)));
+  const ui = render(<MemoryRouter><ArchivedCardDetail {...props} canAdminister /></MemoryRouter>);
+  await screen.findByText(detail.title);
+  expect(screen.getByRole('button', { name: 'Retention classification for this Card' })).toBeEnabled();
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  ui.rerender(<MemoryRouter><ArchivedCardDetail {...props} canAdminister={false} /></MemoryRouter>);
+  expect(screen.queryByRole('button', { name: 'Retention classification for this Card' })).not.toBeInTheDocument();
+});
 it('keeps retained checklists and attachments readable without child mutation controls while an archived parent is admitted', async () => {
   const at = '2026-10-04T08:00:00.123456Z'; const rank = '000000000000000000000000001000';
   const checklist = { id: id(5), organizationId: scope.organizationId, cardId: scope.cardId, title: 'Retained preparations',

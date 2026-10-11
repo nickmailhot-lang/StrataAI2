@@ -10,6 +10,7 @@ import { commentMassMentionScopes, selectedCommentMentions, type CommentMentionS
 import { activityEvent, activityResult } from './activityTelemetry';
 import { formatUserDateTime } from '../auth/userDateTime';
 import { watchIdentity } from '../auth/identityLive';
+import { SourceRetentionEntry } from '../records/SourceRetentionEntry';
 
 type Preferences = { locale: string; timezone: string };
 type Review = { actor: string; page: CardCommentPage; cursor?: string; preferences: Preferences };
@@ -208,6 +209,10 @@ function CommentsControl(props: CardCommentsProps) {
         {review.page.items.map(item => <Stack key={item.id} spacing={0.5}>
           <Typography variant="caption" sx={{ overflowWrap: 'anywhere' }}>{item.authorId.toLowerCase() === review.actor.toLowerCase() ? 'You' : `Account ${item.authorId}`} · {formatUserDateTime(item.createdAt, review.preferences) ?? 'Date unavailable'}{item.editedAt ? ' · Edited' : ''}</Typography>
           <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{item.deletedAt ? 'Comment body removed.' : item.content}</Typography>
+          {item.deletedAt === null && <SourceRetentionEntry organizationId={props.organizationId}
+            boardId={props.boardId} cardId={props.cardId} cardVersion={props.version} kind="cardComment" recordId={item.id}
+            sourceVersion={item.version} canAdminister={props.canAdminister ?? false} unavailable={props.unavailable}
+            expectedActor={review.actor} onRefresh={props.onRefresh} />}
           {item.deletedAt === null && item.authorId.toLowerCase() === review.actor.toLowerCase() && <Stack direction={{ xs: 'column', sm: 'row' }}>
             <Button data-comment-action="edit" data-comment-id={item.id} disabled={disabled || !props.editable || !review.page.canComment} onBlur={blur} onClick={event => stage(item, false, event.currentTarget)}>Edit comment</Button>
             <Button data-comment-action="remove" data-comment-id={item.id} disabled={disabled || !props.editable || !review.page.canComment} onBlur={blur} onClick={event => stage(item, true, event.currentTarget)}>Remove comment body</Button>
