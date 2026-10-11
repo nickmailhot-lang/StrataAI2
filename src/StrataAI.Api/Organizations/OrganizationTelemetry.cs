@@ -45,6 +45,7 @@ public sealed class OrganizationTelemetry
             ("/organizations/{organizationId:guid}/operational-lifecycle", "PATCH") => "operational_lifecycle_change",
             ("/organizations/{organizationId:guid}/configuration", "GET") => "configuration_read",
             ("/organizations/{organizationId:guid}/configuration", "PATCH") => "configuration_change",
+            ("/organizations/{organizationId:guid}/configuration/usage", "GET") => "configuration_usage",
             ("/organizations/{organizationId:guid}/configuration/history", "GET") => "configuration_history",
             ("/organizations/{organizationId:guid}/configuration/events", "GET") => "configuration_replay",
             ("/organizations/{organizationId:guid}/configuration/activity", "GET") => "configuration_activity",

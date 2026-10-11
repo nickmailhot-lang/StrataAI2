@@ -19,6 +19,15 @@ public static class OrganizationConfigurationEndpoints
 
     public static void MapOrganizationConfigurationEndpoints(this RouteGroupBuilder group)
     {
+        group.MapGet("/{organizationId:guid}/configuration/usage", async (Guid organizationId,
+            HttpContext context, OrganizationConfigurationService service, CancellationToken ct) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = Actor(context); if (actor is null) return Error("session_unavailable");
+            var result = await service.ReadUsageAsync(organizationId, actor.Value, ct);
+            return result.Succeeded ? Results.Ok(result.Value) : Error(result.ErrorCode);
+        });
+
         group.MapGet("/{organizationId:guid}/configuration/activity", async (Guid organizationId,
             HttpContext context, OrganizationConfigurationService service,
             OrganizationConfigurationActivityService activity, CancellationToken ct) =>

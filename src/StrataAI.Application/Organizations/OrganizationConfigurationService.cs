@@ -9,6 +9,8 @@ namespace StrataAI.Application.Organizations;
 
 public sealed record OrganizationConfigurationView(Guid OrganizationId, long Version,
     OrganizationConfigurationRecord? Revision);
+// Read-only analytics projection, not an audit source or a persisted entity.
+public sealed record OrganizationConfigurationUsage(Guid OrganizationId, bool Adopted, long CommittedChangeCount);
 public sealed record OrganizationConfigurationHistoryPage(Guid OrganizationId,
     IReadOnlyList<OrganizationConfigurationRecord> Items, long? NextBeforeVersion);
 
@@ -23,6 +25,20 @@ public sealed class OrganizationConfigurationService(IOrganizationStore organiza
         {
             var revision = await configurations.ReadAsync(organization, ct);
             return OrganizationOperation<OrganizationConfigurationView>.Success(new(organization, revision?.Version ?? 0, revision));
+        }, ct);
+
+    public Task<OrganizationOperation<OrganizationConfigurationUsage>> ReadUsageAsync(Guid organization,
+        Guid actor, CancellationToken ct = default) => Owned(organization, actor, async () =>
+        {
+            var revision = await configurations.ReadAsync(organization, ct);
+            // Every committed configuration increments its retained revision exactly
+            // once. Reads, refused writes and original receipt replay do not change it.
+            // Reuse the owning transaction's current pre/post-IO authority fences;
+            // never enumerate history or expose configuration values to analytics.
+            if (revision is not null && (revision.OrganizationId != organization || revision.Version < 1))
+                return OrganizationOperation<OrganizationConfigurationUsage>.Failure("configuration_source_unavailable");
+            return OrganizationOperation<OrganizationConfigurationUsage>.Success(new(organization,
+                revision is not null, revision?.Version ?? 0));
         }, ct);
 
     public Task<OrganizationOperation<OrganizationConfigurationHistoryPage>> ReadHistoryAsync(Guid organization,

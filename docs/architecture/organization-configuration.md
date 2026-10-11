@@ -1,6 +1,6 @@
 # Organization configuration — PRD-27
 
-This describes configuration under implementation for [PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28). Estimated work remaining: **25%**. Configuration validation/storage, private replay/Activity, MUI review/history/recovery and operational lifecycle workflows have scoped evidence. Local restricted Production checks cover independent Portal access, archived-record/configuration-history preservation through Worker terminal deletion, session expiry, HTTP logout ordering and separate Worker delivery/restart. Maintained desktop/phone tests also verify distinct Owner/Admin configuration attribution, draft and keyboard-review recovery, independent logout and accessibility scans in Demo mode. The comparison region accepts keyboard focus and scrolling. Maintained desktop/phone checks in Demo and restricted Production also cover invalid unsent drafts through failed admission and recovery, cancellation focus, and actual membership removal while the account session remains valid. Fixed configuration client observations have component, API and native original-retry/privacy evidence. Lifecycle client observations have focused component/stream/API and desktop/phone original-retry/reconnection/privacy evidence in both Demo and isolated restricted Production PostgreSQL/Worker runs; actual release ingestion remains required. A scoped [HTTP latency fixture](organization-configuration-latency.md) meets the 500 ms p95 target locally with all configuration fields and bounded collections. Complete current-source regressions, remaining retention/reference and data/permission consistency, full UX/observability and exact-image release acceptance remain required. Earlier sections record historical increments; their percentages and pending items do not describe the current release state. See the [complete acceptance map](prd-27-acceptance.md).
+This describes configuration under implementation for [PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28). Estimated work remaining: **24%**. Configuration validation/storage, private replay/Activity, MUI review/history/recovery and operational lifecycle workflows have scoped evidence. Local restricted Production checks cover independent Portal access, archived-record/configuration-history preservation through Worker terminal deletion, session expiry, HTTP logout ordering and separate Worker delivery/restart. Maintained desktop/phone tests also verify distinct Owner/Admin configuration attribution, draft and keyboard-review recovery, independent logout and accessibility scans in Demo mode. The comparison region accepts keyboard focus and scrolling. Maintained desktop/phone checks in Demo and restricted Production also cover invalid unsent drafts through failed admission and recovery, cancellation focus, and actual membership removal while the account session remains valid. Fixed configuration client observations have component, API and native original-retry/privacy evidence. Lifecycle client observations have focused component/stream/API and desktop/phone original-retry/reconnection/privacy evidence in both Demo and isolated restricted Production PostgreSQL/Worker runs; actual release ingestion remains required. A scoped [HTTP latency fixture](organization-configuration-latency.md) meets the 500 ms p95 target locally with all configuration fields and bounded collections. Complete current-source regressions, remaining retention/reference and data/permission consistency, full UX/observability and exact-image release acceptance remain required. Earlier sections record historical increments; their percentages and pending items do not describe the current release state. See the [complete acceptance map](prd-27-acceptance.md).
 
 ## Reviewed configuration and historical meaning
 
@@ -1115,3 +1115,41 @@ multi-user/phone behavior, actual hosted Worker/Production races, historical and
 independent Portal access, remaining data/retention and full release acceptance
 are required next. **47% estimated PRD-27 work remaining**; no numbered criterion
 or linked scenario is closed by the server stream.
+
+
+## Organization-scoped adoption and committed use
+
+`GET /organizations/{id}/configuration/usage` returns only `organizationId`,
+`adopted` and `committedChangeCount`. A currently admitted Owner/Admin may read
+it for an active Organization; private `no-store` caching applies. This is a
+read-only Application projection under the owning transaction with current
+account, membership and lifecycle checks before and after storage IO. Other
+Organizations, demoted members and inactive Organizations receive safe denial.
+No configuration values, actor/event/correlation references, dates, policy
+sources or labels are included.
+
+`adopted` becomes true at the first committed configuration revision.
+`committedChangeCount` is the retained current revision number: configuration
+commits start at one and increment exactly once under the version precondition
+and atomic history/receipt transaction. Replaying an original receipt after a
+later commit returns its original acknowledgment without incrementing this
+count. Failed commands and reads do not increment it. Suspending/deactivating
+then reactivating an Organization preserves it. The projection uses a bounded
+current-record lookup rather than loading unbounded history. Existing
+configuration records and revision rules establish its meaning; it introduces
+no persistent analytics entity, migration, runtime privilege or datastore.
+The original revision/audit sources remain authoritative.
+
+Server request, failure and latency observations still use the existing fixed
+operator labels; `configuration_usage` names the new read operation. Tenant
+identifiers and configuration values stay out of those labels. Global client
+observations describe browser interactions; this authenticated report describes
+committed configuration adoption/use for its owning Organization. These are
+different measures and must retain their explicit definitions in reporting.
+
+The maintained [Production CI fixture](../../scripts/ci/test-organization-configuration-usage.sh)
+verifies the three-field response, private/no-store headers, first/later commits,
+original-receipt replay, invalid/stale rejection, inactivity/restoration, foreign
+and anonymous denial. It runs against the built release API in the command job.
+Local native restricted Production evidence is recorded in the
+[acceptance map](prd-27-acceptance.md#organization-scoped-adoption-and-committed-use).

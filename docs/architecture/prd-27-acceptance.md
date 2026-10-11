@@ -1,6 +1,6 @@
 # Organization Types and configuration acceptance — PRD-27
 
-PRD-27 remains open, with **25% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest terminal-history, distinct-account realtime, accessibility, configuration telemetry and scoped latency results are recorded at the end. Complete exact-image CI, retention/reference consistency, UX and observability requirements are still required.
+PRD-27 remains open, with **24% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest terminal-history, distinct-account realtime, accessibility, configuration telemetry and scoped latency results are recorded at the end. Complete exact-image CI, retention/reference consistency, UX and observability requirements are still required.
 
 Recipient-security components now include an owning-transaction coordinator with
 current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
@@ -43,7 +43,7 @@ delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
 source/persistence evidence without closing Activity, recipient replay/SignalR
 or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
-[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **25%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
+[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **24%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
 Source CI recorded for `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
 passes **880/880 Domain tests** and **801/801 API host tests**, with zero failed
@@ -539,3 +539,42 @@ retention/hold, Organization adoption analytics and remaining data/permission
 consistency are required before closure. **25% estimated PRD-27 work remaining**;
 no numbered acceptance criterion or linked scenario closes solely from this
 increment.
+
+
+## Organization-scoped adoption and committed use
+
+The authenticated usage report now exposes configured adoption and the number
+of committed configuration changes for the owning Organization without content.
+Its Application projection reuses active Owner/Admin and account authority
+before/after IO, rejects invalid/foreign source records, and derives the count
+from the contiguous retained revision state. HTTP responses contain exactly
+three documented fields with private/no-store caching. Existing operator metrics
+receive only the fixed `configuration_usage` operation label. No new persistent
+entity, SQL migration or runtime privilege is introduced.
+
+All **5/5 focused Linux API cases** pass, zero failures/skips/timeouts, with all
+**818 backend/test hashes matching**. These verify unconfigured zero use, adoption
+and later commits, original retry after a later revision, stale/invalid rejection,
+repeated reads, exact content-free response keys, foreign/anonymous denial,
+Admin admission/demotion with a still-valid account, post-IO account withdrawal,
+and invalid/foreign sources. Initial compilation found a misnamed test helper;
+the corrected fresh API/test build passes with zero warnings/errors.
+
+An isolated native Production HTTP run with fresh migrated PostgreSQL and
+canonical restricted runtime roles passes the actual two-commit/retry/rejection
+workflow and both suspension/deactivation followed by reactivation. All **1,892
+captured repository hashes match**. Owned API/schema/database/roles/credential
+files and the disposable PostgreSQL instance were removed; original PostgreSQL
+was preserved. This compiled-asset runtime proves the scoped SQL/HTTP behavior,
+not immutable release-image execution. The retained Production usage shell
+fixture is mandatory in CI; Bash syntax, workflow parsing and diff checks pass,
+but that exact fixture still requires release execution.
+
+A fresh complete **842-case API run** now captures the usage increment after
+its successful compilation. The earlier **837-case run** remains live for its
+original backend scope and predates these three implementation files and one
+new test file; do not treat it as current-source proof. The **2,384-case frontend
+run** retains unchanged frontend sources. Current full regressions, complete
+exact-image CI, retention/hold and remaining data/permission consistency are
+still required. **24% estimated PRD-27 work remaining**; no numbered acceptance
+criterion or linked scenario closes solely from this increment.
