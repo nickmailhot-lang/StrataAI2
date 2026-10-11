@@ -618,3 +618,12 @@ security/SBOM, Collector ingestion or the required CI gate. PRD-70's legal hold,
 policy, disposition, redaction and export implementations remain absent; retained
 configuration history does not establish them. **24% estimated PRD-27 work
 remaining**, unchanged; no numbered criterion or linked scenario is closed.
+
+The previously running API regressions have now terminated: 837/837 and 842/842
+passed with no failed, skipped, aborted or timed-out cases. They retain their
+captured source scopes; the 842-case capture reports one changed file after
+migration 142 readiness was added, so it does not verify that later change.
+The retention increment has separate fresh compilation, schema/migration and
+Production readiness evidence in [records retention](records-retention.md).
+Policy storage now exists; runtime policy administration and legal-hold
+ enforcement remain pending. PRD-27 remains open at **24% estimated work remaining**.

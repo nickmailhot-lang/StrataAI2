@@ -181,3 +181,12 @@ API/Worker readiness requires ledger 127. The
 [history integrity record](notification-event-history.md) links completed full
 migration/refusal, all-127-ledger readiness and security verification to pending
 native producer/consumer and current build-once release acceptance.
+
+Migration 142 introduces private record-retention policy headers, immutable
+revisions and actor-bound retry receipts with forced RLS. Deferred source guards
+require complete header/history/receipt/audit provenance at commit; namespaces
+and historical attribution remain retained. No default policy is invented.
+API/Worker readiness requires ledger 142; API receives SELECT only and Worker
+receives no policy access. See [records retention](records-retention.md) for
+schema integrity, full migration-runner and compiled Production readiness
+evidence, plus pending policy commands, holds and release-image acceptance.

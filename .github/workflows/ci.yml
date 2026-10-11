@@ -636,6 +636,8 @@ jobs:
 
       - name: Verify installed configuration identities, relationships and restricted capabilities
         run: bash scripts/ci/test-organization-configuration-schema.sh
+      - name: Retention policy schema and restricted capabilities
+        run: bash scripts/ci/test-record-retention-policy-schema.sh
 
       - name: Health, readiness and SPA deep-link smoke tests
         shell: bash

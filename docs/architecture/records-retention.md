@@ -1,8 +1,8 @@
 # Records retention contracts — PRD-70
 
 [PRD-70](https://github.com/nickmailhot-lang/StrataAI2/issues/71) remains open.
-Estimated work remaining: **96%**. The initial Domain policy, hold and disposition
-contracts are implemented and tested. They are not registered in API/Worker
+Estimated work remaining: **92%**. Domain policy, hold and disposition contracts
+and private policy persistence are implemented and tested. Commands are not registered in API/Worker
 flows: no runtime hold, policy administration, redaction, export or disposition
 workflow is complete. This shared boundary is also required by
 [PRD-20](https://github.com/nickmailhot-lang/StrataAI2/issues/21) and the remaining
@@ -49,12 +49,12 @@ policy. An explicit immutable flag preserves records even with a due destructive
 policy. That flag must come from the authoritative record's current domain
 state, never from a request to dispose it.
 
-## Canonical entity definitions and pending persistence
+## Canonical entity definitions and persistence
 
-These are Domain contracts. The relational design below defines their intended
-ownership, cardinality and retention meaning for PRD-20. No migration, RLS
-policy, database privilege, uniqueness guard or persistence adapter exists yet.
-They must be implemented and tested before any runtime feature is enabled.
+Migration [142](../../db/migrations/142_record_retention_policies.sql) implements
+private policy headers, immutable revisions and retry receipts. Hold persistence
+and owning runtime adapters remain pending. The table below describes the broader
+contracts; planned hold references must be implemented before hold enforcement.
 
 | Contract | Identity and ownership | Version/lifecycle and retained meaning |
 | --- | --- | --- |
@@ -75,9 +75,9 @@ and immutable event attribution after account/membership deactivation; labels
 and acting capacity belong to the historical audit/publication snapshot rather
 than a current membership join.
 
-The future current policy namespace must enforce one active revision per
+The persisted current policy namespace enforces one retained identity per
 Organization/class/normalized category/jurisdiction scope, including the null
-jurisdiction scope. The owning selector must resolve a specific jurisdiction
+jurisdiction scope. A policy cannot move namespaces. The future owning selector must resolve a specific jurisdiction
 and Organization-wide applicability deterministically; it may not silently
 choose the shortest retention period. Explicit selection and stale-selection
 recovery still require implementation and tests. Planned indexes support that
@@ -89,6 +89,32 @@ class/category/record selectors as documented above. Entity records and sources
 are private; forced RLS, tenant-safe FKs and current confidentiality guards are
 required at persistence and HTTP boundaries.
 
+## Policy storage and integrity
+
+`record_retention_policies` has primary key `(tenant_id, id)` and selects its
+exact current immutable history revision. `record_retention_policy_history`
+has primary key `(tenant_id, policy_id, version)`; revisions advance contiguously
+and preserve creation time. Deferred foreign keys and final-state triggers require
+the header, revision, authenticated actor's retry receipt and audit source to
+commit together. Orphan revisions and missing receipts are rejected atomically.
+Category keys use ASCII case normalization; jurisdiction keys use the existing
+configuration namespace normalization. Null jurisdiction has its own reserved
+scope; blank normalized jurisdictions are rejected.
+
+History insertion validates an active owning Organization and an active Owner
+or Admin membership under locks, with exact membership version, actor label and
+acting capacity snapshots. Later profile changes preserve those historical
+values. The generated `RECORD_RETENTION_POLICY_CHANGED` audit contains only
+version, record class, action and acting capacity; source and notes stay private.
+Receipts bind the exact revision, actor, key, fingerprint and source clock, with
+a 24-hour expiry boundary. Reserved retry keys and revisions cannot be deleted.
+
+All three tables use forced tenant RLS and restrictive tenant-safe references.
+The API has SELECT only; the Worker has no access. Neither has write grants or
+permission to call internal trigger routines. API/Worker readiness requires
+migration 142. No default policy is fabricated during upgrade. Storage permission
+does not establish HTTP authorization or enable a policy command.
+
 ## Acceptance evidence and complete remaining scope
 
 [RecordRetentionTests.cs](../../tests/StrataAI.Domain.Tests/RecordRetentionTests.cs)
@@ -97,12 +123,24 @@ passes **971/971**, zero failures, skipped, aborted or timed-out cases. Both
 captures match all **820 backend/test source hashes**. Fresh compilation passes
 with zero warnings/errors; owned terminal test containers were removed.
 
-This supports only policy validation and disposition/hold decision primitives
+The final disposable PostgreSQL check passed with **1,899 captured source files**
+and zero mismatches. It exercised policy namespace and version refusal,
+atomic source/receipt integrity, historical attribution, immutable history,
+cross-tenant and unscoped disclosure refusal, and canonical API/Worker capability
+checks. The unchanged full maintained migration runner also passed, including
+repeat execution and its synthetic failure/serialization cases. These checks are
+now required by the build-once integration workflow. Fresh whole-solution
+compilation passed without warnings or errors. A compiled Production API returned
+503 `runtime_database_schema_incompatible` after ledger 142 was removed and
+recovered after it was restored. Owned fixtures were removed. These are local
+schema/compiled-runtime checks; exact release-image CI remains pending.
+
+This supports policy storage integrity, validation and disposition/hold decision primitives
 for RECORDS-FR-001/002/003. It does not close any numbered acceptance criterion
 or linked scenario. Required remaining work includes:
 
-- PostgreSQL schema/RLS, tenant-safe references, namespace constraints, indexes,
-  immutable revisions/receipts and restricted runtime adapters, with Demo parity.
+- Hold schema/RLS, typed tenant-safe record references and restricted policy/hold
+  runtime adapters, with Demo parity and policy selector acceptance.
 - Owning transaction admission, explicit elevated authorization, review/concurrency,
   complete hold lookup and current lock ordering across every disposition path.
 - Applied/released hold and policy administration commands, historical actor/capacity
