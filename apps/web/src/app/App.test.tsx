@@ -6,6 +6,7 @@ const lifecycle = vi.hoisted(() => ({ watch: vi.fn<(options: {
   unavailable(): void; accountUnavailable(): void;
 }) => () => void>(() => vi.fn()) }));
 vi.mock('../features/organizations/organizationLifecycleLive', () => ({ watchOrganizationLifecycle: lifecycle.watch }));
+vi.mock('../features/organizations/operationalLifecycleLive', () => ({ watchOperationalLifecycle: () => () => {} }));
 beforeEach(() => lifecycle.watch.mockClear());
 
 afterEach(() => { vi.unstubAllGlobals(); sessionStorage.clear(); });

@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Alert, Box, Button, CircularProgress, Stack } from '@mui/material';
 import { ThemeProvider, useTheme } from '@mui/material/styles';
 import { Link, useParams } from 'react-router-dom';
-import { workRequest, WorkRequestError } from '../api/workManagement';
+import { boundedWorkRead, workRequest, WorkRequestError } from '../api/workManagement';
+import { isNotificationProfile } from '../features/notifications/notificationInbox';
+import { lifecycleUuid } from '../features/organizations/operationalLifecycle';
+import { watchOperationalLifecycle } from '../features/organizations/operationalLifecycleLive';
 
 type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previouslyAdmitted?: boolean };
 
@@ -16,6 +19,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
   const scope = `${surface}:${organizationId ?? ''}`;
   const [result, setResult] = useState<Result>();
   const [retry, setRetry] = useState(0);
+  const generation = useRef(0);
   // Mount the boundary before its children so a Portal's first layout effect
   // can resolve this container instead of falling back to document.body.
   const [content, setContent] = useState<HTMLDivElement | null>(null);
@@ -37,6 +41,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
       if (retired || pending) return;
       if (!organizationId) { setResult({ scope, status: 'denied' }); return; }
       const controller = new AbortController(); pending = controller;
+      const currentGeneration = generation.current;
       let deadline: ReturnType<typeof setTimeout> | undefined;
       let abort: (() => void) | undefined;
       try {
@@ -51,9 +56,9 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
         ]);
         if (admission?.organizationId !== organizationId || admission.surface !== surface)
           throw new Error('Invalid admission');
-        if (!retired) setResult({ scope, status: 'admitted' });
+        if (!retired && currentGeneration === generation.current) setResult({ scope, status: 'admitted' });
       } catch (reason) {
-        if (!retired) {
+        if (!retired && currentGeneration === generation.current) {
           const status = reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status) ? 'denied' : 'error';
           setResult(previous => ({ scope, status, previouslyAdmitted: status === 'error' && previous?.scope === scope
             && (previous.status === 'admitted' || previous.previouslyAdmitted === true) }));
@@ -69,6 +74,40 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
     const interval = setInterval(refresh, 10_000);
     window.addEventListener('focus', refresh);
     return () => { retired = true; clearInterval(interval); window.removeEventListener('focus', refresh); pending?.abort(); };
+  }, [organizationId, surface, scope, retry]);
+  useEffect(() => {
+    // Portal grants are independent; an internal-member stream cannot admit it.
+    if (surface !== 'INTERNAL' || !lifecycleUuid(organizationId)) return;
+    let retired = false; let stop: (() => void) | undefined;
+    const controller = new AbortController();
+    const withdraw = (status: 'denied' | 'error') => {
+      if (retired) return;
+      ++generation.current;
+      setResult(previous => ({ scope, status, previouslyAdmitted: status === 'error' && previous?.scope === scope
+        && (previous.status === 'admitted' || previous.previouslyAdmitted === true) }));
+    };
+    void boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal).then(profile => {
+      if (retired || !isNotificationProfile(profile)) return;
+      stop = watchOperationalLifecycle({ organizationId, actorId: profile.id,
+        admit: async (page, signal) => {
+          if (page.status !== 'ACTIVE') return;
+          const admission = await workRequest<{ organizationId: string; surface: string }>(
+            `/organizations/${encodeURIComponent(organizationId)}/surface-access?surface=INTERNAL`, { signal,
+              headers: { 'X-StrataAI-Expected-Actor': profile.id } });
+          if (admission?.organizationId !== organizationId || admission.surface !== 'INTERNAL') throw new Error('Invalid admission');
+        },
+        update: page => {
+          if (retired) return;
+          ++generation.current;
+          setResult({ scope, status: page.status === 'ACTIVE' ? 'admitted' : 'denied' });
+        },
+        unavailable: () => withdraw('error'), denied: () => withdraw('denied'),
+      });
+    }).catch(error => {
+      if (error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) withdraw('denied');
+      // Existing bounded polling remains the fallback if stream bootstrap fails.
+    });
+    return () => { retired = true; controller.abort(); stop?.(); };
   }, [organizationId, surface, scope, retry]);
   if (!result || result.scope !== scope) return <CircularProgress aria-label="Checking Organization access" />;
   if (result.status === 'denied' && deniedContent) return deniedContent;

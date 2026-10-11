@@ -1,8 +1,56 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider, useParams } from 'react-router-dom';
 import { SurfaceAdmission } from './SurfaceAdmission';
 import { useState } from 'react';
 import { Dialog } from '@mui/material';
+import type { watchOperationalLifecycle } from '../features/organizations/operationalLifecycleLive';
+const operational = vi.hoisted(() => ({ options: undefined as Parameters<typeof watchOperationalLifecycle>[0] | undefined,
+  stop: vi.fn() }));
+vi.mock('../features/organizations/operationalLifecycleLive', () => ({
+  watchOperationalLifecycle: (options: Parameters<typeof watchOperationalLifecycle>[0]) => { operational.options = options; return operational.stop; },
+}));
+beforeEach(() => { operational.options = undefined; operational.stop.mockClear(); });
+
+const liveOrg = '55555555-5555-4555-8555-555555555555', liveActor = '22222222-2222-4222-8222-222222222222';
+const liveProfile = { id: liveActor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'UTC' };
+const livePage = { organizationId: liveOrg, actorId: liveActor, status: 'ACTIVE' as const, version: 3, afterVersion: 0,
+  nextVersion: null, pending: false, events: [] };
+function mountLive(surface: 'INTERNAL' | 'PORTAL' = 'INTERNAL') {
+  const router = createMemoryRouter([{ path: '/:organizationId', element: <SurfaceAdmission surface={surface}><Content /></SurfaceAdmission> }],
+    { initialEntries: [`/${liveOrg}`] }); render(<RouterProvider router={router} />); return router;
+}
+it.each(['SUSPENDED', 'DEACTIVATED'] as const)('withdraws operational content immediately for live %s and checks fresh admission on reactivation', async status => {
+  const fetcher = vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile)) : response(liveOrg));
+  vi.stubGlobal('fetch', fetcher); mountLive(); await screen.findByText(`Admitted ${liveOrg}`);
+  await waitFor(() => expect(operational.options).toBeDefined());
+  act(() => operational.options!.update({ ...livePage, status }));
+  expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
+  await act(async () => { await operational.options!.admit(livePage, new AbortController().signal); operational.options!.update(livePage); });
+  expect(await screen.findByText(`Admitted ${liveOrg}`)).toBeVisible();
+  expect(fetcher.mock.calls.filter(([path]) => path.includes('/surface-access'))).toHaveLength(2);
+});
+it('does not use internal lifecycle streams to admit the separate Portal', async () => {
+  const fetcher = vi.fn(async () => response(liveOrg, 'PORTAL')); vi.stubGlobal('fetch', fetcher); mountLive('PORTAL');
+  expect(await screen.findByText(`Admitted ${liveOrg}`)).toBeVisible(); expect(operational.options).toBeUndefined();
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+it('fences an older in-flight polling grant after live suspension', async () => {
+  let calls = 0; let finish!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile))
+    : ++calls === 2 ? new Promise<Response>(resolve => { finish = resolve; }) : response(liveOrg)));
+  mountLive(); await screen.findByText(`Admitted ${liveOrg}`); await waitFor(() => expect(operational.options).toBeDefined());
+  fireEvent.focus(window); await waitFor(() => expect(finish).toBeDefined());
+  act(() => operational.options!.update({ ...livePage, status: 'SUSPENDED' }));
+  await act(async () => finish(response(liveOrg)));
+  expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
+  expect(screen.getByText('Access to this Organization surface is unavailable.')).toBeInTheDocument();
+});
+it('keeps failed live transport hidden and withdraws it permanently on fresh denial', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile)) : response(liveOrg)));
+  mountLive(); await screen.findByText(`Admitted ${liveOrg}`); await waitFor(() => expect(operational.options).toBeDefined());
+  act(() => operational.options!.unavailable()); expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeVisible();
+  act(() => operational.options!.denied(404, false)); expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
+});
 
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 function Content() { const { organizationId } = useParams(); return <div>Admitted {organizationId}</div>; }
