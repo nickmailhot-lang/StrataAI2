@@ -20,6 +20,25 @@ internal sealed class InMemoryRetentionPolicyStore(IOrganizationStore organizati
     private readonly Dictionary<(Guid Organization, RetentionRecordClass Class, string Category, string Jurisdiction), Guid> _namespaces = [];
     private readonly HashSet<Guid> _eventIds = [];
 
+    public Task<IReadOnlyList<RecordRetentionPolicy>> ReadPoliciesAsync(Guid organization, Guid? after, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        if (after == Guid.Empty) throw new ArgumentOutOfRangeException(nameof(after));
+        return Task.FromResult<IReadOnlyList<RecordRetentionPolicy>>(_current.Where(x => x.Key.Organization == organization)
+            .Select(x => x.Value).Where(x => after is null || x.Id.CompareTo(after.Value) > 0).OrderBy(x => x.Id).Take(51).ToArray());
+    }
+
+    public Task<IReadOnlyList<RetentionPolicyRevision>> ReadHistoryAsync(Guid organization, Guid policy, long? beforeVersion, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        if (beforeVersion is <= 0) throw new ArgumentOutOfRangeException(nameof(beforeVersion));
+        return Task.FromResult<IReadOnlyList<RetentionPolicyRevision>>(_history.Where(x => x.Key.Organization == organization
+                && x.Key.Policy == policy && (beforeVersion is null || x.Key.Version < beforeVersion.Value))
+            .OrderByDescending(x => x.Key.Version).Take(51).Select(x => new RetentionPolicyRevision(x.Value.Source.Policy,
+                x.Value.Source.ActorId, x.Value.ActorLabel, x.Value.Source.MembershipId, x.Value.Source.MembershipVersion,
+                x.Value.Source.ActingCapacity, x.Value.Source.EventId)).ToArray());
+    }
+
     public Task<RecordRetentionPolicy?> ReadAsync(Guid organization, Guid policy, CancellationToken ct)
     {
         RequireScope(organization, ct);

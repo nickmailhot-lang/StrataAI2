@@ -200,6 +200,38 @@ Application service and cannot prove these later Demo or PostgreSQL changes.
 
 ## Acceptance evidence and complete remaining scope
 
+The owning Application service now supplies bounded policy-directory and retained
+history pages. Both adapters read at most 51 sources and return 50 items with a
+seek boundary: ascending policy UUID for the directory, descending retained
+revision for history. PostgreSQL uses the existing tenant/policy primary keys;
+Demo uses the same ordering and boundaries. History carries immutable actor label,
+actor/membership identities, membership version, acting capacity and event ID;
+it never joins today's profile or membership to rewrite the revision attribution.
+Retry fingerprints and keys are excluded from these read models.
+
+The service admits current Owner/Admin authority before cursor validation/private
+IO and rechecks it before disclosure. It rejects excess rows, duplicate or foreign
+directory identities, incomplete/noncontiguous revision pages, inconsistent current
+source, changed applicability, nonmonotonic clocks and invalid historical
+attribution. A missing policy returns a fixed not-found result; seeking below
+revision one returns an authorized empty page. These are Application read models;
+HTTP cursor transport, privacy headers, endpoints and MUI navigation remain pending.
+
+Fresh whole-solution compilation passed with zero warnings/errors; **11/11 focused
+Linux cases** passed with **826 backend/test hashes matching**. New maintained
+cases cross the 50-item boundary with 52 policies and 53 retained revisions,
+exclude another Organization's sources, check original attribution and exhausted
+boundaries, and refuse duplicate/foreign/incomplete/substituted sources and
+withdraw pages after authority loss during IO. A separate fresh local native
+PostgreSQL harness executed the actual directory/history queries and seek
+boundaries with retained attribution, alongside prior write/retry/concurrency/
+rollback checks. Its **826 source hashes matched** and independent committed
+graph/audit counters remained one header, three revisions, three receipts and
+three fixed body-free audit events. Its prospective write grants were fixture-local;
+canonical runtime provisioning and feature activation remain unchanged. Owned
+fixtures and credentials were removed. Neither running full API regression nor
+queued release CI is claimed as proof of these later source changes.
+
 [RecordRetentionTests.cs](../../tests/StrataAI.Domain.Tests/RecordRetentionTests.cs)
 passes **28/28 focused Linux cases**. The complete current Linux Domain suite
 passes **971/971**, zero failures, skipped, aborted or timed-out cases. Both

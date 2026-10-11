@@ -16,6 +16,11 @@ public sealed record RetentionPolicyWrite(RecordRetentionPolicy Policy, Guid Act
     Guid MembershipId, long MembershipVersion, OrganizationRole ActingCapacity,
     Guid EventId, string CorrelationId, RetentionPolicyReceipt Receipt);
 public enum RetentionPolicyWriteResult { Written, VersionConflict, NamespaceConflict, KeyConflict, SourceUnavailable }
+public sealed record RetentionPolicyRevision(RecordRetentionPolicy Policy, Guid ActorId, string ActorLabel,
+    Guid MembershipId, long MembershipVersion, OrganizationRole ActingCapacity, Guid EventId);
+public sealed record RetentionPolicyPage(Guid OrganizationId, IReadOnlyList<RecordRetentionPolicy> Items, Guid? NextAfter);
+public sealed record RetentionPolicyHistoryPage(Guid OrganizationId, Guid PolicyId,
+    IReadOnlyList<RetentionPolicyRevision> Items, long? NextBeforeVersion);
 
 // Implementations participate in the owning Organization transaction, append the
 // immutable audit/revision/receipt graph atomically and never open a nested unit.
@@ -23,6 +28,8 @@ public enum RetentionPolicyWriteResult { Written, VersionConflict, NamespaceConf
 public interface IRetentionPolicyStore
 {
     Task<RecordRetentionPolicy?> ReadAsync(Guid organization, Guid policy, CancellationToken ct);
+    Task<IReadOnlyList<RecordRetentionPolicy>> ReadPoliciesAsync(Guid organization, Guid? after, CancellationToken ct);
+    Task<IReadOnlyList<RetentionPolicyRevision>> ReadHistoryAsync(Guid organization, Guid policy, long? beforeVersion, CancellationToken ct);
     Task<RetentionPolicyReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct);
     Task<RetentionPolicyWriteResult> WriteAsync(long expectedVersion, RetentionPolicyWrite write, CancellationToken ct);
 }
@@ -31,6 +38,57 @@ public sealed class RetentionPolicyService(IOrganizationStore organizations,
     IRetentionPolicyStore policies, IOrganizationUnitOfWork unit,
     ICommandActorAuthorization actors, IClock clock)
 {
+    public Task<OrganizationOperation<RetentionPolicyPage>> ReadPoliciesAsync(Guid organization, Guid actor,
+        Guid? after, CancellationToken ct = default) => Owned(organization, actor, async () =>
+        {
+            if (after == Guid.Empty) return OrganizationOperation<RetentionPolicyPage>.Failure("invalid_retention_policy_cursor");
+            var rows = await policies.ReadPoliciesAsync(organization, after, ct);
+            var previous = after; var identities = new HashSet<Guid>();
+            if (rows.Count > 51) return OrganizationOperation<RetentionPolicyPage>.Failure("retention_policy_source_unavailable");
+            foreach (var row in rows)
+            {
+                if (!Valid(row, organization, row.Id) || !identities.Add(row.Id)
+                    || previous is { } prior && row.Id.CompareTo(prior) <= 0)
+                    return OrganizationOperation<RetentionPolicyPage>.Failure("retention_policy_source_unavailable");
+                previous = row.Id;
+            }
+            var items = rows.Take(50).ToArray();
+            return OrganizationOperation<RetentionPolicyPage>.Success(new(organization, items,
+                rows.Count > 50 ? items[^1].Id : null));
+        }, ct);
+
+    public Task<OrganizationOperation<RetentionPolicyHistoryPage>> ReadHistoryAsync(Guid organization,
+        Guid actor, Guid policy, long? beforeVersion, CancellationToken ct = default) => Owned(organization, actor, async () =>
+        {
+            if (beforeVersion is <= 0) return OrganizationOperation<RetentionPolicyHistoryPage>.Failure("invalid_retention_policy_cursor");
+            var current = policy == Guid.Empty ? null : await policies.ReadAsync(organization, policy, ct);
+            if (current is null) return OrganizationOperation<RetentionPolicyHistoryPage>.Failure("retention_policy_not_found");
+            if (!Valid(current, organization, policy)) return OrganizationOperation<RetentionPolicyHistoryPage>.Failure("retention_policy_source_unavailable");
+            var rows = await policies.ReadHistoryAsync(organization, policy, beforeVersion, ct);
+            var expected = beforeVersion is { } before ? Math.Min(current.Version, before - 1) : current.Version;
+            var events = new HashSet<Guid>();
+            var previousAt = current.UpdatedAt;
+            if (rows.Count != Math.Min(51L, expected)) return OrganizationOperation<RetentionPolicyHistoryPage>.Failure("retention_policy_source_unavailable");
+            foreach (var row in rows)
+            {
+                if (!Valid(row.Policy, organization, policy) || row.Policy.Version != expected--
+                    || row.Policy.CreatedAt != current.CreatedAt || row.Policy.UpdatedAt > current.UpdatedAt
+                    || row.Policy.UpdatedAt > previousAt || row.Policy.Version == current.Version && row.Policy != current
+                    || row.Policy.RecordClass != current.RecordClass
+                    || !string.Equals(row.Policy.Category, current.Category, StringComparison.OrdinalIgnoreCase)
+                    || !string.Equals(row.Policy.Jurisdiction, current.Jurisdiction, StringComparison.OrdinalIgnoreCase)
+                    || row.ActorId == Guid.Empty || row.MembershipId == Guid.Empty || row.MembershipVersion < 1
+                    || row.EventId == Guid.Empty || !events.Add(row.EventId)
+                    || row.ActingCapacity is not (OrganizationRole.Owner or OrganizationRole.Admin)
+                    || string.IsNullOrWhiteSpace(row.ActorLabel) || row.ActorLabel.Length > 160 || row.ActorLabel.Any(char.IsControl))
+                    return OrganizationOperation<RetentionPolicyHistoryPage>.Failure("retention_policy_source_unavailable");
+                previousAt = row.Policy.UpdatedAt;
+            }
+            var items = rows.Take(50).ToArray();
+            return OrganizationOperation<RetentionPolicyHistoryPage>.Success(new(organization, policy,
+                items, rows.Count > 50 ? items[^1].Policy.Version : null));
+        }, ct);
+
     public Task<OrganizationOperation<RecordRetentionPolicy?>> ReadAsync(Guid organization,
         Guid actor, Guid policy, CancellationToken ct = default) => Owned(organization, actor, async () =>
         {

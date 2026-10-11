@@ -16,6 +16,42 @@ internal sealed class PostgresRetentionPolicyStore(PostgresConnectionFactory con
 {
     private const string Fields = "h.policy_id,h.tenant_id,h.version,h.record_class,h.category,h.jurisdiction,h.anchor,h.retention_days,h.action,h.source,h.notes,h.created_at,h.updated_at";
 
+    public async Task<IReadOnlyList<RecordRetentionPolicy>> ReadPoliciesAsync(Guid organization, Guid? after, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        if (after == Guid.Empty) throw new ArgumentOutOfRangeException(nameof(after));
+        await using var session = await connections.OpenTenantSessionAsync(organization, ct);
+        await using var command = new NpgsqlCommand("SELECT " + Fields + " " + """
+            FROM record_retention_policies p JOIN record_retention_policy_history h
+            ON (h.tenant_id,h.policy_id,h.version)=(p.tenant_id,p.id,p.version)
+            WHERE p.tenant_id=@tenant AND (@after IS NULL OR p.id>@after) ORDER BY p.id LIMIT 51;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organization);
+        command.Parameters.AddWithValue("after", NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
+        var rows = new List<RecordRetentionPolicy>(); await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct)) rows.Add(Decode(reader));
+        return rows;
+    }
+
+    public async Task<IReadOnlyList<RetentionPolicyRevision>> ReadHistoryAsync(Guid organization, Guid policy, long? beforeVersion, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        if (beforeVersion is <= 0) throw new ArgumentOutOfRangeException(nameof(beforeVersion));
+        await using var session = await connections.OpenTenantSessionAsync(organization, ct);
+        await using var command = new NpgsqlCommand("SELECT " + Fields + """
+            ,h.actor_id,h.actor_label,h.membership_id,h.membership_version,h.acting_capacity,h.event_id
+            FROM record_retention_policy_history h WHERE h.tenant_id=@tenant AND h.policy_id=@policy
+            AND (@before IS NULL OR h.version<@before) ORDER BY h.version DESC LIMIT 51;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organization); command.Parameters.AddWithValue("policy", policy);
+        command.Parameters.AddWithValue("before", NpgsqlDbType.Bigint, (object?)beforeVersion ?? DBNull.Value);
+        var rows = new List<RetentionPolicyRevision>(); await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct)) rows.Add(new(Decode(reader), reader.GetGuid(13), reader.GetString(14), reader.GetGuid(15),
+            reader.GetInt64(16), reader.GetString(17) == "ORGANIZATION_OWNER" ? OrganizationRole.Owner
+                : reader.GetString(17) == "ORGANIZATION_ADMIN" ? OrganizationRole.Admin : throw new InvalidOperationException("Invalid retention attribution."), reader.GetGuid(18)));
+        return rows;
+    }
+
     public async Task<RecordRetentionPolicy?> ReadAsync(Guid organization, Guid policy, CancellationToken ct)
     {
         RequireScope(organization, ct);
