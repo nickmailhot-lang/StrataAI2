@@ -1,6 +1,6 @@
 # Organization Types and configuration acceptance — PRD-27
 
-PRD-27 remains open, with **41% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest restricted PostgreSQL concurrency result is recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
+PRD-27 remains open, with **40% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest Portal isolation and restricted PostgreSQL concurrency results are recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
 
 Recipient-security components now include an owning-transaction coordinator with
 current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
@@ -43,7 +43,7 @@ delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
 source/persistence evidence without closing Activity, recipient replay/SignalR
 or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
-[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **41%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
+[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **40%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
 Source CI recorded for `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
 passes **880/880 Domain tests** and **801/801 API host tests**, with zero failed
@@ -341,3 +341,9 @@ The repeatable CI equivalent is [test-organization-operational-lifecycle-deliver
 [OrganizationOperationalLifecycleConcurrencyContract.cs](../../tests/StrataAI.Persistence.Contracts/OrganizationOperationalLifecycleConcurrencyContract.cs) now runs in both the focused lifecycle executable and the complete persistence contract. It uses actual restricted PostgreSQL transactions, production module stores and real board-creation/lifecycle services, with synthetic actor/command context. An administrator fixture locks the existing parent, then observes actual `pg_stat_activity` lock waits to establish contender order. It tests both lock orders for suspension and deactivation without assuming a winner from an arbitrary delay.
 
 All four cases pass: board work admitted before inactivity remains committed and retained; work queued behind inactivity is rejected without board, Work event, queue or Board audit rows. Each successful lifecycle transition retains exactly one history row, receipt and event. The complete focused lifecycle/readiness/delivery/concurrency executable passes against restricted API/Worker roles with 1871 captured source files and zero mismatches at completion. The project builds with zero warnings/errors. Earlier failed runs retained missing fixture registrations for background jobs, identity dependencies and work command context; final composition uses the production modules plus explicit synthetic context, with unchanged invariants. This is database/Application concurrency proof, not HTTP session-race or complete release evidence. **41% estimated work remaining**; no acceptance criteria are closed by this increment alone.
+
+## Independent Portal grants across operational lifecycle changes
+
+Two actual Demo API-host cases now cover both suspension and deactivation with an internal Owner and a separate Portal-only recipient. The Owner issues a PORTAL/OWNER invitation through HTTP and the recipient accepts it through HTTP. The existing Portal grant remains stored during inactivity, while surface admission returns safe not-found. Reactivation restores Portal admission without creating internal membership, internal surface access, administrative lifecycle review, lifecycle replay access or mutation authority. Internal ownership never supplies an implicit Portal grant. Retrying the original lifecycle command after reactivation returns its original acknowledgment while the current parent stays Active at the later revision.
+
+The focused Linux API suite passes **23/23**, with no failures, skipped cases or timeouts and **815 captured backend/test source files matching** at completion. The API test project builds successfully. This proves the tested Demo HTTP authorization boundaries; it does not establish Production Portal parity, historical record access/retention-hold policy or complete immutable-image acceptance. The earlier full API capture predates these cases and current GitHub CI remains queued. **40% estimated work remaining**; no acceptance criteria or linked scenarios are closed by this increment alone.
