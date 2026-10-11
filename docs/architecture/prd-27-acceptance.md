@@ -258,3 +258,19 @@ Producer/schema, actual Worker discovery and lease-bound persistence, Demo
 delivery and authorized replay/realtime integration remain unfinished. This
 contract does not establish delivered events or immutable-image acceptance.
 **50% estimated work remaining**; all criteria/scenarios remain open.
+
+## Production operational lifecycle delivery increment
+
+Migration 141 now publishes operational lifecycle jobs atomically, preserves
+existing sources on upgrade and restricts delivery to exact live Worker leases.
+Typed tenant discovery and Worker registration are implemented; readiness requires
+141. Final restricted PostgreSQL contracts prove lease recovery, source/tenant
+refusal, original-clock redelivery, actor-deactivation survival, rollback,
+unrelated-job isolation and API capability denial. Full Domain 936/936 and full
+frontend 2,343/2,343 pass. The populated upgrade runner also passes, with unchanged
+SQL/script source and only a later expanded C# contract outside its scope.
+See [production operational lifecycle publication and delivery](organization-configuration.md#production-operational-lifecycle-publication-and-delivery)
+for exact evidence boundaries. Actual hosted Worker/Production session races,
+Demo delivery, authorized replay/realtime, historical/Portal access and remaining
+acceptance/release obligations are unfinished. **49% estimated work remaining**;
+no criterion or scenario is closed.

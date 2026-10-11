@@ -138,4 +138,6 @@ GRANT EXECUTE ON FUNCTION public.claim_invitation_issuer_authority(uuid),
  public.deliver_invitation_issuer_authority(uuid,uuid,uuid,uuid,uuid,integer) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.deliver_organization_configuration_event(uuid,uuid,uuid,uuid,uuid,uuid),
  public.discover_organization_configuration_scopes(uuid,integer),public.claim_organization_configuration_job(uuid) TO strataai_worker_runtime;
+GRANT EXECUTE ON FUNCTION public.deliver_organization_operational_lifecycle_event(uuid,uuid,uuid,uuid,uuid,uuid),
+ public.discover_organization_operational_lifecycle_scopes(uuid,integer),public.claim_organization_operational_lifecycle_job(uuid) TO strataai_worker_runtime;
 COMMIT;

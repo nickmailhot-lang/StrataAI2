@@ -8,6 +8,8 @@ using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Organizations;
 using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.WorkManagement;
+using StrataAI.Infrastructure.BackgroundJobs;
+using StrataAI.Application.BackgroundJobs;
 
 // Real restricted SQL/owning transactions; session admission is synthetic here.
 internal static class OrganizationOperationalLifecycleContract
@@ -18,7 +20,7 @@ internal static class OrganizationOperationalLifecycleContract
         public Task<bool> VerifyAsync(Guid actor, CancellationToken cancellationToken = default) => Task.FromResult(Active);
     }
     private static void Require(bool condition, string rule) { if (!condition) throw new InvalidOperationException(rule); }
-    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
+    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, string workerConnection, CancellationToken ct)
     {
         var organization = Guid.NewGuid(); var other = Guid.NewGuid(); var actor = Guid.NewGuid(); var stranger = Guid.NewGuid();
         await using (var seed = new NpgsqlCommand("""
@@ -149,6 +151,99 @@ internal static class OrganizationOperationalLifecycleContract
             catch (PostgresException exception) when (exception.SqlState is PostgresErrorCodes.CheckViolation or PostgresErrorCodes.ForeignKeyViolation) { rejected = true; }
             Require(rejected, "Status-only lifecycle change committed without a source.");
         }
+        await VerifyDeliveryAsync(admin, apiConnection, workerConnection, organization, actor, ct);
         Console.WriteLine("Restricted Organization lifecycle transitions, original receipts, administrative refusal, rollback and source-only commit guards passed.");
+    }
+
+    private static async Task VerifyDeliveryAsync(NpgsqlConnection admin, string apiConnection, string workerConnection,
+        Guid organization, Guid actor, CancellationToken ct)
+    {
+        await using var worker = new PostgresConnectionFactory(workerConnection);
+        var scopes = new PostgresOrganizationOperationalLifecycleScopeReader(worker);
+        Require((await scopes.ReadAsync(null, 100, ct)).Contains(organization), "Operational lifecycle scope was not discovered.");
+        var jobs = new PostgresBackgroundJobStore(worker, operationalLifecycleJobsOnly: true);
+        var delivery = new PostgresOrganizationOperationalLifecycleDeliveryStore(worker);
+        var workerId = Guid.NewGuid();
+        await using (var unrelated = new NpgsqlCommand("""
+            INSERT INTO background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,safe_metadata)
+            VALUES(@job,@tenant,'UNRELATED_PROVIDER','operational-lifecycle-unrelated',@actor,'unrelated-provider','unrelated-contract','{}');
+            """, admin))
+        {
+            unrelated.Parameters.AddWithValue("job", Guid.NewGuid()); unrelated.Parameters.AddWithValue("tenant", organization);
+            unrelated.Parameters.AddWithValue("actor", actor); await unrelated.ExecuteNonQueryAsync(ct);
+        }
+        var claim = await jobs.ClaimAsync(organization, workerId, ct);
+        Require(claim is not null && claim.JobType == OrganizationOperationalLifecycleDeliveryHandler.Type,
+            "Restricted Worker could not claim an operational lifecycle job.");
+        var eventId = OrganizationLifecycleDeliveryHandler.ParseEventId(claim!.SafeMetadataJson);
+        Require(!await delivery.MarkReadyAsync(claim with { LeaseId = Guid.NewGuid() }, eventId, ct), "Foreign lease delivered a lifecycle event.");
+        Require(!await delivery.MarkReadyAsync(claim with { ActorId = Guid.NewGuid() }, eventId, ct), "Foreign actor delivered a lifecycle event.");
+        Require(!await delivery.MarkReadyAsync(claim with { OrganizationId = Guid.NewGuid() }, eventId, ct), "Foreign tenant delivered a lifecycle event.");
+        Require(!await delivery.MarkReadyAsync(claim, Guid.NewGuid(), ct), "Foreign event reference delivered a lifecycle event.");
+        await using (var expire = new NpgsqlCommand("""
+            UPDATE background_jobs SET lease_expires_at=clock_timestamp()-interval '1 second',
+                updated_at=clock_timestamp(),version=version+1 WHERE tenant_id=@tenant AND id=@job;
+            """, admin))
+        { expire.Parameters.AddWithValue("tenant", organization); expire.Parameters.AddWithValue("job", claim.Id); await expire.ExecuteNonQueryAsync(ct); }
+        Require(!await delivery.MarkReadyAsync(claim, eventId, ct), "Expired lifecycle lease delivered an event.");
+        Require((await scopes.ReadAsync(null, 100, ct)).Contains(organization), "Expired lifecycle lease was not rediscovered.");
+        var recovered = await jobs.ClaimAsync(organization, workerId, ct);
+        Require(recovered is not null && recovered.Id == claim.Id && recovered.LeaseId != claim.LeaseId
+            && recovered.AttemptCount == claim.AttemptCount + 1, "Lifecycle lease recovery did not preserve its original job.");
+        Require(!await delivery.MarkReadyAsync(claim, eventId, ct), "Reclaimed lifecycle job accepted its previous lease.");
+        claim = recovered!;
+        // Committed facts survive a later parent revision and actor withdrawal.
+        await using (var withdraw = new NpgsqlCommand("UPDATE users SET status='DEACTIVATED' WHERE id=@actor", admin))
+        { withdraw.Parameters.AddWithValue("actor", actor); await withdraw.ExecuteNonQueryAsync(ct); }
+        try
+        {
+            await new OrganizationOperationalLifecycleDeliveryHandler(delivery).ExecuteAsync(claim, ct);
+            var first = await ReadyAtAsync();
+            Require(first is not null, "Operational lifecycle event did not become ready.");
+            Require(await delivery.MarkReadyAsync(claim, eventId, ct) && await ReadyAtAsync() == first,
+                "Lifecycle redelivery moved its original readiness clock.");
+        }
+        finally
+        {
+            await using var restore = new NpgsqlCommand("UPDATE users SET status='ACTIVE' WHERE id=@actor", admin);
+            restore.Parameters.AddWithValue("actor", actor); await restore.ExecuteNonQueryAsync(ct);
+        }
+        Require(await jobs.CompleteAsync(organization, claim.Id, claim.LeaseId, workerId, ct), "Lifecycle job completion failed.");
+        Require(!await delivery.MarkReadyAsync(claim, eventId, ct), "Completed lease remained a lifecycle delivery capability.");
+        var second = await jobs.ClaimAsync(organization, workerId, ct);
+        Require(second is not null, "Reactivation delivery was missing.");
+        await new OrganizationOperationalLifecycleDeliveryHandler(delivery).ExecuteAsync(second!, ct);
+        Require(await jobs.CompleteAsync(organization, second!.Id, second.LeaseId, workerId, ct), "Reactivation job completion failed.");
+        Require(await jobs.ClaimAsync(organization, workerId, ct) is null, "Rolled-back lifecycle publication left a queued job.");
+        await using (var unrelated = new NpgsqlCommand("""
+            SELECT count(*)=1 AND bool_and(state='PENDING' AND attempt_count=0)
+            FROM background_jobs WHERE tenant_id=@tenant AND job_type='UNRELATED_PROVIDER';
+            """, admin))
+        { unrelated.Parameters.AddWithValue("tenant", organization); Require(await unrelated.ExecuteScalarAsync(ct) is true, "Typed lifecycle dispatcher touched an unrelated provider job."); }
+        Require(!(await scopes.ReadAsync(null, 100, ct)).Contains(organization), "Completed lifecycle scope stayed eligible.");
+        await using (var proof = new NpgsqlCommand("""
+            SELECT count(*)=2 AND bool_and(ready_at IS NOT NULL AND ready_at>=created_at AND updated_at=ready_at)
+            FROM organization_operational_lifecycle_events WHERE tenant_id=@tenant;
+            """, admin))
+        { proof.Parameters.AddWithValue("tenant", organization); Require(await proof.ExecuteScalarAsync(ct) is true, "Lifecycle delivery clocks or rollback count differed."); }
+        await using var apiFactory = new PostgresConnectionFactory(apiConnection);
+        await using var apiSession = await apiFactory.OpenTenantSessionAsync(organization, ct);
+        await using var denied = new NpgsqlCommand("SELECT public.deliver_organization_operational_lifecycle_event(@tenant,@job,@actor,@worker,@lease,@event)", apiSession.Connection, apiSession.Transaction);
+        denied.Parameters.AddWithValue("tenant", organization); denied.Parameters.AddWithValue("job", claim.Id);
+        denied.Parameters.AddWithValue("actor", actor); denied.Parameters.AddWithValue("worker", workerId);
+        denied.Parameters.AddWithValue("lease", claim.LeaseId); denied.Parameters.AddWithValue("event", eventId);
+        var refused = false;
+        try { await denied.ExecuteScalarAsync(ct); }
+        catch (PostgresException error) when (error.SqlState == PostgresErrorCodes.InsufficientPrivilege) { refused = true; }
+        Require(refused, "API runtime borrowed the Worker lifecycle delivery capability.");
+        Console.WriteLine("Restricted operational lifecycle publication, typed discovery/claims, lease/source refusal, original-clock redelivery and API capability denial passed.");
+
+        async Task<DateTimeOffset?> ReadyAtAsync()
+        {
+            await using var query = new NpgsqlCommand("SELECT ready_at FROM organization_operational_lifecycle_events WHERE tenant_id=@tenant AND event_id=@event", admin);
+            query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("event", eventId);
+            var value = await query.ExecuteScalarAsync(ct);
+            return value is DateTime timestamp ? new DateTimeOffset(timestamp) : null;
+        }
     }
 }

@@ -889,3 +889,58 @@ discovery, runtime grants/readiness, Demo delivery, independently authorized
 replay/realtime and their integration/concurrency tests remain required before
 claiming event delivery. **50% estimated PRD-27 work remaining**; no acceptance
 criterion or linked scenario is closed.
+
+## Production operational lifecycle publication and delivery
+
+Migration 141 binds the body-free operational lifecycle envelope to its immutable
+history and AuditEvent and publishes a typed durable job in the same transaction.
+Existing envelopes retain their original JSON/history/receipt/source clocks and
+receive exactly one pending publication. Forced tenant RLS remains enabled.
+`ready_at` is a one-time delivery clock; `updated_at` is generated from readiness
+or the original source clock. API accounts cannot borrow delivery privileges.
+
+Restricted Worker delivery checks the exact Organization/job/actor/event,
+correlation, idempotency reference, worker and unexpired lease. It verifies the
+immutable history, preserves the first readiness timestamp on redelivery and
+rechecks the lease before commit. A committed fact remains deliverable after
+later parent revisions or original actor deactivation; subscriber access still
+requires an independent current authorization check. Completed, expired and
+superseded leases cannot publish.
+
+The separate Worker now registers the operational lifecycle handler and a bounded
+discovery loop. `STRATAAI_ORGANIZATION_OPERATIONAL_LIFECYCLE_DISCOVERY_ENABLED`
+defaults to enabled in Production; explicitly enabling it outside Production is
+rejected. Discovery returns at most 100 tenant identifiers, seeks and wraps, and
+finds pending or expired claims without requiring an active parent. Each pass
+uses forced tenant RLS and a dispatcher that claims only the operational job
+type/service pair, with count/time bounds and existing retry/backoff behavior.
+Runtime provisioning grants only the Worker the delivery/discovery/claim functions;
+API and Worker readiness require migration 141.
+
+Evidence: solution build passes without warnings/errors; the full Linux Domain
+suite passes **936/936**. Final restricted PostgreSQL contracts pass with **1,856
+matching source hashes**. They cover wrong lease/actor/tenant/event refusal,
+expired-lease rediscovery/reclaim and rejection of the previous lease, publication
+rollback, actor deactivation, original-clock redelivery, completion withdrawal,
+unrelated-provider job isolation and API function denial. All 141 migration ledger
+entries are individually refused/restored by both runtime accounts. These tests
+invoke the real restricted adapters and handler; they do not prove a deployed
+Worker process, Production HTTP sessions or recipient realtime delivery.
+
+The complete populated upgrade runner passes, including exact old envelope,
+history and receipt preservation, original clocks, one queued job per event,
+repeated execution, serialized migration runners and rollback/unrecorded rejection.
+Its frozen source predates only the final expanded C# persistence contract;
+migration/upgrade scripts are unchanged. An initial long-path setup failed before
+database creation; the shorter-path run passed. Owned terminal databases, roles,
+containers and credential files were removed; the original PostgreSQL was kept.
+
+The complete frontend run has now finished **2,343/2,343**, zero failed/pending,
+with 329 matching frontend source hashes and unchanged test timeouts. Earlier
+failed source runs remain recorded above. The older full HTTP API run and
+exact-image CI are still separate pending evidence.
+
+Demo delivery, independently authorized operational lifecycle replay/realtime,
+actual hosted Worker recovery/concurrency, inactive historical and Portal access,
+remaining data/retention and release acceptance remain required.
+**49% estimated PRD-27 work remaining**; no numbered criterion/scenario is closed.

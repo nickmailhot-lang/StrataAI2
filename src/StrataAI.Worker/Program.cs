@@ -76,6 +76,8 @@ if (runtime.Mode == RuntimeMode.Production)
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationMetadataDeliveryHandler>();
     builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationConfigurationDeliveryStore, StrataAI.Infrastructure.Organizations.PostgresOrganizationConfigurationDeliveryStore>();
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationConfigurationDeliveryHandler>();
+    builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationOperationalLifecycleDeliveryStore, StrataAI.Infrastructure.Organizations.PostgresOrganizationOperationalLifecycleDeliveryStore>();
+    builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.Organizations.OrganizationOperationalLifecycleDeliveryHandler>();
     builder.Services.AddSingleton<IInvitationRecipientAuthorityDeliveryStore, PostgresInvitationRecipientAuthorityDeliveryStore>();
     builder.Services.AddSingleton<IBackgroundJobHandler, InvitationRecipientAuthorityDeliveryHandler>();
     builder.Services.AddSingleton<IIdentityRetryCleanupStore, PostgresIdentityRetryCleanupStore>();
@@ -120,6 +122,19 @@ if (configurationDiscovery)
         StrataAI.Infrastructure.Organizations.PostgresOrganizationConfigurationScopeReader>();
     builder.Services.TryAddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
     builder.Services.AddHostedService<OrganizationConfigurationDiscoveryWorker>();
+}
+var operationalLifecycleDiscoverySetting = builder.Configuration["STRATAAI_ORGANIZATION_OPERATIONAL_LIFECYCLE_DISCOVERY_ENABLED"];
+var operationalLifecycleDiscovery = operationalLifecycleDiscoverySetting is null ? runtime.Mode == RuntimeMode.Production
+    : bool.TryParse(operationalLifecycleDiscoverySetting, out var operationalLifecycleEnabled) ? operationalLifecycleEnabled
+    : throw new InvalidOperationException("Organization operational lifecycle discovery setting must be true or false.");
+if (operationalLifecycleDiscovery && runtime.Mode != RuntimeMode.Production)
+    throw new InvalidOperationException("Organization operational lifecycle discovery requires Production mode.");
+if (operationalLifecycleDiscovery)
+{
+    builder.Services.AddSingleton<StrataAI.Application.Organizations.IOrganizationOperationalLifecycleScopeReader,
+        StrataAI.Infrastructure.Organizations.PostgresOrganizationOperationalLifecycleScopeReader>();
+    builder.Services.TryAddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
+    builder.Services.AddHostedService<OrganizationOperationalLifecycleDiscoveryWorker>();
 }
 var authorityDiscoverySetting = builder.Configuration["STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED"];
 var authorityDiscovery = authorityDiscoverySetting is null ? runtime.Mode == RuntimeMode.Production

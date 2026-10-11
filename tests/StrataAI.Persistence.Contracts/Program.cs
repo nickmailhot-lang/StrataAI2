@@ -33,7 +33,7 @@ await using var admin = new NpgsqlConnection(adminConnection); await admin.OpenA
 if (args.Contains("--organization-operational-lifecycle-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
-    await OrganizationOperationalLifecycleContract.RunAsync(admin,apiConnection,ct);
+    await OrganizationOperationalLifecycleContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
 if (args.Contains("--organization-configuration-delivery-only", StringComparer.Ordinal))
@@ -261,7 +261,7 @@ try
         await IdentityRevocationExpiryContract.RunAsync(admin,apiConnection,ct);
         await OrganizationCreationTimestampContract.RunAsync(admin,apiConnection,ct);
         await OrganizationConfigurationContract.RunAsync(admin,apiConnection,ct);
-        await OrganizationOperationalLifecycleContract.RunAsync(admin,apiConnection,ct);
+        await OrganizationOperationalLifecycleContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationConfigurationDeliveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
         await WorkArchiveHistoryContract.RunAsync(admin,apiConnection,ct);
         await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,workerConnection,ct);
