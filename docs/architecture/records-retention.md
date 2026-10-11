@@ -72,6 +72,49 @@ mismatches, and owned terminal containers were removed. This is Domain verificat
 not persistence, authorized runtime enforcement or immutable-image CI acceptance.
 PRD-70 remains open at **83% estimated work remaining**.
 
+### Owning hold command contract
+
+[RetentionHoldService.cs](../../src/StrataAI.Application/Records/RetentionHoldService.cs)
+defines apply, release and private read commands inside the existing owning
+Organization unit of work. Parent/account/current Owner or Admin admission
+precedes input validation or private store I/O. A required scope authorizer must
+resolve the typed owning record and its confidentiality under that transaction;
+an elevated Organization role cannot substitute for that decision. Apply checks
+the scope before receipt lookup. Reads, release and receipt recovery verify the
+retained scope; private scope denial also precedes release revision conflicts.
+Source identity, clocks, state and original evidence are validated before use.
+
+Actor-bound 24-hour receipts retain the exact original acknowledgment. Apply and
+release have distinct canonical fingerprints; changing the reviewed request cannot
+reuse its key. An apply acknowledgment can be recovered after release without
+reactivating the hold. Release recovery also cross-checks original application
+evidence and the exact retained release against the current head. Normal release
+uses compare-and-swap and preserves original application data. Write intent carries
+the authenticated actor, current membership/version/capacity, fresh event ID,
+correlation and exact receipt. Scope authority is rechecked around writing, and
+parent/account authority is checked before returning success. The owning unit must
+roll back the entire immutable graph when a final fence refuses success.
+
+This service is deliberately **unregistered** until Production/Demo atomic hold
+adapters and actual typed scope authorization exist. The interfaces are contracts,
+not proof of persistence or audit events. No permissive scope resolver, HTTP/Worker
+capability, disposal side effect or usable hold enforcement is introduced. Runtime
+adapters, database integrity, audit/publication, complete current hold lookup,
+review/recovery UI and the rest of PRD-70 remain required before closure.
+
+Verification: fresh whole-solution build passed with zero warnings/errors. The
+focused Linux API Records suite passed **23/23**, including five new maintained
+[hold command tests](../../tests/StrataAI.Api.Tests/RetentionHoldCommandTests.cs).
+These use the actual owning Organization unit and contract probes for hold storage
+and scope authorization. They establish original apply/release recovery, immutable
+application evidence, distinct write/audit intent, request/key conflicts and expiry,
+admission before private I/O, denial before protected revision conflicts, corrupt
+or future source refusal and final scope/account fences. They do **not** prove
+runtime scope resolution, adapter rollback, database persistence or audit emission.
+The capture matched **835 backend/test source hashes**, zero mismatches, and its
+owned terminal container was removed. Main CI/image acceptance remains pending.
+Estimated PRD-70 work remaining remains **83%**.
+
 The disposition decision refuses invalid or foreign policy/record/hold sources,
 incomplete hold lookup, immutable records, matching active holds, missing
 anchors and pending/overflowing deadlines. It accepts a server-owned
