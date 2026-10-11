@@ -22,7 +22,7 @@ export function watchOperationalLifecycle(options: {
   let connection: ReturnType<typeof createOperationalLifecycleConnection>;
   try { connection = options.connection ?? createOperationalLifecycleConnection(); }
   catch { options.unavailable(); return () => {}; }
-  let disposed = false, generation = 0, cursor = 0, attempt = 0;
+  let disposed = false, connectedOnce = false, generation = 0, cursor = 0, attempt = 0;
   let runtimeConfirmed = !!options.connection, retry: ReturnType<typeof setTimeout> | undefined;
   let subscription: { dispose(): void } | undefined;
   let admission: AbortController | undefined;
@@ -85,6 +85,8 @@ export function watchOperationalLifecycle(options: {
       }
       await account(lifetime.signal); if (!active(expected)) return;
       await connection.start(); if (!active(expected)) { if (disposed) await connection.stop(); return; }
+      if (connectedOnce) options.reconnected?.();
+      connectedOnce = true;
       subscribe();
     } catch (error) { fail(error, expected); }
   }

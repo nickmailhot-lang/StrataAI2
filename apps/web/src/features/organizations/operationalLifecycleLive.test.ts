@@ -11,16 +11,16 @@ const page = { organizationId: organization, actorId: actor, status: 'SUSPENDED'
 const frame = (value: unknown = page) => ({ organizationId: organization, userId: actor, page: value });
 type Observer = { next(value: unknown): void; error(error: unknown): void; complete(): void };
 function fixture(admit: Parameters<typeof watchOperationalLifecycle>[0]['admit'] = vi.fn(async () => {})) {
-  let observer!: Observer; let reconnect = () => {}; let reconnecting = () => {};
+  let observer!: Observer; let reconnect = () => {}; let reconnecting = () => {}; let close = () => {};
   const connection = { start: vi.fn().mockResolvedValue(undefined), stop: vi.fn().mockResolvedValue(undefined),
     stream: vi.fn(() => ({ subscribe: (value: Observer) => { observer = value; return { dispose: vi.fn() }; } })),
     onreconnected: (callback: () => void) => { reconnect = callback; },
-    onreconnecting: (callback: () => void) => { reconnecting = callback; }, onclose: vi.fn() };
+    onreconnecting: (callback: () => void) => { reconnecting = callback; }, onclose: (callback: () => void) => { close = callback; } };
   const update = vi.fn(), unavailable = vi.fn(), denied = vi.fn(), reconnected = vi.fn();
   const cleanup = watchOperationalLifecycle({ organizationId: organization, actorId: actor, admit, update, unavailable, denied, reconnected,
     connection: connection as unknown as ReturnType<typeof createOperationalLifecycleConnection> });
   return { connection, update, unavailable, denied, reconnected, admit, cleanup, next: (value: unknown) => observer.next(value),
-    previous: () => observer, reconnect: () => reconnect(), reconnecting: () => reconnecting() };
+    previous: () => observer, reconnect: () => reconnect(), reconnecting: () => reconnecting(), close: () => close() };
 }
 beforeEach(() => vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(profile)))));
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
@@ -97,4 +97,15 @@ it('reports reconnection only for a live connection and does not resurrect dispo
   expect(f.reconnected).toHaveBeenCalledTimes(1); expect(f.connection.stream).toHaveBeenCalledTimes(2);
   f.cleanup(); f.reconnect(); expect(f.reconnected).toHaveBeenCalledTimes(1);
   expect(f.connection.stream).toHaveBeenCalledTimes(2);
+});
+
+it('observes a successful restart after closed transport, excluding failed attempts and disposed callbacks', async () => {
+  const f = fixture(); await vi.waitFor(() => expect(f.connection.stream).toHaveBeenCalledTimes(1));
+  vi.useFakeTimers(); f.connection.start.mockRejectedValueOnce(new Error('Transport unavailable')); f.close();
+  await vi.advanceTimersByTimeAsync(1000); expect(f.reconnected).not.toHaveBeenCalled();
+  expect(f.connection.stream).toHaveBeenCalledTimes(1);
+  await vi.advanceTimersByTimeAsync(2000); expect(f.reconnected).toHaveBeenCalledTimes(1);
+  expect(f.connection.stream).toHaveBeenCalledTimes(2);
+  f.cleanup(); f.close(); await vi.advanceTimersByTimeAsync(30000);
+  expect(f.reconnected).toHaveBeenCalledTimes(1); expect(f.connection.stream).toHaveBeenCalledTimes(2);
 });

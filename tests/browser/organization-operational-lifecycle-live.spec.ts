@@ -34,6 +34,14 @@ for (const width of [1280, 390]) {
       restoreWorker = scopedBoardWorker(organization);
       const review = await peer.newPage(), home = await peer.newPage();
       const sockets = new Set<WebSocketRoute>(); const frames: WirePage[] = [];
+      const reports: { events: { action: string; kind: string; count: number; durationMs?: number }[] }[] = [];
+      const reportStatuses: number[] = [];
+      review.on('request', request => {
+        if (new URL(request.url()).pathname === '/me/activity-client-events' && request.method() === 'POST') reports.push(request.postDataJSON());
+      });
+      review.on('response', response => {
+        if (new URL(response.url()).pathname === '/me/activity-client-events') reportStatuses.push(response.status());
+      });
       await review.routeWebSocket('**/organizations/live/operational-lifecycle*', route => {
         sockets.add(route); route.connectToServer();
       });
@@ -83,6 +91,13 @@ for (const width of [1280, 390]) {
         && frame.events.length === 1 && frame.events[0].version === 3), { timeout: 30_000 }).toBe(true);
       await expect(home.getByRole('heading', { name, exact: true })).toBeVisible({ timeout: 30_000 });
       expect(await review.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      await expect.poll(() => reports.flatMap(report => report.events).some(row => row.action === 'organization_lifecycle_read' && row.kind === 'reconnect'), { timeout: 15_000 }).toBe(true);
+      await expect.poll(() => reportStatuses.length).toBe(reports.length); expect(reportStatuses.every(status => status === 204)).toBe(true);
+      const serializedReports = JSON.stringify(reports);
+      for (const secret of [organization, owner.user.id, recipient.user.id, name, email, 'SUSPENDED', 'ACTIVE', 'ORGANIZATION_ADMIN', path])
+        expect(serializedReports).not.toContain(secret);
+      for (const row of reports.flatMap(report => report.events)) expect(Object.keys(row).sort()).toEqual(row.durationMs === undefined
+        ? ['action', 'count', 'kind'] : ['action', 'count', 'durationMs', 'kind']);
       const logout = await peer.request.post('/auth/logout', { headers }); expect(logout.status()).toBe(204);
       await expect(review.getByText(name, { exact: true })).toHaveCount(0, { timeout: 10_000 });
       await expect(peerLaunch).toHaveCount(0);

@@ -1067,7 +1067,7 @@ jobs:
             cleanup() { "${compose[@]}" logs --no-color > demo-metadata-compose.log 2>&1 || true; "${compose[@]}" down --volumes --remove-orphans; }
           trap cleanup EXIT
           "${compose[@]}" up -d --wait --wait-timeout 180
-          npx playwright test tests/browser/organization-metadata-live.spec.ts tests/browser/organization-settings-live.spec.ts tests/browser/organization-member-lifecycle.spec.ts tests/browser/organization-deletion-completion.spec.ts tests/browser/recipient-invitation-lifecycle-authority.spec.ts tests/browser/organization-operational-lifecycle-live.spec.ts tests/browser/organization-configuration-distinct-accounts.spec.ts tests/browser/organization-configuration-telemetry.spec.ts
+          npx playwright test tests/browser/organization-metadata-live.spec.ts tests/browser/organization-settings-live.spec.ts tests/browser/organization-member-lifecycle.spec.ts tests/browser/organization-deletion-completion.spec.ts tests/browser/recipient-invitation-lifecycle-authority.spec.ts tests/browser/organization-operational-lifecycle-live.spec.ts tests/browser/organization-configuration-distinct-accounts.spec.ts tests/browser/organization-configuration-telemetry.spec.ts tests/browser/organization-operational-lifecycle-telemetry.spec.ts
           PLAYWRIGHT_JSON_OUTPUT_FILE=test-results/demo-reminders-report.json npx playwright test tests/browser/card-reminders.spec.ts --grep 'Demo seeded account' --reporter=list,json
 
       - name: Attachment upload and isolated Worker image publication through explicit private test providers
