@@ -1670,3 +1670,36 @@ checks passed; the existing bundle-size advisory remains. This is component/clie
 evidence. Production browser archived-source acceptance remains required in
 addition to the already completed six-case active-source/move/withdrawal flow.
 No backend, database capability or operational mutation contract changed.
+
+
+## Production browser archived-source classification
+
+The maintained source-classification specification additionally creates a real
+URL Attachment, archives the Attachment and its owning Card through versioned
+commands, and opens the actual archived Card deep link at 1280px and 390px.
+Keyboard review and explicit confirmation classify the archived Card at revision
+4 and archived Attachment at revision 2 using the owning Card revision 4 and
+List revision 1. Both actual server receipts retain the authenticated actor and
+source revision. Subsequent authoritative archived-detail/archive reads confirm
+that classification preserved those operational revisions and lifecycle states.
+Archived review exposes no editing, restore or delete controls. Both flows also
+pass the automated WCAG-tagged Axe checks and horizontal-overflow assertion.
+Confirmation assertions target the visible classification region, avoiding the
+hidden receipt notice retained by the previously reviewed source.
+
+Local expanded Production verification on 2026-10-11: **8/8 maintained cases
+passed**, including archived sources, three-source original reload recovery,
+real cross-Board movement and actual membership withdrawal. **1,377 browser
+source hashes and 1,970 native source hashes matched**, with zero mismatches.
+Fresh whole-solution build passed with zero warnings/errors; browser TypeScript
+passed. The capture used the current built web bundle containing the archived
+Attachment review control. Owned API/Worker containers, database, roles and
+private credentials were removed, preserving original PostgreSQL.
+
+Complete browser collection covers **380 cases in 143 files**, distributed
+**95/96/95/94** across four intact-file shards. The mandatory integration registry
+retains **124 steps across four groups/seven isolated executions**; all **212**
+workflow/shard regression tests passed. These local results do not establish
+retained immutable-image acceptance. Exact-commit build-once CI still requires
+verification; legal-hold disposition enforcement, redaction, secure export,
+privacy actions and the remaining Records requirements remain open.

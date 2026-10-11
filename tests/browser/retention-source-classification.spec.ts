@@ -16,6 +16,66 @@ async function sourceEntry(page: Page, kind: string) {
 }
 
 for (const width of [1280, 390]) {
+  test(`PRD-70 archived Card and Attachment classification remains independent of operational editing at ${width}px`, async ({ page, context }) => {
+    test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
+    const account = await registerNotificationAccount(context.request, {
+      email: `source-archive-${width}-${crypto.randomUUID()}@example.test`, password: 'source-archive-fixture-horse', displayName: 'Archive classification Owner',
+    }, process.env.STRATAAI_E2E_RUNTIME_MODE !== 'demo');
+    const created = await context.request.post('/organizations', { headers, data: { name: 'Archived source fixture' } });
+    expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
+    const boardResponse = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Retained source Board', visibility: 'PRIVATE' } });
+    expect(boardResponse.status()).toBe(201); const board = (await boardResponse.json()).id;
+    const listResponse = await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Retained source List' } });
+    expect(listResponse.status()).toBe(201); const list = (await listResponse.json()).id;
+    const cardResponse = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Archived classified Card' } });
+    expect(cardResponse.status()).toBe(201); const card = (await cardResponse.json()).id;
+    const added = await context.request.post(`/cards/${card}/attachments/url`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+      data: { title: 'Archived reference', url: 'https://example.test/archived-source', cardVersion: 1 } });
+    expect(added.status()).toBe(200); const attachment = (await added.json()).attachment;
+    expect((await context.request.post(`/cards/${card}/attachments/${attachment.id}/archive`, {
+      headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { cardVersion: 2, version: 1 },
+    })).status()).toBe(200);
+    expect((await context.request.post(`/cards/${card}/archive`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { version: 3 } })).status()).toBe(200);
+    const receipts: { actorId: string; reference: { recordId: string; sourceVersion: number } }[] = [];
+    page.on('response', async response => {
+      if (response.request().method() === 'POST' && new URL(response.url()).pathname.endsWith('/classification') && response.status() === 200)
+        receipts.push(await response.json());
+    });
+    const restoreWorker = scopedBoardWorker(org);
+    try {
+      await waitForBoardDelivery(context.request, board);
+      const cardPath = `/app/${org}/boards/${board}/cards/${card}`, reads = trackBoardReads(page, board, cardPath);
+      await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      await expect(page.getByText('This Card or its List is archived. Details are read-only.', { exact: true })).toBeVisible();
+      for (const source of [{ kind: 'card', id: card, version: 4 }, { kind: 'attachment', id: attachment.id, version: 2 }]) {
+        if (source.kind === 'attachment') await press(page, 'Review archived attachments');
+        await press(page, `Retention classification for this ${source.kind === 'card' ? 'Card' : 'Attachment'}`);
+        await press(page, 'Review source classification');
+        await expect(page.getByRole('textbox', { name: 'Record category', exact: false })).toBeFocused();
+        await expect(page.getByText(`Source revision ${source.version}; Card revision 4; List revision 1.`, { exact: true })).toBeVisible();
+        await expect(page.getByText('Source archived; Card archived; List active.', { exact: true })).toBeVisible();
+        await page.keyboard.insertText(`archived.${source.kind}`);
+        await page.getByRole('checkbox', { name: 'I reviewed the source evidence and confirm this classification', exact: true }).focus();
+        await page.keyboard.press('Space');
+        expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        for (const name of ['Save card', 'Manage attachments', 'Add link attachment', 'Restore attachment Archived reference', 'Delete attachment Archived reference'])
+          await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
+        await press(page, 'Confirm classification');
+        await expect(page.getByRole('region', { name: 'Source retention classification', exact: true })
+          .getByText('Classification confirmed. The original source and audit evidence are preserved.', { exact: true })).toBeVisible();
+        await expect.poll(() => receipts.some(receipt => receipt.reference.recordId === source.id && receipt.reference.sourceVersion === source.version
+          && receipt.actorId === account.user.id)).toBe(true);
+        await press(page, 'Hide retention classification');
+      }
+      expect(receipts).toHaveLength(2);
+      const retained = await context.request.get(`/boards/${board}/cards/${card}/archived-details`); expect(retained.status()).toBe(200);
+      expect((await retained.json()).version).toBe(4);
+      const archive = await context.request.get(`/cards/${card}/attachments/archive`); expect(archive.status()).toBe(200);
+      expect(await archive.json()).toMatchObject({ cardVersion: 4, canRestore: false, canDelete: false,
+        items: [{ id: attachment.id, version: 2, lifecycleState: 1 }] });
+    } finally { restoreWorker(); }
+  });
   test(`PRD-70 membership withdrawal clears pending source recovery without replay at ${width}px`, async ({ page, context, browser }) => {
     test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
     const owner = await browser.newContext({ baseURL: test.info().project.use.baseURL });
