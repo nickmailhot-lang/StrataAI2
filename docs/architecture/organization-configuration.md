@@ -1000,3 +1000,51 @@ Required remaining work includes realtime subscription/consumer integration and
 reconnect behavior, hosted Worker and Production HTTP race acceptance, inactive
 historical/independent Portal access, remaining data/retention and release evidence.
 **48% estimated PRD-27 work remaining**; no numbered criterion/scenario is closed.
+
+## Operational lifecycle SignalR stream
+
+`/organizations/live/operational-lifecycle` exposes `Watch(organizationId,
+afterVersion)` for current internal members. It uses the independently authorized
+replay service for Active, Suspended and Deactivated parents, retaining normal
+operational and Portal authorization boundaries. Each iteration authenticates
+the original session, reads a bounded page, authenticates again, then discards
+that earlier page and re-enters owning replay admission before delivery. This
+prevents session IO from carrying a captured page past membership withdrawal.
+
+Frames bind Organization and recipient user to the shared HTTP/SignalR wire page.
+Both transports use the same content-free projection; private names, saved actor
+captions, request correlation and retry keys are absent. The stream publishes an
+initial snapshot, changed current lifecycle/revision/pending state, published
+facts and periodic heartbeats. It advances only through returned ready events,
+drains bounded ready pages, waits at publication gaps and resumes from a supplied
+last event revision after reconnect. Session or membership denial closes the
+connection. One active subscription is allowed per connection; cancellation
+releases its ownership. Existing origin enforcement and transport buffer limits
+apply to the new route.
+
+The solution builds without warnings/errors. **21/21 focused lifecycle API cases**
+pass, including nine new real WebSocket scenarios: ordinary-member suspension
+delivery, membership removal/logout, missed reactivation on reconnect, 50/1
+stream paging, missing/foreign origin, foreign membership, subscription limits
+and cancellation, and controlled membership withdrawal during the session IO
+between page reads. The latter decorates actual session authentication and
+withdraws the real Demo membership after a committed source was captured; no
+captured stream item is received. **9/9 existing live-transport cases** also pass.
+Both runs capture 813 matching backend/test source hashes.
+
+Retained failures: the initial focused run passed 19/20, and the diagnostic run
+with the additional session-IO probe passed 20/21. Stack inspection located the
+failure in the shared test receiver's single-fragment assumption, while reading
+the 50-event page. The receiver now reassembles valid WebSocket fragments within
+its existing 131,072-byte bound before parsing a SignalR record. No test timeout
+or message-size limit was increased. The final 21-case and nine-case runs pass.
+Owned terminal fixtures were removed. Domain and PostgreSQL logic is unchanged
+from its preceding scoped evidence. The separate full API run predates these
+stream/receiver changes and remains active; exact-image CI is separate pending
+release evidence.
+
+MUI subscriber integration and account-switch/reconnect UI recovery, native
+multi-user/phone behavior, actual hosted Worker/Production races, historical and
+independent Portal access, remaining data/retention and full release acceptance
+are required next. **47% estimated PRD-27 work remaining**; no numbered criterion
+or linked scenario is closed by the server stream.

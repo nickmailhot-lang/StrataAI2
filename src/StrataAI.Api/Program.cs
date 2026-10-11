@@ -201,6 +201,11 @@ app.MapHub<OrganizationLifecycleRealtimeHub>("/organizations/live/lifecycle", op
         options.ApplicationMaxBufferSize = 131072;
         options.TransportMaxBufferSize = 4096;
     }).RequireAuthorization();
+app.MapHub<OrganizationOperationalLifecycleRealtimeHub>("/organizations/live/operational-lifecycle", options =>
+{
+    options.ApplicationMaxBufferSize = 131072;
+    options.TransportMaxBufferSize = 4096;
+}).RequireAuthorization();
 app.MapHub<OrganizationMetadataRealtimeHub>("/organizations/live/metadata", options =>
 {
     options.ApplicationMaxBufferSize = 131072;

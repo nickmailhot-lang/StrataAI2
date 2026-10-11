@@ -25,12 +25,7 @@ public static class OrganizationOperationalLifecycleEndpoints
                     System.Globalization.CultureInfo.InvariantCulture, out after))) return Error("invalid_organization_cursor");
             var result = await service.ReadAsync(organizationId, actor.Value, after, ct);
             if (!result.Succeeded) return Error(result.ErrorCode);
-            var page = result.Value!;
-            return Results.Ok(new { page.OrganizationId, page.ActorId, Status = State(page.Status), page.Version,
-                page.AfterVersion, page.NextVersion, page.Pending, Events = page.Events.Select(source => new {
-                    source.EventId, source.OrganizationId, source.ActorId, source.EventType, source.EntityType, source.EntityId,
-                    source.Version, PreviousStatus = State(source.PreviousStatus), Status = State(source.Status),
-                    source.ActingCapacity, source.CreatedAt }) });
+            return Results.Ok(OrganizationOperationalLifecycleTransport.Page(result.Value!));
         });
         group.MapGet("/operational-lifecycle-directory", async (HttpContext context,
             OrganizationOperationalLifecycleDirectoryService service, CancellationToken ct) =>

@@ -289,3 +289,17 @@ contracts pass. A later fixed telemetry label is covered by a successful rebuild
 Realtime consumer/reconnect integration, hosted Worker/Production HTTP races,
 historical/Portal access and remaining acceptance/release work are unfinished.
 **48% estimated work remaining**; all criteria and linked scenarios remain open.
+
+## Operational lifecycle server-stream increment
+
+A separate SignalR stream now delivers the same content-free projection as HTTP,
+with current session/membership fences after session IO, bounded ready-event
+advancement, reconnect positions, subscription ownership and existing origin
+protection. Real WebSocket focused API cases pass 21/21, including a controlled
+membership withdrawal between page reads; existing live transport cases pass
+9/9. See [operational lifecycle SignalR stream](organization-configuration.md#operational-lifecycle-signalr-stream)
+for evidence limits and retained receiver failures repaired without increasing
+timeouts or bounds. MUI consumers/account-switch recovery, native collaboration,
+hosted Worker/Production races, historical/Portal behavior and full release
+acceptance remain unfinished. **47% estimated work remaining**; all criteria and
+linked scenarios remain open.

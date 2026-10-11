@@ -152,10 +152,19 @@ public sealed partial class ApiHostTests
     private static async Task<JsonElement?> Frame(WebSocket socket, CancellationToken ct)
     {
         var buffer = new byte[131072];
-        var received = await socket.ReceiveAsync(buffer, ct);
-        if (received.MessageType == WebSocketMessageType.Close) return null;
-        Assert.True(received.EndOfMessage);
-        var text = Encoding.UTF8.GetString(buffer, 0, received.Count).TrimEnd('\u001e');
+        var length = 0;
+        ValueWebSocketReceiveResult received;
+        do
+        {
+            received = await socket.ReceiveAsync(buffer.AsMemory(length), ct);
+            if (received.MessageType == WebSocketMessageType.Close) return null;
+            Assert.Equal(WebSocketMessageType.Text, received.MessageType);
+            length += received.Count;
+            // ReceiveAsync may return a fragment even when the whole message
+            // fits the existing bound. Never parse a partial SignalR record.
+            Assert.True(received.EndOfMessage || length < buffer.Length);
+        } while (!received.EndOfMessage);
+        var text = Encoding.UTF8.GetString(buffer, 0, length).TrimEnd('\u001e');
         using var document = JsonDocument.Parse(text);
         return document.RootElement.Clone();
     }
