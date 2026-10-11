@@ -246,3 +246,15 @@ frontend and newer full API runs and immutable-image CI remain pending. The
 806/806 older API result applies only to its frozen source. Historical access,
 portal, Worker/realtime, Production concurrency and remaining acceptance are
 unfinished. **50% estimated work remaining**; all criteria/scenarios stay open.
+
+## Operational lifecycle delivery contract increment
+
+The Application dispatcher now has a distinct operational lifecycle capability,
+separate from deletion completion and configuration delivery. Twelve new cases
+cover capability substitution, invalid/private event references, unavailable
+sources and cancellation; the rebuilt full Domain suite passes 936/936.
+See [operational lifecycle delivery capability](organization-configuration.md#operational-lifecycle-delivery-capability).
+Producer/schema, actual Worker discovery and lease-bound persistence, Demo
+delivery and authorized replay/realtime integration remain unfinished. This
+contract does not establish delivered events or immutable-image acceptance.
+**50% estimated work remaining**; all criteria/scenarios remain open.

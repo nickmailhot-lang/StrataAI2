@@ -867,3 +867,25 @@ Worker delivery/replay and authorized realtime recovery, Production concurrency,
 remaining retention/data and release acceptance are still required.
 **50% estimated PRD-27 work remaining**; no numbered criterion or scenario closes
 from this directory increment.
+
+## Operational lifecycle delivery capability
+
+The Application delivery contract now distinguishes operational lifecycle events
+from the existing deletion-completion and configuration channels:
+`ORGANIZATION_OPERATIONAL_LIFECYCLE_EVENT_READY`, with service identity
+`organization-operational-lifecycle-delivery`. Its handler accepts only a complete
+owning job/actor/Organization/worker/lease scope and one body-free event UUID.
+Deletion, configuration and mixed service capabilities, malformed/private
+references, unavailable sources and cancellation cannot return successful
+dispatch. The storage contract requires binding the exact live lease to the
+immutable transition; retained attribution does not grant current subscriber
+access. A bounded scope-reader port prepares the separate Worker discovery loop.
+
+The rebuilt full Linux Domain suite passes **936/936**, with 803 captured
+backend/test source hashes matching. This adds twelve dispatcher cases. This
+contract is not registered as a running producer/Worker pipeline yet: schema 140
+still records publication intent only. Production lease-guarded publication,
+discovery, runtime grants/readiness, Demo delivery, independently authorized
+replay/realtime and their integration/concurrency tests remain required before
+claiming event delivery. **50% estimated PRD-27 work remaining**; no acceptance
+criterion or linked scenario is closed.
