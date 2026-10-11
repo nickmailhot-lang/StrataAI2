@@ -886,3 +886,11 @@ and on exit, including failure exits. It still requires the real restricted queu
 to reach `DELETED` and verifies unchanged configuration/lifecycle history and
 retained archive timestamps. Syntax validation alone does not establish this
 completion phase; current build-once CI execution remains required.
+
+Initial internal-surface admission also stays owned by its bounded HTTP check
+when the operational stream has not established a grant. An earlier stream
+transport failure cannot discard the pending response and strand an independently
+authorized PUBLIC Board behind a generic access error. Existing admitted content
+still withdraws on transport uncertainty, and definitive lifecycle denial still
+fences an older in-flight grant. Focused tests cover both initial HTTP outcomes;
+the current release browser replay is still required.

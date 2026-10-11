@@ -18,6 +18,8 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
   const organizationId = routeId?.toLowerCase();
   const scope = `${surface}:${organizationId ?? ''}`;
   const [result, setResult] = useState<Result>();
+  const currentResult = useRef<Result | undefined>(undefined);
+  currentResult.current = result;
   const [retry, setRetry] = useState(0);
   const generation = useRef(0);
   // Mount the boundary before its children so a Portal's first layout effect
@@ -82,6 +84,13 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
     const controller = new AbortController();
     const withdraw = (status: 'denied' | 'error') => {
       if (retired) return;
+      // Stream availability does not decide initial navigation admission.
+      // Let the bounded HTTP check finish, including a denial that mounts an
+      // independently authorized PUBLIC Board view. Withdraw an existing
+      // grant immediately when its live transport becomes uncertain.
+      const previous = currentResult.current;
+      if (status === 'error' && (previous?.scope !== scope
+        || previous.status !== 'admitted' && !previous.previouslyAdmitted)) return;
       ++generation.current;
       setResult(previous => ({ scope,
         // A stream transport failure cannot turn a definitive surface denial

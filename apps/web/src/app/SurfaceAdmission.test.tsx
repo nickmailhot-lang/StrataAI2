@@ -59,6 +59,22 @@ it('fences an older in-flight polling grant after live suspension', async () => 
   expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
   expect(screen.getByText('Access to this Organization surface is unavailable.')).toBeInTheDocument();
 });
+it.each([200, 404])('finishes initial HTTP admission after an earlier stream transport failure (%s)', async status => {
+  let finish!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me'
+    ? new Response(JSON.stringify(liveProfile)) : new Promise<Response>(resolve => { finish = resolve; })));
+  const router = createMemoryRouter([{ path: '/:organizationId', element: <SurfaceAdmission surface="INTERNAL"
+    deniedContent={<div>Independent Board view</div>}><Content /></SurfaceAdmission> }],
+  { initialEntries: [`/${liveOrg}`] });
+  render(<RouterProvider router={router} />);
+  await waitFor(() => expect(operational.options).toBeDefined());
+  act(() => operational.options!.unavailable());
+  expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
+  expect(screen.queryByText('Independent Board view')).not.toBeInTheDocument();
+  await act(async () => finish(status === 200 ? response(liveOrg) : new Response('{}', { status })));
+  expect(screen.getByText(status === 200 ? `Admitted ${liveOrg}` : 'Independent Board view')).toBeVisible();
+  expect(screen.queryByText('Access could not be checked. Try again.')).not.toBeInTheDocument();
+});
 it('keeps failed live transport hidden and withdraws it permanently on fresh denial', async () => {
   vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile)) : response(liveOrg)));
   mountLive(); await screen.findByText(`Admitted ${liveOrg}`); await waitFor(() => expect(operational.options).toBeDefined());
