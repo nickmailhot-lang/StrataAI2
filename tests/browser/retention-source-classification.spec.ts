@@ -16,6 +16,75 @@ async function sourceEntry(page: Page, kind: string) {
 }
 
 for (const width of [1280, 390]) {
+  test(`PRD-70 membership withdrawal clears pending source recovery without replay at ${width}px`, async ({ page, context, browser }) => {
+    test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
+    const owner = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+    let restoreWorker = () => {};
+    try {
+      const verified = process.env.STRATAAI_E2E_RUNTIME_MODE !== 'demo';
+      await registerNotificationAccount(owner.request, {
+        email: `source-withdraw-owner-${width}-${crypto.randomUUID()}@example.test`,
+        password: 'source-withdraw-owner-fixture', displayName: 'Source withdrawal Owner',
+      }, verified);
+      const email = `source-withdraw-admin-${width}-${crypto.randomUUID()}@example.test`;
+      const admin = await registerNotificationAccount(context.request, { email,
+        password: 'source-withdraw-admin-fixture', displayName: 'Source withdrawal administrator' }, verified);
+      const created = await owner.request.post('/organizations', { headers, data: { name: 'Source withdrawal fixture' } });
+      expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
+      const invitation = await owner.request.post(`/organizations/${org}/invitations`, { headers,
+        data: { email, surface: 'INTERNAL', targetRole: 'ADMIN' } });
+      expect(invitation.status()).toBe(201);
+      expect((await context.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
+      const boardResponse = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Private withdrawal Board', visibility: 'PRIVATE' } });
+      expect(boardResponse.status()).toBe(201); const board = (await boardResponse.json()).id;
+      const listResponse = await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Private source List' } });
+      expect(listResponse.status()).toBe(201); const list = (await listResponse.json()).id;
+      const cardResponse = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Private source before withdrawal' } });
+      expect(cardResponse.status()).toBe(201); const card = (await cardResponse.json()).id;
+      const path = `/organizations/${org}/retention-sources/card/${card}/classification`;
+      const writes: { body: string; key: string }[] = [];
+      await page.route(url => url.pathname === path, async route => {
+        const request = route.request(), response = await route.fetch(); expect(response.status()).toBe(200);
+        writes.push({ body: request.postData()!, key: request.headers()['idempotency-key'] });
+        await route.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"work_storage_unavailable"}' });
+      });
+      restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
+      const cardPath = `/app/${org}/boards/${board}/cards/${card}`, reads = trackBoardReads(page, board, cardPath);
+      await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+      await sourceEntry(page, 'card'); await press(page, 'Review source classification');
+      await expect(page.getByRole('textbox', { name: 'Record category', exact: false })).toBeFocused();
+      await page.keyboard.insertText('private.withdrawal');
+      await page.getByRole('checkbox', { name: 'I reviewed the source evidence and confirm this classification', exact: true }).focus();
+      await page.keyboard.press('Space'); await press(page, 'Confirm classification');
+      await expect(page.getByRole('button', { name: 'Retry original classification', exact: true })).toBeFocused();
+      expect(writes).toHaveLength(1);
+      const storageKey = `strataai:retention-source-classification:v1:${admin.user.id}:${org}`;
+      expect(await page.evaluate(key => sessionStorage.getItem(key) !== null, storageKey)).toBe(true);
+      const memberResponse = await owner.request.get(`/organizations/${org}/members/${admin.user.id}`);
+      expect(memberResponse.status()).toBe(200); const member = (await memberResponse.json()).member;
+      expect((await owner.request.delete(`/organizations/${org}/members/${admin.user.id}?expectedVersion=${member.version}`,
+        { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() } })).status()).toBe(204);
+      // Board deep links retain their own safe denial view after the outer
+      // Organization surface withdraws; require that authoritative Board state.
+      await expect(page.getByRole('alert').filter({ hasText: 'This board or action is unavailable.' })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByRole('button', { name: 'Retry original classification', exact: true })).toHaveCount(0);
+      await expect.poll(() => page.evaluate(key => sessionStorage.getItem(key), storageKey)).toBeNull();
+      expect(await page.locator('body').innerText()).not.toContain('Private source before withdrawal');
+      expect(await page.locator('body').innerText()).not.toContain('private.withdrawal');
+      expect(writes).toHaveLength(1);
+      const refused = await context.request.post(path, { headers: { ...headers, 'Idempotency-Key': writes[0].key }, data: JSON.parse(writes[0].body) });
+      expect(refused.status()).toBe(404); expect(await refused.text()).not.toContain('private.withdrawal');
+      const preserved = await owner.request.get(`/boards/${board}`); expect(preserved.status()).toBe(200);
+      expect((await preserved.json()).lists.flatMap((item: { cards: { id: string; version: number }[] }) => item.cards)
+        .find((item: { id: string }) => item.id === card).version).toBe(1);
+      const replacement = await owner.request.post(path, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: JSON.parse(writes[0].body) });
+      // A fresh actor/key cannot disclose or replace an existing classification.
+      expect(replacement.status()).toBe(404);
+      expect((await replacement.json()).code).toBe('retention_source_unavailable');
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    } finally { restoreWorker(); await owner.close(); }
+  });
   test(`PRD-70 original classification recovery retains its source Board after a real Card move at ${width}px`, async ({ page, context }) => {
     test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
     await registerNotificationAccount(context.request, {

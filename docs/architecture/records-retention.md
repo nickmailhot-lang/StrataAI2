@@ -1622,3 +1622,26 @@ The owned terminal API container was removed, preserving original PostgreSQL.
 This supersedes the earlier pending full-regression status. It does not establish
 retained immutable-image release acceptance: exact-commit CI remains to be
 verified. Other Records acceptance requirements remain open.
+
+## Production browser membership withdrawal
+
+The maintained source-classification specification additionally uses separate
+verified Owner and administrator accounts at both viewport widths. The
+administrator classifies an actual Card and loses its already-committed response.
+While the original remains in recovery, the Owner removes the membership through
+the real versioned command. The Board deep link renders its own safe denial view;
+classification retry and private Card/category content disappear, and the
+actor/Organization recovery slot is deleted. No automatic second POST occurs.
+An explicit replay by the removed administrator is refused. The Owner can still
+read the unchanged Card, but a fresh actor/key cannot replace or disclose the
+existing classification; the server returns its generic source-unavailable 404.
+
+Local expanded Production verification on 2026-10-11: **6/6 maintained cases
+passed**, covering all three sources, exact reload recovery, real cross-Board
+movement and actual membership withdrawal. **1,377 browser-capture and 1,970
+native-capture source hashes matched**. Fresh whole-solution build passed with
+zero warnings/errors; browser TypeScript passed. Complete browser collection
+covers **378 cases in 143 files**, distributed **95/96/93/94** across the four
+intact-file shards. Owned fixtures and private credentials were removed,
+preserving original PostgreSQL. Retained immutable-image CI and the remaining
+Records features still require acceptance; PRD-70 stays open.
