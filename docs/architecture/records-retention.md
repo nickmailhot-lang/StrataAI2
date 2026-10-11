@@ -1,7 +1,7 @@
 # Records retention contracts — PRD-70
 
 [PRD-70](https://github.com/nickmailhot-lang/StrataAI2/issues/71) remains open.
-Estimated work remaining: **92%**. Domain policy, hold and disposition contracts
+Estimated work remaining: **90%**. Domain policy, hold and disposition contracts
 and private policy persistence are implemented and tested. Commands are not registered in API/Worker
 flows: no runtime hold, policy administration, redaction, export or disposition
 workflow is complete. This shared boundary is also required by
@@ -133,8 +133,9 @@ provenance are refused. Correlation IDs are bounded and excluded from intent
 identity. Store writes receive current membership identity/version/capacity and
 an event ID, and must atomically persist the full audited source graph.
 
-This service is deliberately unregistered until transactional Demo parity,
-runtime capabilities, HTTP contracts and their acceptance checks exist.
+This service remains unregistered until runtime capabilities, HTTP contracts
+and their acceptance checks exist. The Demo store is registered as an internal
+transaction participant; no retention HTTP surface is enabled.
 The test probe is not an adapter and cannot establish persistence, audit or rollback
 semantics. Four focused Linux command tests passed after fresh whole-solution
 compilation (zero warnings/errors), with all 822 backend/test hashes matching.
@@ -167,6 +168,35 @@ This harness used **fixture-local prospective INSERT/UPDATE grants** after check
 canonical read-only provisioning. Those grants are not in runtime provisioning.
 The adapter remains unregistered, the Worker has no policy access, and this local
 compiled harness is not maintained release-image or complete HTTP acceptance.
+
+## Transactional Demo policy parity
+
+[InMemoryRetentionPolicyStore](../../src/StrataAI.Infrastructure/Records/InMemoryRetentionPolicyStore.cs)
+participates in the existing account/Organization and Work gates and rollback
+snapshots. It retains immutable policy revisions, original receipts, actor label,
+membership version and acting capacity, reserves per-Organization normalized
+class/category/jurisdiction namespaces, and requires an owning Organization
+command for reads and writes. Expired keys remain reserved rather than silently
+reused. No default policy is seeded. Historical snapshots do not join current
+membership values when replayed.
+
+The existing Demo audit store now admits retention events only with typed fixed
+metadata: positive version, record class, disposition action and acting capacity.
+Source, notes, category and jurisdiction never enter that metadata. Those audit
+facts share the Work rollback with policy history, receipts, namespace claims and
+event identities. Cancellation or a failed final authority fence restores all of
+them, allowing a genuinely rolled-back key/namespace to be used again.
+
+Fresh whole-solution compilation passed without warnings/errors. All **eight
+focused Linux retention service/adapter tests** passed, with **825 backend/test
+source hashes matching**. The three maintained Demo scenarios cover persisted
+refresh and original retry after competing versioned edits, normalized namespace
+collision, unchanged historical attribution after a real membership-version
+change, 256-character correlation IDs, fixed body-free audit metadata, complete
+final-authority rollback with key/namespace reclamation, and cancellation after
+write with audit rollback. A fresh full API regression captures this Demo source;
+its result remains pending. The earlier running regression captures the preceding
+Application service and cannot prove these later Demo or PostgreSQL changes.
 
 ## Acceptance evidence and complete remaining scope
 

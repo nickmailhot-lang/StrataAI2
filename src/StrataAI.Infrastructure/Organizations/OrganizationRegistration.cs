@@ -29,6 +29,9 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationConfigurationAttributionReader>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
             services.AddSingleton<IOrganizationConfigurationIntakeStore>(provider => provider.GetRequiredService<InMemoryWorkManagementStore>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
+            services.AddSingleton<StrataAI.Infrastructure.Records.InMemoryRetentionPolicyStore>();
+            services.AddSingleton<StrataAI.Application.Records.IRetentionPolicyStore>(provider => provider.GetRequiredService<StrataAI.Infrastructure.Records.InMemoryRetentionPolicyStore>());
+            services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<StrataAI.Infrastructure.Records.InMemoryRetentionPolicyStore>());
             services.AddSingleton<InMemoryOrganizationMetadataJournal>();
             services.AddSingleton<Func<InMemoryOrganizationMetadataJournal>>(provider => () => provider.GetRequiredService<InMemoryOrganizationMetadataJournal>());
             services.AddSingleton<IOrganizationMetadataEventReader>(provider => provider.GetRequiredService<InMemoryOrganizationMetadataJournal>());
