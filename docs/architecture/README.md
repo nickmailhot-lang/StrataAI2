@@ -100,3 +100,6 @@ retirement and the retained baseline and verification boundaries.
 
 [Card label support references](../board-label-api.md#card-label-public-failure-references)
 records disclosure/editing recovery and its source and native browser evidence.
+
+
+[Records retention contracts](records-retention.md) define the initial PRD-70 policy, hold and disposition rules, their canonical entity design and the complete remaining runtime/acceptance work.
