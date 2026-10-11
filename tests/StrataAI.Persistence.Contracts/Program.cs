@@ -34,6 +34,7 @@ if (args.Contains("--organization-operational-lifecycle-only", StringComparer.Or
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await OrganizationOperationalLifecycleContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationOperationalLifecycleConcurrencyContract.RunAsync(admin,apiConnection,ct);
     return;
 }
 if (args.Contains("--organization-configuration-delivery-only", StringComparer.Ordinal))
@@ -262,6 +263,7 @@ try
         await OrganizationCreationTimestampContract.RunAsync(admin,apiConnection,ct);
         await OrganizationConfigurationContract.RunAsync(admin,apiConnection,ct);
         await OrganizationOperationalLifecycleContract.RunAsync(admin,apiConnection,workerConnection,ct);
+        await OrganizationOperationalLifecycleConcurrencyContract.RunAsync(admin,apiConnection,ct);
     await OrganizationConfigurationDeliveryContract.RunAsync(admin,apiConnection,workerConnection,ct);
         await WorkArchiveHistoryContract.RunAsync(admin,apiConnection,ct);
         await OrganizationMetadataEventContract.RunAsync(admin,apiConnection,workerConnection,ct);

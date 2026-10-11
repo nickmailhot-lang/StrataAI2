@@ -1,5 +1,7 @@
 # Organization Types and configuration acceptance — PRD-27
 
+PRD-27 remains open, with **41% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest restricted PostgreSQL concurrency result is recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
+
 Recipient-security components now include an owning-transaction coordinator with
 current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
 purpose-separated role/account/membership-bound encrypted cursor. Fifteen focused
@@ -41,9 +43,9 @@ delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
 source/persistence evidence without closing Activity, recipient replay/SignalR
 or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
-[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **52%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
+[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **41%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
-Current-main source CI at `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
+Source CI recorded for `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
 passes **880/880 Domain tests** and **801/801 API host tests**, with zero failed
 or skipped cases. Metadata, web quality, PostgreSQL integration and the combined
 source gate also pass; the three immutable images have been built once. Their
@@ -333,3 +335,9 @@ An isolated PostgreSQL production fixture now passes with actual API and Worker 
 Two retained setup failures stopped before Worker launch: the loopback HTTP client did not forward Production's Secure session cookie. The successful isolated client explicitly sends its held cookie; the product's Secure cookie behavior remains enforced. The production fixture allows self-registration without a verification-email provider; newly created accounts are verified under that policy. This does not establish email provider delivery or public TLS behavior.
 
 The repeatable CI equivalent is [test-organization-operational-lifecycle-delivery.sh](../../scripts/ci/test-organization-operational-lifecycle-delivery.sh), with a typed-discovery Compose override using the retained Worker image. It is included in the exact-image command job. Bash syntax and workflow/fixture YAML checks pass; execution of this new release-image step remains pending. Current full API, remaining races/historical/Portal requirements and complete release gates remain open. **42% estimated work remaining**; no acceptance criterion is closed by this increment alone.
+
+## Lifecycle and operational-write concurrency
+
+[OrganizationOperationalLifecycleConcurrencyContract.cs](../../tests/StrataAI.Persistence.Contracts/OrganizationOperationalLifecycleConcurrencyContract.cs) now runs in both the focused lifecycle executable and the complete persistence contract. It uses actual restricted PostgreSQL transactions, production module stores and real board-creation/lifecycle services, with synthetic actor/command context. An administrator fixture locks the existing parent, then observes actual `pg_stat_activity` lock waits to establish contender order. It tests both lock orders for suspension and deactivation without assuming a winner from an arbitrary delay.
+
+All four cases pass: board work admitted before inactivity remains committed and retained; work queued behind inactivity is rejected without board, Work event, queue or Board audit rows. Each successful lifecycle transition retains exactly one history row, receipt and event. The complete focused lifecycle/readiness/delivery/concurrency executable passes against restricted API/Worker roles with 1871 captured source files and zero mismatches at completion. The project builds with zero warnings/errors. Earlier failed runs retained missing fixture registrations for background jobs, identity dependencies and work command context; final composition uses the production modules plus explicit synthetic context, with unchanged invariants. This is database/Application concurrency proof, not HTTP session-race or complete release evidence. **41% estimated work remaining**; no acceptance criteria are closed by this increment alone.
