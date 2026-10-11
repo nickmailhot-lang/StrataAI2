@@ -18,6 +18,37 @@ Validation rejects unknown JSON properties, control characters, unsupported time
 
 Each revision preserves configuration, Organization ID, revision version, the server's parent display-name/type/version snapshot, authenticated actor, event ID, correlation ID, original creation time and actual update time. Changing management company, jurisdiction or timezone preserves older values and timestamps in history. Historical parent snapshots do not replace the current canonical Organization record.
 
+## Complete field contract and enforcement
+
+The following camel-case fields are the complete configuration value contract. Optional fields accept null; provided text must be nonblank. Text limits count .NET UTF-16 code units. Control characters are refused; fields marked multiline allow carriage return, newline and tab. Empty collections are permitted, with at most 32 entries per collection.
+
+| Field | Required | Limit and rule |
+| --- | --- | --- |
+| `legalName` | Yes | 200; independent of Organization display name. |
+| `jurisdiction` | Yes | 120; registration namespace uses the documented invariant normalization. |
+| `timezone` | Yes | 128; UTC or a supported IANA timezone. |
+| `corporationIdentifier` | No | 120; normalized jurisdiction/identifier pair unique across current configurations. |
+| `civicAddress` | No | 1,000, multiline. |
+| `lotCount` | No | Integer 1–1,000,000. |
+| `fiscalYearEndMonth` | No | Integer 1–12; provided together with day. |
+| `fiscalYearEndDay` | No | Valid day in the selected month using leap year 2000; February 29 permitted. |
+| `agmCycleMonths` | No | Integer 1–1,200; records configuration, without inferring a statutory deadline. |
+| `depreciationReportCycleMonths` | No | Integer 1–1,200. |
+| `insuranceRenewalDate` | No | Calendar date represented as DateOnly; no timezone conversion. |
+| `managementCompanyName` | No | 200; older revisions retain the previous company. |
+| `emergencyContacts` | No | Up to 32 objects: required name 160, optional phone 80 and email 320. At least one phone/email; plain valid email without a display name. |
+| `defaultCategories` | No | Up to 32 nonblank labels, each 160; unique after trim with ordinal case-insensitive comparison. |
+| `defaultPriorities` | No | Same bounds and uniqueness as categories. |
+| `intakeBoardId` | No | Nonempty UUID; actual active Board in the owning Organization at approval. |
+| `intakeListId` | No | Nonempty UUID; requires Board; actual active List belonging to that Board and Organization. |
+| `jurisdictionPolicies` | No | Up to 32 objects: required key 64 ASCII letters/digits/underscore/hyphen/dot, required multiline value 2,000 and source 1,000, optional multiline notes 2,000. Keys ordinal case-insensitive unique within the revision. |
+
+The API rejects unknown/duplicate properties, invalid JSON types and an envelope larger than 98,304 bytes before command execution. Domain validation bounds the complete serialized configuration to 65,536 UTF-8 bytes and enforces the field rules above. Application and PostgreSQL store admission require current account, active Organization and Owner/Admin authority; the store validates configuration before writing and locks actual intake relationships in the owning transaction. Browser validation supplies review feedback and does not establish server authority.
+
+SQL independently enforces tenant-safe keys/references, normalized current registration uniqueness, revision/receipt/audit identity, positive versions, append-only history and atomic source publication. Its JSON and required-field guards supplement the full Domain rules; SQL does not duplicate every optional-field rule. Persisted revision JSON is bounded to 98,304 bytes and receipt JSON to 100,352 bytes because they include server attribution and acknowledgment envelopes. Generated relational columns preserve lookup/FK meaning without introducing an independently mutable policy or contact entity.
+
+The release check [installed-schema assertions](../../scripts/ci/assert-organization-configuration-schema.sql) runs after ordered migrations and canonical runtime-role provisioning. It reads PostgreSQL catalogs to verify four primary identities, 17 validated foreign-key edges with their deletion/defer semantics, four uniqueness constraints, forced RLS and API/Worker table/function privileges. It does not substitute for adversarial tenant/permission tests, field validation tests or retention-hold acceptance. Historical references remain restrictive; deactivated users and archived intake records retain their identity. Operational suspension, deactivation and terminal deletion have scoped preservation evidence below; a complete cross-PRD retention/hold policy remains required.
+
 ## Commands, permissions and recovery
 
 The Application service enters the existing Organization unit of work. It requires a current active account, active Organization and active Owner/Admin membership before private reads, history, validation responses or receipt recovery. It checks admission again before success; transaction failure rolls back all participating state. Governance titles and Organization classification do not confer configuration authority. No nested Organization transaction is introduced.
@@ -48,11 +79,11 @@ The namespace trims the .NET whitespace set and uses simple invariant uppercase,
 | Historical configuration revision | Primary key `(tenant_id, version)`; one retained revision per successful change. | Required actor references `users`; unique event identity references retained audit. Current and historical intake FKs preserve Board/List relationship identity. Updates/deletes are refused; history is private to current authorized administrators. Primary-key ordering supports descending bounded history. Retention/deactivation and operational deletion interactions still require full acceptance. |
 | `JurisdictionPolicy` | Embedded value identified by `(Organization, configuration revision, case-insensitive ASCII policy key)`. | Required key/value/source, optional notes; at most 32 per revision. Keys are unique within a revision. No separate policy table, independent lifecycle or unbounded policy query is introduced. A policy edit creates a new configuration revision; older values/source/notes retain historical meaning. Confidentiality, permission and retention follow the enclosing revision. |
 | Original change receipt | Primary key `(tenant_id, actor_id, key_id)`; unique `(tenant_id, version)` binds one receipt to its historical revision. | Required reviewed fingerprint, immutable original result and expiry; actor/user and revision references restrict deletion. Expiry is 24 hours for replay, not automatic key reuse or historical deletion. No update/delete capability is granted. |
-| Body-free event source | Primary key `(tenant_id, version)`; unique audit event ID. | Safe event/actor/entity/version/correlation/source-time fields and restrictive history/audit references. Source creation and reference-only durable delivery publication are atomic with the private revision. First Worker readiness has retained clocks and lease fences; Activity and authorized SignalR replay remain required. |
+| Body-free event source | Primary key `(tenant_id, version)`; unique audit event ID. | Safe event/actor/entity/version/correlation/source-time fields and restrictive history/audit references. Source creation and reference-only durable delivery publication are atomic with the private revision. First Worker readiness has retained clocks and lease fences; current viewer admission protects Activity and authorized SignalR replay. |
 
-Deferred current-to-history and history-to-receipt/audit references prevent a partial revision from committing. The history source must exactly match the retained current row; its private trigger creates an append-only audit and body-free event with the same identity, actor, version, correlation and source time. Receipts must match the immutable revision. API grants permit current writes and history/receipt insertion; direct event writes, history/receipt rewrites and destructive configuration cleanup are withheld. Migration 138 adds restricted configuration delivery and first-publication clocks; Activity and authorized replay remain unfinished. Runtime readiness requires migrations 137 and 138 for both API and Worker. Production binds the PostgreSQL store and does not use a Demo fallback.
+Deferred current-to-history and history-to-receipt/audit references prevent a partial revision from committing. The history source must exactly match the retained current row; its private trigger creates an append-only audit and body-free event with the same identity, actor, version, correlation and source time. Receipts must match the immutable revision. API grants permit current writes and history/receipt insertion; direct event writes, history/receipt rewrites and destructive configuration cleanup are withheld. Migration 138 adds restricted configuration delivery and first-publication clocks; migration 139 captures immutable historical attribution. Activity and authorized replay are implemented with scoped evidence below. API and Worker require the complete ordered migration ledger at readiness. Production binds the PostgreSQL store and does not use a Demo fallback.
 
-The remaining data review must cover the complete optional-field/schema contract, historical retention and Organization lifecycle transitions, including operational deletion of referenced intake records. Unicode namespace parity is now checked across the adopted runtimes and restricted SQL; future runtime/namespace changes retain the migration/compatibility obligation above. Separated portal behavior and deployed error/recovery behavior still require verification.
+The field/schema contract above records current enforcement. Complete cross-PRD retention/hold acceptance and current exact-image execution remain required; local lifecycle evidence below includes operational deletion of referenced intake records. Unicode namespace parity is now checked across the adopted runtimes and restricted SQL; future runtime/namespace changes retain the migration/compatibility obligation above. Separated Portal behavior has local Production evidence below; complete deployed error/recovery acceptance remains required.
 
 ## HTTP contract
 
@@ -62,7 +93,7 @@ The remaining data review must cover the complete optional-field/schema contract
 
 Validation uses a stable Problem Details `code`: `invalid_configuration_request`, `invalid_configuration_cursor`, `invalid_configuration_{Field}`, `configuration_intake_unavailable` and `idempotency_key_required` return 400; stale revisions, changed/expired retry keys and unavailable registration identifiers return 409. A lost database acknowledgment or unavailable source returns 503. Authentication/account binding failures return 401. Errors do not echo private field values. Operator telemetry labels contain fixed operations/outcomes/error categories and a keyed-attempt flag, without tenant/actor IDs or configuration values.
 
-The safe event source contains event/Organization/actor IDs, entity type/ID, revision, correlation and actual source time. It excludes legal name, address, contacts, identifier and policy values. PostgreSQL persists the required `ORGANIZATION_CONFIGURATION_CHANGED` audit/source atomically. Reference-only durable publication and separate Worker readiness now have focused restricted-runtime evidence. Activity, authorized SignalR recovery and lifecycle behavior remain unfinished; readiness does not confer recipient authorization.
+The safe event source contains event/Organization/actor IDs, entity type/ID, revision, correlation and actual source time. It excludes legal name, address, contacts, identifier and policy values. PostgreSQL persists the required `ORGANIZATION_CONFIGURATION_CHANGED` audit/source atomically. Reference-only durable publication and separate Worker readiness now have focused restricted-runtime evidence. Activity, authorized SignalR recovery and operational lifecycle now have the scoped evidence below; readiness does not confer recipient authorization.
 
 ## Executed evidence and limits
 

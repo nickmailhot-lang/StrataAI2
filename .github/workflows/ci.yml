@@ -634,6 +634,9 @@ jobs:
       - name: Reject unsafe runtime database roles in exact images
         run: scripts/ci/test-runtime-database-security.sh
 
+      - name: Verify installed configuration identities, relationships and restricted capabilities
+        run: bash scripts/ci/test-organization-configuration-schema.sh
+
       - name: Health, readiness and SPA deep-link smoke tests
         shell: bash
         run: |
