@@ -1011,6 +1011,10 @@ jobs:
         if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-organization-operational-lifecycle-portal.sh
 
+      - name: Lifecycle session expiry during receipt publication against exact release API
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-operational-lifecycle-session.sh
+
       - uses: actions/setup-node@v7
         if: (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         with:

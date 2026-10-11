@@ -1,6 +1,6 @@
 # Organization Types and configuration acceptance — PRD-27
 
-PRD-27 remains open, with **38% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest Portal isolation and restricted PostgreSQL concurrency results are recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
+PRD-27 remains open, with **37% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest Portal isolation and restricted PostgreSQL concurrency results are recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
 
 Recipient-security components now include an owning-transaction coordinator with
 current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
@@ -43,7 +43,7 @@ delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
 source/persistence evidence without closing Activity, recipient replay/SignalR
 or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
-[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **38%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
+[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **37%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
 Source CI recorded for `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
 passes **880/880 Domain tests** and **801/801 API host tests**, with zero failed
@@ -361,3 +361,12 @@ Four actual Demo API-host cases now expire the original authenticated session at
 The tests exposed an error classification defect: session expiry before persistence returned source-unavailable (503) rather than session-unavailable (401). The coordinator now rechecks original actor/session authorization after a failed store write before mapping the persistence failure. Successful writes still use the existing final session fence and owning rollback. Tests retain the same unauthorized response and atomic rollback assertions.
 
 Final validation: **27/27 focused Linux API cases** and **943/943 complete Linux Domain cases**, no failures/skips/timeouts, with **816 captured backend/test files matching** at completion. Earlier retained fixture failures were uninitialized lazy test wrapper, reentrant HTTP logout waiting on the shared transaction gate, and a fixture clock older than the actual parent timestamp; the correctly admitted expiry run then passed 2/4 and isolated the real 503 classification defect before the fix. Neither assertions nor deadlines were relaxed. Production expiry/HTTP logout ordering, remaining historical/retention obligations, full current-source API regression and exact-image CI remain required. **38% estimated work remaining**; no acceptance criteria or linked scenarios are closed by this increment alone.
+## Production original-session expiry during receipt publication
+
+Two hosted Production HTTP cases now exercise suspension and deactivation against fresh PostgreSQL migrations and distinct restricted API/Worker runtime roles. A disposable session expires after ten seconds while a tenant-specific AFTER INSERT receipt trigger delays the actual API transaction for twelve seconds. The harness observes the restricted API connection in PostgreSQL `PgSleep` on the receipt insertion, then requires HTTP 401. A full snapshot hash of the parent, lifecycle history, receipts, events, Organization audits and typed publication jobs remains identical. After real HTTP login, the same original request key commits revision 2 with one receipt. Timing is controlled only in the disposable database; the production clock and authorization are unchanged.
+
+The hosted run also repeats both Production Portal lifecycle cases and automatic Worker delivery/restart after expired leases. All **1875 captured repository source files match** at completion; owned database, runtime roles, containers and credential files were removed, retaining the original PostgreSQL instance. The isolated host permits registration and does not require verified email at login; provider/TLS-edge acceptance is separate.
+
+[test-organization-operational-lifecycle-session.sh](../../scripts/ci/test-organization-operational-lifecycle-session.sh) retains the receipt-expiry checks in the exact-image command job, using fresh verified disposable accounts, observed database wait state, full effect snapshots, private responses and cleanup of the timing trigger. Bash syntax, workflow YAML and diff checks pass. Execution of this new step against retained release images remains pending.
+
+The earlier full API run completed **822/822**, zero failures/skips/timeouts. Its 813-file backend/test capture has two later differences (lifecycle coordinator and persistence Program) and omits the later Portal, session-race and persistence concurrency files, so it is baseline evidence only. The current **828-case** full API run remains active. HTTP logout ordering, remaining historical/retention requirements and complete release gates are still required. **37% estimated work remaining**; no acceptance criteria or linked scenarios are closed by this increment alone.
