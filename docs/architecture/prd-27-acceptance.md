@@ -187,3 +187,18 @@ limitations. The fresh complete frontend suite is running separately; the prior
 full lifecycle/data/retention/portal, UX/telemetry and immutable-image acceptance
 remain required. Current estimate: **55% remaining**. All numbered criteria and
 linked scenarios stay open.
+
+
+## Operational lifecycle PostgreSQL increment
+
+Production lifecycle persistence now uses a dedicated parent/membership-locked
+transaction and migration 140 immutable source/receipt/audit/event guards with
+forced RLS. Restricted PostgreSQL contracts and the full ordered upgrade runner
+pass, including late session withdrawal rollback and foreign lifecycle reads.
+The full Linux Domain suite passes 909/909; the separate full Demo API run and
+published exact-image CI remain pending. See [PostgreSQL operational lifecycle
+persistence](organization-configuration.md#postgresql-operational-lifecycle-persistence)
+for evidence scope and retained setup failures. Historical access, portal,
+lifecycle HTTP/UI, Worker delivery/replay, concurrency and remaining acceptance
+obligations are unfinished. **52% estimated work remaining**; no AC or scenario
+is closed.

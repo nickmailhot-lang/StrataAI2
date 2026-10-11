@@ -62,6 +62,8 @@ GRANT SELECT,INSERT ON organization_creation_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON organization_configurations TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_configuration_history,organization_configuration_receipts TO strataai_api_runtime;
 GRANT SELECT ON organization_configuration_events TO strataai_api_runtime;
+GRANT SELECT,INSERT ON organization_operational_lifecycle_history,organization_operational_lifecycle_receipts TO strataai_api_runtime;
+GRANT SELECT ON organization_operational_lifecycle_events TO strataai_api_runtime;
 GRANT EXECUTE ON FUNCTION public.organization_configuration_namespace(text) TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_deletion_replays TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_deletion_requests,organization_deletion_progress TO strataai_api_runtime;

@@ -661,3 +661,46 @@ The remaining implementation must change these boundaries together:
 This is an implementation boundary audit, not an executed suspension result.
 FR-007, its related scenarios and full PRD-27 acceptance remain open; the estimate
 is unchanged at **52% work remaining**.
+
+
+## PostgreSQL operational lifecycle persistence
+
+Migration 140 adds Suspended/Deactivated parent states and versioned immutable
+lifecycle sources, original receipts and content-free event envelopes. Forced
+tenant RLS, restricted API grants, deferred source/receipt/audit relationships
+and a parent transition guard reject status-only writes at commit. Existing
+records retain their prior contents during the 139-to-140 upgrade; the migration
+does not invent historical transitions. API and Worker readiness require all
+140 ledger entries. These events are publication intent; Worker delivery is still
+required.
+
+The dedicated PostgreSQL transaction locks the parent and acting membership,
+verifies account/session admission before and after persistence, and commits only
+a successful command. Normal operational admission remains Active-only. The store
+records original caption, capacity, membership epoch, correlation and microsecond
+UTC source time, and recovers original receipts without restoring a later state.
+
+The pinned Linux restricted-role contract passes suspension/reactivation,
+original acknowledgment recovery, ordinary-member/foreign-tenant refusal,
+normal command denial while suspended, explicit failure rollback, session
+withdrawal after writes, foreign history/receipt/event RLS and rejection of raw
+status/pointer updates. All 140 API/Worker readiness entries pass missing/refusal/
+restoration checks. Session admission in this fixture is synthetic; it does not
+prove real HTTP authentication, concurrent revocation or accessible UI behavior.
+The separate full migration runner passes ordered apply, repeat apply, retained
+139-to-140 upgrade fixtures and migration serialization/failure/unrecorded guards.
+Both runs captured 1,837 matching source files. Two earlier setup runs failed on
+an incorrectly named immutability function and ambiguous SQL CASE syntax; both
+were corrected before these successful runs. Disposable fixture resources were
+cleaned up while the original PostgreSQL instance was preserved.
+
+The full Linux Domain suite passes **909/909**, with 796 matching backend/test
+source hashes. The full Demo API suite remains a separate running frozen source
+scope. The solution builds without warnings or errors. These are local source
+checks; required exact-image CI must pass for the published commit.
+
+Lifecycle HTTP commands, explicit MUI review/retry/conflict flows, authorized
+inactive historical reads, independent portal consistency, durable Worker
+discovery/delivery/replay, concurrency coverage and complete release acceptance
+remain required. No numbered criterion or scenario is closed. PRD-27 estimate:
+**52% work remaining**.

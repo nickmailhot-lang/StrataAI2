@@ -18,6 +18,7 @@ public static class OrganizationOperationalLifecycleRules
         && source.MembershipId == scope.MembershipId && source.MembershipVersion == scope.MembershipVersion
         && source.ActingCapacity == (scope.Role == OrganizationRole.Owner ? "ORGANIZATION_OWNER" : "ORGANIZATION_ADMIN")
         && source.CreatedAt >= scope.UpdatedAt && source.CreatedAt <= now
+        && source.CreatedAt.Offset == TimeSpan.Zero && source.CreatedAt.Ticks % 10 == 0
         && source.CreatedAt <= DateTimeOffset.MaxValue.AddHours(-24)
         && !string.IsNullOrWhiteSpace(source.CorrelationId) && source.CorrelationId.Length <= 256 && !source.CorrelationId.Any(char.IsControl)
         && receipt.ActorId == source.ActorId && receipt.Key != Guid.Empty && receipt.Result == source

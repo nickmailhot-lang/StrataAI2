@@ -571,6 +571,8 @@ internal sealed class PostgresOrganizationStore(
             "ARCHIVED" => OrganizationStatus.Archived,
             "DELETING" => OrganizationStatus.Deleting,
             "DELETED" => OrganizationStatus.Deleted,
+            "SUSPENDED" => OrganizationStatus.Suspended,
+            "DEACTIVATED" => OrganizationStatus.Deactivated,
             _ => throw new InvalidOperationException(
                 $"Unknown Organization status '{status}'."),
         };
