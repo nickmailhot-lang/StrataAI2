@@ -4,7 +4,18 @@ umask 077
 test "${CI:-}" = true || { echo 'Disposable lifecycle history fixtures require CI.' >&2; exit 1; }
 base="${1:-http://localhost:8080}"
 scratch=$(mktemp -d)
-trap 'rm -rf "$scratch"' EXIT
+worker_active=false
+restore_worker() {
+  docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
+  worker_active=false
+}
+cleanup() {
+  local result=$?
+  if $worker_active; then restore_worker || result=1; fi
+  rm -rf "$scratch"
+  exit "$result"
+}
+trap cleanup EXIT
 trap 'echo "Lifecycle historical preservation failed at line $LINENO" >&2' ERR
 uuid() { cat /proc/sys/kernel/random/uuid; }
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
@@ -112,6 +123,14 @@ for target in SUSPENDED DEACTIVATED; do
   test "$(admin "SELECT count(*) FROM organizations WHERE id='$org' AND status IN ('DELETING','DELETED');")" = 1
   # The ordinary release Worker must complete through its restricted queue;
   # neither the API acknowledgment nor a fixture SQL update proves completion.
+  # CI deliberately leaves discovery disabled for stable command snapshots.
+  # Give this completion phase only its fixture Organization, using the same
+  # built image and runtime role, then restore the job's canonical settings.
+  worker_active=true
+  STRATAAI_WORKER_ORGANIZATION_IDS="$org" STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED=false \
+  STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED=false STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED=false \
+  STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED=false \
+  docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
   for attempt in $(seq 1 60); do
     if test "$(admin "SELECT count(*) FROM organizations WHERE id='$org' AND status='DELETED';")" = 1; then break; fi
     sleep 1
@@ -129,5 +148,6 @@ for target in SUSPENDED DEACTIVATED; do
   done
   test "$(request PATCH "/organizations/$org/operational-lifecycle" "$(jq -nc --argjson version "$((version+4))" '{status:"ACTIVE",version:$version}')")" = 404
   test "$(configuration_snapshot)" = "$before_deletion"
+  restore_worker
 done
 echo 'Production lifecycle preserved archived/configuration history and references; deletion withdrew access and lifecycle reactivation stayed denied.'

@@ -877,3 +877,12 @@ work retains original attribution and immutable existing audit rows; retired
 accounts cannot recover deletion receipts or completion details. Surviving member
 accounts stay usable. This strengthens accepted-request authority evidence without
 substituting local compiled tests for the required current immutable-image run.
+
+The maintained archived-record/configuration-history CI fixture explicitly scopes
+the ordinary release Worker to its current Organization during deletion completion.
+Command CI otherwise keeps deletion discovery disabled to protect transaction
+snapshots. The fixture restores canonical Worker settings after each Organization
+and on exit, including failure exits. It still requires the real restricted queue
+to reach `DELETED` and verifies unchanged configuration/lifecycle history and
+retained archive timestamps. Syntax validation alone does not establish this
+completion phase; current build-once CI execution remains required.
