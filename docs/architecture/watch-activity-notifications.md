@@ -463,3 +463,17 @@ original-key replay and history assertions pass unchanged in the 1.0-minute stri
 Production case. Browser typecheck and tagged Axe/overflow pass; owned fixtures
 are removed. Current retained-image/full CI and complete PRD acceptance remain
 required. PRD-17 remains open at **15% estimated work remaining**.
+
+The maintained `watch-permission-order.spec.ts` replay passed all four MEMBER,
+ADMIN, ORGANIZATION_READER and PUBLIC_READER cases on 2026-10-11 against current
+compiled production API/Worker hosts and real restricted PostgreSQL. Metadata
+and invitation issuer/recipient authority discovery matched full-browser CI
+settings. Actual Board-lock ordering, source mutation and single/bulk read races,
+denied inbox/watch/history disclosure, exact original replay, retained notification
+and complete private-state fingerprints all remained in the scenario. No snapshot
+field, queued job or assertion was excluded. There were zero failed/skipped/flaky
+cases or global errors; all **1,363 native and 1,953 hosted captured hashes matched**.
+The run took 425 seconds. This current-main replay does not by itself explain or
+close the earlier CI snapshot failures. The current immutable-image release
+matrix still must pass. PRD-05 and PRD-17 remain open at **14% and 15% estimated
+work remaining**, respectively.
