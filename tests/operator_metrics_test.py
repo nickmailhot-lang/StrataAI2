@@ -54,6 +54,13 @@ class OperatorEvidenceTests(unittest.TestCase):
         for metric in ["strataai_organization_requests", "strataai_organization_duration_count"]:
             observations.append((metric, 'operation="configuration_change",outcome="conflict",error_code="version_conflict"'))
             observations.append((metric, 'operation="configuration_read",outcome="denied"'))
+        for action, kind in [("organization_configuration_disclosure", "open"), ("organization_configuration_read", "reconnect"),
+                             ("organization_configuration_change", "retry"), ("organization_configuration_change", "failure"),
+                             ("organization_configuration_change", "success"), ("organization_configuration_history", "success"),
+                             ("organization_configuration_activity", "success")]:
+            observations.append(("strataai_activity_client_events", f'action="{action}",kind="{kind}"'))
+            if kind in ("success", "failure"):
+                observations.append(("strataai_activity_client_duration_count", f'action="{action}",kind="{kind}"'))
         return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations)
 
     def test_complete_fixed_scope(self):

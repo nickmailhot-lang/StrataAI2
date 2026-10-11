@@ -13,7 +13,9 @@ public sealed class ActivityClientTelemetry
         "notification_disclosure", "notification_read", "notification_mark_read", "watch_disclosure", "watch_read", "watch_change", "archive_list_disclosure", "archive_list_read", "archive_list_restore", "archive_list_delete",
         "archive_card_disclosure", "archive_card_read", "archive_card_restore", "archive_card_delete", "list_archive", "card_archive", "archive_board_disclosure", "archive_board_read", "archive_board_restore", "archive_board_delete", "board_archive", "board_metadata_update", "board_star_disclosure", "board_star_read", "board_star_change", "board_copy_disclosure", "board_copy_read", "board_copy_change", "navigation_context", "navigation_board", "navigation_card",
         "organization_settings_disclosure", "organization_settings_read", "organization_settings_update",
-        "organization_creation_disclosure", "organization_creation"];
+        "organization_creation_disclosure", "organization_creation",
+        "organization_configuration_disclosure", "organization_configuration_read", "organization_configuration_change",
+        "organization_configuration_history", "organization_configuration_activity"];
     public Meter Meter { get; }
     private readonly Counter<long> _events;
     private readonly Histogram<double> _duration;

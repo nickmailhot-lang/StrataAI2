@@ -49,6 +49,7 @@ test "$(curl --max-time 30 --silent --show-error -o /dev/null -w '%{http_code}' 
 version=$(get "$lifecycle" | jq -er '.version')
 [[ "$version" =~ ^[1-9][0-9]*$ ]]
 patch "$lifecycle" "$(jq -nc --argjson version "$version" '{version:$version,status:"ACTIVE"}')" >/dev/null
+post /me/activity-client-events '{"events":[{"action":"organization_configuration_disclosure","kind":"open","count":1},{"action":"organization_configuration_read","kind":"reconnect","count":1},{"action":"organization_configuration_change","kind":"retry","count":1},{"action":"organization_configuration_change","kind":"failure","count":1,"durationMs":125},{"action":"organization_configuration_change","kind":"success","count":1,"durationMs":125},{"action":"organization_configuration_history","kind":"success","count":1,"durationMs":125},{"action":"organization_configuration_activity","kind":"success","count":1,"durationMs":125}]}' >/dev/null
 # Poll bounded export/batch intervals; raw scrapes never become retained artifacts.
 post /me/activity-client-events '{"events":[{"action":"organization_creation_disclosure","kind":"open","count":1},{"action":"organization_creation","kind":"retry","count":1},{"action":"organization_creation","kind":"success","count":1,"durationMs":125}]}' >/dev/null
 passed=false

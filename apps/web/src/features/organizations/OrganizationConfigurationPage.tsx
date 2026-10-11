@@ -12,6 +12,7 @@ import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchOrganizationConfiguration } from './organizationConfigurationLive';
 import { OrganizationConfigurationActivityPanel } from './OrganizationConfigurationActivityPanel';
 import { organizationTypeLabel } from './organizationTypes';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { completeConfigurationChange, forgetConfigurationChanges, forgetForeignConfigurationChanges,
   restoreConfigurationChange, retainConfigurationChange } from './organizationConfigurationRecovery';
 
@@ -53,6 +54,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   const loadButton = useRef<HTMLButtonElement>(null); const reviewButton = useRef<HTMLButtonElement>(null); const retryButton = useRef<HTMLButtonElement>(null);
   const historyHeading = useRef<HTMLHeadingElement>(null); const heading = useRef<HTMLHeadingElement>(null);
   const actor = useRef<string | undefined>(undefined); const mounted = useRef(false);
+  const opened = useRef(false);
   const operation = useRef<AbortController | undefined>(undefined);
   const directoryRead = useRef<AbortController | undefined>(undefined); const boardRead = useRef<AbortController | undefined>(undefined);
   const current = useRef({ draft, original, review, busy, authorityCheck, context });
@@ -82,12 +84,15 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
     error('Organization configuration is unavailable to your account.');
     if (reason instanceof WorkRequestError && reason.status === 401) navigate('/login', { replace: true });
   }
-  async function load(preserve = true) {
+  async function load(preserve = true, retry = false) {
     if (operation.current) return;
+    const started = performance.now(); activityEvent('organization_configuration_read', retry ? 'retry' : 'use');
     const controller = new AbortController(); operation.current = controller; setBusy(true); setReview(undefined);
     try {
       const result = await readOrganizationConfiguration(organizationId, controller.signal, actor.current);
       if (!mounted.current || controller.signal.aborted || operation.current !== controller) return;
+      activityResult('organization_configuration_read', true, started);
+      if (!opened.current) { opened.current = true; activityEvent('organization_configuration_disclosure', 'open'); }
       actor.current = result.actorId; setContext(result); setNeedsCheck(false); setUnavailable(false);
       setAuthorityCheck(false);
       forgetForeignConfigurationChanges(sessionStorage, result.actorId);
@@ -100,6 +105,8 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
       if (!current.current.original) setFailure(undefined);
     } catch (reason) {
       if (!mounted.current || controller.signal.aborted || operation.current !== controller) return;
+      activityResult('organization_configuration_read', false, started);
+      if (!(reason instanceof WorkRequestError) && !(reason instanceof WorkInputError)) activityEvent('organization_configuration_read', 'exception');
       if (denied(reason)) withdraw(reason);
       else { setNeedsCheck(true); error(reason instanceof WorkInputError ? reason.message : 'Current configuration could not be checked. Your draft and any original submission are preserved.', reason); }
     } finally { if (operation.current === controller) { operation.current = undefined; if (mounted.current) setBusy(false); } }
@@ -124,7 +131,8 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
     const configuration = watchOrganizationConfiguration({ organizationId, userId: context.actorId,
       invalidate: version => {
         if (version === undefined || confirmedRevision.current === undefined || version > confirmedRevision.current) recheck(true);
-      }, reset: () => recheck(true), unavailable: () => recheck(true) });
+      }, reset: () => { activityEvent('organization_configuration_read', 'reconnect'); recheck(true); },
+      unavailable: () => { activityEvent('organization_configuration_read', 'exception'); recheck(true); } });
     return () => { metadata(); configuration(); };
   }, [organizationId, context?.actorId]);
   useEffect(() => {
@@ -187,16 +195,22 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
         || values.intakeListId && !lists.some(row => row.id === values.intakeListId)) throw new WorkInputError('Verify an active intake destination before reviewing.');
     } catch (reason) { error(commandFailure(reason)); return; }
     const controller = new AbortController(); operation.current = controller; setBusy(true); setFailure(undefined);
+    const started = performance.now(); activityEvent('organization_configuration_read', 'use');
     try {
       const latest = await readOrganizationConfiguration(organizationId, controller.signal, context.actorId);
       if (!mounted.current || controller.signal.aborted || operation.current !== controller) return;
+      activityResult('organization_configuration_read', true, started);
       setContext(latest); setNeedsCheck(false);
       setReview(ConfigurationChangeIntent.review(organizationId, context.actorId, latest.view.version, values));
-    } catch (reason) { if (mounted.current && !controller.signal.aborted) { if (denied(reason)) withdraw(reason); else { setNeedsCheck(true); error('No change was submitted. Check current configuration before reviewing again.', reason); } } }
+    } catch (reason) { if (mounted.current && !controller.signal.aborted && operation.current === controller) {
+      activityResult('organization_configuration_read', false, started);
+      if (!(reason instanceof WorkRequestError) && !(reason instanceof WorkInputError)) activityEvent('organization_configuration_read', 'exception');
+      if (denied(reason)) withdraw(reason); else { setNeedsCheck(true); error('No change was submitted. Check current configuration before reviewing again.', reason); } } }
     finally { if (operation.current === controller) { operation.current = undefined; if (mounted.current) setBusy(false); } }
   }
   async function submit(intent: ConfigurationChangeIntent, retry = false) {
     if (operation.current) return;
+    const started = performance.now(); activityEvent('organization_configuration_change', retry ? 'retry' : 'use');
     const controller = new AbortController(); operation.current = controller; setBusy(true); setReview(undefined); setFailure(undefined); focusAfter.current = 'submission';
     let sent = retry; let acknowledged = false;
     try {
@@ -204,6 +218,8 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
         retainConfigurationChange(sessionStorage, intent);
         sent = true; current.current.original = intent; if (mounted.current) setOriginal(intent);
       }); acknowledged = true;
+      if (mounted.current && !controller.signal.aborted && operation.current === controller)
+        activityResult('organization_configuration_change', true, started);
       completeConfigurationChange(sessionStorage, intent);
       if (!mounted.current || controller.signal.aborted || operation.current !== controller) return;
       setOriginal(undefined); current.current.original = undefined;
@@ -214,6 +230,11 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
       setNotice(`Change acknowledged. Current configuration revision ${latest.view.version}.`);
     } catch (reason) {
       if (!mounted.current || controller.signal.aborted || operation.current !== controller) return;
+      if (!acknowledged) {
+        activityResult('organization_configuration_change', false, started);
+        if (reason instanceof WorkRequestError && reason.status === 409) activityEvent('organization_configuration_change', 'conflict');
+        else if (!(reason instanceof WorkRequestError) && !(reason instanceof WorkInputError)) activityEvent('organization_configuration_change', 'exception');
+      }
       if (denied(reason)) withdraw(reason);
       else if (acknowledged) { setNeedsCheck(true); error('Change acknowledged, but current configuration could not be checked. Your draft is preserved; load current configuration.', reason); }
       else if (reason instanceof WorkRequestError && [400, 409].includes(reason.status)) {
@@ -226,11 +247,16 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   }
   async function historyPage(before?: number) {
     if (!context || operation.current) return;
+    const started = performance.now(); activityEvent('organization_configuration_history', 'use');
     const controller = new AbortController(); operation.current = controller; setBusy(true); focusAfter.current = 'history';
     try {
       const result = await readOrganizationConfigurationHistory(organizationId, context.actorId, controller.signal, before);
-      if (mounted.current && !controller.signal.aborted && operation.current === controller) { setHistory(result); if (!original) setFailure(undefined); }
-    } catch (reason) { if (mounted.current && !controller.signal.aborted) { if (denied(reason)) withdraw(reason); else error('History could not be checked. Your draft and original submission are preserved.', reason); } }
+      if (mounted.current && !controller.signal.aborted && operation.current === controller) {
+        activityResult('organization_configuration_history', true, started); setHistory(result); if (!original) setFailure(undefined); }
+    } catch (reason) { if (mounted.current && !controller.signal.aborted && operation.current === controller) {
+      activityResult('organization_configuration_history', false, started);
+      if (!(reason instanceof WorkRequestError) && !(reason instanceof WorkInputError)) activityEvent('organization_configuration_history', 'exception');
+      if (denied(reason)) withdraw(reason); else error('History could not be checked. Your draft and original submission are preserved.', reason); } }
     finally { if (operation.current === controller) { operation.current = undefined; if (mounted.current) setBusy(false); } }
   }
   return <Container maxWidth="md" sx={{ py: 3 }} data-testid="configuration-authority"
@@ -242,7 +268,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
       {failure && <Alert severity="error">{failure.message}{failure.reference && <Typography>Support reference: {failure.reference}</Typography>}</Alert>}
       {notice && <Alert severity="info" role="status">{notice}</Alert>}
       {busy && <CircularProgress aria-label="Checking organization configuration" />}
-      {!unavailable && <Button ref={loadButton} disabled={busy} onClick={() => void load()}>Load current configuration</Button>}
+      {!unavailable && <Button ref={loadButton} disabled={busy} onClick={() => void load(true, true)}>Load current configuration</Button>}
       {authorityCheck && !unavailable && <Alert severity="info">Private configuration is hidden until current authority is confirmed. Your draft and original submission are preserved.</Alert>}
       {!unavailable && !authorityCheck && context && draft && <>
         <Typography>Current revision: {context.view.version}</Typography>

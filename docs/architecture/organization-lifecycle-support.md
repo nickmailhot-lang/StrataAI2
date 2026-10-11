@@ -52,8 +52,17 @@ performs actual configuration/lifecycle HTTP operations and requires their
 request/duration samples, plus configuration conflict and inactive-parent denial.
 Validator tests reject any missing required sample. Successful replay HTTP
 metrics do not establish that a Worker-delivered source was present; delivery
-acceptance uses the separate Worker fixture. Complete client failure/recovery
-observations, release ingestion and latency evidence remain unproven.
+acceptance uses the separate Worker fixture. Configuration client observations
+now use the existing bounded Activity transport with fixed disclosure/read/change/
+history/Activity actions. They record admitted opening, explicit retries, failed
+and confirmed result timing, definite conflicts and configuration-stream recovery.
+Aborted obsolete reads do not report successful results. Change success means a
+valid original acknowledgment; subsequent reconciliation still needs fresh
+authority. No input values, actor/Organization/event IDs, cursors, paths, retry
+keys or diagnostics enter reports. Counts are untrusted observations, separate
+from immutable business history. Local component/API/native cases pass; exact
+release ingestion, lifecycle-specific client observations and latency evidence
+remain required.
 
 In Production, the separate Worker discovers eligible scopes when
 `STRATAAI_ORGANIZATION_OPERATIONAL_LIFECYCLE_DISCOVERY_ENABLED` is unset; an

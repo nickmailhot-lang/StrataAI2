@@ -3,6 +3,7 @@ import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/ma
 import { WorkRequestError } from '../../api/workManagement';
 import { readOrganizationConfigurationActivity } from './organizationConfigurationClient';
 import { configurationActingCapacityLabel, type ConfigurationActivityPage } from './organizationConfigurationActivity';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 export function OrganizationConfigurationActivityPanel({ organizationId, actorId, disabled, onDenied }: {
   organizationId: string; actorId: string; disabled: boolean; onDenied: (reason: unknown) => void;
@@ -12,6 +13,7 @@ export function OrganizationConfigurationActivityPanel({ organizationId, actorId
   const operation = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null); const focus = useRef(false);
   const section = useRef<HTMLElement>(null);
+  const opened = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; operation.current?.abort(); }; }, []);
   useLayoutEffect(() => {
     if (!busy && !disabled && focus.current) {
@@ -19,15 +21,22 @@ export function OrganizationConfigurationActivityPanel({ organizationId, actorId
       focus.current = false;
     }
   }, [busy, disabled]);
-  async function read(cursor?: string, beforeVersion?: number) {
+  async function read(cursor?: string, beforeVersion?: number, retry = false) {
     if (disabled || operation.current) return;
+    const started = performance.now(); activityEvent('organization_configuration_activity', retry ? 'retry' : 'use');
     const controller = new AbortController(); operation.current = controller;
     setBusy(true); setPage(undefined); setFailure(undefined); setAttempt({ cursor, beforeVersion }); focus.current = true;
     try {
       const result = await readOrganizationConfigurationActivity(organizationId, actorId, controller.signal, cursor, beforeVersion);
-      if (mounted.current && !controller.signal.aborted) setPage(result);
+      if (mounted.current && !controller.signal.aborted && operation.current === controller) {
+        activityResult('organization_configuration_activity', true, started);
+        if (!opened.current) { opened.current = true; activityEvent('organization_configuration_activity', 'open'); }
+        setPage(result);
+      }
     } catch (reason) {
-      if (mounted.current && !controller.signal.aborted) {
+      if (mounted.current && !controller.signal.aborted && operation.current === controller) {
+        activityResult('organization_configuration_activity', false, started);
+        if (!(reason instanceof WorkRequestError)) activityEvent('organization_configuration_activity', 'exception');
         if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) onDenied(reason);
         else setFailure('Activity could not be confirmed. Your configuration draft and original submission are preserved.');
       }
@@ -41,7 +50,7 @@ export function OrganizationConfigurationActivityPanel({ organizationId, actorId
       <Typography>Original change references, private to current administrators. Review configuration history for retained values.</Typography>
       <Button disabled={disabled || busy} onClick={() => void read()}>Load configuration Activity</Button>
       {busy && <CircularProgress aria-label="Checking configuration Activity" />}
-      {failure && <Alert severity="warning" role="status" action={<Button disabled={disabled || busy} onClick={() => void read(attempt.cursor, attempt.beforeVersion)}>Retry Activity read</Button>}>{failure}</Alert>}
+      {failure && <Alert severity="warning" role="status" action={<Button disabled={disabled || busy} onClick={() => void read(attempt.cursor, attempt.beforeVersion, true)}>Retry Activity read</Button>}>{failure}</Alert>}
       {page && <>
         <Typography role="status">{page.items.length ? `${page.items.length} configuration changes in this page.` : 'No configuration changes exist in this Activity page.'}</Typography>
         {page.items.map(item => <Box key={item.eventId}>

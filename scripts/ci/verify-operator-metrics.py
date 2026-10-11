@@ -37,6 +37,14 @@ def verify(raw, revision, version):
                    for metric, labels, value in samples)
 
     return all([
+        *[observed("strataai_activity_client_events", {"action": action, "kind": kind})
+          for action, kind in [("organization_configuration_disclosure", "open"), ("organization_configuration_read", "reconnect"),
+                               ("organization_configuration_change", "retry"), ("organization_configuration_change", "failure"),
+                               ("organization_configuration_change", "success"), ("organization_configuration_history", "success"),
+                               ("organization_configuration_activity", "success")]],
+        *[observed("strataai_activity_client_duration_count", {"action": action, "kind": kind})
+          for action, kind in [("organization_configuration_change", "failure"), ("organization_configuration_change", "success"),
+                               ("organization_configuration_history", "success"), ("organization_configuration_activity", "success")]],
         *[observed(metric, {"operation": operation, "outcome": "success"})
           for operation in ["configuration_read", "configuration_change", "configuration_history",
                             "configuration_activity", "configuration_replay", "operational_lifecycle_review",
@@ -93,4 +101,5 @@ if __name__ == "__main__":
                      "activityServerReads": True, "commentClientEvents": True, "commentClientDuration": True,
                      "commentServerOperations": True, "organizationServerOperations": True, "organizationClientEvents": True,
                      "configurationLifecycleServerOperations": True, "configurationConflictAndDenial": True,
+                     "configurationClientEvents": True, "configurationClientDuration": True,
                      "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")
