@@ -16,6 +16,7 @@ export function watchOperationalLifecycle(options: {
   // permission does not confer administrator review or active work access.
   admit(page: OperationalLifecycleReplay, signal: AbortSignal): Promise<void>;
   update(page: OperationalLifecycleReplay): void; unavailable(): void; denied(status: number, switched: boolean): void;
+  reconnected?(): void;
   connection?: ReturnType<typeof createOperationalLifecycleConnection>;
 }) {
   let connection: ReturnType<typeof createOperationalLifecycleConnection>;
@@ -88,7 +89,7 @@ export function watchOperationalLifecycle(options: {
     } catch (error) { fail(error, expected); }
   }
   connection.onreconnecting(() => { if (!disposed) { invalidate(); options.unavailable(); } });
-  connection.onreconnected(subscribe);
+  connection.onreconnected(() => { if (!disposed) { options.reconnected?.(); subscribe(); } });
   connection.onclose(() => { if (!disposed) { invalidate(); options.unavailable(); schedule(); } });
   void start();
   return () => { disposed = true; invalidate(); lifetime.abort(); clearTimeout(retry); void connection.stop().catch(() => {}); };

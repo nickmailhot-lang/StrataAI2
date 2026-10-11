@@ -15,7 +15,8 @@ public sealed class ActivityClientTelemetry
         "organization_settings_disclosure", "organization_settings_read", "organization_settings_update",
         "organization_creation_disclosure", "organization_creation",
         "organization_configuration_disclosure", "organization_configuration_read", "organization_configuration_change",
-        "organization_configuration_history", "organization_configuration_activity"];
+        "organization_configuration_history", "organization_configuration_activity",
+        "organization_lifecycle_disclosure", "organization_lifecycle_read", "organization_lifecycle_change"];
     public Meter Meter { get; }
     private readonly Counter<long> _events;
     private readonly Histogram<double> _duration;

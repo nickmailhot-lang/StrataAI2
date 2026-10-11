@@ -118,3 +118,11 @@ and [Worker delivery](../../scripts/ci/test-organization-operational-lifecycle-d
 fixtures in their CI environment. They create and clean owned test resources;
 they are not production repair commands. A local pass, collected browser test
 or queued Actions run cannot replace successful exact-image release execution.
+
+## Fixed client observations
+
+The standalone operational lifecycle review records only `organization_lifecycle_disclosure`, `organization_lifecycle_read` and `organization_lifecycle_change` through the existing bounded client transport. A protected opening is counted only after current account and administrator admission. Read results have fixed success/failure durations; an explicit reload records retry. A live SignalR reconnection records reconnect, without presenting it as successful authorization or delivery. Disposed connections and abandoned page reads produce no successful disclosure/result.
+
+Change observations distinguish explicit original-intent retry, definite conflict, unavailable admission and uncertain transport failure. A validated acknowledgment after account confirmation records success independently of a later review refresh. Such a success represents the original receipt; it does not establish the latest parent revision or permission. A failed later reconciliation records a read exception and retains the existing human recovery flow. Telemetry never automatically repeats a mutation.
+
+Client reports contain only fixed action/kind/count and bounded duration fields. They exclude Organization/account/event IDs, names, role/capacity, lifecycle values, versions, keys, bodies, routes and diagnostics. The server rejects private/unknown properties atomically and retains existing session, request and batch limits. Counters support fixed recovery/use rates; histograms supply duration measurements. Reports are best effort, not durable audit or complete usage accounting. The release Collector fixture now requires these additional fixed counters and change duration samples.

@@ -16,10 +16,10 @@ function fixture(admit: Parameters<typeof watchOperationalLifecycle>[0]['admit']
     stream: vi.fn(() => ({ subscribe: (value: Observer) => { observer = value; return { dispose: vi.fn() }; } })),
     onreconnected: (callback: () => void) => { reconnect = callback; },
     onreconnecting: (callback: () => void) => { reconnecting = callback; }, onclose: vi.fn() };
-  const update = vi.fn(), unavailable = vi.fn(), denied = vi.fn();
-  const cleanup = watchOperationalLifecycle({ organizationId: organization, actorId: actor, admit, update, unavailable, denied,
+  const update = vi.fn(), unavailable = vi.fn(), denied = vi.fn(), reconnected = vi.fn();
+  const cleanup = watchOperationalLifecycle({ organizationId: organization, actorId: actor, admit, update, unavailable, denied, reconnected,
     connection: connection as unknown as ReturnType<typeof createOperationalLifecycleConnection> });
-  return { connection, update, unavailable, denied, admit, cleanup, next: (value: unknown) => observer.next(value),
+  return { connection, update, unavailable, denied, reconnected, admit, cleanup, next: (value: unknown) => observer.next(value),
     previous: () => observer, reconnect: () => reconnect(), reconnecting: () => reconnecting() };
 }
 beforeEach(() => vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(profile)))));
@@ -89,4 +89,12 @@ it('bounds pending replay backlog and resumes from the last delivered source aft
   for (let index = 0; index < 65; index++) f.next(frame());
   expect(f.unavailable).toHaveBeenCalledTimes(1); expect(f.update).not.toHaveBeenCalled();
   f.reconnect(); expect(f.connection.stream).toHaveBeenLastCalledWith('Watch', organization, 0); f.cleanup();
+});
+
+it('reports reconnection only for a live connection and does not resurrect disposed subscriptions', async () => {
+  const f = fixture(); await vi.waitFor(() => expect(f.connection.stream).toHaveBeenCalledTimes(1));
+  expect(f.reconnected).not.toHaveBeenCalled(); f.reconnecting(); f.reconnect();
+  expect(f.reconnected).toHaveBeenCalledTimes(1); expect(f.connection.stream).toHaveBeenCalledTimes(2);
+  f.cleanup(); f.reconnect(); expect(f.reconnected).toHaveBeenCalledTimes(1);
+  expect(f.connection.stream).toHaveBeenCalledTimes(2);
 });

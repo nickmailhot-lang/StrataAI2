@@ -15,12 +15,15 @@ public sealed partial class ApiHostTests
     [InlineData("organization_configuration_change")]
     [InlineData("organization_configuration_history")]
     [InlineData("organization_configuration_activity")]
+    [InlineData("organization_lifecycle_disclosure")]
+    [InlineData("organization_lifecycle_read")]
+    [InlineData("organization_lifecycle_change")]
     public void PRD_27_configuration_telemetry_parser_rejects_private_fields_atomically(string action)
     {
         using var valid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
             new { action, kind = "retry", count = 1 }, new { action, kind = "failure", count = 1, durationMs = 125 } } }));
         Assert.Equal(2, ActivityClientTelemetry.Parse(valid.RootElement)!.Count);
-        foreach (var field in new[] { "legalName", "jurisdiction", "actorId", "organizationId", "eventId", "correlationId", "cursor", "key", "body", "diagnostic" })
+        foreach (var field in new[] { "legalName", "jurisdiction", "actorId", "organizationId", "eventId", "correlationId", "cursor", "key", "body", "diagnostic", "status", "previousStatus", "actingCapacity", "name", "route" })
         {
             using var invalid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
                 new { action, kind = "use", count = 1 },
@@ -49,15 +52,18 @@ public sealed partial class ApiHostTests
             new { action = "organization_configuration_change", kind = "retry", count = 1 },
             new { action = "organization_configuration_history", kind = "use", count = 1 },
             new { action = "organization_configuration_activity", kind = "use", count = 1 },
+            new { action = "organization_lifecycle_disclosure", kind = "open", count = 1 },
+            new { action = "organization_lifecycle_read", kind = "reconnect", count = 1 },
+            new { action = "organization_lifecycle_change", kind = "conflict", count = 1 },
             new { action = "organization_configuration_change", kind = "success", count = 1, durationMs = 125 } } };
         using var denied = await Mutate(anonymous, HttpMethod.Post, "/me/activity-client-events", payload);
         Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode); Assert.Empty(counters); Assert.Empty(durations);
         using var accepted = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", payload);
-        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode); Assert.Equal(6, counters.Count); Assert.Equal(0.125, Assert.Single(durations));
+        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode); Assert.Equal(9, counters.Count); Assert.Equal(0.125, Assert.Single(durations));
         Assert.All(counters, tags => Assert.Equal(new[] { "action", "kind" }, tags.Keys.Order().ToArray()));
         using var rejected = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", new { events = new object[] {
             new { action = "organization_configuration_read", kind = "use", count = 1 },
             new { action = "organization_configuration_change", kind = "retry", count = 1, key = Guid.NewGuid(), legalName = "private-value" } } });
-        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(6, counters.Count); Assert.Single(durations);
+        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(9, counters.Count); Assert.Single(durations);
     }
 }
