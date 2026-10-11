@@ -53,6 +53,18 @@ remain unfinished. These are executed CI source results, separate from the
 older local producer-only 800-case result and the still-running local consumer
 API run. The uncommitted scrolling candidate is outside this commit's scope.
 
+Both original pending local runs subsequently completed. The captured-attribution
+API suite passes **801/801**, with zero failures, errors, timeouts, aborted,
+not-executed or pending cases. All **784 backend/test source hashes** match both
+the compiled frozen source and current main. The scrolling increment published
+as `fdf1106b` passes **2,314/2,314 frontend cases across 154 files**, with no
+failed/pending cases and all 480 frontend/browser source hashes matching after
+completion. Both owned terminal test containers were removed; PostgreSQL/data
+was preserved. These full local results remain separate from the
+[new exact-head image pipeline](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38098072035),
+whose source jobs are running. No numbered AC/scenario is closed; **52% remaining**
+is unchanged.
+
 The captured-attribution browser extension subsequently passed both original
 desktop/phone native scenarios with zero retries, flaky results or skips. It
 checks the three captured actor/capacity entries and retains keyboard review,

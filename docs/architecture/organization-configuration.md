@@ -529,6 +529,15 @@ full UX/telemetry or PRD-wide release acceptance. Estimated work remaining stays
 
 ## Suspension and deactivation implementation boundaries
 
+The earlier independent consumer API run has now completed: **801/801 cases
+pass**, with zero failed, timed-out, aborted, not-executed or pending cases.
+All 784 backend/test source hashes match the compiled frozen source and current
+main. The published `fdf1106b` frontend source independently passes **2,314/2,314
+across 154 files**, zero failed/pending cases, with all 480 frontend/browser
+source hashes matching. Both owned terminal containers were removed. These are
+full local source results; new exact-image CI and the requirements below remain
+unfinished. The PRD-27 estimate remains **52% work remaining**.
+
 Source inspection at `c62087a6` confirms ORGCFG-FR-007 is unimplemented.
 `OrganizationStatus` and `PostgresOrganizationStore.ParseStatus` recognize only
 Active, Archived, Deleting and Deleted. Migration 089's Organization status

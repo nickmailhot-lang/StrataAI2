@@ -30,8 +30,13 @@ credentials were cleaned up; the original PostgreSQL data was preserved.
 
 All 161 production frontend and capacity-case files match the frozen candidate.
 This uses a local Production compiled API/Worker, PostgreSQL and Nginx; it is not
-an exact CI release-image result. The candidate's complete frontend suite is still
-running. Current-main `c62087a6` source CI passes 880 Domain and 801 API host cases,
+an exact CI release-image result. The original complete frozen Linux frontend run
+subsequently passes **2,314/2,314 across 154 files**, zero failures or pending
+cases, with two workers and unchanged deadlines. All 480 frontend/browser source
+hashes match the published `fdf1106b` correction after completion. Its owned
+terminal test container was removed. The
+[exact-head CI](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38098072035)
+has passed metadata; source jobs are running. Preceding `c62087a6` source CI passes 880 Domain and 801 API host cases,
 web quality and PostgreSQL integration; its immutable-image security/integration
 checks remain separate; security passes, while container/browser integration and
 the required release gate are unfinished. No PRD-wide completion is claimed.
