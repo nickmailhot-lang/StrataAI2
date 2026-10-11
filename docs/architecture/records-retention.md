@@ -1,7 +1,7 @@
 # Records retention contracts — PRD-70
 
 [PRD-70](https://github.com/nickmailhot-lang/StrataAI2/issues/71) remains open.
-Estimated work remaining: **83%**. Domain contracts, private policy storage,
+Estimated work remaining: **82%**. Domain contracts, private policy storage,
 transactional Demo parity and authorized policy HTTP commands/reads are implemented
 and locally tested. The internal MUI policy create/edit/review and retry workflow
 is implemented with component and scoped desktop/mobile browser coverage; remaining browser/release acceptance, runtime
@@ -114,6 +114,48 @@ runtime scope resolution, adapter rollback, database persistence or audit emissi
 The capture matched **835 backend/test source hashes**, zero mismatches, and its
 owned terminal container was removed. Main CI/image acceptance remains pending.
 Estimated PRD-70 work remaining remains **83%**.
+
+### Demo hold persistence and rollback
+
+[InMemoryRetentionHoldStore.cs](../../src/StrataAI.Infrastructure/Records/InMemoryRetentionHoldStore.cs)
+implements current hold state, immutable transition history with retained actor
+label/membership/capacity, actor-bound original receipts and event identities. All
+calls require the owning Organization transaction. Writes recheck active account,
+parent and current elevated membership, typed scope authorization and the exact
+Domain transition. Release cannot rewrite original application evidence. Supplied
+membership, event, correlation, receipt and microsecond clocks are validated before
+the first change. The adapter participates in the same rollback snapshot as Demo
+audit facts, so an unsuccessful final fence or cancellation must restore all four
+parts of the graph and leave retry keys available.
+
+Demo audit now supports typed hold metadata containing only version, status, broad
+scope kind and acting capacity. Apply/release event types must match that status;
+reason, category and record reference are excluded. Existing policy metadata stays
+separate. These are internal immutable audit facts, not authorized realtime
+publication or an API exposure of private holds.
+
+The adapter is registered only in maintained test fixtures with a scope contract
+probe. Application-wide registration, real typed owning record authorization,
+PostgreSQL schema/adapter parity and runtime enforcement remain pending. This
+fixture registration establishes actual Demo persistence and rollback, while its
+scope probe does not establish confidentiality or typed record reference integrity
+for production. PRD-70 remains open at **82% estimated work remaining**.
+
+Fresh solution compilation passed with zero warnings/errors. The focused Linux API
+Records suite passed **27/27**, including four new maintained
+[Demo hold tests](../../tests/StrataAI.Api.Tests/RetentionHoldDemoTests.cs). Actual
+storage and owning rollback participation establish apply/release refresh, original
+receipt recovery, immutable history/attribution, safe audit facts, serialized
+concurrent release, rejection of rewritten/forged source evidence, and cancellation
+or scope withdrawal restoring current state/history/receipts/audit. The capture
+matched **837 backend/test source hashes**, zero mismatches, and its owned terminal
+container was removed. The full Linux API regression for the shared audit change
+has also completed: **869/869** cases passed, zero failed, unexecuted, aborted or
+timed-out cases. That capture matched the same **837 backend/test source hashes**
+with zero mismatches, and its owned terminal container was removed. Both captures
+used freshly compiled code in a pinned runtime container; they do not establish
+immutable release image or rigorous CI acceptance. Production hold parity and
+runtime activation remain incomplete.
 
 The disposition decision refuses invalid or foreign policy/record/hold sources,
 incomplete hold lookup, immutable records, matching active holds, missing
