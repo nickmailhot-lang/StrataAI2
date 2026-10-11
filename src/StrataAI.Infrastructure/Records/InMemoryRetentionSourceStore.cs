@@ -23,6 +23,11 @@ internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizati
     IDemoOrganizationTransactionParticipant
 {
     private readonly Dictionary<(Guid Organization, RetentionRecordClass Class, Guid Record), DemoRetentionSourceClassification> rows = [];
+    internal DemoRetentionSourceClassification? ReadClassification(Guid organization, RetentionRecordClass recordClass, Guid record, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        return rows.GetValueOrDefault((organization, recordClass, record));
+    }
     public Task<RetentionSourceReference?> ReadSourceAsync(Guid organization, RetentionRecordClass recordClass, Guid record, CancellationToken ct)
     {
         RequireScope(organization, ct);

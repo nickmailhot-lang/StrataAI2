@@ -18,7 +18,8 @@ public sealed partial class ApiHostTests
         var (_, other) = await ConfigurationParent(owner, "Other hold lookup", ct);
         var service = ActivatorUtilities.CreateInstance<RetentionHoldService>(app.Services);
         var store = app.Services.GetRequiredService<InMemoryRetentionHoldStore>();
-        var id = Guid.NewGuid(); var at = DateTimeOffset.UtcNow;
+        var id = await ClassifiedDemoAttachment(app.Services, parent.Id, actor, "contracts", ct);
+        var excludedId = await ClassifiedDemoAttachment(app.Services, parent.Id, actor, "contracts", ct); var at = DateTimeOffset.UtcNow;
         var record = new RetentionRecord(id, parent.Id, 1, RetentionRecordClass.Document, "contracts", null, at, null, null, null, false);
         var included = new List<RetentionHold>();
         foreach (var scope in new RetentionHoldScope[] { new(parent.Id, null, null, null), new(parent.Id, record.RecordClass, null, null),
@@ -28,7 +29,7 @@ public sealed partial class ApiHostTests
             Assert.True(hold.Succeeded); included.Add(hold.Value!);
         }
         foreach (var scope in new RetentionHoldScope[] { new(parent.Id, RetentionRecordClass.Governance, null, null),
-            new(parent.Id, record.RecordClass, "other", null), new(parent.Id, record.RecordClass, null, Guid.NewGuid()), new(other.Id, null, null, null) })
+            new(parent.Id, record.RecordClass, "other", null), new(parent.Id, record.RecordClass, null, excludedId), new(other.Id, null, null, null) })
             Assert.True((await service.ApplyAsync(scope.OrganizationId, actor, Guid.NewGuid(), scope, "Excluded reason", Guid.NewGuid(), "exclude", ct)).Succeeded);
         var released = await service.ReleaseAsync(parent.Id, actor, included[0].Id, 1, Guid.NewGuid(), "release", ct);
         Assert.True(released.Succeeded); included[0] = released.Value!;

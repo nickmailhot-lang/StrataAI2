@@ -17,10 +17,31 @@ public sealed partial class ApiHostTests
         // Real Demo adapter + rollback participation, fixture scope authorization.
         // Production registration waits for actual typed authorization and parity.
         services.AddSingleton<IRetentionHoldScopeAuthorization>(scopes);
+        services.AddSingleton<InMemoryRetentionSourceStore>();
+        services.AddSingleton<IDemoOrganizationTransactionParticipant>(p => p.GetRequiredService<InMemoryRetentionSourceStore>());
         services.AddSingleton<InMemoryRetentionHoldStore>();
         services.AddSingleton<IRetentionHoldStore>(p => p.GetRequiredService<InMemoryRetentionHoldStore>());
         services.AddSingleton<IDemoOrganizationTransactionParticipant>(p => p.GetRequiredService<InMemoryRetentionHoldStore>());
     });
+    private static async Task<Guid> ClassifiedDemoAttachment(IServiceProvider services, Guid organization, Guid actor, string category, CancellationToken ct)
+    {
+        var work = services.GetRequiredService<IWorkManagementStore>(); var catalog = services.GetRequiredService<InMemoryRetentionSourceStore>();
+        var unit = services.GetRequiredService<IOrganizationUnitOfWork>(); var organizations = services.GetRequiredService<IOrganizationStore>();
+        var board = Guid.NewGuid(); var list = Guid.NewGuid(); var card = Guid.NewGuid(); var file = Guid.NewGuid();
+        DateTimeOffset Now() => AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow);
+        await ConfigurationOwned(unit, organization, actor, null, false, async () =>
+        {
+            await work.CreateBoardAsync(organization, actor, board, "Classification fixture", null, BoardVisibility.Private, "COLOR", null, Now(), ct);
+            await work.CreateListAsync(board, list, "Classification list", null, Now(), ct);
+            await work.CreateCardAsync(list, card, "Private work", null, null, Now(), ct);
+            await ((IAttachmentMetadataStore)work).CreateUrlAttachmentAsync(file, organization, card, actor, "Private source", "https://example.test/private", Now(), ct);
+            var member = (await organizations.FindMembershipAsync(organization, actor, ct))!;
+            Assert.NotNull(await catalog.CaptureAsync(new(organization, RetentionRecordClass.Document, file, RetentionProducerKind.Attachment,
+                category, null, 1, 1, actor, member.Id, member.Version, member.Role, Guid.NewGuid(), "fixture-classification", Now()), ct));
+            return OrganizationOperation<bool>.Success(true);
+        }, ct);
+        return file;
+    }
     private sealed class HoldAfterWrite(IRetentionHoldStore inner, Action after) : IRetentionHoldStore
     {
         public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct) => inner.ReadApplicableAsync(record, ct);
@@ -72,7 +93,7 @@ public sealed partial class ApiHostTests
         var (actor, parent) = await ConfigurationParent(owner, "Demo hold", ct);
         var service = ActivatorUtilities.CreateInstance<RetentionHoldService>(app.Services);
         var store = app.Services.GetRequiredService<InMemoryRetentionHoldStore>();
-        var id = Guid.NewGuid(); var key = Guid.NewGuid(); var record = Guid.NewGuid();
+        var id = Guid.NewGuid(); var key = Guid.NewGuid(); var record = await ClassifiedDemoAttachment(app.Services, parent.Id, actor, "private.category", ct);
         var applied = await service.ApplyAsync(parent.Id, actor, id, new(parent.Id, RetentionRecordClass.Document, "private.category", record), "Private hold reason", key, "apply", ct);
         Assert.True(applied.Succeeded); Assert.Equal(applied.Value, (await service.ReadAsync(parent.Id, actor, id, ct)).Value);
         var releaseKeys = new[] { Guid.NewGuid(), Guid.NewGuid() };

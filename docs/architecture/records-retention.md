@@ -389,6 +389,44 @@ repository hashes unchanged. Owned fixtures were removed. PRD-70 stays open at
 82% estimated work remaining; these checks do not establish full Demo/Production
 workflow parity, HTTP/session acceptance or immutable-image release completion.
 
+### Demo hold application and history context
+
+The Demo hold store now requires its actual source catalog. New record holds must
+reference a classified source of the exact class and ID; any supplied category must
+match the retained classification, and application cannot precede registration.
+There is no placeholder-record or guessed-current-Board fallback. Tests that formerly
+used unbound document IDs now create and classify actual Attachment producers.
+
+At application, the store captures the classification Board and the actual current
+application Board/source revision. Each immutable history revision retains that
+reference. Release copies the existing context while advancing only the hold
+version, and actor/key receipt reference lookup selects the exact original history
+revision. Moves and archive do not recapture the application Board or change an
+original acknowledgment. Context rollback uses the same history/header/receipt
+participants as the hold graph, so a failed final reference fence reclaims the key.
+Broad holds have no invented producer context; their separate administration
+contract and other module origins remain pending.
+
+The maintained [Demo application-context test](../../tests/StrataAI.Api.Tests/RetentionHoldContextDemoTests.cs)
+injects the actual work authorization, source catalog and hold store in fixture-local
+DI. It applies holds to all three real producer kinds after a parent move, moves
+again, archives retained sources/Boards, releases and recovers original receipts.
+Both history versions retain classification/application Boards and the actual
+application producer revision. It also proves category mismatch refusal and a final
+reference denial restoring history/header/receipt context and the original key.
+The denial is an explicit decorator; this is not HTTP/session withdrawal proof.
+
+Verification: fresh solution build passed with zero warnings/errors. Focused Linux
+Records API tests passed 33/33, no failed or unexecuted cases, with 848 backend/test
+hashes unchanged. Complete native PostgreSQL hold/readiness verification passed all
+145 ledger refusal/restoration cases for both restricted hosts with all 1,945
+captured repository files unchanged. Owned fixtures were removed. These components
+remain unregistered in deployed runtime. PRD-70 stays open at approximately 81%
+estimated work remaining: review/idempotent classification, broad/other producer
+admission, full permission/Portal/session matrices, HTTP/MUI, event and disposition
+enforcement, controlled redaction, export/privacy and offboarding still require
+implementation and acceptance evidence. Full immutable-image CI remains required.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines

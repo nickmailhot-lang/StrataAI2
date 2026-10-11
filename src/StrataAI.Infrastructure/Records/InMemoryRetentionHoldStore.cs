@@ -9,12 +9,12 @@ using StrataAI.Infrastructure.WorkManagement;
 
 namespace StrataAI.Infrastructure.Records;
 
-internal sealed record DemoRetentionHoldRevision(RetentionHoldWrite Source, string ActorLabel);
+internal sealed record DemoRetentionHoldRevision(RetentionHoldWrite Source, string ActorLabel, RetentionHoldReference Reference);
 
 // Activation still requires Production parity and actual typed scope resolution.
 internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organizations, IIdentityStore identities,
     ICommandActorAuthorization actors, IRetentionHoldScopeAuthorization scopes, DemoWorkTransactionScope scope,
-    IWorkManagementStore work, IClock clock) : IRetentionHoldStore, IDemoOrganizationTransactionParticipant
+    IWorkManagementStore work, IClock clock, InMemoryRetentionSourceStore sources) : IRetentionHoldStore, IDemoOrganizationTransactionParticipant
 {
     private readonly Dictionary<(Guid Organization, Guid Hold), RetentionHold> _current = [];
     private readonly Dictionary<(Guid Organization, Guid Hold, long Version), DemoRetentionHoldRevision> _history = [];
@@ -23,18 +23,15 @@ internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organization
     public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct)
     {
         RequireScope(organization, ct);
-        return Task.FromResult(Reference(_current.GetValueOrDefault((organization, hold))));
+        var current = _current.GetValueOrDefault((organization, hold));
+        return Task.FromResult(current is null ? null : _history.GetValueOrDefault((organization, hold, current.Version))?.Reference);
     }
     public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct)
     {
         RequireScope(organization, ct);
-        return Task.FromResult(Reference(_receipts.GetValueOrDefault((organization, actor, key))?.Result));
+        var receipt = _receipts.GetValueOrDefault((organization, actor, key));
+        return Task.FromResult(receipt is null ? null : _history.GetValueOrDefault((organization, receipt.Result.Id, receipt.Result.Version))?.Reference);
     }
-    // Historical producer context is unavailable until Demo source capture exists.
-    // Never synthesize it from a current Card route. Real work authorization refuses it.
-    private static RetentionHoldReference? Reference(RetentionHold? hold) => hold is null ? null
-        : new(hold.OrganizationId, hold.Id, hold.Version, hold.RecordClass, hold.Category is not null,
-            hold.RecordId, null, null, null, null);
 
     public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct)
     {
@@ -99,6 +96,31 @@ internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organization
             || string.IsNullOrWhiteSpace(subject.DisplayName) || subject.DisplayName.Length > 160 || subject.DisplayName.Any(char.IsControl))
             return RetentionHoldWriteResult.SourceUnavailable;
         if (work is not InMemoryWorkManagementStore audits) throw new InvalidOperationException("Demo hold audit persistence is unavailable.");
+        RetentionHoldReference reference;
+        if (current is not null)
+        {
+            if (!_history.TryGetValue((hold.OrganizationId, hold.Id, current.Version), out var original))
+                return RetentionHoldWriteResult.SourceUnavailable;
+            reference = original.Reference with { Version = hold.Version };
+        }
+        else
+        {
+            reference = new(hold.OrganizationId, hold.Id, hold.Version, hold.RecordClass, hold.Category is not null,
+                hold.RecordId, null, null, null, null);
+            if (hold.RecordId is { } record)
+            {
+                var classified = sources.ReadClassification(hold.OrganizationId, hold.RecordClass!.Value, record, ct);
+                if (classified is null || hold.AppliedAt < classified.Source.RegisteredAt
+                    || hold.Category is not null && !string.Equals(hold.Category, classified.Source.Category, StringComparison.OrdinalIgnoreCase))
+                    return RetentionHoldWriteResult.SourceUnavailable;
+                var source = await sources.ReadAsync(hold.OrganizationId, hold.RecordClass.Value, record, ct);
+                if (source is null || source.Classification != classified.Reference || source.Classification.ContextVersion != 1
+                    || source.Classification.OriginalBoardId is null || source.Classification.OriginalBoardId == Guid.Empty
+                    || source.BoardId == Guid.Empty || source.SourceVersion < 1) return RetentionHoldWriteResult.SourceUnavailable;
+                reference = reference with { ContextVersion = 1, ClassificationBoardId = source.Classification.OriginalBoardId,
+                    ApplicationBoardId = source.BoardId, ApplicationSourceVersion = source.SourceVersion };
+            }
+        }
         var capacity = write.ActingCapacity == OrganizationRole.Owner ? "ORGANIZATION_OWNER" : "ORGANIZATION_ADMIN";
         var scopeKind = hold.RecordId is not null ? "RECORD" : hold.Category is not null ? "CATEGORY" : hold.RecordClass is not null ? "CLASS" : "ORGANIZATION";
         await audits.AppendAuditFactAsync(write.EventId, hold.OrganizationId, write.ActorId,
@@ -106,7 +128,7 @@ internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organization
             "RETENTION_HOLD", hold.Id, write.CorrelationId, at, ct, holdMetadata: new(hold.Version, hold.Status.ToString().ToUpperInvariant(), scopeKind, capacity));
         ct.ThrowIfCancellationRequested();
         _current[(hold.OrganizationId, hold.Id)] = hold;
-        _history.Add((hold.OrganizationId, hold.Id, hold.Version), new(write, subject.DisplayName));
+        _history.Add((hold.OrganizationId, hold.Id, hold.Version), new(write, subject.DisplayName, reference));
         _receipts.Add((hold.OrganizationId, write.ActorId, receipt.Key), receipt); _eventIds.Add(write.EventId);
         return RetentionHoldWriteResult.Written;
     }
