@@ -477,3 +477,33 @@ The run took 425 seconds. This current-main replay does not by itself explain or
 close the earlier CI snapshot failures. The current immutable-image release
 matrix still must pass. PRD-05 and PRD-17 remain open at **14% and 15% estimated
 work remaining**, respectively.
+
+## Executed overlap and current List movement replay
+
+The maintained `watch-notifications.spec.ts` scenario passed on 2026-10-11 in
+62.9 seconds against restricted PostgreSQL and actual compiled API/Worker hosts.
+It verifies Board/List/Card watch overlap deduplication, no self-notifications,
+unwatch, current List creation/move relationships, desktop/phone read
+synchronization, canonical journal recovery, native links and WCAG checks.
+There were no skipped, unexpected or flaky cases; all **1,364 native and 1,957
+hosted captured hashes matched**. Browser typecheck passed.
+
+The fresh earlier replay reproduced a keyboard action that sent no second List
+watch request during foreground admission refresh. A focus-only adjustment was
+insufficient and was removed. The maintained activation now observes the request:
+it retries the keyboard step only while the unchanged enabled Watch control
+remains and no command exists. Once a request starts, it waits for its original
+response and requires exactly one request; it does not resubmit an uncertain
+acknowledgment. All four Watch actions retain exact one-command checks and their
+authoritative result/version assertions. The overall 180-second scenario budget
+is unchanged, and response waiting is explicitly bounded to 30 seconds.
+
+This general browser scenario uses the account setting from the full-browser CI
+phase. Strict verified-account watch scenarios retain their separate stricter
+configuration and evidence. An initial local harness expected four permission
+cases rather than this suite's one case; the final correctly bounded harness
+passed with source comparisons and cleanup retained. Temporary containers,
+roles, database and credentials were removed; the original PostgreSQL data was
+preserved. These are local source results. Current build-once immutable-image
+acceptance and complete PRD requirements remain required. PRD-17 stays open at
+**15% estimated work remaining**.

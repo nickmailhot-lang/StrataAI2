@@ -11,6 +11,28 @@ async function activate(button: Locator) {
   await button.press('Enter', { timeout: 5_000 });
 }
 
+async function activateWatchChange(button: Locator, path: string) {
+  const page = button.page(); let commands = 0;
+  const observe = (request: import('@playwright/test').Request) => {
+    if (request.method() === 'PUT' && new URL(request.url()).pathname === path) commands++;
+  };
+  page.on('request', observe);
+  const response = page.waitForResponse(reply => new URL(reply.url()).pathname === path && reply.request().method() === 'PUT', { timeout: 30_000 });
+  // Foreground admission may disable a button between focus and Enter. Retry
+  // only the keyboard activation while its unchanged enabled control remains
+  // and no command exists. A started command hides that control; never activate
+  // it again after a request, or retry an uncertain server acknowledgment here.
+  try {
+    await expect(async () => {
+      if (commands) return;
+      await activate(button);
+      await expect.poll(() => commands, { timeout: 500 }).toBe(1);
+    }).toPass({ timeout: 10_000 });
+    const result = await response; expect(result.status()).toBe(200); expect(commands).toBe(1);
+    return result;
+  } finally { page.off('request', observe); void response.catch(() => {}); }
+}
+
 test('PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List movement delivery', async ({ page, context, browser, baseURL }) => {
   test.setTimeout(180_000);
   const headers = { 'X-StrataAI-Request': '1' };
@@ -48,9 +70,7 @@ test('PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List m
       const dialog = page.getByRole('dialog', { name: `${kind} watching`, exact: true });
       await expect(dialog.getByText(`You are not watching this ${kind}.`, { exact: true })).toBeVisible();
       const watchedId = kind === 'Board' ? board : kind === 'List' ? list : card;
-      const subscribed = page.waitForResponse(reply => new URL(reply.url()).pathname === `/watch/${kind.toUpperCase()}/${watchedId}` && reply.request().method() === 'PUT');
-      await activate(dialog.getByRole('button', { name: `Watch ${kind}`, exact: true }));
-      const subscription = await subscribed; expect(subscription.status()).toBe(200);
+      const subscription = await activateWatchChange(dialog.getByRole('button', { name: `Watch ${kind}`, exact: true }), `/watch/${kind.toUpperCase()}/${watchedId}`);
       const watch = await subscription.json(); expect(watch.watching).toBe(true); expect(watch.version).toBe(1);
       await expect(dialog.getByText(`You are watching this ${kind}.`, { exact: true })).toBeVisible();
       await activate(dialog.getByRole('button', { name: 'Done watching', exact: true }));
@@ -126,7 +146,7 @@ test('PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List m
     await activate(page.getByRole('button', { name: 'List watching', exact: true }).first());
     const listWatch = page.getByRole('dialog', { name: 'List watching', exact: true });
     await expect(listWatch.getByText('You are not watching this List.', { exact: true })).toBeVisible();
-    await activate(listWatch.getByRole('button', { name: 'Watch List', exact: true }));
+    await activateWatchChange(listWatch.getByRole('button', { name: 'Watch List', exact: true }), `/watch/LIST/${list}`);
     await expect(listWatch.getByText('You are watching this List.', { exact: true })).toBeVisible();
     await activate(listWatch.getByRole('button', { name: 'Done watching', exact: true }));
     const priorSnapshots = privateLive[0].snapshots;
