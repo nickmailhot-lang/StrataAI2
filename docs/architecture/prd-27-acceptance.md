@@ -1,6 +1,6 @@
 # Organization Types and configuration acceptance — PRD-27
 
-PRD-27 remains open, with **31% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest terminal-history and distinct-account realtime results are recorded at the end. Complete exact-image CI, retention/reference consistency, UX and observability requirements are still required.
+PRD-27 remains open, with **30% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest terminal-history, distinct-account realtime and accessibility results are recorded at the end. Complete exact-image CI, retention/reference consistency, UX and observability requirements are still required.
 
 Recipient-security components now include an owning-transaction coordinator with
 current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
@@ -43,7 +43,7 @@ delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
 source/persistence evidence without closing Activity, recipient replay/SignalR
 or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
-[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **31%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
+[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **30%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
 Source CI recorded for `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
 passes **880/880 Domain tests** and **801/801 API host tests**, with zero failed
@@ -418,3 +418,13 @@ Admin logout must return 204, deny that account's subsequent `/me` request and l
 Both maintained desktop (1280px) and phone (390px) cases pass locally with zero retries, flaky results or skips. All **1309 captured backend/test/browser/web source files match** at completion. The native fixture uses freshly built API/web assets, actual HTTP sessions and WebSocket upgrades, and explicit Demo mode with verified accounts. It proves these browser/session assertions in Demo mode; it does not prove Production Worker publication or immutable release-image execution. Its owned API container and browser/proxy were cleaned up. Browser typechecking, web typecheck/build, workflow parsing and diff checks pass. Current Production suite collection includes **362 cases across 138 files**; collection is not execution.
 
 CI explicitly includes the new file in the Demo browser foundation and automatically collects it in Production browser shards. The exact-head image pipeline and full current-source frontend/API regressions remain pending at this increment. Complete retention/reference/data consistency, UX/observability and release acceptance remain required. **31% estimated work remaining**; no numbered acceptance criterion or linked scenario is closed by this increment alone.
+
+## Keyboard-scrollable configuration review and Collector requirements
+
+The distinct-account browser file now scans the loaded form, reopened authoritative review and loaded Activity with the WCAG 2 A/AA, 2.1 AA and 2.2 AA axe tags. The first desktop/phone run failed both cases on `scrollable-region-focusable`: MUI comparison content scrolled but could not receive keyboard focus. The fix gives `DialogContent` a named `Configuration comparison` region and `tabIndex=0`. The maintained keyboard flow reaches it with Shift+Tab, requires PageDown to move its actual scroll position, then reaches Return/Approve by Tab. No violation rule, test deadline or retry policy was weakened.
+
+Both fixed native cases pass with no unexpected, skipped or flaky cases; all **1308 captured backend/test/browser/web source hashes match** at completion. API/web assets are frozen, and the web was rebuilt after the fix. Web and browser typechecks and the web build pass. This is explicit Demo native evidence for the tested screens, not all WCAG requirements, Production Worker publication or exact-image acceptance. The owned native fixture was cleaned up. The current focused configuration-page regression is running; the earlier full frontend run covers its pre-fix source snapshot and cannot prove this new accessibility change. The full API run remains pending with backend sources unchanged.
+
+The existing server meter already maps configuration and lifecycle operations. The maintained Collector fixture now executes actual configuration read/change/history/Activity/replay and lifecycle review/directory/replay/suspension/reactivation, plus stale configuration conflict and inactive-parent denial. The validator requires both request counters and duration samples for these operations and rejects omitted required samples. All three validator cases pass, including each-required-sample removal and private-label/build mismatch rejection. Normalized CI Bash syntax and diff checks pass. Actual new Collector ingestion through exact release images remains pending; these checks do not establish client failure/recovery telemetry or p95 latency. See [support diagnostics](organization-lifecycle-support.md).
+
+Complete retention/reference/data consistency, broader UX/observability and release acceptance remain required. **30% estimated work remaining**; no numbered acceptance criterion or linked scenario is closed by this increment alone.

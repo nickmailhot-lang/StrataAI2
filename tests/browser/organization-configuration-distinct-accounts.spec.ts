@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker } from './scopedBoardWorker';
@@ -42,6 +43,7 @@ for (const width of [1280, 390]) {
       await page.goto(`/app/${organization}/configuration`);
       await expect.poll(() => frames.some(frame => frame.type === 2), { timeout: 10_000 }).toBe(true);
       await expect(page.getByTestId('configuration-authority')).toHaveAttribute('data-ready', 'true');
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await page.getByLabel(/^Legal name/).fill('Preserved keyboard proposal');
       const review = page.getByRole('button', { name: 'Review configuration change', exact: true });
       await review.focus(); await page.keyboard.press('Enter');
@@ -62,6 +64,12 @@ for (const width of [1280, 390]) {
       await page.keyboard.press('Enter'); await expect(dialog).toBeVisible();
       await expect(dialog.getByText('Changed private legal name', { exact: true })).toBeVisible();
       await expect(dialog.getByText('Preserved keyboard proposal', { exact: true })).toBeVisible();
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      await page.keyboard.press('Shift+Tab');
+      const comparison = dialog.getByRole('region', { name: 'Configuration comparison', exact: true });
+      await expect(comparison).toBeFocused(); await page.keyboard.press('PageDown');
+      await expect.poll(() => comparison.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+      await page.keyboard.press('Tab'); await expect(dialog.getByRole('button', { name: 'Return to draft' })).toBeFocused();
       await page.keyboard.press('Tab'); await expect(dialog.getByRole('button', { name: 'Approve configuration change' })).toBeFocused();
       await page.keyboard.press('Enter'); await expect(dialog).not.toBeVisible();
       await expect(page.getByText('Change acknowledged. Current configuration revision 3.', { exact: true })).toBeVisible();
@@ -77,6 +85,7 @@ for (const width of [1280, 390]) {
       await expect(activity.locator('time').filter({ hasText: source.updatedAt })).toBeVisible();
       await expect(activity.getByText('Changed private legal name', { exact: true })).toHaveCount(0);
       await expect(activity.getByText('Preserved keyboard proposal', { exact: true })).toHaveCount(0);
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       const logout = await peer.request.post('/auth/logout', { headers, data: {} }); expect(logout.status()).toBe(204);
       expect((await context.request.get('/me')).status()).toBe(200);
       expect((await peer.request.get('/me')).status()).toBe(401);

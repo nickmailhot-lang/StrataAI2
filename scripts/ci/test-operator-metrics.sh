@@ -7,6 +7,8 @@ trap 'rm -rf "$scratch"' EXIT
 base=http://localhost:8088
 uuid() { cat /proc/sys/kernel/random/uuid; }
 post() { curl --max-time 30 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $(uuid)" -d "$2" "$base$1"; }
+get() { curl --max-time 30 --fail --silent --show-error -b "$scratch/cookies" "$base$1"; }
+patch() { curl --max-time 30 --fail --silent --show-error -b "$scratch/cookies" -X PATCH -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $(uuid)" -d "$2" "$base$1"; }
 credentials=$(jq -nc --arg email "metrics-$(uuid)@example.test" '{email:$email,password:"private-metric-fixture-password",displayName:"private-metric-fixture"}')
 curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$credentials" "$base/auth/register" >/dev/null
 curl --fail --silent --show-error -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$credentials" "$base/auth/login" >/dev/null
@@ -30,6 +32,23 @@ test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/c
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"create","kind":"use","count":1}]}' "$base/me/checklist-client-events")" = 401
 test "$(curl --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"events":[{"action":"create","kind":"use","count":1,"private":"private-metric-fixture"}]}' "$base/me/checklist-client-events")" = 400
 post /me/activity-client-events '{"events":[{"action":"organization_settings_disclosure","kind":"open","count":1},{"action":"organization_settings_read","kind":"retry","count":1},{"action":"organization_settings_update","kind":"use","count":1},{"action":"organization_settings_update","kind":"success","count":1,"durationMs":125}]}' >/dev/null
+# PRD-27: actual authorized HTTP operations, not synthetic server observations.
+configuration="/organizations/$org/configuration"
+get "$configuration" >/dev/null
+configuration_input='{"version":0,"configuration":{"legalName":"private-metric-fixture","jurisdiction":"CA-BC","timezone":"UTC"}}'
+patch "$configuration" "$configuration_input" >/dev/null
+for suffix in history activity events; do get "$configuration/$suffix" >/dev/null; done
+test "$(curl --max-time 30 --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/cookies" -X PATCH -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $(uuid)" -d "$configuration_input" "$base$configuration")" = 409
+lifecycle="/organizations/$org/operational-lifecycle"
+version=$(get "$lifecycle" | jq -er '.version')
+[[ "$version" =~ ^[1-9][0-9]*$ ]]
+get /organizations/operational-lifecycle-directory >/dev/null
+get "$lifecycle/events" >/dev/null
+patch "$lifecycle" "$(jq -nc --argjson version "$version" '{version:$version,status:"SUSPENDED"}')" >/dev/null
+test "$(curl --max-time 30 --silent --show-error -o /dev/null -w '%{http_code}' -b "$scratch/cookies" "$base$configuration")" = 404
+version=$(get "$lifecycle" | jq -er '.version')
+[[ "$version" =~ ^[1-9][0-9]*$ ]]
+patch "$lifecycle" "$(jq -nc --argjson version "$version" '{version:$version,status:"ACTIVE"}')" >/dev/null
 # Poll bounded export/batch intervals; raw scrapes never become retained artifacts.
 post /me/activity-client-events '{"events":[{"action":"organization_creation_disclosure","kind":"open","count":1},{"action":"organization_creation","kind":"retry","count":1},{"action":"organization_creation","kind":"success","count":1,"durationMs":125}]}' >/dev/null
 passed=false

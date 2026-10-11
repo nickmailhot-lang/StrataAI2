@@ -278,7 +278,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
     </Stack>
     <Dialog open={!!review} onClose={() => { if (!busy) setReview(undefined); }} fullWidth maxWidth="md" aria-labelledby="configuration-review-title">
       <DialogTitle id="configuration-review-title">Review configuration change</DialogTitle>
-      <DialogContent dividers>
+      <DialogContent dividers tabIndex={0} role="region" aria-label="Configuration comparison">
         {review && context && <Stack spacing={2}>
           <Alert severity="warning">Approval replaces configuration at revision {review.expectedVersion} and retains a new historical revision. Verify the source and every proposed value. Configuration does not establish legal compliance.</Alert>
           <Typography variant="h6" component="h3">Current configuration</Typography>

@@ -37,6 +37,15 @@ def verify(raw, revision, version):
                    for metric, labels, value in samples)
 
     return all([
+        *[observed(metric, {"operation": operation, "outcome": "success"})
+          for operation in ["configuration_read", "configuration_change", "configuration_history",
+                            "configuration_activity", "configuration_replay", "operational_lifecycle_review",
+                            "operational_lifecycle_directory", "operational_lifecycle_replay", "operational_lifecycle_change"]
+          for metric in ["strataai_organization_requests", "strataai_organization_duration_count"]],
+        *[observed(metric, {"operation": "configuration_change", "outcome": "conflict", "error_code": "version_conflict"})
+          for metric in ["strataai_organization_requests", "strataai_organization_duration_count"]],
+        *[observed(metric, {"operation": "configuration_read", "outcome": "denied"})
+          for metric in ["strataai_organization_requests", "strataai_organization_duration_count"]],
         observed("strataai_activity_client_events", {"action": "organization_creation_disclosure", "kind": "open"}),
         observed("strataai_activity_client_events", {"action": "organization_creation", "kind": "retry"}),
         observed("strataai_activity_client_events", {"action": "organization_creation", "kind": "success"}),
@@ -82,4 +91,6 @@ if __name__ == "__main__":
         "verified": {"clientEvents": True, "clientDuration": True, "serverRequests": True,
                      "serverDuration": True, "activityClientEvents": True, "activityClientDuration": True,
                      "activityServerReads": True, "commentClientEvents": True, "commentClientDuration": True,
-                     "commentServerOperations": True, "organizationServerOperations": True, "organizationClientEvents": True, "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")
+                     "commentServerOperations": True, "organizationServerOperations": True, "organizationClientEvents": True,
+                     "configurationLifecycleServerOperations": True, "configurationConflictAndDenial": True,
+                     "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")

@@ -41,6 +41,20 @@ disagreement. The server remains authoritative after timeout or reconnect.
 
 ## Investigate delayed publication
 
+The existing `StrataAI.Organizations` meter records
+`strataai.organization.requests` and `strataai.organization.duration` (seconds).
+Fixed operations distinguish configuration read/change/history/Activity/replay
+and operational lifecycle review/change/directory/replay. Labels are limited
+to operation, outcome, fixed error code and a boolean keyed-attempt flag. They
+do not contain Organization/account/event identifiers or submitted values.
+The [release Collector check](../../scripts/ci/test-operator-metrics.sh) now
+performs actual configuration/lifecycle HTTP operations and requires their
+request/duration samples, plus configuration conflict and inactive-parent denial.
+Validator tests reject any missing required sample. Successful replay HTTP
+metrics do not establish that a Worker-delivered source was present; delivery
+acceptance uses the separate Worker fixture. Complete client failure/recovery
+observations, release ingestion and latency evidence remain unproven.
+
 In Production, the separate Worker discovers eligible scopes when
 `STRATAAI_ORGANIZATION_OPERATIONAL_LIFECYCLE_DISCOVERY_ENABLED` is unset; an
 explicit false disables this loop. An explicit invalid value fails startup,

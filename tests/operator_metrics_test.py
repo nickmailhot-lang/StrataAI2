@@ -46,6 +46,14 @@ class OperatorEvidenceTests(unittest.TestCase):
                         ("strataai_activity_client_duration_count", 'action="comment_create",kind="success"'),
                         ("strataai_board_sharing_requests", 'operation="comment_create",outcome="success"'),
                         ("strataai_board_sharing_requests", 'operation="comment_read",outcome="success"')]
+        for operation in ["configuration_read", "configuration_change", "configuration_history",
+                          "configuration_activity", "configuration_replay", "operational_lifecycle_review",
+                          "operational_lifecycle_directory", "operational_lifecycle_replay", "operational_lifecycle_change"]:
+            for metric in ["strataai_organization_requests", "strataai_organization_duration_count"]:
+                observations.append((metric, f'operation="{operation}",outcome="success"'))
+        for metric in ["strataai_organization_requests", "strataai_organization_duration_count"]:
+            observations.append((metric, 'operation="configuration_change",outcome="conflict",error_code="version_conflict"'))
+            observations.append((metric, 'operation="configuration_read",outcome="denied"'))
         return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations)
 
     def test_complete_fixed_scope(self):
