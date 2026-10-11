@@ -27,6 +27,10 @@ public sealed record RetentionPolicyHistoryPage(Guid OrganizationId, Guid Policy
 // Runtime registration follows both Production and Demo adapters.
 public interface IRetentionPolicyStore
 {
+    // Trusted owning reader prerequisite, not record authorization. Read the full
+    // current applicability namespace, with a third row exposing corruption.
+    // The owning transaction must retain its parent lock through disposition.
+    Task<IReadOnlyList<RecordRetentionPolicy>> ReadApplicableAsync(RetentionPolicyApplicability scope, CancellationToken ct);
     Task<RecordRetentionPolicy?> ReadAsync(Guid organization, Guid policy, CancellationToken ct);
     Task<IReadOnlyList<RecordRetentionPolicy>> ReadPoliciesAsync(Guid organization, Guid? after, CancellationToken ct);
     Task<IReadOnlyList<RetentionPolicyRevision>> ReadHistoryAsync(Guid organization, Guid policy, long? beforeVersion, CancellationToken ct);

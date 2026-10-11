@@ -20,6 +20,18 @@ internal sealed class InMemoryRetentionPolicyStore(IOrganizationStore organizati
     private readonly Dictionary<(Guid Organization, RetentionRecordClass Class, string Category, string Jurisdiction), Guid> _namespaces = [];
     private readonly HashSet<Guid> _eventIds = [];
 
+    public Task<IReadOnlyList<RecordRetentionPolicy>> ReadApplicableAsync(RetentionPolicyApplicability scope, CancellationToken ct)
+    {
+        RequireScope(scope.OrganizationId, ct);
+        if (RecordRetentionRules.Validate(scope) is not null) throw new ArgumentException("Invalid retention applicability.", nameof(scope));
+        var category = scope.Category.ToUpperInvariant(); var jurisdiction = scope.Jurisdiction?.ToUpperInvariant() ?? "";
+        return Task.FromResult<IReadOnlyList<RecordRetentionPolicy>>(_current.Values
+            .Where(p => p.OrganizationId == scope.OrganizationId && p.RecordClass == scope.RecordClass
+                && p.Category.ToUpperInvariant() == category
+                && (p.Jurisdiction is null || p.Jurisdiction.ToUpperInvariant() == jurisdiction))
+            .OrderBy(p => p.Id).Take(3).ToArray());
+    }
+
     public Task<IReadOnlyList<RecordRetentionPolicy>> ReadPoliciesAsync(Guid organization, Guid? after, CancellationToken ct)
     {
         RequireScope(organization, ct);

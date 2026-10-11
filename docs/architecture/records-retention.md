@@ -81,7 +81,7 @@ Organization/class/normalized category/jurisdiction scope, including the null
 jurisdiction scope. A policy cannot move namespaces. The future owning selector must resolve a specific jurisdiction
 and Organization-wide applicability deterministically; it may not silently
 choose the shortest retention period. The domain selection contract below now
-defines explicit choice and stale-source refusal; owning runtime readers,
+defines explicit choice and stale-source refusal; owning record readers,
 selection review/recovery and policy retirement still require implementation.
 Planned indexes support that
 namespace and hold admission by `(tenant_id, status, record_class, category,
@@ -134,6 +134,48 @@ retirement, hold persistence, disposition execution, audit/publication or releas
 acceptance. The previously verified 859-case API capture predates these new
 domain sources; it is not evidence of their runtime integration. PRD-70 remains
 open at **83% estimated work remaining**.
+
+### Complete current policy lookup
+
+`IRetentionPolicyStore.ReadApplicableAsync` now loads the current Organization,
+record class, normalized category and Organization-wide or matching jurisdiction
+namespace. It is separate from directory pagination. Both Demo and PostgreSQL
+require an existing owning transaction before validating applicability or reading
+private policy data. PostgreSQL borrows that transaction, filters the indexed
+namespace and joins each header to its exact current immutable revision. Demo
+uses the same invariant uppercase keys. Neither reads old revisions as candidates.
+The three-row limit exposes an unexpected third match to the selector's corruption
+check; the persisted unique namespace permits at most two applicable policies.
+
+The existing Organization unit locks the active parent before admission, and
+policy writes acquire that same parent. An eventual owning record reader must
+keep that lock, authorize the actual record and its confidentiality, load its
+current snapshot and complete holds, and revalidate selection through disposition.
+The applicability object is a trusted storage input, not a public record or proof
+of authorization. No HTTP completeness flag, disposition command or Worker grant
+is introduced by this lookup. Selection review, policy retirement, actual record
+adapters, hold persistence and all remaining PRD-70 workflows are still pending.
+
+Maintained [applicability tests](../../tests/StrataAI.Api.Tests/RetentionPolicyApplicabilityTests.cs)
+exercise the registered Demo adapter with real policy writes: complete global and
+Unicode jurisdiction matching, current revisions, unrelated class/category and
+jurisdiction exclusion, tenant isolation, owning scope, invalid input, cancellation
+and explicit selection when two candidates match.
+
+Verification for this lookup: a fresh solution build passed with zero warnings
+and errors; the focused Linux API Records suite passed **18/18**, including the
+new applicability case. A separate fresh PostgreSQL fixture applied the maintained
+migration stream and canonical API/Worker roles, verified the schema, and executed
+the compiled Production adapter against real current/history rows. It passed
+normalized Unicode matching, complete dual applicability, current revision,
+empty/global-only scopes, unrelated scope exclusion, owning tenant admission,
+invalid input and cancellation alongside the existing persistence/retry/concurrency
+and rollback checks. The committed graph contained five policy headers and seven
+revisions, receipts and audit events; audit metadata retained only four safe fields.
+Both fixtures matched **831 backend/test source hashes** with zero mismatches.
+Owned fixture containers were removed. These compiled-runtime captures do not
+establish immutable release image acceptance; the exact main CI still requires
+execution and inspection. Estimated PRD-70 work remaining remains **83%**.
 
 `record_retention_policies` has primary key `(tenant_id, id)` and selects its
 exact current immutable history revision. `record_retention_policy_history`

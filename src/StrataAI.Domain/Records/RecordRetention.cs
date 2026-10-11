@@ -5,6 +5,9 @@ public enum RetentionAnchor { Created, Archived, Closed, Approved }
 public enum RecordDispositionAction { Preserve, Delete, Anonymize }
 public enum RetentionHoldStatus { Active, Released }
 
+public sealed record RetentionPolicyApplicability(Guid OrganizationId, RetentionRecordClass RecordClass,
+    string Category, string? Jurisdiction);
+
 // Organization-specific policy values; elapsed UTC days are supplied explicitly.
 // Null days means indefinite preservation, never a jurisdiction-derived default.
 public sealed record RecordRetentionPolicy(Guid Id, Guid OrganizationId, long Version,
@@ -36,6 +39,12 @@ public sealed record RecordDispositionDecision(bool CanDispose, RecordDispositio
 public static class RecordRetentionRules
 {
     public const int MaximumRetentionDays = 3_652_500;
+    public static string? Validate(RetentionPolicyApplicability scope)
+    {
+        if (scope.OrganizationId == Guid.Empty) return "identity";
+        if (!Enum.IsDefined(scope.RecordClass) || !Key(scope.Category)) return "record_class";
+        return OptionalText(scope.Jurisdiction, 120) ? null : "jurisdiction";
+    }
     public static string? Validate(RecordRetentionPolicy policy)
     {
         if (policy.Id == Guid.Empty || policy.OrganizationId == Guid.Empty) return "identity";

@@ -14,6 +14,7 @@ public sealed partial class ApiHostTests
 {
     private sealed class RetentionAfterWrite(IRetentionPolicyStore inner, Action after) : IRetentionPolicyStore
     {
+        public Task<IReadOnlyList<RecordRetentionPolicy>> ReadApplicableAsync(RetentionPolicyApplicability scope, CancellationToken ct) => inner.ReadApplicableAsync(scope, ct);
         public Task<IReadOnlyList<RecordRetentionPolicy>> ReadPoliciesAsync(Guid organization, Guid? after, CancellationToken ct) => inner.ReadPoliciesAsync(organization, after, ct);
         public Task<IReadOnlyList<RetentionPolicyRevision>> ReadHistoryAsync(Guid organization, Guid policy, long? beforeVersion, CancellationToken ct) => inner.ReadHistoryAsync(organization, policy, beforeVersion, ct);
         public Task<RecordRetentionPolicy?> ReadAsync(Guid organization, Guid policy, CancellationToken ct) => inner.ReadAsync(organization, policy, ct);

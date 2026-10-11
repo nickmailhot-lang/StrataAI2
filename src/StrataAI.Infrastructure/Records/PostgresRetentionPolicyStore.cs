@@ -8,13 +8,33 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Records;
 
-// Unregistered until restricted runtime write capabilities and Demo parity are
-// verified. Every call borrows the already admitted Organization transaction.
+// Every call borrows the already admitted Organization transaction.
 internal sealed class PostgresRetentionPolicyStore(PostgresConnectionFactory connections,
     IOrganizationStore organizations, IIdentityStore identities, ICommandActorAuthorization actors)
     : IRetentionPolicyStore
 {
     private const string Fields = "h.policy_id,h.tenant_id,h.version,h.record_class,h.category,h.jurisdiction,h.anchor,h.retention_days,h.action,h.source,h.notes,h.created_at,h.updated_at";
+
+    public async Task<IReadOnlyList<RecordRetentionPolicy>> ReadApplicableAsync(RetentionPolicyApplicability scope, CancellationToken ct)
+    {
+        RequireScope(scope.OrganizationId, ct);
+        if (RecordRetentionRules.Validate(scope) is not null) throw new ArgumentException("Invalid retention applicability.", nameof(scope));
+        await using var session = await connections.OpenTenantSessionAsync(scope.OrganizationId, ct);
+        await using var command = new NpgsqlCommand("SELECT " + Fields + " " + """
+            FROM record_retention_policies p JOIN record_retention_policy_history h
+            ON (h.tenant_id,h.policy_id,h.version)=(p.tenant_id,p.id,p.version)
+            WHERE p.tenant_id=@tenant AND p.record_class=@class AND p.category_key=@category
+            AND (p.jurisdiction_key='' OR p.jurisdiction_key=@jurisdiction)
+            ORDER BY p.id LIMIT 3;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", scope.OrganizationId);
+        command.Parameters.AddWithValue("class", scope.RecordClass == RetentionRecordClass.OperationalWork ? "OPERATIONAL_WORK" : scope.RecordClass.ToString().ToUpperInvariant());
+        command.Parameters.AddWithValue("category", scope.Category.ToUpperInvariant());
+        command.Parameters.AddWithValue("jurisdiction", scope.Jurisdiction?.ToUpperInvariant() ?? "");
+        var rows = new List<RecordRetentionPolicy>(); await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct)) rows.Add(Decode(reader));
+        return rows;
+    }
 
     public async Task<IReadOnlyList<RecordRetentionPolicy>> ReadPoliciesAsync(Guid organization, Guid? after, CancellationToken ct)
     {

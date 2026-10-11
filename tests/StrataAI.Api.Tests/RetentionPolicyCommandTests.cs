@@ -20,6 +20,8 @@ public sealed partial class ApiHostTests
         public Action? AfterRead { get; set; }
         public IReadOnlyList<RecordRetentionPolicy> PolicyRows { get; set; } = [];
         public IReadOnlyList<RetentionPolicyRevision> HistoryRows { get; set; } = [];
+        public Task<IReadOnlyList<RecordRetentionPolicy>> ReadApplicableAsync(RetentionPolicyApplicability scope, CancellationToken ct)
+        { Reads++; AfterRead?.Invoke(); return Task.FromResult(PolicyRows); }
         public Task<IReadOnlyList<RecordRetentionPolicy>> ReadPoliciesAsync(Guid organization, Guid? after, CancellationToken ct)
         { Reads++; AfterRead?.Invoke(); return Task.FromResult(PolicyRows); }
         public Task<IReadOnlyList<RetentionPolicyRevision>> ReadHistoryAsync(Guid organization, Guid policy, long? beforeVersion, CancellationToken ct)
