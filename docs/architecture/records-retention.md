@@ -115,6 +115,34 @@ permission to call internal trigger routines. API/Worker readiness requires
 migration 142. No default policy is fabricated during upgrade. Storage permission
 does not establish HTTP authorization or enable a policy command.
 
+## Owning policy command contract
+
+[RetentionPolicyService](../../src/StrataAI.Application/Records/RetentionPolicyService.cs)
+implements the Application admission and command boundary. It enters the existing
+Organization unit of work, checks active account/parent and current Owner/Admin
+membership before validation or private store reads, and checks authority again
+before returning a successful result. It validates policy fields and explicit
+expected version, freezes scalar record input, preserves creation time and
+original applicability, and rejects namespace moves, stale versions and backward
+clocks. A separately reviewed identity is required for a different applicability.
+
+The actor-bound retry fingerprint includes Organization, policy ID, expected
+version and reviewed input. Valid retries return the original revision even after
+a later policy edit; changed intent, expired keys and inconsistent receipt
+provenance are refused. Correlation IDs are bounded and excluded from intent
+identity. Store writes receive current membership identity/version/capacity and
+an event ID, and must atomically persist the full audited source graph.
+
+This service is deliberately unregistered until Production and transactional Demo
+adapters, runtime capabilities, HTTP contracts and their acceptance checks exist.
+The test probe is not an adapter and cannot establish persistence, audit or rollback
+semantics. Four focused Linux command tests passed after fresh whole-solution
+compilation (zero warnings/errors), with all 822 backend/test hashes matching.
+They verify admission before disclosure, original acknowledgment recovery,
+changed/stale/expired retries, immutable applicability, substituted private
+sources and result withdrawal after authority loss during IO. A current full API
+regression is running; no result is claimed before it terminates.
+
 ## Acceptance evidence and complete remaining scope
 
 [RecordRetentionTests.cs](../../tests/StrataAI.Domain.Tests/RecordRetentionTests.cs)
