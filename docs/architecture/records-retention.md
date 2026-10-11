@@ -80,8 +80,10 @@ The persisted current policy namespace enforces one retained identity per
 Organization/class/normalized category/jurisdiction scope, including the null
 jurisdiction scope. A policy cannot move namespaces. The future owning selector must resolve a specific jurisdiction
 and Organization-wide applicability deterministically; it may not silently
-choose the shortest retention period. Explicit selection and stale-selection
-recovery still require implementation and tests. Planned indexes support that
+choose the shortest retention period. The domain selection contract below now
+defines explicit choice and stale-source refusal; owning runtime readers,
+selection review/recovery and policy retirement still require implementation.
+Planned indexes support that
 namespace and hold admission by `(tenant_id, status, record_class, category,
 record_id)`; immutable version histories need descending version pagination.
 Record-specific holds require tenant-safe typed owning-record references,
@@ -91,6 +93,47 @@ are private; forced RLS, tenant-safe FKs and current confidentiality guards are
 required at persistence and HTTP boundaries.
 
 ## Policy storage and integrity
+
+### Complete policy selection and revalidation
+
+[RetentionPolicySelection.cs](../../src/StrataAI.Domain/Records/RetentionPolicySelection.cs)
+adds a domain selection result bound to the full owning record snapshot. A trusted
+reader must establish the complete current class/category scope containing the
+Organization-wide policy and, where applicable, the matching jurisdiction policy.
+The existing unique namespace permits at most two matching identities. A paged
+directory or a caller-supplied assertion is not proof of completeness. Invalid,
+foreign, unrelated, duplicate or future sources are refused; no matching rule
+preserves the record.
+
+A single current applicable rule can be selected without inventing another rule.
+When both Organization-wide and jurisdiction applicability match, selection
+requires an explicit tenant/policy/version reference. It does not prefer the
+specific jurisdiction, shorter period or destructive action. Foreign, missing,
+nonpositive or stale references cannot silently rebind to today's revision.
+The result retains whether the original choice was explicit or unambiguous.
+
+The selection-aware disposition evaluator requires a fresh complete policy scope
+and identical current record/rule snapshots. It repeats the original choice:
+new ambiguity invalidates an automatic choice, while an explicit reviewed choice
+can remain valid if that exact rule is still current. Changed versions, clocks,
+applicability, immutability or same-version rule content refuse disposition.
+Successful selection still passes through complete hold lookup, active hold,
+governance immutability, anchor, period and overflow checks. No selection alone
+authorizes deletion or anonymization.
+
+Fresh whole-solution compilation passed with zero warnings/errors. Maintained
+[selection tests](../../tests/StrataAI.Domain.Tests/RetentionPolicySelectionTests.cs)
+cover order-independent ambiguity, explicit preservation, unique matching,
+snapshot changes, incomplete scopes, foreign/future/duplicate/unrelated sources,
+stale/substituted references, new ambiguity, holds and governance preservation.
+The focused Records suite passed **41/41** and the complete Linux Domain suite
+passed **984/984**, zero failed/not-executed/aborted/timed-out cases. Both captures
+matched all **830 backend/test source hashes**; owned terminal fixtures were
+removed. These are domain prerequisites, not runtime selection, lock acquisition,
+retirement, hold persistence, disposition execution, audit/publication or release
+acceptance. The previously verified 859-case API capture predates these new
+domain sources; it is not evidence of their runtime integration. PRD-70 remains
+open at **83% estimated work remaining**.
 
 `record_retention_policies` has primary key `(tenant_id, id)` and selects its
 exact current immutable history revision. `record_retention_policy_history`

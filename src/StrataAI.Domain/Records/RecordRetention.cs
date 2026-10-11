@@ -27,7 +27,8 @@ public sealed record RetentionRecord(Guid Id, Guid OrganizationId, long Version,
 public enum DispositionReason
 {
     Eligible, InvalidSource, IncompleteHoldScope, NoApplicablePolicy,
-    ImmutableRecord, ActiveHold, PolicyPreserves, MissingAnchor, RetentionPending, DeadlineOverflow
+    ImmutableRecord, ActiveHold, PolicyPreserves, MissingAnchor, RetentionPending, DeadlineOverflow,
+    IncompletePolicyScope, PolicyChoiceRequired, PolicyReferenceUnavailable
 }
 public sealed record RecordDispositionDecision(bool CanDispose, RecordDispositionAction Action,
     DispositionReason Reason, DateTimeOffset? EligibleAt = null);
@@ -83,6 +84,27 @@ public static class RecordRetentionRules
 // scope and hold locks through the actual disposition transaction and audit.
 public static class RecordDisposition
 {
+    // Re-read and lock both scopes in the eventual owning transaction. Preserve
+    // the original explicit/automatic selection and complete record/rule snapshot.
+    public static RecordDispositionDecision Evaluate(RetentionPolicySelection selection, RetentionRecord currentRecord,
+        IReadOnlyList<RecordRetentionPolicy> currentPolicies, bool policyScopeComplete,
+        IReadOnlyList<RetentionHold> currentHolds, bool holdScopeComplete, DateTimeOffset now)
+    {
+        RecordDispositionDecision Keep(RetentionPolicySelectionReason reason) => new(false, RecordDispositionAction.Preserve, reason switch
+        {
+            RetentionPolicySelectionReason.IncompleteScope => DispositionReason.IncompletePolicyScope,
+            RetentionPolicySelectionReason.NoApplicablePolicy => DispositionReason.NoApplicablePolicy,
+            RetentionPolicySelectionReason.ChoiceRequired => DispositionReason.PolicyChoiceRequired,
+            RetentionPolicySelectionReason.ReferenceUnavailable => DispositionReason.PolicyReferenceUnavailable,
+            _ => DispositionReason.InvalidSource
+        });
+        if (!selection.Succeeded) return Keep(selection.Reason);
+        if (selection.Record != currentRecord) return Keep(RetentionPolicySelectionReason.InvalidSource);
+        var current = RetentionPolicies.Select(currentRecord, currentPolicies, policyScopeComplete, now, selection.Reference);
+        if (!current.Succeeded) return Keep(current.Reason);
+        if (current.Policy != selection.Policy) return Keep(RetentionPolicySelectionReason.ReferenceUnavailable);
+        return Evaluate(current.Policy!, currentRecord, currentHolds, holdScopeComplete, now);
+    }
     public static RecordDispositionDecision Evaluate(RecordRetentionPolicy policy, RetentionRecord record,
         IReadOnlyList<RetentionHold> holds, bool holdScopeComplete, DateTimeOffset now)
     {
