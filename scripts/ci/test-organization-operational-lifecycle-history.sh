@@ -73,6 +73,7 @@ for target in SUSPENDED DEACTIVATED; do
   done
   test "$(request POST "/lists/$list/restore" '{"version":2}')" = 404
   test "$(request POST "/cards/$card/restore" '{"version":2}')" = 404
+  test "$(request DELETE "/organizations/$org?version=$((version+1))" '{}')" = 404
   test "$(retained)" = "$before"
   test "$(request PATCH "/organizations/$org/operational-lifecycle" "$(jq -nc --argjson version "$((version+1))" '{status:"ACTIVE",version:$version}')")" = 200
   test "$(retained)" = "$before"
@@ -91,5 +92,21 @@ for target in SUSPENDED DEACTIVATED; do
   jq -e '.items[0].version==4 and .items[0].configuration.intakeBoardId==null and .items[0].configuration.intakeListId==null' "$scratch/response.json" >/dev/null
   jq -S '.items[1:]' "$scratch/response.json" > "$scratch/earlier-history.json"
   cmp "$scratch/original-history.json" "$scratch/earlier-history.json"
+  configuration_snapshot() {
+    admin "SELECT md5(jsonb_build_object(
+      'current',(SELECT to_jsonb(c) FROM organization_configurations c WHERE tenant_id='$org'),
+      'history',(SELECT jsonb_agg(to_jsonb(h) ORDER BY version) FROM organization_configuration_history h WHERE tenant_id='$org'),
+      'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY version) FROM organization_configuration_receipts r WHERE tenant_id='$org'),
+      'lifecycle',(SELECT jsonb_agg(to_jsonb(h) ORDER BY version) FROM organization_operational_lifecycle_history h WHERE tenant_id='$org'))::text);"
+  }
+  before_deletion=$(configuration_snapshot)
+  test "$(request DELETE "/organizations/$org?version=$((version+2))" '{}')" = 202
+  for route in "$configuration/history" "$details" "/organizations/$org/operational-lifecycle" "/organizations/$org/operational-lifecycle/events?afterVersion=0"; do
+    test "$(get "$route")" = 404
+    scripts/ci/assert-file-excludes.sh 'Original legal name|Later legal name|Retained private Card|Original private history' "$scratch/response.json"
+  done
+  test "$(request PATCH "/organizations/$org/operational-lifecycle" "$(jq -nc --argjson version "$((version+3))" '{status:"ACTIVE",version:$version}')")" = 404
+  test "$(configuration_snapshot)" = "$before_deletion"
+  test "$(admin "SELECT count(*) FROM organizations WHERE id='$org' AND status IN ('DELETING','DELETED');")" = 1
 done
-echo 'Production lifecycle transitions preserved archived records and configuration history; inactive reads/restores denied and original history recovered.'
+echo 'Production lifecycle preserved archived/configuration history and references; deletion withdrew access and lifecycle reactivation stayed denied.'
