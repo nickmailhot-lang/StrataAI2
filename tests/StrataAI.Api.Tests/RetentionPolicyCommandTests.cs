@@ -41,6 +41,7 @@ public sealed partial class ApiHostTests
         var id = Guid.NewGuid(); var key = Guid.NewGuid(); var input = PolicyInput();
         var first = await service.ChangeAsync(parent.Id, actor, id, input, 0, key, "policy-first", ct);
         Assert.True(first.Succeeded); Assert.Equal(1, first.Value!.Version);
+        Assert.Equal(0, first.Value.UpdatedAt.Ticks % 10);
         var firstReceipt = probe.Receipt;
         clock.UtcNow = clock.UtcNow.AddSeconds(1);
         var second = await service.ChangeAsync(parent.Id, actor, id, input with { RetentionDays = 730 }, 1,
@@ -107,5 +108,26 @@ public sealed partial class ApiHostTests
         probe.AfterRead = () => fence.Denied = true;
         var refused = await service.ReadAsync(parent.Id, actor, id, ct);
         Assert.False(refused.Succeeded); Assert.Equal("organization_not_found", refused.ErrorCode); Assert.Null(refused.Value);
+    }
+
+    [Fact]
+    public async Task PRD_70_policy_postgres_adapter_refuses_unowned_operations_before_opening_database()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory();
+        await using var connections = new StrataAI.Infrastructure.Persistence.PostgresConnectionFactory(
+            "Host=127.0.0.1;Port=1;Database=unopened;Username=unopened;Password=unopened;Timeout=1");
+        var store = ActivatorUtilities.CreateInstance<StrataAI.Infrastructure.Records.PostgresRetentionPolicyStore>(app.Services, connections);
+        var organization = Guid.NewGuid(); var actor = Guid.NewGuid(); var policy = Guid.NewGuid();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.ReadAsync(organization, policy, ct));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.ReadReceiptAsync(organization, actor, Guid.NewGuid(), ct));
+        var at = DateTimeOffset.UtcNow;
+        var source = new RecordRetentionPolicy(policy, organization, 1, RetentionRecordClass.Document,
+            "contracts", null, RetentionAnchor.Created, null, RecordDispositionAction.Preserve, "Explicit policy", null, at, at);
+        var write = new RetentionPolicyWrite(source, actor, Guid.NewGuid(), 1, OrganizationRole.Owner,
+            Guid.NewGuid(), "unowned", new(actor, Guid.NewGuid(), new string('A', 64), source, at.AddHours(24)));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.WriteAsync(0, write, ct));
+        using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => store.ReadAsync(organization, policy, cancelled.Token));
     }
 }

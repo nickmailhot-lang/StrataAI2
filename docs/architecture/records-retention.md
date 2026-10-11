@@ -133,8 +133,8 @@ provenance are refused. Correlation IDs are bounded and excluded from intent
 identity. Store writes receive current membership identity/version/capacity and
 an event ID, and must atomically persist the full audited source graph.
 
-This service is deliberately unregistered until Production and transactional Demo
-adapters, runtime capabilities, HTTP contracts and their acceptance checks exist.
+This service is deliberately unregistered until transactional Demo parity,
+runtime capabilities, HTTP contracts and their acceptance checks exist.
 The test probe is not an adapter and cannot establish persistence, audit or rollback
 semantics. Four focused Linux command tests passed after fresh whole-solution
 compilation (zero warnings/errors), with all 822 backend/test hashes matching.
@@ -142,6 +142,31 @@ They verify admission before disclosure, original acknowledgment recovery,
 changed/stale/expired retries, immutable applicability, substituted private
 sources and result withdrawal after authority loss during IO. A current full API
 regression is running; no result is claimed before it terminates.
+
+[PostgresRetentionPolicyStore](../../src/StrataAI.Infrastructure/Records/PostgresRetentionPolicyStore.cs)
+now borrows the owning transaction for typed current/history and original receipt
+reads. It validates current account, membership and source/receipt provenance
+again before writing, snapshots the actor's current label, and appends the complete
+header/revision/receipt graph under a savepoint. The schema produces the audit.
+Namespace, version and retry conflicts return fixed errors; a final authority
+failure rolls the owning transaction back. It cannot open an independent command.
+Command timestamps are canonicalized to PostgreSQL microseconds before responses
+and receipts are formed, preserving exact refresh/replay equality.
+
+Fresh compilation and **five focused Linux cases** passed with **823 backend/test
+hashes matching**, including refusal of unowned/cancelled adapter operations before
+database access. A separate local compiled native PostgreSQL harness also passed
+using real restricted API-role connections and the actual owning unit/store/service:
+first/later committed refresh, original retries, changed/stale intent refusal,
+normalized namespace collision, two concurrent writers with one stale conflict,
+and final authority failure rolling back the header and receipt. Independent SQL
+confirmed exactly **one header, three revisions, three receipts and three audit
+events**, with four safe metadata fields and no private source/notes. All **823
+captured source hashes** matched; owned fixtures and credentials were removed.
+This harness used **fixture-local prospective INSERT/UPDATE grants** after checking
+canonical read-only provisioning. Those grants are not in runtime provisioning.
+The adapter remains unregistered, the Worker has no policy access, and this local
+compiled harness is not maintained release-image or complete HTTP acceptance.
 
 ## Acceptance evidence and complete remaining scope
 

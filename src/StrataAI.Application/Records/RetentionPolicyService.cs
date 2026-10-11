@@ -51,7 +51,10 @@ public sealed class RetentionPolicyService(IOrganizationStore organizations,
             if (string.IsNullOrWhiteSpace(correlationId) || correlationId.Length > 256 || correlationId.Any(char.IsControl))
                 return OrganizationOperation<RecordRetentionPolicy>.Failure("invalid_correlation_id");
             if (input is null) return OrganizationOperation<RecordRetentionPolicy>.Failure("invalid_retention_policy");
-            var at = clock.UtcNow;
+            // PostgreSQL timestamptz retains microseconds. Canonicalize before
+            // composing both the response and its receipt so refresh/replay match.
+            var now = clock.UtcNow;
+            var at = now.AddTicks(-(now.Ticks % 10));
             var proposed = new RecordRetentionPolicy(policy, organization, expectedVersion + 1,
                 input.RecordClass, input.Category, input.Jurisdiction, input.Anchor,
                 input.RetentionDays, input.Action, input.Source, input.Notes, at, at);
