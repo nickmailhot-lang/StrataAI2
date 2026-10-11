@@ -1,6 +1,6 @@
 # Organization Types and configuration acceptance — PRD-27
 
-PRD-27 remains open, with **35% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest Portal isolation and restricted PostgreSQL concurrency results are recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
+PRD-27 remains open, with **34% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest Portal isolation and restricted PostgreSQL concurrency results are recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
 
 Recipient-security components now include an owning-transaction coordinator with
 current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
@@ -43,7 +43,7 @@ delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
 source/persistence evidence without closing Activity, recipient replay/SignalR
 or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
-[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **35%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
+[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **34%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
 Source CI recorded for `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
 passes **880/880 Domain tests** and **801/801 API host tests**, with zero failed
@@ -386,3 +386,9 @@ Two actual Production HTTP cases now create two configuration revisions (includi
 The hosted run also repeats real-clock session-expiry rollback, both HTTP logout orderings, independent Portal admission and actual Worker delivery/restart recovery. All **1876 captured source files match** at completion. Owned containers, database, runtime roles and credential files were removed; original PostgreSQL preserved. These isolated Production checks do not establish provider/TLS-edge or complete legal retention-hold behavior.
 
 [test-organization-operational-lifecycle-history.sh](../../scripts/ci/test-organization-operational-lifecycle-history.sh) now retains both paths in the exact-image command job with real HTTP setup, unchanged-record snapshots, private denial bodies and original history comparison. Publication readiness may progress separately; the snapshot intentionally covers retained records and immutable revisions/audits rather than claiming ready clocks cannot advance. Bash syntax, workflow YAML and diff checks pass. Full current-source API regression and retained-image execution remain pending. Further retention-hold/reference and data/permission consistency, remaining complete browser/degraded/observability scenarios and release gates remain required. **35% estimated work remaining**; no acceptance criterion or linked scenario is closed by this increment alone.
+
+## Historical intake references and obsolete operational selections
+
+Both Production archived-history cases now also select the live Board/List as intake in configuration revision 3 before archiving the List. The captured historical revision retains its original Board/List IDs through suspension/deactivation and reactivation. Fresh configuration submissions using the archived List fail with `configuration_intake_unavailable` and leave complete retained-record/revision/receipt/audit snapshots unchanged, both before inactivity and after reactivation. Clearing the obsolete operational selection through an ordinary authorized HTTP configuration change creates revision 4; all three earlier history items remain identical, including their intake foreign keys and captured source context. No automatic archive callback silently rewrites configuration history.
+
+The hosted restricted Production run passes the expanded reference cases alongside expiry, logout ordering, Portal and Worker recovery. All **1876 captured repository source files match** at completion; owned database, roles, containers and credential files were cleaned, original PostgreSQL preserved. The [retained release fixture](../../scripts/ci/test-organization-operational-lifecycle-history.sh) carries the same selection/rejection/clear-and-preserve assertions. Bash syntax and diff checks pass. This establishes the tested archived intake reference behavior; it does not establish complete legal retention-hold policy or every deletion/reference combination. Current full API regression and exact-image CI remain pending. **34% estimated work remaining**; no acceptance criteria or linked scenarios are closed by this increment alone.

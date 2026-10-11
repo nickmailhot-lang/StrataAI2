@@ -49,12 +49,21 @@ for target in SUSPENDED DEACTIVATED; do
   test "$(request POST "/lists/$list/cards" '{"title":"Retained private Card","description":"Original private history"}')" = 201
   card=$(jq -r '.id' "$scratch/response.json")
   for id in "$board" "$list" "$card"; do [[ "$id" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]; done
+  intake=$(jq -nc --arg board "$board" --arg list "$list" '{version:2,configuration:{legalName:"Later legal name",jurisdiction:"CA-ON",timezone:"America/Toronto",managementCompanyName:"Later management",intakeBoardId:$board,intakeListId:$list}}')
+  test "$(request PATCH "$configuration" "$intake")" = 200
+  test "$(get "$configuration/history")" = 200
+  jq -e --arg board "$board" --arg list "$list" '.items[0].version==3 and .items[0].configuration.intakeBoardId==$board and .items[0].configuration.intakeListId==$list' "$scratch/response.json" >/dev/null
+  jq -S '.items' "$scratch/response.json" > "$scratch/original-history.json"
   test "$(request POST "/cards/$card/archive" '{"version":1}')" = 200
   test "$(request POST "/lists/$list/archive" '{"version":1}')" = 200
   details="/boards/$board/cards/$card/archived-details"
   test "$(get "$details")" = 200
   cp "$scratch/response.json" "$scratch/original-card.json"
   before=$(retained)
+  stale_intake=$(jq '.version=3' <<< "$intake")
+  test "$(request PATCH "$configuration" "$stale_intake")" = 400
+  jq -e '.code=="configuration_intake_unavailable"' "$scratch/response.json" >/dev/null
+  test "$(retained)" = "$before"
   test "$(get "/organizations/$org/operational-lifecycle")" = 200
   version=$(jq -r '.version' "$scratch/response.json")
   test "$(request PATCH "/organizations/$org/operational-lifecycle" "$(jq -nc --arg target "$target" --argjson version "$version" '{status:$target,version:$version}')")" = 200
@@ -72,5 +81,15 @@ for target in SUSPENDED DEACTIVATED; do
   cmp "$scratch/original-history.json" "$scratch/restored-history.json"
   test "$(get "$details")" = 200
   cmp "$scratch/original-card.json" "$scratch/response.json"
+  test "$(request PATCH "$configuration" "$stale_intake")" = 400
+  jq -e '.code=="configuration_intake_unavailable"' "$scratch/response.json" >/dev/null
+  test "$(retained)" = "$before"
+  # Clearing the obsolete operational selection creates a new revision; old
+  # historical foreign keys and source captions must retain their meaning.
+  test "$(request PATCH "$configuration" '{"version":3,"configuration":{"legalName":"Later legal name","jurisdiction":"CA-ON","timezone":"America/Toronto","managementCompanyName":"Later management"}}')" = 200
+  test "$(get "$configuration/history")" = 200
+  jq -e '.items[0].version==4 and .items[0].configuration.intakeBoardId==null and .items[0].configuration.intakeListId==null' "$scratch/response.json" >/dev/null
+  jq -S '.items[1:]' "$scratch/response.json" > "$scratch/earlier-history.json"
+  cmp "$scratch/original-history.json" "$scratch/earlier-history.json"
 done
 echo 'Production lifecycle transitions preserved archived records and configuration history; inactive reads/restores denied and original history recovered.'
