@@ -2,6 +2,7 @@ using System.Globalization;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
+using StrataAI.Application.Records;
 using StrataAI.Domain.WorkManagement;
 
 namespace StrataAI.Application.WorkManagement;
@@ -15,7 +16,7 @@ public sealed record AttachmentArchivePage(Guid OrganizationId, Guid BoardId, Gu
 
 public sealed class AttachmentLifecycleService(IWorkManagementStore work, IAttachmentMetadataStore attachments,
     IOrganizationStore organizations, IWorkBoardAuthorization boards, IWorkManagementUnitOfWork transactions,
-    IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events, ICardAttachmentCoverStore covers)
+    IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events, ICardAttachmentCoverStore covers, IRetentionWorkDisposition disposition)
 {
     public Task<WorkOperation<AttachmentLifecycleChange>> ArchiveAsync(Guid card, Guid attachment, Guid actor,
         AttachmentLifecycleInput input, string correlationId, CancellationToken ct = default) =>
@@ -65,6 +66,11 @@ public sealed class AttachmentLifecycleService(IWorkManagementStore work, IAttac
                 }
                 if (child.LifecycleState == AttachmentLifecycleState.Deleted || deleting && child.LifecycleState != AttachmentLifecycleState.Archived)
                     return WorkOperation<AttachmentLifecycleChange>.Failure("invalid_lifecycle_transition");
+                if (deleting)
+                {
+                    var dispositionError = (await disposition.CheckAsync(hint.OrganizationId, RetentionWorkDispositionKind.Attachment, attachmentId, ct)).ErrorCode();
+                    if (dispositionError is not null) return WorkOperation<AttachmentLifecycleChange>.Failure(dispositionError);
+                }
                 var now = AttachmentMetadataMapping.DatabaseTimestamp(clock.UtcNow);
                 if (now < current.UpdatedAt || now < child.UpdatedAt || child.Version == long.MaxValue || current.Version == long.MaxValue)
                     return WorkOperation<AttachmentLifecycleChange>.Failure("version_conflict");

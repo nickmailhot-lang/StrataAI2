@@ -20,6 +20,14 @@ internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organization
     private readonly Dictionary<(Guid Organization, Guid Hold, long Version), DemoRetentionHoldRevision> _history = [];
     private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), RetentionHoldReceipt> _receipts = [];
     private readonly HashSet<Guid> _eventIds = [];
+    internal bool HasActiveDispositionHold(Guid organization, RetentionRecordClass recordClass, Guid record, string? category, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!scope.Owns(organization)) throw new InvalidOperationException("Disposition requires its owning tenant transaction.");
+        return _current.Values.Any(h => h.OrganizationId == organization && h.Status == RetentionHoldStatus.Active
+            && (h.RecordClass is null || h.RecordClass == recordClass) && (h.RecordId is null || h.RecordId == record)
+            && (h.Category is null || category is null || string.Equals(h.Category, category, StringComparison.OrdinalIgnoreCase)));
+    }
     public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct)
     {
         RequireScope(organization, ct);

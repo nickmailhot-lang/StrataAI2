@@ -850,6 +850,8 @@ public static partial class WorkManagementEndpoints
                 StatusCodes.Status401Unauthorized,
                 errorCode,
                 "Your session is no longer available. Sign in again."),
+            "retention_hold_prevents_disposition" => Problem(409, errorCode, "Retention requirements prevent permanent deletion. Ask an authorized Records administrator to review the hold."),
+            "retention_disposition_unavailable" => Problem(503, errorCode, "Retention requirements could not be confirmed. Permanent deletion was not performed; retry after access and storage are available."),
             "work_storage_unavailable" => Problem(
                 StatusCodes.Status503ServiceUnavailable,
                 errorCode,

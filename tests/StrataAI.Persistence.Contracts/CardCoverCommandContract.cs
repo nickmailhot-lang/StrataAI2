@@ -26,7 +26,7 @@ internal static class CardCoverCommandContract
         var organizations = provider.GetRequiredService<IOrganizationStore>(); var boards = provider.GetRequiredService<IWorkBoardAuthorization>();
         var events = provider.GetRequiredService<IWorkEventStore>();
         var service = new CardAttachmentCoverService(work, metadata, covers, organizations, boards, unit, context, authorization, clock, events);
-        var lifecycle = new AttachmentLifecycleService(work, metadata, organizations, boards, unit, context, authorization, clock, events, covers);
+        var lifecycle = new AttachmentLifecycleService(work, metadata, organizations, boards, unit, context, authorization, clock, events, covers, provider.GetRequiredService<StrataAI.Application.Records.IRetentionWorkDisposition>());
         async Task<T> Scalar<T>(string sql)
         {
             await using var query = new NpgsqlCommand(sql, admin);

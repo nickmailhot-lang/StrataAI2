@@ -142,6 +142,7 @@ public sealed class BoardSharingTelemetry
                 or "list_not_found" or "card_not_found" or "invalid_list_name" or "invalid_rank"
                 or "invalid_move_position" or "rank_space_exhausted"
                 or "invalid_lifecycle_transition" or "delete_confirmation_required"
+                or "retention_hold_prevents_disposition" or "retention_disposition_unavailable"
                 or "deletion_impact_required" or "deletion_impact_changed"
                 or "invalid_archive_cursor" or "invalid_card_title"
                 or "label_not_found" or "invalid_label_name" or "invalid_label_color" or "invalid_label_cursor" or "invalid_board_filter" or "invalid_search" or "invalid_card_member_version" => code,

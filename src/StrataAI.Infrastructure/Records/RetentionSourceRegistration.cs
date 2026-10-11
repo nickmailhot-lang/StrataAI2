@@ -3,6 +3,7 @@ using StrataAI.Application.Organizations;
 using StrataAI.Application.Records;
 using StrataAI.Application.Runtime;
 using StrataAI.Infrastructure.Organizations;
+using StrataAI.Infrastructure.WorkManagement;
 
 namespace StrataAI.Infrastructure.Records;
 
@@ -12,6 +13,12 @@ public static class RetentionSourceRegistration
     {
         if (runtime.Mode == RuntimeMode.Demo)
         {
+            services.AddSingleton<InMemoryRetentionHoldStore>();
+            services.AddSingleton<IRetentionHoldStore>(p => p.GetRequiredService<InMemoryRetentionHoldStore>());
+            services.AddSingleton<IDemoOrganizationTransactionParticipant>(p => p.GetRequiredService<InMemoryRetentionHoldStore>());
+            services.AddSingleton<Func<InMemoryRetentionHoldStore>>(p => () => p.GetRequiredService<InMemoryRetentionHoldStore>());
+            services.AddSingleton<Func<InMemoryRetentionSourceStore>>(p => () => p.GetRequiredService<InMemoryRetentionSourceStore>());
+            services.AddSingleton<IRetentionWorkDisposition, InMemoryRetentionWorkDisposition>();
             services.AddSingleton<InMemoryRetentionSourceStore>();
             services.AddSingleton<IRetentionSourceCommandStore>(p => p.GetRequiredService<InMemoryRetentionSourceStore>());
             services.AddSingleton<IRetentionSourceReferenceReader>(p => p.GetRequiredService<InMemoryRetentionSourceStore>());
@@ -21,6 +28,7 @@ public static class RetentionSourceRegistration
         }
         else
         {
+            services.AddSingleton<IRetentionWorkDisposition, PostgresRetentionWorkDisposition>();
             services.AddSingleton<PostgresRetentionSourceStore>();
             services.AddSingleton<IRetentionSourceCommandStore>(p => p.GetRequiredService<PostgresRetentionSourceStore>());
             services.AddSingleton<IRetentionSourceReferenceReader>(p => p.GetRequiredService<PostgresRetentionSourceStore>());
@@ -29,6 +37,7 @@ public static class RetentionSourceRegistration
         }
         services.AddSingleton<RetentionProducerAuthorization>();
         services.AddSingleton<RetentionWorkAuthorization>();
+        services.AddSingleton<IRetentionHoldScopeAuthorization>(p => p.GetRequiredService<RetentionWorkAuthorization>());
         services.AddSingleton<RetentionSourceReviewService>();
         services.AddSingleton<RetentionSourceClassificationService>();
     }

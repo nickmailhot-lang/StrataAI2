@@ -331,11 +331,70 @@ internal static class RetentionHoldPersistenceContract
                 return OrganizationOperation<bool>.Success(true);
             }, ct);
             Require(stamped.Succeeded, "Native stamped reference lookup unit failed.");
+            var disposition = new PostgresRetentionWorkDisposition(db);
+            async Task CheckDisposition(RetentionWorkDispositionKind kind, Guid recordId, RetentionDispositionAdmission expected)
+            {
+                var checkedScope = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
+                {
+                    Require(await disposition.CheckAsync(tenant, kind, recordId, ct) == expected,
+                        "Native complete disposition scope disagreed with current hold/source family.");
+                    return OrganizationOperation<bool>.Success(true);
+                }, ct);
+                Require(checkedScope.Succeeded, "Native owning disposition check failed.");
+            }
+            // More than 1,000 unrelated Audit holds are already present. Work
+            // disposition must use complete EXISTS, not the bounded preview API.
+            await CheckDisposition(RetentionWorkDispositionKind.Card, card, RetentionDispositionAdmission.Held);
+            await CheckDisposition(RetentionWorkDispositionKind.List, destinationList, RetentionDispositionAdmission.Held);
+            await CheckDisposition(RetentionWorkDispositionKind.Board, destination, RetentionDispositionAdmission.Held);
+            await CheckDisposition(RetentionWorkDispositionKind.Board, board, RetentionDispositionAdmission.Clear);
+            await CheckDisposition(RetentionWorkDispositionKind.CardComment, comment, RetentionDispositionAdmission.Clear);
+            await CheckDisposition(RetentionWorkDispositionKind.Attachment, attachment, RetentionDispositionAdmission.Clear);
+            var documentHold = Guid.NewGuid();
+            Require((await service.ApplyAsync(tenant, actor, documentHold,
+                new(tenant, RetentionRecordClass.Document, "PRIVATE.CONTEXT", attachment), "Private document reason", Guid.NewGuid(), "disposition-document", ct)).Succeeded,
+                "Native disposition document hold fixture failed.");
+            await CheckDisposition(RetentionWorkDispositionKind.Attachment, attachment, RetentionDispositionAdmission.Held);
+            await CheckDisposition(RetentionWorkDispositionKind.CardComment, comment, RetentionDispositionAdmission.Clear);
+            Require((await service.ReleaseAsync(tenant, actor, documentHold, 1, Guid.NewGuid(), "disposition-release", ct)).Succeeded,
+                "Native disposition document release fixture failed.");
+            await CheckDisposition(RetentionWorkDispositionKind.Attachment, attachment, RetentionDispositionAdmission.Clear);
+            var categoryHold = Guid.NewGuid();
+            Require((await service.ApplyAsync(tenant, actor, categoryHold,
+                new(tenant, RetentionRecordClass.Document, "unknown.category", null), "Private category reason", Guid.NewGuid(), "disposition-category", ct)).Succeeded,
+                "Native disposition category hold fixture failed.");
+            await CheckDisposition(RetentionWorkDispositionKind.Attachment, attachment, RetentionDispositionAdmission.Clear);
+            await CheckDisposition(RetentionWorkDispositionKind.Attachment, unclassifiedAttachment, RetentionDispositionAdmission.Held);
+            await CheckDisposition(RetentionWorkDispositionKind.Card, unclassified, RetentionDispositionAdmission.Held);
+            await CheckDisposition(RetentionWorkDispositionKind.List, list, RetentionDispositionAdmission.Held);
+            await CheckDisposition(RetentionWorkDispositionKind.Board, board, RetentionDispositionAdmission.Held);
+            Require((await service.ReleaseAsync(tenant, actor, categoryHold, 1, Guid.NewGuid(), "disposition-category-release", ct)).Succeeded,
+                "Native disposition category release fixture failed.");
+            await CheckDisposition(RetentionWorkDispositionKind.Board, board, RetentionDispositionAdmission.Clear);
+            var organizationHold = Guid.NewGuid();
+            Require((await service.ApplyAsync(tenant, actor, organizationHold,
+                new(tenant, null, null, null), "Private Organization reason", Guid.NewGuid(), "disposition-organization", ct)).Succeeded,
+                "Native disposition Organization hold fixture failed.");
+            await CheckDisposition(RetentionWorkDispositionKind.CardComment, comment, RetentionDispositionAdmission.Held);
+            Require((await service.ReleaseAsync(tenant, actor, organizationHold, 1, Guid.NewGuid(), "disposition-organization-release", ct)).Succeeded,
+                "Native disposition Organization release fixture failed.");
+            await CheckDisposition(RetentionWorkDispositionKind.CardComment, comment, RetentionDispositionAdmission.Clear);
+            await CheckDisposition(RetentionWorkDispositionKind.Card, Guid.NewGuid(), RetentionDispositionAdmission.Unavailable);
+            var foreignDisposition = await unit.ExecuteAsync(other, actor, null, false, async () =>
+            {
+                Require(await disposition.CheckAsync(other, RetentionWorkDispositionKind.Card, card, ct) == RetentionDispositionAdmission.Unavailable,
+                    "Native disposition crossed tenant scope.");
+                return OrganizationOperation<bool>.Success(true);
+            }, ct);
+            Require(foreignDisposition.Succeeded, "Native foreign disposition fixture failed.");
+            try { await disposition.CheckAsync(tenant, RetentionWorkDispositionKind.Card, card, ct); throw new Exception("Unowned disposition IO admitted."); }
+            catch (InvalidOperationException) { }
+            Console.WriteLine("Native complete Work disposition: current moved families, record/category/Organization holds, releases, unknown classification, tenant refusal and unowned refusal passed.");
             var workStore = new PostgresWorkManagementStore(db);
             // Only the existing GetSyncScopeAsync admission path is used. Its
             // event/notification/reminder mutation collaborators are not invoked.
             IWorkBoardAuthorization actualBoards = new WorkManagementService(workStore, organizations, clock,
-                null!, policy, null!, null!, null!, null!);
+                null!, policy, null!, null!, null!, null!, new PostgresRetentionWorkDisposition(db));
             var review = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
             {
                 var auth = new RetentionProducerAuthorization(producers, workStore, actualBoards, organizations, actors);
@@ -533,12 +592,58 @@ internal static class RetentionHoldPersistenceContract
             }
             try { await sourceStore.ReadSourceAsync(tenant, RetentionRecordClass.OperationalWork, unclassified, ct); throw new Exception("Unowned classification IO admitted."); }
             catch (InvalidOperationException) { }
+            var raceHold = Guid.NewGuid();
+            Require((await realService.ApplyAsync(tenant, actor, raceHold,
+                new(tenant, RetentionRecordClass.OperationalWork, null, unclassified), "Private ordered hold", Guid.NewGuid(), "ordered-apply", ct)).Succeeded,
+                "Native ordered hold application failed.");
+            var workUnit = new PostgresWorkManagementUnitOfWork(db, actors, NullLogger<PostgresWorkManagementUnitOfWork>.Instance);
+            var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var finish = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var retainedCheck = Task.Run(() => workUnit.ExecuteReadAsync(tenant, actor, "board_not_found",
+                () => workStore.AcquireBoardReadScopeAsync(tenant, actor, board, ct), async () =>
+                {
+                    Require(await disposition.CheckAsync(tenant, RetentionWorkDispositionKind.Card, unclassified, ct) == RetentionDispositionAdmission.Held,
+                        "Native Work gate did not observe the committed active hold.");
+                    entered.TrySetResult();
+                    await finish.Task.WaitAsync(TimeSpan.FromSeconds(15), ct);
+                    Require(await disposition.CheckAsync(tenant, RetentionWorkDispositionKind.Card, unclassified, ct) == RetentionDispositionAdmission.Held,
+                        "Native hold changed before the owning Work gate finished.");
+                    return WorkOperation<bool>.Success(true);
+                }, ct), ct);
+            Task<OrganizationOperation<RetentionHold>>? competingRelease = null;
+            try
+            {
+                await entered.Task.WaitAsync(TimeSpan.FromSeconds(10), ct);
+                competingRelease = Task.Run(() => realService.ReleaseAsync(tenant, actor, raceHold, 1, Guid.NewGuid(), "ordered-release", ct), ct);
+                var waiting = false; var deadline = DateTimeOffset.UtcNow.AddSeconds(5);
+                while (!waiting && DateTimeOffset.UtcNow < deadline)
+                {
+                    await using var blocked = new NpgsqlCommand("""
+                        SELECT EXISTS(SELECT FROM pg_stat_activity WHERE usename='strataai_api_runtime'
+                          AND wait_event_type='Lock' AND position('organizations' IN query)>0 AND position('FOR UPDATE' IN query)>0);
+                        """, admin);
+                    waiting = await blocked.ExecuteScalarAsync(ct) is true;
+                    if (!waiting) await Task.Delay(25, ct);
+                }
+                Require(waiting && !competingRelease.IsCompleted,
+                    "Native competing hold release did not wait on the retained Organization gate.");
+            }
+            finally
+            {
+                finish.TrySetResult();
+                Require((await retainedCheck).Succeeded, "Native retained Work transaction failed.");
+                if (competingRelease is not null)
+                    Require((await competingRelease).Succeeded, "Native waiting hold release failed after Work completion.");
+            }
+            await CheckDisposition(RetentionWorkDispositionKind.Card, unclassified, RetentionDispositionAdmission.Clear);
+            Console.WriteLine("Native hold ordering: real Work SHARE/Board gate retained current hold until completion; competing authorized release waited on PostgreSQL and then committed.");
             Console.WriteLine("Native hold and source adapters: restricted owning persistence, original recovery, bounded lookup, reviewed classifications, rollback and safe audit passed; explicit denial/race controls remain fixtures.");
         }
         finally
         {
             await using var restore = new NpgsqlCommand("""
                 REVOKE SELECT,INSERT,UPDATE ON record_retention_holds FROM strataai_api_runtime;
+                GRANT SELECT(tenant_id,record_class,category_key,record_id,status) ON record_retention_holds TO strataai_api_runtime;
                 REVOKE SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts FROM strataai_api_runtime;
                 REVOKE UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;
                 """, admin);

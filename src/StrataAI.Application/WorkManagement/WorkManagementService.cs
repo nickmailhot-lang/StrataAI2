@@ -1,5 +1,6 @@
 using StrataAI.Application.Common;
 using StrataAI.Application.Organizations;
+using StrataAI.Application.Records;
 
 namespace StrataAI.Application.WorkManagement;
 
@@ -8,7 +9,7 @@ public sealed partial class WorkManagementService(
     IOrganizationStore organizationStore,
     IClock clock, IWorkEventStore events, StrataAI.Application.Identity.IdentityPolicy identityPolicy,
     IWorkNotificationStore notifications, CardWatchNotificationProducer watchNotifications,
-    CardReminderScheduling reminders, CardReminderContainerScheduling reminderContainers) : IWorkManagementService, IWorkBoardAuthorization
+    CardReminderScheduling reminders, CardReminderContainerScheduling reminderContainers, IRetentionWorkDisposition disposition) : IWorkManagementService, IWorkBoardAuthorization
 {
     public async Task<WorkOperation<BoardSyncScope>> GetSyncScopeAsync(Guid boardId, Guid? actorId,
         CancellationToken cancellationToken = default)
@@ -678,6 +679,8 @@ public sealed partial class WorkManagementService(
             // commands cannot change this impact between review and deletion.
             if (await store.CountContainedCardsAsync(listId, cancellationToken) != expectedContainedCardCount)
                 return WorkOperation<BoardListRecord>.Failure("deletion_impact_changed");
+            var dispositionError = (await disposition.CheckAsync(list.OrganizationId, RetentionWorkDispositionKind.List, listId, cancellationToken)).ErrorCode();
+            if (dispositionError is not null) return WorkOperation<BoardListRecord>.Failure(dispositionError);
         }
 
         var updated = await store.SetListLifecycleAsync(
@@ -931,6 +934,12 @@ public sealed partial class WorkManagementService(
 
         if (nextState == WorkItemLifecycleState.Deleted && !deletionConfirmed)
             return WorkOperation<CardRecord>.Failure("delete_confirmation_required");
+        if (card.Version != expectedVersion) return WorkOperation<CardRecord>.Failure("version_conflict");
+        if (nextState == WorkItemLifecycleState.Deleted)
+        {
+            var dispositionError = (await disposition.CheckAsync(card.OrganizationId, RetentionWorkDispositionKind.Card, cardId, cancellationToken)).ErrorCode();
+            if (dispositionError is not null) return WorkOperation<CardRecord>.Failure(dispositionError);
+        }
 
         var updated = await store.SetCardLifecycleAsync(
             cardId,
@@ -1065,6 +1074,12 @@ public sealed partial class WorkManagementService(
 
         if (nextState == BoardLifecycleState.Deleted && !deletionConfirmed)
             return WorkOperation<BoardRecord>.Failure("delete_confirmation_required");
+        if (resolved.Value.Board.Version != expectedVersion) return WorkOperation<BoardRecord>.Failure("version_conflict");
+        if (nextState == BoardLifecycleState.Deleted)
+        {
+            var dispositionError = (await disposition.CheckAsync(resolved.Value.Board.OrganizationId, RetentionWorkDispositionKind.Board, boardId, cancellationToken)).ErrorCode();
+            if (dispositionError is not null) return WorkOperation<BoardRecord>.Failure(dispositionError);
+        }
 
         var updated = await store.SetBoardLifecycleAsync(
             boardId,

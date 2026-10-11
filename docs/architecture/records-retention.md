@@ -1703,3 +1703,74 @@ workflow/shard regression tests passed. These local results do not establish
 retained immutable-image acceptance. Exact-commit build-once CI still requires
 verification; legal-hold disposition enforcement, redaction, secure export,
 privacy actions and the remaining Records requirements remain open.
+
+
+## Ordinary Work disposition suspension
+
+The server now checks current retention holds before permanent deletion of a
+Board, List, Card, Attachment or Comment body. Each check runs after current
+object admission, revision and explicit confirmation checks, inside the owning
+Work transaction. Parent deletion checks the complete current family of Card,
+Comment and Attachment identities, including retained descendants with prior
+deleted lifecycle markers, rather than a paged archive or Board UI projection.
+Archive remains available because it preserves the record. A held source or
+child returns the stable, private `retention_hold_prevents_disposition` 409;
+an unavailable disposition projection returns `retention_disposition_unavailable`
+503. Neither envelope discloses hold identities, reasons or private history.
+
+[IRetentionWorkDisposition](../../src/StrataAI.Application/Records/RetentionWorkDisposition.cs)
+is a required server-only boundary with actual
+[PostgreSQL](../../src/StrataAI.Infrastructure/Records/PostgresRetentionWorkDisposition.cs)
+and [Demo](../../src/StrataAI.Infrastructure/Records/InMemoryRetentionWorkDisposition.cs)
+adapters. Production uses complete correlated EXISTS over the owning record
+family and current hold heads; it does not use the bounded preview lookup.
+Organization, class/category and record scopes are considered. A missing
+classification cannot prove exclusion from a category-scoped hold, so deletion
+is conservatively suspended. A known classification outside the category scope
+remains eligible. Current Released heads do not reactivate historical Active
+holds. Current relationships follow a moved Card and its children.
+
+Work commands retain the Organization SHARE lock before the Board gate. Hold
+apply/release owns that Organization FOR UPDATE. This serializes the hold check
+through the work mutation. Demo uses its existing shared mutation gate.
+Already-completed command recovery returns the authorized original receipt
+without invoking a new disposition; a later hold still prevents new deletion.
+Refused commands roll back and may reuse their original key after release.
+
+Canonical API provisioning grants SELECT on exactly five hold columns:
+`tenant_id`, `record_class`, `category_key`, `record_id` and `status`. It grants
+no hold mutation, reason, actor, history or receipt-body access; the Worker gets
+no hold capability. The Demo hold catalog is now composed for suspension and
+participates in Organization rollback. Production hold-writing services and
+hold administration endpoints remain unactivated; broad administration in the
+verification scenarios is explicitly a scope fixture.
+
+Executed local evidence on 2026-10-11: **44/44 focused Records API cases passed**,
+with all **865 captured backend/test hashes matching**. The five actual mapped
+HTTP deletion cases use real typed record/Board hold authorization, real Demo
+storage and the actual disposition provider; they prove child-hold refusal,
+private denial, unchanged state/audit on refusal, release followed by original-key
+retry and stable original receipt recovery. A separate actual HTTP case proves
+original deletion acknowledgment after a later hold while a new child deletion
+is blocked. Broad-scope fixtures separately verify unknown-category suspension,
+known-category exclusion and tenant/owning-scope refusal.
+
+Native PostgreSQL verification passed all **146 migrations**, both restricted
+runtime readiness checks and the maintained persistence executable, with all
+**1,975 captured source hashes matching**. It proves record/category/Organization
+scope, current moved families, releases, unknown classification, complete checks
+with more than 1,000 unrelated holds, tenant refusal and exact canonical minimum
+capabilities. The added actual lock-ordering case observes PostgreSQL blocking a
+competing authorized hold release on the Organization gate while a real Work
+transaction retains its checked hold, then verifies release and current clear
+state after Work completion. Actor-session proof and broad scope administration
+remain explicit native fixture controls. Fresh solution compilation passed
+with zero warnings/errors. Owned fixtures and credentials were removed,
+preserving original PostgreSQL.
+
+Full API regression for this backend change and exact-commit immutable-image CI
+remain to be verified. Actual Production HTTP/browser hold administration,
+clear hold-specific UI explanations, governance retention, Organization deletion
+and offboarding enforcement, controlled redaction, secure exports, privacy
+actions and disposition jobs remain open. This increment implements the
+ordinary Work deletion boundary, not all RECORDS-FR-003 or PRD-70 acceptance.

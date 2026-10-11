@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
+using StrataAI.Application.Records;
 using StrataAI.Domain.WorkManagement;
 
 namespace StrataAI.Application.WorkManagement;
@@ -25,7 +26,7 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
     IOrganizationStore organizations, IWorkBoardAuthorization boards, IWorkManagementUnitOfWork transactions,
     IWorkCommandContext context, ICommandActorAuthorization actors, IClock clock, IWorkEventStore events,
     CardCommentMentionPlanning mentions, ICommentMentionSnapshotStore snapshots, IWorkNotificationStore notifications,
-    CardMassMentionPlanning groups, ICardMassMentionQuota quota)
+    CardMassMentionPlanning groups, ICardMassMentionQuota quota, IRetentionWorkDisposition disposition)
 {
     // Durable recovery must never retain former comment plaintext. The body is
     // hydrated only from the currently admitted row at the recorded revision.
@@ -109,6 +110,11 @@ public sealed class CardCommentService(IWorkManagementStore work, ICardCommentSt
                 }
                 if (child is not null && (deleting ? child.DeletedAt is not null : child.Content == normalized) && selected is not { Count: > 0 } && mass is null)
                     return await Complete(hint, actor, current.Version, child, false, false, ct);
+                if (deleting)
+                {
+                    var dispositionError = (await disposition.CheckAsync(hint.OrganizationId, RetentionWorkDispositionKind.CardComment, child!.Id, ct)).ErrorCode();
+                    if (dispositionError is not null) return WorkOperation<Receipt>.Failure(dispositionError);
+                }
                 var previous = child is null ? null : await snapshots.FindSnapshotAsync(hint.OrganizationId, cardId, child.Id, child.Version, ct);
                 CardCommentMentionPlan? plan = null;
                 CardMassMentionPlan? group = null;

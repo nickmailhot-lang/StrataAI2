@@ -20,6 +20,12 @@ internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizati
 {
     private readonly Dictionary<(Guid Organization, RetentionRecordClass Class, Guid Record), DemoRetentionSourceClassification> rows = [];
     private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), RetentionSourceReceipt> receipts = [];
+    internal string? ReadDispositionCategory(Guid organization, RetentionRecordClass recordClass, Guid record, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!scope.Owns(organization)) throw new InvalidOperationException("Disposition requires its owning tenant transaction.");
+        return rows.GetValueOrDefault((organization, recordClass, record))?.Source.Category;
+    }
     public Task<RetentionSourceReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct)
     {
         RequireScope(organization, ct);
