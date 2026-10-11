@@ -16,6 +16,59 @@ async function sourceEntry(page: Page, kind: string) {
 }
 
 for (const width of [1280, 390]) {
+  test(`PRD-70 original classification recovery retains its source Board after a real Card move at ${width}px`, async ({ page, context }) => {
+    test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
+    await registerNotificationAccount(context.request, {
+      email: `source-move-${width}-${crypto.randomUUID()}@example.test`,
+      password: 'source-move-fixture-correct-horse', displayName: 'Source move Owner',
+    }, process.env.STRATAAI_E2E_RUNTIME_MODE !== 'demo');
+    const created = await context.request.post('/organizations', { headers, data: { name: 'Classification move fixture' } });
+    expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
+    const boards: string[] = [], lists: string[] = [];
+    for (const name of ['Original classification Board', 'Current source Board']) {
+      const board = await context.request.post('/boards', { headers, data: { organizationId: org, name, visibility: 'PRIVATE' } });
+      expect(board.status()).toBe(201); boards.push((await board.json()).id);
+      const list = await context.request.post(`/boards/${boards.at(-1)}/lists`, { headers, data: { name: 'Source context' } });
+      expect(list.status()).toBe(201); lists.push((await list.json()).id);
+    }
+    const cardResponse = await context.request.post(`/lists/${lists[0]}/cards`, { headers, data: { title: 'Moving classified source' } });
+    expect(cardResponse.status()).toBe(201); const card = (await cardResponse.json()).id;
+    const path = `/organizations/${org}/retention-sources/card/${card}/classification`;
+    const writes: { body: string; key: string; receipt: unknown }[] = [];
+    await page.route(url => url.pathname === path, async route => {
+      const request = route.request(), response = await route.fetch(); expect(response.status()).toBe(200);
+      writes.push({ body: request.postData()!, key: request.headers()['idempotency-key'], receipt: await response.json() });
+      if (writes.length === 1) await route.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"work_storage_unavailable"}' });
+      else await route.fulfill({ response });
+    });
+    const restoreWorker = scopedBoardWorker(org);
+    try {
+      for (const board of boards) await waitForBoardDelivery(context.request, board);
+      const originalPath = `/app/${org}/boards/${boards[0]}/cards/${card}`, originalReads = trackBoardReads(page, boards[0], originalPath);
+      await page.goto(originalPath); await expect.poll(originalReads).toBeGreaterThanOrEqual(2);
+      await sourceEntry(page, 'card'); await press(page, 'Review source classification');
+      await expect(page.getByRole('textbox', { name: 'Record category', exact: false })).toBeFocused();
+      await page.keyboard.insertText('reviewed.before.move');
+      await page.getByRole('checkbox', { name: 'I reviewed the source evidence and confirm this classification', exact: true }).focus();
+      await page.keyboard.press('Space'); await press(page, 'Confirm classification');
+      await expect(page.getByRole('button', { name: 'Retry original classification', exact: true })).toBeFocused();
+      const moved = await context.request.post(`/cards/${card}/move`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+        data: { sourceBoardId: boards[0], destinationListId: lists[1], expectedVersion: 1 } });
+      expect(moved.status()).toBe(200);
+      await waitForBoardDelivery(context.request, boards[1]);
+      const currentPath = `/app/${org}/boards/${boards[1]}/cards/${card}`, currentReads = trackBoardReads(page, boards[1], currentPath);
+      await page.goto(currentPath); await expect.poll(currentReads).toBeGreaterThanOrEqual(2);
+      await sourceEntry(page, 'card');
+      await expect(page.getByRole('button', { name: 'Review source classification', exact: true })).toHaveCount(0);
+      await press(page, 'Retry original classification');
+      await expect(page.getByText('Classification confirmed. The original source and audit evidence are preserved.', { exact: true })).toBeVisible();
+      expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
+      expect(JSON.parse(writes[0].body).review).toMatchObject({ cardVersion: 1, sourceVersion: 1, boardId: boards[0], listId: lists[0], recordId: card });
+      expect((writes[1].receipt as { reference: object }).reference).toMatchObject({ originalBoardId: boards[0], sourceVersion: 1, recordId: card });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    } finally { restoreWorker(); }
+  });
   test(`PRD-70 actual three-source keyboard classification and exact original reload recovery at ${width}px`, async ({ page, context }) => {
     test.setTimeout(180_000); await page.setViewportSize({ width, height: 844 });
     const account = await registerNotificationAccount(context.request, {

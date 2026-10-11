@@ -1582,10 +1582,28 @@ The strict verified-account release-image phase explicitly runs this specificati
 the complete browser suite also collects it in the existing four intact-file
 shards. Local mandatory integration verification covers **124 registered steps**
 across four groups/seven isolated executions; browser collection covers **374
-cases in 143 files**, distributed **95/94/95/90** across the four shards. Retained
+cases in 143 files**, distributed **95/94/95/90** across the four shards.
 Workflow/partition regressions passed **212/212** cases, including refusal of a
 skipped, filtered, ignored or weakened verified-account classification phase.
 Browser TypeScript and whitespace checks passed. Retained
 immutable-image CI, source classification browser move/withdrawal cases, and the
 unfinished hold/redaction/privacy/export/disposition/offboarding behavior remain
 required. PRD-70 stays open.
+
+The maintained specification now also includes actual cross-Board Card movement
+at both widths. After an uncertain classification acknowledgment, the Owner moves
+the Card through the real versioned command, waits for destination delivery, and
+opens its current destination details. Recovery offers the original submission
+without fresh source review. The recovered receipt and body remain byte-identical
+to the first response/command, retaining the original Board, List and source
+revision despite the new operational context. Current and original Board authority
+remain server-enforced; this browser increment proves authorized recovery, not
+every permission-loss ordering.
+
+Local expanded Production verification on 2026-10-11: **4/4 maintained cases
+passed**, with **1,377 browser-capture and 1,970 native-capture hashes matched**.
+Fresh whole-solution build passed with zero warnings/errors; browser TypeScript
+passed. Full collection accounts for **376 cases in 143 intact files**, distributed
+**95/94/95/92** across four shards. Owned fixtures and private credentials were
+removed, preserving original PostgreSQL. Browser withdrawal and retained
+immutable-image acceptance remain open, alongside the other RECORDS requirements.
