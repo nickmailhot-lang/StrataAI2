@@ -1015,6 +1015,10 @@ jobs:
         if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-organization-operational-lifecycle-session.sh
 
+      - name: Archived records and configuration history across operational lifecycle changes
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-operational-lifecycle-history.sh
+
       - uses: actions/setup-node@v7
         if: (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         with:

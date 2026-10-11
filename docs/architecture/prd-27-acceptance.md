@@ -1,6 +1,6 @@
 # Organization Types and configuration acceptance — PRD-27
 
-PRD-27 remains open, with **36% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest Portal isolation and restricted PostgreSQL concurrency results are recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
+PRD-27 remains open, with **35% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest Portal isolation and restricted PostgreSQL concurrency results are recorded at the end. Complete exact-image CI and remaining historical/Portal/retention requirements are still required.
 
 Recipient-security components now include an owning-transaction coordinator with
 current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
@@ -43,7 +43,7 @@ delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
 source/persistence evidence without closing Activity, recipient replay/SignalR
 or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
-[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **36%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
+[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **35%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
 Source CI recorded for `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
 passes **880/880 Domain tests** and **801/801 API host tests**, with zero failed
@@ -378,3 +378,11 @@ Four actual Production HTTP cases now cover logout-first and lifecycle-first for
 The hosted run also repeats two real-clock receipt-expiry cases, two independent Portal cases and Worker discovery/restart with expired leases. All **1875 captured repository source files match** at completion. Owned containers, database, runtime roles and credential files were removed; the original PostgreSQL instance remains. These are isolated Production runtime checks; provider/TLS-edge acceptance is separate.
 
 The maintained [session fixture](../../scripts/ci/test-organization-operational-lifecycle-session.sh) now retains all four HTTP logout orderings in addition to the two expiry cases, with distinct response files, observed database waits and trigger cleanup. Bash syntax and diff checks pass. Complete current-source API regression and release-image execution remain pending. The requirement map above now reflects implemented lifecycle/Portal/publication behavior instead of its earlier Demo-only snapshot. Historical/retention and remaining complete acceptance obligations remain open. **36% estimated work remaining**; no criteria or linked scenarios are closed by this increment alone.
+
+## Production archived records and configuration history preservation
+
+Two actual Production HTTP cases now create two configuration revisions (including legal name, management company, jurisdiction and timezone changes), a Board/List/Card, and archive the Card and List before suspending or deactivating the Organization. A complete snapshot of Board/List/Card rows, current configuration, immutable revision history, configuration receipts and original non-lifecycle Organization audits remains identical while inactive and after reactivation. Historical configuration, archived-card details and archived directories return safe not-found during inactivity; Card/List restore attempts are rejected. Reactivation returns the identical original configuration history items and archived-card detail response. Historical retention is distinct from granting an inactive Organization operational access; no permission exception was added.
+
+The hosted run also repeats real-clock session-expiry rollback, both HTTP logout orderings, independent Portal admission and actual Worker delivery/restart recovery. All **1876 captured source files match** at completion. Owned containers, database, runtime roles and credential files were removed; original PostgreSQL preserved. These isolated Production checks do not establish provider/TLS-edge or complete legal retention-hold behavior.
+
+[test-organization-operational-lifecycle-history.sh](../../scripts/ci/test-organization-operational-lifecycle-history.sh) now retains both paths in the exact-image command job with real HTTP setup, unchanged-record snapshots, private denial bodies and original history comparison. Publication readiness may progress separately; the snapshot intentionally covers retained records and immutable revisions/audits rather than claiming ready clocks cannot advance. Bash syntax, workflow YAML and diff checks pass. Full current-source API regression and retained-image execution remain pending. Further retention-hold/reference and data/permission consistency, remaining complete browser/degraded/observability scenarios and release gates remain required. **35% estimated work remaining**; no acceptance criterion or linked scenario is closed by this increment alone.
