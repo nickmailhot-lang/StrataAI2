@@ -161,9 +161,10 @@ or any PRD-70 acceptance criterion.
 
 ## Record authorization required before hold activation
 
-The current hold scope contains only Organization, class, category and record ID;
-the producer registry captures kind and an exact child Card relationship, but no
-original Board authorization context. These identify a record; they do not prove
+The current hold scope contains only Organization, class, category and record ID.
+Migration 145 adds trusted historical Board context to the producer registry and
+hold storage, alongside the exact child Card relationship. These identify a record;
+they do not prove
 permission to its historical private classification, hold reason or acknowledgment
 after a Card moves. The native store's scope probes do not resolve this gap.
 
@@ -204,6 +205,44 @@ fabricate historical gates for legacy rows from their current Board. Existing
 unactivated foundation rows without sufficient trusted context need a defined,
 authorized recovery/migration contract or must refuse disclosure. No permissive
 scope resolver or new public capability is introduced by this review.
+
+### Persisted historical authorization context
+
+[Migration 145](../../db/migrations/145_record_retention_authorization_context.sql)
+captures the actual classification Board and source revision for new Card,
+Comment and Attachment classifications. For children, the Board comes from the
+exact tenant-safe parent Card relationship. A record hold retains that original
+classification Board plus the actual Board and source revision at application;
+both history revisions copy the same application context. Subsequent moves and
+release cannot rewrite those identities. Composite Board foreign keys preserve
+Organization ownership. Callers cannot supply the captured fields.
+
+Existing classification, hold and history rows remain explicitly unstamped.
+Audit producers also remain unstamped until their originating module provides
+trusted authorization evidence. The migration never guesses original permissions
+from a record's current Board. All context fields must be absent together or form
+the complete versioned shape; private Board identities are excluded from audit
+metadata. Runtime grants and service registration remain unchanged.
+
+The maintained migration runner seeds a pre-upgrade Card classification and hold,
+moves the Card, then verifies that upgrade leaves missing evidence explicit. The
+[post-upgrade contract](../../scripts/ci/retention-context-after-upgrade.sql)
+checks server capture, moves before application and after application, immutable
+history and context rewrite refusal. It also runs in the retained-image schema
+phase. The fresh native executable passed all 145 individual ledger refusal and
+restoration cases for both restricted hosts and the actual owning hold persistence
+contract; all 1,938 captured repository files matched at completion. This verifies
+storage compatibility, not original/current object authorization or review.
+
+The full maintained migration runner passed clean/repeat/forward upgrade,
+serialized execution and failure rollback with 378 captured database/script files
+unchanged. A separate fully migrated PostgreSQL fixture passed the maintained
+source, hold and authorization-context contracts, including both child producer
+kinds and their exact parent Boards before and after moves; all 148 captured SQL
+files matched. The 207 integration, release-startup and browser-shard coverage
+tests also passed. Owned test containers were removed. PRD-70 remains open at
+82% estimated work remaining; scope resolution, Demo source parity, review,
+enforcement, redaction, exports, disposition and offboarding still require work.
 
 ## Policy and decision semantics
 

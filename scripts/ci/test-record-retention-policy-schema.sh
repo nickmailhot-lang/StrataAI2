@@ -5,4 +5,5 @@ docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -q -v ON_E
 docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < scripts/ci/record-retention-policy-after-upgrade.sql
 docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < scripts/ci/record-retention-source-after-upgrade.sql
 docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < scripts/ci/record-retention-hold-after-upgrade.sql
+docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -q -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < scripts/ci/retention-context-after-upgrade.sql
 echo 'Retention policy schema, private capabilities and immutable source contract passed.'
