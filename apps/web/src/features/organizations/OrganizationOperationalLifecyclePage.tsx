@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
-import { boundedWorkRead } from '../../api/workManagement';
+import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
+import { watchOperationalLifecycle } from './operationalLifecycleLive';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { clearLifecycleIntent, lifecycleLabel, lifecycleUuid, parseLifecycleAcknowledgment, parseLifecycleReview, readLifecycleIntent, saveLifecycleIntent } from './operationalLifecycle';
 import type { LifecycleAcknowledgment, LifecycleIntent, LifecycleReview, OperationalState } from './operationalLifecycle';
@@ -18,6 +19,9 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
   const [busy, setBusy] = useState(false); const [error, setError] = useState<string>();
   const [intent, setIntent] = useState<LifecycleIntent>(); const original = useRef<LifecycleIntent | undefined>(undefined);
   const [ack, setAck] = useState<LifecycleAcknowledgment>(); const [denied, setDenied] = useState(false);
+  const [liveStatus, setLiveStatus] = useState<string>(); const [liveUnavailable, setLiveUnavailable] = useState(false);
+  const latestReview = useRef<LifecycleReview | undefined>(undefined); latestReview.current = review;
+  const liveActor = review?.actorId;
   const mounted = useRef(false); const pending = useRef<AbortController | undefined>(undefined);
   const cancel = useRef<HTMLButtonElement>(null); const launcher = useRef<HTMLButtonElement>(null);
   const retry = useRef<HTMLButtonElement>(null); const reload = useRef<HTMLButtonElement>(null); const notice = useRef<HTMLDivElement>(null);
@@ -29,6 +33,36 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
   const root = `/organizations/${encodeURIComponent(organizationId)}/operational-lifecycle`;
   useEffect(() => { mounted.current = true; original.current = readLifecycleIntent(organizationId); void load();
     return () => { mounted.current = false; pending.current?.abort(); }; }, []);
+  useEffect(() => {
+    if (!liveActor) return;
+    let fresh: LifecycleReview | undefined;
+    return watchOperationalLifecycle({ organizationId, actorId: liveActor,
+      admit: async (page, signal) => {
+        fresh = undefined;
+        const body = await workRequest<unknown>(root, { signal, headers: { 'X-StrataAI-Expected-Actor': liveActor } });
+        const value = parseLifecycleReview(body, organizationId, liveActor);
+        if (!value || value.version < page.version || value.version === page.version && value.status !== page.status)
+          throw new WorkRequestError(409, null);
+        fresh = value;
+      },
+      update: () => {
+        if (!mounted.current || !fresh || pending.current || original.current) return;
+        const previous = latestReview.current;
+        setLiveUnavailable(false);
+        if (!previous || previous.version !== fresh.version || previous.status !== fresh.status || previous.name !== fresh.name) {
+          setOpen(false); setConfirmation(undefined); setReview(fresh);
+          setTarget(fresh.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE');
+          setLiveStatus('Organization lifecycle changed. Current permission and revision have been checked. Review a new change before confirming.');
+        } else setLiveStatus(undefined);
+      },
+      unavailable: () => {
+        if (!mounted.current) return;
+        setOpen(false); setLiveUnavailable(true);
+        setLiveStatus('Live updates are unavailable. Load the current lifecycle before reviewing another change.');
+      },
+      denied: (status, switched) => { if (mounted.current) unavailable(status, switched); },
+    });
+  }, [organizationId, liveActor]);
   useEffect(() => {
     if (busy || !focus.current) return;
     if (document.activeElement === document.body || !document.activeElement?.isConnected) focusResult();
@@ -74,7 +108,7 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
     const controller = begin(); if (!controller) return; setOpen(false); setReview(undefined);
     try {
       const value = await admitted(controller, original.current?.actorId); if (!value || !current(controller)) return;
-      setDenied(false);
+      setDenied(false); setLiveUnavailable(false); setLiveStatus(undefined);
       if (original.current) { setIntent(original.current); focus.current = 'retry'; setError('The original lifecycle change is unconfirmed. Recover the same request before starting another change.'); }
       else { setReview(value); setTarget(value.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE'); }
     } catch { if (current(controller)) { setError('Unable to review current lifecycle permission. Try loading it again.'); focus.current = 'reload'; } }
@@ -124,6 +158,7 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
     <Button component={Link} to="/app/lifecycle">Organization lifecycle management</Button>
     {busy && <Typography role="status">Checking current lifecycle and permission…</Typography>}
     {error && <Alert severity="warning">{error}</Alert>}
+    {liveStatus && !denied && <Typography role="status">{liveStatus}</Typography>}
     {ack && <Alert severity="success" role="status" tabIndex={-1} ref={notice}>Original change acknowledged: {lifecycleLabel(ack.status)}, revision {ack.version}.
       {' '}This acknowledgment may precede a later change. Load the current lifecycle before another action.</Alert>}
     {review && !denied && <>
@@ -133,7 +168,7 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
       <TextField select label="Requested lifecycle" value={target} onChange={event => setTarget(event.target.value as OperationalState)} disabled={busy}>
         {(['ACTIVE', 'SUSPENDED', 'DEACTIVATED'] as const).filter(value => value !== review.status).map(value => <MenuItem key={value} value={value}>{lifecycleLabel(value)}</MenuItem>)}
       </TextField>
-      <Button ref={launcher} variant="contained" disabled={busy || !!intent || target === review.status} onClick={() => { setConfirmation({ review, target }); setOpen(true); }}>Review lifecycle change</Button>
+      <Button ref={launcher} variant="contained" disabled={busy || liveUnavailable || !!intent || target === review.status} onClick={() => { setConfirmation({ review, target }); setOpen(true); }}>Review lifecycle change</Button>
     </>}
     {intent && !denied && <Button ref={retry} variant="contained" disabled={busy} onClick={() => void change(true)}>Retry original lifecycle change</Button>}
     {!denied && <Button ref={reload} disabled={busy || !!intent} onClick={() => void load()}>Load current lifecycle</Button>}

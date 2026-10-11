@@ -1,7 +1,45 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationOperationalLifecyclePage } from './OrganizationOperationalLifecyclePage';
 import { readLifecycleIntent } from './operationalLifecycle';
+import type { watchOperationalLifecycle } from './operationalLifecycleLive';
+const live = vi.hoisted(() => ({ options: undefined as Parameters<typeof watchOperationalLifecycle>[0] | undefined }));
+vi.mock('./operationalLifecycleLive', () => ({ watchOperationalLifecycle: (options: Parameters<typeof watchOperationalLifecycle>[0]) => {
+  live.options = options; return () => {};
+} }));
+beforeEach(() => { live.options = undefined; });
+
+it('reconciles a remote lifecycle snapshot through fresh admin review and cancels stale confirmation', async () => {
+  let current = review;
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : current)));
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Review lifecycle change' }));
+  await screen.findByRole('dialog'); current = { ...review, status: 'SUSPENDED', version: 4 };
+  await act(async () => {
+    await live.options!.admit({ organizationId: org, actorId: actor, status: 'SUSPENDED', version: 4,
+      afterVersion: 0, nextVersion: null, pending: false, events: [] }, new AbortController().signal);
+    live.options!.update({ organizationId: org, actorId: actor, status: 'SUSPENDED', version: 4,
+      afterVersion: 0, nextVersion: null, pending: false, events: [] });
+  });
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.getByText(/Revision 4/)).toBeInTheDocument(); expect(screen.getByRole('status')).toHaveTextContent('Organization lifecycle changed');
+  expect(readLifecycleIntent(org)).toBeUndefined();
+});
+it('requires a fresh manual review after live interruption and keeps the critical flow accessible', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : review)));
+  mount(); const launch = await screen.findByRole('button', { name: 'Review lifecycle change' });
+  act(() => live.options!.unavailable()); expect(launch).toBeDisabled();
+  expect(screen.getByRole('status')).toHaveTextContent('Live updates are unavailable');
+  fireEvent.click(screen.getByRole('button', { name: 'Load current lifecycle' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Review lifecycle change' })).toBeEnabled());
+});
+it('withdraws named review and dialog when the live consumer loses administration', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : review)));
+  mount(); fireEvent.click(await screen.findByRole('button', { name: 'Review lifecycle change' }));
+  await screen.findByRole('dialog'); act(() => live.options!.denied(404, false));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.queryByText('Reviewed Organization')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Review lifecycle change' })).not.toBeInTheDocument();
+});
 const actor = '22222222-2222-4222-8222-222222222222'; const org = '55555555-5555-4555-8555-555555555555';
 const other = '33333333-3333-4333-8333-333333333333'; const event = '44444444-4444-4444-8444-444444444444';
 const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'UTC' };

@@ -303,3 +303,9 @@ timeouts or bounds. MUI consumers/account-switch recovery, native collaboration,
 hosted Worker/Production races, historical/Portal behavior and full release
 acceptance remain unfinished. **47% estimated work remaining**; all criteria and
 linked scenarios remain open.
+
+## Operational lifecycle review subscriber increment
+
+The lifecycle review MUI surface now consumes admitted replay pages, refreshes administrator review between current-account checks, cancels stale confirmation dialogs, and announces current lifecycle changes. Reconnect resumes at the last delivered source revision; pending publication gaps never advance to the parent revision. Generation/cancellation fences and a bounded backlog prevent obsolete subscriptions from delivering after replacement. Interrupted review requires a fresh load; original unknown-acknowledgment recovery remains independent.
+
+The three focused browser files pass **41/41** cases (23 MUI, 9 subscriber, 9 replay parser). Final web typecheck and targeted lint pass. The full frozen Linux web regression run is pending; it captured the source before a test-helper callback type annotation was corrected, so its eventual result must be described with that boundary. Simulated subscription tests do not establish actual native multi-user WebSocket behavior. Active operational-shell consumption, native two-user recovery, hosted Worker/Production races, historical/Portal behavior and full immutable-image release acceptance remain unfinished. **46% estimated work remaining**; no acceptance criteria or linked scenarios are closed by this increment.
