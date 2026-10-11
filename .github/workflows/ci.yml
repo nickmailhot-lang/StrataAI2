@@ -1003,6 +1003,10 @@ jobs:
         if: (matrix.suite == 'commands')
         run: scripts/ci/test-work-events.sh
 
+      - name: Hosted operational lifecycle discovery and restart recovery against exact release Worker
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-operational-lifecycle-delivery.sh
+
       - uses: actions/setup-node@v7
         if: (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         with:
