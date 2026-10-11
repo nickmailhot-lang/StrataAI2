@@ -72,6 +72,7 @@ internal static class RetentionHoldPersistenceContract
         var source = Guid.NewGuid(); var hold = Guid.NewGuid(); var key = Guid.NewGuid();
         var board = Guid.NewGuid(); var destination = Guid.NewGuid(); var list = Guid.NewGuid(); var destinationList = Guid.NewGuid();
         var card = Guid.NewGuid(); var comment = Guid.NewGuid(); var attachment = Guid.NewGuid();
+        var unclassified = Guid.NewGuid();
         var at = DateTimeOffset.UtcNow.AddMinutes(-1);
         try
         {
@@ -99,6 +100,8 @@ internal static class RetentionHoldPersistenceContract
                 VALUES(@list,@tenant,@board,'Original List','a',@at,@at),(@destinationList,@tenant,@destination,'Destination List','a',@at,@at);
                 INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
                 VALUES(@card,@tenant,@board,@list,'Private Card','a',@at,@at);
+                INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
+                VALUES(@unclassified,@tenant,@board,@list,'Unclassified Card','b',@at,@at);
                 INSERT INTO card_comments(id,tenant_id,card_id,author_id,content,created_at,updated_at)
                 VALUES(@comment,@tenant,@card,@actor,'Private comment',@at,@at);
                 INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,url,scan_status,created_at,updated_at)
@@ -117,6 +120,7 @@ internal static class RetentionHoldPersistenceContract
                 seed.Parameters.AddWithValue("board", board); seed.Parameters.AddWithValue("destination", destination);
                 seed.Parameters.AddWithValue("list", list); seed.Parameters.AddWithValue("destinationList", destinationList);
                 seed.Parameters.AddWithValue("card", card); seed.Parameters.AddWithValue("comment", comment); seed.Parameters.AddWithValue("attachment", attachment);
+                seed.Parameters.AddWithValue("unclassified", unclassified);
                 await seed.ExecuteNonQueryAsync(ct);
             }
             // Prove the narrow lock privilege separately from mutation permission.
@@ -159,6 +163,7 @@ internal static class RetentionHoldPersistenceContract
             var unit = new PostgresOrganizationUnitOfWork(db, actors, NullLogger<PostgresOrganizationUnitOfWork>.Instance);
             var store = new PostgresRetentionHoldStore(db, organizations, identities, actors, scopes, clock);
             var references = new PostgresRetentionAuthorizationReferences(db);
+            var producers = new PostgresRetentionProducerReferences(db);
             var service = new RetentionHoldService(organizations, store, scopes, unit, actors, clock);
             var scope = new RetentionHoldScope(tenant, RetentionRecordClass.Audit, "AUDIT.FIXTURE", source);
             var applied = await service.ApplyAsync(tenant, actor, hold, scope, "Private native hold reason", key, "native-hold-contract", ct);
@@ -176,6 +181,24 @@ internal static class RetentionHoldPersistenceContract
             var record = new RetentionRecord(source, tenant, 1, RetentionRecordClass.Audit, "audit.fixture", null, at, null, null, null, true);
             var lookup = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
             {
+                var raw = await producers.ReadAsync(tenant, RetentionProducerKind.Card, unclassified, ct);
+                Require(raw is { ParentCardId: null, SourceVersion: 1, CardVersion: 1, ListVersion: 1, SourceState: StrataAI.Application.WorkManagement.WorkItemLifecycleState.Active }
+                    && raw.CardId == unclassified && raw.BoardId == board && raw.ListId == list && raw.CreatedAt.Offset == TimeSpan.Zero
+                    && await references.ReadSourceAsync(tenant, RetentionRecordClass.OperationalWork, unclassified, ct) is null,
+                    "Native first-classification producer evidence depends on an existing registry or invents classification.");
+                foreach (var item in new[] { (card, RetentionProducerKind.Card), (comment, RetentionProducerKind.CardComment), (attachment, RetentionProducerKind.Attachment) })
+                {
+                    var current = await producers.ReadAsync(tenant, item.Item2, item.Item1, ct);
+                    Require(current is { CardVersion: 2 } && current.Kind == item.Item2 && current.CardId == card
+                        && current.BoardId == destination && current.ListId == destinationList
+                        && current.SourceVersion == (item.Item2 == RetentionProducerKind.Card ? 2 : 1)
+                        && current.ParentCardId == (item.Item2 == RetentionProducerKind.Card ? null : card),
+                        "Native raw producer substituted kind, current route, revision or parent.");
+                }
+                Require(await producers.ReadAsync(tenant, RetentionProducerKind.AuditEvent, source, ct) is null
+                    && await producers.ReadAsync(tenant, RetentionProducerKind.Attachment, card, ct) is null
+                    && await producers.ReadAsync(tenant, RetentionProducerKind.Card, Guid.NewGuid(), ct) is null,
+                    "Native raw producer admitted unsupported, wrong-kind or unknown identity.");
                 var candidates = await store.ReadApplicableAsync(record, ct);
                 Require(candidates.ScopeComplete && candidates.Items.Single() == released.Value, "Native lookup omitted current release evidence.");
                 Require(await store.ReadReceiptAsync(tenant, Guid.NewGuid(), key, ct) is null, "Native foreign actor receipt disclosed.");
@@ -216,6 +239,8 @@ internal static class RetentionHoldPersistenceContract
                 "Native rollback did not reclaim the original command key.");
             try { await store.ReadAsync(tenant, hold, ct); throw new Exception("Unowned native hold IO admitted."); }
             catch (InvalidOperationException) { }
+            try { await producers.ReadAsync(tenant, RetentionProducerKind.Card, card, ct); throw new Exception("Unowned raw producer IO admitted."); }
+            catch (InvalidOperationException) { }
             try { await references.ReadHoldAsync(tenant, hold, ct); throw new Exception("Unowned reference IO admitted."); }
             catch (InvalidOperationException) { }
             var foreignReferences = await unit.ExecuteAsync(other, actor, null, false, async () =>
@@ -224,6 +249,8 @@ internal static class RetentionHoldPersistenceContract
                     && await references.ReadHoldAsync(other, hold, ct) is null
                     && await references.ReadReceiptAsync(other, actor, key, ct) is null,
                     "Native reference crossed Organization boundary.");
+                Require(await producers.ReadAsync(other, RetentionProducerKind.Card, unclassified, ct) is null,
+                    "Native raw producer crossed Organization boundary.");
                 return OrganizationOperation<bool>.Success(true);
             }, ct);
             Require(foreignReferences.Succeeded, "Native foreign reference fixture failed.");

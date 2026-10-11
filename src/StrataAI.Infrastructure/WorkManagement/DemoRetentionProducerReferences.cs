@@ -4,15 +4,10 @@ using StrataAI.Domain.Records;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed record DemoRetentionProducerReference(Guid OrganizationId, Guid RecordId, RetentionProducerKind Kind,
-    Guid? ParentCardId, Guid CardId, Guid BoardId, Guid ListId, long CardVersion, long ListVersion,
-    long SourceVersion, WorkItemLifecycleState CardState, WorkItemLifecycleState ListState,
-    WorkItemLifecycleState SourceState, DateTimeOffset CreatedAt);
-
 internal sealed partial class InMemoryWorkManagementStore
 {
     // Only identities, versions and lifecycle; no private work/Comment/file body.
-    internal DemoRetentionProducerReference? ReadRetentionProducer(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct)
+    internal RetentionProducerReference? ReadRetentionProducer(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         if (organization == Guid.Empty || !transactionScope.OwnsOrganizationCommand(organization))

@@ -38,3 +38,14 @@ public interface IRetentionWorkSourceReferences
     Task<RetentionWorkSourceReference?> ReadAsync(Guid organization, RetentionRecordClass recordClass,
         Guid record, CancellationToken ct);
 }
+
+// Unclassified producer evidence for server review/admission. This is not an HTTP
+// projection or permission; authorize its actual owning Board before disclosure.
+public sealed record RetentionProducerReference(Guid OrganizationId, Guid RecordId, RetentionProducerKind Kind,
+    Guid? ParentCardId, Guid CardId, Guid BoardId, Guid ListId, long CardVersion, long ListVersion,
+    long SourceVersion, WorkItemLifecycleState CardState, WorkItemLifecycleState ListState,
+    WorkItemLifecycleState SourceState, DateTimeOffset CreatedAt);
+public interface IRetentionProducerReferences
+{
+    Task<RetentionProducerReference?> ReadAsync(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct);
+}

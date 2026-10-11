@@ -427,6 +427,31 @@ admission, full permission/Portal/session matrices, HTTP/MUI, event and disposit
 enforcement, controlled redaction, export/privacy and offboarding still require
 implementation and acceptance evidence. Full immutable-image CI remains required.
 
+### Evidence before first classification
+
+The shared `IRetentionProducerReferences` contract reads minimal identities,
+versions, lifecycle and creation time from actual Card, Comment and Attachment
+producers before a classification exists. Demo uses its actual work dictionaries;
+the unregistered PostgreSQL adapter uses typed tenant-safe parent/List joins inside
+an owning transaction. Neither reader invents a classification, category,
+jurisdiction or historical Board. This evidence is backend-private: review must
+authorize the actual owning Board and re-read after acquiring its gates before
+disclosing source evidence or accepting classification.
+
+Maintained Demo and native PostgreSQL tests prove an actual unclassified Card can
+be read while classified-source lookup remains empty; all three producer kinds
+retain current routes and versions after a move. Wrong-kind, unknown, unsupported,
+foreign-tenant and unowned-transaction lookups are refused. No runtime registration,
+HTTP projection or new database grant is introduced by this reader.
+
+Verification: fresh solution build passed with zero warnings/errors. Focused Linux
+Records tests passed 33/33 with 849 backend/test hashes unchanged. Native PostgreSQL
+hold and readiness checks passed all 145 ledger cases for both restricted hosts,
+with 1,946 repository hashes unchanged. Owned fixtures were removed. PRD-70 remains
+open at approximately 81% estimated work remaining; this is prerequisite evidence
+for the outstanding review/idempotent classification workflow, not its acceptance.
+Hosted immutable-image CI must still complete for the committed revision.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines

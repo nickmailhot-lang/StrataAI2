@@ -19,10 +19,15 @@ internal sealed record DemoRetentionSourceClassification(RetentionSourceReferenc
 // parity remain required; no HTTP seed or guessed historical source is accepted.
 internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizations, IIdentityStore identities,
     ICommandActorAuthorization actors, IWorkManagementStore work, IWorkBoardAuthorization boards,
-    DemoWorkTransactionScope scope, IClock clock) : IRetentionSourceReferenceReader, IRetentionWorkSourceReferences,
+    DemoWorkTransactionScope scope, IClock clock) : IRetentionSourceReferenceReader, IRetentionWorkSourceReferences, IRetentionProducerReferences,
     IDemoOrganizationTransactionParticipant
 {
     private readonly Dictionary<(Guid Organization, RetentionRecordClass Class, Guid Record), DemoRetentionSourceClassification> rows = [];
+    public Task<RetentionProducerReference?> ReadAsync(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        return Task.FromResult(Producer(organization, kind, record, ct));
+    }
     internal DemoRetentionSourceClassification? ReadClassification(Guid organization, RetentionRecordClass recordClass, Guid record, CancellationToken ct)
     {
         RequireScope(organization, ct);
@@ -81,7 +86,7 @@ internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizati
         rows.Add(key, new(reference, write, actor.DisplayName));
         return reference;
     }
-    private DemoRetentionProducerReference? Producer(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct) =>
+    private RetentionProducerReference? Producer(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct) =>
         work is InMemoryWorkManagementStore memory ? memory.ReadRetentionProducer(organization, kind, record, ct)
             : throw new InvalidOperationException("Demo retention requires actual Demo producers.");
     public Action CaptureRollback() => DemoRollback.Dictionary(rows);

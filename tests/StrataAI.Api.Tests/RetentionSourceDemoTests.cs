@@ -51,6 +51,11 @@ public sealed partial class ApiHostTests
             var member = (await organizations.FindMembershipAsync(parent.Id, actor, ct))!;
             foreach (var item in items)
             {
+                var producer = await catalog.ReadAsync(parent.Id, item.Item2, item.Item1, ct);
+                Assert.NotNull(producer); Assert.Equal(board, producer.BoardId); Assert.Equal(1, producer.SourceVersion);
+                Assert.Equal(1, producer.CardVersion); Assert.Equal(1, producer.ListVersion); Assert.Equal(TimeSpan.Zero, producer.CreatedAt.Offset);
+                Assert.Equal(item.Item2 == RetentionProducerKind.Card ? null : (Guid?)card, producer.ParentCardId);
+                Assert.Null(await catalog.ReadSourceAsync(parent.Id, item.Item3, item.Item1, ct));
                 var write = new DemoRetentionSourceWrite(parent.Id, item.Item3, item.Item1, item.Item2, "private.fixture", "explicit jurisdiction",
                     1, 1, actor, member.Id, member.Version, member.Role, Guid.NewGuid(), "demo-source", Now());
                 Assert.Null(await catalog.CaptureAsync(write with { MembershipId = Guid.NewGuid() }, ct));
@@ -71,6 +76,9 @@ public sealed partial class ApiHostTests
             }
             Assert.Null(await catalog.ReadSourceAsync(parent.Id, RetentionRecordClass.Document, card, ct));
             Assert.Null(await catalog.ReadSourceAsync(parent.Id, RetentionRecordClass.OperationalWork, Guid.NewGuid(), ct));
+            Assert.Null(await catalog.ReadAsync(parent.Id, RetentionProducerKind.AuditEvent, card, ct));
+            Assert.Null(await catalog.ReadAsync(parent.Id, RetentionProducerKind.Attachment, card, ct));
+            Assert.Null(await catalog.ReadAsync(parent.Id, RetentionProducerKind.Card, Guid.NewGuid(), ct));
             return OrganizationOperation<bool>.Success(true);
         }, ct);
         var audits = ((InMemoryWorkManagementStore)work).AuditSnapshot(parent.Id).Where(a => a.EventType == "RECORD_RETENTION_SOURCE_REGISTERED").ToArray();
