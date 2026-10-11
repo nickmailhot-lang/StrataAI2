@@ -3,6 +3,7 @@ import { WorkRequestError } from '../../api/workManagement';
 import { apiFetch } from '../../api/apiFetch';
 import { forgetInvitationIntents } from '../organizations/invitationIntent';
 import { forgetConfigurationChanges } from '../organizations/organizationConfigurationRecovery';
+import { forgetRetentionPolicyChanges } from '../records/retentionPolicyRecovery';
 import { formatUserDateTime } from './userDateTime';
 import { validateIdentitySync } from './identitySync';
 import { watchIdentity } from './identityLive';
@@ -302,6 +303,7 @@ export function ProfilePage() {
       if (response.status !== 204 && response.status !== 401) throw new WorkRequestError(response.status, response.reference);
       forgetInvitationIntents();
       forgetConfigurationChanges();
+      forgetRetentionPolicyChanges();
       setProfile(undefined); setDraft(undefined);
       navigate('/login', { replace: true });
     } catch (reason) {
@@ -328,6 +330,7 @@ export function ProfilePage() {
       if (response.status === 204) {
         forgetInvitationIntents();
         forgetConfigurationChanges();
+        forgetRetentionPolicyChanges();
         deactivateRetry.current = undefined;
         setProfile(undefined); setDraft(undefined); setDeactivateUncertain(false); setDeactivateDialog(false);
         navigate('/login', { replace: true, state: { accountDeactivated: true } }); return;

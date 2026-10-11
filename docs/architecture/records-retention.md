@@ -58,7 +58,7 @@ contracts; planned hold references must be implemented before hold enforcement.
 
 | Contract | Identity and ownership | Version/lifecycle and retained meaning |
 | --- | --- | --- |
-| RecordRetentionPolicy | Nonempty policy ID and Organization ID; one Organization has many policies, one policy has many immutable revisions. Planned revision key `(tenant_id, policy_id, version)` and Organization FK with restrictive deletion. | Positive version, UTC creation/update clocks, update at or after creation. Changes append revisions; a future current-policy reference selects the admitted revision. Disposition must bind the exact policy revision. Policy retirement must preserve referenced revisions. |
+| RecordRetentionPolicy | Nonempty policy ID and Organization ID; one Organization has many policies, one policy has many immutable revisions. Persisted revision key `(tenant_id, policy_id, version)` and Organization FK with restrictive deletion. | Positive version, UTC creation/update clocks, update at or after creation. Changes append revisions; the header selects the current revision. Disposition must bind the exact policy revision. Policy retirement must preserve referenced revisions. |
 | RetentionHold | Nonempty hold ID and Organization ID; one Organization has many holds. Planned header key `(tenant_id, hold_id)` and immutable transition key `(tenant_id, hold_id, version)`, with restrictive Organization/reference deletion. | Positive version; Active has no release metadata, Released requires version at least two and complete release provenance. Hold transitions require compare-and-swap versioning, idempotent receipts and append-only audit. Release cannot remove prior application evidence. |
 | RetentionRecord | Read-only source projection of an existing record ID, Organization, version, class/category, jurisdiction, domain clocks and immutability. | No new independent persisted record lifecycle. Owning record adapters retain object confidentiality, current lifecycle, approved-governance immutability and archive/history references. |
 | RecordDispositionDecision | Ephemeral derived result from a policy revision, record snapshot and complete current holds. | Not an audit or authorization source. The eventual transaction must recheck authority, record/policy revisions and holds through disposition and persist its own authoritative audit/result. |
@@ -201,6 +201,42 @@ existing bundle-size advisory. These checks do not establish desktop/mobile
 browser, screen-reader, full frontend, live policy publication or mutation-review
 acceptance; those remain required before closure.
 
+## Reviewed browser submission and recovery contract
+
+[RetentionPolicyChangeIntent](../../apps/web/src/features/records/retentionPolicyClient.ts)
+freezes the reviewed Organization, account, policy identity, expected revision,
+input and retry key. Review validates the supported fields without introducing
+jurisdiction defaults. Submission rechecks account and owning private policy
+authority before sending, uses the existing same-origin CSRF boundary and
+15-second bound, and validates the acknowledgment against the original identity,
+next revision and exact reviewed input. A historical original receipt remains an
+acknowledgment of that submission, not evidence of today's current policy.
+Authority/account are checked again before returning private values.
+
+[Recovery helpers](../../apps/web/src/features/records/retentionPolicyRecovery.ts)
+retain at most one unresolved submission per account/Organization, with a
+32-context capacity. They preserve exact canonical request bytes and refuse
+replacement, corrupt/foreign records and failed storage writes instead of
+discarding unresolved work. No later read acknowledges an unresolved submission.
+The helpers accept browser storage explicitly; the policy browsing screen still
+does not persist private read results. Sign-out and confirmed account deactivation
+clear retained policy submissions. A future editor must retain its original
+before sending, restore only after current owning admission, clear foreign
+account/withdrawn authority scopes, and clear completion only for the matching
+acknowledgment or explicitly reviewed definitive refusal.
+
+Known retention Problem codes are admitted through a status-bound allowlist;
+raw diagnostic bodies and unsafe correlation references are excluded. Maintained
+client/recovery cases cover lost acknowledgment, stalled delivery, exact retry
+bytes, replacement accounts, authority withdrawal, substituted receipts,
+cancellation, capacity, storage failure, corrupt records and account cleanup.
+The focused records/Profile/Problem regression passed **79/79 cases**; web
+typecheck, full source lint and production build passed. The build retains the
+existing bundle-size advisory. These are maintained client/component checks,
+not browser or complete frontend acceptance.
+The create/edit form, confirmation dialog, conflict reconciliation and browser
+acceptance remain pending; this client contract alone does not satisfy them.
+
 ## Transactional Demo storage evidence
 
 [InMemoryRetentionPolicyStore](../../src/StrataAI.Infrastructure/Records/InMemoryRetentionPolicyStore.cs)
@@ -283,8 +319,8 @@ directory identities, incomplete/noncontiguous revision pages, inconsistent curr
 source, changed applicability, nonmonotonic clocks and invalid historical
 attribution. A missing policy returns a fixed not-found result; seeking below
 revision one returns an authorized empty page. These are Application read models;
-The current HTTP surface uses these seek boundaries and private headers as
-documented below. MUI navigation remains pending.
+The current HTTP surface uses these seek boundaries and private headers. The
+internal MUI browsing route is documented above; mutation review remains pending.
 
 Fresh whole-solution compilation passed with zero warnings/errors; **11/11 focused
 Linux cases** passed with **826 backend/test hashes matching**. New maintained
@@ -341,3 +377,10 @@ or linked scenario. Required remaining work includes:
 The earlier API regression captures predate these two added Domain/test files;
 they remain evidence for their captured API source, not proof of retention
 runtime enforcement. PRD-27 stays open at 24% estimated work remaining.
+
+The later `retcmd3-full` API capture has now completed **846/846 cases**, without
+failed, skipped, aborted or timed-out cases. It captured 822 backend/test files;
+six captured files changed by completion. It predates later adapter, pagination
+and HTTP activation changes, so it is historical regression evidence only.
+The current backend `rethttp1-full` capture remains running. Exact-head release
+CI remains queued and no release acceptance is claimed.

@@ -1,4 +1,5 @@
 import { apiFetch } from '../../api/apiFetch';
+import { retentionProblemCode } from '../../api/retentionProblem';
 import { boundedWorkRead, workRequest, WorkInputError, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile, notificationUuid } from '../notifications/notificationInbox';
 
@@ -13,6 +14,21 @@ export type PolicyPage = { organizationId: string; items: RetentionPolicy[]; nex
 export type PolicyRevision = { policy: RetentionPolicy; actorId: string; actorLabel: string; membershipId: string;
   membershipVersion: number; actingCapacity: 0 | 1; eventId: string };
 export type PolicyHistory = { organizationId: string; policyId: string; items: PolicyRevision[]; nextBeforeVersion: number | null };
+export type RetentionPolicyInput = Pick<RetentionPolicy, 'recordClass' | 'category' | 'jurisdiction' | 'anchor' | 'retentionDays' | 'action' | 'source' | 'notes'>;
+
+const inputKeys = ['recordClass', 'category', 'jurisdiction', 'anchor', 'retentionDays', 'action', 'source', 'notes'];
+export function parseRetentionPolicyInput(value: unknown): RetentionPolicyInput {
+  try {
+    const row = object(value);
+    if (!exact(row, [...inputKeys])) throw new Error();
+    // Use the same field contract for reviewed input and authoritative sources.
+    const context = '11111111-1111-4111-8111-111111111111';
+    const policy = parseRetentionPolicy({ ...row, id: context, organizationId: context, version: 1,
+      createdAt: '2000-01-01T00:00:00Z', updatedAt: '2000-01-01T00:00:00Z' }, context);
+    return { recordClass: policy.recordClass, category: policy.category, jurisdiction: policy.jurisdiction,
+      anchor: policy.anchor, retentionDays: policy.retentionDays, action: policy.action, source: policy.source, notes: policy.notes };
+  } catch { throw new WorkInputError('Provide a supported record class, category, applicability, retention rule and reviewed source.'); }
+}
 
 function unavailable(): never { throw new WorkRequestError(503, null); }
 function object(value: unknown): Record<string, unknown> {
@@ -127,4 +143,68 @@ export function readRetentionHistory(organizationId: string, actorId: string, po
     const page = parsePolicyHistory(await request(`/organizations/${organization}/retention-policies/${policy}/history${before === undefined ? '' : `?beforeVersion=${before}`}`, expected, bounded), organization, policy, before);
     await finalAdmission(organization, expected, bounded); return page;
   }, signal);
+}
+
+// A reviewed change owns its original request bytes. Later reads, navigation,
+// timeouts and retries must not replace its identity, revision or retry key.
+export class RetentionPolicyChangeIntent {
+  readonly organizationId: string;
+  readonly actorId: string;
+  readonly policyId: string;
+  readonly expectedVersion: number;
+  readonly key: string;
+  readonly #body: string;
+  private constructor(organization: string, actorId: string, policy: string, version: number, input: unknown, key: string) {
+    this.organizationId = id(organization); this.actorId = id(actorId); this.policyId = id(policy); this.key = id(key);
+    if (!Number.isSafeInteger(version) || version < 0 || version >= Number.MAX_SAFE_INTEGER)
+      throw new WorkInputError('The reviewed policy revision is unavailable.');
+    this.expectedVersion = version;
+    this.#body = JSON.stringify({ version, policy: parseRetentionPolicyInput(input) });
+    if (new TextEncoder().encode(this.#body).length > 32_768) throw new WorkInputError('The reviewed policy exceeds the submission limit.');
+    Object.freeze(this);
+  }
+  static review(organization: string, actorId: string, policy: string, version: number, input: RetentionPolicyInput, key = crypto.randomUUID()) {
+    return new RetentionPolicyChangeIntent(organization, actorId, policy, version, input, key);
+  }
+  reviewedPolicy(): RetentionPolicyInput { return parseRetentionPolicyInput((JSON.parse(this.#body) as { policy: unknown }).policy); }
+  recoveryRecord() { return { organizationId: this.organizationId, actorId: this.actorId, policyId: this.policyId, key: this.key, body: this.#body }; }
+  static restore(value: unknown) {
+    try {
+      const row = object(value);
+      if (!exact(row, ['organizationId', 'actorId', 'policyId', 'key', 'body']) || typeof row.body !== 'string'
+        || new TextEncoder().encode(row.body).length > 32_768) throw new Error();
+      const body = object(JSON.parse(row.body));
+      if (!exact(body, ['version', 'policy']) || typeof body.version !== 'number'
+        || !notificationUuid(row.organizationId) || !notificationUuid(row.actorId) || !notificationUuid(row.policyId) || !notificationUuid(row.key)) throw new Error();
+      const restored = new RetentionPolicyChangeIntent(row.organizationId, row.actorId, row.policyId, body.version, body.policy, row.key);
+      if (restored.#body !== row.body) throw new Error();
+      return restored;
+    } catch { throw new WorkInputError('The original policy submission could not be restored.'); }
+  }
+  submit(signal: AbortSignal, sent: () => void = () => {}) {
+    return boundedWorkRead(async bounded => {
+      await actor(bounded, this.actorId);
+      await finalAdmission(this.organizationId, this.actorId, bounded); bounded.throwIfAborted();
+      sent();
+      const response = await apiFetch(`/organizations/${this.organizationId}/retention-policies/${this.policyId}`, {
+        method: 'PATCH', signal: bounded, headers: { 'Content-Type': 'application/json', 'Idempotency-Key': this.key,
+          'X-StrataAI-Expected-Actor': this.actorId }, body: this.#body,
+      });
+      bounded.throwIfAborted();
+      if (!response.ok) {
+        const problem: unknown = await response.json().catch(() => undefined); bounded.throwIfAborted();
+        const code = problem && typeof problem === 'object' && 'code' in problem ? retentionProblemCode(problem.code, response.status) : undefined;
+        throw new WorkRequestError(response.status, response.headers.get('X-Correlation-ID'), code);
+      }
+      if (response.status !== 200) return unavailable();
+      const value: unknown = await response.json().catch(() => undefined); bounded.throwIfAborted();
+      const result = parseRetentionPolicy(value, this.organizationId);
+      if (result.id !== this.policyId || result.version !== this.expectedVersion + 1
+        || JSON.stringify(parseRetentionPolicyInput(Object.fromEntries(inputKeys.map(key => [key, result[key as keyof RetentionPolicy]]))))
+          !== JSON.stringify(this.reviewedPolicy())) return unavailable();
+      await finalAdmission(this.organizationId, this.actorId, bounded);
+      // An original receipt may predate today's policy; refresh separately.
+      return result;
+    }, signal);
+  }
 }

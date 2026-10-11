@@ -288,6 +288,8 @@ describe('PRD-02 profile management', () => {
   it.each([204, 200])('clears retained invitation commands only after a confirmed sign-out (%s)', async status => {
     const storageKey = 'strataai:invitation-create:v1:actor:organization';
     const configurationKey = 'strataai:configuration-change:v1:actor:organization';
+    const policyKey = 'strataai:retention-policy-change:v1:actor:organization';
+    sessionStorage.setItem(policyKey, 'private original policy');
     sessionStorage.setItem(configurationKey, 'private original configuration');
     sessionStorage.setItem(storageKey, 'private pending input'); sessionStorage.setItem('unrelated-site-data', 'keep');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(syncResponse(profile)).mockResolvedValueOnce(new Response(null, { status })));
@@ -295,8 +297,9 @@ describe('PRD-02 profile management', () => {
     await screen.findByText(status === 204 ? 'Sign in again' : 'Unable to sign out. Please retry.');
     expect(sessionStorage.getItem(storageKey)).toBe(status === 204 ? null : 'private pending input');
     expect(sessionStorage.getItem(configurationKey)).toBe(status === 204 ? null : 'private original configuration');
+    expect(sessionStorage.getItem(policyKey)).toBe(status === 204 ? null : 'private original policy');
     expect(sessionStorage.getItem('unrelated-site-data')).toBe('keep');
-    sessionStorage.removeItem(storageKey); sessionStorage.removeItem(configurationKey); sessionStorage.removeItem('unrelated-site-data');
+    sessionStorage.removeItem(storageKey); sessionStorage.removeItem(configurationKey); sessionStorage.removeItem(policyKey); sessionStorage.removeItem('unrelated-site-data');
   });
 });
 
