@@ -173,6 +173,38 @@ compiled harness is not maintained release-image or complete HTTP acceptance.
 
 ## Transactional Demo policy parity
 
+## Internal MUI policy browsing
+
+The internal route `/app/{organizationId}/retention-policies` now reads private
+current policies and retained history. Active Organization Owners/Admins receive
+the navigation link; the separate Owner Portal has no new retention route.
+The screen shows explicit class/category/jurisdiction, anchor, elapsed days,
+action and source/notes, plus original actor label/capacity and UTC revision time.
+It clearly states that recorded policies do not yet enable retention enforcement
+or automatic disposition. Creation/edit/review controls remain pending.
+
+The browser client validates exact response shapes, owning identities, bounded
+pages and seek boundaries, safe versions, class/action/period rules, retained
+attribution, contiguous history, stable applicability and clocks at full fractional
+UTC precision. A maximum-UUID empty directory seek rechecks the same current
+policy authority before private read completion; account identity is checked on
+both sides. Protected failure details never enter visible text. Reads are bounded
+and cancellable; changing context or superseding a request aborts and fences late
+responses. Metadata invalidation and window focus recheck private access.
+
+MUI controls provide source-aware history names, bounded next-page navigation,
+loading/empty/degraded/refused states and fixed safe retry text. Opening history
+moves focus to its heading; closing returns focus to the originating connected
+control. Authority refusal withdraws private policy/history values. No policy
+source is written to browser storage. The initial 17 client/screen tests and the
+final 74-case targeted client/screen/Organization-home regression passed; web
+typecheck, complete lint and production build passed. The build retains the
+existing bundle-size advisory. These checks do not establish desktop/mobile
+browser, screen-reader, full frontend, live policy publication or mutation-review
+acceptance; those remain required before closure.
+
+## Transactional Demo storage evidence
+
 [InMemoryRetentionPolicyStore](../../src/StrataAI.Infrastructure/Records/InMemoryRetentionPolicyStore.cs)
 participates in the existing account/Organization and Work gates and rollback
 snapshots. It retains immutable policy revisions, original receipts, actor label,

@@ -22,6 +22,7 @@ import { ArchivedBoardsPage } from "../features/kanban/ArchivedBoardsPage";
 import { OrganizationHome } from "../features/organizations/OrganizationHome";
 import { OrganizationSettingsPage } from "../features/organizations/OrganizationSettingsPage";
 import { OrganizationConfigurationPage } from "../features/organizations/OrganizationConfigurationPage";
+import { RetentionPoliciesPage } from '../features/records/RetentionPoliciesPage';
 import { OrganizationMembersPage } from "../features/organizations/OrganizationMembersPage";
 import { OrganizationDeletePage } from "../features/organizations/OrganizationDeletePage";
 import { OrganizationOperationalLifecyclePage } from "../features/organizations/OrganizationOperationalLifecyclePage";
@@ -66,6 +67,7 @@ const routes = [
       { index: true, element: <OrganizationHome /> },
       { path: "settings", element: <OrganizationSettingsPage /> },
       { path: "configuration", element: <OrganizationConfigurationPage /> },
+      { path: "retention-policies", element: <RetentionPoliciesPage /> },
       { path: "notifications", element: <NotificationCenterPage /> },
       { path: "search", element: <GlobalSearchPage /> },
       { path: "archived-boards", element: <ArchivedBoardsPage /> },
