@@ -34,6 +34,7 @@ if (args.Contains("--retention-holds-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await RetentionHoldPersistenceContract.RunAsync(admin,apiConnection,ct);
+    await RetentionSourceReceiptContract.RunAsync(admin,apiConnection,ct);
     return;
 }
 if (args.Contains("--organization-operational-lifecycle-only", StringComparer.Ordinal))

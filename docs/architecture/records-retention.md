@@ -1263,3 +1263,42 @@ first-classification owning review test. This is backend source regression
 evidence; it does not establish unactivated classification HTTP/MUI workflows
 or the current build-once release CI gate. PRD-70 remains open at 80% estimated
 work remaining.
+
+## Durable first-classification receipt graph
+
+Migration 146 adds a nullable original command key to immutable classifications
+and actor-bound `record_retention_source_receipts`. Historical classifications
+retain NULL keys; no command identity or receipt is backfilled. A new key-bearing
+classification requires the exact receipt at commit through a deferred foreign
+key. The inverse receipt binding includes the source class/identity, original
+actor/key and original safe-audit event. A receipt cannot attach to another
+classification or supply a different source clock. Keys are unique within the
+Organization/actor classification namespace, and each source has at most one
+receipt. The fingerprint is 64 uppercase hexadecimal characters and expiry is
+exactly 24 hours after the original source clock. Receipt updates/deletes and
+source-key rewriting are refused.
+
+Receipt RLS is forced and binds both current tenant and identity subject. The
+migration grants no API/Worker capability. Application receipt lookup still must
+perform current account, membership and producer/confidentiality authorization;
+this database graph is not an authorization grant. Owning retry commands,
+Production/Demo receipt adapters and HTTP/MUI workflows remain unfinished.
+
+The mandatory restricted Records persistence invocation passed on 2026-10-11,
+including all **146 migration entries individually rejected/restored for both
+API and Worker hosts**, existing real producer/hold adapter contracts and the new
+receipt graph contract. It verifies source/audit rollback when a receipt is
+missing, changed actor/record/event/clock/expiry/fingerprint rejection, duplicate
+receipt/key refusal, immutability, tenant/actor RLS and historical NULL keys.
+All **1,955 captured hashes matched**. Fresh whole-solution compilation has zero
+warnings/errors. An initial test cleanup attempt was rejected because it tried
+to roll back an already completed failed commit; the final transaction-disposal
+contract passed with all assertions retained.
+
+The complete maintained migration-runner script also passed: clean/repeated
+application, exact pre-existing source/audit comparison across the forward
+upgrade, concurrent runner serialization and failed/unrecorded migration refusal.
+All **381 captured hashes matched**. Its synthetic fixtures now follow migration
+146 without numbering collisions. These are local database/source results;
+current build-once immutable-image acceptance remains required. PRD-70 remains
+open at **80% estimated work remaining**.
