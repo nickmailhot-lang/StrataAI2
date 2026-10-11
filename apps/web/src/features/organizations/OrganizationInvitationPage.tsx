@@ -57,7 +57,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       setLiveNotice('Checking current invitation permissions. The original request is preserved.');
       setReload(value => value + 1);
     };
-    if (boardId !== undefined) return watchBoard({ organizationId, boardId, invalidate: recover,
+    if (boardId !== undefined) return watchBoard({ organizationId, boardId, invalidate: recover, immediateInvalidation: true,
       // Even unchanged content heartbeats must recheck administrative authority.
       // Read access to a Board alone does not authorize invitation issuance.
       status: status => {

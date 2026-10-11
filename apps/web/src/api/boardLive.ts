@@ -127,6 +127,7 @@ export function watchBoard(options: {
   status: (value: LiveStatus) => void;
   reconnected?: () => void;
   initialHead?: () => void;
+  immediateInvalidation?: boolean;
   connection?: ReturnType<typeof createBoardConnection>;
 }) {
   let connection: ReturnType<typeof createBoardConnection>;
@@ -155,6 +156,9 @@ export function watchBoard(options: {
   let established = false, transportRecovery = false, headObserved = false;
   const invalidate = () => {
     if (disposed || refresh !== undefined) return;
+    // Grant editors must withdraw stale authority before reporting the head
+    // live. Content consumers can coalesce reads without that admission gap.
+    if (options.immediateInvalidation) { options.invalidate(); return; }
     refresh = setTimeout(() => {
       refresh = undefined;
       if (!disposed) options.invalidate();

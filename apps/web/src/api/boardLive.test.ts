@@ -169,6 +169,22 @@ describe("PRD-22 browser stream recovery", () => {
     await vi.advanceTimersByTimeAsync(0); fake.next({ ...page('0', []), events: [{ ...event('1'), boardId: org }] });
     expect(initialHead).not.toHaveBeenCalled(); stop();
   });
+  it('withdraws grant authority before a changed head reports live without a later duplicate invalidation', async () => {
+    const fake = fakeConnection(); const order: string[] = [];
+    const stop = watchBoard({ organizationId: org, boardId: board, immediateInvalidation: true,
+      invalidate: () => order.push('withdraw'), status: value => order.push(value),
+      connection: fake.connection as unknown as ReturnType<typeof createBoardConnection> });
+    await vi.advanceTimersByTimeAsync(0); order.length = 0;
+    fake.next(page('1'));
+    expect(order).toEqual(['withdraw', 'live']);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(order).toEqual(['withdraw', 'live']);
+    fake.next(page('1')); expect(order).toEqual(['withdraw', 'live', 'live']);
+    fake.next(page('2', [event('2')]));
+    expect(order.slice(-2)).toEqual(['withdraw', 'live']);
+    stop(); await vi.advanceTimersByTimeAsync(10_000);
+    expect(order.filter(value => value === 'withdraw')).toHaveLength(2);
+  });
   function mount(fake = fakeConnection()) {
     const invalidate = vi.fn(),
       status = vi.fn(), reconnected = vi.fn();

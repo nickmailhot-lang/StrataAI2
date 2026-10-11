@@ -158,3 +158,31 @@ provider delivery and current immutable-image/full PRD-wide acceptance remain
 independent. No product admission guard or event invalidation was weakened.
 PRD-05 remains open at **15%**, and PRD-60 at **18% estimated work remaining**
 (planning estimates).
+
+## Immediate grant withdrawal before live readiness
+
+The 2026-10-11 retained full-browser artifact reproduced a late invitation
+permission refresh clearing the already filled draft, with no issuance POST.
+Content stream invalidation was coalesced for 100 milliseconds while an earlier
+head/read could already appear ready. Board invitation creation now requests
+immediate invalidation: a changed head withdraws the grant before reporting live.
+The subsequent protected Board/account reads still decide current administration;
+canonical changes retire unsubmitted drafts and uncertain requests retain their
+original actor/Board/key/body. Other Board content consumers keep coalesced reads.
+
+The maintained invitation-administration and filter-account files pass together
+at desktop and 390px: **four passed, zero failed/skipped/flaky/global errors**.
+This replay uses current compiled Production API and a separate Worker with
+restricted PostgreSQL 17/pgvector and all 145 migrations, the real maintained
+keyboard/lost-reply/reload assertions, and a local web proxy serving the production
+MUI build. Its optional email-verification fixture matches the full-browser CI
+phase. It does not establish Nginx edge behavior or current immutable-image CI.
+Both frozen source manifests were unchanged (1,359 and 1,949 files); owned fixtures
+were removed and the original PostgreSQL container preserved.
+
+The focused stream/invitation suite passes **75 tests**, including invalidation
+before readiness, duplicate-event deduplication and no delayed invalidation of a
+new draft. TypeScript, lint, production web build and the complete .NET build pass.
+PRD-05 remains open at **14%**, and PRD-60 at **18% estimated work remaining**;
+current full build-once CI and the remaining acceptance matrices still govern
+closure.
