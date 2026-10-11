@@ -171,8 +171,6 @@ then-canonical read-only provisioning. That capture predates the runtime command
 activation below. The Worker still has no policy access; this earlier local
 compiled harness is not maintained release-image or complete HTTP acceptance.
 
-## Transactional Demo policy parity
-
 ## Internal MUI policy browsing
 
 The internal route `/app/{organizationId}/retention-policies` now reads private
