@@ -34,6 +34,20 @@ it('does not use internal lifecycle streams to admit the separate Portal', async
   expect(await screen.findByText(`Admitted ${liveOrg}`)).toBeVisible(); expect(operational.options).toBeUndefined();
   expect(fetcher).toHaveBeenCalledTimes(1);
 });
+it('retains independently authorized recovery after surface denial and an operational stream transport failure', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me'
+    ? new Response(JSON.stringify(liveProfile)) : new Response('{}', { status: 404 })));
+  const router = createMemoryRouter([{ path: '/:organizationId', element: <SurfaceAdmission surface="INTERNAL"
+    deniedContent={<div>Independent terminal recovery</div>}><Content /></SurfaceAdmission> }],
+  { initialEntries: [`/${liveOrg}`] });
+  render(<RouterProvider router={router} />);
+  await screen.findByText('Independent terminal recovery');
+  await waitFor(() => expect(operational.options).toBeDefined());
+  act(() => operational.options!.unavailable());
+  expect(screen.getByText('Independent terminal recovery')).toBeVisible();
+  expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
+  expect(screen.queryByText('Access could not be checked. Try again.')).not.toBeInTheDocument();
+});
 it('fences an older in-flight polling grant after live suspension', async () => {
   let calls = 0; let finish!: (value: Response) => void;
   vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile))

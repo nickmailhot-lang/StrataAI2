@@ -83,8 +83,13 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
     const withdraw = (status: 'denied' | 'error') => {
       if (retired) return;
       ++generation.current;
-      setResult(previous => ({ scope, status, previouslyAdmitted: status === 'error' && previous?.scope === scope
-        && (previous.status === 'admitted' || previous.previouslyAdmitted === true) }));
+      setResult(previous => ({ scope,
+        // A stream transport failure cannot turn a definitive surface denial
+        // into an unknown grant. Keep the shell withdrawn while the independent
+        // denied route performs its own lifecycle/Board authorization.
+        status: status === 'error' && previous?.scope === scope && previous.status === 'denied' ? 'denied' : status,
+        previouslyAdmitted: status === 'error' && previous?.scope === scope
+          && (previous.status === 'admitted' || previous.previouslyAdmitted === true) }));
     };
     void boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal).then(profile => {
       if (retired || !isNotificationProfile(profile)) return;

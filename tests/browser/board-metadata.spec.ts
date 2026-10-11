@@ -2,7 +2,7 @@ import { registerNotificationAccount as registerVerifiedAccountFixture } from '.
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-04: metadata save recovery, concurrent draft review and responsive background at ${width}px`, async ({ page, context }) => {
@@ -31,7 +31,8 @@ for (const width of [1280, 390]) {
         const result = await route.fetch(); expect(result.status()).toBe(200);
         if (requests.length === 1) await route.abort('failed'); else await route.fulfill({ response: result });
       });
-      await pressAdmittedAction(page.getByRole('button', { name: 'Edit Board details', exact: true }));
+      await openAdmittedReview(page.getByRole('button', { name: 'Edit Board details', exact: true }),
+        page.getByRole('dialog', { name: 'Edit Board details', exact: true }));
       await page.getByRole('textbox', { name: 'Board name', exact: true }).fill(longName);
       await page.getByRole('textbox', { name: 'Board description', exact: true }).fill(description);
       await page.getByRole('combobox', { name: 'Board background', exact: true }).focus(); await page.keyboard.press('Enter');
@@ -53,7 +54,8 @@ for (const width of [1280, 390]) {
         await expect(client.getByText(description, { exact: true })).toHaveCSS('white-space', 'pre-wrap');
         expect(await client.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       }
-      await pressAdmittedAction(page.getByRole('button', { name: 'Edit Board details', exact: true }));
+      await openAdmittedReview(page.getByRole('button', { name: 'Edit Board details', exact: true }),
+        page.getByRole('dialog', { name: 'Edit Board details', exact: true }));
       await page.getByRole('textbox', { name: 'Board name', exact: true }).fill('Retained draft');
       const concurrent = await context.request.patch(`/boards/${board.id}`, { headers, data: { name: 'Concurrent Board', description: 'Concurrent description', version: board.version + 1 } });
       expect(concurrent.status()).toBe(200);

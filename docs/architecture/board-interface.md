@@ -1,5 +1,27 @@
 # Persisted board interface
 
+## Initial live admission and keyboard review verification
+
+The first validated live Board head now schedules a fresh protected snapshot read
+even when the head contains no new events. The existing read queue keeps mutation
+controls unavailable while that read is pending; a denial clears the scoped Board.
+This covers public readers as well as members and does not treat a live connection
+as authority for an earlier snapshot.
+
+The metadata browser scenario observes the actual review dialog before entering a
+draft. If a foreground access refresh disables its launcher between focus and
+Enter, it retries only opening that review. Save controls still receive one
+activation, and original body/key recovery and later revision assertions remain.
+
+Verification on 2026-10-11: 80 focused web regression tests passed; web/browser
+type checks, focused lint and the production web build passed. After rebuilding
+the web bundle, all four maintained desktop/phone metadata and personal-star
+browser cases passed against the actual PostgreSQL-backed API and Worker, with
+no failed, skipped or flaky cases. Both native and hosting source manifests were
+unchanged (1,357 and 1,947 files). These are local native checks; hosted CI for
+the committed revision and full PRD acceptance remain required. PRD-04 stays open
+at approximately 15% estimated work remaining.
+
 PRD-01, PRD-04, PRD-07, PRD-08 and PRD-09 share the board screen at
 `/app/:organizationId/boards/:boardId`, with card details at
 `/app/:organizationId/boards/:boardId/cards/:cardId`.

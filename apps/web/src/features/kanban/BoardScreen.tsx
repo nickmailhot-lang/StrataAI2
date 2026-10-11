@@ -296,6 +296,7 @@ function BoardContent() {
       organizationId,
       boardId,
       invalidate: () => invalidate(),
+      initialHead: () => invalidate(),
       status: setLiveStatus,
       reconnected: () => setReconnectSequence(value => value + 1),
     });

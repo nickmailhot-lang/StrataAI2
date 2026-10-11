@@ -13,6 +13,25 @@ A 202 remains an acknowledgment of the accepted request.
 
 ## State and graph treatment
 
+### Fresh terminal route after surface denial
+
+An operational-stream transport failure no longer replaces an already established
+surface denial with an unknown-access screen. The internal shell stays withdrawn;
+the independent Organization route remains mounted and performs its own account
+and deletion-lifecycle admission. A failed stream does not grant internal or Portal
+access, and a different Organization scope cannot inherit the prior denial.
+
+This repairs the fresh terminal-route failure observed in hosted run 38134846408.
+Local verification on 2026-10-11 passed both maintained desktop/phone Demo deletion
+completion scenarios, including actual simulation, member disconnect/reconnect,
+fresh terminal recovery, account replacement, original acknowledgment retry and
+accessibility assertions. The browser report records two passed cases with no
+failed, skipped or flaky cases; 1,357 native and 1,947 hosting source hashes remained
+unchanged. Owned fixtures were removed. The shared focused web suite also passed
+80 tests, including a surface-denial/stream-failure regression. This local Demo
+evidence does not certify Production deletion or full immutable-image CI.
+PRD-03 remains open at approximately 8% estimated work remaining.
+
 ACTIVE transitions to DELETING only through the current Owner/version command.
 DELETING withdraws ordinary Organization and descendant access immediately and
 suspends reminders. The terminal storage foundation adds an irreversible DELETED

@@ -16,3 +16,14 @@ export async function pressAdmittedAction(button: Locator, key: 'Enter' | 'Space
   await focusAdmittedControl(button);
   await button.press(key);
 }
+
+// Opening a review has no write side effect. A foreground admission refresh can
+// disable the launcher between focus and Enter; observe the actual dialog and
+// retry this opening only. Mutation controls must use one activation above.
+export async function openAdmittedReview(button: Locator, dialog: Locator) {
+  await expect(async () => {
+    if (await dialog.isVisible()) return;
+    await pressAdmittedAction(button);
+    await expect(dialog).toBeVisible({ timeout: 500 });
+  }).toPass({ timeout: 5_000 });
+}

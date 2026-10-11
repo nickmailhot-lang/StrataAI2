@@ -100,6 +100,23 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     await waitFor(() => expect(screen.getByRole('link', { name: /^Inspect windows$/ })).toHaveFocus());
   });
 
+  it('rechecks protected Board admission after the first validated live head even without new events', async () => {
+    let initialHead = () => {};
+    vi.mocked(watchBoard).mockImplementationOnce(options => { initialHead = options.initialHead!; return () => {}; });
+    let reads = 0; let finish!: (value: Response) => void;
+    vi.stubGlobal('fetch', vi.fn(async () => ++reads === 1 ? response(fixture)
+      : new Promise<Response>(resolve => { finish = resolve; })));
+    mount(); const workspace = await screen.findByRole('region', { name: 'Board workspace' });
+    await waitFor(() => expect(workspace).toHaveAttribute('aria-busy', 'false'));
+    act(() => initialHead());
+    await waitFor(() => expect(reads).toBe(2));
+    expect(workspace).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: 'Add list' })).toBeDisabled();
+    await act(async () => finish(response({}, 404)));
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Board workspace' })).not.toBeInTheDocument());
+    expect(screen.queryByText('Persisted board')).not.toBeInTheDocument();
+  });
+
   it('keeps mutation admission busy across a queued refresh until the final read withdraws edit access', async () => {
     let invalidate = () => {};
     vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
