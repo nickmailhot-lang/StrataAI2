@@ -274,3 +274,18 @@ for exact evidence boundaries. Actual hosted Worker/Production session races,
 Demo delivery, authorized replay/realtime, historical/Portal access and remaining
 acceptance/release obligations are unfinished. **49% estimated work remaining**;
 no criterion or scenario is closed.
+
+## Authorized operational lifecycle replay increment
+
+Current internal membership now independently admits bounded lifecycle replay
+for active/inactive operational parents. The channel excludes private names,
+saved captions and correlation/retry content; Members receive facts without
+administrative review authority. Unpublished gaps stop advancement, and current
+membership/session/parent checks fence event IO. Demo simulates publication in
+the same rollback boundary; Production reads actual Worker readiness.
+See [authorized replay and Demo publication](organization-configuration.md#authorized-operational-lifecycle-replay-and-demo-publication).
+Full Domain 943/943, focused API 12/12 and restricted PostgreSQL replay/delivery
+contracts pass. A later fixed telemetry label is covered by a successful rebuild.
+Realtime consumer/reconnect integration, hosted Worker/Production HTTP races,
+historical/Portal access and remaining acceptance/release work are unfinished.
+**48% estimated work remaining**; all criteria and linked scenarios remain open.

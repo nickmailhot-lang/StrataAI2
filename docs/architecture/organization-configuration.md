@@ -944,3 +944,59 @@ Demo delivery, independently authorized operational lifecycle replay/realtime,
 actual hosted Worker recovery/concurrency, inactive historical and Portal access,
 remaining data/retention and release acceptance remain required.
 **49% estimated PRD-27 work remaining**; no numbered criterion/scenario is closed.
+
+## Authorized operational lifecycle replay and Demo publication
+
+`GET /organizations/{id}/operational-lifecycle/events?afterVersion=0` is a
+private/no-store, current-session/current-internal-membership replay channel for
+Active, Suspended and Deactivated Organizations. It does not grant lifecycle
+administration, reopen operational commands or confer Portal authorization.
+The owning retained-parent transaction checks current account/membership and
+rechecks membership identity, revision/capacity and session after event IO.
+Changed parent state returns a conflict; lost authority returns no partial page.
+An optional expected-actor header rejects switched accounts.
+
+The response binds Organization, recipient actor, current lifecycle and parent
+revision, requested `afterVersion`, optional `nextVersion`, `pending` and events.
+Events contain only event/Organization/actor IDs, event/entity type and ID,
+revision, previous/current lifecycle, source acting capacity and source time.
+Private names, saved actor captions, request correlation and retry keys are
+excluded. Current internal Members may read these facts; administrative review
+and changes still require current Owner/Admin authority.
+
+Reads inspect at most 51 ordered sources and return at most 50 facts. They include
+unpublished rows internally and return only the ready prefix, preventing a later
+ready event from hiding an earlier publication gap. `pending` signals the first
+unpublished source encountered. Follow `nextVersion` to load another page; for
+subsequent polling, retain the last received event revision. When no new event
+is returned, retain the existing position and retry. A missing next-page cursor
+does not indicate that future events are impossible. Negative, repeated,
+nondecimal or beyond-head positions are rejected. Malformed, foreign, duplicate
+or unbounded sources fail closed. Reads perform no mutation or receipt lookup.
+
+PostgreSQL reads use the owning lifecycle transaction and forced tenant RLS,
+binding the envelope ID/revision/time to immutable history and reading Worker
+readiness. Demo now simulates immediate process-local publication under the
+same Organization/Work rollback gates, following its configuration-event
+simulation pattern. Publication timestamps roll back with history/receipts/audit
+when a command fails or loses its session. Demo is not a durable leased Worker
+pipeline and its data still disappears on process restart.
+
+Evidence: solution builds without warnings/errors; full Linux Domain **943/943**
+and focused API **12/12** pass, each with 810 matching captured backend/test source
+hashes at completion. Domain cases cover publication gaps, bounded continuation,
+membership/session/parent changes and malformed source refusal. API cases prove
+ordinary-member content-free replay while administrative review is denied,
+cross-tenant/actor/cursor refusal, privacy headers and 51 real Demo transitions
+with 50/1/empty continuation. Restricted PostgreSQL contracts pass with 1,860
+matching source hashes, including pending suspension, foreign refusal, partial
+published-prefix recovery while the original actor is deactivated, both delivered
+facts and continuation after the first. A fixed, identifier-free replay telemetry
+label was added afterwards and the solution rebuilt successfully. The unchanged
+frontend retains its preceding 2,343-case result. The older full HTTP API run and
+current exact-image CI remain separate pending evidence.
+
+Required remaining work includes realtime subscription/consumer integration and
+reconnect behavior, hosted Worker and Production HTTP race acceptance, inactive
+historical/independent Portal access, remaining data/retention and release evidence.
+**48% estimated PRD-27 work remaining**; no numbered criterion/scenario is closed.

@@ -65,6 +65,11 @@ internal static class OrganizationOperationalLifecycleContract
             && discovered.Value.Items.All(item => item.OrganizationId != other), "Restricted inactive administrative discovery lost scope.");
         var memberDirectory = await directory.ReadAsync(stranger, null, ct);
         Require(memberDirectory.Succeeded && memberDirectory.Value!.Items.Count == 0, "Restricted lifecycle directory disclosed an ordinary member target.");
+        var replay = provider.GetRequiredService<OrganizationOperationalLifecycleReplayService>();
+        var pendingReplay = await replay.ReadAsync(organization, stranger, 0, ct);
+        Require(pendingReplay.Succeeded && pendingReplay.Value!.Pending && pendingReplay.Value.Events.Count == 0
+            && pendingReplay.Value.Status == OrganizationStatus.Suspended, "Restricted current member replay skipped unpublished suspension.");
+        Require((await replay.ReadAsync(other, actor, 0, ct)).ErrorCode == "organization_not_found", "Foreign lifecycle replay was admitted.");
         Require((await service.ReviewAsync(organization, stranger, ct)).ErrorCode == "organization_not_found"
             && (await service.ReviewAsync(other, actor, ct)).ErrorCode == "organization_not_found",
             "Restricted lifecycle review admitted a member or foreign tenant.");
@@ -151,12 +156,12 @@ internal static class OrganizationOperationalLifecycleContract
             catch (PostgresException exception) when (exception.SqlState is PostgresErrorCodes.CheckViolation or PostgresErrorCodes.ForeignKeyViolation) { rejected = true; }
             Require(rejected, "Status-only lifecycle change committed without a source.");
         }
-        await VerifyDeliveryAsync(admin, apiConnection, workerConnection, organization, actor, ct);
+        await VerifyDeliveryAsync(admin, apiConnection, workerConnection, organization, actor, stranger, replay, ct);
         Console.WriteLine("Restricted Organization lifecycle transitions, original receipts, administrative refusal, rollback and source-only commit guards passed.");
     }
 
     private static async Task VerifyDeliveryAsync(NpgsqlConnection admin, string apiConnection, string workerConnection,
-        Guid organization, Guid actor, CancellationToken ct)
+        Guid organization, Guid actor, Guid member, OrganizationOperationalLifecycleReplayService replay, CancellationToken ct)
     {
         await using var worker = new PostgresConnectionFactory(workerConnection);
         var scopes = new PostgresOrganizationOperationalLifecycleScopeReader(worker);
@@ -202,6 +207,9 @@ internal static class OrganizationOperationalLifecycleContract
             Require(first is not null, "Operational lifecycle event did not become ready.");
             Require(await delivery.MarkReadyAsync(claim, eventId, ct) && await ReadyAtAsync() == first,
                 "Lifecycle redelivery moved its original readiness clock.");
+            var prefix = await replay.ReadAsync(organization, member, 0, ct);
+            Require(prefix.Succeeded && prefix.Value!.Events.Count == 1 && prefix.Value.Events[0].EventId == eventId
+                && prefix.Value.Pending && prefix.Value.NextVersion == 2, "Restricted replay skipped an unpublished later source.");
         }
         finally
         {
@@ -221,6 +229,12 @@ internal static class OrganizationOperationalLifecycleContract
             """, admin))
         { unrelated.Parameters.AddWithValue("tenant", organization); Require(await unrelated.ExecuteScalarAsync(ct) is true, "Typed lifecycle dispatcher touched an unrelated provider job."); }
         Require(!(await scopes.ReadAsync(null, 100, ct)).Contains(organization), "Completed lifecycle scope stayed eligible.");
+        var publishedReplay = await replay.ReadAsync(organization, member, 0, ct);
+        Require(publishedReplay.Succeeded && publishedReplay.Value!.Events.Count == 2 && !publishedReplay.Value.Pending,
+            "Restricted member could not recover both published lifecycle facts.");
+        var resumedReplay = await replay.ReadAsync(organization, member, 2, ct);
+        Require(resumedReplay.Succeeded && resumedReplay.Value!.Events.Count == 1 && resumedReplay.Value.Events[0].Version == 3,
+            "Restricted lifecycle replay continuation repeated or skipped its later fact.");
         await using (var proof = new NpgsqlCommand("""
             SELECT count(*)=2 AND bool_and(ready_at IS NOT NULL AND ready_at>=created_at AND updated_at=ready_at)
             FROM organization_operational_lifecycle_events WHERE tenant_id=@tenant;

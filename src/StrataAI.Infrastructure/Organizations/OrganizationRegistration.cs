@@ -36,6 +36,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationUnitOfWork, InMemoryOrganizationUnitOfWork>();
             services.AddSingleton<InMemoryOrganizationOperationalLifecycleStore>();
             services.AddSingleton<IOrganizationOperationalLifecycleStore>(provider => provider.GetRequiredService<InMemoryOrganizationOperationalLifecycleStore>());
+            services.AddSingleton<IOrganizationOperationalLifecycleEventReader>(provider => provider.GetRequiredService<InMemoryOrganizationOperationalLifecycleStore>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationOperationalLifecycleStore>());
             services.AddSingleton<IOrganizationOperationalLifecycleUnitOfWork, InMemoryOrganizationOperationalLifecycleUnitOfWork>();
             services.AddSingleton<InMemoryOrganizationDeletionJobPublisher>();
@@ -79,6 +80,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationUnitOfWork, PostgresOrganizationUnitOfWork>();
             services.AddSingleton<IOrganizationOperationalLifecycleUnitOfWork, PostgresOrganizationOperationalLifecycleUnitOfWork>();
             services.AddSingleton<IOrganizationOperationalLifecycleStore, PostgresOrganizationOperationalLifecycleStore>();
+            services.AddSingleton<IOrganizationOperationalLifecycleEventReader, PostgresOrganizationOperationalLifecycleEventReader>();
             services.AddSingleton<IOrganizationRemovalReplayStore, PostgresOrganizationRemovalReplayStore>();
             services.AddSingleton<IOrganizationDepartureReplayStore, PostgresOrganizationDepartureReplayStore>();
             services.AddSingleton<IOrganizationMetadataReplayStore, PostgresOrganizationMetadataReplayStore>();
@@ -91,6 +93,7 @@ public static class OrganizationRegistration
         services.AddSingleton<OrganizationMetadataSynchronizationService>();
         services.AddSingleton<OrganizationOperationalLifecycleService>();
         services.AddSingleton<OrganizationOperationalLifecycleDirectoryService>();
+        services.AddSingleton<OrganizationOperationalLifecycleReplayService>();
         services.AddSingleton<OrganizationConfigurationService>();
         services.AddSingleton<OrganizationConfigurationSynchronizationService>();
         services.AddSingleton<OrganizationConfigurationActivityService>();

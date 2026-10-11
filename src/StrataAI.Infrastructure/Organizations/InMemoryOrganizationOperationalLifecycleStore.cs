@@ -8,11 +8,12 @@ namespace StrataAI.Infrastructure.Organizations;
 internal sealed class InMemoryOrganizationOperationalLifecycleStore(InMemoryOrganizationStore organizations,
     IIdentityStore identities, ICommandActorAuthorization actors, IClock clock, InMemoryWorkManagementStore audits,
     DemoWorkTransactionScope workScope, OrganizationOperationalLifecycleCommandScope lifecycle)
-    : IOrganizationOperationalLifecycleStore, IDemoOrganizationTransactionParticipant
+    : IOrganizationOperationalLifecycleStore, IOrganizationOperationalLifecycleEventReader, IDemoOrganizationTransactionParticipant
 {
     private readonly Dictionary<(Guid Organization, long Version), OrganizationOperationalLifecycleTransition> _sources = [];
     private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), OrganizationOperationalLifecycleReceipt> _receipts = [];
     private readonly HashSet<Guid> _eventIds = [];
+    private readonly Dictionary<(Guid Organization, long Version), DateTimeOffset> _publications = [];
 
     public async Task<OrganizationOperationalLifecycleScope?> ReadScopeAsync(Guid organization, Guid actor, CancellationToken ct)
     {
@@ -49,12 +50,27 @@ internal sealed class InMemoryOrganizationOperationalLifecycleStore(InMemoryOrga
         _sources.Add((source.OrganizationId, source.Version), source);
         _receipts.Add((source.OrganizationId, receipt.ActorId, receipt.Key), receipt);
         _eventIds.Add(source.EventId);
+        // Demo simulates publication locally, under the same rollback gate.
+        // Production readiness requires a live Worker lease instead.
+        _publications.Add((source.OrganizationId, source.Version), clock.UtcNow < source.CreatedAt ? source.CreatedAt : clock.UtcNow.ToUniversalTime());
         return OrganizationOperationalLifecycleWriteResult.Written;
+    }
+
+    public Task<OrganizationOperation<IReadOnlyList<OrganizationOperationalLifecyclePublication>>> ReadAsync(
+        Guid organization, Guid actor, long afterVersion, CancellationToken ct)
+    {
+        Require(organization, actor, ct);
+        IReadOnlyList<OrganizationOperationalLifecyclePublication> rows = _sources
+            .Where(row => row.Key.Organization == organization && row.Key.Version > afterVersion)
+            .OrderBy(row => row.Key.Version).Take(51)
+            .Select(row => new OrganizationOperationalLifecyclePublication(row.Value,
+                _publications.TryGetValue(row.Key, out var ready) ? ready : null)).ToArray();
+        return Task.FromResult(OrganizationOperation<IReadOnlyList<OrganizationOperationalLifecyclePublication>>.Success(rows));
     }
 
     public Action CaptureRollback()
     {
-        Action[] restore = [DemoRollback.Dictionary(_sources), DemoRollback.Dictionary(_receipts), DemoRollback.Set(_eventIds)];
+        Action[] restore = [DemoRollback.Dictionary(_sources), DemoRollback.Dictionary(_receipts), DemoRollback.Set(_eventIds), DemoRollback.Dictionary(_publications)];
         return () => { foreach (var action in restore) action(); };
     }
 
