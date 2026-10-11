@@ -88,12 +88,18 @@ public sealed class OrganizationOperationalLifecycleService(IOrganizationOperati
                 var written = await store.WriteAsync(expectedVersion, result,
                     new(actor, key, fingerprint, result, at.AddHours(24)), ct);
                 if (written != OrganizationOperationalLifecycleWriteResult.Written)
+                {
+                    // A persistence refusal can follow IO that outlived the
+                    // original session. Report current authentication failure
+                    // before encouraging a retry of an unavailable source.
+                    if (!await actors.VerifyAsync(actor, ct)) return Failure("session_unavailable");
                     return Failure(written switch
                     {
                         OrganizationOperationalLifecycleWriteResult.VersionConflict => "version_conflict",
                         OrganizationOperationalLifecycleWriteResult.KeyConflict => "idempotency_key_conflict",
                         _ => "organization_lifecycle_source_unavailable",
                     });
+                }
             }
             // IO may have waited past session expiry or withdrawn current admin
             // authority. Failure causes the owning transaction to roll back.
