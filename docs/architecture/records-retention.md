@@ -1,10 +1,10 @@
 # Records retention contracts — PRD-70
 
 [PRD-70](https://github.com/nickmailhot-lang/StrataAI2/issues/71) remains open.
-Estimated work remaining: **84%**. Domain contracts, private policy storage,
+Estimated work remaining: **83%**. Domain contracts, private policy storage,
 transactional Demo parity and authorized policy HTTP commands/reads are implemented
 and locally tested. The internal MUI policy create/edit/review and retry workflow
-is implemented with component coverage; browser/release acceptance, runtime
+is implemented with component and scoped desktop/mobile browser coverage; remaining browser/release acceptance, runtime
 holds, redaction, export and disposition workflows remain incomplete. This shared boundary is also required by
 [PRD-20](https://github.com/nickmailhot-lang/StrataAI2/issues/21) and the remaining
 [PRD-27 acceptance](prd-27-acceptance.md). Retained configuration history alone
@@ -144,8 +144,8 @@ semantics. Four focused Linux command tests passed after fresh whole-solution
 compilation (zero warnings/errors), with all 822 backend/test hashes matching.
 They verify admission before disclosure, original acknowledgment recovery,
 changed/stale/expired retries, immutable applicability, substituted private
-sources and result withdrawal after authority loss during IO. A current full API
-regression is running; no result is claimed before it terminates.
+sources and result withdrawal after authority loss during IO. Full API results
+and the boundaries of their captured source are documented below.
 
 [PostgresRetentionPolicyStore](../../src/StrataAI.Infrastructure/Records/PostgresRetentionPolicyStore.cs)
 now borrows the owning transaction for typed current/history and original receipt
@@ -243,6 +243,47 @@ web typecheck, full lint and production build passed. These are component/client
 checks, not actual desktop/mobile browser or screen-reader acceptance. Realtime
 policy publication and the remaining PRD scope are still required.
 
+### Maintained policy browser scenarios
+
+[retention-policy-review.spec.ts](../../tests/browser/retention-policy-review.spec.ts)
+executes four maintained cases at 1,280px and 390px with real authenticated
+accounts and owning policy writes. It covers empty → explicit creation,
+keyboard selection/review/confirmation and focus containment, revision guards,
+stale conflict/current-source comparison with a preserved draft and new approval,
+retained revision order/event identities/original actor attribution, and current
+state after acknowledgment. Lost-response cases commit the actual request and
+abort only delivery, reload tab-local recovery, make a later policy change, then
+require the original request bytes/key and acknowledgment before admitting the
+refreshed later current state. Another uncertain committed submission is followed
+by administrator removal; private values and recovery disappear, subsequent reads
+and retries are denied, and the Owner retains the original committed revision.
+
+The scenarios observe the actual initial metadata stream before triggering a
+recovered retry. Admission rechecks can cancel a preflight while preserving its
+original; a hidden dialog or a newer read never proves acknowledgment. The test
+requires the actual retry request and explicit acknowledgment notice. It does
+not retry an unexpected failing assertion or weaken current authority checks.
+
+All **4/4 Production and 4/4 Demo cases** passed without skipped, unexpected or
+flaky cases. Axe found no violations for the tested WCAG 2/2.1/2.2 AA rule tags
+in review/history states; layout overflow checks passed at both widths. These
+checks do not establish manual screen-reader or full PRD accessibility coverage.
+The Production fixture used fresh compiled API/Worker builds, a production web
+build, canonical runtime roles, fresh migrations and installed policy capability
+assertions, with an isolated database and local proxy. Its **1,918 captured
+repository hashes** matched; the browser/code subset also matched all **1,335**
+hashes. Demo used a separate compiled Demo API/provider with the same maintained
+spec and **1,335 code/browser/web hashes matching**. Owned fixtures, database,
+roles and credential files were removed; original PostgreSQL was preserved.
+These local fixtures used compiled mounts and a local proxy, not immutable
+release images or the release Nginx edge.
+
+The spec now runs in the mandatory Demo release-image browser step and in the
+complete Production browser shards. Actual collection/partition verification
+covers **372 cases in 142 intact files**, each exactly once across four shards,
+with retries disabled. Exact-head image integration/security/CI remains pending.
+No numbered PRD-70 criterion or linked scenario is closed by this policy subset.
+
 ## Reviewed browser submission and recovery contract
 
 [RetentionPolicyChangeIntent](../../apps/web/src/features/records/retentionPolicyClient.ts)
@@ -305,9 +346,9 @@ refresh and original retry after competing versioned edits, normalized namespace
 collision, unchanged historical attribution after a real membership-version
 change, 256-character correlation IDs, fixed body-free audit metadata, complete
 final-authority rollback with key/namespace reclamation, and cancellation after
-write with audit rollback. A fresh full API regression captures this Demo source;
-its result remains pending. The earlier running regression captures the preceding
-Application service and cannot prove these later Demo or PostgreSQL changes.
+write with audit rollback. The subsequent full API captures and their source
+boundaries are documented below. The earlier service-only capture did not prove
+these later Demo or PostgreSQL changes.
 
 ## Acceptance evidence and complete remaining scope
 
@@ -345,7 +386,8 @@ foreign/anonymous refusal, and suspended/deactivated denial with unchanged resto
 revision. All **1,908 repository source hashes** matched. Owned fixtures and
 credential files were removed. The fixture is now mandatory in build-once release
 integration CI, but this local run used compiled mounts, not the immutable release
-images. A fresh full API regression is running; exact-head CI remains pending.
+images. The completed current backend regression is documented below; exact-head
+CI remains pending.
 
 The owning Application service now supplies bounded policy-directory and retained
 history pages. Both adapters read at most 51 sources and return 50 items with a
@@ -376,9 +418,9 @@ boundaries with retained attribution, alongside prior write/retry/concurrency/
 rollback checks. Its **826 source hashes matched** and independent committed
 graph/audit counters remained one header, three revisions, three receipts and
 three fixed body-free audit events. Its prospective write grants were fixture-local;
-canonical runtime provisioning and feature activation remain unchanged. Owned
-fixtures and credentials were removed. Neither running full API regression nor
-queued release CI is claimed as proof of these later source changes.
+this harness predated canonical provisioning and HTTP activation described above.
+Owned fixtures and credentials were removed. Subsequent full API results are
+documented below; queued release CI is not claimed as proof of those sources.
 
 [RecordRetentionTests.cs](../../tests/StrataAI.Domain.Tests/RecordRetentionTests.cs)
 passes **28/28 focused Linux cases**. The complete current Linux Domain suite
@@ -406,7 +448,7 @@ or linked scenario. Required remaining work includes:
   runtime adapters, with Demo parity and policy selector acceptance.
 - Owning transaction admission, explicit elevated authorization, review/concurrency,
   complete hold lookup and current lock ordering across every disposition path.
-- Applied/released hold commands, policy selector/retirement rules, MUI policy review browser acceptance,
+- Applied/released hold commands, policy selector/retirement rules and remaining Records MUI workflows,
   cross-session domain publication and authorized replay after membership changes.
 - Independent governance preservation; controlled redaction and authorized original
   access; privacy deletion/anonymization versus retained governance/audit sources.
@@ -429,5 +471,9 @@ The separate `retdemo2-full` API capture completed **850/850 cases**, with zero
 failed/skipped/aborted/timed-out cases. It captured 825 backend/test files; eight
 captured files changed by completion. It predates pagination and HTTP activation
 and is also historical regression evidence only.
-The current backend `rethttp1-full` capture remains running. Exact-head release
-CI remains queued and no release acceptance is claimed.
+The current backend `rethttp1-full` capture has completed **859/859 cases**,
+with zero failed/skipped/aborted/timed-out cases. All **828 captured backend/test
+hashes matched**. This is full current backend source regression evidence,
+including adapter, pagination and HTTP activation; it does not establish release
+images or frontend acceptance. Exact-head release CI remains queued and no release
+acceptance is claimed.
