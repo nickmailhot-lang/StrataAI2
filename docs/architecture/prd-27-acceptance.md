@@ -202,3 +202,16 @@ for evidence scope and retained setup failures. Historical access, portal,
 lifecycle HTTP/UI, Worker delivery/replay, concurrency and remaining acceptance
 obligations are unfinished. **52% estimated work remaining**; no AC or scenario
 is closed.
+
+
+## Operational lifecycle HTTP increment
+
+Private retained-parent administrative review and revision/key-bound lifecycle
+HTTP commands now exist. The full Domain suite passes 918/918; eight focused
+API-host cases and restricted PostgreSQL review/refusal contracts pass. See
+[operational lifecycle HTTP review and commands](organization-configuration.md#operational-lifecycle-http-review-and-commands)
+for response/input contracts, original acknowledgment behavior and retained
+failure evidence. Current full API and exact-head image CI are separate pending
+scopes. MUI confirmation/retry/conflicts, inactive historical and portal access,
+Worker delivery/replay, concurrency and remaining acceptance remain unfinished.
+**52% estimated work remaining**; no criterion or scenario is closed.

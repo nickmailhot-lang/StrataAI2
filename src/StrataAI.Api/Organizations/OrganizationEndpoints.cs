@@ -9,6 +9,7 @@ public static class OrganizationEndpoints
     {
         var group = app.MapGroup("/organizations").RequireAuthorization().AddEndpointFilter<OrganizationTelemetryResultFilter>();
         group.MapOrganizationConfigurationEndpoints();
+        group.MapOrganizationOperationalLifecycleEndpoints();
         group.MapGet("/{organizationId:guid}/lifecycle-events", async (Guid organizationId, Guid? expectedActorId,
                 HttpContext context, IOrganizationLifecycleEventReader reader, CancellationToken cancellationToken) =>
             {

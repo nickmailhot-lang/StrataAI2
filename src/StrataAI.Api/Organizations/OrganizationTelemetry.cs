@@ -39,6 +39,8 @@ public sealed class OrganizationTelemetry
             ("/organizations/{organizationId:guid}/deletion-requests/{requestId:guid}", "GET") => "delete_observation",
             ("/organizations/{organizationId:guid}/metadata-events", "GET") => "metadata_replay",
             ("/organizations/{organizationId:guid}/lifecycle-events", "GET") => "lifecycle_replay",
+            ("/organizations/{organizationId:guid}/operational-lifecycle", "GET") => "operational_lifecycle_review",
+            ("/organizations/{organizationId:guid}/operational-lifecycle", "PATCH") => "operational_lifecycle_change",
             ("/organizations/{organizationId:guid}/configuration", "GET") => "configuration_read",
             ("/organizations/{organizationId:guid}/configuration", "PATCH") => "configuration_change",
             ("/organizations/{organizationId:guid}/configuration/history", "GET") => "configuration_history",
@@ -59,6 +61,8 @@ public sealed class OrganizationTelemetry
         or "configuration_source_unavailable" or "configuration_sync_unavailable" or "configuration_identifier_unavailable"
         or "configuration_intake_unavailable" or "invalid_configuration_cursor"
         or "invalid_configuration_request" => code,
+        "organization_lifecycle_source_unavailable" or "organization_lifecycle_unchanged"
+        or "invalid_organization_lifecycle" or "invalid_organization_lifecycle_request" or "invalid_correlation_id" => code,
         { } value when value.StartsWith("invalid_configuration_", StringComparison.Ordinal) => "invalid_configuration_field",
         _ => "other_error",
     };

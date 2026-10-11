@@ -704,3 +704,52 @@ inactive historical reads, independent portal consistency, durable Worker
 discovery/delivery/replay, concurrency coverage and complete release acceptance
 remain required. No numbered criterion or scenario is closed. PRD-27 estimate:
 **52% work remaining**.
+
+
+## Operational lifecycle HTTP review and commands
+
+`GET /organizations/{id}/operational-lifecycle` independently admits the current
+Owner/Admin in Active, Suspended or Deactivated state and returns a private,
+non-cacheable review: Organization/actor IDs, explicit uppercase state, revision,
+source update time and acting capacity. Account and membership identity/epoch/
+role are checked across IO under the dedicated retained-parent lock. This route
+does not grant historical Board, configuration or portal access.
+
+`PATCH /organizations/{id}/operational-lifecycle` requires JSON containing exactly
+`version` and `status` plus a nonempty UUID `Idempotency-Key`. Status is one of
+`ACTIVE`, `SUSPENDED`, `DEACTIVATED`; integer values, other states, duplicates,
+missing fields, unknown fields and bodies exceeding 4,096 bytes are rejected.
+Admission precedes parsing, and the command independently repeats current
+authorization after the review transaction. CSRF and optional expected-actor
+checks apply. Success returns original event/actor/caption/capacity, prior/new
+states, incremented revision, correlation and immutable source time. Retrying
+the exact original request returns its original acknowledgment even after a
+later reactivation, without applying the old state again.
+
+Responses use stable non-disclosing Problems: unauthorized target 404, withdrawn
+session 401, input/retry-key validation 400, stale revision/changed or expired
+retry/unchanged state 409, unconfirmed persistence/source 503. Operator metrics
+use fixed review/change names and error/outcome labels; submitted values and
+tenant/actor/retry identifiers never enter metric labels.
+
+Executed pinned Linux evidence: **918/918 full Domain tests**, with 798 matching
+backend/test source hashes; **8/8 focused API-host lifecycle cases**, covering
+actual authenticated HTTP review, suspension/reactivation/deactivation, blocked
+Board creation, stale revisions, changed-key rejection, original recovery,
+malformed/oversized bodies, foreign targets, expected-actor and CSRF refusal.
+The first focused run passed 7/8 and stopped its happy-path case on a header-order
+assertion; the assertion now checks both actual privacy flags and the complete
+rerun passes. A separate fixture-copy attempt hit Windows path-length limits
+before starting any tests; its shorter uniquely named rerun passes. Restricted
+PostgreSQL contracts also pass inactive administrative review and member/foreign
+review refusal, capturing 1,839 matching source files. Their session admission is
+synthetic; real Production HTTP/session races remain unproven. Owned terminal
+fixtures were cleaned up. The current full API source suite runs separately;
+the older still-running full Demo suite belongs to its preceding frozen source.
+
+Lifecycle MUI review/confirmation, inactive historical permission routes,
+independent portal consistency, Worker delivery/discovery/replay, concurrency,
+remaining data/retention and accessible/telemetry/release acceptance remain
+unfinished. Local tests do not prove the published immutable images; exact-head
+CI is required. PRD-27 remains **52% estimated work remaining**; no numbered
+criterion or scenario is closed.

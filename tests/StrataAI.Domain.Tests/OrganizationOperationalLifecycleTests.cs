@@ -227,6 +227,42 @@ public sealed class OrganizationOperationalLifecycleTests
         Assert.Equal(Now, result.Value!.CreatedAt); Assert.Equal(Now.AddHours(24), f.Store.Receipt!.ExpiresAt);
     }
 
+    [Theory]
+    [InlineData(OrganizationStatus.Active)] [InlineData(OrganizationStatus.Suspended)] [InlineData(OrganizationStatus.Deactivated)]
+    public async Task PRD_27_FR007_Administrative_review_is_current_and_does_not_write_history(OrganizationStatus status)
+    {
+        var f = new Fixture(); f.Store.Scope = f.Store.Scope! with { Status = status };
+        var result = await f.Service.ReviewAsync(Organization, Actor, TestContext.Current.CancellationToken);
+        Assert.True(result.Succeeded); Assert.Equal(status, result.Value!.Status); Assert.Equal(7, result.Value.Version);
+        Assert.Equal(Actor, result.Value.ActorId); Assert.Equal("ORGANIZATION_OWNER", result.Value.ActingCapacity);
+        Assert.Equal(0, f.Store.Writes); Assert.Equal(0, f.Store.ReceiptReads); Assert.Empty(f.Store.Sources);
+    }
+
+    [Theory]
+    [InlineData("account")] [InlineData("late_account")] [InlineData("membership")]
+    [InlineData("epoch")] [InlineData("role")] [InlineData("version")]
+    public async Task PRD_27_FR007_Review_withdrawal_or_changed_revision_returns_no_protected_result(string change)
+    {
+        var f = new Fixture();
+        f.Store.AfterScope = () =>
+        {
+            if (change == "late_account") { if (f.Store.ScopeReads == 2) f.Auth.Active = false; return; }
+            if (f.Store.ScopeReads != 1) return;
+            if (change == "account") f.Auth.Active = false;
+            else f.Store.Scope = change switch
+            {
+                "membership" => f.Store.Scope! with { MembershipActive = false },
+                "epoch" => f.Store.Scope! with { MembershipVersion = 4 },
+                "role" => f.Store.Scope! with { Role = OrganizationRole.Admin },
+                _ => f.Store.Scope! with { Version = 8 },
+            };
+        };
+        var result = await f.Service.ReviewAsync(Organization, Actor, TestContext.Current.CancellationToken);
+        Assert.False(result.Succeeded); Assert.Null(result.Value); Assert.Equal(0, f.Store.Writes); Assert.Empty(f.Store.Sources);
+        Assert.Equal(change.Contains("account", StringComparison.Ordinal) ? "session_unavailable"
+            : change == "version" ? "version_conflict" : "organization_not_found", result.ErrorCode);
+    }
+
     private sealed class Fixture
     {
         public Store Store { get; } = new(); public Auth Auth { get; } = new(); public Clock Clock { get; } = new();
@@ -273,9 +309,10 @@ public sealed class OrganizationOperationalLifecycleTests
         public int ScopeReads { get; private set; } public int ReceiptReads { get; private set; } public int Writes { get; private set; }
         public Action? AfterWrite { get; set; }
         public Action? AfterReceipt { get; set; }
+        public Action? AfterScope { get; set; }
         public OrganizationOperationalLifecycleWriteResult WriteResult { get; set; } = OrganizationOperationalLifecycleWriteResult.Written;
         public Task<OrganizationOperationalLifecycleScope?> ReadScopeAsync(Guid organization, Guid actor, CancellationToken ct)
-        { Assert.True(Unit.Inside); ct.ThrowIfCancellationRequested(); ScopeReads++; return Task.FromResult(Scope); }
+        { Assert.True(Unit.Inside); ct.ThrowIfCancellationRequested(); ScopeReads++; var value = Scope; AfterScope?.Invoke(); return Task.FromResult(value); }
         public Task<OrganizationOperationalLifecycleReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct)
         { Assert.True(Unit.Inside); ReceiptReads++; AfterReceipt?.Invoke(); return Task.FromResult(Receipt); }
         public Task<OrganizationOperationalLifecycleWriteResult> WriteAsync(long version,

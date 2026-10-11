@@ -8,6 +8,36 @@ namespace StrataAI.Application.Organizations;
 public sealed class OrganizationOperationalLifecycleService(IOrganizationOperationalLifecycleUnitOfWork unit,
     IOrganizationOperationalLifecycleStore store, ICommandActorAuthorization actors, IClock clock)
 {
+    public Task<OrganizationOperation<OrganizationOperationalLifecycleReview>> ReviewAsync(Guid organization,
+        Guid actor, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (organization == Guid.Empty || actor == Guid.Empty)
+            return Task.FromResult(OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("organization_not_found"));
+        return unit.ExecuteAsync<OrganizationOperationalLifecycleReview>(organization, actor, async () =>
+        {
+            if (!await actors.VerifyAsync(actor, ct))
+                return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("session_unavailable");
+            var scope = await store.ReadScopeAsync(organization, actor, ct);
+            if (scope?.Admitted(organization, actor) != true)
+                return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("organization_not_found");
+            if (!await actors.VerifyAsync(actor, ct))
+                return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("session_unavailable");
+            var current = await store.ReadScopeAsync(organization, actor, ct);
+            if (current?.Admitted(organization, actor) != true || current.MembershipId != scope.MembershipId
+                || current.MembershipVersion != scope.MembershipVersion || current.Role != scope.Role)
+                return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("organization_not_found");
+            if (current.Status != scope.Status || current.Version != scope.Version || current.UpdatedAt != scope.UpdatedAt)
+                return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("version_conflict");
+            if (!await actors.VerifyAsync(actor, ct))
+                return OrganizationOperation<OrganizationOperationalLifecycleReview>.Failure("session_unavailable");
+            ct.ThrowIfCancellationRequested();
+            return OrganizationOperation<OrganizationOperationalLifecycleReview>.Success(new(organization, actor,
+                current.Status, current.Version, current.UpdatedAt,
+                current.Role == OrganizationRole.Owner ? "ORGANIZATION_OWNER" : "ORGANIZATION_ADMIN"));
+        }, ct);
+    }
+
     public Task<OrganizationOperation<OrganizationOperationalLifecycleTransition>> ChangeAsync(Guid organization,
         Guid actor, OrganizationStatus status, long expectedVersion, Guid key, string correlationId,
         CancellationToken ct = default)

@@ -53,6 +53,12 @@ internal static class OrganizationOperationalLifecycleContract
         var key = Guid.NewGuid();
         var suspended = await service.ChangeAsync(organization, actor, OrganizationStatus.Suspended, 1, key, "restricted-suspension", ct);
         Require(suspended.Succeeded && suspended.Value!.Version == 2, "Restricted lifecycle suspension failed.");
+        var review = await service.ReviewAsync(organization, actor, ct);
+        Require(review.Succeeded && review.Value!.Status == OrganizationStatus.Suspended && review.Value.Version == 2,
+            "Restricted lifecycle current administrative review failed for a suspended parent.");
+        Require((await service.ReviewAsync(organization, stranger, ct)).ErrorCode == "organization_not_found"
+            && (await service.ReviewAsync(other, actor, ct)).ErrorCode == "organization_not_found",
+            "Restricted lifecycle review admitted a member or foreign tenant.");
         var recovered = await service.ChangeAsync(organization, actor, OrganizationStatus.Suspended, 1, key, "retry", ct);
         Require(recovered.Succeeded && recovered.Value == suspended.Value, "Restricted lifecycle original receipt changed.");
         Require((await service.ChangeAsync(organization, stranger, OrganizationStatus.Active, 2, Guid.NewGuid(), "member-denied", ct)).ErrorCode == "organization_not_found",
