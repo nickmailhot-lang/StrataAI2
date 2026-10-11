@@ -1007,6 +1007,10 @@ jobs:
         if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-organization-operational-lifecycle-delivery.sh
 
+      - name: Independent Portal grants across operational lifecycle changes against exact release API
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-operational-lifecycle-portal.sh
+
       - uses: actions/setup-node@v7
         if: (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')
         with:
