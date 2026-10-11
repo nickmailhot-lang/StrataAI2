@@ -15,6 +15,12 @@ test('every mandatory check has an owner and every group uses retained images', 
 
 const mutations = [
   ...[
+    ['omitted', value => { value.jobs['postgres-integration'].steps = value.jobs['postgres-integration'].steps.filter(entry => entry.name !== 'Retention hold owning PostgreSQL adapter and rollback contract'); }],
+    ['replaced by success', value => { value.jobs['postgres-integration'].steps.find(entry => entry.name === 'Retention hold owning PostgreSQL adapter and rollback contract').run = 'true'; }],
+    ['skipped', value => { value.jobs['postgres-integration'].steps.find(entry => entry.name === 'Retention hold owning PostgreSQL adapter and rollback contract').if = 'false'; }],
+    ['failure ignored', value => { value.jobs['postgres-integration'].steps.find(entry => entry.name === 'Retention hold owning PostgreSQL adapter and rollback contract')['continue-on-error'] = true; }],
+  ].map(([name, mutate]) => [`owning hold persistence ${name}`, mutate]),
+  ...[
     'Verify installed configuration identities, relationships and restricted capabilities',
     'Retention policy schema and restricted capabilities',
     'Authorized configuration and lifecycle HTTP p95 through exact release images',

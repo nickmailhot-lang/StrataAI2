@@ -66,6 +66,16 @@ function owners(step) {
 
 export function verifyIntegrationSuites(workflow, registry, attachmentSources = readAttachmentSources()) {
   const jobs = workflow.jobs;
+  const postgresSteps = jobs['postgres-integration'].steps;
+  const holdPersistence = postgresSteps.find(step => step.name === 'Retention hold owning PostgreSQL adapter and rollback contract');
+  assert.equal(holdPersistence?.run,
+    'dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --configuration Release --no-build -- --retention-holds-only',
+    'Owning hold persistence contract must run intact');
+  assert.equal(holdPersistence.if, undefined, 'Owning hold persistence cannot be skipped');
+  assert.equal(holdPersistence['continue-on-error'] ?? false, false);
+  const uploadPersistence = postgresSteps.find(step => step.name === 'Execute real C# upload persistence under the restricted API login');
+  assert.deepEqual(holdPersistence.env, uploadPersistence.env, 'Use the same disposable restricted runtime connections');
+  assert.ok(postgresSteps.indexOf(holdPersistence) > postgresSteps.indexOf(uploadPersistence), 'Compile and execute mandatory persistence before the hold contract');
   const job = jobs['container-integration'];
   for (const [name, script] of [
     ['Verify installed configuration identities, relationships and restricted capabilities', 'test-organization-configuration-schema.sh'],

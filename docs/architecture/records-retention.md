@@ -110,6 +110,55 @@ matched at completion. Owned containers and ephemeral credential files were
 removed. Full hosted CI for the resulting commit remains required; no ticket or
 acceptance criterion is closed by this storage/readiness foundation.
 
+## Owning PostgreSQL hold adapter
+
+[PostgresRetentionHoldStore.cs](../../src/StrataAI.Infrastructure/Records/PostgresRetentionHoldStore.cs)
+implements the owning hold store without application-wide registration. Every
+read/write requires the existing Organization command scope and borrows that
+transaction. Current reads join the current revision, whereas actor/key receipts
+join their original immutable revision. Applicability reads include Released
+heads, normalize ASCII categories consistently with Demo, and query at most 1,001
+rows: exactly 1,000 can be complete; overflow stays incomplete and cannot authorize
+disposition. Larger-scale complete processing remains required.
+
+Writes validate the exact Domain transition, current parent/account/elevated
+membership provenance, scope authorization, timestamps, receipt identity/expiry
+and immutable source. A savepoint contains current/history/receipt/audit changes;
+CAS/key conflicts and source constraint failures roll back that attempted graph.
+No account, Organization, record scope, original application or audit privilege is
+inferred from a supplied hold body. The owning Application service still performs
+its admission, scope and final disclosure/write fences.
+
+The maintained [native persistence contract](../../tests/StrataAI.Persistence.Contracts/RetentionHoldPersistenceContract.cs)
+uses the actual adapter, existing PostgreSQL unit and Application commands against
+a restricted API login. Its admission and scope probes are explicit fixture
+contracts, not session or object confidentiality proof. Prospective table grants
+exist only in that disposable fixture and are revoked in `finally`. PostgreSQL's
+source row lock needs `UPDATE(version)` in addition to SELECT; a negative control
+proves SELECT alone refuses the lock, while the immutable trigger still refuses
+an actual update with that narrow privilege. Canonical provisioning and runtime
+registration remain unchanged.
+
+Fresh solution compilation passed with zero warnings/errors. The actual native
+contract passed persisted apply/refresh/release, original Apply recovery after
+release without reactivation, stale release, unknown typed source, foreign
+Organization/actor receipt refusal, late scope withdrawal restoring the full
+graph and original key, and unowned IO refusal. Independent committed counters
+were two current heads, three history rows, three receipts and three hold audit
+facts before the capacity fixture. Actual PostgreSQL lookup then passed exactly
+1,000 matching heads as complete and 1,003 matching heads as a capped 1,001-row
+incomplete result. The same executable passed all 144 individual ledger
+refusal/restoration cases for API and Worker. All 1,935 captured repository hashes
+matched at completion; owned containers and credential files were removed.
+
+The contract is a mandatory source PostgreSQL CI phase. Coverage checks reject
+omission, success substitution, skipping and ignored failures; all 207 maintained
+integration/release-startup/browser-shard contract tests passed locally. Exact-head
+hosted CI, actual record classification/confidentiality authorization and Demo
+source parity, runtime activation, HTTP/MUI, domain delivery and disposition
+integration remain outstanding. This adapter does not complete hold enforcement
+or any PRD-70 acceptance criterion.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines
@@ -789,7 +838,7 @@ for RECORDS-FR-001/002/003. It does not close any numbered acceptance criterion
 or linked scenario. Required remaining work includes:
 
 - Remaining typed producer identities, real record classification/confidentiality
-  authorization and Production hold runtime adapters/activation, with Demo parity
+  authorization and Production hold runtime activation, with Demo parity
   and complete policy selector acceptance.
 - Owning transaction admission, explicit elevated authorization, review/concurrency,
   complete hold lookup and current lock ordering across every disposition path.
