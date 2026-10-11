@@ -15,6 +15,9 @@ public sealed record RetentionHoldWrite(RetentionHold Hold, Guid ActorId, Guid M
 public enum RetentionHoldWriteResult { Written, VersionConflict, KeyConflict, SourceUnavailable }
 public interface IRetentionHoldStore
 {
+    // Trusted record projection after owning record authorization. This is not
+    // a paged directory or a caller-supplied completeness assertion.
+    Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct);
     Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct);
     Task<RetentionHoldReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct);
     // All current/history/receipt/audit writes belong to the existing transaction.

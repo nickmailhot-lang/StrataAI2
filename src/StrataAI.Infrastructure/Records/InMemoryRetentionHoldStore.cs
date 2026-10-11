@@ -21,6 +21,22 @@ internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organization
     private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), RetentionHoldReceipt> _receipts = [];
     private readonly HashSet<Guid> _eventIds = [];
 
+    public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct)
+    {
+        RequireScope(record.OrganizationId, ct);
+        var now = clock.UtcNow;
+        if (RecordRetentionRules.Validate(record) is not null || now.Offset != TimeSpan.Zero
+            || record.CreatedAt > now || record.ArchivedAt > now || record.ClosedAt > now || record.ApprovedAt > now)
+            throw new ArgumentException("Invalid retention record projection.", nameof(record));
+        // Current states only, including release evidence. Never select historical
+        // Active rows or omit a current row merely because its status is Released.
+        var rows = _current.Values.Where(h => h.OrganizationId == record.OrganizationId
+            && (h.RecordClass is null || h.RecordClass == record.RecordClass)
+            && (h.Category is null || string.Equals(h.Category, record.Category, StringComparison.OrdinalIgnoreCase))
+            && (h.RecordId is null || h.RecordId == record.Id)).OrderBy(h => h.Id);
+        return Task.FromResult(new RetentionHoldCandidates(record, rows));
+    }
+
     public Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct)
     {
         RequireScope(organization, ct);

@@ -157,6 +157,48 @@ used freshly compiled code in a pinned runtime container; they do not establish
 immutable release image or rigorous CI acceptance. Production hold parity and
 runtime activation remain incomplete.
 
+### Current hold applicability and completeness
+
+`IRetentionHoldStore.ReadApplicableAsync` now accepts a trusted owning record
+projection and returns [RetentionHoldCandidates](../../src/StrataAI.Application/Records/RetentionHoldCandidates.cs).
+The Demo adapter requires the existing owning Organization transaction before
+validating that projection or reading private rows. It rejects invalid identities,
+classification and future record clocks. Matching includes the same Organization's
+whole-Organization, record class, case-insensitive category and record-ID scopes;
+unrelated tenant/class/category/record holds are excluded. Current Released rows
+remain in the result so their source evidence can be validated; historical Active
+revisions are never substituted for a current release.
+
+The result retains the full record snapshot and an immutable item collection. Its
+evaluation helper refuses a changed record before applying selection-aware Domain
+disposition checks. A synchronous scope with at most 1,000 matches is complete;
+the 1,001st row proves overflow and keeps `ScopeComplete` false. Evaluation of that
+result preserves the record with `IncompleteHoldScope`, never treating a truncated
+page as permission to dispose. This is a synchronous safety bound, **not a hold
+quota**: storage accepts additional holds. A scalable complete reader for larger
+scopes and recoverable disposition processing still require implementation.
+
+The input projection and completeness result are private storage contracts, not
+HTTP input, record authorization or a grant to a Worker. The eventual owning
+resolver must authorize the actual record/confidentiality, establish its current
+classification, and re-read current record/policy/hold sources under locks through
+disposition. PostgreSQL hold schema/adapter parity and runtime enforcement remain
+pending. The earlier 869-case API capture predates this lookup change and is not
+proof of its runtime integration. Estimated PRD-70 work remaining remains **82%**.
+
+Verification: fresh solution compilation passed with zero warnings/errors. The
+focused Linux API Records suite passed **29/29**, including two new maintained
+[hold lookup tests](../../tests/StrataAI.Api.Tests/RetentionHoldLookupTests.cs).
+They use actual Demo writes/transactions to verify all four matching scope shapes,
+unrelated tenant/class/category/record exclusion, current release evidence,
+unowned/foreign/invalid/future/canceled reads, record snapshot changes, empty scope
+and the exact 1,000/1,001 completeness boundary. The overflow case persists 1,001
+valid holds within one owning transaction and proves evaluation refuses disposition.
+The capture matched **839 backend/test source hashes**, zero mismatches, and its
+owned terminal fixture was removed. Typed scope authorization remains a contract
+probe in these fixtures; this is not actual record authorization, Production
+persistence or immutable release image acceptance.
+
 The disposition decision refuses invalid or foreign policy/record/hold sources,
 incomplete hold lookup, immutable records, matching active holds, missing
 anchors and pending/overflowing deadlines. It accepts a server-owned

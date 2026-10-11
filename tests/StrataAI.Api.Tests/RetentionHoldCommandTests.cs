@@ -12,6 +12,8 @@ public sealed partial class ApiHostTests
     // Command contract probe only; runtime persistence/audit is not established.
     private sealed class HoldProbe : IRetentionHoldStore
     {
+        public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct) =>
+            throw new NotSupportedException("Command probe does not establish complete owning hold lookup.");
         public RetentionHold? Current { get; set; }
         public RetentionHoldReceipt? Receipt { get; set; }
         public RetentionHoldWrite? LastWrite { get; private set; }
