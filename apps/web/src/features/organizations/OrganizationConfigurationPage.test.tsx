@@ -73,6 +73,19 @@ async function review() {
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); sessionStorage.clear(); live.watch.mockClear(); configurationLive.watch.mockClear(); });
 describe('PRD-27 configuration form, human review and recovery', () => {
+  it('returns keyboard focus to review after cancelling a freshly verified configuration without writing', async () => {
+    const state = fixture(); mount();
+    fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Unsent cancelled proposal' } });
+    await waitFor(() => expect(reviewButton()).toBeEnabled()); reviewButton().focus();
+    const dialog = await review();
+    const cancel = within(dialog).getByRole('button', { name: 'Return to draft' });
+    cancel.focus(); fireEvent.click(cancel);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(reviewButton()).toHaveFocus());
+    expect(screen.getByLabelText(/^Legal name/)).toHaveValue('Unsent cancelled proposal');
+    expect(state.writes).toHaveLength(0);
+  });
+
   it('keeps an acknowledged save and a new review open when that confirmed revision is delivered later', async () => {
     const state = fixture(); mount();
     fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Acknowledged proposal' } });

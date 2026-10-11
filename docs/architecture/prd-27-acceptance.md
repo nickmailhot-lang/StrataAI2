@@ -1,6 +1,6 @@
 # Organization Types and configuration acceptance — PRD-27
 
-PRD-27 remains open, with **26% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest terminal-history, distinct-account realtime, accessibility, configuration telemetry and scoped latency results are recorded at the end. Complete exact-image CI, retention/reference consistency, UX and observability requirements are still required.
+PRD-27 remains open, with **25% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest terminal-history, distinct-account realtime, accessibility, configuration telemetry and scoped latency results are recorded at the end. Complete exact-image CI, retention/reference consistency, UX and observability requirements are still required.
 
 Recipient-security components now include an owning-transaction coordinator with
 current Owner/Admin and post-IO account/membership/lifecycle fences, plus a
@@ -43,7 +43,7 @@ delivery commit's PostgreSQL CI job also passed. This strengthens the recorded
 source/persistence evidence without closing Activity, recipient replay/SignalR
 or complete immutable-image acceptance. The estimate remains **60% remaining**.
 
-[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **26%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
+[PRD-27](https://github.com/nickmailhot-lang/StrataAI2/issues/28) remains open. Current estimated work remaining: **25%**. Earlier percentages below describe their recorded increments. This map preserves the complete ticket scope; classification, configuration storage/HTTP, private replay/Activity and the MUI workflow remain increments, not complete tenant configuration acceptance.
 
 Source CI recorded for `c62087a6ac59c73878ee00c87cd3437d8d55a95a`
 passes **880/880 Domain tests** and **801/801 API host tests**, with zero failed
@@ -486,3 +486,56 @@ The final run passes **4/4**, zero failed/skipped/flaky cases, with **1,313 capt
 Earlier fixture attempts are retained separately: missing required identity delivery configuration refused registration with 503; incomplete Compose registration could not find the owned database; release Worker setup was incompatible with local compiled-runtime mounting; and the reused API-base health probe checked the wrong Worker route. After correcting the fixture's actual role/service/health setup, the final run passed without changing browser assertions, deadlines, retry settings, admission or application code. API/Worker, composed Worker, migration and disposable PostgreSQL containers, database, roles and credential files were removed; the original PostgreSQL remains intact.
 
 Both previous full regressions have also terminated successfully: **834/834 API cases**, zero failed/skipped/timeouts and two later source-hash changes in the telemetry allowlist/test file; **2,382/2,382 frontend cases**, zero failed/pending and two later source-hash changes in the lifecycle stream/test file. They are baseline evidence for their captured source, not complete current-source acceptance. Fresh current API/test compilation passes with zero warnings/errors; current **837-case API** and **2,383-case frontend** full runs are now live under new captured manifests. Complete current regressions, exact-image CI, cross-PRD retention/hold and remaining permission/data/UX consistency remain required. **26% estimated PRD-27 work remaining**; no numbered criterion or linked scenario closes from this increment alone.
+
+
+## Invalid unsent configuration, degraded admission and membership revocation
+
+The maintained `organization-configuration-degraded-authority.spec.ts` now runs
+at desktop (1280 px) and phone (390 px) widths in the Demo foundation and the
+complete Production browser partitions. An actual Owner invites a distinct
+Admin. The Admin retains an invalid, unsent draft through a temporary failed
+configuration read, explicitly recovers admission, receives an actionable lot
+count validation error without submitting a mutation, corrects the draft, and
+opens/cancels the human comparison using the keyboard. The Owner then removes
+the actual Admin membership using its authoritative revision precondition.
+Live recipient invalidation withdraws the draft, configuration history and
+review dialog. The account's `/me` remains available, whereas configuration,
+history and Activity return safe 404 responses. Owner review confirms the
+original configuration revision is unchanged and the Admin sent zero PATCHes.
+Both layouts pass WCAG-tagged Axe checks and the viewport overflow assertion;
+private server diagnostics are absent from the visible page.
+
+This exposed a real cancellation focus defect: asynchronous admission can
+disable the initiating button before MUI captures its restore target. Explicit
+cancellation now returns focus to the enabled Review button after the dialog
+exit transition, with current authority, mounted-state and active-review checks.
+Withdrawal clears that intent. The unsent draft remains editable and no
+approval occurs. A focused regression plus the existing configuration component
+cases pass **16/16**. Browser typecheck, frontend typecheck/build/lint, nine
+partition guard tests and the complete **368-case / 141-file** collection pass;
+the four partitions contain **93/91/92/92** cases with each file intact.
+
+The first local native candidate failed both focus assertions; it is retained
+as failed evidence. After the fix, the maintained cases pass **2/2 in Demo**
+and **2/2 in restricted Production**, with zero skipped/flaky cases. The Demo
+and Production native manifests each match all **1,314** captured source files;
+the Production fixture also matches all **1,890** captured repository files.
+Production uses fresh migrated PostgreSQL, canonical restricted API/Worker
+roles, real authenticated HTTP sessions, strict verified-email admission and a
+separate healthy Worker with configuration/metadata discovery enabled. The
+private local fixture mounts freshly compiled application assets over the
+pinned runtime and overrides two Compose files; it does not prove exact
+immutable release images or external identity-email delivery. Owned services,
+databases, roles and credential files were removed, preserving the original
+PostgreSQL instance.
+
+The preceding full frontend run terminated **2,383/2,383**, with zero source
+mismatches at completion; this cancellation fix subsequently changed two web
+files. A new complete **2,384-case** frontend run is live under its own frozen
+manifest. The existing **837-case** full API run remains live with unchanged
+backend sources. These pending runs and queued GitHub CI are not successful
+release evidence. Exact-image CI, complete current regressions, cross-PRD
+retention/hold, Organization adoption analytics and remaining data/permission
+consistency are required before closure. **25% estimated PRD-27 work remaining**;
+no numbered acceptance criterion or linked scenario closes solely from this
+increment.

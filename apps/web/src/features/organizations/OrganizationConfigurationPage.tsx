@@ -54,7 +54,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   const loadButton = useRef<HTMLButtonElement>(null); const reviewButton = useRef<HTMLButtonElement>(null); const retryButton = useRef<HTMLButtonElement>(null);
   const historyHeading = useRef<HTMLHeadingElement>(null); const heading = useRef<HTMLHeadingElement>(null);
   const actor = useRef<string | undefined>(undefined); const mounted = useRef(false);
-  const opened = useRef(false);
+  const opened = useRef(false); const cancelledReview = useRef(false);
   const operation = useRef<AbortController | undefined>(undefined);
   const directoryRead = useRef<AbortController | undefined>(undefined); const boardRead = useRef<AbortController | undefined>(undefined);
   const current = useRef({ draft, original, review, busy, authorityCheck, context });
@@ -75,7 +75,18 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   }, []);
   const confirmedRevision = useRef<number | undefined>(undefined); confirmedRevision.current = context?.view.version;
   function error(message: string, reason?: unknown) { setFailure({ message, reference: reason instanceof WorkRequestError ? reason.correlationId : null }); }
+  function cancelReview() {
+    if (!busy) { cancelledReview.current = true; setReview(undefined); }
+  }
+  function restoreCancelledReviewFocus() {
+    if (!cancelledReview.current) return;
+    cancelledReview.current = false;
+    const state = current.current;
+    if (mounted.current && state.context && !state.review && !state.authorityCheck && !state.busy
+      && reviewButton.current && !reviewButton.current.disabled) reviewButton.current.focus();
+  }
   function withdraw(reason: unknown) {
+    cancelledReview.current = false;
     operation.current?.abort(); boardRead.current?.abort(); directoryRead.current?.abort();
     if (actor.current) forgetConfigurationChanges(actor.current, organizationId);
     actor.current = undefined; setContext(undefined); setDraft(undefined); setReview(undefined); setOriginal(undefined);
@@ -187,6 +198,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   }
   const boardOptions = selectedBoard && !boards.some(row => row.id === selectedBoard.id) ? [selectedBoard, ...boards] : boards;
   async function prepareReview() {
+    cancelledReview.current = false;
     if (!draft || !context || operation.current || original || intakeBusy) return;
     let values: OrganizationConfiguration;
     try {
@@ -302,7 +314,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
         </Box>}
       </>}
     </Stack>
-    <Dialog open={!!review} onClose={() => { if (!busy) setReview(undefined); }} fullWidth maxWidth="md" aria-labelledby="configuration-review-title">
+    <Dialog open={!!review} onClose={cancelReview} slotProps={{ transition: { onExited: restoreCancelledReviewFocus } }} fullWidth maxWidth="md" aria-labelledby="configuration-review-title">
       <DialogTitle id="configuration-review-title">Review configuration change</DialogTitle>
       <DialogContent dividers tabIndex={0} role="region" aria-label="Configuration comparison">
         {review && context && <Stack spacing={2}>
@@ -313,7 +325,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
           <ConfigurationValues configuration={review.reviewedConfiguration()} boards={boardOptions} lists={lists} />
         </Stack>}
       </DialogContent>
-      <DialogActions><Button autoFocus disabled={busy} onClick={() => setReview(undefined)}>Return to draft</Button>
+      <DialogActions><Button autoFocus disabled={busy} onClick={cancelReview}>Return to draft</Button>
         <Button disabled={busy || !review} onClick={() => { if (review) void submit(review); }}>Approve configuration change</Button></DialogActions>
     </Dialog>
   </Container>;
