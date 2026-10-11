@@ -513,3 +513,60 @@ independent current-disabled callback check block edits during review, including
 synthetic events. The same snapshot includes the separately tested Kanban pointer
 target and elapsed-time scrolling repairs. This full source-suite result does not
 complete the native capacity matrix or exact-image release acceptance.
+
+The current-main CI at `c62087a6ac59c73878ee00c87cd3437d8d55a95a` subsequently
+passes **880/880 Domain tests** and **801/801 API host tests**, with zero failures
+or skips, together with metadata, web quality and PostgreSQL integration. CI has
+built the immutable images once and passed security; container/browser integration
+and the required release gate remain unfinished in the
+[same run](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38095378054).
+The independent local consumer API run remains active and is not counted as a
+second passing execution. The later uncommitted scrolling candidate is outside
+this commit's source/image scope. This strengthens current source evidence without
+completing suspension/deactivation, remaining retention/schema/portal consistency,
+full UX/telemetry or PRD-wide release acceptance. Estimated work remaining stays
+**52%**.
+
+## Suspension and deactivation implementation boundaries
+
+Source inspection at `c62087a6` confirms ORGCFG-FR-007 is unimplemented.
+`OrganizationStatus` and `PostgresOrganizationStore.ParseStatus` recognize only
+Active, Archived, Deleting and Deleted. Migration 089's Organization status
+constraint has the same four values. `IOrganizationService` exposes deletion,
+but no suspension or deactivation command. Retaining records during deletion
+does not establish a suspension workflow or authorized historical access.
+
+The remaining implementation must change these boundaries together:
+
+- Both Organization unit-of-work implementations currently admit an Active
+  parent, with a narrowly named deletion-receipt exception for Deleting/Deleted.
+  Suspension acknowledgment recovery and historical reads need explicit admission
+  policies, current account/membership checks and a parent lock; broadening the
+  deletion exception would grant unrelated commands access to inactive tenants.
+- The existing lifecycle channel is a content-free deletion channel. Migration
+  089 gives `organization_lifecycle_events` one row per tenant and permits only
+  `ORGANIZATION_DELETED`. Both lifecycle readers validate that terminal event
+  against the deletion request/progress and retained source clocks. Repeated
+  suspension transitions cannot reuse this single-row schema or bypass its
+  deletion integrity proof. Their versioned sources, receipts, immutable audit,
+  acting capacity and durable Worker publication need their own consistent path.
+- A lifecycle command must serialize with operational work through the existing
+  parent lock and Demo gates, validate the current administrator and expected
+  revision, persist state/audit/event/receipt atomically, and recover only the
+  original authorized acknowledgment. A denied or stale command must leave all
+  of those stores unchanged. Changing status alone is insufficient evidence.
+- Historical access must remain Organization-scoped and permission-specific,
+  including private configuration and independently authorized portal records.
+  It must preserve original record identities, versions, attribution and source
+  times without making operational writes, invitations, uploads, automation or
+  stale command receipts available again. Existing active-only operational gates
+  should remain enforced; historical reads require explicit routes and admission.
+- The MUI workflow still needs explicit review, visible lifecycle/revision,
+  keyboard and phone operation, current-authority withdrawal, uncertain retry and
+  safe conflict recovery. Native and restricted PostgreSQL tests must demonstrate
+  competing writes, original receipt recovery, permission loss, historical
+  preservation and cross-tenant refusal before immutable-image acceptance.
+
+This is an implementation boundary audit, not an executed suspension result.
+FR-007, its related scenarios and full PRD-27 acceptance remain open; the estimate
+is unchanged at **52% work remaining**.

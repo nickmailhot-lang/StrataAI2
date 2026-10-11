@@ -137,3 +137,41 @@ it('preserves native edge progress across delayed ticks without a background cat
     expect(Math.abs(board.scrollBy.mock.calls[3][0])).toBeCloseTo(ordinary);
   } finally { scroll.finish(); source.remove(); board.element.remove(); clock.mockRestore(); vi.useRealTimers(); }
 });
+
+it('retains a middle-half phone destination through delayed frames before the native stop input arrives', () => {
+  vi.useFakeTimers();
+  const clock = vi.spyOn(window.performance, 'now').mockReturnValue(0);
+  const scroll = new KanbanAutoScroll(), board = viewport('horizontal', new DOMRect(24, 100, 342, 400));
+  const source = startPointer(scroll, 195, 300);
+  try {
+    observe(scroll, [board.element]);
+    const initial = board.element.scrollLeft;
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 36, clientY: 300 }));
+    for (const time of [100, 200, 300]) {
+      clock.mockReturnValue(time); vi.advanceTimersByTime(5);
+    }
+    // A destination observed in the middle half has at least a quarter-width
+    // margin. Delayed callbacks must not consume it before the next input.
+    expect(initial - board.element.scrollLeft).toBeGreaterThan(0);
+    expect(initial - board.element.scrollLeft).toBeLessThan(342 / 4);
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 195, clientY: 300 }));
+    clock.mockReturnValue(400); vi.advanceTimersByTime(5);
+    expect(board.scrollBy).toHaveBeenCalledTimes(3);
+  } finally { scroll.finish(); source.remove(); board.element.remove(); clock.mockRestore(); vi.useRealTimers(); }
+});
+
+it('preserves vertical buffer traversal during delayed rendering', () => {
+  vi.useFakeTimers();
+  const clock = vi.spyOn(window.performance, 'now').mockReturnValue(0);
+  const scroll = new KanbanAutoScroll(), cards = viewport('vertical', new DOMRect(24, 100, 342, 400));
+  const source = startPointer(scroll, 195, 300);
+  try {
+    observe(scroll, [cards.element]);
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 195, clientY: 488 }));
+    clock.mockReturnValue(100); vi.advanceTimersByTime(5);
+    expect(cards.scrollBy).toHaveBeenCalledTimes(1);
+    expect(cards.scrollBy.mock.calls[0][0]).toBe(0);
+    expect(cards.element.scrollTop - 1000).toBeGreaterThanOrEqual(80);
+    expect(cards.element.scrollTop - 1000).toBeLessThanOrEqual(400 / 4);
+  } finally { scroll.finish(); source.remove(); cards.element.remove(); clock.mockRestore(); vi.useRealTimers(); }
+});

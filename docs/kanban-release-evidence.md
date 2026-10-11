@@ -1,6 +1,42 @@
 # Kanban release evidence
 
-## Current phone pointer-scroll investigation
+## Viewport-bounded horizontal catch-up increment — 2026-10-10
+
+This increment bounds a delayed horizontal step by one-twelfth
+of the visible canvas width. It preserves the existing 50ms elapsed cap, vertical
+quarter-height progress, ordinary five-ms scrolling rate, current pointer/geometry
+checks, center stop, keyboard movement and collision admission.
+
+The preceding committed `c62087a6` local matrix passed desktop/tablet but failed
+phone destination retention: its center was 405.0859375 beyond the viewport's
+right edge of 366. Retained numeric evidence recorded repeated horizontal steps
+around 70.5px. A first global 16ms catch-up candidate was rejected: all three widths
+failed vertical-buffer traversal at the original case207 assertion. These failures
+remain retained; their deadlines, destination identities and assertions were not
+changed.
+
+The revised candidate passes **14/14** focused scrolling/collision/frame cases,
+type checking, lint and the frozen production build. Its unchanged native capacity
+matrix passes **3/3** on desktop/tablet/phone under CPU-four throttling in **6.1m**,
+with no retry. All six SQL rank/concurrency phases and the final complete
+100,000-archived-record preservation phase pass. Fixture containers, database and
+credentials were cleaned up; the original PostgreSQL data was preserved.
+
+| Viewport | Numeric samples | Horizontal scrollBy calls | Maximum requested horizontal step | Dropped samples |
+| --- | ---: | ---: | ---: | ---: |
+| Desktop 1280px | 169 | 28 | 75.667px | 0 |
+| Tablet 768px | 166 | 54 | 34.333px | 0 |
+| Phone 390px | 162 | 49 | 23.5px | 0 |
+
+All 161 production frontend and capacity-case files match the frozen candidate.
+This uses a local Production compiled API/Worker, PostgreSQL and Nginx; it is not
+an exact CI release-image result. The candidate's complete frontend suite is still
+running. Current-main `c62087a6` source CI passes 880 Domain and 801 API host cases,
+web quality and PostgreSQL integration; its immutable-image security/integration
+checks remain separate; security passes, while container/browser integration and
+the required release gate are unfinished. No PRD-wide completion is claimed.
+
+## Earlier phone pointer-scroll investigation
 
 [CI run 38061080373](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38061080373)
 passed its source, image-build and security jobs, but its browser-foundation job

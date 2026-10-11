@@ -47,7 +47,8 @@ export class KanbanAutoScroll {
     const now = pointer.window.performance.now();
     if (!Number.isFinite(now)) return;
     // Preserve edge speed when rendering delays the nominal five-ms timer.
-    // Bound elapsed time so a resumed background tab cannot catch up in one jump.
+    // Preserve progress through delayed rendering without replaying an entire
+    // background pause. Visible horizontal geometry bounds the jump below.
     const elapsed = Math.max(0, Math.min(50, now - (this.lastTick ?? now - 5)));
     this.lastTick = now;
     for (let index = 0; index < this.ancestors.length; index++) {
@@ -70,10 +71,13 @@ export class KanbanAutoScroll {
       const start = horizontal ? left : top, end = horizontal ? right : bottom;
       const threshold = (end - start) * 0.2;
       // Match the normal ten-pixels-per-five-ms rate. A single delayed frame
-      // cannot cross more than a quarter of the currently visible viewport.
+      // cannot cross more than a twelfth of the visible horizontal viewport.
+      // This retains a middle-half destination's quarter-width margin through
+      // several delayed callbacks before the next native pointer input arrives.
+      // Vertical traversal retains its existing quarter-height progress bound.
       // Recompute from the native point on every tick so center input stops
       // immediately even before a React effect or hovered rectangle catches up.
-      const distance = Math.min(2 * elapsed, (end - start) / 4);
+      const distance = Math.min(2 * elapsed, (end - start) / (horizontal ? 12 : 4));
       const step = point < start + threshold ? -distance * Math.min(1, (start + threshold - point) / threshold)
         : point > end - threshold ? distance * Math.min(1, (point - end + threshold) / threshold) : 0;
       const offset = horizontal ? element.scrollLeft : element.scrollTop;
