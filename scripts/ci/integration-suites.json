@@ -1,4 +1,49 @@
 {
+  "Verify installed configuration identities, relationships and restricted capabilities": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Retention policy schema and restricted capabilities": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Authorized configuration and lifecycle HTTP p95 through exact release images": [
+    "commands"
+  ],
+  "Prepare Retain fixed Organization latency evidence": [
+    "commands"
+  ],
+  "Retain fixed Organization latency evidence": [
+    "commands"
+  ],
+  "Hosted operational lifecycle discovery and restart recovery against exact release Worker": [
+    "commands"
+  ],
+  "Independent Portal grants across operational lifecycle changes against exact release API": [
+    "commands"
+  ],
+  "Lifecycle session expiry during receipt publication against exact release API": [
+    "commands"
+  ],
+  "Archived records and configuration history across operational lifecycle changes": [
+    "commands"
+  ],
+  "Organization configuration tenant-scoped usage": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
+  "Retention policy authorized commands and private history against exact release API": [
+    "commands",
+    "browser-foundation",
+    "browser-notifications",
+    "browser-full"
+  ],
   "Download exact built images": [
     "commands",
     "browser-foundation",

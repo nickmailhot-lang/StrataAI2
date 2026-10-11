@@ -67,6 +67,20 @@ function owners(step) {
 export function verifyIntegrationSuites(workflow, registry, attachmentSources = readAttachmentSources()) {
   const jobs = workflow.jobs;
   const job = jobs['container-integration'];
+  for (const [name, script] of [
+    ['Verify installed configuration identities, relationships and restricted capabilities', 'test-organization-configuration-schema.sh'],
+    ['Retention policy schema and restricted capabilities', 'test-record-retention-policy-schema.sh'],
+    ['Authorized configuration and lifecycle HTTP p95 through exact release images', 'test-organization-configuration-latency.sh'],
+    ['Hosted operational lifecycle discovery and restart recovery against exact release Worker', 'test-organization-operational-lifecycle-delivery.sh'],
+    ['Independent Portal grants across operational lifecycle changes against exact release API', 'test-organization-operational-lifecycle-portal.sh'],
+    ['Lifecycle session expiry during receipt publication against exact release API', 'test-organization-operational-lifecycle-session.sh'],
+    ['Archived records and configuration history across operational lifecycle changes', 'test-organization-operational-lifecycle-history.sh'],
+    ['Organization configuration tenant-scoped usage', 'test-organization-configuration-usage.sh'],
+    ['Retention policy authorized commands and private history against exact release API', 'test-retention-policy-http.sh'],
+  ]) {
+    assert.equal(job.steps.find(step => step.name === name)?.run, `bash scripts/ci/${script}`,
+      `Configuration, lifecycle and retention checks must run intact: ${name}`);
+  }
   const executions = [
     ...suites.filter(suite => suite !== 'browser-full').map(suite => ({ suite, shard: 1, totalShards: 1 })),
     ...Array.from({ length: shardCount }, (_, index) => ({ suite: 'browser-full', shard: index + 1, totalShards: shardCount })),

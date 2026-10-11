@@ -1,4 +1,14 @@
 {
+  "Retain fixed Organization latency evidence": {
+    "artifact": "organization-latency-${{ github.sha }}",
+    "output": "artifacts/retained/organization-latency",
+    "entries": [
+      [
+        "artifacts/capacity/organization-latency.json",
+        "organization-latency.json"
+      ]
+    ]
+  },
   "Retain fixed operator collection evidence": {
     "artifact": "operator-metrics-${{ github.sha }}",
     "output": "artifacts/retained/operator-metrics",

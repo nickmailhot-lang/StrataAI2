@@ -860,7 +860,7 @@ jobs:
         if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-organization-configuration-latency.sh
 
-      - name: Prepare fixed Organization latency evidence
+      - name: Prepare Retain fixed Organization latency evidence
         if: always() && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/organization-latency --entry "artifacts/capacity/organization-latency.json" "organization-latency.json"
 

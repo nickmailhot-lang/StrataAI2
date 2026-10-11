@@ -10,10 +10,28 @@ const integration = value => value.jobs['container-integration'];
 const step = (value, name) => integration(value).steps.find(entry => entry.name === name);
 
 test('every mandatory check has an owner and every group uses retained images', () => {
-  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 112 });
+  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 123 });
 });
 
 const mutations = [
+  ...[
+    'Verify installed configuration identities, relationships and restricted capabilities',
+    'Retention policy schema and restricted capabilities',
+    'Authorized configuration and lifecycle HTTP p95 through exact release images',
+    'Hosted operational lifecycle discovery and restart recovery against exact release Worker',
+    'Independent Portal grants across operational lifecycle changes against exact release API',
+    'Lifecycle session expiry during receipt publication against exact release API',
+    'Archived records and configuration history across operational lifecycle changes',
+    'Organization configuration tenant-scoped usage',
+    'Retention policy authorized commands and private history against exact release API',
+  ].flatMap(name => [
+    [`${name} replaced by success`, value => { step(value, name).run = 'true'; }],
+    [`${name} errors swallowed`, value => { step(value, name).run += ' || true'; }],
+    [`${name} skipped`, value => { step(value, name).if = 'false'; }],
+    [`${name} failure ignored`, value => { step(value, name)['continue-on-error'] = true; }],
+  ]),
+  ['Organization latency evidence includes private files', value => { step(value, 'Prepare Retain fixed Organization latency evidence').run += ' --entry "private.env" "private.env"'; }],
+  ['Organization latency evidence bypasses staging', value => { step(value, 'Retain fixed Organization latency evidence').with.path = 'artifacts/capacity/'; }],
   ['seeded-account Demo reminder execution omitted', value => {
     const entry = step(value, 'Demo metadata, terminal and recipient lifecycle against exact API and web images');
     entry.run = entry.run.split('\n').filter(line => !line.includes('demo-reminders-report.json')).join('\n');
