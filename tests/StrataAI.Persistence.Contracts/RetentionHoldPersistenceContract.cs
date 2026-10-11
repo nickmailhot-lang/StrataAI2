@@ -34,13 +34,13 @@ internal static class RetentionHoldPersistenceContract
         }
     }
     // Explicit race control layered over the actual restricted producer reader.
-    private sealed class ChangedProducer(IRetentionProducerReferences inner) : IRetentionProducerReferences
+    private sealed class ChangedProducer(IRetentionProducerReferences inner, int afterReads = 1) : IRetentionProducerReferences
     {
         private int reads;
         public async Task<RetentionProducerReference?> ReadAsync(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct)
         {
             var value = await inner.ReadAsync(organization, kind, record, ct);
-            return ++reads > 1 && value is not null ? value with { SourceVersion = value.SourceVersion + 1 } : value;
+            return ++reads > afterReads && value is not null ? value with { SourceVersion = value.SourceVersion + 1 } : value;
         }
     }
     private sealed class BoardGate(IWorkBoardAuthorization inner, Guid? denied = null) : IWorkBoardAuthorization
@@ -83,6 +83,7 @@ internal static class RetentionHoldPersistenceContract
         var board = Guid.NewGuid(); var destination = Guid.NewGuid(); var list = Guid.NewGuid(); var destinationList = Guid.NewGuid();
         var card = Guid.NewGuid(); var comment = Guid.NewGuid(); var attachment = Guid.NewGuid();
         var unclassified = Guid.NewGuid();
+        var unclassifiedComment = Guid.NewGuid(); var unclassifiedAttachment = Guid.NewGuid();
         var at = DateTimeOffset.UtcNow.AddMinutes(-1);
         try
         {
@@ -114,8 +115,12 @@ internal static class RetentionHoldPersistenceContract
                 VALUES(@unclassified,@tenant,@board,@list,'Unclassified Card','b',@at,@at);
                 INSERT INTO card_comments(id,tenant_id,card_id,author_id,content,created_at,updated_at)
                 VALUES(@comment,@tenant,@card,@actor,'Private comment',@at,@at);
+                INSERT INTO card_comments(id,tenant_id,card_id,author_id,content,created_at,updated_at)
+                VALUES(@unclassifiedComment,@tenant,@unclassified,@actor,'Private review comment',@at,@at);
                 INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,url,scan_status,created_at,updated_at)
                 VALUES(@attachment,@tenant,@card,@actor,'URL','Private file','https://example.test/file','NOT_APPLICABLE',@at,@at);
+                INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,url,scan_status,created_at,updated_at)
+                VALUES(@unclassifiedAttachment,@tenant,@unclassified,@actor,'URL','Private review file','https://example.test/review','NOT_APPLICABLE',@at,@at);
                 INSERT INTO record_retention_sources(tenant_id,record_class,record_id,source_kind,parent_card_id,category,registered_at,
                  actor_id,membership_id,membership_version,actor_label,acting_capacity,event_id,correlation_id)
                 SELECT @tenant,s.class,s.id,s.kind,s.parent,'private.context',@at,@actor,@member,1,'Native hold owner','ORGANIZATION_OWNER',gen_random_uuid(),'native-hold-contract'
@@ -131,6 +136,7 @@ internal static class RetentionHoldPersistenceContract
                 seed.Parameters.AddWithValue("list", list); seed.Parameters.AddWithValue("destinationList", destinationList);
                 seed.Parameters.AddWithValue("card", card); seed.Parameters.AddWithValue("comment", comment); seed.Parameters.AddWithValue("attachment", attachment);
                 seed.Parameters.AddWithValue("unclassified", unclassified);
+                seed.Parameters.AddWithValue("unclassifiedComment", unclassifiedComment); seed.Parameters.AddWithValue("unclassifiedAttachment", unclassifiedAttachment);
                 await seed.ExecuteNonQueryAsync(ct);
             }
             // Prove the narrow lock privilege separately from mutation permission.
@@ -425,14 +431,82 @@ internal static class RetentionHoldPersistenceContract
                     "Private work reason", workKey, "private-retry", ct)).ErrorCode == "retention_hold_not_found"
                 && privateGuard.Reads == 0 && privateGuard.Writes == 0,
                 "Native application gate denial occurred after private body reads or disclosed a revision conflict.");
-            Console.WriteLine("Native hold adapter: actual restricted owning apply/release, original recovery, current release lookup, actor-bound receipts, late scope rollback and reclaimed key passed; scope/admission are fixture probes.");
+            // Prospective classification capability exists only in this disposable
+            // contract; canonical runtime provisioning is still unchanged.
+            await using (var grantSource = new NpgsqlCommand("GRANT INSERT ON record_retention_sources TO strataai_api_runtime;", admin))
+                await grantSource.ExecuteNonQueryAsync(ct);
+            var sourceAuthorization = new RetentionProducerAuthorization(producers, workStore, actualBoards, organizations, actors);
+            var sourceStore = new PostgresRetentionSourceStore(db, organizations, identities, actors, sourceAuthorization, clock);
+            var sourceEvents = new List<Guid>();
+            foreach (var item in new[] { (unclassified, RetentionProducerKind.Card, RetentionRecordClass.OperationalWork),
+                (unclassifiedComment, RetentionProducerKind.CardComment, RetentionRecordClass.OperationalWork),
+                (unclassifiedAttachment, RetentionProducerKind.Attachment, RetentionRecordClass.Document) })
+            {
+                var eventId = Guid.NewGuid(); sourceEvents.Add(eventId);
+                async Task<OrganizationOperation<bool>> Classify(bool rollBack, PostgresRetentionSourceStore adapter)
+                    => await unit.ExecuteAsync(tenant, actor, null, false, async () =>
+                    {
+                        var evidence = (await producers.ReadAsync(tenant, item.Item2, item.Item1, ct))!;
+                        var membership = (await organizations.FindMembershipAsync(tenant, actor, ct))!;
+                        var now = clock.UtcNow; now = now.AddTicks(-(now.Ticks % 10));
+                        var write = new RetentionSourceWrite(tenant, item.Item3, item.Item1, item.Item2, "native.review", "explicit native jurisdiction",
+                            evidence.SourceVersion, evidence.CardVersion, actor, membership.Id, membership.Version, membership.Role,
+                            eventId, "native-classification", now, evidence);
+                        Require(await adapter.CaptureAsync(write with { MembershipId = Guid.NewGuid() }, ct) is null
+                            && await adapter.CaptureAsync(write with { Review = evidence with { BoardId = destination } }, ct) is null
+                            && await adapter.CaptureAsync(write with { Kind = RetentionProducerKind.AuditEvent }, ct) is null,
+                            "Native classification admitted forged membership, review route or producer kind.");
+                        var captured = await adapter.CaptureAsync(write, ct);
+                        Require(captured is { ContextVersion: 1, SourceVersion: 1 } && captured.RecordId == item.Item1
+                            && captured.Kind == item.Item2 && captured.OriginalBoardId == board && captured.ParentCardId == evidence.ParentCardId,
+                            "Native classification lost actual reviewed context or typed parent.");
+                        Require(await adapter.CaptureAsync(write with { Category = "rewritten", EventId = Guid.NewGuid() }, ct) is null,
+                            "Native existing classification was rewritten.");
+                        return rollBack ? OrganizationOperation<bool>.Failure("native_classification_rollback") : OrganizationOperation<bool>.Success(true);
+                    }, ct);
+                Require(!(await Classify(true, sourceStore)).Succeeded, "Native classification rollback fixture committed.");
+                var absent = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
+                    OrganizationOperation<bool>.Success(await sourceStore.ReadSourceAsync(tenant, item.Item3, item.Item1, ct) is null), ct);
+                Require(absent.Succeeded && absent.Value, "Native classification survived owning rollback.");
+                // Fail the actual storage adapter's post-insert review fence. The
+                // source and trigger-owned audit must roll back to its savepoint.
+                var late = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
+                {
+                    var evidence = (await producers.ReadAsync(tenant, item.Item2, item.Item1, ct))!;
+                    var membership = (await organizations.FindMembershipAsync(tenant, actor, ct))!;
+                    var now = clock.UtcNow; now = now.AddTicks(-(now.Ticks % 10));
+                    var adapter = new PostgresRetentionSourceStore(db, organizations, identities, actors,
+                        new RetentionProducerAuthorization(new ChangedProducer(producers, 2), workStore, actualBoards, organizations, actors), clock);
+                    Require(await adapter.CaptureAsync(new(tenant, item.Item3, item.Item1, item.Item2, "native.review", null,
+                        evidence.SourceVersion, evidence.CardVersion, actor, membership.Id, membership.Version, membership.Role,
+                        eventId, "native-late-classification", now, evidence), ct) is null
+                        && await sourceStore.ReadSourceAsync(tenant, item.Item3, item.Item1, ct) is null,
+                        "Native late review withdrawal retained a classification.");
+                    return OrganizationOperation<bool>.Success(true);
+                }, ct);
+                Require(late.Succeeded && (await Classify(false, sourceStore)).Succeeded,
+                    "Native classification savepoint did not reclaim source/audit identity.");
+            }
+            await using (var auditSource = new NpgsqlCommand("""
+                SELECT count(*) FROM audit_events WHERE id=ANY(@events) AND tenant_id=@tenant
+                  AND event_type='RECORD_RETENTION_SOURCE_REGISTERED'
+                  AND (SELECT count(*) FROM jsonb_object_keys(safe_metadata))=3
+                  AND safe_metadata ?& ARRAY['recordClass','sourceKind','actingCapacity'];
+                """, admin))
+            {
+                auditSource.Parameters.AddWithValue("events", sourceEvents.ToArray()); auditSource.Parameters.AddWithValue("tenant", tenant);
+                Require(Convert.ToInt64(await auditSource.ExecuteScalarAsync(ct)) == 3, "Native classification audit privacy or atomic identity failed.");
+            }
+            try { await sourceStore.ReadSourceAsync(tenant, RetentionRecordClass.OperationalWork, unclassified, ct); throw new Exception("Unowned classification IO admitted."); }
+            catch (InvalidOperationException) { }
+            Console.WriteLine("Native hold and source adapters: restricted owning persistence, original recovery, bounded lookup, reviewed classifications, rollback and safe audit passed; explicit denial/race controls remain fixtures.");
         }
         finally
         {
             await using var restore = new NpgsqlCommand("""
                 REVOKE SELECT,INSERT,UPDATE ON record_retention_holds FROM strataai_api_runtime;
                 REVOKE SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts FROM strataai_api_runtime;
-                REVOKE SELECT,UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;
+                REVOKE SELECT,INSERT,UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;
                 """, admin);
             await restore.ExecuteNonQueryAsync(CancellationToken.None);
         }

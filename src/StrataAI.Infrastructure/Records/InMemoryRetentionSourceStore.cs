@@ -9,17 +9,13 @@ using StrataAI.Infrastructure.WorkManagement;
 
 namespace StrataAI.Infrastructure.Records;
 
-internal sealed record DemoRetentionSourceWrite(Guid OrganizationId, RetentionRecordClass RecordClass,
-    Guid RecordId, RetentionProducerKind Kind, string Category, string? Jurisdiction, long SourceVersion,
-    long CardVersion, Guid ActorId, Guid MembershipId, long MembershipVersion, OrganizationRole Capacity,
-    Guid EventId, string CorrelationId, DateTimeOffset RegisteredAt);
-internal sealed record DemoRetentionSourceClassification(RetentionSourceReference Reference, DemoRetentionSourceWrite Source, string ActorLabel);
+internal sealed record DemoRetentionSourceClassification(RetentionSourceReference Reference, RetentionSourceWrite Source, string ActorLabel);
 
 // Unregistered storage primitive. Human review, exact retry and Production command
 // parity remain required; no HTTP seed or guessed historical source is accepted.
 internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizations, IIdentityStore identities,
     ICommandActorAuthorization actors, IWorkManagementStore work, IWorkBoardAuthorization boards,
-    DemoWorkTransactionScope scope, IClock clock) : IRetentionSourceReferenceReader, IRetentionWorkSourceReferences, IRetentionProducerReferences,
+    DemoWorkTransactionScope scope, IClock clock) : IRetentionSourceStore, IRetentionWorkSourceReferences, IRetentionProducerReferences,
     IDemoOrganizationTransactionParticipant
 {
     private readonly Dictionary<(Guid Organization, RetentionRecordClass Class, Guid Record), DemoRetentionSourceClassification> rows = [];
@@ -46,7 +42,7 @@ internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizati
         return current is null ? null : new(reference, current.CardId, current.BoardId, current.ListId,
             current.CardVersion, current.ListVersion, current.SourceVersion, current.CardState, current.ListState, current.SourceState);
     }
-    internal async Task<RetentionSourceReference?> CaptureAsync(DemoRetentionSourceWrite write, CancellationToken ct)
+    public async Task<RetentionSourceReference?> CaptureAsync(RetentionSourceWrite write, CancellationToken ct)
     {
         RequireScope(write.OrganizationId, ct);
         var key = (write.OrganizationId, write.RecordClass, write.RecordId);
@@ -66,7 +62,7 @@ internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizati
             || write.RegisteredAt < parent.UpdatedAt || write.RegisteredAt < member.UpdatedAt || write.RegisteredAt < actor.UpdatedAt
             || string.IsNullOrWhiteSpace(actor.DisplayName) || actor.DisplayName.Length > 160 || actor.DisplayName.Any(char.IsControl)) return null;
         var producer = Producer(write.OrganizationId, write.Kind, write.RecordId, ct);
-        if (producer is null || producer.SourceVersion != write.SourceVersion || producer.CardVersion != write.CardVersion
+        if (producer is null || producer != write.Review || producer.SourceVersion != write.SourceVersion || producer.CardVersion != write.CardVersion
             || producer.SourceVersion < 1 || producer.CardVersion < 1 || producer.ListVersion < 1 || write.RegisteredAt < producer.CreatedAt
             || !Retained(producer.CardState) || !Retained(producer.ListState) || !Retained(producer.SourceState)
             || !await work.AcquireBoardReadScopeAsync(write.OrganizationId, write.ActorId, producer.BoardId, ct)) return null;

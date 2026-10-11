@@ -37,7 +37,8 @@ public sealed partial class ApiHostTests
             await ((IAttachmentMetadataStore)work).CreateUrlAttachmentAsync(file, organization, card, actor, "Private source", "https://example.test/private", Now(), ct);
             var member = (await organizations.FindMembershipAsync(organization, actor, ct))!;
             Assert.NotNull(await catalog.CaptureAsync(new(organization, RetentionRecordClass.Document, file, RetentionProducerKind.Attachment,
-                category, null, 1, 1, actor, member.Id, member.Version, member.Role, Guid.NewGuid(), "fixture-classification", Now()), ct));
+                category, null, 1, 1, actor, member.Id, member.Version, member.Role, Guid.NewGuid(), "fixture-classification", Now(),
+                (await catalog.ReadAsync(organization, RetentionProducerKind.Attachment, file, ct))!), ct));
             return OrganizationOperation<bool>.Success(true);
         }, ct);
         return file;

@@ -64,11 +64,13 @@ public sealed partial class ApiHostTests
                 Assert.False(await reviewAuth.VerifyAsync(producer with { SourceVersion = 99 }, actor, ct));
                 Assert.False(await reviewAuth.VerifyAsync(producer with { Kind = RetentionProducerKind.AuditEvent }, actor, ct));
                 reviewEvidence.Add(producer);
-                var write = new DemoRetentionSourceWrite(parent.Id, item.Item3, item.Item1, item.Item2, "private.fixture", "explicit jurisdiction",
-                    1, 1, actor, member.Id, member.Version, member.Role, Guid.NewGuid(), "demo-source", Now());
+                var write = new RetentionSourceWrite(parent.Id, item.Item3, item.Item1, item.Item2, "private.fixture", "explicit jurisdiction",
+                    1, 1, actor, member.Id, member.Version, member.Role, Guid.NewGuid(), "demo-source", Now(), producer);
                 Assert.Null(await catalog.CaptureAsync(write with { MembershipId = Guid.NewGuid() }, ct));
                 Assert.Null(await catalog.CaptureAsync(write with { SourceVersion = 2 }, ct));
                 Assert.Null(await catalog.CaptureAsync(write with { Kind = RetentionProducerKind.AuditEvent }, ct));
+                Assert.Null(await catalog.CaptureAsync(write with { Review = producer with { BoardId = destination } }, ct));
+                Assert.Null(await catalog.CaptureAsync(write with { Review = producer with { ListVersion = 2 } }, ct));
                 var captured = await catalog.CaptureAsync(write, ct);
                 Assert.NotNull(captured); Assert.Equal(board, captured.OriginalBoardId); Assert.Equal(1, captured.SourceVersion);
                 Assert.Equal(item.Item2 == RetentionProducerKind.Card ? null : (Guid?)card, captured.ParentCardId);
@@ -114,7 +116,7 @@ public sealed partial class ApiHostTests
             var member = (await organizations.FindMembershipAsync(parent.Id, actor, ct))!;
             Assert.NotNull(await catalog.CaptureAsync(new(parent.Id, RetentionRecordClass.OperationalWork, rollbackCard,
                 RetentionProducerKind.Card, "private.rollback", null, 1, 1, actor, member.Id, member.Version, member.Role,
-                Guid.NewGuid(), "source-rollback", Now()), ct));
+                Guid.NewGuid(), "source-rollback", Now(), (await catalog.ReadAsync(parent.Id, RetentionProducerKind.Card, rollbackCard, ct))!), ct));
             return OrganizationOperation<bool>.Failure("source_fixture_rollback");
         }, ct);
         Assert.False(failed.Succeeded);

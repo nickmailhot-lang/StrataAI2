@@ -372,9 +372,9 @@ Classification and the typed three-field source audit fact participate in the
 existing Demo Organization rollback. Audit metadata contains only record class,
 source kind and acting capacity, excluding category, jurisdiction, Board IDs and
 source content. The source store is unregistered; it is a storage primitive, not
-the public review/idempotency workflow. Demo hold-application/history context
-capture, complete source-binding parity, Production classification command parity,
-broad and remaining producer admission and runtime activation still require work.
+the public review/idempotency workflow. Human review/idempotent classification
+commands, broad and remaining producer admission, runtime activation and full
+deployed acceptance still require work.
 
 Verification: fresh solution compilation passed with zero warnings/errors. The
 focused Linux Records API suite passed 32/32, no failed or unexecuted cases, with
@@ -477,6 +477,41 @@ PostgreSQL hold/readiness verification passed all 145 ledger cases for both
 restricted hosts with 1,947 repository hashes unchanged. Owned fixtures were
 removed. PRD-70 remains open at approximately 81% estimated work remaining;
 classification review/retry commands and full deployed acceptance remain pending.
+
+### Shared reviewed classification storage
+
+`IRetentionSourceStore` and `RetentionSourceWrite` now provide the same capture
+contract to Demo and PostgreSQL. The write retains the full reviewed producer
+tuple, rather than accepting only source/Card versions. Demo refuses a changed
+Board, List revision or any other reviewed field before its existing atomic audit
+capture. Category and optional jurisdiction remain explicit classifications.
+
+The unregistered `PostgresRetentionSourceStore` requires an owning transaction,
+the actual current Board admission, exact active membership/version/capacity,
+active account and valid registration clocks. It inserts the typed source with
+server-derived actor label and parent. Existing database triggers capture trusted
+context and the content-free audit. The adapter checks the persisted reference
+against the review and repeats admission after insertion. Its savepoint rolls back
+both classification and audit if the final review fence fails; the outer owning
+transaction also restores them on command failure. Existing classifications cannot
+be rewritten. Canonical runtime grants, DI and HTTP activation remain unchanged.
+
+Maintained native checks classify actual Card, Comment and Attachment producers
+under the restricted API login, including retained archived Board context. They
+refuse forged membership/route/kind, verify immutable identities, owning rollback,
+post-insert review withdrawal, reused source/audit identities after rollback and
+exact three-field audit privacy. The post-insert race is an explicit reader
+decorator, not a deployed HTTP/session race. Prospective INSERT privileges exist
+only in the disposable contract and are revoked on cleanup.
+
+Verification: full solution build passed with zero warnings/errors; focused Linux
+Records tests passed 33/33 with 852 backend/test hashes unchanged. Native hold/source
+and readiness checks passed all 145 ledger cases for both restricted hosts with
+1,949 repository hashes unchanged. Owned fixtures were removed. PRD-70 remains
+open at approximately 80% estimated work remaining. Human review/retry commands,
+classification receipts, broad and other producer admission, HTTP/MUI and full
+permission/session/Portal matrices, events/disposition, controlled redaction,
+exports/privacy/offboarding and exact-commit immutable-image CI remain pending.
 
 ## Policy and decision semantics
 

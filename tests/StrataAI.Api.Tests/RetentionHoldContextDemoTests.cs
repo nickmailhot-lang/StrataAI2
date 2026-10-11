@@ -60,7 +60,8 @@ public sealed partial class ApiHostTests
             var member = (await organizations.FindMembershipAsync(parent.Id, actor, ct))!;
             foreach (var record in records)
                 Assert.NotNull(await sources.CaptureAsync(new(parent.Id, record.Item3, record.Item1, record.Item2, "explicit.classification", null,
-                    1, 1, actor, member.Id, member.Version, member.Role, Guid.NewGuid(), "classify", Now()), ct));
+                    1, 1, actor, member.Id, member.Version, member.Role, Guid.NewGuid(), "classify", Now(),
+                    (await sources.ReadAsync(parent.Id, record.Item2, record.Item1, ct))!), ct));
             Assert.NotNull(await work.MoveCardAsync(card, lists[1], null, 1, Now(), ct));
             return OrganizationOperation<bool>.Success(true);
         }, ct);
