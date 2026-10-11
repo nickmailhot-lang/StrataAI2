@@ -123,9 +123,10 @@ public static class RecordDisposition
             || policy.OrganizationId != record.OrganizationId || now.Offset != TimeSpan.Zero
             || now < policy.UpdatedAt || now < record.CreatedAt) return Keep(DispositionReason.InvalidSource);
         if (!holdScopeComplete) return Keep(DispositionReason.IncompleteHoldScope);
+        var holdIds = new HashSet<Guid>();
         foreach (var hold in holds)
             if (RecordRetentionRules.Validate(hold) is not null || hold.OrganizationId != record.OrganizationId
-                || hold.AppliedAt > now || hold.ReleasedAt > now) return Keep(DispositionReason.InvalidSource);
+                || hold.AppliedAt > now || hold.ReleasedAt > now || !holdIds.Add(hold.Id)) return Keep(DispositionReason.InvalidSource);
         if (policy.RecordClass != record.RecordClass || !Same(policy.Category, record.Category)
             || policy.Jurisdiction is not null && !Same(policy.Jurisdiction, record.Jurisdiction)) return Keep(DispositionReason.NoApplicablePolicy);
         if (record.Immutable) return Keep(DispositionReason.ImmutableRecord);

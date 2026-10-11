@@ -40,6 +40,38 @@ at or after application; original application actor/reason/time stay present.
 The eventual command must persist immutable transitions and audit evidence.
 The Domain model alone does not make those writes auditable.
 
+[RetentionHoldLifecycle.cs](../../src/StrataAI.Domain/Records/RetentionHoldLifecycle.cs)
+now defines explicit application and release transitions. Application creates an
+Active version-one hold with the supplied Organization/class/category/record scope,
+reason and application actor/UTC clock. It does not infer a scope or expiration.
+Release accepts only the current owning Organization and exact positive revision,
+valid source and release actor/UTC clock at or after application. It increments
+that revision while preserving identity, scope, original reason, application actor
+and clock. Stale releases, foreign/invalid/future sources, revision overflow and
+another release of an already released hold return no replacement state. A future
+owning command must handle exact receipt recovery independently, rather than
+creating a new release revision for a retried acknowledgment.
+
+Disposition now refuses duplicate hold IDs, including two revisions of one hold,
+before evaluating any action. A claimed complete scope cannot substitute a mixed
+history for unique current holds. Owning hold persistence, scope authorization,
+typed record references, locks, immutable audit/receipts, runtime enforcement and
+human review remain pending; these Domain transitions provide no permissions.
+Existing Cards have no retained category or jurisdiction classification contract,
+so their owning retention projection must be designed and persisted before record
+selection can rely on it. No generic Card lifecycle is used for governance records.
+
+Fresh solution compilation passed with zero warnings/errors. Maintained
+[hold lifecycle tests](../../tests/StrataAI.Domain.Tests/RetentionHoldLifecycleTests.cs)
+cover four scope shapes, invalid identity/scope/reason/clock, immutable application
+evidence, exact/stale/repeated release, foreign/future/overflow sources and duplicate
+hold corruption. The focused Linux Records suite passed **49/49**, including eight
+new cases; the complete Linux Domain suite passed **992/992**, zero failures or
+unexecuted cases. Both captures matched **833 backend/test source hashes**, zero
+mismatches, and owned terminal containers were removed. This is Domain verification,
+not persistence, authorized runtime enforcement or immutable-image CI acceptance.
+PRD-70 remains open at **83% estimated work remaining**.
+
 The disposition decision refuses invalid or foreign policy/record/hold sources,
 incomplete hold lookup, immutable records, matching active holds, missing
 anchors and pending/overflowing deadlines. It accepts a server-owned
