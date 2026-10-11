@@ -22,12 +22,15 @@ internal sealed partial class InMemoryWorkManagementStore
         ct.ThrowIfCancellationRequested();
         var configurationSource = eventType == "ORGANIZATION_CONFIGURATION_CHANGED"
             && entityType == "OrganizationConfiguration" && entityId == organizationId;
+        var lifecycleSource = eventType is "ORGANIZATION_SUSPENDED" or "ORGANIZATION_DEACTIVATED" or "ORGANIZATION_REACTIVATED"
+            && entityType == "Organization" && entityId == organizationId;
+        var organizationSource = configurationSource || lifecycleSource;
         if (!transactionScope.Owns(organizationId) || id == Guid.Empty || organizationId == Guid.Empty ||
             actorId == Guid.Empty || entityId == Guid.Empty ||
             !Regex.IsMatch(eventType, "\\A[A-Z][A-Z0-9_]{0,79}\\z", RegexOptions.NonBacktracking) ||
             string.IsNullOrWhiteSpace(entityType) || entityType.Length > 80 ||
-            string.IsNullOrWhiteSpace(correlationId) || correlationId.Length > (configurationSource ? 256 : 120)
-            || configurationSource && (!transactionScope.OwnsOrganizationCommand(organizationId) || correlationId.Any(char.IsControl)))
+            string.IsNullOrWhiteSpace(correlationId) || correlationId.Length > (organizationSource ? 256 : 120)
+            || organizationSource && (!transactionScope.OwnsOrganizationCommand(organizationId) || correlationId.Any(char.IsControl)))
             throw new InvalidOperationException("Demo audit requires an owning command and valid source references.");
         var fact = new DemoWorkAuditFact(id, organizationId, actorId, eventType, entityType, entityId,
             correlationId, createdAt.ToUniversalTime());

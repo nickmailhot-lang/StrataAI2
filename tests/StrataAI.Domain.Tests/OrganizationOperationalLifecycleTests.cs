@@ -219,6 +219,14 @@ public sealed class OrganizationOperationalLifecycleTests
         Assert.Equal(OrganizationStatus.Deleted, System.Text.Json.JsonSerializer.Deserialize<OrganizationStatus>("3"));
     }
 
+    [Fact]
+    public async Task PRD_27_FR007_Source_and_parent_clocks_share_PostgreSQL_microsecond_precision()
+    {
+        var f = new Fixture(); f.Clock.Value = Now.AddTicks(7);
+        var result = await f.Change(); Assert.True(result.Succeeded);
+        Assert.Equal(Now, result.Value!.CreatedAt); Assert.Equal(Now.AddHours(24), f.Store.Receipt!.ExpiresAt);
+    }
+
     private sealed class Fixture
     {
         public Store Store { get; } = new(); public Auth Auth { get; } = new(); public Clock Clock { get; } = new();

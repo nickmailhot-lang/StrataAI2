@@ -531,7 +531,51 @@ full UX/telemetry or PRD-wide release acceptance. Estimated work remaining stays
 
 ### Lifecycle command coordinator
 
-`OrganizationOperationalLifecycleService` now coordinates reviewed suspension,
+#### Owning Demo lifecycle persistence
+
+The subsequent Demo increment registers a concrete lifecycle unit/store and the
+command service. Its tenant-and-actor-bound capability supplements the owning
+Organization scope. Both existing account/Organization and Work mutation gates
+remain held through state, original receipt, retained source and audit changes,
+final session verification and commit/rollback. Generic Organization commands
+cannot use this lifecycle scope, and a lifecycle transaction cannot borrow a
+different tenant or actor. Every source/receipt/event identity participates in
+rollback with the aggregate and authoritative Demo audit.
+
+The store independently validates current administrative admission, exact
+previous/resulting states, revision, captured caption/capacity/membership epoch,
+correlation, source clock, canonical reviewed-intent fingerprint and original
+receipt. Only the aggregate's status/version/update clock change; the historical
+graph and membership are retained. Command source times are normalized to UTC
+microseconds so future PostgreSQL persistence and Demo use the same clock shape.
+This does not weaken the normal active-only operational gates.
+
+Five pinned Linux API-host cases pass with zero failed, skipped, timed-out,
+aborted or pending cases. They execute actual registration, Organization/Board/
+List/Card HTTP creation and the concrete Demo service/store/transaction.
+HTTP work creation/edit requests are refused while suspended without protected
+content in errors; original Board/List/Card and membership records are unchanged,
+and reactivation permits new work without rewriting the original Card. Additional
+cases prove configuration preservation, original receipt recovery after a later
+reactivation, exact audit identity/time, 256-character correlation, cross-scope
+capability refusal, ordinary-member denial and complete rollback of aggregate,
+audit and receipt after a write. The complete Linux Domain suite passes **909/909**,
+with all **793 backend/test source hashes matching** after execution. The full
+solution builds with zero warnings/errors. Owned terminal focused/Domain
+containers were removed; the original full API run is separately in progress.
+
+This is concrete **Demo application persistence**, with no new lifecycle HTTP
+route or browser UI. Production PostgreSQL state migration/readers/transactions,
+immutable source/audit/receipt/outbox, Worker discovery/delivery/replay, authorized
+historical record access while inactive, independent portal rules, API/MUI/native
+workflow and current immutable-image acceptance remain required. Existing
+configuration history is verified after reactivation; it is still withheld while
+suspended, so that result does not establish inactive historical access. The
+retained lifecycle source is not yet published to subscribers. No FR-007/AC/test
+scenario is closed; **52% estimated work remaining** is unchanged.
+
+The preceding command-only increment introduced `OrganizationOperationalLifecycleService`
+to coordinate reviewed suspension,
 deactivation and reactivation against a separate lifecycle transaction/store
 contract. Its admission requires current Owner/Admin capacity, active membership,
 the correct tenant/account, valid captured caption and membership identity/epoch.
@@ -559,8 +603,8 @@ late account/membership/epoch/role withdrawal, source mismatch, storage conflict
 cancelled writes and compatibility with retained numeric status receipts. Both
 owned terminal test containers were removed.
 
-This is an Application coordinator and port contract, **not an exposed or
-persisted suspension feature**. Concrete Demo/PostgreSQL lifecycle transactions,
+At that preceding increment this was an Application coordinator and port
+contract, **not an exposed or persisted suspension feature**. Concrete Demo/PostgreSQL lifecycle transactions,
 status migration and readers, immutable sources/receipts/audit/outbox, restricted
 runtime contracts, API registration, historical reads, independent portal
 authorization, Worker discovery/delivery/replay and MUI review/retry/conflict

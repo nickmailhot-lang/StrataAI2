@@ -16,6 +16,7 @@ public static class OrganizationRegistration
         services.AddSingleton<IOrganizationMetadataCursorCodec, DataProtectedOrganizationMetadataCursorCodec>();
         services.AddSingleton<IOrganizationConfigurationCursorCodec, DataProtectedOrganizationConfigurationCursorCodec>();
         services.AddSingleton<IOrganizationConfigurationActivityCursorCodec, DataProtectedOrganizationConfigurationActivityCursorCodec>();
+        services.AddSingleton<OrganizationOperationalLifecycleCommandScope>();
         if (runtime.Mode == RuntimeMode.Demo)
         {
             services.TryAddSingleton<InMemoryAccountOrganizationGate>();
@@ -33,6 +34,11 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationMetadataEventReader>(provider => provider.GetRequiredService<InMemoryOrganizationMetadataJournal>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationMetadataJournal>());
             services.AddSingleton<IOrganizationUnitOfWork, InMemoryOrganizationUnitOfWork>();
+            services.AddSingleton<InMemoryOrganizationOperationalLifecycleStore>();
+            services.AddSingleton<IOrganizationOperationalLifecycleStore>(provider => provider.GetRequiredService<InMemoryOrganizationOperationalLifecycleStore>());
+            services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationOperationalLifecycleStore>());
+            services.AddSingleton<IOrganizationOperationalLifecycleUnitOfWork, InMemoryOrganizationOperationalLifecycleUnitOfWork>();
+            services.AddSingleton<OrganizationOperationalLifecycleService>();
             services.AddSingleton<InMemoryOrganizationDeletionJobPublisher>();
             services.AddSingleton<InMemoryOrganizationDeletionGraphSimulation>();
             services.AddSingleton<IOrganizationDeletionGraphSimulation>(provider => provider.GetRequiredService<InMemoryOrganizationDeletionGraphSimulation>());

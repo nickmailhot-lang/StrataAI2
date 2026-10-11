@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text.Json;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 
@@ -28,10 +26,7 @@ public sealed class OrganizationOperationalLifecycleService(IOrganizationOperati
             if (key == Guid.Empty) return Failure("idempotency_key_required");
             if (string.IsNullOrWhiteSpace(correlationId) || correlationId.Length > 256 || correlationId.Any(char.IsControl))
                 return Failure("invalid_correlation_id");
-            var fingerprint = Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new
-            {
-                organization, status, expectedVersion,
-            })));
+            var fingerprint = OrganizationOperationalLifecycleRules.Fingerprint(organization, status, expectedVersion);
             var receipt = await store.ReadReceiptAsync(organization, actor, key, ct);
             OrganizationOperationalLifecycleTransition result;
             var recovery = receipt is not null;
@@ -49,7 +44,10 @@ public sealed class OrganizationOperationalLifecycleService(IOrganizationOperati
             {
                 if (scope.Version != expectedVersion) return Failure("version_conflict");
                 if (scope.Status == status) return Failure("organization_lifecycle_unchanged");
-                var at = clock.UtcNow;
+                // PostgreSQL stores microseconds. Keep the immutable source and
+                // aggregate clock identical in both runtime modes.
+                var at = clock.UtcNow.ToUniversalTime();
+                at = at.AddTicks(-(at.Ticks % 10));
                 if (at < scope.UpdatedAt || at > DateTimeOffset.MaxValue.AddHours(-24)) return Failure("version_conflict");
                 result = new(organization, Guid.NewGuid(), actor, scope.ActorLabel,
                     scope.Role == OrganizationRole.Owner ? "ORGANIZATION_OWNER" : "ORGANIZATION_ADMIN",
