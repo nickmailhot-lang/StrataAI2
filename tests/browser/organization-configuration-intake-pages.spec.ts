@@ -48,8 +48,12 @@ for (const width of [1280, 390]) {
       });
       await page.goto(`/app/${organizationId}/configuration`);
       await expect.poll(() => initialMetadata).toBe(true);
-      if (initialRecheck)
-        await expect(page.getByText('Organization authority changed. Checking current configuration before approval.', { exact: true })).toBeVisible();
+      if (initialRecheck) {
+        // Metadata and configuration replay independently request the same
+        // authority check. Either fixed notice may be the latest announcement.
+        await expect(page.getByRole('status').filter({ hasText:
+          /^(Organization authority changed\.|Configuration changed or live recovery is required\.) Checking current configuration before approval\.$/ })).toBeVisible();
+      }
       await expect(page.getByRole('button', { name: 'Load current configuration', exact: true })).toBeEnabled();
       await expect(page.getByText('Private configuration is hidden until current authority is confirmed. Your draft and original submission are preserved.', { exact: true })).not.toBeVisible();
       await page.getByLabel(/^Legal name/).fill('Reviewed paged legal name');

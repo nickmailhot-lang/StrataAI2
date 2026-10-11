@@ -22,6 +22,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
   currentResult.current = result;
   const [retry, setRetry] = useState(0);
   const generation = useRef(0);
+  const refreshAdmission = useRef<(() => void) | undefined>(undefined);
   // Mount the boundary before its children so a Portal's first layout effect
   // can resolve this container instead of falling back to document.body.
   const [content, setContent] = useState<HTMLDivElement | null>(null);
@@ -72,10 +73,13 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
       }
     };
     const refresh = () => { void read(); };
+    refreshAdmission.current = refresh;
     refresh();
     const interval = setInterval(refresh, 10_000);
     window.addEventListener('focus', refresh);
-    return () => { retired = true; clearInterval(interval); window.removeEventListener('focus', refresh); pending?.abort(); };
+    return () => { retired = true; clearInterval(interval); window.removeEventListener('focus', refresh);
+      if (refreshAdmission.current === refresh) refreshAdmission.current = undefined;
+      pending?.abort(); };
   }, [organizationId, surface, scope, retry]);
   useEffect(() => {
     // Portal grants are independent; an internal-member stream cannot admit it.
@@ -91,7 +95,10 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
       const previous = currentResult.current;
       if (status === 'error' && (previous?.scope !== scope
         || previous.status !== 'admitted' && !previous.previouslyAdmitted)) return;
-      ++generation.current;
+      // Transport uncertainty withdraws presentation, but is not a newer
+      // authority decision. An already pending bounded HTTP check must still
+      // resolve, especially a denial that admits independent lifecycle recovery.
+      if (status === 'denied') ++generation.current;
       setResult(previous => ({ scope,
         // A stream transport failure cannot turn a definitive surface denial
         // into an unknown grant. Keep the shell withdrawn while the independent
@@ -99,6 +106,8 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
         status: status === 'error' && previous?.scope === scope && previous.status === 'denied' ? 'denied' : status,
         previouslyAdmitted: status === 'error' && previous?.scope === scope
           && (previous.status === 'admitted' || previous.previouslyAdmitted === true) }));
+      if (status === 'error' && previous?.scope === scope && previous.status === 'admitted')
+        refreshAdmission.current?.();
     };
     void boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal).then(profile => {
       if (retired || !isNotificationProfile(profile)) return;

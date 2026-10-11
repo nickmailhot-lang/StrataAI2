@@ -903,3 +903,23 @@ authorized PUBLIC Board behind a generic access error. Existing admitted content
 still withdraws on transport uncertainty, and definitive lifecycle denial still
 fences an older in-flight grant. Focused tests cover both initial HTTP outcomes;
 the current release browser replay is still required.
+
+After initial admission, operational stream uncertainty also preserves any
+pending bounded HTTP authority check. It hides protected presentation immediately
+and starts a fresh check when no check is pending. Transport failure does not
+advance the authority generation; a definitive stream denial still does. This
+lets current HTTP denial mount the independently admitted lifecycle view instead
+of discarding it and leaving a hidden pending-deletion observer.
+
+The maintained deletion-retry and deletion-completion desktop/phone scenarios,
+together with four Portal-admission widths, passed **8/8** on 2026-10-11 against
+compiled production API/Worker hosts and restricted PostgreSQL. Completion used
+the actual Worker queue; no SQL fabricated progress or terminal state. Lost
+acknowledgment recovery, original request identity, private graph withdrawal,
+pending/completed live frames, keyboard/focus, offline recovery and WCAG assertions
+remain intact. All **1,363 native and 1,953 hosted captured hashes matched**.
+The local Compose fixture preserves deletion-discovery interpolation so the
+unchanged completion helper can start and restore the Worker. This is compiled
+host evidence, not the current build-once immutable-image gate. The 83 focused
+admission/router/Organization Home tests and fresh full solution compilation also
+pass. PRD-03 remains open at **8% estimated work remaining**.

@@ -1162,3 +1162,15 @@ suite passed 2,384/2,384 with unchanged source. See
 [built API-image fixture evidence](prd-27-acceptance.md#maintained-usage-fixture-against-a-built-api-image)
 for the immutable image ID, local build version, source provenance and remaining
 whole-release gates.
+
+The maintained bounded intake-List continuation scenario passed **2/2** at
+desktop and phone widths on 2026-10-11 with verified-email enforcement, separate
+compiled production API/Worker hosts and real restricted PostgreSQL. Metadata
+and configuration replay can independently request the same current-authority
+check; the initial announcement assertion accepts exactly their two fixed
+checking notices. Pagination, selected-source preservation, review, mutation,
+keyboard and disclosure assertions remain. No arbitrary text or success state
+can satisfy that checking assertion. There were zero failed/skipped/flaky cases
+or global errors; all **1,363 native and 1,953 hosted captured hashes matched**.
+Current build-once release-image CI and the rest of PRD-27 acceptance remain
+required. PRD-27 stays open at **24% estimated work remaining**.

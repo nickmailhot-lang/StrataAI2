@@ -82,6 +82,37 @@ it('keeps failed live transport hidden and withdraws it permanently on fresh den
   act(() => operational.options!.denied(404, false)); expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
 });
 
+it('finishes an in-flight authority denial despite repeated stream uncertainty after admission', async () => {
+  let calls = 0; let finish!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me'
+    ? new Response(JSON.stringify(liveProfile)) : ++calls === 1 ? response(liveOrg)
+      : new Promise<Response>(resolve => { finish = resolve; })));
+  const router = createMemoryRouter([{ path: '/:organizationId', element: <SurfaceAdmission surface="INTERNAL"
+    deniedContent={<div>Independent lifecycle recovery</div>}><Content /></SurfaceAdmission> }],
+  { initialEntries: [`/${liveOrg}`] }); render(<RouterProvider router={router} />);
+  await screen.findByText(`Admitted ${liveOrg}`);
+  await waitFor(() => expect(operational.options).toBeDefined());
+  fireEvent.focus(window); await waitFor(() => expect(finish).toBeDefined());
+  act(() => { operational.options!.unavailable(); operational.options!.unavailable(); });
+  expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeVisible();
+  await act(async () => finish(new Response('{}', { status: 404 })));
+  expect(screen.getByText('Independent lifecycle recovery')).toBeVisible();
+  expect(screen.queryByText('Access could not be checked. Try again.')).not.toBeInTheDocument();
+});
+
+it('immediately rechecks current surface authority when an admitted live stream becomes unavailable', async () => {
+  let calls = 0;
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me'
+    ? new Response(JSON.stringify(liveProfile)) : ++calls === 1 ? response(liveOrg)
+      : new Response('{}', { status: 404 })));
+  mountLive(); await screen.findByText(`Admitted ${liveOrg}`);
+  await waitFor(() => expect(operational.options).toBeDefined());
+  act(() => operational.options!.unavailable());
+  expect(await screen.findByText('Access to this Organization surface is unavailable.')).toBeVisible();
+  expect(calls).toBe(2);
+  expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
+});
+
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 function Content() { const { organizationId } = useParams(); return <div>Admitted {organizationId}</div>; }
 function mount(surface: 'INTERNAL' | 'PORTAL' = 'INTERNAL', fallback = false) {
