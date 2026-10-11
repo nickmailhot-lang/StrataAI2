@@ -116,6 +116,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Configuration Worker delivery and remaining authorized replay](architecture/organization-configuration.md#durable-configuration-worker-delivery)
 - [Full Organization configuration requirement and acceptance map (PRD-27)](architecture/prd-27-acceptance.md)
 - [Organization lifecycle support: uncertain replies, Worker recovery and historical access](architecture/organization-lifecycle-support.md)
+- [Configuration and lifecycle HTTP latency: workload, privacy and measured scope](architecture/organization-configuration-latency.md)
 - [Organization requirements and acceptance map (PRD-03)](architecture/prd-03-acceptance.md)
 - [Organization deletion Worker stages and completion contract (product integration pending)](architecture/organization-deletion-lifecycle.md)
 - [Owner deletion request acknowledgments](architecture/organization-deletion-retries.md)

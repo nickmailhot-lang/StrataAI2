@@ -116,6 +116,9 @@ jobs:
       - name: Verify operator evidence rejects missing and private metric fields
         run: python3 -m unittest discover -s tests -p 'operator_metrics_test.py'
 
+      - name: Verify Organization latency evidence and sample boundaries
+        run: python3 -m unittest discover -s tests -p 'organization_latency_test.py'
+
       - name: Verify source test report completeness and privacy
         run: |
           python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
@@ -847,6 +850,23 @@ jobs:
       - name: Checklist, comment, activity, movement and lifecycle at supported capacity
         if: (matrix.suite == 'commands')
         run: scripts/ci/test-checklist-capacity.sh
+
+      - name: Authorized configuration and lifecycle HTTP p95 through exact release images
+        if: (matrix.suite == 'commands')
+        run: bash scripts/ci/test-organization-configuration-latency.sh
+
+      - name: Prepare fixed Organization latency evidence
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/organization-latency --entry "artifacts/capacity/organization-latency.json" "organization-latency.json"
+
+      - name: Retain fixed Organization latency evidence
+        if: always() && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: organization-latency-${{ github.sha }}
+          path: artifacts/retained/organization-latency
+          retention-days: 90
+          if-no-files-found: ignore
 
       - name: Validate pinned operator Collector configuration
         if: (matrix.suite == 'commands')
