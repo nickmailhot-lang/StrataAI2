@@ -1607,3 +1607,18 @@ passed. Full collection accounts for **376 cases in 143 intact files**, distribu
 **95/94/95/92** across four shards. Owned fixtures and private credentials were
 removed, preserving original PostgreSQL. Browser withdrawal and retained
 immutable-image acceptance remain open, alongside the other RECORDS requirements.
+
+## Complete API regression after source-provider activation
+
+The complete compiled-host API regression finished on 2026-10-11: **879/879
+tests passed**, with zero failures, errors, timeouts, aborts, skips or unexecuted
+cases. Both the actual mapped three-source confirmation/move/recovery case and
+the complete real Production provider-graph case passed within this full run.
+All **860 captured backend/test source hashes matched**. The capture ran against
+`8decbf7d`; backend/API-test/database sources remain unchanged through `51b9ef50`,
+whose subsequent changes compose the MUI views and maintain browser/CI coverage.
+The owned terminal API container was removed, preserving original PostgreSQL.
+
+This supersedes the earlier pending full-regression status. It does not establish
+retained immutable-image release acceptance: exact-commit CI remains to be
+verified. Other Records acceptance requirements remain open.
