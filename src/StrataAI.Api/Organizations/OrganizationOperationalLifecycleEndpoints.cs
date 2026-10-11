@@ -14,6 +14,25 @@ public static class OrganizationOperationalLifecycleEndpoints
     private static readonly JsonSerializerOptions InputOptions = new(JsonSerializerDefaults.Web) { AllowDuplicateProperties = false };
     public static void MapOrganizationOperationalLifecycleEndpoints(this RouteGroupBuilder group)
     {
+        group.MapGet("/operational-lifecycle-directory", async (HttpContext context,
+            OrganizationOperationalLifecycleDirectoryService service, CancellationToken ct) =>
+        {
+            context.Response.Headers.CacheControl = "private, no-store";
+            var actor = Actor(context); if (actor is null) return Error("session_unavailable");
+            Guid? after = null;
+            if (context.Request.Query.TryGetValue("after", out var values))
+            {
+                if (values.Count != 1 || values[0]?.Length != 36 || !Guid.TryParseExact(values[0], "D", out var parsed) || parsed == Guid.Empty)
+                    return Error("invalid_organization_cursor");
+                after = parsed;
+            }
+            var result = await service.ReadAsync(actor.Value, after, ct);
+            if (!result.Succeeded) return Error(result.ErrorCode);
+            var page = result.Value!;
+            return Results.Ok(new { page.ActorId, page.NextCursor, Items = page.Items.Select(review => new {
+                review.OrganizationId, review.ActorId, review.Name, Status = State(review.Status),
+                review.Version, review.UpdatedAt, review.ActingCapacity }) });
+        });
         group.MapGet("/{organizationId:guid}/operational-lifecycle", async (Guid organizationId,
             HttpContext context, OrganizationOperationalLifecycleService service, CancellationToken ct) =>
         {
@@ -88,6 +107,7 @@ public static class OrganizationOperationalLifecycleEndpoints
             "idempotency_key_expired" => (409, "The original acknowledgment expired. Review the current lifecycle."),
             "organization_lifecycle_unchanged" => (409, "Organization already has the requested lifecycle state."),
             "idempotency_key_required" => (400, "A nonempty UUID retry key is required."),
+            "invalid_organization_cursor" => (400, "Use one nonempty UUID continuation returned by the directory."),
             "invalid_organization_lifecycle" => (400, "Choose ACTIVE, SUSPENDED or DEACTIVATED."),
             "invalid_organization_lifecycle_request" or "invalid_correlation_id" => (400, "Supply one lifecycle state and reviewed revision."),
             _ => (404, "Organization not found."),

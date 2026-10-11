@@ -229,3 +229,20 @@ API scopes and current exact-image CI remain separate pending results. Inactive
 historical reads, independent portal consistency, Worker delivery/replay/realtime,
 Production concurrency and remaining acceptance obligations are unfinished.
 **50% estimated work remaining**; no criterion or scenario is closed.
+
+## Inactive Organization directory increment
+
+Current Owners and Administrators can now rediscover suspended/deactivated
+Organizations through a bounded, independently authorized lifecycle directory.
+Membership hints do not confer access; names are rechecked after page IO and the
+MUI withdraws previous names on refresh or account changes. The normal operational
+directory and commands remain gated by active lifecycle.
+See [inactive Organization lifecycle directory](organization-configuration.md#inactive-organization-lifecycle-directory)
+for contracts, source boundaries and retained failures. Current full Domain
+924/924, focused API 10/10, directory UI 6/6, restricted PostgreSQL contracts,
+frontend static/build checks and two actual Demo desktop/phone flows pass.
+Four selected earlier frontend failures pass focused reruns; the current full
+frontend and newer full API runs and immutable-image CI remain pending. The
+806/806 older API result applies only to its frozen source. Historical access,
+portal, Worker/realtime, Production concurrency and remaining acceptance are
+unfinished. **50% estimated work remaining**; all criteria/scenarios stay open.

@@ -121,6 +121,7 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
   return <Container component="main" maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
     <Typography variant="h4" component="h1">Organization lifecycle</Typography>
     <Button component={Link} to="/app">Back to organizations</Button>
+    <Button component={Link} to="/app/lifecycle">Organization lifecycle management</Button>
     {busy && <Typography role="status">Checking current lifecycle and permission…</Typography>}
     {error && <Alert severity="warning">{error}</Alert>}
     {ack && <Alert severity="success" role="status" tabIndex={-1} ref={notice}>Original change acknowledged: {lifecycleLabel(ack.status)}, revision {ack.version}.

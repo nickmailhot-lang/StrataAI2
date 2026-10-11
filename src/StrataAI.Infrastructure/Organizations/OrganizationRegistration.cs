@@ -90,6 +90,7 @@ public static class OrganizationRegistration
 
         services.AddSingleton<OrganizationMetadataSynchronizationService>();
         services.AddSingleton<OrganizationOperationalLifecycleService>();
+        services.AddSingleton<OrganizationOperationalLifecycleDirectoryService>();
         services.AddSingleton<OrganizationConfigurationService>();
         services.AddSingleton<OrganizationConfigurationSynchronizationService>();
         services.AddSingleton<OrganizationConfigurationActivityService>();

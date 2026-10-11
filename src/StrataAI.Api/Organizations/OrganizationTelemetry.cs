@@ -40,6 +40,7 @@ public sealed class OrganizationTelemetry
             ("/organizations/{organizationId:guid}/metadata-events", "GET") => "metadata_replay",
             ("/organizations/{organizationId:guid}/lifecycle-events", "GET") => "lifecycle_replay",
             ("/organizations/{organizationId:guid}/operational-lifecycle", "GET") => "operational_lifecycle_review",
+            ("/organizations/operational-lifecycle-directory", "GET") => "operational_lifecycle_directory",
             ("/organizations/{organizationId:guid}/operational-lifecycle", "PATCH") => "operational_lifecycle_change",
             ("/organizations/{organizationId:guid}/configuration", "GET") => "configuration_read",
             ("/organizations/{organizationId:guid}/configuration", "PATCH") => "configuration_change",

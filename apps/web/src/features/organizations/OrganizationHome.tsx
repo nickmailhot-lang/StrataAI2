@@ -305,6 +305,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             Profile
           </Button>
           <Button component={Link} to="/app/invitations">Invitations</Button>
+          {!organizationId && <Button component={Link} to="/app/lifecycle">Organization lifecycle management</Button>}
         </Stack>
         <Typography variant="h4" component="h1" ref={heading} tabIndex={-1}>
           {organizationId

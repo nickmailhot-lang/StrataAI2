@@ -109,6 +109,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Organization Types, creation classifications and remaining PRD-27 configuration](architecture/organization-types.md)
 - [Organization configuration, private history, MUI recovery and persistence](architecture/organization-configuration.md)
 - [Organization lifecycle review, confirmation and original-request recovery](architecture/organization-configuration.md#operational-lifecycle-review-and-confirmation-screen)
+- [Inactive Organization discovery and lifecycle directory](architecture/organization-configuration.md#inactive-organization-lifecycle-directory)
 - [Configuration Worker delivery and remaining authorized replay](architecture/organization-configuration.md#durable-configuration-worker-delivery)
 - [Full Organization configuration requirement and acceptance map (PRD-27)](architecture/prd-27-acceptance.md)
 - [Organization requirements and acceptance map (PRD-03)](architecture/prd-03-acceptance.md)

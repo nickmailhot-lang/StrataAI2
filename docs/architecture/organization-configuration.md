@@ -822,3 +822,48 @@ and authorized realtime recovery, full Production concurrent-write/session-loss
 acceptance, remaining data/retention, UX/telemetry and exact-image release evidence.
 PRD-27 estimate is now **50% work remaining**. No numbered AC or linked scenario
 is closed by this partial workflow.
+
+## Inactive Organization lifecycle directory
+
+`GET /organizations/operational-lifecycle-directory` provides an actor-bound,
+private/no-store directory for current Owners and Administrators of Active,
+Suspended and Deactivated Organizations. Existing membership routing supplies
+at most 51 ordered hints; the service reviews at most 50 and rechecks admitted
+Organizations after page IO. Routing does not grant administration. Ordinary
+members, withdrawn memberships and terminal parents contribute no private names.
+An empty authorized page can still have a continuation; malformed/regressed
+hints or lost sessions return no partial response. The directory performs no
+mutation or receipt lookup and does not reopen normal operational access.
+
+The standalone MUI `/app/lifecycle` page is reachable from the Organization home
+and lifecycle review. It checks the account before and after loading, validates
+the exact actor-bound response, and clears previous names during reload, paging
+and foreground refresh. Entries show name, lifecycle and revision and lead to
+the existing independently authorized review/confirmation workflow. Pagination
+is bounded; first-page recovery remains available after a failed continuation.
+
+Current evidence: **924/924 full Linux Domain tests**, **10/10 focused API-host
+tests**, **6/6 directory UI tests**, typecheck, lint and production frontend build
+pass. Restricted PostgreSQL contracts pass with 1,848 matching captured source
+hashes, including suspended Owner rediscovery and ordinary-member exclusion.
+Two native Chromium desktop/phone cases pass against the actual seeded Demo API
+and built MUI app, with 1,130 matching backend/frontend/test hashes. Both recover
+a committed suspension, rediscover its named entry through this directory, open
+canonical review and reactivate. The original PostgreSQL fixture is preserved;
+owned terminal fixtures were removed.
+
+Retained full frontend results on earlier source were 2,334/2,336 and
+2,335/2,337. The failures were shell heading discovery, Card-detail modal focus,
+List-copy recovery and configuration-review timeouts. The four selected cases
+pass subsequent focused reruns with unchanged test timeouts. This is not a full
+suite pass. The current complete frontend run uses one worker to reduce resource
+contention and remains a separate pending result. An older frozen Demo API source
+passes 806/806; eleven later backend source differences prevent treating that as
+current-source evidence. The newer full HTTP API run and immutable-image CI
+remain pending.
+
+Inactive historical reads, independent portal consistency, durable lifecycle
+Worker delivery/replay and authorized realtime recovery, Production concurrency,
+remaining retention/data and release acceptance are still required.
+**50% estimated PRD-27 work remaining**; no numbered criterion or scenario closes
+from this directory increment.

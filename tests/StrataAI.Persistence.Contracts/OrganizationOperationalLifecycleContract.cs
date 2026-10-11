@@ -56,6 +56,13 @@ internal static class OrganizationOperationalLifecycleContract
         var review = await service.ReviewAsync(organization, actor, ct);
         Require(review.Succeeded && review.Value!.Status == OrganizationStatus.Suspended && review.Value.Version == 2,
             "Restricted lifecycle current administrative review failed for a suspended parent.");
+        var directory = provider.GetRequiredService<OrganizationOperationalLifecycleDirectoryService>();
+        var discovered = await directory.ReadAsync(actor, null, ct);
+        Require(discovered.Succeeded && discovered.Value!.Items.Any(item => item.OrganizationId == organization
+            && item.Status == OrganizationStatus.Suspended && item.Name == "Retained lifecycle contract")
+            && discovered.Value.Items.All(item => item.OrganizationId != other), "Restricted inactive administrative discovery lost scope.");
+        var memberDirectory = await directory.ReadAsync(stranger, null, ct);
+        Require(memberDirectory.Succeeded && memberDirectory.Value!.Items.Count == 0, "Restricted lifecycle directory disclosed an ordinary member target.");
         Require((await service.ReviewAsync(organization, stranger, ct)).ErrorCode == "organization_not_found"
             && (await service.ReviewAsync(other, actor, ct)).ErrorCode == "organization_not_found",
             "Restricted lifecycle review admitted a member or foreign tenant.");
