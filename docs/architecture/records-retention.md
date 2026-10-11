@@ -61,6 +61,55 @@ all 373 captured database/script hashes matching. Owned fixtures were removed.
 This is local database evidence; exact-head hosted release evidence is still
 required before acceptance.
 
+## Production hold storage foundation
+
+[Migration 144](../../db/migrations/144_record_retention_holds.sql) adds private
+current holds, immutable hold history and immutable actor-bound command receipts.
+Forced RLS applies to all three tables. Organization, class, category and exact
+record scopes are represented explicitly; record scopes reference the typed
+producer registry, and a supplied category must match that registered source.
+The current-scope index retains Released rows as well as Active rows.
+
+The storage transition is Active version one to Released version two, once.
+Identity, scope, original reason, applying actor and application clock cannot be
+rewritten. The release history retains that original evidence and the current
+releasing actor's membership/version/capacity and attribution snapshot. Parent,
+membership, account and source clocks are checked under current owning locks.
+Deferred constraints require a complete current/history/receipt/audit graph;
+missing history or receipt refuses the entire transaction. The original Apply
+receipt continues to reference Active revision one after the head becomes
+Released. Receipts have a fixed 24-hour expiry and retain their immutable
+fingerprint and original result identity.
+
+Audit facts use `RETENTION_HOLD_APPLIED` / `RETENTION_HOLD_RELEASED` and four safe
+metadata values matching Demo: version, status, scope kind and acting capacity.
+Reasons, category, record content and actor labels are not audit metadata. No API
+or Worker table/routine grants are activated. Production adapters, real object
+confidentiality authorization, owning HTTP/MUI workflows, realtime publication and
+disposition enforcement remain outstanding; SQL graph proof does not establish
+any of those runtime behaviors.
+
+The [maintained hold storage contract](../../scripts/ci/record-retention-hold-after-upgrade.sql)
+passed on disposable PostgreSQL after all 144 migrations. It exercises all four
+scope shapes, persisted apply/release and original receipt identity, refused
+scope/reason rewrites and reactivation, unknown/category-substituted records,
+incomplete graph rollback, immutable history/receipts, safe audit facts, forced
+tenant RLS and unactivated restricted capabilities. All captured SQL sources
+matched. The full ordered migration runner passed with all 375 captured database
+and script hashes matching, including upgrade/repeat, serialization, failure
+rollback and missing-ledger refusal. Both maintained checks are required by the
+existing build-once schema phase.
+
+Hosted CI exposed a missing readiness requirement for migration 143. The compiled
+connection factory now requires both 143 and 144 alongside every prior migration.
+Fresh solution compilation passed with zero warnings/errors. A separate actual
+compiled readiness contract passed using canonical restricted API and Worker
+logins: all 144 ledger entries were individually hidden/refused, restored and
+successfully recovered for both factories. All 1,933 captured repository hashes
+matched at completion. Owned containers and ephemeral credential files were
+removed. Full hosted CI for the resulting commit remains required; no ticket or
+acceptance criterion is closed by this storage/readiness foundation.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines
@@ -739,8 +788,9 @@ This supports policy storage integrity, validation and disposition/hold decision
 for RECORDS-FR-001/002/003. It does not close any numbered acceptance criterion
 or linked scenario. Required remaining work includes:
 
-- Hold schema/RLS, typed tenant-safe record references and restricted policy/hold
-  runtime adapters, with Demo parity and policy selector acceptance.
+- Remaining typed producer identities, real record classification/confidentiality
+  authorization and Production hold runtime adapters/activation, with Demo parity
+  and complete policy selector acceptance.
 - Owning transaction admission, explicit elevated authorization, review/concurrency,
   complete hold lookup and current lock ordering across every disposition path.
 - Applied/released hold commands, policy selector/retirement rules and remaining Records MUI workflows,
