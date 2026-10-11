@@ -7,6 +7,7 @@ import { CardCommentsControl } from './CardCommentsControl';
 import { CardChecklists } from './CardChecklists';
 import { CardAttachments } from './CardAttachments';
 import { SourceRetentionEntry } from '../records/SourceRetentionEntry';
+import { AttachmentManageControl } from './AttachmentManageControl';
 
 type Scope = { organizationId: string; boardId: string; cardId: string };
 type Detail = Scope & { title: string; description: string | null; version: number };
@@ -60,6 +61,8 @@ function Reader(props: Props) {
       canAdminister={props.canAdminister ?? false} unavailable={props.unavailable} onRefresh={props.onRefresh} />
     <CardChecklists {...props} version={detail.version} />
     <CardAttachments {...props} version={detail.version} />
+    <AttachmentManageControl {...props} version={detail.version} editable={false} disabled={false} archiveOnly
+      canAdminister={props.canAdminister ?? false} onBusyChange={ignore} onRecoveryChange={ignore} />
     <ActivityHistoryControl organizationId={props.organizationId} boardId={props.boardId} kind="CARD" targetId={props.cardId}
       unavailable={false} refreshSequence={props.refreshSequence} onDenied={props.onDenied} />
     <CardCommentsControl {...props} version={detail.version} editable={false} disabled={false} canAdminister={props.canAdminister ?? false}

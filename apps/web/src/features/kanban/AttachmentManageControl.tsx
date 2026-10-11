@@ -8,8 +8,9 @@ import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 import type { UrlAttachmentCreateProps } from './UrlAttachmentCreateControl';
 import { FileAttachmentDownloadControl } from './FileAttachmentDownloadControl';
 import { FileAttachmentPreviewControl } from './FileAttachmentPreviewControl';
+import { SourceRetentionEntry } from '../records/SourceRetentionEntry';
 
-type Props = UrlAttachmentCreateProps & { canAdminister: boolean };
+type Props = UrlAttachmentCreateProps & { canAdminister: boolean; archiveOnly?: boolean };
 type Source = AttachmentMetadata | ArchivedAttachment;
 type Review = { actor: string; archive: boolean; page: AttachmentPage | AttachmentArchivePage; cursor?: string };
 type Draft = { actor: string; file: Source; action: AttachmentLifecycleAction; cardVersion: number; confirmed: boolean };
@@ -103,9 +104,9 @@ function Management(props: Props) {
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
   }
   const reviewCurrent = review?.page.cardVersion === props.version;
-  return <Stack component="section" aria-label="Manage Card attachments" spacing={1} sx={{ my: 2 }}>
+  return <Stack component="section" aria-label={props.archiveOnly ? 'Archived Card attachments' : 'Manage Card attachments'} spacing={1} sx={{ my: 2 }}>
     <Button ref={primary} disabled={disabled || !!intent || !!draft || blocked} onBlur={releaseFocus}
-      onClick={event => void load(false, event.currentTarget)}>Manage attachments</Button>
+      onClick={event => void load(props.archiveOnly ?? false, event.currentTarget)}>{props.archiveOnly ? 'Review archived attachments' : 'Manage attachments'}</Button>
     {busy && <Typography role="status">{draft ? 'Saving attachment change…' : 'Checking current attachments…'}</Typography>}
     {notice && <Typography role="status">{notice}</Typography>}
     {props.unavailable ? <Typography role="status">Checking current Card access…</Typography> : <>
@@ -119,18 +120,22 @@ function Management(props: Props) {
             <FileAttachmentDownloadControl {...props} file={file} archiveReview />
             <FileAttachmentPreviewControl {...props} file={file} archiveReview />
           </>}
-          {review.archive ? <>
+          {review.archive && <SourceRetentionEntry organizationId={props.organizationId} boardId={props.boardId}
+            cardId={props.cardId} cardVersion={review.page.cardVersion} kind="attachment" recordId={file.id}
+            sourceVersion={file.version} expectedActor={review.actor} canAdminister={props.canAdminister}
+            unavailable={disabled || !reviewCurrent} onRefresh={props.onRefresh} />}
+          {!props.archiveOnly && (review.archive ? <>
             <Button disabled={disabled || !reviewCurrent || !props.editable || !('canRestore' in review.page && review.page.canRestore)} onBlur={releaseFocus}
               onClick={event => stage(file, 'restore', event.currentTarget)}>Restore attachment {file.displayName}</Button>
             <Button disabled={disabled || !reviewCurrent || !props.editable || !props.canAdminister || !('canDelete' in review.page && review.page.canDelete)} onBlur={releaseFocus}
               onClick={event => stage(file, 'delete', event.currentTarget)}>Delete attachment {file.displayName}</Button>
           </> : <Button disabled={disabled || !reviewCurrent || !props.editable || !('canEdit' in review.page && review.page.canEdit)} onBlur={releaseFocus}
-            onClick={event => stage(file, 'archive', event.currentTarget)}>Archive attachment {file.displayName}</Button>}
+              onClick={event => stage(file, 'archive', event.currentTarget)}>Archive attachment {file.displayName}</Button>)}
         </Stack>)}
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-          <Button disabled={disabled} onBlur={releaseFocus} onClick={event => void load(!review.archive, event.currentTarget)}>{review.archive ? 'Review active attachments' : 'Review attachment archive'}</Button>
-          <Button disabled={disabled || !review.cursor} onBlur={releaseFocus} onClick={event => void load(review.archive, event.currentTarget)}>First managed attachment page</Button>
-          <Button disabled={disabled || !reviewCurrent || !review.page.nextCursor} onBlur={releaseFocus} onClick={event => void load(review.archive, event.currentTarget, review.page.nextCursor!)}>Next managed attachment page</Button>
+          {!props.archiveOnly && <Button disabled={disabled} onBlur={releaseFocus} onClick={event => void load(!review.archive, event.currentTarget)}>{review.archive ? 'Review active attachments' : 'Review attachment archive'}</Button>}
+          <Button disabled={disabled || !review.cursor} onBlur={releaseFocus} onClick={event => void load(review.archive, event.currentTarget)}>{props.archiveOnly ? 'First archived attachment page' : 'First managed attachment page'}</Button>
+          <Button disabled={disabled || !reviewCurrent || !review.page.nextCursor} onBlur={releaseFocus} onClick={event => void load(review.archive, event.currentTarget, review.page.nextCursor!)}>{props.archiveOnly ? 'Next archived attachment page' : 'Next managed attachment page'}</Button>
         </Stack>
       </>}
       {draft && <>

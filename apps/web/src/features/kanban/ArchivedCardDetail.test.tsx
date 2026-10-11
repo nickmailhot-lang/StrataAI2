@@ -13,6 +13,7 @@ it('offers explicit classification of an admitted archived Card independently fr
   const ui = render(<MemoryRouter><ArchivedCardDetail {...props} canAdminister /></MemoryRouter>);
   await screen.findByText(detail.title);
   expect(screen.getByRole('button', { name: 'Retention classification for this Card' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: 'Review archived attachments' })).toBeEnabled();
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   ui.rerender(<MemoryRouter><ArchivedCardDetail {...props} canAdminister={false} /></MemoryRouter>);
   expect(screen.queryByRole('button', { name: 'Retention classification for this Card' })).not.toBeInTheDocument();

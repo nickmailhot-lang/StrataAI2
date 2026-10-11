@@ -1645,3 +1645,28 @@ covers **378 cases in 143 files**, distributed **95/96/93/94** across the four
 intact-file shards. Owned fixtures and private credentials were removed,
 preserving original PostgreSQL. Retained immutable-image CI and the remaining
 Records features still require acceptance; PRD-70 stays open.
+
+## Archived Attachment classification views
+
+Admitted archive metadata now offers the existing classification entry with the
+actual Attachment revision, current owning Card revision, Board/Organization and
+reviewed actor. Active Card attachment management retains its existing lifecycle
+controls. Archived Card details additionally expose **Review archived attachments**:
+this mode reads the existing bounded archive page and supports classification,
+without exposing restore/delete/archive actions or switching to active management.
+Pagination remains bounded and uses the existing validated archive cursors.
+
+Classification is independent from operational editing: its own fresh account,
+Organization and Board gates still apply. A stale parent revision or uncertain
+access hides the classification review. Opening archive metadata does not itself
+read or submit a classification; explicit source review and confirmation remain
+required.
+
+Local verification on 2026-10-11: **47/47 focused attachment/archive/classification
+component cases passed**, including a strict archived-source review bound to the
+actual Attachment/Card revisions and absence of operational actions in archive
+review mode. Frontend types, changed-file lint, production web build and whitespace
+checks passed; the existing bundle-size advisory remains. This is component/client
+evidence. Production browser archived-source acceptance remains required in
+addition to the already completed six-case active-source/move/withdrawal flow.
+No backend, database capability or operational mutation contract changed.

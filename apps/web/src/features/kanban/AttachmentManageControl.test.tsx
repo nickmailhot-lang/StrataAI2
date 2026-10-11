@@ -3,6 +3,7 @@ import { Button, Dialog } from '@mui/material';
 import { AttachmentManageControl } from './AttachmentManageControl';
 import { workRequest, WorkRequestError } from '../../api/workManagement';
 vi.mock('../../api/workManagement', async importOriginal => ({ ...await importOriginal<typeof import('../../api/workManagement')>(), workRequest: vi.fn() }));
+vi.mock('../auth/identityLive', () => ({ watchIdentity: () => () => {} }));
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const scope = { organizationId: id(1), boardId: id(2), cardId: id(3) };
 const profile = { id: id(8), version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-US', timezone: 'UTC' };
@@ -26,7 +27,48 @@ async function select(action = 'Archive') {
   if (action !== 'Archive') fireEvent.click(await screen.findByRole('button', { name: 'Review attachment archive' }));
   fireEvent.click(await screen.findByRole('button', { name: `${action} attachment Reference` }));
 }
-beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+beforeEach(() => { vi.mocked(workRequest).mockReset(); sessionStorage.clear(); });
+afterEach(() => vi.unstubAllGlobals());
+it('binds archived classification review to the admitted Attachment revision and current owning Card', async () => {
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile
+    : path.includes('retention-policies') ? { organizationId: scope.organizationId, items: [], nextAfter: null }
+      : path === `/boards/${scope.boardId}` ? { board: { id: scope.boardId, organizationId: scope.organizationId, lifecycleState: 'active' },
+        access: { canView: true, canAdminister: true } } : archivePage);
+  const source = { organizationId: scope.organizationId, boardId: scope.boardId, cardId: scope.cardId, listId: id(9),
+    recordId: archivedFile.id, parentCardId: scope.cardId, kind: 'attachment', cardVersion: 4, listVersion: 2,
+    sourceVersion: 2, cardState: 'active', listState: 'active', sourceState: 'archived', createdAt: created };
+  const fetch = vi.fn(async (input: RequestInfo | URL) => {
+    if (String(input).includes('retention-policies'))
+      return new Response(JSON.stringify({ organizationId: scope.organizationId, items: [], nextAfter: null }));
+    expect(String(input)).toBe(`/organizations/${scope.organizationId}/retention-sources/attachment/${archivedFile.id}/review`);
+    return new Response(JSON.stringify(source));
+  }); vi.stubGlobal('fetch', fetch);
+  render(<AttachmentManageControl {...props()} editable={false} archiveOnly />);
+  fireEvent.click(screen.getByRole('button', { name: 'Review archived attachments' })); await screen.findByText('Reference');
+  expect(fetch).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Retention classification for this Attachment' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Review source classification' }));
+  await screen.findByLabelText('Record category *');
+  const reviews = fetch.mock.calls.filter(([input]) => String(input).includes('retention-sources'));
+  expect(reviews).toHaveLength(1);
+  expect(reviews[0][0]).toBe(`/organizations/${scope.organizationId}/retention-sources/attachment/${archivedFile.id}/review`);
+  expect(screen.getByText('Source revision 2; Card revision 4; List revision 2.')).toBeVisible();
+  expect(screen.getByText('Source archived; Card active; List active.')).toBeVisible();
+  expect(writes()).toHaveLength(0);
+});
+it('reviews archived metadata without operational actions and offers classification only to a Board administrator', async () => {
+  mock(); const p = props(), view = render(<AttachmentManageControl {...p} editable={false} archiveOnly />);
+  expect(workRequest).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Review archived attachments' }));
+  await screen.findByText('Reference');
+  expect(vi.mocked(workRequest).mock.calls.some(([path]) => path === `/cards/${scope.cardId}/attachments/archive`)).toBe(true);
+  expect(screen.getByRole('button', { name: 'Retention classification for this Attachment' })).toBeEnabled();
+  for (const name of ['Restore attachment Reference', 'Delete attachment Reference', 'Archive attachment Reference', 'Review active attachments'])
+    expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
+  expect(writes()).toHaveLength(0);
+  view.rerender(<AttachmentManageControl {...p} editable={false} archiveOnly canAdminister={false} />);
+  expect(screen.queryByRole('button', { name: 'Retention classification for this Attachment' })).not.toBeInTheDocument();
+});
 it('withholds private attachment review when the account changes during the read', async () => {
   let profiles = 0;
   vi.mocked(workRequest).mockImplementation(async path => path === '/me'
