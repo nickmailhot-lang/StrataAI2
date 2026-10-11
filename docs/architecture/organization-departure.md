@@ -3,8 +3,30 @@
 PRD-03 WS-FR-006 has a MUI departure screen at `/app/{organizationId}/leave`,
 linked from the active internal Organization directory for every admitted role.
 It uses a direct current Organization read rather than an unbounded directory.
-The internal surface guard and server membership/session checks remain
-authoritative; Portal-only access does not authorize departure.
+The route independently checks current account and membership review, and the
+server membership/session checks remain authoritative. Portal-only access does
+not authorize departure. It sits outside the internal surface shell because a
+successful departure removes that shell's membership authority.
+
+## Confirmation after membership withdrawal
+
+The independent route retains the success announcement and actor-bound original
+retry after its own command removes membership. It does not keep the internal
+navigation shell or private Organization review after leaving. A later rejoin is
+separate from the original acknowledgment, and a different account cannot recover
+the departed actor's command. This repairs the confirmation-focus failure in
+hosted run 38135912739 without disabling surface withdrawal for other pages.
+
+Verification on 2026-10-11: 23 focused router/departure tests passed, including the
+actual App route retaining the original body/key after a lost response while
+surface access is denied. Type checks, focused lint and the rebuilt web bundle
+passed. Both maintained desktop/phone departure browser scenarios passed against
+the actual PostgreSQL-backed API/Worker fixture, with no failed, skipped or flaky
+cases. They retain cancellation/no-write, successful withdrawal/announcement focus,
+same-key recovery after rejoin, account uncertainty and owner-continuity checks.
+All 1,359 native and 1,949 hosting source hashes remained unchanged, and owned
+fixtures were removed. Exact-commit immutable-image CI and full PRD-03 acceptance
+remain pending; approximately 8% of PRD-03 work remains.
 
 The confirmation names the Organization, explains loss of membership and Card
 assignments, and warns that another usable owner must remain. Cancel receives

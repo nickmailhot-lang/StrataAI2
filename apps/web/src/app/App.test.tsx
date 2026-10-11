@@ -97,3 +97,30 @@ it('admits protected terminal recovery on a fresh Organization route after ordin
   expect(screen.queryByRole('navigation', { name: 'Internal application navigation' })).not.toBeInTheDocument();
   expect(fetcher.mock.calls.some(([path]) => path.includes('/boards/directory'))).toBe(false);
 });
+
+it('retains departure confirmation and original recovery when leaving withdraws Organization surface access', async () => {
+  const org = '55555555-5555-4555-8555-555555555555'; const actor = '22222222-2222-4222-8222-222222222222';
+  const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'UTC' };
+  let writes = 0;
+  const fetcher = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path === '/me') return new Response(JSON.stringify(profile));
+    if (path.includes('/surface-access')) return new Response('{}', { status: 404 });
+    if (path.endsWith('/leave') && options?.method === 'POST') {
+      if (++writes === 1) throw new TypeError('Lost departure response after commit');
+      return new Response(null, { status: 204 });
+    }
+    return new Response(JSON.stringify({ organization: { id: org, name: 'Departure review', status: 0 }, role: 2 }));
+  });
+  vi.stubGlobal('fetch', fetcher); window.history.pushState({}, '', `/app/${org}/leave`); render(<App />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Review departure' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm departure' }));
+  const retry = await screen.findByRole('button', { name: 'Retry original departure' });
+  await waitFor(() => expect(retry).toHaveFocus());
+  vi.useFakeTimers(); try { await act(async () => { await vi.advanceTimersByTimeAsync(10_001); }); } finally { vi.useRealTimers(); }
+  expect(retry).toBeEnabled(); fireEvent.click(retry);
+  expect(await screen.findByRole('status')).toHaveTextContent('Original departure acknowledged. Review current membership to check later access.');
+  expect(fetcher.mock.calls.some(([path]) => path.includes('/surface-access'))).toBe(false);
+  const calls = fetcher.mock.calls.filter(([path, options]) => path.endsWith('/leave') && options?.method === 'POST');
+  expect(calls).toHaveLength(2); expect(calls[0][1]!.body).toBe(calls[1][1]!.body);
+  expect((calls[0][1]!.headers as Headers).get('Idempotency-Key')).toBe((calls[1][1]!.headers as Headers).get('Idempotency-Key'));
+});

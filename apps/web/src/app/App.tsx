@@ -47,6 +47,9 @@ const routes = [
   // Deletion withdraws normal surface access. The operation independently
   // authorizes its review/receipt and must retain an unresolved original intent.
   { path: "/app/:organizationId/delete", element: <OrganizationDeletePage /> },
+  // Departure removes normal surface access as part of its successful command.
+  // This page independently admits review and actor-bound original recovery.
+  { path: "/app/:organizationId/leave", element: <OrganizationLeavePage /> },
   { path: "/app/:organizationId/operational-lifecycle", element: <OrganizationOperationalLifecyclePage /> },
   { path: "/invitation", element: <InvitationLinkPage /> },
   { path: "/verify-email", element: <VerifyEmailPage /> },
@@ -72,7 +75,6 @@ const routes = [
       { path: "search", element: <GlobalSearchPage /> },
       { path: "archived-boards", element: <ArchivedBoardsPage /> },
       { path: "members", element: <OrganizationMembersPage /> },
-      { path: "leave", element: <OrganizationLeavePage /> },
       { path: "invite", element: <OrganizationInvitationPage /> },
       { path: "boards/:boardId/invite", element: <BoardInvitationPage /> },
       { path: "boards/:boardId/visibility", element: <BoardVisibilityPage /> },
