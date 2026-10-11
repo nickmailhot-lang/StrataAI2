@@ -1001,6 +1001,12 @@ reconnect behavior, hosted Worker and Production HTTP race acceptance, inactive
 historical/independent Portal access, remaining data/retention and release evidence.
 **48% estimated PRD-27 work remaining**; no numbered criterion/scenario is closed.
 
+## Operational lifecycle browser replay validation
+
+The browser replay parser binds the exact HTTP page or SignalR envelope to the expected Organization, current recipient and requested cursor. It rejects extra fields, foreign entity identifiers, duplicate event identities, unordered or unsafe revisions, invalid transition/event-type pairs, and clocks outside UTC microsecond precision. Pages are bounded to 50 facts; a continuation must equal the last delivered source position. A pending publication can leave the cursor unchanged. Intervening configuration revisions need not have lifecycle events.
+
+The validated parent snapshot remains distinct from historical source status. Neither supplies operational permission: consumers must refresh current account and surface admission before exposing private state or enabling work. Nine focused browser tests cover these protocol boundaries, including 50/1 recovery and publication gaps. This parser is groundwork for the subscriber; the MUI subscription and native multi-user verification remain outstanding.
+
 ## Operational lifecycle SignalR stream
 
 `/organizations/live/operational-lifecycle` exposes `Watch(organizationId,
