@@ -1,0 +1,79 @@
+using Npgsql;
+using StrataAI.Application.Records;
+using StrataAI.Domain.Records;
+using StrataAI.Infrastructure.Persistence;
+
+namespace StrataAI.Infrastructure.Records;
+
+// Unregistered until actual source admission and Demo parity exist. No new grants.
+internal sealed class PostgresRetentionAuthorizationReferences(PostgresConnectionFactory connections)
+    : IRetentionAuthorizationReferences
+{
+    private const string HoldFields = "h.tenant_id,h.hold_id,h.version,h.record_class,(h.category IS NOT NULL),h.record_id,h.authorization_context_version,h.classification_board_id,h.application_board_id,h.application_source_version ";
+
+    public async Task<RetentionSourceReference?> ReadSourceAsync(Guid organization, RetentionRecordClass recordClass,
+        Guid record, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        if (record == Guid.Empty || !Enum.IsDefined(recordClass)) return null;
+        await using var session = await connections.OpenTenantSessionAsync(organization, ct);
+        await using var command = new NpgsqlCommand("""
+            SELECT tenant_id,record_class,record_id,source_kind,parent_card_id,
+                   authorization_context_version,original_board_id,source_version
+            FROM record_retention_sources WHERE tenant_id=@tenant AND record_class=@class AND record_id=@record;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organization);
+        command.Parameters.AddWithValue("class", recordClass == RetentionRecordClass.OperationalWork ? "OPERATIONAL_WORK" : recordClass.ToString().ToUpperInvariant());
+        command.Parameters.AddWithValue("record", record);
+        await using var row = await command.ExecuteReaderAsync(ct);
+        if (!await row.ReadAsync(ct)) return null;
+        var kind = row.GetString(3) switch
+        {
+            "CARD" => RetentionProducerKind.Card, "CARD_COMMENT" => RetentionProducerKind.CardComment,
+            "ATTACHMENT" => RetentionProducerKind.Attachment, "AUDIT_EVENT" => RetentionProducerKind.AuditEvent,
+            _ => throw new InvalidOperationException("Unknown retention producer.")
+        };
+        return new(row.GetGuid(0), Class(row, 1)!.Value, row.GetGuid(2), kind, GuidValue(row, 4),
+            row.IsDBNull(5) ? null : row.GetInt16(5), GuidValue(row, 6), row.IsDBNull(7) ? null : row.GetInt64(7));
+    }
+
+    public Task<RetentionHoldReference?> ReadHoldAsync(Guid organization, Guid hold, CancellationToken ct) =>
+        ReadAsync(organization, hold, null, null, ct);
+    public Task<RetentionHoldReference?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) =>
+        ReadAsync(organization, null, actor, key, ct);
+
+    private async Task<RetentionHoldReference?> ReadAsync(Guid organization, Guid? hold, Guid? actor, Guid? key, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        if (hold == Guid.Empty || actor == Guid.Empty || key == Guid.Empty) return null;
+        await using var session = await connections.OpenTenantSessionAsync(organization, ct);
+        var query = hold.HasValue
+            ? "SELECT " + HoldFields + """
+               FROM record_retention_holds p JOIN record_retention_hold_history h
+                ON(h.tenant_id,h.hold_id,h.version)=(p.tenant_id,p.id,p.version)
+               WHERE p.tenant_id=@tenant AND p.id=@hold;
+               """
+            : "SELECT " + HoldFields + """
+               FROM record_retention_hold_receipts r JOIN record_retention_hold_history h
+                ON(h.tenant_id,h.hold_id,h.version,h.actor_id,h.key_id)=(r.tenant_id,r.hold_id,r.version,r.actor_id,r.key_id)
+               WHERE r.tenant_id=@tenant AND r.actor_id=@actor AND r.key_id=@key;
+               """;
+        await using var command = new NpgsqlCommand(query, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organization);
+        if (hold.HasValue) command.Parameters.AddWithValue("hold", hold.Value);
+        else { command.Parameters.AddWithValue("actor", actor!.Value); command.Parameters.AddWithValue("key", key!.Value); }
+        await using var row = await command.ExecuteReaderAsync(ct);
+        return await row.ReadAsync(ct) ? new(row.GetGuid(0), row.GetGuid(1), row.GetInt64(2), Class(row, 3),
+            row.GetBoolean(4), GuidValue(row, 5), row.IsDBNull(6) ? null : row.GetInt16(6),
+            GuidValue(row, 7), GuidValue(row, 8), row.IsDBNull(9) ? null : row.GetInt64(9)) : null;
+    }
+    private static Guid? GuidValue(NpgsqlDataReader row, int index) => row.IsDBNull(index) ? null : row.GetGuid(index);
+    private static RetentionRecordClass? Class(NpgsqlDataReader row, int index) => row.IsDBNull(index) ? null
+        : row.GetString(index) == "OPERATIONAL_WORK" ? RetentionRecordClass.OperationalWork : Enum.Parse<RetentionRecordClass>(row.GetString(index), true);
+    private void RequireScope(Guid organization, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (organization == Guid.Empty || !connections.HasCommandScope(organization))
+            throw new InvalidOperationException("Retention references require an owning transaction.");
+    }
+}

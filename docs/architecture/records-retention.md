@@ -244,6 +244,36 @@ tests also passed. Owned test containers were removed. PRD-70 remains open at
 82% estimated work remaining; scope resolution, Demo source parity, review,
 enforcement, redaction, exports, disposition and offboarding still require work.
 
+### Private authorization reference lookup
+
+[RetentionAuthorizationReferences.cs](../../src/StrataAI.Application/Records/RetentionAuthorizationReferences.cs)
+defines owning-transaction reference hints for classification, current hold and
+actor-bound original receipt history. The
+[PostgreSQL reader](../../src/StrataAI.Infrastructure/Records/PostgresRetentionAuthorizationReferences.cs)
+selects only typed identities, scope shape, version and retained Board context.
+It excludes category values, jurisdiction, classification provenance, hold reasons,
+actor labels, receipt fingerprints and result bodies. Receipt hints join the exact
+actor/key/history version, so an original Apply hint remains version 1 after release
+while the current hold hint is version 2. Missing context remains explicitly null.
+
+Every query requires the existing owning Organization transaction and uses an
+explicit tenant predicate under forced RLS. Unknown/wrong-class/foreign source IDs,
+foreign hold IDs and another actor's receipt yield no reference. These hints grant
+no permissions: the resolver must authorize original classification/application
+and current producer gates, re-read relationships after waits, then authorize
+private detail reads. The reader is unregistered and canonical runtime privileges
+are unchanged; Demo parity and integration with command/detail reads remain pending.
+
+The maintained native hold contract now executes the actual reference reader with
+the restricted API login. It passed all four producer kinds, exact child parents,
+original context after Card moves, fully stamped hold/application context,
+explicit unresolved Audit context, current/original history separation, wrong-class,
+unknown, cross-Organization, foreign-actor and unowned-IO refusals. Fresh solution
+build passed with zero warnings/errors; the complete native hold and 145-entry
+readiness contract passed for both restricted hosts with all 1,940 captured
+repository files unchanged. Owned fixtures were removed. This is reference storage
+evidence, not a completed confidentiality resolver or hold enforcement acceptance.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines

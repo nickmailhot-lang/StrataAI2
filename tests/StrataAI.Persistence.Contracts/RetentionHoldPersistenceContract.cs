@@ -36,6 +36,8 @@ internal static class RetentionHoldPersistenceContract
     {
         var tenant = Guid.NewGuid(); var other = Guid.NewGuid(); var actor = Guid.NewGuid(); var member = Guid.NewGuid();
         var source = Guid.NewGuid(); var hold = Guid.NewGuid(); var key = Guid.NewGuid();
+        var board = Guid.NewGuid(); var destination = Guid.NewGuid(); var list = Guid.NewGuid(); var destinationList = Guid.NewGuid();
+        var card = Guid.NewGuid(); var comment = Guid.NewGuid(); var attachment = Guid.NewGuid();
         var at = DateTimeOffset.UtcNow.AddMinutes(-1);
         try
         {
@@ -57,12 +59,30 @@ internal static class RetentionHoldPersistenceContract
                 INSERT INTO record_retention_sources(tenant_id,record_class,record_id,source_kind,category,registered_at,
                  actor_id,membership_id,membership_version,actor_label,acting_capacity,event_id,correlation_id)
                 VALUES(@tenant,'AUDIT',@source,'AUDIT_EVENT','audit.fixture',@at,@actor,@member,1,'Native hold owner','ORGANIZATION_OWNER',gen_random_uuid(),'native-hold-contract');
+                INSERT INTO boards(id,tenant_id,name,created_at,updated_at)
+                VALUES(@board,@tenant,'Original Board',@at,@at),(@destination,@tenant,'Destination Board',@at,@at);
+                INSERT INTO board_lists(id,tenant_id,board_id,name,rank,created_at,updated_at)
+                VALUES(@list,@tenant,@board,'Original List','a',@at,@at),(@destinationList,@tenant,@destination,'Destination List','a',@at,@at);
+                INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at)
+                VALUES(@card,@tenant,@board,@list,'Private Card','a',@at,@at);
+                INSERT INTO card_comments(id,tenant_id,card_id,author_id,content,created_at,updated_at)
+                VALUES(@comment,@tenant,@card,@actor,'Private comment',@at,@at);
+                INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,url,scan_status,created_at,updated_at)
+                VALUES(@attachment,@tenant,@card,@actor,'URL','Private file','https://example.test/file','NOT_APPLICABLE',@at,@at);
+                INSERT INTO record_retention_sources(tenant_id,record_class,record_id,source_kind,parent_card_id,category,registered_at,
+                 actor_id,membership_id,membership_version,actor_label,acting_capacity,event_id,correlation_id)
+                SELECT @tenant,s.class,s.id,s.kind,s.parent,'private.context',@at,@actor,@member,1,'Native hold owner','ORGANIZATION_OWNER',gen_random_uuid(),'native-hold-contract'
+                FROM (VALUES('OPERATIONAL_WORK',@card,'CARD',NULL::uuid),('OPERATIONAL_WORK',@comment,'CARD_COMMENT',@card),('DOCUMENT',@attachment,'ATTACHMENT',@card)) s(class,id,kind,parent);
+                UPDATE cards SET board_id=@destination,list_id=@destinationList,version=2,updated_at=@at+interval '1 second' WHERE id=@card;
                 SELECT set_config('app.tenant_id','',false),set_config('app.identity_subject','',false);
                 """, admin))
             {
                 seed.Parameters.AddWithValue("actor", actor); seed.Parameters.AddWithValue("email", actor + "@example.test");
                 seed.Parameters.AddWithValue("tenant", tenant); seed.Parameters.AddWithValue("other", other);
                 seed.Parameters.AddWithValue("member", member); seed.Parameters.AddWithValue("source", source); seed.Parameters.AddWithValue("at", at);
+                seed.Parameters.AddWithValue("board", board); seed.Parameters.AddWithValue("destination", destination);
+                seed.Parameters.AddWithValue("list", list); seed.Parameters.AddWithValue("destinationList", destinationList);
+                seed.Parameters.AddWithValue("card", card); seed.Parameters.AddWithValue("comment", comment); seed.Parameters.AddWithValue("attachment", attachment);
                 await seed.ExecuteNonQueryAsync(ct);
             }
             // Prove the narrow lock privilege separately from mutation permission.
@@ -104,6 +124,7 @@ internal static class RetentionHoldPersistenceContract
             var actors = new Admission(); var scopes = new Scope();
             var unit = new PostgresOrganizationUnitOfWork(db, actors, NullLogger<PostgresOrganizationUnitOfWork>.Instance);
             var store = new PostgresRetentionHoldStore(db, organizations, identities, actors, scopes, clock);
+            var references = new PostgresRetentionAuthorizationReferences(db);
             var service = new RetentionHoldService(organizations, store, scopes, unit, actors, clock);
             var scope = new RetentionHoldScope(tenant, RetentionRecordClass.Audit, "AUDIT.FIXTURE", source);
             var applied = await service.ApplyAsync(tenant, actor, hold, scope, "Private native hold reason", key, "native-hold-contract", ct);
@@ -124,6 +145,30 @@ internal static class RetentionHoldPersistenceContract
                 var candidates = await store.ReadApplicableAsync(record, ct);
                 Require(candidates.ScopeComplete && candidates.Items.Single() == released.Value, "Native lookup omitted current release evidence.");
                 Require(await store.ReadReceiptAsync(tenant, Guid.NewGuid(), key, ct) is null, "Native foreign actor receipt disclosed.");
+                var auditHint = await references.ReadSourceAsync(tenant, RetentionRecordClass.Audit, source, ct);
+                Require(auditHint is { Kind: RetentionProducerKind.AuditEvent, ContextVersion: null, OriginalBoardId: null, SourceVersion: null },
+                    "Native Audit reference fabricated historical authority.");
+                foreach (var item in new[] { (card, RetentionRecordClass.OperationalWork, RetentionProducerKind.Card),
+                    (comment, RetentionRecordClass.OperationalWork, RetentionProducerKind.CardComment),
+                    (attachment, RetentionRecordClass.Document, RetentionProducerKind.Attachment) })
+                {
+                    var hint = await references.ReadSourceAsync(tenant, item.Item2, item.Item1, ct);
+                    Require(hint is { ContextVersion: 1, SourceVersion: 1 } && hint.Kind == item.Item3
+                        && hint.RecordId == item.Item1 && hint.OriginalBoardId == board
+                        && hint.ParentCardId == (item.Item3 == RetentionProducerKind.Card ? null : card),
+                        "Native producer reference substituted destination context or parent.");
+                }
+                Require(await references.ReadSourceAsync(tenant, RetentionRecordClass.Document, card, ct) is null,
+                    "Native reference admitted wrong record class.");
+                Require(await references.ReadSourceAsync(tenant, RetentionRecordClass.OperationalWork, Guid.NewGuid(), ct) is null,
+                    "Native unknown source reference admitted.");
+                var headHint = await references.ReadHoldAsync(tenant, hold, ct);
+                var receiptHint = await references.ReadReceiptAsync(tenant, actor, key, ct);
+                Require(headHint is { Version: 2, CategoryScoped: true, ContextVersion: null } && headHint.RecordId == source
+                    && receiptHint is { Version: 1, ContextVersion: null } && receiptHint.HoldId == hold,
+                    "Native reference recovery substituted current head or invented context.");
+                Require(await references.ReadReceiptAsync(tenant, Guid.NewGuid(), key, ct) is null,
+                    "Native reference disclosed another actor's receipt.");
                 return OrganizationOperation<bool>.Success(true);
             }, ct);
             Require(lookup.Succeeded, "Native lookup unit failed.");
@@ -137,6 +182,17 @@ internal static class RetentionHoldPersistenceContract
                 "Native rollback did not reclaim the original command key.");
             try { await store.ReadAsync(tenant, hold, ct); throw new Exception("Unowned native hold IO admitted."); }
             catch (InvalidOperationException) { }
+            try { await references.ReadHoldAsync(tenant, hold, ct); throw new Exception("Unowned reference IO admitted."); }
+            catch (InvalidOperationException) { }
+            var foreignReferences = await unit.ExecuteAsync(other, actor, null, false, async () =>
+            {
+                Require(await references.ReadSourceAsync(other, RetentionRecordClass.Audit, source, ct) is null
+                    && await references.ReadHoldAsync(other, hold, ct) is null
+                    && await references.ReadReceiptAsync(other, actor, key, ct) is null,
+                    "Native reference crossed Organization boundary.");
+                return OrganizationOperation<bool>.Success(true);
+            }, ct);
+            Require(foreignReferences.Succeeded, "Native foreign reference fixture failed.");
             await using var graph = new NpgsqlCommand("""
                 SELECT (SELECT count(*) FROM record_retention_holds WHERE tenant_id=@tenant),
                  (SELECT count(*) FROM record_retention_hold_history WHERE tenant_id=@tenant),
@@ -184,6 +240,20 @@ internal static class RetentionHoldPersistenceContract
             }
             await AddCategoryHolds(998); await CheckBound(true, 1000);
             await AddCategoryHolds(3); await CheckBound(false, 1001);
+            var workHold = Guid.NewGuid(); var workKey = Guid.NewGuid();
+            Require((await service.ApplyAsync(tenant, actor, workHold,
+                new(tenant, RetentionRecordClass.OperationalWork, null, card), "Private work reason", workKey, "native-reference", ct)).Succeeded,
+                "Native stamped hold reference fixture failed.");
+            var stamped = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
+            {
+                var head = await references.ReadHoldAsync(tenant, workHold, ct);
+                var original = await references.ReadReceiptAsync(tenant, actor, workKey, ct);
+                Require(head is { ContextVersion: 1, Version: 1, CategoryScoped: false, ApplicationSourceVersion: 2 }
+                    && head.ClassificationBoardId == board && head.ApplicationBoardId == destination && head.RecordId == card
+                    && original == head, "Native stamped hold reference lost original or application evidence.");
+                return OrganizationOperation<bool>.Success(true);
+            }, ct);
+            Require(stamped.Succeeded, "Native stamped reference lookup unit failed.");
             Console.WriteLine("Native hold adapter: actual restricted owning apply/release, original recovery, current release lookup, actor-bound receipts, late scope rollback and reclaimed key passed; scope/admission are fixture probes.");
         }
         finally
