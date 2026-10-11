@@ -529,6 +529,44 @@ full UX/telemetry or PRD-wide release acceptance. Estimated work remaining stays
 
 ## Suspension and deactivation implementation boundaries
 
+### Lifecycle command coordinator
+
+`OrganizationOperationalLifecycleService` now coordinates reviewed suspension,
+deactivation and reactivation against a separate lifecycle transaction/store
+contract. Its admission requires current Owner/Admin capacity, active membership,
+the correct tenant/account, valid captured caption and membership identity/epoch.
+It never broadens `IOrganizationUnitOfWork` or its deletion-recovery exception.
+The Application enum appends Suspended/Deactivated after the existing four values
+so existing numeric receipt representations keep their original meaning.
+
+The command requires the reviewed parent revision and a nonempty retry key.
+It captures original actor/caption/capacity, membership identity/epoch, previous
+and resulting states, incremented revision, event identity, correlation and source
+time. Its store contract requires one atomic state/history/audit/receipt/outbox
+write that preserves the historical graph. The coordinator rejects changed retry
+intent, expired or malformed original receipts, regressed parent versions,
+invalid source clocks and unsafe version overflow. Recovering an original receipt
+returns that original source without restoring a later lifecycle state.
+Current account and membership capacity are rechecked after IO; a denial or
+cancellation requires the owning transaction to roll back all participants.
+
+The final pinned Linux run passes **28/28 focused regressions** and **908/908 full
+Domain tests**, with zero failed, timed-out, aborted, not-executed or pending cases.
+All 787 captured backend/test source hashes match after execution. The cases cover
+all six transitions, administrative capacity, original retry after reactivation,
+cross-scope/terminal/member refusal, changed intent, stale revision, invalid input,
+late account/membership/epoch/role withdrawal, source mismatch, storage conflicts,
+cancelled writes and compatibility with retained numeric status receipts. Both
+owned terminal test containers were removed.
+
+This is an Application coordinator and port contract, **not an exposed or
+persisted suspension feature**. Concrete Demo/PostgreSQL lifecycle transactions,
+status migration and readers, immutable sources/receipts/audit/outbox, restricted
+runtime contracts, API registration, historical reads, independent portal
+authorization, Worker discovery/delivery/replay and MUI review/retry/conflict
+remain required. Existing normal operational gates remain active-only. No
+FR-007/AC/scenario is closed; **52% estimated work remaining** is unchanged.
+
 The earlier independent consumer API run has now completed: **801/801 cases
 pass**, with zero failed, timed-out, aborted, not-executed or pending cases.
 All 784 backend/test source hashes match the compiled frozen source and current

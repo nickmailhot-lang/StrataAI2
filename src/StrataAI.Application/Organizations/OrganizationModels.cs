@@ -15,6 +15,9 @@ public enum OrganizationStatus
     Archived,
     Deleting,
     Deleted,
+    // Append values to preserve existing numeric receipt representations.
+    Suspended,
+    Deactivated,
 }
 
 public sealed record OrganizationRecord(
