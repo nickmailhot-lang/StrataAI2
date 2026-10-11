@@ -10,6 +10,57 @@ holds, redaction, export and disposition workflows remain incomplete. This share
 [PRD-27 acceptance](prd-27-acceptance.md). Retained configuration history alone
 cannot establish legal-hold behavior.
 
+## Persistent producer identity foundation
+
+[Migration 143](../../db/migrations/143_record_retention_sources.sql) introduces
+`record_retention_sources` as an immutable, Organization-owned classification
+identity. Its key is `(tenant_id, record_class, record_id)`; classification version
+is one. Category and optional jurisdiction are supplied explicitly, without
+automatic upgrade backfill, inferred jurisdiction or a legal retention default.
+An indexed normalized category supports eventual class/category scope lookup.
+
+The first supported producers are actual Cards and Card Comments in operational
+work, Attachments in documents, and tenant-owned AuditEvents in audit. Generated
+typed IDs and composite foreign keys require the real owning source and, for a
+Comment or Attachment, its exact parent Card. A caller cannot substitute an
+arbitrary UUID, another Organization's source, a system AuditEvent with no tenant,
+or a generic Card for a Governance record. Physical deletion of a referenced
+source is restricted; classification identity and provenance cannot be updated
+or deleted. This does not prevent existing soft-delete paths or establish runtime
+hold enforcement. Future disposition must retain referential meaning while
+implementing its explicitly authorized deletion/anonymization behavior.
+
+Registration locks the Organization, membership, account and actual producer,
+checks active Owner/Admin provenance, rejects registration clocks predating the
+current Organization/membership/account snapshot, and atomically appends a fixed audit fact.
+The audit metadata contains only record class, producer kind and acting capacity;
+category, jurisdiction, record content and original actor label are excluded from
+that metadata. Forced RLS rejects foreign and unscoped reads. Neither API nor
+Worker receives table or internal-function capabilities at this stage.
+
+This schema is **unactivated foundation**, not a public registration API or a
+confidentiality authorizer. Owning Application commands must authorize the
+specific object before private source IO and retain/recheck that authority under
+the shared transaction before activation. Demo classification parity, trustworthy
+live record projections, hold schema/adapters, and all disposition paths remain
+required. Governance, external correspondence and AI need their own real producer
+identities and foreign keys; they are not replaced with ordinary Cards or Comments.
+The six-class PRD scope remains unchanged.
+
+The maintained [source contract check](../../scripts/ci/record-retention-source-after-upgrade.sql)
+runs through the existing mandatory retained-image retention schema phase and the
+ordered migration upgrade/repeat runner. Local disposable PostgreSQL executed all
+143 migrations and the four real source registrations, immutable provenance,
+substituted/missing/foreign/system sources, future clocks, physical source deletion
+refusal, content-free audit rollback and forced tenant RLS. Canonical restricted
+runtime role provisioning confirmed no source-table or routine capability escaped.
+All 144 captured migration/contract file hashes matched. The full maintained
+migration runner also passed clean installation, each incremental/repeat upgrade,
+serialized execution, synthetic failure rollback and missing-ledger refusal, with
+all 373 captured database/script hashes matching. Owned fixtures were removed.
+This is local database evidence; exact-head hosted release evidence is still
+required before acceptance.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines
