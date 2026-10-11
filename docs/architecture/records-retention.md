@@ -513,6 +513,35 @@ classification receipts, broad and other producer admission, HTTP/MUI and full
 permission/session/Portal matrices, events/disposition, controlled redaction,
 exports/privacy/offboarding and exact-commit immutable-image CI remain pending.
 
+### Owning first-classification review command
+
+The unregistered `RetentionSourceReviewService` now opens the actual Organization
+unit of work for first-classification review. It checks current actor and active
+Owner/Admin membership before reading a supported real producer, admits the exact
+Board through `RetentionProducerAuthorization`, and refuses an existing
+classification. Before returning, it repeats producer, classification and account
+admission checks. Its result is backend-private evidence for a later write
+precondition, not a bearer grant or permission to disclose private bodies.
+Unsupported Audit origins, wrong kinds, unknown sources and changed evidence
+return a generic unavailable result. The command writes no classification or audit.
+
+Maintained Demo and PostgreSQL checks review real Card, Comment and Attachment
+sources, use the returned evidence for classification, and refuse a second
+first-classification review afterward. An explicit reader decorator changes the
+source after its initial Board gate and proves no review escapes that fence.
+Demo additionally checks nonmember, wrong-kind and unsupported/unknown refusal,
+and absence of classification audit before the actual capture.
+
+Verification: the fresh full solution build passed with zero warnings/errors;
+focused Linux Records API tests passed **34/34** with **854** captured hashes
+unchanged. The complete native hold/source contract and all **145** migration
+readiness checks passed for both restricted hosts with **1,951** repository hashes
+unchanged. Owned fixtures were removed and original PostgreSQL preserved. This
+supports the review prerequisite; durable classification receipts, retry commands,
+HTTP/MUI human review, runtime grants/DI, broad and other producer admission and the
+full PRD acceptance remain pending. PRD-70 stays open at approximately **80% work
+remaining**. Current immutable-image CI must still complete.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines

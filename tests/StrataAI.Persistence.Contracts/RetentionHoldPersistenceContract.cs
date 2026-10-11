@@ -437,16 +437,27 @@ internal static class RetentionHoldPersistenceContract
                 await grantSource.ExecuteNonQueryAsync(ct);
             var sourceAuthorization = new RetentionProducerAuthorization(producers, workStore, actualBoards, organizations, actors);
             var sourceStore = new PostgresRetentionSourceStore(db, organizations, identities, actors, sourceAuthorization, clock);
+            var reviewCommand = new RetentionSourceReviewService(producers, sourceStore, sourceAuthorization, organizations, actors, unit);
             var sourceEvents = new List<Guid>();
             foreach (var item in new[] { (unclassified, RetentionProducerKind.Card, RetentionRecordClass.OperationalWork),
                 (unclassifiedComment, RetentionProducerKind.CardComment, RetentionRecordClass.OperationalWork),
                 (unclassifiedAttachment, RetentionProducerKind.Attachment, RetentionRecordClass.Document) })
             {
+                var reviewed = await reviewCommand.ReviewAsync(tenant, actor, item.Item2, item.Item1, ct);
+                Require(reviewed.Succeeded && reviewed.Value is { SourceVersion: 1 } && reviewed.Value.RecordId == item.Item1
+                    && reviewed.Value.Kind == item.Item2 && reviewed.Value.BoardId == board,
+                    "Native owning review did not return the actual unclassified producer.");
+                var lateReader = new ChangedProducer(producers, 3);
+                var racingReview = new RetentionSourceReviewService(lateReader, sourceStore,
+                    new RetentionProducerAuthorization(lateReader, workStore, actualBoards, organizations, actors), organizations, actors, unit);
+                var withdrawnReview = await racingReview.ReviewAsync(tenant, actor, item.Item2, item.Item1, ct);
+                Require(!withdrawnReview.Succeeded && withdrawnReview.Value is null,
+                    "Native review returned evidence changed after its first Board gate.");
                 var eventId = Guid.NewGuid(); sourceEvents.Add(eventId);
                 async Task<OrganizationOperation<bool>> Classify(bool rollBack, PostgresRetentionSourceStore adapter)
                     => await unit.ExecuteAsync(tenant, actor, null, false, async () =>
                     {
-                        var evidence = (await producers.ReadAsync(tenant, item.Item2, item.Item1, ct))!;
+                        var evidence = reviewed.Value!;
                         var membership = (await organizations.FindMembershipAsync(tenant, actor, ct))!;
                         var now = clock.UtcNow; now = now.AddTicks(-(now.Ticks % 10));
                         var write = new RetentionSourceWrite(tenant, item.Item3, item.Item1, item.Item2, "native.review", "explicit native jurisdiction",
@@ -486,6 +497,9 @@ internal static class RetentionHoldPersistenceContract
                 }, ct);
                 Require(late.Succeeded && (await Classify(false, sourceStore)).Succeeded,
                     "Native classification savepoint did not reclaim source/audit identity.");
+                var classifiedReview = await reviewCommand.ReviewAsync(tenant, actor, item.Item2, item.Item1, ct);
+                Require(!classifiedReview.Succeeded && classifiedReview.Value is null && classifiedReview.ErrorCode == "retention_source_unavailable",
+                    "Native first-classification review disclosed existing classification or allowed rewriting.");
             }
             await using (var auditSource = new NpgsqlCommand("""
                 SELECT count(*) FROM audit_events WHERE id=ANY(@events) AND tenant_id=@tenant
