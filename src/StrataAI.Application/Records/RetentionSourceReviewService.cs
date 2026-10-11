@@ -10,6 +10,14 @@ public sealed class RetentionSourceReviewService(IRetentionProducerReferences pr
     IRetentionSourceReferenceReader classifications, RetentionProducerAuthorization authorization,
     IOrganizationStore organizations, ICommandActorAuthorization actors, IOrganizationUnitOfWork unit)
 {
+    public Task<OrganizationOperation<bool>> AdmitAsync(Guid organization, Guid actor, CancellationToken ct = default) =>
+        organization == Guid.Empty
+            ? Task.FromResult(OrganizationOperation<bool>.Failure("organization_not_found"))
+            : unit.ExecuteAsync(organization, actor, null, false, async () =>
+                await Admitted(organization, actor, ct)
+                    ? OrganizationOperation<bool>.Success(true)
+                    : OrganizationOperation<bool>.Failure("organization_not_found"), ct);
+
     public Task<OrganizationOperation<RetentionProducerReference>> ReviewAsync(Guid organization,
         Guid actor, RetentionProducerKind kind, Guid record, CancellationToken ct = default) =>
         organization == Guid.Empty

@@ -1377,3 +1377,33 @@ These are local source/database results, not retained immutable-image acceptance
 HTTP/MUI activation, broad/other owning producers, legal holds, redaction,
 exports, privacy actions, disposition/offboarding and complete release/PRD
 acceptance remain unfinished. PRD-70 stays open at **80% estimated work remaining**.
+
+## First-classification request boundary
+
+`RetentionSourceEndpoints` defines separate source review and classification
+handlers using explicit transport projections. The shipping host does not map
+these routes yet: Production/Demo composition, canonical runtime capabilities and
+the source-context review/recovery interface must be completed together.
+
+The classification body requires every reviewed relationship, revision and
+lifecycle field, an explicit nullable jurisdiction and human confirmation.
+Duplicate/unknown properties, numeric enums, missing evidence, oversized bodies,
+route/evidence substitutions and missing UUID retry keys are refused. The actor
+comes from the authenticated session; an expected-actor mismatch requires sign-in.
+Organization admission precedes request parsing. Responses prohibit caching and
+the review projection contains no titles, comment bodies or attachment URLs.
+
+An exact original submission does not obtain a fresh review before recovery:
+the owning service checks both original and current Boards and returns the
+original classification receipt. This preserves acknowledgment recovery after
+a move without treating the original evidence as a retained permission grant.
+
+Local verification on 2026-10-11: the whole solution compiled with zero warnings
+and errors; **35/35 focused compiled-host Records cases passed**, with zero
+failed/skipped/aborted/timed-out/unexecuted cases and **858 captured backend/test
+hashes unchanged**. The real Demo classification regression invokes the request
+handlers for all three source kinds, checks strict schema/confirmation refusals,
+expected-actor refusal and Organization denial before body consumption, and
+recovers exact original results after a Card move. These are handler/owning-store
+checks, not proof of a mapped Production HTTP route or completed MUI workflow.
+Public activation and full immutable-image acceptance remain unfinished.

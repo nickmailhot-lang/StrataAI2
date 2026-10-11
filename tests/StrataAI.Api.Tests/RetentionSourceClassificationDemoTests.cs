@@ -1,4 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using StrataAI.Api.Records;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
@@ -59,11 +66,39 @@ public sealed partial class ApiHostTests
         foreach (var (id, kind) in new[] { (card, RetentionProducerKind.Card), (comment, RetentionProducerKind.CardComment), (attachment, RetentionProducerKind.Attachment) })
         {
             var review = (await reviewService.ReviewAsync(parent.Id, actor, kind, id, ct)).Value!; var key = Guid.NewGuid();
+            var routeKind = kind == RetentionProducerKind.CardComment ? "cardComment" : kind == RetentionProducerKind.Attachment ? "attachment" : "card";
+            var projectionContext = Request("{}", key);
+            var projection = await RetentionSourceEndpoints.ReviewAsync(parent.Id, routeKind, id, projectionContext, reviewService, ct);
+            Assert.Equal(RetentionSourceReviewRequest.From(review), Assert.IsAssignableFrom<IValueHttpResult>(projection).Value);
+            Assert.Equal("private, no-store", projectionContext.Response.Headers.CacheControl);
+            var json = Payload(review);
+            foreach (var malformed in new[] { json.Replace("\"confirmed\":true", "\"confirmed\":false"),
+                json.Replace("\"confirmed\":true", "\"confirmed\":true,\"confirmed\":true"),
+                json.Replace("\"confirmed\":true", "\"confirmed\":true,\"actorId\":\"" + actor + "\""),
+                json.Replace("\"kind\":\"" + routeKind + "\"", "\"kind\":0"),
+                json.Replace("\"jurisdiction\":\"BC\",", ""),
+                json.Replace("\"sourceVersion\":1,", ""), new string(' ', 32_769) })
+            {
+                var rejected = await RetentionSourceEndpoints.ClassifyAsync(parent.Id, routeKind, id, Request(malformed, key), reviewService, service, ct);
+                Assert.Equal(400, Assert.IsAssignableFrom<IStatusCodeHttpResult>(rejected).StatusCode);
+            }
+            var wrongActor = Request(json, key); wrongActor.Request.Headers["X-StrataAI-Expected-Actor"] = Guid.NewGuid().ToString("D");
+            Assert.Equal(401, Assert.IsAssignableFrom<IStatusCodeHttpResult>(await RetentionSourceEndpoints.ClassifyAsync(parent.Id, routeKind, id,
+                wrongActor, reviewService, service, ct)).StatusCode);
+            var denied = Request("not json", key);
+            Assert.Equal(404, Assert.IsAssignableFrom<IStatusCodeHttpResult>(await RetentionSourceEndpoints.ClassifyAsync(Guid.NewGuid(), routeKind,
+                id, denied, reviewService, service, ct)).StatusCode);
+            Assert.Equal(0, denied.Request.Body.Position);
+            var substituted = JsonNode.Parse(json)!.AsObject(); substituted["review"]!["recordId"] = Guid.NewGuid();
+            Assert.Equal(400, Assert.IsAssignableFrom<IStatusCodeHttpResult>(await RetentionSourceEndpoints.ClassifyAsync(parent.Id, routeKind, id,
+                Request(substituted.ToJsonString(), key), reviewService, service, ct)).StatusCode);
             Assert.False((await service.ClassifyAsync(parent.Id, actor, review with { ListVersion = 99 }, "private.explicit", "BC", key, "stale", ct)).Succeeded);
             var result = await service.ClassifyAsync(parent.Id, actor, review, "private.explicit", "BC", key, "first", ct);
             Assert.True(result.Succeeded, result.ErrorCode); Assert.NotNull(result.Value);
             Assert.Equal(board, result.Value.Reference.OriginalBoardId); Assert.Equal(1, result.Value.Reference.SourceVersion);
             Assert.Equal(result.Value, (await service.ClassifyAsync(parent.Id, actor, review, "private.explicit", "BC", key, "new-correlation", ct)).Value);
+            Assert.Equal(result.Value, Assert.IsAssignableFrom<IValueHttpResult>(await RetentionSourceEndpoints.ClassifyAsync(parent.Id, routeKind, id,
+                Request(json, key), reviewService, service, ct)).Value);
             Assert.Equal("idempotency_key_conflict", (await service.ClassifyAsync(parent.Id, actor, review, "other", "BC", key, "conflict", ct)).ErrorCode);
             Assert.Equal("idempotency_key_conflict", (await service.ClassifyAsync(parent.Id, actor, review with { ListVersion = 2 }, "private.explicit", "BC", key, "conflict-review", ct)).ErrorCode);
             Assert.Equal("retention_source_unavailable", (await service.ClassifyAsync(parent.Id, actor, review, "other", null, Guid.NewGuid(), "new-key", ct)).ErrorCode);
@@ -85,6 +120,9 @@ public sealed partial class ApiHostTests
         foreach (var capture in captures)
         {
             Assert.Equal(capture.Result, (await service.ClassifyAsync(parent.Id, actor, capture.Review, "private.explicit", "BC", capture.Key, "moved-retry", ct)).Value);
+            var routeKind = capture.Review.Kind == RetentionProducerKind.CardComment ? "cardComment" : capture.Review.Kind == RetentionProducerKind.Attachment ? "attachment" : "card";
+            Assert.Equal(capture.Result, Assert.IsAssignableFrom<IValueHttpResult>(await RetentionSourceEndpoints.ClassifyAsync(parent.Id, routeKind,
+                capture.Review.RecordId, Request(Payload(capture.Review), capture.Key), reviewService, service, ct)).Value);
             foreach (var deniedBoard in new[] { board, destination })
             {
                 var denied = Service(new ClassificationBoardGate(boards, deniedBoard)); var before = probe.BodyReads;
@@ -97,6 +135,20 @@ public sealed partial class ApiHostTests
         clock.Value = Now();
         Assert.True((await service.ClassifyAsync(parent.Id, actor, rollbackReview, "private.rollback", null, rollbackKey, "retry-rollback", ct)).Succeeded);
         Assert.Equal(4, ((InMemoryWorkManagementStore)work).AuditSnapshot(parent.Id).Count(a => a.EventType == "RECORD_RETENTION_SOURCE_REGISTERED"));
+
+        DefaultHttpContext Request(string body, Guid key)
+        {
+            var context = new DefaultHttpContext(); context.TraceIdentifier = "classification-http-boundary";
+            context.User = new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, actor.ToString("D"))], "test"));
+            context.Request.ContentType = "application/json"; context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+            context.Request.Headers["Idempotency-Key"] = key.ToString("D"); return context;
+        }
+        static string Payload(RetentionProducerReference review)
+        {
+            var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+            return JsonSerializer.Serialize(new ClassifyRetentionSourceRequest(RetentionSourceReviewRequest.From(review), "private.explicit", "BC", true), options);
+        }
     }
 
     private sealed class ClassificationClock(DateTimeOffset at) : IClock
