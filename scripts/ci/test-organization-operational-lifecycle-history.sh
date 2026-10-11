@@ -100,6 +100,8 @@ for target in SUSPENDED DEACTIVATED; do
       'lifecycle',(SELECT jsonb_agg(to_jsonb(h) ORDER BY version) FROM organization_operational_lifecycle_history h WHERE tenant_id='$org'))::text);"
   }
   before_deletion=$(configuration_snapshot)
+  list_archive=$(admin "SELECT archived_at FROM board_lists WHERE id='$list' AND tenant_id='$org';")
+  card_archive=$(admin "SELECT archived_at FROM cards WHERE id='$card' AND tenant_id='$org';")
   test "$(request DELETE "/organizations/$org?version=$((version+2))" '{}')" = 202
   for route in "$configuration/history" "$details" "/organizations/$org/operational-lifecycle" "/organizations/$org/operational-lifecycle/events?afterVersion=0"; do
     test "$(get "$route")" = 404
@@ -108,5 +110,24 @@ for target in SUSPENDED DEACTIVATED; do
   test "$(request PATCH "/organizations/$org/operational-lifecycle" "$(jq -nc --argjson version "$((version+3))" '{status:"ACTIVE",version:$version}')")" = 404
   test "$(configuration_snapshot)" = "$before_deletion"
   test "$(admin "SELECT count(*) FROM organizations WHERE id='$org' AND status IN ('DELETING','DELETED');")" = 1
+  # The ordinary release Worker must complete through its restricted queue;
+  # neither the API acknowledgment nor a fixture SQL update proves completion.
+  for attempt in $(seq 1 60); do
+    if test "$(admin "SELECT count(*) FROM organizations WHERE id='$org' AND status='DELETED';")" = 1; then break; fi
+    sleep 1
+  done
+  test "$(admin "SELECT count(*) FROM organizations WHERE id='$org' AND status='DELETED';")" = 1
+  test "$(configuration_snapshot)" = "$before_deletion"
+  test "$(admin "SELECT count(*) FROM boards WHERE id='$board' AND tenant_id='$org' AND lifecycle_state='DELETED' AND deleted_at IS NOT NULL;")" = 1
+  test "$(admin "SELECT count(*) FROM board_lists WHERE id='$list' AND board_id='$board' AND tenant_id='$org' AND lifecycle_state='DELETED' AND deleted_at IS NOT NULL;")" = 1
+  test "$(admin "SELECT count(*) FROM cards WHERE id='$card' AND list_id='$list' AND board_id='$board' AND tenant_id='$org' AND lifecycle_state='DELETED' AND deleted_at IS NOT NULL;")" = 1
+  test "$(admin "SELECT archived_at FROM board_lists WHERE id='$list' AND tenant_id='$org';")" = "$list_archive"
+  test "$(admin "SELECT archived_at FROM cards WHERE id='$card' AND tenant_id='$org';")" = "$card_archive"
+  for route in "$configuration/history" "$details" "/organizations/$org/operational-lifecycle" "/organizations/$org/operational-lifecycle/events?afterVersion=0"; do
+    test "$(get "$route")" = 404
+    scripts/ci/assert-file-excludes.sh 'Original legal name|Later legal name|Retained private Card|Original private history' "$scratch/response.json"
+  done
+  test "$(request PATCH "/organizations/$org/operational-lifecycle" "$(jq -nc --argjson version "$((version+4))" '{status:"ACTIVE",version:$version}')")" = 404
+  test "$(configuration_snapshot)" = "$before_deletion"
 done
 echo 'Production lifecycle preserved archived/configuration history and references; deletion withdrew access and lifecycle reactivation stayed denied.'
