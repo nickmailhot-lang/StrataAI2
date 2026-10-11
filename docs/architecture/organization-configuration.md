@@ -4,6 +4,12 @@ This describes configuration under implementation for [PRD-27](https://github.co
 
 ## Reviewed configuration and historical meaning
 
+For support triage, see [Organization lifecycle support](organization-lifecycle-support.md):
+uncertain acknowledgment handling, current error codes, separate Worker recovery,
+replay/parent version interpretation and historical-access boundaries. This guide
+documents implemented behavior; telemetry ingestion and complete release acceptance
+remain required.
+
 `OrganizationConfigurationData` requires a legal name, jurisdiction and IANA timezone. Legal name is distinct from the canonical Organization display name. No configuration is fabricated from an existing tenant's name, type or migration time. An authorized, unconfigured read returns version zero and a null revision.
 
 Optional values include corporation/registration identifier, civic address, lot count, paired fiscal year-end month/day, AGM and depreciation-report cycle in months, insurance renewal date, management-company name, emergency contacts, default categories/priorities, intake Board/List and jurisdiction policies. Policies contain key, value, source and optional notes. Configuration records reviewed values and does not confer legal compliance or imply local-law deadlines.
