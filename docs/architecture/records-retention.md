@@ -1254,3 +1254,12 @@ hashes matched**. This is full current backend source regression evidence,
 including adapter, pagination and HTTP activation; it does not establish release
 images or frontend acceptance. Exact-head release CI remains queued and no release
 acceptance is claimed.
+
+
+The `retreviewcmd1-full` compiled-host API regression completed on 2026-10-11:
+**876/876 cases passed**, with zero failed, skipped, timed-out, aborted or
+unexecuted cases. All **854 captured source hashes matched**, including the new
+first-classification owning review test. This is backend source regression
+evidence; it does not establish unactivated classification HTTP/MUI workflows
+or the current build-once release CI gate. PRD-70 remains open at 80% estimated
+work remaining.

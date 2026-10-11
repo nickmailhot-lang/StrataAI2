@@ -1,4 +1,5 @@
 import { expect, test } from './releaseTest';
+import { isCanonicalWorkMutation } from './canonicalWorkMutation';
 
 for (const width of [1280, 390]) for (const kind of ['board', 'card'] as const) {
   test(`PRD-06: private-safe ${kind} render failure and explicit recovery at ${width}px`, async ({ page, context }) => {
@@ -31,10 +32,7 @@ for (const width of [1280, 390]) for (const kind of ['board', 'card'] as const) 
     page.on('console', message => { if (message.type() === 'error') diagnostics.push(message.text()); });
     let mutations = 0;
     page.on('request', request => {
-      const path = new URL(request.url()).pathname;
-      // Navigation observations and hub negotiation do not mutate canonical work.
-      if (!['GET', 'HEAD'].includes(request.method()) && /^\/(organizations|boards|lists|cards|attachments|labels)(\/|$)/.test(path)
-        && !path.endsWith('/live/negotiate')) mutations++;
+      if (isCanonicalWorkMutation(request.method(), request.url())) mutations++;
     });
     const report = page.waitForResponse(response => response.request().method() === 'POST'
       && new URL(response.url()).pathname === '/me/activity-client-events'

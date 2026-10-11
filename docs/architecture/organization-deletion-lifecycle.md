@@ -887,6 +887,15 @@ to reach `DELETED` and verifies unchanged configuration/lifecycle history and
 retained archive timestamps. Syntax validation alone does not establish this
 completion phase; current build-once CI execution remains required.
 
+The unchanged maintained shell contract subsequently passed on 2026-10-11 for
+both SUSPENDED and DEACTIVATED Organizations using separate compiled production
+API and Worker hosts and the real restricted PostgreSQL queue. It verified actual
+`DELETED` completion, retained archived Card/List timestamps, unchanged
+configuration/lifecycle history, graph withdrawal and refused reactivation. All
+1,361 native and 1,951 hosted captured hashes matched. The private local fixture
+used pre-provisioned PostgreSQL and translated Worker bind paths for Linux Compose;
+it proves the command contract, not release composition or immutable-image CI.
+
 Initial internal-surface admission also stays owned by its bounded HTTP check
 when the operational stream has not established a grant. An earlier stream
 transport failure cannot discard the pending response and strand an independently

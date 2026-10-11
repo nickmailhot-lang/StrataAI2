@@ -1,4 +1,5 @@
 import { expect, test } from './releaseTest';
+import { isCanonicalWorkMutation } from './canonicalWorkMutation';
 
 for (const width of [1280, 390]) {
   test(`PRD-06: browser exceptions retain a dirty Card draft and report only fixed counts at ${width}px`, async ({ page, context }) => {
@@ -23,9 +24,7 @@ for (const width of [1280, 390]) {
     page.on('pageerror', error => diagnostics.push(error.message));
     let mutations = 0;
     page.on('request', request => {
-      const path = new URL(request.url()).pathname;
-      if (!['GET', 'HEAD'].includes(request.method()) && /^\/(organizations|boards|lists|cards|attachments|labels)(\/|$)/.test(path)
-        && !path.endsWith('/live/negotiate')) mutations++;
+      if (isCanonicalWorkMutation(request.method(), request.url())) mutations++;
     });
     await page.goto(`/app/${org}/boards/${board}/cards/${card}`);
     const title = page.getByRole('textbox', { name: 'Card title' }); await expect(title).toBeEnabled();

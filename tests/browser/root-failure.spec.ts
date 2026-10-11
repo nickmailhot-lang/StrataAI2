@@ -1,4 +1,5 @@
 import { expect, test } from './releaseTest';
+import { isCanonicalWorkMutation } from './canonicalWorkMutation';
 
 for (const width of [1280, 390]) {
   test(`ARCH-02/PRD-06: fatal application root has private-safe keyboard recovery at ${width}px`, async ({ page, context }) => {
@@ -33,9 +34,7 @@ for (const width of [1280, 390]) {
       // Router replaceState also emits framenavigated; only a document request
       // proves reload. Do not count an in-document history update as a reload.
       if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++;
-      const path = new URL(request.url()).pathname;
-      if (!['GET', 'HEAD'].includes(request.method()) && /^\/(organizations|boards|lists|cards|attachments|labels)(\/|$)/.test(path)
-        && !path.endsWith('/live/negotiate')) mutations++;
+      if (isCanonicalWorkMutation(request.method(), request.url())) mutations++;
     });
     const report = page.waitForResponse(response => response.request().method() === 'POST'
       && new URL(response.url()).pathname === '/me/activity-client-events'

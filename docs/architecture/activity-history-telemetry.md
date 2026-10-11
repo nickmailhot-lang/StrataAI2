@@ -74,3 +74,15 @@ PRD-17 inbox observations use the same bounded transport and instruments with th
 Notification SignalR recovery also emits the existing fixed notification_read/reconnect observation on SDK reconnection or a successful retained-cursor retry, and notification_read/exception on invalid replay/stream failure or failed connection startup. Observers receive only the fixed kind, never an exception or stream value. Disposed and obsolete stream callbacks remain fenced. Connection tests verify fixed-only observations and no emissions after disposal; the inbox privacy regression includes live recovery observations in the actual bounded telemetry request. Counts remain client observations, not proof of unique network reconnects, durable delivery or authorization outcomes. Native/collector execution remains required.
 
 Watching uses three fixed actions in the same transport: watch_disclosure, watch_read and watch_change. They cover dialog opening, authoritative read/change latency and outcome, explicit retry, fixed exception/conflict categories and online recovery. Ordinary polling remains use; obsolete responses do not report outcomes. Neither watch state, identifiers, scope, keys, endpoint paths nor diagnostics enter the report. The component privacy regression drives a lost mutation reply, exact retry and online read; six server parser cases reject private extra fields atomically. All 33 watch component cases, SPA typechecking and lint pass locally. Strict server compilation verifies the source cases; managed/native/collector execution remains pending CI.
+
+The maintained root, runtime and Board/Card render-failure browser contracts passed
+all eight desktop/phone cases on 2026-10-11 against compiled production API/Worker
+hosts, with no failed, skipped, flaky or global-error cases. They retain actual
+exception injection, fixed-only telemetry, private diagnostic exclusion, dirty
+draft preservation, explicit keyboard reload and unchanged canonical server state.
+Their shared work-command counter excludes only POST negotiation to the API's
+explicitly mapped work hubs, including nested Organization lifecycle hubs. Unknown
+negotiation-shaped routes and other command methods still count; two Node
+regressions verify those boundaries and run in source CI. All 1,363 native and
+1,953 hosted captured hashes matched. This compiled-host replay does not replace
+current immutable-image CI or complete PRD-06 acceptance.
