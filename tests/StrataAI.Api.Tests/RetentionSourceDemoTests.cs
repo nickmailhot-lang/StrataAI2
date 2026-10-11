@@ -32,6 +32,9 @@ public sealed partial class ApiHostTests
         var unit = app.Services.GetRequiredService<IOrganizationUnitOfWork>();
         var auth = new RetentionWorkAuthorization(catalog, catalog, work, app.Services.GetRequiredService<IWorkBoardAuthorization>(),
             organizations, app.Services.GetRequiredService<ICommandActorAuthorization>());
+        var reviewAuth = new RetentionProducerAuthorization(catalog, work, app.Services.GetRequiredService<IWorkBoardAuthorization>(),
+            organizations, app.Services.GetRequiredService<ICommandActorAuthorization>());
+        var reviewEvidence = new List<RetentionProducerReference>();
         var board = Guid.NewGuid(); var destination = Guid.NewGuid(); var list = Guid.NewGuid(); var destinationList = Guid.NewGuid();
         var card = Guid.NewGuid(); var comment = Guid.NewGuid(); var attachment = Guid.NewGuid(); var rollbackCard = Guid.NewGuid();
         var items = new[] { (card, RetentionProducerKind.Card, RetentionRecordClass.OperationalWork),
@@ -56,6 +59,11 @@ public sealed partial class ApiHostTests
                 Assert.Equal(1, producer.CardVersion); Assert.Equal(1, producer.ListVersion); Assert.Equal(TimeSpan.Zero, producer.CreatedAt.Offset);
                 Assert.Equal(item.Item2 == RetentionProducerKind.Card ? null : (Guid?)card, producer.ParentCardId);
                 Assert.Null(await catalog.ReadSourceAsync(parent.Id, item.Item3, item.Item1, ct));
+                Assert.True(await reviewAuth.VerifyAsync(producer, actor, ct));
+                Assert.False(await reviewAuth.VerifyAsync(producer, Guid.NewGuid(), ct));
+                Assert.False(await reviewAuth.VerifyAsync(producer with { SourceVersion = 99 }, actor, ct));
+                Assert.False(await reviewAuth.VerifyAsync(producer with { Kind = RetentionProducerKind.AuditEvent }, actor, ct));
+                reviewEvidence.Add(producer);
                 var write = new DemoRetentionSourceWrite(parent.Id, item.Item3, item.Item1, item.Item2, "private.fixture", "explicit jurisdiction",
                     1, 1, actor, member.Id, member.Version, member.Role, Guid.NewGuid(), "demo-source", Now());
                 Assert.Null(await catalog.CaptureAsync(write with { MembershipId = Guid.NewGuid() }, ct));
@@ -67,6 +75,16 @@ public sealed partial class ApiHostTests
                 Assert.Null(await catalog.CaptureAsync(write with { Category = "rewritten", EventId = Guid.NewGuid() }, ct));
             }
             Assert.NotNull(await work.MoveCardAsync(card, destinationList, null, 1, Now(), ct));
+            foreach (var previous in reviewEvidence)
+            {
+                Assert.False(await reviewAuth.VerifyAsync(previous, actor, ct));
+                var moved = await catalog.ReadAsync(parent.Id, previous.Kind, previous.RecordId, ct);
+                Assert.NotNull(moved); Assert.True(await reviewAuth.VerifyAsync(moved, actor, ct));
+                var changed = new RetentionProducerAuthorization(new ChangedReviewProducer(catalog), work,
+                    app.Services.GetRequiredService<IWorkBoardAuthorization>(), organizations,
+                    app.Services.GetRequiredService<ICommandActorAuthorization>());
+                Assert.False(await changed.VerifyAsync(moved, actor, ct));
+            }
             foreach (var item in items)
             {
                 var current = await catalog.ReadAsync(parent.Id, item.Item3, item.Item1, ct);
@@ -107,5 +125,15 @@ public sealed partial class ApiHostTests
         }, ct);
         Assert.Equal(3, ((InMemoryWorkManagementStore)work).AuditSnapshot(parent.Id).Count(a => a.EventType == "RECORD_RETENTION_SOURCE_REGISTERED"));
         await Assert.ThrowsAsync<InvalidOperationException>(() => catalog.ReadSourceAsync(parent.Id, RetentionRecordClass.OperationalWork, card, ct));
+    }
+    // Explicit race control: the actual producer changes after Board admission.
+    private sealed class ChangedReviewProducer(IRetentionProducerReferences inner) : IRetentionProducerReferences
+    {
+        private int reads;
+        public async Task<RetentionProducerReference?> ReadAsync(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct)
+        {
+            var value = await inner.ReadAsync(organization, kind, record, ct);
+            return ++reads > 1 && value is not null ? value with { SourceVersion = value.SourceVersion + 1 } : value;
+        }
     }
 }

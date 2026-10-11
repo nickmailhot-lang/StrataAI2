@@ -33,6 +33,16 @@ internal static class RetentionHoldPersistenceContract
             return ++reads > 1 && value is not null ? value with { CardVersion = value.CardVersion + 1 } : value;
         }
     }
+    // Explicit race control layered over the actual restricted producer reader.
+    private sealed class ChangedProducer(IRetentionProducerReferences inner) : IRetentionProducerReferences
+    {
+        private int reads;
+        public async Task<RetentionProducerReference?> ReadAsync(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct)
+        {
+            var value = await inner.ReadAsync(organization, kind, record, ct);
+            return ++reads > 1 && value is not null ? value with { SourceVersion = value.SourceVersion + 1 } : value;
+        }
+    }
     private sealed class BoardGate(IWorkBoardAuthorization inner, Guid? denied = null) : IWorkBoardAuthorization
     {
         public List<Guid> Gates { get; } = [];
@@ -320,6 +330,30 @@ internal static class RetentionHoldPersistenceContract
             // event/notification/reminder mutation collaborators are not invoked.
             IWorkBoardAuthorization actualBoards = new WorkManagementService(workStore, organizations, clock,
                 null!, policy, null!, null!, null!, null!);
+            var review = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
+            {
+                var auth = new RetentionProducerAuthorization(producers, workStore, actualBoards, organizations, actors);
+                foreach (var item in new[] { (unclassified, RetentionProducerKind.Card), (card, RetentionProducerKind.Card),
+                    (comment, RetentionProducerKind.CardComment), (attachment, RetentionProducerKind.Attachment) })
+                {
+                    var evidence = (await producers.ReadAsync(tenant, item.Item2, item.Item1, ct))!;
+                    Require(await auth.VerifyAsync(evidence, actor, ct), "Native actual first-classification review admission failed.");
+                    Require(!await auth.VerifyAsync(evidence, Guid.NewGuid(), ct)
+                        && !await auth.VerifyAsync(evidence with { SourceVersion = 99 }, actor, ct)
+                        && !await auth.VerifyAsync(evidence with { Kind = RetentionProducerKind.AuditEvent }, actor, ct)
+                        && !await auth.VerifyAsync(evidence with { BoardId = Guid.NewGuid() }, actor, ct),
+                        "Native review admitted foreign actor, wrong revision/kind or forged route.");
+                    var denied = new RetentionProducerAuthorization(producers, workStore,
+                        new BoardGate(actualBoards, evidence.BoardId), organizations, actors);
+                    Require(!await denied.VerifyAsync(evidence, actor, ct), "Native first review bypassed actual Board refusal.");
+                    var changed = new RetentionProducerAuthorization(new ChangedProducer(producers), workStore, actualBoards, organizations, actors);
+                    Require(!await changed.VerifyAsync(evidence, actor, ct), "Native review adopted changed producer evidence after admission.");
+                }
+                Require(await references.ReadSourceAsync(tenant, RetentionRecordClass.OperationalWork, unclassified, ct) is null,
+                    "Native review invented a classification while admitting source evidence.");
+                return OrganizationOperation<bool>.Success(true);
+            }, ct);
+            Require(review.Succeeded, "Native first-classification review unit failed.");
             async Task<bool> Authorize(Func<RetentionWorkAuthorization, Task<bool>> action,
                 IWorkBoardAuthorization? boardAuthorization = null, IRetentionWorkSourceReferences? sourceReferences = null)
             {
@@ -358,6 +392,13 @@ internal static class RetentionHoldPersistenceContract
                 archive.Parameters.AddWithValue("list", list);
                 await archive.ExecuteNonQueryAsync(ct);
             }
+            var archivedReview = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
+            {
+                var evidence = (await producers.ReadAsync(tenant, RetentionProducerKind.Card, card, ct))!;
+                return OrganizationOperation<bool>.Success(await new RetentionProducerAuthorization(producers, workStore,
+                    actualBoards, organizations, actors).VerifyAsync(evidence, actor, ct));
+            }, ct);
+            Require(archivedReview.Succeeded && archivedReview.Value, "Native archived producer review lost its actual administrator.");
             Require(await Authorize(a => a.VerifySourceAsync(tenant, RetentionRecordClass.OperationalWork, card, actor, ct)),
                 "Native retained archived source became inaccessible to its current administrator.");
             Require(await Authorize(async a => await a.VerifyHoldAsync((await references.ReadHoldAsync(tenant, workHold, ct))!, actor, ct)),

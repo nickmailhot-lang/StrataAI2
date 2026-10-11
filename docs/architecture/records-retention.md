@@ -452,6 +452,32 @@ open at approximately 81% estimated work remaining; this is prerequisite evidenc
 for the outstanding review/idempotent classification workflow, not its acceptance.
 Hosted immutable-image CI must still complete for the committed revision.
 
+### Admission of first-classification review evidence
+
+The unregistered `RetentionProducerAuthorization` checks current account admission,
+active Organization Owner/Admin membership, exact supported producer identity and
+the actual Board's view/administer permission. It acquires the existing Board read
+scope, accepts retained active/archived sources, then re-reads the exact producer
+tuple and actor admission. A move, revision, parent or lifecycle change requires a
+new review instead of silently adopting a different Board. Callers still must retain
+this evidence as their write precondition and repeat authorization before private
+disclosure and commit; no HTTP or classification command is activated here.
+
+Maintained Demo checks exercise all three actual producers before classification,
+refuse nonmembers and malformed/revised evidence, then reject old review evidence
+after a move and accept its new authorized route. Native PostgreSQL checks use the
+actual restricted reader and existing Board permission service for an unclassified
+Card and all three kinds, including archived evidence. Explicit denial/race
+decorators prove Board refusal and a changed revision after admission remain
+failures; they do not establish real HTTP session withdrawal acceptance.
+
+Verification: fresh full solution build passed with zero warnings/errors; focused
+Linux Records tests passed 33/33 with 850 backend/test hashes unchanged. Native
+PostgreSQL hold/readiness verification passed all 145 ledger cases for both
+restricted hosts with 1,947 repository hashes unchanged. Owned fixtures were
+removed. PRD-70 remains open at approximately 81% estimated work remaining;
+classification review/retry commands and full deployed acceptance remain pending.
+
 ## Policy and decision semantics
 
 [RecordRetention.cs](../../src/StrataAI.Domain/Records/RecordRetention.cs) defines
