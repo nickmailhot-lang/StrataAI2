@@ -1439,3 +1439,36 @@ and scoped withdrawal/sign-out preservation/cleanup. Frontend type checking,
 lint and web compilation passed (the existing bundle-size advisory remains).
 These results do not prove a completed source-context MUI control, mapped
 Production/Demo workflow or retained immutable-image release acceptance.
+
+## Source-context MUI review control
+
+`RetentionSourceControl` now implements the review/confirmation/recovery state
+machine for an actual source context. Its caller must provide the admitted actor,
+Organization, owning Card/Board and current Card/source revisions; server review
+evidence must match that context. The control displays source relationships,
+revisions, retained lifecycles and creation evidence before explicit category,
+optional jurisdiction and confirmation. Stale context prevents submission while
+retaining the unsent category draft. A confirmed current source cannot start
+another first-classification review.
+
+Original recovery is generic until the owning command admits the original and
+current source: pending intent from another source cannot expose its category or
+jurisdiction through the current view. Persistence is verified before delivery;
+even an unsuccessful/partial storage write preserves the unsent original key.
+Malformed storage prevents new delivery. A definitive refusal preserves the
+original for support instead of silently replacing its key. Uncertain access
+hides private controls and retains work; definitive denial clears private state
+and recovery. Epoch/cancellation fences prevent late success from acknowledging
+a command after the caller withdraws admission. Rendered-state focus restoration
+uses the existing owned-focus rules, preserving another user-selected control.
+
+Local verification on 2026-10-11: **74/74 focused MUI control, classification
+client, SurfaceAdmission and ProfilePage cases passed**, including 11 control
+cases for confirmation, stale context, remount/move recovery, privacy, corrupt
+storage, refusal, storage failure before delivery, definitive server denial,
+late success after uncertainty, and accessible names/category focus. Frontend
+types, lint and web build passed; the existing bundle-size advisory remains.
+These are component/transport tests; actual browser keyboard/mobile/AA proof
+is still required. The control is not yet composed into shipping Card/Comment/
+Attachment views. Production/Demo provider composition, canonical capabilities,
+mapped HTTP/native proof and immutable-image release acceptance remain open.
