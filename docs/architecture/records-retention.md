@@ -1,10 +1,10 @@
 # Records retention contracts — PRD-70
 
 [PRD-70](https://github.com/nickmailhot-lang/StrataAI2/issues/71) remains open.
-Estimated work remaining: **90%**. Domain policy, hold and disposition contracts
-and private policy persistence are implemented and tested. Commands are not registered in API/Worker
-flows: no runtime hold, policy administration, redaction, export or disposition
-workflow is complete. This shared boundary is also required by
+Estimated work remaining: **86%**. Domain contracts, private policy storage,
+transactional Demo parity and authorized policy HTTP commands/reads are implemented
+and locally tested. MUI policy administration, runtime holds, redaction, export
+and disposition workflows remain incomplete. This shared boundary is also required by
 [PRD-20](https://github.com/nickmailhot-lang/StrataAI2/issues/21) and the remaining
 [PRD-27 acceptance](prd-27-acceptance.md). Retained configuration history alone
 cannot establish legal-hold behavior.
@@ -53,7 +53,7 @@ state, never from a request to dispose it.
 
 Migration [142](../../db/migrations/142_record_retention_policies.sql) implements
 private policy headers, immutable revisions and retry receipts. Hold persistence
-and owning runtime adapters remain pending. The table below describes the broader
+and owning hold adapters remain pending. The table below describes the broader
 contracts; planned hold references must be implemented before hold enforcement.
 
 | Contract | Identity and ownership | Version/lifecycle and retained meaning |
@@ -110,10 +110,12 @@ Receipts bind the exact revision, actor, key, fingerprint and source clock, with
 a 24-hour expiry boundary. Reserved retry keys and revisions cannot be deleted.
 
 All three tables use forced tenant RLS and restrictive tenant-safe references.
-The API has SELECT only; the Worker has no access. Neither has write grants or
-permission to call internal trigger routines. API/Worker readiness requires
-migration 142. No default policy is fabricated during upgrade. Storage permission
-does not establish HTTP authorization or enable a policy command.
+Canonical API provisioning now grants SELECT/INSERT on all three policy tables
+and UPDATE on the current header only. DELETE, history/receipt UPDATE, TRUNCATE,
+REFERENCES and TRIGGER remain denied. The Worker has no policy access; neither
+role may call internal trigger routines directly. API/Worker readiness requires
+migration 142. No default policy is fabricated during upgrade. The service and
+HTTP boundary establish current authority independently of storage permissions.
 
 ## Owning policy command contract
 
@@ -133,9 +135,9 @@ provenance are refused. Correlation IDs are bounded and excluded from intent
 identity. Store writes receive current membership identity/version/capacity and
 an event ID, and must atomically persist the full audited source graph.
 
-This service remains unregistered until runtime capabilities, HTTP contracts
-and their acceptance checks exist. The Demo store is registered as an internal
-transaction participant; no retention HTTP surface is enabled.
+The service and both adapters are now registered. The Demo store participates in
+Organization rollback; the Production store borrows its owning transaction.
+The current HTTP surface and verified scope are documented below.
 The test probe is not an adapter and cannot establish persistence, audit or rollback
 semantics. Four focused Linux command tests passed after fresh whole-solution
 compilation (zero warnings/errors), with all 822 backend/test hashes matching.
@@ -165,8 +167,8 @@ confirmed exactly **one header, three revisions, three receipts and three audit
 events**, with four safe metadata fields and no private source/notes. All **823
 captured source hashes** matched; owned fixtures and credentials were removed.
 This harness used **fixture-local prospective INSERT/UPDATE grants** after checking
-canonical read-only provisioning. Those grants are not in runtime provisioning.
-The adapter remains unregistered, the Worker has no policy access, and this local
+then-canonical read-only provisioning. That capture predates the runtime command
+activation below. The Worker still has no policy access; this earlier local
 compiled harness is not maintained release-image or complete HTTP acceptance.
 
 ## Transactional Demo policy parity
@@ -200,6 +202,42 @@ Application service and cannot prove these later Demo or PostgreSQL changes.
 
 ## Acceptance evidence and complete remaining scope
 
+### Authorized HTTP policy administration
+
+All routes belong to `/organizations/{organizationId}/retention-policies` and
+require current active account, active Organization and Owner/Admin membership.
+Collection GET accepts one nonempty UUID `after`; GET `/{policyId}` returns the
+current revision; GET `/{policyId}/history` accepts one positive `beforeVersion`.
+PATCH `/{policyId}` creates at version zero or changes the reviewed current
+revision, with a nonempty UUID `Idempotency-Key`. The request has required `version`
+and `policy`; policy requires recordClass, category, anchor, retentionDays (explicit
+null is allowed), action and source, with optional jurisdiction/notes. Record class,
+anchor and action are named camel-case enum values. Applicability remains fixed
+for a retained identity. No DELETE or automatic disposition operation is exposed.
+
+Input rejects duplicate/unknown/missing fields and numeric enum values and bounds
+both chunked and fixed-length bodies to 32,768 bytes. Current admission precedes
+body, key and cursor validation, then the owning command/read freshly rechecks
+authority. Responses use `private, no-store`; expected-actor mismatch returns 401.
+Stable envelopes distinguish validation (400), version/namespace/retry conflicts
+(409), authorized missing policy (404), denied Organization (404 without protected
+source facts), and unavailable private storage/source (503).
+
+Fresh whole-solution compilation passed without warnings/errors. **17/17 focused
+Linux cases** passed with **828 backend/test hashes matching**, including Demo HTTP
+refresh/history/original retry, private headers, foreign/anonymous and expected-actor
+denial, and strict malformed input. The unchanged maintained
+[HTTP fixture](../../scripts/ci/test-retention-policy-http.sh) passed against a
+fresh compiled Production API with canonical provisioned API/Worker roles, fresh
+schema and installed capability assertions: persisted equality, first/later changes,
+original and changed/stale retries, namespace conflicts, retained attribution,
+history seeks, history/receipt/audit counters and four body-free metadata fields,
+foreign/anonymous refusal, and suspended/deactivated denial with unchanged restored
+revision. All **1,908 repository source hashes** matched. Owned fixtures and
+credential files were removed. The fixture is now mandatory in build-once release
+integration CI, but this local run used compiled mounts, not the immutable release
+images. A fresh full API regression is running; exact-head CI remains pending.
+
 The owning Application service now supplies bounded policy-directory and retained
 history pages. Both adapters read at most 51 sources and return 50 items with a
 seek boundary: ascending policy UUID for the directory, descending retained
@@ -215,7 +253,8 @@ directory identities, incomplete/noncontiguous revision pages, inconsistent curr
 source, changed applicability, nonmonotonic clocks and invalid historical
 attribution. A missing policy returns a fixed not-found result; seeking below
 revision one returns an authorized empty page. These are Application read models;
-HTTP cursor transport, privacy headers, endpoints and MUI navigation remain pending.
+The current HTTP surface uses these seek boundaries and private headers as
+documented below. MUI navigation remains pending.
 
 Fresh whole-solution compilation passed with zero warnings/errors; **11/11 focused
 Linux cases** passed with **826 backend/test hashes matching**. New maintained
@@ -258,8 +297,8 @@ or linked scenario. Required remaining work includes:
   runtime adapters, with Demo parity and policy selector acceptance.
 - Owning transaction admission, explicit elevated authorization, review/concurrency,
   complete hold lookup and current lock ordering across every disposition path.
-- Applied/released hold and policy administration commands, historical actor/capacity
-  attribution, audit/domain publication and authorized replay after membership changes.
+- Applied/released hold commands, policy selector/retirement rules, MUI policy review,
+  cross-session domain publication and authorized replay after membership changes.
 - Independent governance preservation; controlled redaction and authorized original
   access; privacy deletion/anonymization versus retained governance/audit sources.
 - Scoped exports, confidentiality, asynchronous expiring object-storage downloads;

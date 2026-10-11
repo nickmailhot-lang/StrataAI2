@@ -1045,6 +1045,8 @@ jobs:
         run: bash scripts/ci/test-organization-operational-lifecycle-history.sh
       - name: Organization configuration tenant-scoped usage
         run: bash scripts/ci/test-organization-configuration-usage.sh
+      - name: Retention policy authorized commands and private history against exact release API
+        run: bash scripts/ci/test-retention-policy-http.sh
 
       - uses: actions/setup-node@v7
         if: (matrix.suite == 'browser-foundation' || matrix.suite == 'browser-notifications' || matrix.suite == 'browser-full')

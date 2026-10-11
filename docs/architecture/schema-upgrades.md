@@ -190,3 +190,11 @@ API/Worker readiness requires ledger 142; API receives SELECT only and Worker
 receives no policy access. See [records retention](records-retention.md) for
 schema integrity, full migration-runner and compiled Production readiness
 evidence, plus pending policy commands, holds and release-image acceptance.
+
+Retention policy HTTP activation now uses canonical API SELECT/INSERT on all
+three policy tables and UPDATE on the header only; history/receipts remain
+immutable and the Worker has no policy access. Apply current
+`db/provision-runtime-roles.sql` during upgrade; migration 142 alone does not
+install runtime grants. Maintained capability and HTTP fixtures check these
+permissions and owning command behavior. See [records retention](records-retention.md)
+for locally executed Production checks and pending immutable-image CI acceptance.

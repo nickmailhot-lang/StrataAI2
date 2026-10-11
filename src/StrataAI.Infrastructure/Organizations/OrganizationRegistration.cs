@@ -76,6 +76,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationLifecycleEventReader, PostgresOrganizationLifecycleEventReader>();
             services.AddSingleton<IOrganizationStore, PostgresOrganizationStore>();
             services.AddSingleton<IOrganizationConfigurationStore, PostgresOrganizationConfigurationStore>();
+            services.AddSingleton<StrataAI.Application.Records.IRetentionPolicyStore, StrataAI.Infrastructure.Records.PostgresRetentionPolicyStore>();
             services.AddSingleton<PostgresOrganizationConfigurationEventReader>();
             services.AddSingleton<IOrganizationConfigurationEventReader>(provider => provider.GetRequiredService<PostgresOrganizationConfigurationEventReader>());
             services.AddSingleton<IOrganizationConfigurationAttributionReader>(provider => provider.GetRequiredService<PostgresOrganizationConfigurationEventReader>());
@@ -98,6 +99,7 @@ public static class OrganizationRegistration
         services.AddSingleton<OrganizationOperationalLifecycleDirectoryService>();
         services.AddSingleton<OrganizationOperationalLifecycleReplayService>();
         services.AddSingleton<OrganizationConfigurationService>();
+        services.AddSingleton<StrataAI.Application.Records.RetentionPolicyService>();
         services.AddSingleton<OrganizationConfigurationSynchronizationService>();
         services.AddSingleton<OrganizationConfigurationActivityService>();
         services.AddSingleton<TransactionalOrganizationMetadataSynchronization>();

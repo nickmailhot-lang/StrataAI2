@@ -38,6 +38,9 @@ public sealed class RetentionPolicyService(IOrganizationStore organizations,
     IRetentionPolicyStore policies, IOrganizationUnitOfWork unit,
     ICommandActorAuthorization actors, IClock clock)
 {
+    public Task<OrganizationOperation<bool>> AdmitAsync(Guid organization, Guid actor, CancellationToken ct = default) =>
+        Owned(organization, actor, () => Task.FromResult(OrganizationOperation<bool>.Success(true)), ct);
+
     public Task<OrganizationOperation<RetentionPolicyPage>> ReadPoliciesAsync(Guid organization, Guid actor,
         Guid? after, CancellationToken ct = default) => Owned(organization, actor, async () =>
         {

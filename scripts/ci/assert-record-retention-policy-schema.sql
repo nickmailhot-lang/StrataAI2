@@ -9,8 +9,9 @@ BEGIN
   END IF;
   FOREACH privilege IN ARRAY ARRAY['INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER'] LOOP
    IF has_table_privilege('strataai_api_runtime','public.'||relation,privilege)
+     IS DISTINCT FROM (privilege='INSERT' OR privilege='UPDATE' AND relation='record_retention_policies')
     OR has_table_privilege('strataai_worker_runtime','public.'||relation,privilege) THEN
-    RAISE EXCEPTION 'Retention policy write capability escaped pre-command boundary';
+    RAISE EXCEPTION 'Retention policy restricted command capabilities are invalid';
    END IF;
   END LOOP;
  END LOOP;
