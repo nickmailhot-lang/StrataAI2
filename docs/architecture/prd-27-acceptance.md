@@ -313,3 +313,9 @@ The three focused browser files pass **41/41** cases (23 MUI, 9 subscriber, 9 re
 ## Operational lifecycle internal surface increment
 
 The internal shell admission boundary now consumes current operational lifecycle snapshots and withdraws operational content on suspension/deactivation. Restoration requires a fresh INTERNAL surface-access check between account fences. Older polling results cannot override a live withdrawal. The Portal remains independently authorized and does not use this internal stream. Surface/app component tests pass 20/20, with typecheck and targeted lint passing. Native two-user delivery, deployed Worker delivery and exact-image release proof remain outstanding. **45% estimated work remaining**; no acceptance criterion is closed by component-only evidence.
+
+## Native lifecycle collaboration verification
+
+Desktop and phone native browser cases pass with two distinct verified accounts and real administrator invitation acceptance. Actual WebSocket pages confirm remote suspension, stale dialog cancellation and operational home withdrawal. A later reactivation committed during socket interruption replays from the saved source cursor and restores the current admitted views. Actual recipient logout withdraws private review. Both runs capture 1146 source files with zero mismatches, using a freshly built API and web assets. The phone view was visually inspected. Retained initial fixture failures and the older 813/813 pre-stream API result are documented with their scope in [organization configuration](organization-configuration.md#operational-lifecycle-browser-replay-validation).
+
+This proves the tested Demo collaboration flow, not deployed Production Worker recovery or all lifecycle/Portal/retention requirements. Full current-source regression and exact-image CI remain required. **44% estimated work remaining**; no acceptance criteria or linked scenarios are closed by this increment alone.
