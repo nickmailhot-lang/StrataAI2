@@ -433,7 +433,7 @@ internal static class RetentionHoldPersistenceContract
                 "Native application gate denial occurred after private body reads or disclosed a revision conflict.");
             // Prospective classification capability exists only in this disposable
             // contract; canonical runtime provisioning is still unchanged.
-            await using (var grantSource = new NpgsqlCommand("GRANT INSERT ON record_retention_sources TO strataai_api_runtime;", admin))
+            await using (var grantSource = new NpgsqlCommand("GRANT INSERT ON record_retention_sources TO strataai_api_runtime; GRANT SELECT,INSERT ON record_retention_source_receipts TO strataai_api_runtime;", admin))
                 await grantSource.ExecuteNonQueryAsync(ct);
             var sourceAuthorization = new RetentionProducerAuthorization(producers, workStore, actualBoards, organizations, actors);
             var sourceStore = new PostgresRetentionSourceStore(db, organizations, identities, actors, sourceAuthorization, clock);
@@ -453,7 +453,7 @@ internal static class RetentionHoldPersistenceContract
                 var withdrawnReview = await racingReview.ReviewAsync(tenant, actor, item.Item2, item.Item1, ct);
                 Require(!withdrawnReview.Succeeded && withdrawnReview.Value is null,
                     "Native review returned evidence changed after its first Board gate.");
-                var eventId = Guid.NewGuid(); sourceEvents.Add(eventId);
+                var eventId = Guid.NewGuid(); var classificationKey = Guid.NewGuid();
                 async Task<OrganizationOperation<bool>> Classify(bool rollBack, PostgresRetentionSourceStore adapter)
                     => await unit.ExecuteAsync(tenant, actor, null, false, async () =>
                     {
@@ -462,7 +462,7 @@ internal static class RetentionHoldPersistenceContract
                         var now = clock.UtcNow; now = now.AddTicks(-(now.Ticks % 10));
                         var write = new RetentionSourceWrite(tenant, item.Item3, item.Item1, item.Item2, "native.review", "explicit native jurisdiction",
                             evidence.SourceVersion, evidence.CardVersion, actor, membership.Id, membership.Version, membership.Role,
-                            eventId, "native-classification", now, evidence);
+                            eventId, "native-classification", now, evidence, classificationKey, new string('A', 64));
                         Require(await adapter.CaptureAsync(write with { MembershipId = Guid.NewGuid() }, ct) is null
                             && await adapter.CaptureAsync(write with { Review = evidence with { BoardId = destination } }, ct) is null
                             && await adapter.CaptureAsync(write with { Kind = RetentionProducerKind.AuditEvent }, ct) is null,
@@ -473,11 +473,16 @@ internal static class RetentionHoldPersistenceContract
                             "Native classification lost actual reviewed context or typed parent.");
                         Require(await adapter.CaptureAsync(write with { Category = "rewritten", EventId = Guid.NewGuid() }, ct) is null,
                             "Native existing classification was rewritten.");
+                        var receipt = await adapter.ReadReceiptAsync(tenant, actor, classificationKey, ct);
+                        Require(receipt is not null && receipt.Result.Reference == captured && receipt.Result.EventId == eventId
+                            && receipt.Result.Category == write.Category && receipt.Fingerprint == write.Fingerprint
+                            && receipt.ExpiresAt == now.AddHours(24), "Native adapter lost original receipt graph.");
                         return rollBack ? OrganizationOperation<bool>.Failure("native_classification_rollback") : OrganizationOperation<bool>.Success(true);
                     }, ct);
                 Require(!(await Classify(true, sourceStore)).Succeeded, "Native classification rollback fixture committed.");
                 var absent = await unit.ExecuteAsync(tenant, actor, null, false, async () =>
-                    OrganizationOperation<bool>.Success(await sourceStore.ReadSourceAsync(tenant, item.Item3, item.Item1, ct) is null), ct);
+                    OrganizationOperation<bool>.Success(await sourceStore.ReadSourceAsync(tenant, item.Item3, item.Item1, ct) is null
+                        && await sourceStore.ReadReceiptAsync(tenant, actor, classificationKey, ct) is null), ct);
                 Require(absent.Succeeded && absent.Value, "Native classification survived owning rollback.");
                 // Fail the actual storage adapter's post-insert review fence. The
                 // source and trigger-owned audit must roll back to its savepoint.
@@ -490,13 +495,28 @@ internal static class RetentionHoldPersistenceContract
                         new RetentionProducerAuthorization(new ChangedProducer(producers, 2), workStore, actualBoards, organizations, actors), clock);
                     Require(await adapter.CaptureAsync(new(tenant, item.Item3, item.Item1, item.Item2, "native.review", null,
                         evidence.SourceVersion, evidence.CardVersion, actor, membership.Id, membership.Version, membership.Role,
-                        eventId, "native-late-classification", now, evidence), ct) is null
-                        && await sourceStore.ReadSourceAsync(tenant, item.Item3, item.Item1, ct) is null,
+                        eventId, "native-late-classification", now, evidence, classificationKey, new string('A', 64)), ct) is null
+                        && await sourceStore.ReadSourceAsync(tenant, item.Item3, item.Item1, ct) is null
+                        && await sourceStore.ReadReceiptAsync(tenant, actor, classificationKey, ct) is null,
                         "Native late review withdrawal retained a classification.");
                     return OrganizationOperation<bool>.Success(true);
                 }, ct);
-                Require(late.Succeeded && (await Classify(false, sourceStore)).Succeeded,
-                    "Native classification savepoint did not reclaim source/audit identity.");
+                Require(late.Succeeded, "Native classification savepoint did not reclaim source/audit/receipt identity.");
+                await using (var rolledBackAudit = new NpgsqlCommand("SELECT count(*) FROM audit_events WHERE id=@event;", admin))
+                {
+                    rolledBackAudit.Parameters.AddWithValue("event", eventId);
+                    Require(Convert.ToInt64(await rolledBackAudit.ExecuteScalarAsync(ct)) == 0, "Native classification rollback retained its original safe audit.");
+                }
+                var owningClassification = new RetentionSourceClassificationService(sourceStore, sourceAuthorization,
+                    new RetentionWorkAuthorization(sourceStore, references, workStore, actualBoards, organizations, actors), organizations, actors, unit, clock);
+                var committed = await owningClassification.ClassifyAsync(tenant, actor, reviewed.Value!, "native.review", "explicit native jurisdiction", classificationKey, "native-owning-classify", ct);
+                Require(committed.Succeeded && committed.Value is not null, "Native owning first-classification command failed.");
+                sourceEvents.Add(committed.Value!.EventId);
+                var replay = await owningClassification.ClassifyAsync(tenant, actor, reviewed.Value!, "native.review", "explicit native jurisdiction", classificationKey, "native-owning-replay", ct);
+                Require(replay.Succeeded && replay.Value == committed.Value, "Native owning classification did not recover its original result.");
+                Require((await owningClassification.ClassifyAsync(tenant, actor, reviewed.Value!, "conflicting", "explicit native jurisdiction", classificationKey, "native-owning-conflict", ct)).ErrorCode == "idempotency_key_conflict"
+                    && (await owningClassification.ClassifyAsync(tenant, actor, reviewed.Value!, "native.review", null, Guid.NewGuid(), "native-owning-new-key", ct)).ErrorCode == "retention_source_unavailable",
+                    "Native owning classification accepted changed input or a new-key rewrite.");
                 var classifiedReview = await reviewCommand.ReviewAsync(tenant, actor, item.Item2, item.Item1, ct);
                 Require(!classifiedReview.Succeeded && classifiedReview.Value is null && classifiedReview.ErrorCode == "retention_source_unavailable",
                     "Native first-classification review disclosed existing classification or allowed rewriting.");
@@ -521,6 +541,7 @@ internal static class RetentionHoldPersistenceContract
                 REVOKE SELECT,INSERT,UPDATE ON record_retention_holds FROM strataai_api_runtime;
                 REVOKE SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts FROM strataai_api_runtime;
                 REVOKE SELECT,INSERT,UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;
+                REVOKE SELECT,INSERT ON record_retention_source_receipts FROM strataai_api_runtime;
                 """, admin);
             await restore.ExecuteNonQueryAsync(CancellationToken.None);
         }

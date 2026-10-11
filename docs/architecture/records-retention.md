@@ -1281,8 +1281,9 @@ source-key rewriting are refused.
 Receipt RLS is forced and binds both current tenant and identity subject. The
 migration grants no API/Worker capability. Application receipt lookup still must
 perform current account, membership and producer/confidentiality authorization;
-this database graph is not an authorization grant. Owning retry commands,
-Production/Demo receipt adapters and HTTP/MUI workflows remain unfinished.
+this database graph is not an authorization grant. The initial migration-only
+step left owning retry commands, Production/Demo receipt adapters and HTTP/MUI
+workflows unfinished; the command/adapter evidence below records subsequent work.
 
 The mandatory restricted Records persistence invocation passed on 2026-10-11,
 including all **146 migration entries individually rejected/restored for both
@@ -1330,3 +1331,49 @@ browser type checks, lint, production web build and fresh full-solution compilat
 with zero .NET warnings/errors. These are local source results; exact-head
 build-once image acceptance remains required. PRD-70 remains open at **80%
 estimated work remaining**.
+
+## Owning first-classification command and receipt adapters
+
+The backend-private `RetentionSourceClassificationService` owns the existing
+Organization transaction. It admits the current account and active Owner/Admin,
+requires the exact reviewed Card/Comment/Attachment tuple, and fingerprints that
+tuple with the explicit human category and optional jurisdiction. It never
+guesses classifications or rewrites an existing source with a new key.
+
+Actor/key recovery reads a minimal original reference first, authorizes both the
+original classification Board and current producer Board, then reads and
+cross-checks the immutable receipt. Exact retries return the original event,
+category, jurisdiction, context and source clock after a move; changed inputs
+conflict, expired keys are refused at 24 hours, and denied access withholds private
+receipt bodies. Admission and reference checks repeat before returning or commit.
+
+Both real adapters capture classification, original receipt and safe audit in the
+same owning transaction. PostgreSQL inserts the exact migration-146 graph inside
+the existing savepoint before its late review fence. Demo retains actual producer
+storage and restores both classification and receipt dictionaries with the work
+audit on failure. Legacy private captures remain receipt-free; no historical
+command identity is fabricated. These commands and adapters remain unregistered:
+canonical API/Worker grants and HTTP/MUI confirmation/recovery are not activated.
+
+Verification on 2026-10-11:
+
+- All **35 focused Records cases** passed. The new real Demo command case covers
+  all three producers, exact/mismatched input, stale review, new-key refusal,
+  original recovery after moves, both original/current Board denial before body
+  lookup, expiry, and complete classification/receipt/audit rollback.
+- The final restricted PostgreSQL contract passed owning classifications and
+  original recovery for all three producers, changed-input/new-key refusal,
+  owning rollback and post-insert savepoint restoration with audit/receipt absence.
+  It retained the receipt graph and all **146 ledger-entry readiness checks for
+  both API and Worker**; all **1,959 captured hashes matched**.
+- The complete compiled-host API regression passed **877/877 cases**, with zero
+  failed, skipped, timed-out, aborted or unexecuted cases. All **857 captured
+  backend/test source hashes matched**.
+- Fresh whole-solution compilation passed with zero warnings/errors. Owned
+  temporary hosts, databases, roles and credential files were removed; original
+  PostgreSQL data was preserved.
+
+These are local source/database results, not retained immutable-image acceptance.
+HTTP/MUI activation, broad/other owning producers, legal holds, redaction,
+exports, privacy actions, disposition/offboarding and complete release/PRD
+acceptance remain unfinished. PRD-70 stays open at **80% estimated work remaining**.

@@ -13,11 +13,43 @@ namespace StrataAI.Infrastructure.Records;
 // existing Organization transaction. No automatic producer classification.
 internal sealed class PostgresRetentionSourceStore(PostgresConnectionFactory connections,
     IOrganizationStore organizations, IIdentityStore identities, ICommandActorAuthorization actors,
-    RetentionProducerAuthorization authorization, IClock clock) : IRetentionSourceStore
+    RetentionProducerAuthorization authorization, IClock clock) : IRetentionSourceCommandStore
 {
     private readonly PostgresRetentionAuthorizationReferences references = new(connections);
     public Task<RetentionSourceReference?> ReadSourceAsync(Guid organization, RetentionRecordClass recordClass, Guid record, CancellationToken ct) =>
         references.ReadSourceAsync(organization, recordClass, record, ct);
+
+    public async Task<RetentionSourceReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) =>
+        (await ReadReceipt(organization, actor, key, false, ct))?.Reference;
+    public async Task<RetentionSourceReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) =>
+        (await ReadReceipt(organization, actor, key, true, ct))?.Receipt;
+    private async Task<(RetentionSourceReference Reference, RetentionSourceReceipt? Receipt)?> ReadReceipt(Guid organization, Guid actor, Guid key, bool body, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!connections.HasCommandScope(organization)) throw new InvalidOperationException("Classification receipts require an owning transaction.");
+        if (actor == Guid.Empty || key == Guid.Empty) return null;
+        await using var session = await connections.OpenTenantSessionAsync(organization, ct);
+        await using (var context = new NpgsqlCommand("SELECT set_config('app.identity_subject',@actor,true);", session.Connection, session.Transaction))
+        { context.Parameters.AddWithValue("actor", actor.ToString()); await context.ExecuteScalarAsync(ct); }
+        var fields = body ? ",s.category,s.jurisdiction,s.actor_id,s.event_id,s.registered_at,r.fingerprint,r.expires_at" : "";
+        await using var query = new NpgsqlCommand("""
+            SELECT s.tenant_id,s.record_class,s.record_id,s.source_kind,s.parent_card_id,s.authorization_context_version,s.original_board_id,s.source_version
+            """ + fields + """
+             FROM record_retention_source_receipts r JOIN record_retention_sources s
+              ON(s.tenant_id,s.record_class,s.record_id,s.actor_id,s.command_key,s.event_id)=(r.tenant_id,r.record_class,r.record_id,r.actor_id,r.key_id,r.event_id)
+             WHERE r.tenant_id=@tenant AND r.actor_id=@actor AND r.key_id=@key;
+            """, session.Connection, session.Transaction);
+        query.Parameters.AddWithValue("tenant", organization); query.Parameters.AddWithValue("actor", actor); query.Parameters.AddWithValue("key", key);
+        await using var row = await query.ExecuteReaderAsync(ct);
+        if (!await row.ReadAsync(ct)) return null;
+        var reference = new RetentionSourceReference(row.GetGuid(0), row.GetString(1) == "DOCUMENT" ? RetentionRecordClass.Document : RetentionRecordClass.OperationalWork,
+            row.GetGuid(2), row.GetString(3) switch { "CARD" => RetentionProducerKind.Card, "CARD_COMMENT" => RetentionProducerKind.CardComment,
+                "ATTACHMENT" => RetentionProducerKind.Attachment, _ => throw new InvalidOperationException("Unsupported classification receipt producer.") },
+            row.IsDBNull(4) ? null : row.GetGuid(4), row.IsDBNull(5) ? null : row.GetInt16(5), row.IsDBNull(6) ? null : row.GetGuid(6), row.IsDBNull(7) ? null : row.GetInt64(7));
+        // The hint path selects no private classification, fingerprint or clock.
+        return (reference, body ? new(actor, key, row.GetString(13), new(reference, row.GetString(8), row.IsDBNull(9) ? null : row.GetString(9),
+            row.GetGuid(10), row.GetGuid(11), row.GetFieldValue<DateTimeOffset>(12)), row.GetFieldValue<DateTimeOffset>(14)) : null);
+    }
 
     public async Task<RetentionSourceReference?> CaptureAsync(RetentionSourceWrite write, CancellationToken ct)
     {
@@ -27,7 +59,7 @@ internal sealed class PostgresRetentionSourceStore(PostgresConnectionFactory con
         var review = write.Review;
         var expectedClass = write.Kind == RetentionProducerKind.Attachment ? RetentionRecordClass.Document : RetentionRecordClass.OperationalWork;
         if (write.Kind is not (RetentionProducerKind.Card or RetentionProducerKind.CardComment or RetentionProducerKind.Attachment)
-            || write.RecordClass != expectedClass || review is null || review.OrganizationId != write.OrganizationId
+            || write.RecordClass != expectedClass || !RetentionSourceCommandIdentity.Valid(write) || review is null || review.OrganizationId != write.OrganizationId
             || review.RecordId != write.RecordId || review.Kind != write.Kind
             || review.SourceVersion != write.SourceVersion || review.CardVersion != write.CardVersion
             || RecordRetentionRules.Validate(new RetentionPolicyApplicability(write.OrganizationId, write.RecordClass, write.Category, write.Jurisdiction)) is not null
@@ -53,8 +85,8 @@ internal sealed class PostgresRetentionSourceStore(PostgresConnectionFactory con
             context.Parameters.AddWithValue("actor", write.ActorId.ToString()); await context.ExecuteScalarAsync(ct);
             await using var insert = new NpgsqlCommand("""
                 INSERT INTO record_retention_sources(tenant_id,record_class,record_id,source_kind,parent_card_id,category,jurisdiction,
-                    registered_at,actor_id,membership_id,membership_version,actor_label,acting_capacity,event_id,correlation_id)
-                VALUES(@tenant,@class,@record,@kind,@parent,@category,@jurisdiction,@at,@actor,@member,@memberVersion,@label,@capacity,@event,@correlation);
+                    registered_at,actor_id,membership_id,membership_version,actor_label,acting_capacity,event_id,correlation_id,command_key)
+                VALUES(@tenant,@class,@record,@kind,@parent,@category,@jurisdiction,@at,@actor,@member,@memberVersion,@label,@capacity,@event,@correlation,@key);
                 """, session.Connection, session.Transaction);
             insert.Parameters.AddWithValue("tenant", write.OrganizationId);
             insert.Parameters.AddWithValue("class", write.RecordClass == RetentionRecordClass.Document ? "DOCUMENT" : "OPERATIONAL_WORK");
@@ -68,7 +100,20 @@ internal sealed class PostgresRetentionSourceStore(PostgresConnectionFactory con
             insert.Parameters.AddWithValue("label", subject.DisplayName);
             insert.Parameters.AddWithValue("capacity", write.Capacity == OrganizationRole.Owner ? "ORGANIZATION_OWNER" : "ORGANIZATION_ADMIN");
             insert.Parameters.AddWithValue("event", write.EventId); insert.Parameters.AddWithValue("correlation", write.CorrelationId);
+            insert.Parameters.AddWithValue("key", NpgsqlDbType.Uuid, (object?)write.CommandKey ?? DBNull.Value);
             await insert.ExecuteNonQueryAsync(ct);
+            if (write.CommandKey is { } key)
+            {
+                await using var receipt = new NpgsqlCommand("""
+                    INSERT INTO record_retention_source_receipts(tenant_id,actor_id,key_id,record_class,record_id,event_id,fingerprint,created_at,expires_at)
+                    VALUES(@tenant,@actor,@key,@class,@record,@event,@fingerprint,@at,@expires);
+                    """, session.Connection, session.Transaction);
+                receipt.Parameters.AddWithValue("tenant", write.OrganizationId); receipt.Parameters.AddWithValue("actor", write.ActorId);
+                receipt.Parameters.AddWithValue("key", key); receipt.Parameters.AddWithValue("class", write.RecordClass == RetentionRecordClass.Document ? "DOCUMENT" : "OPERATIONAL_WORK");
+                receipt.Parameters.AddWithValue("record", write.RecordId); receipt.Parameters.AddWithValue("event", write.EventId);
+                receipt.Parameters.AddWithValue("fingerprint", write.Fingerprint!); receipt.Parameters.AddWithValue("at", write.RegisteredAt);
+                receipt.Parameters.AddWithValue("expires", write.RegisteredAt.AddHours(24)); await receipt.ExecuteNonQueryAsync(ct);
+            }
             var captured = await references.ReadSourceAsync(write.OrganizationId, write.RecordClass, write.RecordId, ct);
             var expected = new RetentionSourceReference(write.OrganizationId, write.RecordClass, write.RecordId, write.Kind,
                 review.ParentCardId, 1, review.BoardId, review.SourceVersion);

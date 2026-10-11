@@ -15,10 +15,21 @@ internal sealed record DemoRetentionSourceClassification(RetentionSourceReferenc
 // parity remain required; no HTTP seed or guessed historical source is accepted.
 internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizations, IIdentityStore identities,
     ICommandActorAuthorization actors, IWorkManagementStore work, IWorkBoardAuthorization boards,
-    DemoWorkTransactionScope scope, IClock clock) : IRetentionSourceStore, IRetentionWorkSourceReferences, IRetentionProducerReferences,
+    DemoWorkTransactionScope scope, IClock clock) : IRetentionSourceCommandStore, IRetentionWorkSourceReferences, IRetentionProducerReferences,
     IDemoOrganizationTransactionParticipant
 {
     private readonly Dictionary<(Guid Organization, RetentionRecordClass Class, Guid Record), DemoRetentionSourceClassification> rows = [];
+    private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), RetentionSourceReceipt> receipts = [];
+    public Task<RetentionSourceReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        return Task.FromResult(receipts.GetValueOrDefault((organization, actor, key))?.Result.Reference);
+    }
+    public Task<RetentionSourceReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        return Task.FromResult(receipts.GetValueOrDefault((organization, actor, key)));
+    }
     public Task<RetentionProducerReference?> ReadAsync(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct)
     {
         RequireScope(organization, ct);
@@ -49,6 +60,8 @@ internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizati
         var expectedClass = write.Kind == RetentionProducerKind.Attachment ? RetentionRecordClass.Document : RetentionRecordClass.OperationalWork;
         if (write.Kind is not (RetentionProducerKind.Card or RetentionProducerKind.CardComment or RetentionProducerKind.Attachment)
             || write.RecordClass != expectedClass || rows.ContainsKey(key) || write.RecordId == Guid.Empty
+            || !RetentionSourceCommandIdentity.Valid(write)
+            || write.CommandKey is { } commandKey && receipts.ContainsKey((write.OrganizationId, write.ActorId, commandKey))
             || RecordRetentionRules.Validate(new RetentionPolicyApplicability(write.OrganizationId, write.RecordClass, write.Category, write.Jurisdiction)) is not null
             || write.EventId == Guid.Empty || string.IsNullOrWhiteSpace(write.CorrelationId) || write.CorrelationId.Length > 256 || write.CorrelationId.Any(char.IsControl)
             || write.RegisteredAt.Offset != TimeSpan.Zero || write.RegisteredAt.Ticks % 10 != 0 || write.RegisteredAt > clock.UtcNow
@@ -80,12 +93,19 @@ internal sealed class InMemoryRetentionSourceStore(IOrganizationStore organizati
                 write.Kind == RetentionProducerKind.Card ? "CARD" : write.Kind == RetentionProducerKind.CardComment ? "CARD_COMMENT" : "ATTACHMENT", capacity));
         ct.ThrowIfCancellationRequested();
         rows.Add(key, new(reference, write, actor.DisplayName));
+        if (write.CommandKey is { } receiptKey)
+            receipts.Add((write.OrganizationId, write.ActorId, receiptKey), new(write.ActorId, receiptKey, write.Fingerprint!,
+                new(reference, write.Category, write.Jurisdiction, write.ActorId, write.EventId, write.RegisteredAt), write.RegisteredAt.AddHours(24)));
         return reference;
     }
     private RetentionProducerReference? Producer(Guid organization, RetentionProducerKind kind, Guid record, CancellationToken ct) =>
         work is InMemoryWorkManagementStore memory ? memory.ReadRetentionProducer(organization, kind, record, ct)
             : throw new InvalidOperationException("Demo retention requires actual Demo producers.");
-    public Action CaptureRollback() => DemoRollback.Dictionary(rows);
+    public Action CaptureRollback()
+    {
+        var restoreRows = DemoRollback.Dictionary(rows); var restoreReceipts = DemoRollback.Dictionary(receipts);
+        return () => { restoreReceipts(); restoreRows(); };
+    }
     private static bool Retained(WorkItemLifecycleState value) => value is WorkItemLifecycleState.Active or WorkItemLifecycleState.Archived;
     private void RequireScope(Guid organization, CancellationToken ct)
     {

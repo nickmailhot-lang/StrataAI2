@@ -494,8 +494,8 @@ insufficient and was removed. The maintained activation now observes the request
 it retries the keyboard step only while the unchanged enabled Watch control
 remains and no command exists. Once a request starts, it waits for its original
 response and requires exactly one request; it does not resubmit an uncertain
-acknowledgment. All four Watch actions retain exact one-command checks and their
-authoritative result/version assertions. The overall 180-second scenario budget
+acknowledgment. All four Watch actions retain exact one-command checks; the
+existing authoritative result/version assertions remain. The overall 180-second scenario budget
 is unchanged, and response waiting is explicitly bounded to 30 seconds.
 
 This general browser scenario uses the account setting from the full-browser CI
