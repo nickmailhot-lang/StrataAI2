@@ -1,6 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { openAdmittedReview } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-07/18: reviewed archived List restore recovers without changing card states at ${width}px`, async ({ page, context }) => {
@@ -38,7 +39,8 @@ for (const width of [1280, 390]) {
         const result = await route.fetch(); expect(result.status()).toBe(200);
         if (archiveRequests.length === 1) await route.abort('failed'); else await route.fulfill({ response: result });
       });
-      await page.getByRole('button', { name: 'Archive a list', exact: true }).focus(); await page.keyboard.press('Enter');
+      await openAdmittedReview(page.getByRole('button', { name: 'Archive a list', exact: true }),
+        page.getByRole('combobox', { name: 'List to archive' }));
       await page.getByRole('combobox', { name: 'List to archive' }).click();
       await page.getByRole('option', { name: 'Planning', exact: true }).focus(); await page.keyboard.press('Enter');
       await page.getByRole('button', { name: 'Confirm archive', exact: true }).focus(); await page.keyboard.press('Enter');

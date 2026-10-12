@@ -64,3 +64,31 @@ The same two release-browser cases now archive through the real UI, lose/recover
 that response and then restore through the archive page. Archived-card browsing
 and permanent-delete confirmation/contained-card impact still require work before
 PRD-07/18 can close.
+
+## Current archive review admission verification (2026-10-12)
+
+Retained-image full-browser shard 1 for 0d57b03b fails the archived-List desktop
+review before the List selector appears. A current compiled-runtime reproduction
+executes the complete archived-List, Card-label and checklist-collaboration files
+together: **4/6 in 466.35 seconds**, both archive viewports failing at that same
+missing selector. The other four cases pass unchanged; their older CI failures
+are not reproduced or claimed repaired by this run.
+
+The archive fixture now uses the existing bounded openAdmittedReview helper to
+observe the actual List selector after the read-only launcher. Only that review
+opening can repeat within the existing five-second admission budget. The original
+selection, one archive confirmation, lost committed response, original key/body
+recovery, exact mutation counts, restoration, unchanged child/neighbor state,
+versions, focus and reload assertions and 90-second deadline remain.
+
+The complete same three-file invocation then passes **6/6 in 314.03 seconds**,
+zero skips/unexpected/flaky outcomes or report errors. All **2,074** hosted source/
+runtime hashes and **1,409** native hashes match; independent inspection also
+matches all four served web files. Owned API/Worker/edge/PostgreSQL fixtures and
+credential files are removed, preserving original PostgreSQL data.
+
+Fresh warning-free solution build, browser type checking and diff validation pass.
+This uses current compiled applications/current Nginx/cached runtime support and
+the general CI policy (API optional verification, Worker mandatory verification).
+Current complete immutable-image CI and all remaining PRD-07/18 AC/DoD remain
+necessary for closure. PRD-18 stays open at **15% estimated work remaining**.
