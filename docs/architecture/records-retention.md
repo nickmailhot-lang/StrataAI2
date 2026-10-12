@@ -1905,3 +1905,39 @@ suites. For `74a47c6b`, PostgreSQL integration actually executed the added broad
 Organization/class/category administration, private read, release and original
 receipt recovery cases successfully; actor-session proof remains explicitly
 a native fixture. Complete final image/release gates remain separately tracked.
+
+### Reviewed hold application and original recovery
+
+`RetentionHoldService.ApplyReviewedAsync` requires exact producer evidence for
+a new record-specific human hold. It uses the actual server producer authorizer
+inside the owning Organization command, before persistence and again before
+commit. The evidence must belong to the requested Organization/record and its
+supported Card, Comment or Attachment class. Broad administrative scopes require
+no producer snapshot and reject supplied record evidence. A missing server
+authorizer cannot fall back to the trusted internal primitive.
+
+Reviewed commands use a distinct immutable fingerprint covering the reviewed
+snapshot as well as scope and reason. Altered evidence cannot reuse an original
+key. Receipt recovery first retains the existing source/hold authority, including
+original, application and current Board gates, then returns the exact original
+reviewed receipt. It does not replace the original evidence with a fresh source
+or require the old source route/revision still to be current after a move. A new
+key still requires current producer evidence. The trusted internal apply/release
+fingerprint format remains unchanged for existing receipts and native fixtures.
+
+Executed local evidence: **57/57 focused Records API cases passed**, with zero
+skips/failures and all **2,401 captured source/binary hashes matching**. The new
+real Demo cases cover Card/Comment/Attachment classification and review, stale
+refusal without audit/state effects, original-key application, altered-review
+key conflict, recovery after actual Card movement without another audit, and
+fresh-key stale-review refusal. A broad-scope case verifies evidence rejection
+and actual administration with stable original recovery. Fresh full solution
+compilation passed with zero warnings/errors. Added native cases cover the three
+producer kinds with actual source authorization, stale refusal, current apply,
+original recovery, altered-review key conflict and release; their execution
+awaits CI while local Docker is unavailable.
+
+Production hold-writing transport, capabilities, review UI and domain delivery
+remain unactivated. This is the reviewed-command prerequisite for that workflow,
+not completed RECORDS-FR-003 or PRD-70 acceptance. Complete image verification
+and the broader retention/privacy/export/offboarding requirements remain open.

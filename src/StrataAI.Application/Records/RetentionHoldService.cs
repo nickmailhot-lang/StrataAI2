@@ -54,6 +54,17 @@ public sealed class RetentionHoldService(IOrganizationStore organizations, IRete
         RetentionHoldScope scope, string reason, Guid key, string correlationId, CancellationToken ct = default) =>
         ChangeAsync(organization, actor, hold, 0, scope, reason, key, correlationId, ct);
 
+    // Human transport uses this boundary. The actual producer authorizer is a
+    // server dependency, never a client permission bit. Original receipt recovery
+    // retains its reviewed fingerprint and the hold's original/current Board gates.
+    public Task<OrganizationOperation<RetentionHold>> ApplyReviewedAsync(Guid organization, Guid actor, Guid hold,
+        RetentionHoldScope scope, string reason, RetentionProducerReference? review,
+        RetentionProducerAuthorization reviewer, Guid key, string correlationId, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(reviewer);
+        return ChangeAsync(organization, actor, hold, 0, scope, reason, key, correlationId, ct, review, reviewer);
+    }
+
     public Task<OrganizationOperation<RetentionHold>> ReleaseAsync(Guid organization, Guid actor, Guid hold,
         long expectedVersion, Guid key, string correlationId, CancellationToken ct = default) =>
         expectedVersion < 1
@@ -61,7 +72,8 @@ public sealed class RetentionHoldService(IOrganizationStore organizations, IRete
             : ChangeAsync(organization, actor, hold, expectedVersion, null, null, key, correlationId, ct);
 
     private Task<OrganizationOperation<RetentionHold>> ChangeAsync(Guid organization, Guid actor, Guid hold,
-        long expectedVersion, RetentionHoldScope? scope, string? reason, Guid key, string correlationId, CancellationToken ct) =>
+        long expectedVersion, RetentionHoldScope? scope, string? reason, Guid key, string correlationId, CancellationToken ct,
+        RetentionProducerReference? review = null, RetentionProducerAuthorization? reviewer = null) =>
         Owned(organization, actor, async () =>
         {
             OrganizationOperation<RetentionHold> Fail(string code) => OrganizationOperation<RetentionHold>.Failure(code);
@@ -77,11 +89,15 @@ public sealed class RetentionHoldService(IOrganizationStore organizations, IRete
                 var change = RetentionHoldLifecycle.Apply(hold, scope, actor, reason, at);
                 if (!change.Succeeded) return Fail("invalid_retention_hold");
                 proposed = change.Hold;
+                if (reviewer is not null && !ReviewedScope(scope, review)) return Fail("invalid_retention_hold_review");
                 if (!await scopes.VerifyAsync(scope, actor, ct)) return Fail("retention_hold_not_found");
             }
             else if (hold == Guid.Empty) return Fail("retention_hold_not_found");
-            var fingerprint = Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new
-                { operation = expectedVersion == 0 ? "APPLY" : "RELEASE", organization, hold, expectedVersion, scope, reason })));
+            var fingerprint = Convert.ToHexString(SHA256.HashData(reviewer is null
+                ? JsonSerializer.SerializeToUtf8Bytes(new
+                    { operation = expectedVersion == 0 ? "APPLY" : "RELEASE", organization, hold, expectedVersion, scope, reason })
+                : JsonSerializer.SerializeToUtf8Bytes(new
+                    { operation = "APPLY_REVIEWED", organization, hold, expectedVersion, scope, reason, review })));
             var receiptRead = await ReadReceiptAsync(organization, actor, key, ct);
             if (!receiptRead.Succeeded) return Fail(receiptRead.ErrorCode!);
             var receipt = receiptRead.Value;
@@ -114,6 +130,8 @@ public sealed class RetentionHoldService(IOrganizationStore organizations, IRete
                 }
                 return OrganizationOperation<RetentionHold>.Success(saved);
             }
+            if (reviewer is not null && review is not null && !await reviewer.VerifyAsync(review, actor, ct))
+                return Fail("retention_hold_review_changed");
             var currentRead = await ReadCurrentAsync(organization, actor, hold, ct);
             if (!currentRead.Succeeded) return Fail(currentRead.ErrorCode!);
             var current = currentRead.Value;
@@ -137,6 +155,8 @@ public sealed class RetentionHoldService(IOrganizationStore organizations, IRete
             var result = await holds.WriteAsync(expectedVersion, new(proposed!, actor, membership.Id, membership.Version,
                 membership.Role, Guid.NewGuid(), correlationId, new(actor, key, fingerprint, proposed!, at.AddHours(24))), ct);
             if (result == RetentionHoldWriteResult.Written && !await scopes.VerifyAsync(Scope(proposed!), actor, ct)) return Fail("retention_hold_not_found");
+            if (result == RetentionHoldWriteResult.Written && reviewer is not null && review is not null
+                && !await reviewer.VerifyAsync(review, actor, ct)) return Fail("retention_hold_review_changed");
             if (result == RetentionHoldWriteResult.Written)
             {
                 var committed = await ReadCurrentAsync(organization, actor, hold, ct);
@@ -183,6 +203,12 @@ public sealed class RetentionHoldService(IOrganizationStore organizations, IRete
     private static bool Matches(RetentionHoldReference hint, RetentionHold body) => hint.OrganizationId == body.OrganizationId
         && hint.HoldId == body.Id && hint.Version == body.Version && hint.RecordClass == body.RecordClass
         && hint.RecordId == body.RecordId && hint.CategoryScoped == (body.Category is not null);
+    private static bool ReviewedScope(RetentionHoldScope scope, RetentionProducerReference? review) => scope.RecordId is null
+        ? review is null
+        : review is not null && review.OrganizationId == scope.OrganizationId && review.RecordId == scope.RecordId
+            && (scope.RecordClass == RetentionRecordClass.Document && review.Kind == RetentionProducerKind.Attachment
+                || scope.RecordClass == RetentionRecordClass.OperationalWork
+                    && review.Kind is RetentionProducerKind.Card or RetentionProducerKind.CardComment);
     private static RetentionHoldScope Scope(RetentionHold hold) => new(hold.OrganizationId, hold.RecordClass, hold.Category, hold.RecordId);
     private static DateTimeOffset ChangedAt(RetentionHold hold) => hold.ReleasedAt ?? hold.AppliedAt;
     private static bool Valid(RetentionHold hold, Guid organization, Guid id, DateTimeOffset now) =>

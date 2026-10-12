@@ -647,6 +647,25 @@ internal static class RetentionHoldPersistenceContract
                     new RetentionWorkAuthorization(sourceStore, references, workStore, actualBoards, organizations, actors), organizations, actors, unit, clock);
                 var committed = await owningClassification.ClassifyAsync(tenant, actor, reviewed.Value!, "native.review", "explicit native jurisdiction", classificationKey, "native-owning-classify", ct);
                 Require(committed.Succeeded && committed.Value is not null, "Native owning first-classification command failed.");
+                var reviewedHold = Guid.NewGuid(); var reviewedHoldKey = Guid.NewGuid();
+                var reviewedHoldScope = new RetentionHoldScope(tenant, item.Item3, "native.review", item.Item1);
+                Require((await realService.ApplyReviewedAsync(tenant, actor, reviewedHold, reviewedHoldScope,
+                    "Private reviewed native hold", reviewed.Value! with { SourceVersion = reviewed.Value!.SourceVersion + 1 },
+                    sourceAuthorization, reviewedHoldKey, "native-stale-hold-review", ct)).ErrorCode == "retention_hold_review_changed",
+                    "Native reviewed hold admitted stale source evidence.");
+                var reviewedApplied = await realService.ApplyReviewedAsync(tenant, actor, reviewedHold, reviewedHoldScope,
+                    "Private reviewed native hold", reviewed.Value!, sourceAuthorization, reviewedHoldKey, "native-reviewed-hold", ct);
+                Require(reviewedApplied.Succeeded, "Native current reviewed hold application failed.");
+                Require((await realService.ApplyReviewedAsync(tenant, actor, reviewedHold, reviewedHoldScope,
+                    "Private reviewed native hold", reviewed.Value!, sourceAuthorization, reviewedHoldKey,
+                    "native-reviewed-hold-recovery", ct)).Value == reviewedApplied.Value,
+                    "Native reviewed hold lost original acknowledgment.");
+                Require((await realService.ApplyReviewedAsync(tenant, actor, reviewedHold, reviewedHoldScope,
+                    "Private reviewed native hold", reviewed.Value! with { CardVersion = reviewed.Value!.CardVersion + 1 },
+                    sourceAuthorization, reviewedHoldKey, "native-reviewed-key-conflict", ct)).ErrorCode == "idempotency_key_conflict",
+                    "Native reviewed hold reused a key for altered evidence.");
+                Require((await realService.ReleaseAsync(tenant, actor, reviewedHold, 1,
+                    Guid.NewGuid(), "native-reviewed-hold-release", ct)).Succeeded, "Native reviewed hold release failed.");
                 sourceEvents.Add(committed.Value!.EventId);
                 var replay = await owningClassification.ClassifyAsync(tenant, actor, reviewed.Value!, "native.review", "explicit native jurisdiction", classificationKey, "native-owning-replay", ct);
                 Require(replay.Succeeded && replay.Value == committed.Value, "Native owning classification did not recover its original result.");
@@ -714,6 +733,7 @@ internal static class RetentionHoldPersistenceContract
             }
             await CheckDisposition(RetentionWorkDispositionKind.Card, unclassified, RetentionDispositionAdmission.Clear);
             Console.WriteLine("Native hold ordering: real Work SHARE/Board gate retained current hold until completion; competing authorized release waited on PostgreSQL and then committed.");
+            Console.WriteLine("Native reviewed holds: actual Card/Comment/Attachment evidence, stale refusal, immutable original recovery, changed-review key refusal and release passed; actor session remains a native fixture.");
             Console.WriteLine("Native hold and source adapters: restricted owning persistence, original recovery, bounded lookup, reviewed classifications, rollback and safe audit passed; explicit denial/race controls remain fixtures.");
         }
         finally
