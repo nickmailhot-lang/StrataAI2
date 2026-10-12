@@ -4,6 +4,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="../../scripts/ci/assert-record-retention-runtime-capabilities.sql" LogicalName="RetentionRuntimeCapabilities.sql" />
     <ProjectReference Include="../../src/StrataAI.Infrastructure/StrataAI.Infrastructure.csproj" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
   </ItemGroup>

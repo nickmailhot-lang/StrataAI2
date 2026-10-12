@@ -31,8 +31,10 @@ internal static class RetentionSourceReceiptContract
             FROM (VALUES('record_retention_sources'),('record_retention_source_receipts')) r(relation);
             """, admin))
             Require(await capabilities.ExecuteScalarAsync(ct) is true, "Canonical classification runtime capabilities differ from API SELECT/INSERT only.");
-        await using (var holdCapabilities = new NpgsqlCommand(await File.ReadAllTextAsync(
-            Path.Combine(FindRepoRoot(), "scripts/ci/assert-record-retention-runtime-capabilities.sql"), ct), admin))
+        using var capabilityStream = typeof(RetentionSourceReceiptContract).Assembly.GetManifestResourceStream("RetentionRuntimeCapabilities.sql")
+            ?? throw new InvalidOperationException("Canonical retention capability verifier was not packaged.");
+        using var capabilityReader = new StreamReader(capabilityStream);
+        await using (var holdCapabilities = new NpgsqlCommand(await capabilityReader.ReadToEndAsync(ct), admin))
             await holdCapabilities.ExecuteNonQueryAsync(ct);
         try
         {
@@ -154,10 +156,4 @@ internal static class RetentionSourceReceiptContract
     }
     private static void Require(bool condition, string rule)
     { if (!condition) throw new InvalidOperationException(rule); }
-    private static string FindRepoRoot()
-    {
-        for (var directory = new DirectoryInfo(Directory.GetCurrentDirectory()); directory is not null; directory = directory.Parent)
-            if (File.Exists(Path.Combine(directory.FullName, "scripts/ci/assert-record-retention-runtime-capabilities.sql"))) return directory.FullName;
-        throw new InvalidOperationException("Canonical retention capability verifier was not found.");
-    }
 }

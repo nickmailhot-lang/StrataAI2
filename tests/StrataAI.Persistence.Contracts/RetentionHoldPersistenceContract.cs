@@ -504,7 +504,7 @@ internal static class RetentionHoldPersistenceContract
                 finally
                 {
                     await using var prospective = new NpgsqlCommand("""
-                        GRANT SELECT(id,version,tenant_id,record_class,category_key,record_id,status),INSERT ON record_retention_holds TO strataai_api_runtime;
+                        GRANT SELECT,INSERT ON record_retention_holds TO strataai_api_runtime;
                         GRANT UPDATE(version,status,released_by,released_at) ON record_retention_holds TO strataai_api_runtime;
                         GRANT SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts TO strataai_api_runtime;
                         """, admin);
@@ -744,7 +744,7 @@ internal static class RetentionHoldPersistenceContract
             await using var restore = new NpgsqlCommand("""
                 REVOKE SELECT,INSERT,UPDATE ON record_retention_holds FROM strataai_api_runtime;
                 REVOKE SELECT(id,version),UPDATE(version,status,released_by,released_at) ON record_retention_holds FROM strataai_api_runtime;
-                GRANT SELECT(id,version,tenant_id,record_class,category_key,record_id,status),INSERT ON record_retention_holds TO strataai_api_runtime;
+                GRANT SELECT,INSERT ON record_retention_holds TO strataai_api_runtime;
                 GRANT UPDATE(version,status,released_by,released_at) ON record_retention_holds TO strataai_api_runtime;
                 GRANT SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts TO strataai_api_runtime;
                 REVOKE UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;
