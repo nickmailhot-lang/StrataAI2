@@ -136,6 +136,10 @@ internal static class RetentionHoldPersistenceContract
                 await seed.ExecuteNonQueryAsync(ct);
             }
             // Prove the narrow lock privilege separately from mutation permission.
+            // Prove the exact lock prerequisite, then restore canonical version-only
+            // permission. The immutable trigger still rejects every actual update.
+            await using (var revokeSourceLock = new NpgsqlCommand("REVOKE UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;", admin))
+                await revokeSourceLock.ExecuteNonQueryAsync(ct);
             await using (var restricted = new NpgsqlConnection(apiConnection))
             {
                 await restricted.OpenAsync(ct);
@@ -747,7 +751,7 @@ internal static class RetentionHoldPersistenceContract
                 GRANT SELECT,INSERT ON record_retention_holds TO strataai_api_runtime;
                 GRANT UPDATE(version,status,released_by,released_at) ON record_retention_holds TO strataai_api_runtime;
                 GRANT SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts TO strataai_api_runtime;
-                REVOKE UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;
+                GRANT UPDATE(version) ON record_retention_sources TO strataai_api_runtime;
                 """, admin);
             await restore.ExecuteNonQueryAsync(CancellationToken.None);
         }

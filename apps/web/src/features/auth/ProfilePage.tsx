@@ -4,6 +4,7 @@ import { apiFetch } from '../../api/apiFetch';
 import { forgetInvitationIntents } from '../organizations/invitationIntent';
 import { forgetConfigurationChanges } from '../organizations/organizationConfigurationRecovery';
 import { forgetRetentionPolicyChanges } from '../records/retentionPolicyRecovery';
+import { forgetHoldIntents } from '../records/retentionHoldClient';
 import { forgetRetentionSourceClassifications } from '../records/retentionSourceRecovery';
 import { formatUserDateTime } from './userDateTime';
 import { validateIdentitySync } from './identitySync';
@@ -306,6 +307,7 @@ export function ProfilePage() {
       forgetConfigurationChanges();
       forgetRetentionPolicyChanges();
       forgetRetentionSourceClassifications();
+      forgetHoldIntents();
       setProfile(undefined); setDraft(undefined);
       navigate('/login', { replace: true });
     } catch (reason) {
@@ -334,6 +336,7 @@ export function ProfilePage() {
         forgetConfigurationChanges();
         forgetRetentionPolicyChanges();
         forgetRetentionSourceClassifications();
+      forgetHoldIntents();
         deactivateRetry.current = undefined;
         setProfile(undefined); setDraft(undefined); setDeactivateUncertain(false); setDeactivateDialog(false);
         navigate('/login', { replace: true, state: { accountDeactivated: true } }); return;

@@ -21,16 +21,6 @@ internal static class RetentionSourceReceiptContract
         var card = Guid.NewGuid(); var legacy = Guid.NewGuid(); var key = Guid.NewGuid(); var eventId = Guid.NewGuid();
         var at = DateTimeOffset.UtcNow.AddMinutes(-1); at = at.AddTicks(-(at.Ticks % 10));
         var fingerprint = new string('A', 64);
-        await using (var capabilities = new NpgsqlCommand("""
-            SELECT bool_and(has_table_privilege('strataai_api_runtime',r.relation,'SELECT')
-              AND has_table_privilege('strataai_api_runtime',r.relation,'INSERT')
-              AND NOT has_table_privilege('strataai_api_runtime',r.relation,'UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
-              AND NOT has_any_column_privilege('strataai_api_runtime',r.relation,'UPDATE,REFERENCES')
-              AND NOT has_table_privilege('strataai_worker_runtime',r.relation,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
-              AND NOT has_any_column_privilege('strataai_worker_runtime',r.relation,'SELECT,INSERT,UPDATE,REFERENCES'))
-            FROM (VALUES('record_retention_sources'),('record_retention_source_receipts')) r(relation);
-            """, admin))
-            Require(await capabilities.ExecuteScalarAsync(ct) is true, "Canonical classification runtime capabilities differ from API SELECT/INSERT only.");
         using var capabilityStream = typeof(RetentionSourceReceiptContract).Assembly.GetManifestResourceStream("RetentionRuntimeCapabilities.sql")
             ?? throw new InvalidOperationException("Canonical retention capability verifier was not packaged.");
         using var capabilityReader = new StreamReader(capabilityStream);

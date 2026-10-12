@@ -92,7 +92,32 @@ export function retainHoldIntent(intent: HoldIntent) {
   sessionStorage.setItem(key, encoded);
   if (sessionStorage.getItem(key) !== encoded) throw new WorkInputError('Original hold recovery could not be retained.');
 }
-export function forgetHoldIntent(actor: string, organization: string) { sessionStorage.removeItem(storageKey(actor,organization)); }
+export function forgetHoldIntent(actor: string, organization: string) {
+  const key = storageKey(actor,organization); sessionStorage.removeItem(key);
+  if (sessionStorage.getItem(key) !== null) throw new WorkInputError('Original hold recovery could not be retired.');
+}
+export function forgetHoldIntents(actor?: string, organization?: string) {
+  const prefix = 'strataai:hold-command:v1:';
+  try {
+    for (let index = sessionStorage.length - 1; index >= 0; index--) {
+      const key = sessionStorage.key(index); if (!key?.startsWith(prefix)) continue;
+      const parts = key.slice(prefix.length).split(':');
+      if (parts.length === 2 && parts.every(notificationUuid)
+        && (!actor || parts[0] === identity(actor)) && (!organization || parts[1] === identity(organization))) sessionStorage.removeItem(key);
+    }
+  } catch { /* Definitive withdrawal cannot depend on browser storage. */ }
+}
+export function forgetForeignHoldIntents(actor: string) {
+  const prefix = 'strataai:hold-command:v1:'; const current = identity(actor);
+  for (let index = sessionStorage.length - 1; index >= 0; index--) {
+    const key = sessionStorage.key(index); if (!key?.startsWith(prefix)) continue;
+    const parts = key.slice(prefix.length).split(':');
+    if (parts.length === 2 && parts.every(notificationUuid) && parts[0] !== current) {
+      sessionStorage.removeItem(key);
+      if (sessionStorage.getItem(key) !== null) throw new WorkInputError('Foreign hold recovery could not be retired.');
+    }
+  }
+}
 export function submitHoldIntent(original: HoldIntent, signal: AbortSignal) {
   const intent = validateHoldIntent(original, original.actorId, original.organizationId);
   return boundedWorkRead(async bounded => {

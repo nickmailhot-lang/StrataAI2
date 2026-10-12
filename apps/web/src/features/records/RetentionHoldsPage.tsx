@@ -5,7 +5,7 @@ import { WorkRequestError } from '../../api/workManagement';
 import { readRetentionPolicies } from './retentionPolicyClient';
 import { recordClasses } from './RetentionPolicyEditor';
 import { type RetentionSourceKind, type RetentionSourceReview } from './retentionSourceClient';
-import { forgetHoldIntent, readHold, restoreHoldIntent, retainHoldIntent, validateHoldIntent, reviewHoldSource, submitHoldIntent,
+import { forgetHoldIntent, forgetForeignHoldIntents, readHold, restoreHoldIntent, retainHoldIntent, validateHoldIntent, reviewHoldSource, submitHoldIntent,
   type HoldClass, type HoldIntent, type RetentionHold } from './retentionHoldClient';
 
 export function RetentionHoldsPage() {
@@ -42,7 +42,7 @@ function HoldScreen({ organizationId }: { organizationId: string }) {
       if (!alive.current) return;
       if (!actorRef.current) {
         actorRef.current = result.actorId; setActor(result.actorId);
-        try { setIntent(restoreHoldIntent(result.actorId,organizationId)); }
+        try { forgetForeignHoldIntents(result.actorId); setIntent(restoreHoldIntent(result.actorId,organizationId)); }
         catch { setRecoveryBlocked(true); setError('Original hold recovery is unavailable. New commands are blocked.'); }
       }
       setAdmitted(true); setDenied(false);
@@ -122,7 +122,7 @@ function HoldScreen({ organizationId }: { organizationId: string }) {
             const result = await reviewHoldSource(organizationId,actor!,kind,recordId.toLowerCase(),signal);
             signal.throwIfAborted(); if (alive.current) setReview(result);
           })}>Review classified source</Button>
-          {review && <Alert severity="info">Reviewed {review.kind}: {review.recordId}. Board: {review.boardId}. Source version {review.sourceVersion}; Card version {review.cardVersion}.</Alert>}
+          {review && <Alert severity="info" sx={{ overflowWrap:'anywhere' }}>Reviewed {review.kind}: {review.recordId}. Board: {review.boardId}. Source version {review.sourceVersion}; Card version {review.cardVersion}.</Alert>}
         </>}
         <TextField label="Preservation reason" multiline minRows={2} value={reason} disabled={disabled} onChange={e => { setReason(e.target.value); setConfirmed(false); }} />
         <FormControlLabel control={<Checkbox checked={confirmed} disabled={disabled || scope === 'record' && !review} onChange={e => setConfirmed(e.target.checked)} />} label="I reviewed this scope and confirm preservation under this hold." />

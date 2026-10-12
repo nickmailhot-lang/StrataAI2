@@ -8,6 +8,7 @@ import { lifecycleUuid } from '../features/organizations/operationalLifecycle';
 import { watchOperationalLifecycle } from '../features/organizations/operationalLifecycleLive';
 import { forgetOrganizationRetentionPolicyChanges } from '../features/records/retentionPolicyRecovery';
 import { forgetOrganizationRetentionSourceClassifications } from '../features/records/retentionSourceRecovery';
+import { forgetHoldIntents } from '../features/records/retentionHoldClient';
 
 type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previouslyAdmitted?: boolean };
 
@@ -37,6 +38,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
     if (surface === 'INTERNAL' && organizationId && result?.scope === scope && result.status === 'denied') {
       forgetOrganizationRetentionPolicyChanges(organizationId);
       forgetOrganizationRetentionSourceClassifications(organizationId);
+      forgetHoldIntents(undefined, organizationId);
     }
   }, [surface, organizationId, scope, result]);
   const theme = useTheme();

@@ -7,10 +7,13 @@ BEGIN
   IF NOT has_table_privilege('strataai_api_runtime',relation,'SELECT')
    OR NOT has_table_privilege('strataai_api_runtime',relation,'INSERT')
    OR has_table_privilege('strataai_api_runtime',relation,'UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
-   OR has_any_column_privilege('strataai_api_runtime',relation,'UPDATE,REFERENCES')
+   OR has_any_column_privilege('strataai_api_runtime',relation,'REFERENCES')
+   OR NOT (SELECT bool_and(has_column_privilege('strataai_api_runtime',relation,a.attname,'UPDATE')
+      = (relation='record_retention_sources' AND a.attname='version'))
+     FROM pg_attribute a WHERE a.attrelid=relation::regclass AND a.attnum>0 AND NOT a.attisdropped)
    OR has_table_privilege('strataai_worker_runtime',relation,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
    OR has_any_column_privilege('strataai_worker_runtime',relation,'SELECT,INSERT,UPDATE,REFERENCES') THEN
-   RAISE EXCEPTION 'Classification runtime capability must be API SELECT/INSERT only';
+   RAISE EXCEPTION 'Classification runtime capability must be immutable API sources/receipts with one source version lock column';
   END IF;
  END LOOP;
  IF has_table_privilege('strataai_api_runtime','record_retention_holds','UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')

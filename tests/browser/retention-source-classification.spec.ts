@@ -14,6 +14,121 @@ async function sourceEntry(page: Page, kind: string) {
   if (kind === 'attachment') await press(page, 'Show attachments');
   await press(page, `Retention classification for this ${kind === 'card' ? 'Card' : kind === 'cardComment' ? 'Comment' : 'Attachment'}`);
 }
+async function chooseHold(page: Page, name: string, option: string) {
+  const select = page.getByRole('combobox', { name, exact: true }); await expect(select).toBeEnabled();
+  await select.focus(); await page.keyboard.press('ArrowDown');
+  await page.getByRole('option', { name: option, exact: true }).focus(); await page.keyboard.press('Enter');
+}
+
+for (const width of [1280, 390]) {
+  test(`PRD-70 hold administration recovers reviewed preservation and releases blocked disposition at ${width}px`, async ({ page, context }) => {
+    test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
+    const account = await registerNotificationAccount(context.request, {
+      email: `hold-review-${width}-${crypto.randomUUID()}@example.test`, password: 'hold-review-fixture-horse', displayName: 'Hold review Owner',
+    }, process.env.STRATAAI_E2E_RUNTIME_MODE !== 'demo');
+    const created = await context.request.post('/organizations', { headers, data: { name: 'Reviewed hold fixture' } });
+    expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
+    const boardResponse = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Retained held Board', visibility: 'PRIVATE' } });
+    expect(boardResponse.status()).toBe(201); const board = (await boardResponse.json()).id;
+    const listResponse = await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Held List' } });
+    expect(listResponse.status()).toBe(201); const list = (await listResponse.json()).id;
+    const cardResponse = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Private held Card' } });
+    expect(cardResponse.status()).toBe(201); const card = (await cardResponse.json()).id;
+    const source = `/organizations/${org}/retention-sources/card/${card}`;
+    const reviewed = await context.request.get(source + '/review'); expect(reviewed.status()).toBe(200);
+    expect((await context.request.post(source + '/classification', { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+      data: { review: await reviewed.json(), category: 'browser.hold', jurisdiction: null, confirmed: true } })).status()).toBe(200);
+    expect((await context.request.post(`/cards/${card}/archive`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { version: 1 } })).status()).toBe(200);
+    const writes: { path:string; body:string; key:string; receipt: { id:string; version:number; status:string } }[] = [];
+    const matches = (url:URL) => url.pathname.startsWith(`/organizations/${org}/retention-holds/`) && url.pathname.endsWith('/apply');
+    await page.route(matches, async route => {
+      const request = route.request(), response = await route.fetch(); expect(response.status()).toBe(200);
+      writes.push({ path:new URL(request.url()).pathname, body:request.postData()!, key:request.headers()['idempotency-key'], receipt:await response.json() });
+      if (writes.length === 1) await route.fulfill({ status:503,contentType:'application/json',body:'{"code":"organization_storage_unavailable"}' });
+      else await route.fulfill({ response });
+    });
+    await page.goto(`/app/${org}/retention-holds`);
+    await chooseHold(page,'Hold scope','Individual classified record'); await chooseHold(page,'Source type','Card');
+    await page.getByRole('textbox',{name:'Classified record identifier',exact:true}).fill(card);
+    const confirm = page.getByRole('checkbox',{name:'I reviewed this scope and confirm preservation under this hold.',exact:true});
+    await expect(confirm).toBeDisabled(); await press(page,'Review classified source');
+    await expect(page.getByText(`Reviewed card: ${card}. Board: ${board}. Source version 2; Card version 2.`,{exact:true})).toBeVisible();
+    await page.getByRole('textbox',{name:'Preservation reason',exact:true}).fill('Private preservation evidence');
+    await expect(page.getByRole('button',{name:'Apply confirmed hold',exact:true})).toBeDisabled();
+    await confirm.focus(); await page.keyboard.press('Space');
+    expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await press(page,'Apply confirmed hold');
+    await expect(page.getByText('The acknowledgment could not be confirmed. Retry the retained original request.',{exact:true})).toBeVisible();
+    expect(writes).toHaveLength(1); await page.reload(); await press(page,'Retry original request');
+    await expect(page.getByText('Original request acknowledged. Load the current hold to review its present status.',{exact:true})).toBeVisible();
+    expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
+    expect(JSON.parse(writes[0].body)).toMatchObject({recordClass:'operationalWork',recordId:card,confirmed:true,
+      review:{organizationId:org,kind:'card',recordId:card,boardId:board,sourceVersion:2}});
+    const deletionKey=crypto.randomUUID(), deletionPath=`/cards/${card}?version=2&confirmed=true`;
+    const blocked=await context.request.delete(deletionPath,{headers:{...headers,'Idempotency-Key':deletionKey}});
+    expect(blocked.status()).toBe(409); expect((await blocked.json()).code).toBe('retention_hold_prevents_disposition');
+    expect(await blocked.text()).not.toContain('Private preservation evidence');
+    await press(page,'Load current hold'); await expect(page.getByText('Status: active. Version: 1.',{exact:true})).toBeVisible();
+    const release=page.getByRole('button',{name:'Release confirmed hold',exact:true}); await expect(release).toBeDisabled();
+    await page.getByRole('checkbox',{name:'I reviewed this version and confirm release of this hold.',exact:true}).focus(); await page.keyboard.press('Space');
+    expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+    await press(page,'Release confirmed hold'); await expect(page.getByText('Original request acknowledged. Load the current hold to review its present status.',{exact:true})).toBeVisible();
+    await press(page,'Load current hold'); await expect(page.getByText('Status: released. Version: 2.',{exact:true})).toBeVisible();
+    await expect(release).toHaveCount(0);
+    const original=await context.request.post(writes[0].path,{headers:{...headers,'Idempotency-Key':writes[0].key},data:JSON.parse(writes[0].body)});
+    expect(original.status()).toBe(200); expect(await original.json()).toEqual(writes[0].receipt);
+    const current=await context.request.get(`/organizations/${org}/retention-holds/${writes[0].receipt.id}`);
+    expect(current.status()).toBe(200); expect(await current.json()).toMatchObject({status:'released',version:2,appliedBy:account.user.id});
+    const deleted=await context.request.delete(deletionPath,{headers:{...headers,'Idempotency-Key':deletionKey}});
+    expect(deleted.status()).toBe(200); const deletionReceipt=await deleted.json();
+    expect(deletionReceipt).toMatchObject({id:card,version:3,lifecycleState:'deleted',deletedBy:account.user.id});
+    const replay=await context.request.delete(deletionPath,{headers:{...headers,'Idempotency-Key':deletionKey}});
+    expect(replay.status()).toBe(200); expect(await replay.json()).toEqual(deletionReceipt);
+    await page.unroute(matches);
+  });
+  test(`PRD-70 hold administration withdraws pending private preservation after real membership removal at ${width}px`, async ({page,context,browser}) => {
+    test.setTimeout(120_000); await page.setViewportSize({width,height:844});
+    const owner=await browser.newContext({baseURL:test.info().project.use.baseURL});
+    try {
+      const verified=process.env.STRATAAI_E2E_RUNTIME_MODE !== 'demo';
+      await registerNotificationAccount(owner.request,{email:`hold-owner-${width}-${crypto.randomUUID()}@example.test`,password:'hold-owner-fixture-horse',displayName:'Hold Owner'},verified);
+      const email=`hold-admin-${width}-${crypto.randomUUID()}@example.test`;
+      const admin=await registerNotificationAccount(context.request,{email,password:'hold-admin-fixture-horse',displayName:'Hold Admin'},verified);
+      const created=await owner.request.post('/organizations',{headers,data:{name:'Hold withdrawal fixture'}});
+      expect(created.status()).toBe(201); const org=(await created.json()).organization.id;
+      const invitation=await owner.request.post(`/organizations/${org}/invitations`,{headers,data:{email,surface:'INTERNAL',targetRole:'ADMIN'}});
+      expect(invitation.status()).toBe(201);
+      expect((await context.request.post(`/me/invitations/${(await invitation.json()).id}/accept`,{headers})).status()).toBe(200);
+      const writes: {path:string;body:string;key:string}[]=[];
+      const matches=(url:URL)=>url.pathname.startsWith(`/organizations/${org}/retention-holds/`) && url.pathname.endsWith('/apply');
+      await page.route(matches,async route=>{
+        const request=route.request(),response=await route.fetch(); expect(response.status()).toBe(200);
+        writes.push({path:new URL(request.url()).pathname,body:request.postData()!,key:request.headers()['idempotency-key']});
+        await route.fulfill({status:503,contentType:'application/json',body:'{"code":"organization_storage_unavailable"}'});
+      });
+      await page.goto(`/app/${org}/retention-holds`);
+      const reason=page.getByRole('textbox',{name:'Preservation reason',exact:true}); await expect(reason).toBeEnabled(); await reason.fill('Private revoked hold reason');
+      await page.getByRole('checkbox',{name:'I reviewed this scope and confirm preservation under this hold.',exact:true}).focus(); await page.keyboard.press('Space');
+      await press(page,'Apply confirmed hold');
+      await expect(page.getByText('The acknowledgment could not be confirmed. Retry the retained original request.',{exact:true})).toBeVisible();
+      const storageKey=`strataai:hold-command:v1:${admin.user.id}:${org}`;
+      expect(await page.evaluate(key=>sessionStorage.getItem(key)!==null,storageKey)).toBe(true); expect(writes).toHaveLength(1);
+      const membership=await owner.request.get(`/organizations/${org}/members/${admin.user.id}`); expect(membership.status()).toBe(200);
+      const member=(await membership.json()).member;
+      expect((await owner.request.delete(`/organizations/${org}/members/${admin.user.id}?expectedVersion=${member.version}`,{headers:{...headers,'Idempotency-Key':crypto.randomUUID()}})).status()).toBe(204);
+      await expect(page.getByRole('button',{name:'Retry original request',exact:true})).toHaveCount(0,{timeout:20_000});
+      await expect(reason).toHaveCount(0); expect(await page.locator('body').innerText()).not.toContain('Private revoked hold reason');
+      await expect.poll(()=>page.evaluate(key=>sessionStorage.getItem(key),storageKey)).toBeNull(); expect(writes).toHaveLength(1);
+      const denied=await context.request.post(writes[0].path,{headers:{...headers,'Idempotency-Key':writes[0].key},data:JSON.parse(writes[0].body)});
+      expect(denied.status()).toBe(404); expect(await denied.text()).not.toContain('Private revoked hold reason');
+      const holdId=writes[0].path.split('/').at(-2);
+      const retained=await owner.request.get(`/organizations/${org}/retention-holds/${holdId}`); expect(retained.status()).toBe(200);
+      expect(await retained.json()).toMatchObject({status:'active',version:1,appliedBy:admin.user.id});
+      await page.unroute(matches);
+    } finally {await owner.close();}
+  });
+}
 
 for (const width of [1280, 390]) {
   test(`PRD-70 archived Card and Attachment classification remains independent of operational editing at ${width}px`, async ({ page, context }) => {

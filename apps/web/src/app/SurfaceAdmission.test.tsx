@@ -128,7 +128,11 @@ it('clears this Organization private policy recovery when the outer boundary wit
   sessionStorage.setItem(key, 'unresolved private original'); sessionStorage.setItem(other, 'other Organization original');
   const sourceKey = `strataai:retention-source-classification:v1:${liveActor}:${liveOrg}`;
   const sourceOther = `strataai:retention-source-classification:v1:${liveActor}:44444444-4444-4444-8444-444444444444`;
-  sessionStorage.setItem(sourceKey, 'original source evidence'); sessionStorage.setItem(sourceOther, 'other source evidence');
+  sessionStorage.setItem(sourceKey, 'original source evidence');
+  const holdKey = `strataai:hold-command:v1:${liveActor}:${liveOrg}`;
+  sessionStorage.setItem(holdKey, 'original hold evidence'); sessionStorage.setItem(sourceOther, 'other source evidence');
+  const otherHold = `strataai:hold-command:v1:${liveActor}:44444444-4444-4444-8444-444444444444`;
+  sessionStorage.setItem(otherHold, 'other hold evidence');
   try {
     vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile)) : response(liveOrg)));
     mountLive(); await screen.findByText(`Admitted ${liveOrg}`); await waitFor(() => expect(operational.options).toBeDefined());
@@ -136,7 +140,9 @@ it('clears this Organization private policy recovery when the outer boundary wit
     expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
     await waitFor(() => expect(sessionStorage.getItem(key)).toBeNull());
     expect(sessionStorage.getItem(sourceKey)).toBeNull();
+    expect(sessionStorage.getItem(holdKey)).toBeNull();
     expect(sessionStorage.getItem(sourceOther)).toBe('other source evidence');
+    expect(sessionStorage.getItem(otherHold)).toBe('other hold evidence');
     expect(sessionStorage.getItem(other)).toBe('other Organization original');
   } finally { sessionStorage.clear(); }
 });
@@ -145,6 +151,8 @@ it('preserves unresolved policy recovery through transport uncertainty until fre
   sessionStorage.setItem(key, 'unresolved private original'); let calls = 0;
   const sourceKey = `strataai:retention-source-classification:v1:${liveActor}:${liveOrg}`;
   sessionStorage.setItem(sourceKey, 'original source evidence');
+  const holdKey = `strataai:hold-command:v1:${liveActor}:${liveOrg}`;
+  sessionStorage.setItem(holdKey, 'original hold evidence');
   try {
     vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile))
       : ++calls === 1 ? response(liveOrg) : new Promise<Response>(() => {})));
@@ -153,6 +161,7 @@ it('preserves unresolved policy recovery through transport uncertainty until fre
     expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeVisible();
     expect(sessionStorage.getItem(key)).toBe('unresolved private original');
     expect(sessionStorage.getItem(sourceKey)).toBe('original source evidence');
+    expect(sessionStorage.getItem(holdKey)).toBe('original hold evidence');
   } finally { sessionStorage.clear(); }
 });
 it('does not discard internal policy recovery when the separate Portal is denied', async () => {
@@ -160,11 +169,14 @@ it('does not discard internal policy recovery when the separate Portal is denied
   sessionStorage.setItem(key, 'unresolved internal original');
   const sourceKey = `strataai:retention-source-classification:v1:${liveActor}:${liveOrg}`;
   sessionStorage.setItem(sourceKey, 'original source evidence');
+  const holdKey = `strataai:hold-command:v1:${liveActor}:${liveOrg}`;
+  sessionStorage.setItem(holdKey, 'original hold evidence');
   try {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 404 }))); mountLive('PORTAL');
     await screen.findByText('Access to this Organization surface is unavailable.');
     expect(sessionStorage.getItem(key)).toBe('unresolved internal original');
     expect(sessionStorage.getItem(sourceKey)).toBe('original source evidence');
+    expect(sessionStorage.getItem(holdKey)).toBe('original hold evidence');
   } finally { sessionStorage.clear(); }
 });
 

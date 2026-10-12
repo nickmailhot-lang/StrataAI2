@@ -65,6 +65,9 @@ GRANT INSERT ON record_retention_policy_history,record_retention_policy_receipts
 -- Explicit human classification owns immutable source/receipt insertion only.
 -- The separate Worker cannot read or mutate this private command graph.
 GRANT SELECT,INSERT ON record_retention_sources,record_retention_source_receipts TO strataai_api_runtime;
+-- PostgreSQL FOR SHARE requires an UPDATE column grant. The immutable source
+-- trigger rejects every actual UPDATE, including version self-assignment.
+GRANT UPDATE(version) ON record_retention_sources TO strataai_api_runtime;
 -- Human hold commands own current transitions and immutable history/receipts.
 -- Invoker integrity triggers read the full current head; ordinary disposition
 -- continues to project only scope. The Worker has no access.
