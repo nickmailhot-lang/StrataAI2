@@ -93,6 +93,7 @@ var app = builder.Build();
 app.Services.InitializeAttachmentRuntime(attachmentsEnabled);
 
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<UnexpectedApiErrorMiddleware>();
 app.UseStatusCodePages(ApiErrorContract.WriteEmptyError);
 app.UseMiddleware<BoardSharingTelemetryMiddleware>();
 app.UseMiddleware<OrganizationTelemetryMiddleware>();
@@ -121,7 +122,7 @@ app.MapGet("/api/health", (IClock clock) => Results.Ok(new
 
 app.MapGet(
     "/readyz",
-    async (IRuntimeDependencyStatus status, CancellationToken cancellationToken) =>
+    async (HttpContext context, IRuntimeDependencyStatus status, CancellationToken cancellationToken) =>
     {
         var ready = await status.IsReadyAsync(cancellationToken);
         return ready
@@ -131,7 +132,13 @@ app.MapGet(
                 mode = status.Mode.ToString().ToLowerInvariant(),
             })
             : Results.Json(
-                new { status = "not-ready" },
+                new
+                {
+                    status = "not-ready",
+                    code = "runtime_not_ready",
+                    message = "The service is not ready. Try again later.",
+                    correlationId = context.TraceIdentifier,
+                },
                 statusCode: StatusCodes.Status503ServiceUnavailable);
     });
 

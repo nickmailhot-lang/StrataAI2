@@ -30,8 +30,9 @@ source. This is not a build-once retained-image, PostgreSQL/RLS, managed-provide
 or complete PRD acceptance claim. The focused client compatibility tests also
 pass: 20 Work request and 22 shared Problem/fetch cases.
 
-Unexpected exception and failed-readiness response contracts remain incomplete.
-Private probes reproduce both gaps; an isolated exception-handler draft proves
+At the envelope checkpoint, unexpected exception and failed-readiness response
+contracts remained incomplete. Private probes reproduced both gaps; an isolated
+exception-handler draft proved
 safe correlated 500 responses, subsequent host recovery, private-content-free
 logs, preservation of cancellation/already-started responses, and bodyless HEAD.
 Those draft results do not certify a production implementation. Optional field
@@ -40,3 +41,30 @@ remain required by the [PRD-21 acceptance map](prd-21-acceptance.md).
 
 The [operational MVP milestone](operational-mvp-milestone.md) prioritizes these
 core reliability and deployment gaps while retaining the complete roadmap.
+
+## Unexpected failures and readiness
+
+The API now handles unexpected exceptions inside the correlation scope and
+outside the downstream request middleware. Before a response starts, it clears
+the unstarted output and returns a fixed `internal_error` 500 with the actual
+correlation ID and `Cache-Control: no-store`. It records a fixed error event and
+correlation ID without an exception object, message, stack, URL, query or body.
+HEAD remains bodyless. Started responses and cancelled requests preserve their
+original exception and response instead of appending an error document.
+Existing specialized database role/schema middleware keeps its 503 codes.
+
+Failed `/readyz` responses retain `status: not-ready` and add `runtime_not_ready`,
+a fixed public message and the actual correlation ID. Successful readiness and
+build identity retain their existing behavior.
+
+All four new HTTP baseline cases failed before this implementation. The final
+focused run passes **20/20** envelope, unknown-error, logging, recovery, readiness,
+specialized 503 and boundary cases with zero skips; the successful readiness
+regression passes **1/1**, and all **7/7** runtime composition/startup-refusal
+cases pass. The final solution build has no warnings or errors. These results
+include the eleven preceding envelope regressions. The earlier full 993/923
+Linux run certifies the envelope checkpoint, not this later exception handler.
+Complete current source and immutable-image CI remain required.
+
+See [the middleware](../../src/StrataAI.Api/UnexpectedApiErrorMiddleware.cs) and
+[HTTP/boundary regressions](../../tests/StrataAI.Api.Tests/UnexpectedApiErrorTests.cs).
