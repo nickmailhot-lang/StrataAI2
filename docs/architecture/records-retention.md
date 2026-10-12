@@ -1941,3 +1941,33 @@ Production hold-writing transport, capabilities, review UI and domain delivery
 remain unactivated. This is the reviewed-command prerequisite for that workflow,
 not completed RECORDS-FR-003 or PRD-70 acceptance. Complete image verification
 and the broader retention/privacy/export/offboarding requirements remain open.
+
+### Classified source review for human holds
+
+`GET /organizations/{organization}/retention-holds/sources/{kind}/{record}/review`
+now returns the current protected producer evidence for an already-classified
+Card, Comment or Attachment. This is separate from first classification review,
+which still refuses an existing immutable classification. The owning service
+requires a verified current Organization Owner/Admin, actual classified source
+authority across original/current Boards, and actual producer admission before
+and after reading the evidence. Unsupported, unclassified, foreign or withdrawn
+sources receive a safe hold-source not-found response. Expected-actor mismatch
+is fenced before disclosure. Responses are private/no-store and contain only
+identities, revisions, lifecycle and creation evidence, with no titles, bodies,
+file URLs, category or hold reason.
+
+Executed local evidence: **60/60 focused Records API cases passed**, zero
+skips/failures, with all **2,403 captured source/binary hashes matching**. The new
+mapped HTTP cases cover all three kinds, unclassified refusal, actual immutable
+classification, admitted hold review, private content exclusion, continuing
+first-classification refusal, foreign-account denial, actor mismatch and
+unsupported-kind refusal. Fresh full solution compilation passed with zero
+warnings/errors. Added native review cases exercise the actual classified
+producer/Work authorities after first classification; their execution awaits CI.
+Public apply/release transport, production writing capabilities, administration
+UI and domain delivery remain pending; no complete hold workflow is claimed.
+
+Additional verified evidence: PostgreSQL CI for `46eb6c30` executed the earlier
+reviewed hold cases successfully, covering actual Card/Comment/Attachment
+evidence, stale refusal, original recovery, changed-review key refusal and
+release. Actor-session proof remains an explicitly identified native fixture.

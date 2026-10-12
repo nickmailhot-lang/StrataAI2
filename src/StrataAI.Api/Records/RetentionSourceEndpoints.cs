@@ -53,7 +53,25 @@ public static class RetentionSourceEndpoints
     public static void MapRetentionSourceEndpoints(this RouteGroupBuilder group)
     {
         group.MapGet("/{organizationId:guid}/retention-sources/{kind}/{recordId:guid}/review", ReviewAsync);
+        group.MapGet("/{organizationId:guid}/retention-holds/sources/{kind}/{recordId:guid}/review", ReviewHoldAsync);
         group.MapPost("/{organizationId:guid}/retention-sources/{kind}/{recordId:guid}/classification", ClassifyAsync);
+    }
+    public static async Task<IResult> ReviewHoldAsync(Guid organizationId, string kind, Guid recordId,
+        HttpContext context, RetentionHoldReviewService service, CancellationToken ct)
+    {
+        context.Response.Headers.CacheControl = "private, no-store";
+        var actor = Actor(context); if (actor is null) return Error("session_unavailable");
+        // Unsupported route kinds remain a safe not-found after owning admission.
+        Kind(kind, out var producer);
+        var result = await service.ReviewAsync(organizationId, actor.Value, producer, recordId, ct);
+        return result.Succeeded ? Results.Json(RetentionSourceReviewRequest.From(result.Value!), Options) : HoldReviewError(result.ErrorCode);
+    }
+    private static IResult HoldReviewError(string? code)
+    {
+        var status = code == "session_unavailable" ? 401 : code == "organization_storage_unavailable" ? 503 : 404;
+        return Results.Problem(statusCode: status, title: status == 401 ? "Sign in again to continue."
+            : status == 503 ? "The hold source review could not be confirmed. Retry shortly." : "The hold source was not found.",
+            extensions: new Dictionary<string, object?> { ["code"] = status == 404 ? "retention_hold_not_found" : code });
     }
     public static async Task<IResult> ReviewAsync(Guid organizationId, string kind, Guid recordId,
         HttpContext context, RetentionSourceReviewService service, CancellationToken ct)

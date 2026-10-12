@@ -45,6 +45,7 @@ public static class RetentionSourceRegistration
         services.AddSingleton<RetentionHoldAuthorization>();
         services.AddSingleton<IRetentionHoldScopeAuthorization>(p => p.GetRequiredService<RetentionHoldAuthorization>());
         services.AddSingleton<RetentionSourceReviewService>();
+        services.AddSingleton<RetentionHoldReviewService>();
         services.AddSingleton<RetentionSourceClassificationService>();
     }
 }

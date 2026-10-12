@@ -647,6 +647,12 @@ internal static class RetentionHoldPersistenceContract
                     new RetentionWorkAuthorization(sourceStore, references, workStore, actualBoards, organizations, actors), organizations, actors, unit, clock);
                 var committed = await owningClassification.ClassifyAsync(tenant, actor, reviewed.Value!, "native.review", "explicit native jurisdiction", classificationKey, "native-owning-classify", ct);
                 Require(committed.Succeeded && committed.Value is not null, "Native owning first-classification command failed.");
+                var holdReviews = new RetentionHoldReviewService(producers, sourceAuthorization,
+                    new RetentionWorkAuthorization(sourceStore, references, workStore, actualBoards, organizations, actors),
+                    organizations, actors, unit);
+                var currentHoldReview = await holdReviews.ReviewAsync(tenant, actor, item.Item2, item.Item1, ct);
+                Require(currentHoldReview.Succeeded && currentHoldReview.Value == reviewed.Value,
+                    "Native classified hold review lost current producer evidence or owning authority.");
                 var reviewedHold = Guid.NewGuid(); var reviewedHoldKey = Guid.NewGuid();
                 var reviewedHoldScope = new RetentionHoldScope(tenant, item.Item3, "native.review", item.Item1);
                 Require((await realService.ApplyReviewedAsync(tenant, actor, reviewedHold, reviewedHoldScope,
