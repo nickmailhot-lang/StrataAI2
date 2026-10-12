@@ -116,6 +116,127 @@ for (const width of [1280, 390]) {
   });
 }
 
+for (const width of [1280, 390]) for (const role of ['MEMBER', 'ADMIN'] as const) {
+  test(`PRD-09 TC-04/05/08/11/12: distinct ${role} edits and unsaved draft withdrawal at ${width}px`, async ({ page, context, browser }) => {
+    test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });
+    const headers = { 'X-StrataAI-Request': '1' };
+    const owner = await registerNotificationAccount(context.request, {
+      email: `description-editor-owner-${width}-${role}-${Date.now()}@example.test`,
+      password: 'description-editor-owner-correct-horse', displayName: 'Editor fixture owner',
+    });
+    const editor = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 844 } });
+    let restoreWorker = () => {};
+    try {
+      const credentials = { email: `description-editor-${width}-${role}-${Date.now()}@example.test`,
+        password: 'description-editor-correct-horse', displayName: 'Distinct description editor' };
+      const actor = await registerNotificationAccount(editor.request, credentials);
+      expect(actor.user.id).not.toBe(owner.user.id);
+      const organization = await context.request.post('/organizations', { headers, data: { name: 'Description editor roles' } });
+      expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
+      const invitation = await context.request.post(`/organizations/${org}/invitations`, {
+        headers, data: { email: credentials.email, surface: 'INTERNAL', targetRole: 'MEMBER' },
+      });
+      expect(invitation.status()).toBe(201);
+      expect((await editor.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
+      const createdBoard = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Editing role Board', visibility: 'ORGANIZATION' } });
+      expect(createdBoard.status()).toBe(201); const board = (await createdBoard.json()).id;
+      const granted = await context.request.patch(`/boards/${board}/members/${actor.user.id}`, { headers, data: { role } });
+      expect(granted.status()).toBe(200); const grant = await granted.json(); expect(grant).toMatchObject({ userId: actor.user.id, role, active: true });
+      const createdList = await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Editor List' } });
+      expect(createdList.status()).toBe(201); const list = (await createdList.json()).id;
+      const codeLine = 'long literal segment '.repeat(12);
+      const original = '# Editor role source\n\n**Original emphasis** and [Reference](https://example.test/editor).\n\n```text\n' + codeLine + '\n```\n\n<script>globalThis.descriptionAttack = true</script>\n\n[Unsafe](javascript:alert(1))\n\n![Inert original](https://description-probe.example.test/editor)';
+      const createdCard = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Role-editable Card', description: original } });
+      expect(createdCard.status()).toBe(201); const card = (await createdCard.json()).id;
+      restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
+      const path = `/app/${org}/boards/${board}/cards/${card}`;
+      const editorPage = await editor.newPage(); let documents = 0; let externalRequests = 0;
+      editorPage.on('request', request => { if (request.isNavigationRequest() && request.frame() === editorPage.mainFrame()) documents++; });
+      for (const target of [page, editorPage]) await target.route('https://description-probe.example.test/**', async route => {
+        externalRequests++; await route.fulfill({ status: 403, body: '' });
+      });
+      await page.goto(path);
+      const ownerPreview = page.getByRole('region', { name: 'Description preview', exact: true });
+      await expect(ownerPreview.getByRole('heading', { name: 'Editor role source', exact: true })).toBeVisible();
+      await expect(page.getByText('Live updates connected.', { exact: true })).toBeVisible();
+      const reads = trackBoardReads(editorPage, board, path);
+      await editorPage.goto(path); await waitForBoardReads(editorPage, reads, 2);
+      const admission = await editor.request.get(`/boards/${board}`); expect(admission.status()).toBe(200);
+      expect((await admission.json()).access).toMatchObject({ canView: true, canEdit: true, canAdminister: role === 'ADMIN' });
+      const detail = editorPage.getByRole('dialog'); const description = detail.getByRole('textbox', { name: 'Description', exact: true });
+      const preview = detail.getByRole('region', { name: 'Description preview', exact: true });
+      await expect(description).toBeEnabled(); await expect(description).toHaveValue(original);
+      const savedDescription = original.replace('# Editor role source', '# Saved by distinct editor');
+      await detail.getByRole('textbox', { name: 'Card title', exact: true }).fill('Role-edited Card');
+      await description.focus(); await description.fill(savedDescription);
+      await expect(description).toBeFocused();
+      await pressAdmittedAction(detail.getByRole('button', { name: 'Save card', exact: true }));
+      await expect(detail.getByText('Changes saved.', { exact: true })).toBeVisible();
+      await waitForBoardDelivery(context.request, board);
+      await expect(ownerPreview.getByRole('heading', { name: 'Saved by distinct editor', exact: true })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByRole('textbox', { name: 'Description', exact: true })).toHaveValue(savedDescription);
+      const accepted = await context.request.get(`/boards/${board}`); expect(accepted.status()).toBe(200); const snapshot = await accepted.json();
+      expect(snapshot.lists.flatMap((column: { cards: { id: string }[] }) => column.cards).find((row: { id: string }) => row.id === card))
+        .toMatchObject({ id: card, title: 'Role-edited Card', description: savedDescription, version: 2 });
+      const sync = await context.request.get(`/boards/${board}/sync`); expect(sync.status()).toBe(200);
+      const cardUpdates = (await sync.json()).events.filter((event: { eventType: string; entityId: string }) => event.eventType === 'CARD_UPDATED' && event.entityId === card);
+      expect(cardUpdates).toHaveLength(1); expect(cardUpdates[0]).toMatchObject({ actorId: actor.user.id, version: 2 });
+      const draft = savedDescription.replace('# Saved by distinct editor', '# Unsaved after grant removal');
+      await description.focus(); await description.fill(draft);
+      await expect(preview.getByRole('heading', { name: 'Unsaved after grant removal', exact: true })).toBeVisible();
+      const membershipBefore = await context.request.get(`/organizations/${org}/members/${actor.user.id}`); expect(membershipBefore.status()).toBe(200);
+      const organizationMembership = await membershipBefore.json();
+      const removed = await context.request.delete(`/boards/${board}/members/${actor.user.id}`, {
+        headers: { ...headers, 'Idempotency-Key': crypto.randomUUID(), 'If-Match': `"${grant.version}"` },
+      });
+      expect(removed.status()).toBe(204); await waitForBoardDelivery(context.request, board);
+      await expect(description).toBeDisabled({ timeout: 20_000 });
+      await expect(detail.getByRole('button', { name: 'Save card', exact: true })).toHaveCount(0);
+      await expect(detail.getByText('Editing is unavailable. Your unsaved changes are shown here and have not been saved.', { exact: true })).toBeVisible();
+      await expect(description).toHaveValue(draft);
+      await expect(ownerPreview.getByRole('heading', { name: 'Unsaved after grant removal', exact: true })).toHaveCount(0);
+      const readOnly = await editor.request.get(`/boards/${board}`); expect(readOnly.status()).toBe(200);
+      expect((await readOnly.json()).access).toMatchObject({ canView: true, canEdit: false, canAdminister: false });
+      const refused = await editor.request.patch(`/cards/${card}`, {
+        headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { title: 'Refused role edit', description: draft, version: 2 },
+      });
+      expect(refused.status()).toBe(404); expect((await refused.json()).code).toBe('card_not_found');
+      const unchanged = await context.request.get(`/boards/${board}`); expect(unchanged.status()).toBe(200);
+      expect((await unchanged.json()).lists).toEqual(snapshot.lists);
+      const membershipAfter = await context.request.get(`/organizations/${org}/members/${actor.user.id}`); expect(membershipAfter.status()).toBe(200);
+      expect(await membershipAfter.json()).toEqual(organizationMembership);
+      const afterSync = await context.request.get(`/boards/${board}/sync`); expect(afterSync.status()).toBe(200);
+      expect((await afterSync.json()).events.filter((event: { eventType: string; entityId: string }) => event.eventType === 'CARD_UPDATED' && event.entityId === card)).toEqual(cardUpdates);
+      await expect(preview.locator('img,script,iframe,svg')).toHaveCount(0);
+      await expect(preview.getByRole('link', { name: 'Unsafe', exact: true })).toHaveCount(0);
+      const code = preview.locator('pre');
+      expect(await code.textContent()).toBe(codeLine + '\n');
+      expect(await code.evaluate(node => node.scrollWidth > node.clientWidth)).toBe(true);
+      await preview.getByRole('link', { name: 'Reference', exact: true }).focus();
+      await editorPage.keyboard.press('Tab'); await expect(code).toBeFocused();
+      expect(await code.evaluate(node => Number.parseFloat(getComputedStyle(node).outlineWidth))).toBeGreaterThan(0);
+      await editorPage.keyboard.press('ArrowRight');
+      await expect.poll(() => code.evaluate(node => node.scrollLeft)).toBeGreaterThan(0);
+      await editorPage.keyboard.press('ArrowLeft');
+      await expect.poll(() => code.evaluate(node => node.scrollLeft)).toBe(0);
+      expect(await editorPage.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      expect(await editorPage.evaluate(() => (globalThis as typeof globalThis & { descriptionAttack?: boolean }).descriptionAttack)).toBeUndefined();
+      expect((await new AxeBuilder({ page: editorPage }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      const privateBoard = await context.request.patch(`/boards/${board}/visibility`, {
+        headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { visibility: 'PRIVATE', version: snapshot.board.version },
+      });
+      expect(privateBoard.status()).toBe(200); await waitForBoardDelivery(context.request, board);
+      await expect(preview).toHaveCount(0, { timeout: 20_000 });
+      await expect(editorPage.getByText('Unsaved after grant removal', { exact: true })).toHaveCount(0);
+      await expect(editorPage.getByRole('textbox', { name: 'Description', exact: true })).toHaveCount(0);
+      await expect(editorPage.getByText('Editing is unavailable. Your unsaved changes are shown here and have not been saved.', { exact: true })).toHaveCount(0);
+      expect((await editor.request.get(`/boards/${board}`)).status()).toBe(404);
+      expect((await editor.request.get('/me')).status()).toBe(200);
+      expect(documents).toBe(1); expect(externalRequests).toBe(0);
+    } finally { restoreWorker(); await editor.close(); }
+  });
+}
+
 for (const width of [1280, 390]) for (const audience of ['organization-reader', 'anonymous'] as const) {
   test(`PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for ${audience} at ${width}px`, async ({ context, browser }) => {
     test.setTimeout(120_000);

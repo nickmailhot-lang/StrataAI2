@@ -29,6 +29,30 @@ function props() {
   };
 }
 describe("PRD-09/22 drafts across incoming versions", () => {
+  it('identifies an unsaved read-only draft, refuses submission and retains remote conflict protection after editing returns', async () => {
+    const initial = props();
+    const latest = { ...card, version: 4, description: '# Accepted elsewhere' };
+    initial.onDiscard.mockResolvedValue(latest);
+    const { rerender } = render(<CardDetailEditor {...initial} />);
+    const description = screen.getByLabelText('Description');
+    fireEvent.change(description, { target: { value: '# My unsaved description' } });
+    rerender(<CardDetailEditor {...initial} editable={false} />);
+    expect(description).toHaveValue('# My unsaved description');
+    expect(description).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Save card' })).toBeNull();
+    fireEvent.submit((description as HTMLTextAreaElement).form!);
+    expect(initial.onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByText('Editing is unavailable. Your unsaved changes are shown here and have not been saved.')).toBeVisible();
+    rerender(<CardDetailEditor {...initial} card={latest} />);
+    expect(description).toHaveValue('# My unsaved description');
+    expect(screen.getByRole('button', { name: 'Save card' })).toBeDisabled();
+    expect(screen.getByText(/This card changed elsewhere/)).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Discard edits and load latest card' }));
+    await waitFor(() => expect(description).toHaveValue('# Accepted elsewhere'));
+    fireEvent.change(description, { target: { value: '# A fresh edit' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save card' }));
+    expect(initial.onSubmit.mock.calls[0]?.[1]).toBe(4);
+  });
   it("previews a dirty Markdown draft without replacing its original source or accepting a remote description", () => {
     const initial = props();
     const { rerender } = render(<CardDetailEditor {...initial} />);

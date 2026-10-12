@@ -55,3 +55,11 @@ it('replaces rendered source without retaining another description and exposes t
   expect(screen.queryByText('Current context')).toBeNull();
   expect(screen.getByText('No description.')).toBeVisible();
 });
+it('keeps long literal code keyboard focusable for independent horizontal scrolling', () => {
+  const literal = 'long literal segment '.repeat(12);
+  const { container } = render(<CardDescriptionPreview description={'```text\n' + literal + '\n```'} />);
+  const block = container.querySelector('pre')!;
+  expect(block.textContent).toBe(literal + '\n');
+  block.focus();
+  expect(block).toHaveFocus();
+});

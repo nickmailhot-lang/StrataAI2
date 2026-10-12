@@ -1,7 +1,7 @@
 # Card description Markdown — PRD-09
 
 [PRD-09](https://github.com/nickmailhot-lang/StrataAI2/issues/10) remains open at
-**19% estimated work remaining** (planning estimate). This implements
+**18% estimated work remaining** (planning estimate). This implements
 DETAIL-FR-008/009 and verifies a focused AC-DETAIL-09-03 consumer path; it does not
 certify the whole Card Detail ticket or its dependencies.
 
@@ -169,3 +169,61 @@ explicit. The prior full frontend, normal and capacity reports precede this
 boundary change; current full immutable CI, broader role/lifecycle/recovery and
 performance repeatability remain necessary. PRD-09 stays open at **19% estimated
 work remaining**.
+
+## Distinct editors, grant loss and scrollable code (2026-10-12)
+
+The maintained file now also covers distinct MEMBER and ADMIN actors at desktop
+and phone sizes. Both join through real Organization invitations and receive
+their actual Board grant. Native keyboard saving advances the Card exactly once
+to revision 2 and reaches the owner's independently open session. The original
+CARD_UPDATED journal fact identifies the distinct editor. No replies/events are
+fabricated.
+
+After the editor types another local draft, owner API removal of the Board grant
+leaves Organization membership unchanged. Real Worker delivery makes editing
+unavailable while ORGANIZATION visibility still permits reading. The raw draft
+stays local and a MUI warning identifies that it has not been saved. Server edit
+refusal returns card_not_found with the complete Lists/Cards and original update
+fact unchanged. Subsequent PRIVATE visibility removes the entire preview, draft,
+textbox and warning, while the actor's authenticated session remains valid.
+These are native editor/recovery checks; invitation/grant setup and removal use
+actual API commands, not native membership-administration proof.
+
+The draft-warning regression fails before repair and passes afterward, including
+blocked form submission, retained remote conflict after access returns, explicit
+discard and submission from the newly loaded revision. The first complete
+ten-case invocation passes **10/10 in 472.09 seconds** with zero skips/flaky/report
+errors and matching **2,074** hosted/**1,409** native source hashes.
+
+The retained-image notification group for **0d57b03b** subsequently finishes
+**33/34**: its phone description case fails Axe's scrollable-region-focusable rule
+on a pre/code region. The same run's foundation group succeeds. This identifies
+a concrete cross-environment keyboard gap, separate from the earlier contrast
+repair. A new literal-code focus regression fails on the old renderer. Code blocks
+now have an explicit Tab stop and a themed visible outline, preserving literal
+bytes and horizontal overflow. All four editor cases use a deliberately long
+line and prove native Tab focus, ArrowRight scrolling, ArrowLeft restoration,
+visible focus and contained page width before the unchanged tagged Axe checks.
+
+The complete post-repair invocation finishes **9/10 in 468.19 seconds**: all four
+editor/code cases and all four reader cases pass; the original phone owner case
+fails the unchanged **200 ms** opening budget at **206.96 ms**. That case stops at
+the budget assertion, so its later assertions are not claimed executed. All
+**2,074** captured source/runtime hashes and four served-web hashes match. Owned
+containers/database/credential files are removed; original PostgreSQL is retained.
+
+An explicit two-owner-case CPU diagnostic starts sampling before the original
+timer and stops immediately after readiness, before assertions/Axe/failure
+capture. Both original cases pass (**195.36/199.95 ms**), with matching source
+hashes and cleanup. Its generated fixture instrumentation, filtered scope and
+sampling overhead make this diagnostic evidence rather than full acceptance.
+The first 700-ms sampling attempt included later capture work and is retained;
+its totals are not attributed solely to opening. No timing boundary, deadline,
+performance assertion, accessibility rule or mandatory invocation is relaxed.
+
+All **24** focused rendering/editor tests, web/browser types, targeted lint,
+web build and fresh warning-free solution build pass. Full collection is now
+**396 cases / 144 intact files**, partitioned **99/100/115/82**; all **213** CI
+guard regressions pass. Current immutable-image verification of the code fix,
+opening-time repeatability and the complete remaining original AC/DoD are still
+required. PRD-09 remains open at **18% estimated work remaining**.

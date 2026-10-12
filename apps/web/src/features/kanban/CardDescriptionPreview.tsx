@@ -20,6 +20,9 @@ const components: Components = {
   h4: ({ children }) => <h6>{children}</h6>,
   h5: ({ children }) => <h6>{children}</h6>,
   h6: ({ children }) => <h6>{children}</h6>,
+  // Code can overflow independently of the Card. Make that scroll region
+  // reachable with Tab and native arrow keys on every supported browser.
+  pre: ({ children }) => <pre tabIndex={0}>{children}</pre>,
   a: ({ href, children }) => href
     ? <a href={href} target="_blank" rel="noopener noreferrer nofollow">{children}</a>
     : <span>{children}</span>,
@@ -55,6 +58,7 @@ export const CardDescriptionPreview = memo(function CardDescriptionPreview({ des
           '& ol, & ul': { pl: 3 },
           '& blockquote': { mx: 0, pl: 2, borderLeft: 3, borderColor: 'divider' },
           '& pre': { maxWidth: '100%', overflowX: 'auto', p: 1, bgcolor: 'action.hover', borderRadius: 1 },
+          '& pre:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 2 },
           '& code': { fontFamily: 'monospace' },
           '& a': { color: 'primary.main', textDecoration: 'underline', '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main' } },
         },

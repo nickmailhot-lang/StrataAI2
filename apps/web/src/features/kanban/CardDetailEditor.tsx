@@ -77,6 +77,9 @@ export function CardDetailEditor({
     >
       {saved && !dirty && <Typography role="status">Changes saved.</Typography>}
       {error && renderError(error)}
+      {!editable && dirty && <Alert severity="warning">
+        Editing is unavailable. Your unsaved changes are shown here and have not been saved.
+      </Alert>}
       <Button disabled={busy} onClick={onRefresh}>
         Refresh card
       </Button>
