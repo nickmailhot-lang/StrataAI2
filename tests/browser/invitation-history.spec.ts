@@ -14,7 +14,20 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       data: { email, surface: 'PORTAL', targetRole: 'OWNER' } }); expect(invitation.status()).toBe(201);
     const id = (await invitation.json()).id;
     await page.goto(`/app/${org}/members`);
-    await page.getByRole('link', { name: 'Review issued invitations' }).focus(); await page.keyboard.press('Enter');
+    const historyLink = page.getByRole('link', { name: 'Review issued invitations' });
+    const historyHeading = page.getByRole('heading', { name: 'Issued invitations' });
+    // Once navigation starts, the source link disappears before the new view
+    // is admitted. Wait for that heading instead of refocusing a retired link.
+    await expect(async () => {
+      if (await historyHeading.isVisible()) return;
+      if (await historyLink.isVisible()) {
+        await expect(historyLink).toBeEnabled({ timeout: 500 });
+        await historyLink.focus({ timeout: 500 });
+        await expect(historyLink).toBeFocused({ timeout: 500 });
+        await historyLink.press('Enter', { timeout: 500 });
+      }
+      await expect(historyHeading).toBeVisible({ timeout: 500 });
+    }).toPass({ timeout: 5_000 });
     await expect(page.getByRole('heading', { name: 'Issued invitations' })).toBeVisible();
     await expect(page.getByText('No email delivery recorded')).toBeVisible();
     await expect(page.getByText('Current invitations checked. Review an invitation again before confirming revocation.', { exact: true })).toBeVisible();

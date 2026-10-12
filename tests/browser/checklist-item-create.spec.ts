@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-13: keyboard item creation, exact retry and two-session progress at ${width}px`, async ({ page, context, browser }) => {
@@ -19,9 +20,19 @@ for (const width of [1280, 390]) {
     try {
       expect((await peerContext.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
       const peer = await peerContext.newPage(); await peer.goto(route);
-      const show = peer.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
-      await peer.getByRole('button', { name: 'Show items in Preparations', exact: true }).press('Enter');
-      await expect(peer.getByText('No items on this page.', { exact: true })).toBeVisible();
+      const show = peer.getByRole('button', { name: 'Show checklists', exact: true });
+      const showItems = peer.getByRole('button', { name: 'Show items in Preparations', exact: true });
+      const emptyItems = peer.getByText('No items on this page.', { exact: true });
+      // Read-only disclosure can retire while foreground admission refreshes
+      // the parent. Observe the empty item page, progressing only unopened
+      // disclosure stages; creation and its original recovery remain below.
+      await expect(async () => {
+        if (await emptyItems.isVisible()) return;
+        if (await showItems.isVisible()) await pressAdmittedAction(showItems);
+        else if (await show.isVisible()) await pressAdmittedAction(show);
+        await expect(emptyItems).toBeVisible({ timeout: 500 });
+      }).toPass({ timeout: 5_000 });
+      await expect(emptyItems).toBeVisible();
       const manage = page.getByRole('button', { name: 'Manage checklists', exact: true }); await expect(manage).toBeEnabled(); await manage.press('Enter');
       await page.getByRole('button', { name: 'Add item to Preparations', exact: true }).press('Enter');
       const save = page.getByRole('button', { name: 'Create checklist item', exact: true }); await expect(save).toBeDisabled();
