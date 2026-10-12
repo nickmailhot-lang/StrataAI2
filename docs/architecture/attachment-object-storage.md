@@ -730,4 +730,3 @@ certification or deployed external provider acceptance. The earlier CI desktop
 background-review failure is not reproduced, so its cause and repair are not
 claimed. Current complete immutable CI and all remaining PRD-14 acceptance/DoD
 requirements remain necessary. Estimated PRD-14 work remaining stays **32%**.
-

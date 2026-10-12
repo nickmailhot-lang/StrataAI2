@@ -431,4 +431,3 @@ file explicitly simulates its metadata/provider responses. Full immutable CI,
 the broader lifecycle/role/reconnect matrix, provider/backup authority and the
 remaining original acceptance criteria still govern closure. PRD-18 remains
 open at **15% estimated work remaining** (planning estimate).
-
