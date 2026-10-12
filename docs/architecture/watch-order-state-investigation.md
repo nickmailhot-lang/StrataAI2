@@ -1,5 +1,7 @@
 # Current watch permission-order state investigation
 
+See [component diagnostics](watch-order-component-diagnostics.md) for the expanded discovery capture and validated failure-only hash attachment. The hosted failure remains unresolved.
+
 The `baad6b8c` full-browser fourth shard fails all four role scenarios at the
 whole private-state fingerprint following original Card receipt replay. Source
 mapping shows the preceding HTTP receipt-body comparisons passed; the failure

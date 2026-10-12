@@ -1,5 +1,7 @@
 # StrataAI2 architecture
 
+[Permission-order component diagnostics](watch-order-component-diagnostics.md) preserves complete state comparisons and records a deliberate failure probe for safe hosted diagnosis.
+
 [Archived Card recovery admission](archived-card-recovery-admission-verification.md) records observed original receipt recovery and complete desktop/mobile verification supporting the operational MVP.
 
 [Board starring review opening](board-star-opening-verification.md) records the hosted admission interruption and complete local desktop/mobile verification for the operational MVP.

@@ -42,7 +42,11 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
     }
     const watchState = () => query(`SELECT md5(jsonb_agg(to_jsonb(w) ORDER BY id)::text) FROM watch_subscriptions w WHERE tenant_id='${org}' AND user_id='${recipient}';`);
     const originalWatches = watchState();
-    const privateState = () => query(`SELECT md5(jsonb_build_object(
+    const stateComponents = new Map<string, Record<string, string>>();
+    const privateState = () => {
+      // Keep the original complete text hash. Component hashes share its SQL
+      // snapshot and disclose no record contents, identifiers or job payloads.
+      const captured = JSON.parse(query(`WITH source_snapshot AS (SELECT jsonb_build_object(
       'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c WHERE tenant_id='${org}'),
       'watches',(SELECT jsonb_agg(to_jsonb(w) ORDER BY id) FROM watch_subscriptions w WHERE tenant_id='${org}'),
       'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY event_id) FROM work_events e WHERE tenant_id='${org}'),
@@ -51,7 +55,26 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
       'notifications',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='${org}'),
       'journal',(SELECT jsonb_agg(to_jsonb(e) ORDER BY recipient_id,sequence) FROM notification_events e WHERE tenant_id='${org}'),
       'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY recipient_id) FROM notification_event_streams s WHERE tenant_id='${org}'),
-      'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY actor_id,key_id) FROM work_command_replays r WHERE tenant_id='${org}'))::text);`);
+      'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY actor_id,key_id) FROM work_command_replays r WHERE tenant_id='${org}'))::text AS snapshot)
+      SELECT jsonb_build_object('hash',md5(snapshot),'components',
+        (SELECT jsonb_object_agg(key,md5(value::text)) FROM jsonb_each(snapshot::jsonb)))::text FROM source_snapshot;`)) as {
+        hash: string; components: Record<string, string>;
+      };
+      stateComponents.set(captured.hash, captured.components);
+      return captured.hash;
+    };
+    const expectPrivateState = async (expected: string) => {
+      const actual = privateState();
+      if (actual !== expected) {
+        const before = stateComponents.get(expected), after = stateComponents.get(actual);
+        await test.info().attach('permission-state-component-hashes', {
+          body: Buffer.from(JSON.stringify({ role, before, after,
+            changedFields: Object.keys(after ?? {}).filter(key => before?.[key] !== after?.[key]) })),
+          contentType: 'application/json',
+        });
+      }
+      expect(actual).toBe(expected);
+    };
     const retainedState = () => query(`SELECT md5(jsonb_build_object('notifications',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='${org}'),'journal',(SELECT jsonb_agg(to_jsonb(e) ORDER BY recipient_id,sequence) FROM notification_events e WHERE tenant_id='${org}'),'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY recipient_id) FROM notification_event_streams s WHERE tenant_id='${org}'))::text);`);
     let version = 1;
     for (const withdrawalFirst of [true, false]) {
@@ -85,7 +108,7 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
         }
       }
       const replay = await source(); expect(replay.status()).toBe(200); expect(await replay.text()).toBe(sourceText);
-      expect(privateState()).toBe(committed);
+      await expectPrivateState(committed);
       if (reader) {
         const deniedBoard = await context.request.get(`/boards/${board}`); expect(deniedBoard.status()).toBe(200);
         expect((await context.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility, version: (await deniedBoard.json()).board.version } })).status()).toBe(200);
@@ -153,7 +176,7 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
         const replay = await context.request.patch(`/cards/${card}`, { headers: { ...headers, 'Idempotency-Key': source.key }, data: source.body });
         expect(replay.status()).toBe(200); expect(await replay.text()).toBe(source.text);
       }
-      expect(privateState()).toBe(committed); expect(watchState()).toBe(originalWatches);
+      await expectPrivateState(committed); expect(watchState()).toBe(originalWatches);
       if (reader) {
         const hidden = await context.request.get(`/boards/${board}`); expect(hidden.status()).toBe(200);
         expect((await context.request.patch(`/boards/${board}/visibility`, { headers, data: { visibility, version: (await hidden.json()).board.version } })).status()).toBe(200);
@@ -171,7 +194,7 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
       await expectPersistedNotificationDelivery(member.request, org, recipient, []);
       const acknowledged = privateState();
       const retry = await read(); expect(retry.status()).toBe(200); expect(await retry.text()).toBe(originalReadText);
-      expect(privateState()).toBe(acknowledged);
+      await expectPrivateState(acknowledged);
     }
     expect(query(`SELECT version FROM cards WHERE tenant_id='${org}' AND id='${card}';`)).toBe('9');
     expect(query(`SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${recipient}';`)).toBe('7');
