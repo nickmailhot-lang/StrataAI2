@@ -18,6 +18,7 @@ public sealed partial class ApiHostTests
         public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => Task.FromResult(Reference(Receipt?.Key == key ? Receipt.Result : null));
         private static RetentionHoldReference? Reference(RetentionHold? hold) => hold is null ? null : new(hold.OrganizationId, hold.Id,
             hold.Version, hold.RecordClass, hold.Category is not null, hold.RecordId, null, null, null, null);
+        public Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct) => throw new NotSupportedException("Command probe does not establish history.");
         public RetentionHold? Current { get; set; }
         public RetentionHoldReceipt? Receipt { get; set; }
         public RetentionHoldWrite? LastWrite { get; private set; }

@@ -66,6 +66,21 @@ internal sealed class PostgresRetentionHoldStore(PostgresConnectionFactory conne
         await using var reader = await command.ExecuteReaderAsync(ct);
         return await reader.ReadAsync(ct) ? new(actor, key, reader.GetString(12), Decode(reader), reader.GetFieldValue<DateTimeOffset>(13)) : null;
     }
+    public async Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        await using var session = await connections.OpenTenantSessionAsync(organization, ct);
+        await using var command = new NpgsqlCommand("SELECT " + Fields + """
+            ,h.actor_id,h.actor_label,h.acting_capacity,h.event_id,h.correlation_id,h.changed_at
+            FROM record_retention_hold_history h WHERE h.tenant_id=@tenant AND h.hold_id=@hold ORDER BY h.version LIMIT 3;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organization); command.Parameters.AddWithValue("hold", hold);
+        var rows = new List<RetentionHoldRevision>(); await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct)) rows.Add(new(Decode(reader), reader.GetGuid(12), reader.GetString(13),
+            reader.GetString(14) switch { "ORGANIZATION_OWNER" => OrganizationRole.Owner, "ORGANIZATION_ADMIN" => OrganizationRole.Admin,
+                _ => throw new InvalidOperationException("Unknown hold capacity.") }, reader.GetGuid(15), reader.GetString(16), reader.GetFieldValue<DateTimeOffset>(17)));
+        return rows.AsReadOnly();
+    }
     public async Task<RetentionHoldWriteResult> WriteAsync(long expectedVersion, RetentionHoldWrite write, CancellationToken ct)
     {
         var hold = write.Hold; var receipt = write.Receipt;

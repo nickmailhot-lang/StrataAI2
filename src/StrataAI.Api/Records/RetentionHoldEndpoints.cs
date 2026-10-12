@@ -19,7 +19,7 @@ public sealed record ReleaseRetentionHoldRequest([property: JsonRequired] long V
 
 public static class RetentionHoldEndpoints
 {
-    private static readonly JsonSerializerOptions Options = CreateOptions();
+    internal static readonly JsonSerializerOptions Options = CreateOptions();
     private static JsonSerializerOptions CreateOptions()
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
@@ -33,6 +33,7 @@ public static class RetentionHoldEndpoints
     public static void MapRetentionHoldEndpoints(this RouteGroupBuilder group)
     {
         group.MapGet("/{organizationId:guid}/retention-holds/{holdId:guid}", ReadAsync);
+        group.MapGet("/{organizationId:guid}/retention-holds/{holdId:guid}/history", HistoryAsync);
         group.MapPost("/{organizationId:guid}/retention-holds/{holdId:guid}/apply", ApplyAsync);
         group.MapPost("/{organizationId:guid}/retention-holds/{holdId:guid}/release", ReleaseAsync);
     }
@@ -42,6 +43,14 @@ public static class RetentionHoldEndpoints
         context.Response.Headers.CacheControl = "private, no-store";
         var actor = Actor(context); if (actor is null) return Error("session_unavailable");
         var result = await commands.ReadAsync(organizationId, actor.Value, holdId, ct);
+        return result.Succeeded ? Results.Json(result.Value, Options) : Error(result.ErrorCode);
+    }
+    public static async Task<IResult> HistoryAsync(Guid organizationId, Guid holdId, HttpContext context,
+        RetentionHoldService commands, CancellationToken ct)
+    {
+        context.Response.Headers.CacheControl = "private, no-store";
+        var actor = Actor(context); if (actor is null) return Error("session_unavailable");
+        var result = await commands.ReadTimelineAsync(organizationId, actor.Value, holdId, ct);
         return result.Succeeded ? Results.Json(result.Value, Options) : Error(result.ErrorCode);
     }
     public static async Task<IResult> ApplyAsync(Guid organizationId, Guid holdId, HttpContext context,

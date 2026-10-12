@@ -20,6 +20,52 @@ async function chooseHold(page: Page, name: string, option: string) {
   await page.getByRole('option', { name: option, exact: true }).focus(); await page.keyboard.press('Enter');
 }
 
+for (const width of [1280,390]) {
+  test(`PRD-70 hold administration streams another actor's release and withdraws history at ${width}px`,async ({page,context,browser})=>{
+    test.setTimeout(120_000);await page.setViewportSize({width,height:844});
+    const owner=await browser.newContext({baseURL:test.info().project.use.baseURL});
+    const frames:{userId:string;holdId:string;events:{eventId:string;eventType:string;actorId:string;entityVersion:number}[]}[]=[];
+    page.on('websocket',socket=>{
+      if (!new URL(socket.url()).pathname.endsWith('/organizations/live/retention-holds')) return;
+      socket.on('framereceived',frame=>{if(typeof frame.payload==='string')for(const part of frame.payload.split('\u001e').filter(Boolean)){
+        try{const message=JSON.parse(part);if(message.type===2 && message.item?.events)frames.push(message.item);}catch{/* Partial frame. */}
+      }});
+    });
+    try{
+      const verified=process.env.STRATAAI_E2E_RUNTIME_MODE!=='demo';
+      const author=await registerNotificationAccount(owner.request,{email:`hold-live-owner-${width}-${crypto.randomUUID()}@example.test`,password:'hold-live-owner-fixture',displayName:'Live hold Owner'},verified);
+      const email=`hold-live-admin-${width}-${crypto.randomUUID()}@example.test`;
+      const admin=await registerNotificationAccount(context.request,{email,password:'hold-live-admin-fixture',displayName:'Live hold administrator'},verified);
+      const created=await owner.request.post('/organizations',{headers,data:{name:'Live hold fixture'}});expect(created.status()).toBe(201);const org=(await created.json()).organization.id;
+      const invitation=await owner.request.post(`/organizations/${org}/invitations`,{headers,data:{email,surface:'INTERNAL',targetRole:'ADMIN'}});expect(invitation.status()).toBe(201);
+      expect((await context.request.post(`/me/invitations/${(await invitation.json()).id}/accept`,{headers})).status()).toBe(200);
+      const id=crypto.randomUUID(),path=`/organizations/${org}/retention-holds/${id}`;
+      const applied=await owner.request.post(path+'/apply',{headers:{...headers,'Idempotency-Key':crypto.randomUUID()},data:{recordClass:null,category:null,recordId:null,
+        reason:'Live private preservation reason',review:null,confirmed:true}});expect(applied.status()).toBe(200);
+      await page.goto(`/app/${org}/retention-holds`);const identifier=page.getByRole('textbox',{name:'Hold identifier',exact:true});await expect(identifier).toBeEnabled();await identifier.fill(id);
+      await press(page,'Load current hold');await expect(page.getByText('Status: active. Version: 1.',{exact:true})).toBeVisible();
+      await expect.poll(()=>frames.some(frame=>frame.userId===admin.user.id && frame.holdId===id && frame.events.some(event=>event.eventType==='RETENTION_HOLD_APPLIED'))).toBe(true);
+      await press(page,'View hold history');await expect(page.getByRole('region',{name:'Retained hold history'})).toContainText('Applied by Live hold Owner as Organization Owner');
+      await page.getByRole('checkbox',{name:'I reviewed this version and confirm release of this hold.',exact:true}).focus();await page.keyboard.press('Space');
+      const release=await owner.request.post(path+'/release',{headers:{...headers,'Idempotency-Key':crypto.randomUUID()},data:{version:1,confirmed:true}});expect(release.status()).toBe(200);
+      await expect(page.getByText('Status: released. Version: 2.',{exact:true})).toBeVisible({timeout:10_000});
+      await expect(page.getByRole('button',{name:'Release confirmed hold',exact:true})).toHaveCount(0);
+      await expect(page.getByRole('region',{name:'Retained hold history'})).toHaveCount(0);
+      await expect.poll(()=>frames.some(frame=>frame.events.some(event=>event.eventType==='RETENTION_HOLD_RELEASED' && event.entityVersion===2 && event.actorId===author.user.id))).toBe(true);
+      await press(page,'View hold history');await expect(page.getByRole('region',{name:'Retained hold history'})).toContainText('Released by Live hold Owner as Organization Owner');
+      const timeline=await owner.request.get(path+'/history');expect(timeline.status()).toBe(200);const revisions=(await timeline.json()).revisions;
+      expect(frames.flatMap(frame=>frame.events).find(event=>event.eventType==='RETENTION_HOLD_RELEASED')?.eventId).toBe(revisions[1].eventId);
+      expect((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze()).violations).toEqual([]);
+      expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      const memberResponse=await owner.request.get(`/organizations/${org}/members/${admin.user.id}`);expect(memberResponse.status()).toBe(200);const member=(await memberResponse.json()).member;
+      expect((await owner.request.delete(`/organizations/${org}/members/${admin.user.id}?expectedVersion=${member.version}`,{headers:{...headers,'Idempotency-Key':crypto.randomUUID()}})).status()).toBe(204);
+      await expect(page.getByRole('region',{name:'Retained hold history'})).toHaveCount(0,{timeout:20_000});
+      expect(await page.locator('body').innerText()).not.toContain('Live private preservation reason');
+      expect((await context.request.get(path+'/history')).status()).toBe(404);
+    }finally{await owner.close();}
+  });
+}
+
 for (const width of [1280, 390]) {
   test(`PRD-70 hold administration recovers reviewed preservation and releases blocked disposition at ${width}px`, async ({ page, context }) => {
     test.setTimeout(120_000); await page.setViewportSize({ width, height: 844 });

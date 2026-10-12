@@ -60,6 +60,7 @@ internal static class RetentionHoldPersistenceContract
         public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => inner.ReadReceiptReferenceAsync(organization, actor, key, ct);
         public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct) => throw new NotSupportedException();
         public Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct) { Reads++; return inner.ReadAsync(organization, hold, ct); }
+        public Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct) { Reads++; return inner.ReadHistoryAsync(organization, hold, ct); }
         public Task<RetentionHoldReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) { Reads++; return inner.ReadReceiptAsync(organization, actor, key, ct); }
         public Task<RetentionHoldWriteResult> WriteAsync(long expected, RetentionHoldWrite write, CancellationToken ct) { Writes++; return inner.WriteAsync(expected, write, ct); }
     }
@@ -69,6 +70,7 @@ internal static class RetentionHoldPersistenceContract
         public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadReferenceAsync(organization, hold, ct);
         public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => inner.ReadReceiptReferenceAsync(organization, actor, key, ct);
         public Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadAsync(organization, hold, ct);
+        public Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadHistoryAsync(organization, hold, ct);
         public Task<RetentionHoldReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => inner.ReadReceiptAsync(organization, actor, key, ct);
         public async Task<RetentionHoldWriteResult> WriteAsync(long expected, RetentionHoldWrite write, CancellationToken ct)
         { var result = await inner.WriteAsync(expected, write, ct); if (result == RetentionHoldWriteResult.Written) after(); return result; }
@@ -187,6 +189,18 @@ internal static class RetentionHoldPersistenceContract
             Require((await service.ReadAsync(tenant, actor, hold, ct)).Value == applied.Value, "Native persisted refresh differs.");
             var released = await service.ReleaseAsync(tenant, actor, hold, 1, Guid.NewGuid(), "native-hold-contract", ct);
             Require(released.Succeeded && released.Value is { Version: 2, Status: RetentionHoldStatus.Released }, "Native release failed.");
+            var replayPage = await service.ReadSyncAsync(tenant, actor, hold, 0, ct);
+            Require(replayPage.Succeeded && replayPage.Value!.Events.Count == 2
+                && replayPage.Value.Events[0].EventType == "RETENTION_HOLD_APPLIED"
+                && replayPage.Value.Events[1].EventType == "RETENTION_HOLD_RELEASED"
+                && replayPage.Value.Events.Select(x => x.EventId).Distinct().Count() == 2,
+                "Native hold audit replay differs from immutable history.");
+            var afterApply = await service.ReadSyncAsync(tenant, actor, hold, 1, ct);
+            Require(afterApply.Succeeded && afterApply.Value!.Events.Count == 1
+                && afterApply.Value.Events[0] == replayPage.Value!.Events[1], "Native missed release replay changed identity.");
+            Require(!(await service.ReadTimelineAsync(other, actor, hold, ct)).Succeeded, "Native foreign hold history disclosed.");
+            Console.WriteLine("Native hold history and replay: bounded original audit identities, missed release recovery and foreign refusal passed; actor session remains a native fixture.");
+
             Require((await service.ApplyAsync(tenant, actor, hold, scope, "Private native hold reason", key, "retry", ct)).Value == applied.Value,
                 "Native Apply recovery substituted current Released head.");
             Require((await service.ReadAsync(tenant, actor, hold, ct)).Value == released.Value, "Native recovery reactivated a released hold.");

@@ -12,6 +12,15 @@ public sealed record RetentionHoldReceipt(Guid ActorId, Guid Key, string Fingerp
 public sealed record RetentionHoldWrite(RetentionHold Hold, Guid ActorId, Guid MembershipId,
     long MembershipVersion, OrganizationRole ActingCapacity, Guid EventId, string CorrelationId,
     RetentionHoldReceipt Receipt);
+public sealed record RetentionHoldRevision(RetentionHold Hold, Guid ActorId, string ActorLabel,
+    OrganizationRole ActingCapacity, Guid EventId, string CorrelationId, DateTimeOffset CreatedAt);
+public sealed record RetentionHoldEventMetadata(string Status, string ScopeKind);
+public sealed record RetentionHoldEvent(Guid EventId, string EventType, Guid OrganizationId, Guid ActorId,
+    string ActingCapacity, string EntityType, Guid EntityId, long EntityVersion, string CorrelationId,
+    DateTimeOffset CreatedAt, RetentionHoldEventMetadata Metadata);
+public sealed record RetentionHoldTimeline(RetentionHold Current, IReadOnlyList<RetentionHoldRevision> Revisions);
+public sealed record RetentionHoldSyncPage(Guid OrganizationId, Guid UserId, Guid HoldId, RetentionHold Current,
+    long AfterVersion, bool ResetRequired, IReadOnlyList<RetentionHoldEvent> Events);
 public enum RetentionHoldWriteResult { Written, VersionConflict, KeyConflict, SourceUnavailable }
 public interface IRetentionHoldStore
 {
@@ -21,6 +30,7 @@ public interface IRetentionHoldStore
     Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct);
     Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct);
     Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct);
+    Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct);
     Task<RetentionHoldReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct);
     // All current/history/receipt/audit writes belong to the existing transaction.
     Task<RetentionHoldWriteResult> WriteAsync(long expectedVersion, RetentionHoldWrite write, CancellationToken ct);
@@ -38,6 +48,59 @@ public interface IRetentionHoldScopeAuthorization
 public sealed class RetentionHoldService(IOrganizationStore organizations, IRetentionHoldStore holds,
     IRetentionHoldScopeAuthorization scopes, IOrganizationUnitOfWork unit, ICommandActorAuthorization actors, IClock clock)
 {
+    public Task<OrganizationOperation<RetentionHoldTimeline>> ReadTimelineAsync(Guid organization, Guid actor, Guid hold,
+        CancellationToken ct = default) => Owned(organization, actor, async () =>
+        {
+            OrganizationOperation<RetentionHoldTimeline> Fail(string code) => OrganizationOperation<RetentionHoldTimeline>.Failure(code);
+            // Authorize the retained original/application AND current source gates
+            // before reading any private historical reason or actor snapshot.
+            var admitted = await ReadCurrentAsync(organization, actor, hold, ct);
+            if (!admitted.Succeeded) return Fail(admitted.ErrorCode!);
+            var current = admitted.Value;
+            if (current is null) return Fail("retention_hold_not_found");
+            if (!Valid(current, organization, hold, clock.UtcNow) || current.Version is not (1 or 2)) return Fail("retention_hold_source_unavailable");
+            var history = await holds.ReadHistoryAsync(organization, hold, ct);
+            // The persisted lifecycle is exactly one application and at most one
+            // release. A third row is corruption, never a silently truncated page.
+            if (history.Count != current.Version || history.Select(x => x.EventId).Distinct().Count() != history.Count)
+                return Fail("retention_hold_source_unavailable");
+            for (var index = 0; index < history.Count; index++)
+            {
+                var revision = history[index]; var value = revision.Hold;
+                if (value.Version != index + 1 || !Valid(value, organization, hold, clock.UtcNow)
+                    || value.Status != (index == 0 ? RetentionHoldStatus.Active : RetentionHoldStatus.Released)
+                    || Scope(value) != Scope(current) || value.Reason != current.Reason || value.AppliedBy != current.AppliedBy
+                    || value.AppliedAt != current.AppliedAt || revision.ActorId != (value.ReleasedBy ?? value.AppliedBy)
+                    || revision.CreatedAt != ChangedAt(value) || revision.EventId == Guid.Empty
+                    || revision.ActingCapacity is not (OrganizationRole.Owner or OrganizationRole.Admin)
+                    || string.IsNullOrWhiteSpace(revision.ActorLabel) || revision.ActorLabel.Length > 160 || revision.ActorLabel.Any(char.IsControl)
+                    || string.IsNullOrWhiteSpace(revision.CorrelationId) || revision.CorrelationId.Length > 256 || revision.CorrelationId.Any(char.IsControl))
+                    return Fail("retention_hold_source_unavailable");
+            }
+            if (history[^1].Hold != current) return Fail("retention_hold_source_unavailable");
+            var confirmed = await ReadCurrentAsync(organization, actor, hold, ct);
+            if (!confirmed.Succeeded) return Fail(confirmed.ErrorCode!);
+            if (confirmed.Value != current) return Fail("retention_hold_source_unavailable");
+            return OrganizationOperation<RetentionHoldTimeline>.Success(new(current, history));
+        }, ct);
+
+    public async Task<OrganizationOperation<RetentionHoldSyncPage>> ReadSyncAsync(Guid organization, Guid actor, Guid hold,
+        long afterVersion, CancellationToken ct = default)
+    {
+        var timeline = await ReadTimelineAsync(organization, actor, hold, ct);
+        if (!timeline.Succeeded) return OrganizationOperation<RetentionHoldSyncPage>.Failure(timeline.ErrorCode!);
+        if (afterVersion is < 0 or > 2) return OrganizationOperation<RetentionHoldSyncPage>.Failure("invalid_retention_hold_cursor");
+        var source = timeline.Value!; var reset = afterVersion > source.Current.Version;
+        var events = source.Revisions.Where(x => x.Hold.Version > (reset ? 0 : afterVersion)).Select(x => new RetentionHoldEvent(
+            x.EventId, x.Hold.Status == RetentionHoldStatus.Active ? "RETENTION_HOLD_APPLIED" : "RETENTION_HOLD_RELEASED",
+            organization, x.ActorId, x.ActingCapacity == OrganizationRole.Owner ? "ORGANIZATION_OWNER" : "ORGANIZATION_ADMIN",
+            "RETENTION_HOLD", hold, x.Hold.Version, x.CorrelationId, x.CreatedAt,
+            new(x.Hold.Status.ToString().ToUpperInvariant(), x.Hold.RecordId is not null ? "RECORD"
+                : x.Hold.Category is not null ? "CATEGORY" : x.Hold.RecordClass is not null ? "CLASS" : "ORGANIZATION"))).ToArray();
+        return OrganizationOperation<RetentionHoldSyncPage>.Success(new(organization, actor, hold, source.Current, source.Current.Version, reset, events));
+    }
+
+
     public Task<OrganizationOperation<RetentionHold?>> ReadAsync(Guid organization, Guid actor, Guid hold,
         CancellationToken ct = default) => Owned(organization, actor, async () =>
         {

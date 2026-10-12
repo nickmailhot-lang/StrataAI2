@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, Container, FormControlLabel, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
+import { watchRetentionHold } from './retentionHoldLive';
 import { WorkRequestError } from '../../api/workManagement';
 import { readRetentionPolicies } from './retentionPolicyClient';
 import { recordClasses } from './RetentionPolicyEditor';
 import { type RetentionSourceKind, type RetentionSourceReview } from './retentionSourceClient';
-import { forgetHoldIntent, forgetForeignHoldIntents, readHold, restoreHoldIntent, retainHoldIntent, validateHoldIntent, reviewHoldSource, submitHoldIntent,
-  type HoldClass, type HoldIntent, type RetentionHold } from './retentionHoldClient';
+import { forgetHoldIntent, forgetForeignHoldIntents, readHold, readHoldTimeline, restoreHoldIntent, retainHoldIntent, validateHoldIntent, reviewHoldSource, submitHoldIntent,
+  type HoldClass, type HoldIntent, type RetentionHold, type HoldTimeline } from './retentionHoldClient';
 
 export function RetentionHoldsPage() {
   const { organizationId } = useParams();
@@ -20,6 +21,9 @@ function HoldScreen({ organizationId }: { organizationId: string }) {
   const [category, setCategory] = useState(''), [recordId, setRecordId] = useState(''), [reason, setReason] = useState('');
   const [kind, setKind] = useState<RetentionSourceKind>('attachment'), [review, setReview] = useState<RetentionSourceReview>();
   const [holdId, setHoldId] = useState(''), [hold, setHold] = useState<RetentionHold>();
+  const [timeline,setTimeline]=useState<HoldTimeline>();
+  const [holdConfirmed,setHoldConfirmed]=useState(false),[liveNotice,setLiveNotice]=useState<string>();
+  const currentHold=useRef<RetentionHold | undefined>(undefined); currentHold.current=hold;
   const [confirmed, setConfirmed] = useState(false), [releaseConfirmed, setReleaseConfirmed] = useState(false);
   const [intent, setIntent] = useState<HoldIntent>(), [refused, setRefused] = useState(false), [recoveryBlocked, setRecoveryBlocked] = useState(false);
   const [error, setError] = useState<string>(), [notice, setNotice] = useState<string>();
@@ -27,7 +31,7 @@ function HoldScreen({ organizationId }: { organizationId: string }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const withdraw = useCallback((lost: boolean) => {
     ++generation.current; active.current?.abort(); active.current = undefined; setBusy(false); setAdmitted(false); setReview(undefined); setHold(undefined); setNotice(undefined);
-    setConfirmed(false); setReleaseConfirmed(false);
+    setConfirmed(false); setReleaseConfirmed(false); setHoldConfirmed(false); setTimeline(undefined); setLiveNotice(undefined);
     if (lost) {
       if (actorRef.current) { try { forgetHoldIntent(actorRef.current, organizationId); } catch { /* Access remains withdrawn. */ } }
       setReason(''); setRecordId(''); setCategory(''); setHoldId(''); setIntent(undefined); setDenied(true);
@@ -73,10 +77,23 @@ function HoldScreen({ organizationId }: { organizationId: string }) {
     catch (value) { if (alive.current && at === generation.current) failure(value,sent); }
     finally { if (alive.current && at === generation.current) { active.current = undefined; setBusy(false); } }
   }
+  const watchedHoldId=hold?.id;
+  useEffect(() => {
+    if (!watchedHoldId || !actor || !admitted || intent) return;
+    const source=currentHold.current!;
+    return watchRetentionHold({source,actorId:actor,
+      pending:()=>{setHoldConfirmed(false);setTimeline(undefined);setReleaseConfirmed(false);},
+      confirmed:next=>{
+        const previous=currentHold.current;
+        if (!previous || previous.id!==watchedHoldId || next.version<previous.version) return;
+        if (next.version!==previous.version) {setReleaseConfirmed(false);setTimeline(undefined);setLiveNotice('This hold changed. Its current status is shown.');}
+        currentHold.current=next;setHold(next);setHoldConfirmed(true);
+      },accessLost:()=>withdraw(true)});
+  },[watchedHoldId,actor,admitted,intent,withdraw]);
   async function submit(original: HoldIntent) {
     try { original = validateHoldIntent(original,original.actorId,original.organizationId); }
     catch { setError('Provide a valid hold scope, category, reason and source review.'); return; }
-    try { retainHoldIntent(original); setIntent(original); }
+    try { retainHoldIntent(original); setIntent(original); setHold(undefined); setHoldConfirmed(false); setReleaseConfirmed(false); setLiveNotice(undefined); }
     catch { setRecoveryBlocked(true); setError('The original request could not be retained. No request was sent.'); return; }
     await run(async signal => {
       const result = await submitHoldIntent(original,signal); signal.throwIfAborted(); if (!alive.current) return;
@@ -132,13 +149,27 @@ function HoldScreen({ organizationId }: { organizationId: string }) {
       </Stack></Paper>
       <Paper variant="outlined" sx={{ p:2 }}><Stack spacing={2}>
         <Typography variant="h6" component="h2">Review or release a hold</Typography>
-        <TextField label="Hold identifier" value={holdId} disabled={disabled} onChange={e => { setHoldId(e.target.value); setHold(undefined); setReleaseConfirmed(false); }} />
+        <TextField label="Hold identifier" value={holdId} disabled={disabled} onChange={e => { setHoldId(e.target.value); setHold(undefined); setHoldConfirmed(false); setTimeline(undefined); setLiveNotice(undefined); setReleaseConfirmed(false); }} />
         <Button disabled={disabled || !holdId} onClick={() => void run(async signal => {
           const result = await readHold(organizationId,holdId.toLowerCase(),actor!,signal); signal.throwIfAborted();
-          if (alive.current) { setHold(result); setReleaseConfirmed(false); }
+          if (alive.current) { setHoldConfirmed(false); setTimeline(undefined); setLiveNotice(undefined); setHold(result); setReleaseConfirmed(false); }
         })}>Load current hold</Button>
-        {hold && <>
+        {liveNotice && <Alert severity="info" role="status">{liveNotice}</Alert>}
+        {hold && !holdConfirmed && <Alert severity="info">Confirming current hold status. Release is unavailable until its authority is confirmed.</Alert>}
+        {hold && holdConfirmed && <>
           <Typography>Status: {hold.status}. Version: {hold.version}.</Typography>
+          <Button disabled={disabled} onClick={() => void run(async signal=>{
+            const result=await readHoldTimeline(organizationId,hold.id,actor!,signal);signal.throwIfAborted();
+            if (alive.current && currentHold.current?.id===hold.id && result.current.version>=currentHold.current.version) {
+              setHold(result.current);setTimeline(result);setReleaseConfirmed(false);
+            }
+          })}>View hold history</Button>
+          {timeline && <Stack spacing={1} component="section" aria-label="Retained hold history">
+            <Typography variant="h6" component="h3">Retained hold history</Typography>
+            {timeline.revisions.map(row=><Typography key={row.eventId} sx={{overflowWrap:'anywhere'}}>
+              {row.hold.status==='active'?'Applied':'Released'} by {row.actorLabel} as Organization {row.actingCapacity===0?'Owner':'Administrator'} · {row.createdAt}
+            </Typography>)}
+          </Stack>}
           <Typography>Scope: {hold.recordId ?? hold.category ?? (hold.recordClass ? recordClasses[hold.recordClass] : 'Entire Organization')}</Typography>
           <Typography sx={{ whiteSpace:'pre-wrap',overflowWrap:'anywhere' }}>Reason: {hold.reason}</Typography>
           {hold.status === 'active' && <>

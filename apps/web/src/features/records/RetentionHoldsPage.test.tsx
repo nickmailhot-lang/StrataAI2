@@ -4,6 +4,7 @@ import { ThemeProvider } from '@mui/material';
 import { appTheme } from '../../theme/appTheme';
 import { RetentionHoldsPage } from './RetentionHoldsPage';
 
+vi.mock('./retentionHoldLive',()=>({watchRetentionHold:vi.fn((options:{source:unknown;confirmed:(value:unknown)=>void})=>{queueMicrotask(()=>options.confirmed(options.source));return vi.fn();})}));
 const org = '11111111-1111-4111-8111-111111111111', actor = '22222222-2222-4222-8222-222222222222';
 function fixture() {
   const state = { unavailable:false, denied:false, requests:[] as { path:string; body:string; key:string }[], holds:new Map<string,object>() };

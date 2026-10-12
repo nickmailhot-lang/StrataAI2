@@ -11,7 +11,7 @@ namespace StrataAI.Infrastructure.Records;
 
 internal sealed record DemoRetentionHoldRevision(RetentionHoldWrite Source, string ActorLabel, RetentionHoldReference Reference);
 
-// Activation still requires Production parity and actual typed scope resolution.
+// Demo commands retain the same actual typed scope and atomic audit boundary as Production.
 internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organizations, IIdentityStore identities,
     ICommandActorAuthorization actors, IRetentionHoldScopeAuthorization scopes, DemoWorkTransactionScope scope,
     IWorkManagementStore work, IClock clock, InMemoryRetentionSourceStore sources) : IRetentionHoldStore, IDemoOrganizationTransactionParticipant
@@ -79,6 +79,13 @@ internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organization
         RequireScope(organization, ct);
         return _history.Where(x => x.Key.Organization == organization && x.Key.Hold == hold)
             .OrderBy(x => x.Key.Version).Select(x => x.Value).ToArray();
+    }
+    public Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct)
+    {
+        var rows = ReadHistory(organization, hold, ct).Take(3).Select(x => new RetentionHoldRevision(x.Source.Hold,
+            x.Source.ActorId, x.ActorLabel, x.Source.ActingCapacity, x.Source.EventId, x.Source.CorrelationId,
+            x.Source.Hold.ReleasedAt ?? x.Source.Hold.AppliedAt)).ToArray();
+        return Task.FromResult<IReadOnlyList<RetentionHoldRevision>>(rows);
     }
     public async Task<RetentionHoldWriteResult> WriteAsync(long expectedVersion, RetentionHoldWrite write, CancellationToken ct)
     {

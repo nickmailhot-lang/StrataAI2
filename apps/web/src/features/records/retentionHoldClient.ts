@@ -11,6 +11,9 @@ export type RetentionHold = { id: string; organizationId: string; version: numbe
 export type HoldApplication = Pick<RetentionHold, 'recordClass' | 'category' | 'recordId' | 'reason'> & { review: RetentionSourceReview | null; confirmed: true };
 export type HoldIntent = { actorId: string; organizationId: string; holdId: string; key: string;
   operation: 'apply' | 'release'; body: HoldApplication | { version: number; confirmed: true } };
+export type HoldRevision = { hold:RetentionHold;actorId:string;actorLabel:string;actingCapacity:0|1;
+  eventId:string;correlationId:string;createdAt:string };
+export type HoldTimeline = {current:RetentionHold;revisions:HoldRevision[]};
 const admissionCursor = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 const classes = ['operationalWork', 'governance', 'audit', 'correspondence', 'document', 'ai'];
 function unavailable(): never { throw new WorkRequestError(503, null); }
@@ -44,6 +47,34 @@ export function readHold(organization: string, id: string, actor: string, signal
     const hold = parseHold(await response.json(), organization, id); bounded.throwIfAborted();
     await readRetentionPolicies(organization, bounded, actor, admissionCursor); return hold;
   }, signal);
+}
+export function readHoldTimeline(organization:string,id:string,actor:string,signal:AbortSignal) {
+  return boundedWorkRead(async bounded=>{
+    await readRetentionPolicies(organization,bounded,actor,admissionCursor);
+    const response=await apiFetch(`${path(organization,id)}/history`,{signal:bounded,headers:{'X-StrataAI-Expected-Actor':actor}});
+    if (!response.ok) throw new WorkRequestError(response.status,null);
+    const body:unknown=await response.json();bounded.throwIfAborted();
+    if (!body || typeof body!=='object' || Array.isArray(body) || Object.keys(body).sort().join(',')!=='current,revisions') return unavailable();
+    const row=body as HoldTimeline,current=parseHold(row.current,organization,id);
+    if (current.version>2 || !Array.isArray(row.revisions) || row.revisions.length!==current.version) return unavailable();
+    const events=new Set<string>();
+    const revisions=row.revisions.map((revision,index)=>{
+      if (!revision || typeof revision!=='object' || Array.isArray(revision)
+        || Object.keys(revision).sort().join(',')!=='actingCapacity,actorId,actorLabel,correlationId,createdAt,eventId,hold') return unavailable();
+      const hold=parseHold(revision.hold,organization,id);
+      if (hold.version!==index+1 || hold.status!==(index===0?'active':'released')
+        || (['recordClass','category','recordId','reason','appliedBy','appliedAt'] as const).some(key=>hold[key]!==current[key])
+        || revision.actorId!==(hold.releasedBy??hold.appliedBy) || ![0,1].includes(revision.actingCapacity)
+        || typeof revision.actorLabel!=='string' || !revision.actorLabel.trim() || revision.actorLabel.length>160
+        || Array.from(revision.actorLabel).some(c=>c.charCodeAt(0)<32 || c.charCodeAt(0)>=127 && c.charCodeAt(0)<=159)
+        || !notificationUuid(revision.eventId) || events.has(revision.eventId)
+        || typeof revision.correlationId!=='string' || !revision.correlationId.trim() || revision.correlationId.length>256
+        || revision.createdAt!==(hold.releasedAt??hold.appliedAt)) return unavailable();
+      events.add(revision.eventId);return {...revision,hold};
+    });
+    if ((Object.keys(current) as (keyof RetentionHold)[]).some(key=>revisions.at(-1)!.hold[key]!==current[key])) return unavailable();
+    await readRetentionPolicies(organization,bounded,actor,admissionCursor);return {current,revisions};
+  },signal);
 }
 export function reviewHoldSource(organization: string, actor: string, kind: RetentionSourceKind, id: string, signal: AbortSignal) {
   return boundedWorkRead(async bounded => {

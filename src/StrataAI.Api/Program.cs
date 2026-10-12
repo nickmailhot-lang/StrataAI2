@@ -221,6 +221,12 @@ app.MapHub<OrganizationConfigurationRealtimeHub>("/organizations/live/configurat
     options.TransportMaxBufferSize = 4096;
 }).RequireAuthorization();
 
+app.MapHub<StrataAI.Api.Records.RetentionHoldRealtimeHub>("/organizations/live/retention-holds", options =>
+{
+    options.ApplicationMaxBufferSize = 131072;
+    options.TransportMaxBufferSize = 4096;
+}).RequireAuthorization();
+
 app.Run();
 
 public partial class Program;

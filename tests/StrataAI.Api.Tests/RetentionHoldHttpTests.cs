@@ -30,6 +30,10 @@ public sealed partial class ApiHostTests
         Assert.Equal(HttpStatusCode.OK, applied.StatusCode);
         Assert.True(applied.Headers.CacheControl!.Private); Assert.True(applied.Headers.CacheControl.NoStore);
         var original = await applied.Content.ReadAsStringAsync(ct);
+        using var firstHistory = await owner.GetAsync(path + "/history", ct);
+        Assert.Equal(HttpStatusCode.OK, firstHistory.StatusCode); Assert.True(firstHistory.Headers.CacheControl!.NoStore);
+        var appliedHistory = await firstHistory.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Single(appliedHistory.GetProperty("revisions").EnumerateArray());
         using var persisted = await owner.GetAsync(path, ct); Assert.Equal(original, await persisted.Content.ReadAsStringAsync(ct));
         using var stranger = await foreign.GetAsync(path, ct); Assert.Equal(HttpStatusCode.NotFound, stranger.StatusCode);
         Assert.DoesNotContain("Private human hold reason", await stranger.Content.ReadAsStringAsync(ct));
@@ -47,6 +51,16 @@ public sealed partial class ApiHostTests
         Assert.Equal(original, await replayApply.Content.ReadAsStringAsync(ct));
         using var head = await owner.GetAsync(path, ct); var state = await head.Content.ReadFromJsonAsync<JsonElement>(ct);
         Assert.Equal(2L, state.GetProperty("version").GetInt64()); Assert.Equal("released", state.GetProperty("status").GetString());
+        using var history = await owner.GetAsync(path + "/history", ct); Assert.Equal(HttpStatusCode.OK, history.StatusCode);
+        var timeline = await history.Content.ReadFromJsonAsync<JsonElement>(ct);
+        var revisions = timeline.GetProperty("revisions").EnumerateArray().ToArray(); Assert.Equal(2, revisions.Length);
+        Assert.Equal("active", revisions[0].GetProperty("hold").GetProperty("status").GetString());
+        Assert.Equal("released", revisions[1].GetProperty("hold").GetProperty("status").GetString());
+        Assert.NotEqual(revisions[0].GetProperty("eventId").GetGuid(), revisions[1].GetProperty("eventId").GetGuid());
+        Assert.Equal(original, revisions[0].GetProperty("hold").GetRawText());
+        using var foreignHistory = await foreign.GetAsync(path + "/history", ct);
+        Assert.Equal(HttpStatusCode.NotFound, foreignHistory.StatusCode);
+        Assert.DoesNotContain("Private human hold reason", await foreignHistory.Content.ReadAsStringAsync(ct));
     }
 
     [Theory]
