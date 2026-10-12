@@ -38,3 +38,33 @@ physical-device result, completed PRD-80, or full primary-screen/accessibility
 matrix. Current build-once CI and all remaining PRD acceptance requirements
 remain required. PRD-01 stays open at **34% estimated work remaining**, a planning
 estimate rather than a passed-case percentage.
+## Current Portal sign-out and watch-order verification (2026-10-12)
+
+The complete unchanged surface-admission and watch-permission-order files first
+finish **5/8 in 572.37 seconds**. Three Portal-width cases fail their former
+post-logout surface-denial-panel expectation; all four watch lock-order roles
+pass unchanged. Their older retained-image failures are not reproduced or claimed
+repaired by this run. One old Portal expectation passes before the final session
+redirect; that result does not prove the old panel is the final unauthenticated UI.
+
+The fixture now observes the actual sign-in route after Portal logout/reload,
+within the same original five-second expectation budget, and independently
+requires Portal surface-access HTTP 401. All prior valid-session INTERNAL
+membership denial, independent PORTAL-grant admission, withheld Council
+navigation, private/public deep-link, four-width and document-withdrawal assertions
+remain. No product authorization or navigation behavior is changed.
+
+The same complete two-file invocation then passes **8/8 in 555.95 seconds**,
+zero skips/unexpected/flaky outcomes or report errors. It includes all Portal
+widths (1280/768/390/320) and MEMBER/ADMIN/ORGANIZATION_READER/PUBLIC_READER watch
+ordering, actual database wait observations, private-state/watch fingerprints,
+activity/notification rows, original receipt bytes and permission withdrawal.
+
+All **2,074** hosted source/runtime and **1,409** native hashes match. Independent
+inspection matches all four served web files; owned containers/database/credential
+files are absent, with original PostgreSQL preserved. Fresh warning-free solution
+build, browser type checks and diff validation pass. Current compiled applications,
+Nginx/cached runtime support and the general CI optional-API/mandatory-Worker
+verification policy remain explicit. This is local evidence; current immutable
+release, complete Portal/identity policy and full AC/DoD still govern closure.
+PRD-02 remains open at **16% estimated work remaining**.

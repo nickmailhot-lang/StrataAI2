@@ -59,8 +59,9 @@ for (const width of [1280, 768, 390, 320]) {
       expect((await portal.request.get(`/organizations/${org}/surface-access?surface=PORTAL`)).status()).toBe(200);
       await page.goto(`/portal/${org}`); await expect(page.getByRole('heading', { name: 'Owner documents', exact: true })).toBeVisible();
       expect((await portal.request.post('/auth/logout', { headers })).status()).toBe(204);
-      await page.reload(); await expect(page.getByText('Access to this Organization surface is unavailable.')).toBeVisible();
+      await page.reload(); await expect(page).toHaveURL(/\/login$/, { timeout: 5_000 });
       await expect(page.getByRole('heading', { name: 'Owner documents', exact: true })).toHaveCount(0);
+      expect((await portal.request.get(`/organizations/${org}/surface-access?surface=PORTAL`)).status()).toBe(401);
     } finally { await portal.close(); }
   });
 }
