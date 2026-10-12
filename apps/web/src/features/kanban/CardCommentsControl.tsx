@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, FormControlLabel, Stack, TextField, Typography } from '@mui/material';
-import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
+import { boundedWorkRead, workRequest, WorkRequestError, retentionDispositionNotice } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { normalizeComment, parseCardCommentChange, parseCardCommentPage, type CardComment, type CardCommentChange, type CardCommentPage, type CommentIntent } from './cardComments';
 import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
@@ -186,9 +186,9 @@ function CommentsControl(props: CardCommentsProps) {
       if (!(error instanceof WorkRequestError)) activityEvent(action, 'exception');
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
         setIntent(undefined); setDraft(undefined); setReview(undefined); setAcknowledged(undefined); setBlocked(true);
-        setNotice(error.status === 429 ? 'Group mentions are limited to three deliveries per board in ten minutes. Wait, then review the latest Card.'
-          : 'This comment change is unavailable. Load the latest Card before starting another change.');
-      } else { setIntent(captured); setNotice('The comment change is unconfirmed. Retry the original request to recover its acknowledgment.'); }
+        setNotice((captured.check.deleting ? retentionDispositionNotice(error.status, error.code) : undefined) ?? (error.status === 429 ? 'Group mentions are limited to three deliveries per board in ten minutes. Wait, then review the latest Card.'
+          : 'This comment change is unavailable. Load the latest Card before starting another change.'));
+      } else { setIntent(captured); setNotice((captured.check.deleting && error instanceof WorkRequestError ? retentionDispositionNotice(error.status, error.code) : undefined) ?? 'The comment change is unconfirmed. Retry the original request to recover its acknowledgment.'); }
       props.onRefresh();
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
   }

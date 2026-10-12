@@ -1,3 +1,4 @@
+import { retentionHoldDeletionNotice, retentionDispositionUnavailableNotice } from '../../api/retentionDisposition';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { ArchivedCardsPage } from './ArchivedCardsPage';
@@ -230,3 +231,33 @@ it('rejects restore-shaped deletion acknowledgment and preserves the delete inte
   await reviewDeletion(); confirmDeletion(); await screen.findByRole('button', { name: 'Retry this deletion' });
   expect(screen.queryByText('Card deletion acknowledged. Current archived Cards are being checked.')).not.toBeInTheDocument();
 });
+
+it.each([{ status: 409, code: 'retention_hold_prevents_disposition', notice: retentionHoldDeletionNotice },
+  { status: 503, code: 'retention_disposition_unavailable', notice: retentionDispositionUnavailableNotice }])(
+  'explains retention $status without private reasons and keeps only uncertain original deletion recovery', async ({ status, code, notice }) => {
+    const commands: { path: string; init: RequestInit }[] = [];
+    const fetch = vi.fn((path: string, init: RequestInit) => {
+      if (init.method === 'DELETE') {
+        commands.push({ path, init });
+        return Promise.resolve(commands.length === 1 ? reply({ code, title: 'private SQL', reason: 'Private hold reason', holdId: 'private-id' }, status)
+          : reply({ ...ack, lifecycleState: 'deleted' }));
+      }
+      return Promise.resolve(reply(page));
+    });
+    mount(fetch); await reviewDeletion(); confirmDeletion();
+    await screen.findByText(notice);
+    expect(document.body.textContent).not.toContain('Private hold reason'); expect(document.body.textContent).not.toContain('private SQL');
+    expect(document.body.textContent).not.toContain('private-id'); expect(commands).toHaveLength(1);
+    if (status === 409) {
+      expect(screen.queryByRole('button', { name: 'Retry this deletion' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Cancel deletion' })).toBeEnabled();
+      expect(screen.queryByText(/This Card or/)).not.toBeInTheDocument();
+    } else {
+      const retry = screen.getByRole('button', { name: 'Retry this deletion' }); await waitFor(() => expect(retry).toBeEnabled());
+      expect(screen.queryByRole('button', { name: 'Cancel deletion' })).not.toBeInTheDocument();
+      fireEvent.click(retry); await screen.findByText('Card deletion acknowledged. Current archived Cards are being checked.');
+      expect(commands).toHaveLength(2); expect(commands[1].path).toBe(commands[0].path); expect(commands[1].init.body).toBe(commands[0].init.body);
+      expect(new Headers(commands[1].init.headers).get('Idempotency-Key')).toBe(new Headers(commands[0].init.headers).get('Idempotency-Key'));
+    }
+  });

@@ -98,9 +98,8 @@ BEGIN
   OR EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='record_retention_sources'::regclass AND NOT convalidated) THEN
   RAISE EXCEPTION 'Retention source RLS or constraint boundary missing'; END IF;
  IF EXISTS(SELECT 1 FROM pg_roles r WHERE r.rolname IN ('strataai_api_runtime','strataai_worker_runtime')
-  AND (has_table_privilege(r.oid,'record_retention_sources','SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
-   OR has_function_privilege(r.oid,'journal_retention_source()','EXECUTE')
+  AND (has_function_privilege(r.oid,'journal_retention_source()','EXECUTE')
    OR has_function_privilege(r.oid,'guard_retention_source_immutable()','EXECUTE'))) THEN
-  RAISE EXCEPTION 'Unactivated retention producer capability escaped'; END IF;
+  RAISE EXCEPTION 'Retention source internal routine capability escaped'; END IF;
 END $$;
 ROLLBACK;

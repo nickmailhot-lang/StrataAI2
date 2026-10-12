@@ -1770,7 +1770,43 @@ preserving original PostgreSQL.
 
 Full API regression for this backend change and exact-commit immutable-image CI
 remain to be verified. Actual Production HTTP/browser hold administration,
-clear hold-specific UI explanations, governance retention, Organization deletion
+Production browser hold-specific UX verification, governance retention, Organization deletion
 and offboarding enforcement, controlled redaction, secure exports, privacy
 actions and disposition jobs remain open. This increment implements the
 ordinary Work deletion boundary, not all RECORDS-FR-003 or PRD-70 acceptance.
+
+### Hold refusal and original deletion recovery
+
+The Board, List and Card archive reviews, Attachment management and Comment
+body removal now explain the fixed hold refusal and direct the user to an
+authorized Records administrator. The refused deletion cannot be resubmitted
+from that review; the user may cancel and review current state after a hold
+release. An unavailable retention projection retains the original request,
+including its identity, revision, confirmation and idempotency key. Recovery
+retries that same request rather than creating another deletion.
+
+The shared bounded Problem filter retains only the two approved disposition
+codes at their expected statuses (409 and 503). Server titles, hold reasons,
+hold IDs and private scope data are removed before feature clients receive
+the error. A hold-only refusal does not incorrectly claim a stale revision;
+actual revision changes retain their existing review warning.
+
+Executed local evidence: **185/185 focused web cases passed**, including actual
+transport normalization and all five deletion controls. They check private
+body suppression, refusal controls and exact original-key/body/route recovery.
+Web type checking, changed-file lint and production build passed. The production
+build retains its existing large-bundle warning. **212/212 CI verifier regression
+cases passed**; mandatory integration and browser shard verification also passed.
+These component checks do not replace actual Production browser hold coverage.
+
+The exact backend CI run for `adbabc4ecf7806a32a4ae48f5edf1f790f4a9409`
+passed source quality, PostgreSQL integration, compilation, immutable image
+builds and security. Its container suites failed at the old assertion that
+source classification must have no runtime capability. The verification now
+checks migration-only databases for no activated capability separately from
+canonical provisioned containers: API SELECT/INSERT on immutable source and
+receipt tables, exactly five current hold-scope columns, and no Worker or
+private hold history/receipt capability. Internal routine and immutable graph
+checks remain mandatory. Execution of the repaired SQL gates and full API
+regression remains pending; local Docker engines were unavailable during this
+increment. No issue acceptance or release is claimed from the failed run.

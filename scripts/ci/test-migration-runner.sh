@@ -1007,11 +1007,13 @@ run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 143
 query "$(cat scripts/ci/record-retention-source-after-upgrade.sql)" >/dev/null
+query "$(cat scripts/ci/assert-record-retention-unprovisioned.sql)" >/dev/null
 cp db/migrations/144_record_retention_holds.sql "$scratch/migrations/"
 run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 144
 query "$(cat scripts/ci/record-retention-hold-after-upgrade.sql)" >/dev/null
+query "$(cat scripts/ci/assert-record-retention-unprovisioned.sql)" >/dev/null
 query "$(cat scripts/ci/retention-context-before-upgrade.sql)" >/dev/null
 cp db/migrations/145_record_retention_authorization_context.sql "$scratch/migrations/"
 run
@@ -1025,6 +1027,7 @@ run
 
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 146
 query "$(cat scripts/ci/retention-source-receipt-after-upgrade.sql)" >/dev/null
+query "$(cat scripts/ci/assert-record-retention-unprovisioned.sql)" >/dev/null
 cat > "$scratch/migrations/147_serialization_fixture.sql" <<'SQL'
 BEGIN;
 SELECT pg_sleep(1);

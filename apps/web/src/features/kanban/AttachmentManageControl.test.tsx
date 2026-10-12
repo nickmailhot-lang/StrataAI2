@@ -1,3 +1,4 @@
+import { retentionHoldDeletionNotice, retentionDispositionUnavailableNotice } from '../../api/retentionDisposition';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Button, Dialog } from '@mui/material';
 import { AttachmentManageControl } from './AttachmentManageControl';
@@ -163,3 +164,24 @@ it('permits read-only archive review but refuses mutation capabilities, and neve
   render(<AttachmentManageControl {...props()} />); await select(); fireEvent.click(screen.getByRole('button', { name: 'Confirm attachment archive' }));
   await screen.findByText(/This attachment change is unavailable/); expect(writes()).toHaveLength(0);
 });
+
+it.each([{ status: 409, code: 'retention_hold_prevents_disposition', notice: retentionHoldDeletionNotice },
+  { status: 503, code: 'retention_disposition_unavailable', notice: retentionDispositionUnavailableNotice }])(
+  'explains Attachment retention $status and retains only uncertain original deletion', async ({ status, code, notice }) => {
+    let attempts = 0;
+    mock(() => { if (++attempts === 1) throw new WorkRequestError(status, null, code);
+      return { ...ack, attachment: { ...archivedFile, lifecycleState: 2, version: 3, updatedAt: later, deletedAt: later, deletedBy: profile.id } }; });
+    render(<AttachmentManageControl {...props()} />); await select('Delete');
+    fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this attachment deletion cannot be undone' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Permanently delete attachment' })); await screen.findByText(notice);
+    expect(writes()).toHaveLength(1);
+    if (status === 409) {
+      expect(screen.queryByRole('button', { name: 'Retry original attachment change' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Discard attachment review and load latest' })).toBeEnabled();
+    } else {
+      const retry = screen.getByRole('button', { name: 'Retry original attachment change' }); await waitFor(() => expect(retry).toBeEnabled());
+      fireEvent.click(retry); await screen.findByText('Attachment permanently deleted.'); expect(writes()).toHaveLength(2);
+      expect(writes()[1][0]).toBe(writes()[0][0]); expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body);
+      expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+    }
+  });

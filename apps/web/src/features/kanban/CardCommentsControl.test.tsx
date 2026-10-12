@@ -1,3 +1,4 @@
+import { retentionHoldDeletionNotice, retentionDispositionUnavailableNotice } from '../../api/retentionDisposition';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Button, Dialog } from '@mui/material';
 import { CardCommentsControl } from './CardCommentsControl';
@@ -461,3 +462,22 @@ it('automatically rereads an opened clean view after Card invalidation and recon
     { action: 'comment_read', kind: 'reconnect', count: 1 }, { action: 'comment_read', kind: 'use', count: 3 },
   ]));
 });
+
+it.each([{ status: 409, code: 'retention_hold_prevents_disposition', notice: retentionHoldDeletionNotice },
+  { status: 503, code: 'retention_disposition_unavailable', notice: retentionDispositionUnavailableNotice }])(
+  'explains Comment retention $status and preserves only uncertain original removal', async ({ status, code, notice }) => {
+    let attempts = 0;
+    mock(() => { if (++attempts === 1) throw new WorkRequestError(status, null, code);
+      return { ...ack, comment: { ...row, content: null, version: 2, deletedAt: row.updatedAt, deletedBy: row.authorId } }; });
+    render(<CardCommentsControl {...props()} />); await review(); fireEvent.click(screen.getByRole('button', { name: 'Remove comment body' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'I confirm removal of my comment body' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm comment removal' })); await screen.findByText(notice); expect(writes()).toHaveLength(1);
+    if (status === 409) {
+      expect(screen.queryByRole('button', { name: 'Retry original comment change' })).not.toBeInTheDocument();
+    } else {
+      const retry = screen.getByRole('button', { name: 'Retry original comment change' }); await waitFor(() => expect(retry).toBeEnabled());
+      fireEvent.click(retry); await screen.findByText('Comment body removed.'); expect(writes()).toHaveLength(2);
+      expect(writes()[1][0]).toBe(writes()[0][0]); expect(writes()[1][1]!.body).toBe(writes()[0][1]!.body);
+      expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers);
+    }
+  });

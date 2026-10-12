@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, FormControlLabel, Stack, Typography } from '@mui/material';
-import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
+import { boundedWorkRead, workRequest, WorkRequestError, retentionDispositionNotice } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { parseAttachmentPage, type AttachmentMetadata, type AttachmentPage, type AttachmentScope, type ArchivedAttachment } from './attachments';
 import { parseAttachmentArchivePage, parseAttachmentLifecycleChanged, type AttachmentArchivePage, type AttachmentLifecycleAction } from './attachmentLifecycle';
@@ -98,8 +98,8 @@ function Management(props: Props) {
       if (!mounted.current || pending.current !== controller) return;
       if (error instanceof WorkRequestError && [400, 401, 403, 404, 409, 429].includes(error.status)) {
         if ([401, 403, 404].includes(error.status)) { setReview(undefined); setDraft(undefined); }
-        setIntent(undefined); setBlocked(true); setNotice('This attachment change is unavailable. Load the latest Card before reviewing another change.');
-      } else { setIntent(command); setNotice('The attachment change is unconfirmed. Retry the original request to recover its acknowledgment.'); }
+        setIntent(undefined); setBlocked(true); setNotice((command.action === 'delete' ? retentionDispositionNotice(error.status, error.code) : undefined) ?? 'This attachment change is unavailable. Load the latest Card before reviewing another change.');
+      } else { setIntent(command); setNotice((command.action === 'delete' && error instanceof WorkRequestError ? retentionDispositionNotice(error.status, error.code) : undefined) ?? 'The attachment change is unconfirmed. Retry the original request to recover its acknowledgment.'); }
       props.onRefresh();
     } finally { if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); props.onBusyChange(false); } }
   }

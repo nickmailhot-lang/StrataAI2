@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Paper, Stack, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { retentionDispositionNotice, retentionHoldDeletionNotice } from '../../api/retentionDisposition';
 import { activityEvent, activityResult } from './activityTelemetry';
 import { watchBoard, type LiveStatus } from '../../api/boardLive';
 import { validInvitationKey as uuid } from '../organizations/invitationIntent';
@@ -127,11 +128,16 @@ function Archive({ org, board }: { org: string; board: string }) {
         ...(command.deleting ? {} : { body: JSON.stringify({ version: l.version }) }) }, c);
       if (!mounted.current || write.current !== c) return;
       if ([401, 403, 404].includes(result.status)) { activityResult(action, false, started); deny(); return; }
+      const retentionNotice = command.deleting ? retentionDispositionNotice(result.status,
+        result.body && typeof result.body === 'object' ? (result.body as { code?: unknown }).code : undefined) : undefined;
+      if (result.status === 503 && retentionNotice) {
+        activityResult(action, false, started); setIntent(command); setNotice(retentionNotice); return;
+      }
       if ([400, 409].includes(result.status)) {
         activityEvent(action, 'conflict'); activityResult(action, false, started);
-        setIntent(undefined); setConflict(true); setNotice(command.deleting
+        setIntent(undefined); setConflict(true); setNotice(retentionNotice ?? (command.deleting
           ? 'This deletion could not be applied. Check the archive and review the current List and card impact.'
-          : 'This restore could not be applied. Check the archive and review the current List.');
+          : 'This restore could not be applied. Check the archive and review the current List.'));
       } else {
         const ack = result.body as ArchivedList | undefined;
         if (result.status !== 200 || ack?.id !== l.id || ack.organizationId !== org || ack.boardId !== board
@@ -155,7 +161,7 @@ function Archive({ org, board }: { org: string; board: string }) {
     <Button component={Link} to={`/app/${org}/boards/${board}`} disabled={writing || !!intent}>Back to Board</Button>
     <Typography>Restoring a List keeps its cards associated with it. Cards already archived remain archived.</Typography>
     <Typography role="status">Archive updates: {live}.</Typography>
-    {error && <Alert severity="warning">{error}</Alert>}{notice && <Alert severity="info">{notice}</Alert>}
+    {error && <Alert severity="warning">{error}</Alert>}{!selected && notice && <Alert severity="info">{notice}</Alert>}
     <Button ref={refresh} disabled={writing || reading} onClick={() => void load(position.current.cursor, position.current.history)}>Check current archived lists</Button>
     {reading && <CircularProgress aria-label="Checking archived Lists" />}
     {page?.items.map(e => <Paper key={e.list.id} component="article" aria-label={e.list.name} sx={{ p: 2, overflowWrap: 'anywhere' }}>
@@ -186,7 +192,7 @@ function Archive({ org, board }: { org: string; board: string }) {
         <Typography>This makes the List active again. Its position and contained card lifecycle states are preserved.</Typography>
       </>}
       {error && <Alert severity="warning">{error}</Alert>}{notice && <Alert severity="info">{notice}</Alert>}
-      {(changed || conflict) && !intent && <Alert severity="warning">{deleting
+      {(changed || conflict && notice !== retentionHoldDeletionNotice) && !intent && <Alert severity="warning">{deleting
         ? 'This List or card impact changed. Cancel this review and check the current archive before deletion.'
         : 'This List changed. Cancel this review and check the current archive before another restore.'}</Alert>}
       {intent && <Alert severity="info">{deleting ? 'The original deletion is unresolved. Retry that same request; it cannot apply twice.' : 'The original restore is unresolved. Retry that same request; it cannot apply twice.'}</Alert>}

@@ -7,6 +7,17 @@ import {
 
 afterEach(() => vi.unstubAllGlobals());
 it.each([
+  [409, 'retention_hold_prevents_disposition', 'Permanent deletion is blocked by a retention hold. Ask an authorized Records administrator to review it.'],
+  [503, 'retention_disposition_unavailable', 'Retention requirements could not be confirmed. The original deletion is retained; retry that same request when access and storage are available.'],
+] as const)('preserves the approved disposition refusal %s through the real transport without private hold data', async (status, code, message) => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ code, title: 'private SQL',
+    reason: 'private hold reason', holdId: 'private hold ID' }), { status })));
+  const failure = await workRequest('/cards/one', { method: 'DELETE' }).catch((error: unknown) => error);
+  expect(failure).toBeInstanceOf(WorkRequestError);
+  expect(failure).toMatchObject({ status, code, message });
+  expect((failure as Error).message).not.toContain('private');
+});
+it.each([
   [400, 'attachment_type_not_allowed', 'attachment_type_not_allowed'],
   [403, 'attachment_type_not_allowed', undefined],
   [400, 'private-provider-code', undefined],

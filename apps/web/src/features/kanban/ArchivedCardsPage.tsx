@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Paper, Stack, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { retentionDispositionNotice, retentionHoldDeletionNotice } from '../../api/retentionDisposition';
 import { activityEvent, activityResult } from './activityTelemetry';
 import { watchBoard, type LiveStatus } from '../../api/boardLive';
 import { validInvitationKey as uuid } from '../organizations/invitationIntent';
@@ -143,11 +144,16 @@ function Archive({ org, board }: { org: string; board: string }) {
         ...(command.deleting ? {} : { body: JSON.stringify({ version: card.version }) }) }, c);
       if (!mounted.current || write.current !== c) return;
       if ([401, 403, 404].includes(result.status)) { activityResult(action, false, started); deny(); return; }
+      const retentionNotice = command.deleting ? retentionDispositionNotice(result.status,
+        result.body && typeof result.body === 'object' ? (result.body as { code?: unknown }).code : undefined) : undefined;
+      if (result.status === 503 && retentionNotice) {
+        activityResult(action, false, started); setIntent(command); setNotice(retentionNotice); return;
+      }
       if ([400, 409].includes(result.status)) {
         activityEvent(action, 'conflict'); activityResult(action, false, started);
-        setIntent(undefined); setConflict(true); setNotice(command.deleting
+        setIntent(undefined); setConflict(true); setNotice(retentionNotice ?? (command.deleting
           ? 'This deletion could not be applied. Check the archive and review the current Card and parent List.'
-          : 'This restore could not be applied. Check the archive and review the current Card and parent List.');
+          : 'This restore could not be applied. Check the archive and review the current Card and parent List.'));
       } else {
         const ack = result.body as Card | undefined;
         if (result.status !== 200 || ack?.id !== card.id || ack.organizationId !== org || ack.boardId !== board
@@ -204,7 +210,7 @@ function Archive({ org, board }: { org: string; board: string }) {
         <Typography>This makes the Card active again in its existing List and position.</Typography>
       </>}
       {selected && error && <Alert severity="warning">{error}</Alert>}{selected && notice && <Alert severity="info">{notice}</Alert>}
-      {(changed || conflict) && !intent && <Alert severity="warning">{deleting
+      {(changed || conflict && notice !== retentionHoldDeletionNotice) && !intent && <Alert severity="warning">{deleting
         ? 'This Card or its parent List changed. Cancel this review and check the current archive before deletion.'
         : 'This Card or its parent List changed. Cancel this review and check the current archive before another restore.'}</Alert>}
       {intent && <Alert severity="info">{deleting ? 'The original deletion is unresolved. Retry that same request; it cannot apply twice.' : 'The original restore is unresolved. Retry that same request; it cannot apply twice.'}</Alert>}

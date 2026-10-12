@@ -1,3 +1,4 @@
+import { retentionHoldDeletionNotice, retentionDispositionUnavailableNotice } from '../../api/retentionDisposition';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { ArchivedBoardsPage } from './ArchivedBoardsPage';
@@ -359,3 +360,33 @@ it.each([false, true])('bounds noncooperative account checks %s after submission
   if (after) expect(screen.getByRole('button', { name: 'Retry this change' })).toBeDisabled();
   else expect(screen.queryByRole('button', { name: 'Retry this change' })).not.toBeInTheDocument();
 });
+
+it.each([{ status: 409, code: 'retention_hold_prevents_disposition', notice: retentionHoldDeletionNotice },
+  { status: 503, code: 'retention_disposition_unavailable', notice: retentionDispositionUnavailableNotice }])(
+  'explains Board retention $status and preserves only uncertain original deletion recovery', async ({ status, code, notice }) => {
+    const commands: { path: string; init: RequestInit }[] = [];
+    const fetch = vi.fn((path: string, init: RequestInit) => {
+      if (path === '/me') return Promise.resolve(response(profile));
+      if (init.method === 'DELETE') {
+        commands.push({ path, init });
+        return Promise.resolve(commands.length === 1 ? response({ code, title: 'Private hold reason', holdId: 'private-id' }, status)
+          : response({ ...board, version: 3, lifecycleState: 'deleted', deletedBy: user }));
+      }
+      return Promise.resolve(response(page));
+    });
+    mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Permanently delete Planning board' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm permanent deletion' })); await screen.findByText(notice);
+    expect(document.body.textContent).not.toContain('Private hold reason'); expect(document.body.textContent).not.toContain('private-id');
+    expect(commands).toHaveLength(1);
+    if (status === 409) {
+      expect(screen.queryByRole('button', { name: 'Retry this change' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Confirm permanent deletion' })).toBeDisabled();
+      expect(screen.queryByText('This review changed. Cancel and review current archive information.')).not.toBeInTheDocument();
+    } else {
+      const retry = screen.getByRole('button', { name: 'Retry this change' }); await waitFor(() => expect(retry).toBeEnabled());
+      fireEvent.click(retry); await screen.findByText('Board deletion acknowledged.'); expect(commands).toHaveLength(2);
+      expect(commands[1].path).toBe(commands[0].path); expect(commands[1].init.body).toBe(commands[0].init.body);
+      expect(new Headers(commands[1].init.headers).get('Idempotency-Key')).toBe(new Headers(commands[0].init.headers).get('Idempotency-Key'));
+    }
+  });

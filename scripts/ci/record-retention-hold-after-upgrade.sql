@@ -96,10 +96,8 @@ BEGIN
   RAISE EXCEPTION 'Original receipt deleted'; EXCEPTION WHEN check_violation THEN NULL; END;
  FOREACH relation IN ARRAY ARRAY['record_retention_holds','record_retention_hold_history','record_retention_hold_receipts'] LOOP
   IF NOT EXISTS(SELECT 1 FROM pg_class WHERE oid=('public.'||relation)::regclass AND relrowsecurity AND relforcerowsecurity)
-   OR EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid=('public.'||relation)::regclass AND NOT convalidated)
-   OR EXISTS(SELECT 1 FROM pg_roles r WHERE r.rolname IN ('strataai_api_runtime','strataai_worker_runtime')
-    AND has_table_privilege(r.oid,'public.'||relation,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')) THEN
-   RAISE EXCEPTION 'Hold RLS or unactivated capability boundary invalid'; END IF;
+   OR EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid=('public.'||relation)::regclass AND NOT convalidated) THEN
+   RAISE EXCEPTION 'Hold RLS or constraint boundary invalid'; END IF;
  END LOOP;
  FOREACH routine IN ARRAY ARRAY['guard_retention_hold_current()','journal_retention_hold_history()','guard_retention_hold_receipt()','guard_retention_hold_complete()'] LOOP
   IF EXISTS(SELECT 1 FROM pg_roles r WHERE r.rolname IN ('strataai_api_runtime','strataai_worker_runtime')

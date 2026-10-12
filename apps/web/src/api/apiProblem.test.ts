@@ -2,6 +2,18 @@ import { normalizeApiProblem } from './apiProblem';
 
 afterEach(() => vi.useRealTimers());
 describe('ARCH-02 common Problem normalization', () => {
+  it.each([
+    [409, 'retention_hold_prevents_disposition', true],
+    [503, 'retention_disposition_unavailable', true],
+    [503, 'retention_hold_prevents_disposition', false],
+    [409, 'retention_disposition_unavailable', false],
+    [404, 'retention_hold_prevents_disposition', false],
+  ] as const)('bounds disposition code %s/%s to its intended status and strips private hold data', async (status, code, retained) => {
+    const response = await normalizeApiProblem(new Response(JSON.stringify({ code, title: 'private SQL',
+      reason: 'private hold reason', holdId: 'private hold ID', scope: 'private scope' }), { status }));
+    expect(await response.json()).toEqual({ type: 'about:blank', title: 'Unable to complete this request.', status,
+      ...(retained ? { code } : {}) });
+  });
   it.each(['mention_handle_invalid', 'mention_handle_unavailable', 'mention_handle_claim_refused', 'invalid_idempotency_key', 'invalid_mention_cursor', 'mention_prefix_invalid'])(
     'retains approved account handle refusal %s while excluding private response fields', async code => {
       const response = await normalizeApiProblem(new Response(JSON.stringify({ code, handle: 'private', userId: 'private', detail: 'private' }), { status: 409 }));

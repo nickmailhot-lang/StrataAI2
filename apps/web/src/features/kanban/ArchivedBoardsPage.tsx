@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Paper, Stack, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
-import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
+import { boundedWorkRead, workRequest, WorkRequestError, retentionDispositionNotice, retentionHoldDeletionNotice } from '../../api/workManagement';
 import { isNotificationProfile, notificationInstant, notificationUuid } from '../notifications/notificationInbox';
 import { activityEvent, activityResult } from './activityTelemetry';
 import { watchOrganizationBoards } from './organizationBoardLive';
@@ -158,8 +158,8 @@ function Archive({ org }: { org: string }) {
       if (error instanceof ChangedArchiveIdentity || error instanceof WorkRequestError && [401, 403, 404].includes(error.status)) {
         refreshAfter = false; retire(); actor.current = undefined; setLiveActor(undefined); setCurrent(undefined); setReady(false); setLiveNotice(undefined); setNotice('Board administration is unavailable.');
       }
-      else if (error instanceof WorkRequestError && [400, 409].includes(error.status)) { activityEvent(action, 'conflict'); setIntent(undefined); setConflict(true); setNotice('This change could not be applied. Cancel and review the current archive.'); }
-      else if (submitted && !mutationReturned) { activityEvent(action, 'exception'); setIntent(command); setNotice('This change is unconfirmed. Retry the same request to recover its acknowledgment.'); }
+      else if (error instanceof WorkRequestError && [400, 409].includes(error.status)) { activityEvent(action, 'conflict'); setIntent(undefined); setConflict(true); setNotice((command.deleting ? retentionDispositionNotice(error.status, error.code) : undefined) ?? 'This change could not be applied. Cancel and review the current archive.'); }
+      else if (submitted && !mutationReturned) { activityEvent(action, 'exception'); setIntent(command); setNotice((command.deleting && error instanceof WorkRequestError ? retentionDispositionNotice(error.status, error.code) : undefined) ?? 'This change is unconfirmed. Retry the same request to recover its acknowledgment.'); }
       else {
         activityEvent(action, 'exception'); refreshAfter = false; setCurrent(undefined); setReady(false); setReview(undefined); setConfirmed(false); setLiveNotice(undefined);
         if (submitted || intent) { setIntent(command); setNotice('This change is unconfirmed. Check current archived boards, then retry the same request to recover its acknowledgment.'); }
@@ -191,7 +191,7 @@ function Archive({ org }: { org: string }) {
       {deleting ? <><Alert severity="warning">This cannot be undone. This Board cannot be restored, and its Lists and Cards become unavailable through it.</Alert>
         <FormControlLabel label="I understand this cannot be undone." control={<Checkbox checked={confirmed} disabled={writing || !!intent} onChange={e => setConfirmed(e.target.checked)} />} /></>
         : <Typography>Restoration makes the Board active again. Its Lists and Cards retain their own lifecycle states.</Typography>}
-      {notice && review && <Alert severity="info" role="status">{notice}</Alert>}{(changed || conflict) && !intent && <Alert severity="warning">This review changed. Cancel and review current archive information.</Alert>}
+      {notice && review && <Alert severity="info" role="status">{notice}</Alert>}{(changed || conflict && notice !== retentionHoldDeletionNotice) && !intent && <Alert severity="warning">This review changed. Cancel and review current archive information.</Alert>}
       {intent && <Typography>The original request is unresolved. Retry that same request.</Typography>}
       <Button disabled={reading || writing} onClick={() => void load(undefined, undefined, 'retry')}>Check current archive for this change</Button>
     </DialogContent><DialogActions>{!intent && <Button disabled={writing} onClick={() => setReview(undefined)}>Cancel change</Button>}

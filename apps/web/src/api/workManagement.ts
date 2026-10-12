@@ -1,4 +1,6 @@
 import { publicCorrelationReference } from './correlationReference';
+import { retentionDispositionNotice } from './retentionDisposition';
+export { retentionDispositionNotice, retentionHoldDeletionNotice } from './retentionDisposition';
 import { apiFetch } from "./apiFetch";
 export type WorkCard = {
   hasCover?: boolean;
@@ -46,7 +48,7 @@ export class WorkRequestError extends Error {
     public code?: string,
   ) {
     super(
-      status === 409 && code === "idempotency_key_expired"
+      retentionDispositionNotice(status, code) ?? (status === 409 && code === "idempotency_key_expired"
         ? "This submission expired. Reload to check the latest state before starting another change."
         : status === 409 && code === "idempotency_key_reused"
           ? "This submission cannot be reused for different input. Reload to check the latest state."
@@ -60,7 +62,7 @@ export class WorkRequestError extends Error {
                   ? "Check the fields and try again."
                   : status === 503
                     ? "Service temporarily unavailable. Reload to check the latest state before retrying."
-                    : "Unable to complete the request. Please try again.",
+                    : "Unable to complete the request. Please try again."),
     );
     // Match the API correlation middleware. Proxy responses must not turn
     // arbitrary diagnostic text into a public support reference.
@@ -85,9 +87,11 @@ export async function workRequest<T>(
         problem &&
         typeof problem === "object" &&
         "code" in problem &&
+        typeof problem.code === "string" &&
         (problem.code === "idempotency_key_expired" ||
           problem.code === "idempotency_key_reused" || problem.code === "attachment_upload_in_progress" ||
-          response.status === 400 && problem.code === "attachment_type_not_allowed")
+          response.status === 400 && problem.code === "attachment_type_not_allowed" ||
+          retentionDispositionNotice(response.status, problem.code) !== undefined)
       )
         code = problem.code;
     } catch {
