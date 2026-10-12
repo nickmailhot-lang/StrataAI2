@@ -33,8 +33,8 @@ public interface IRetentionHoldScopeAuthorization
     Task<bool> VerifyAsync(RetentionHoldReference reference, Guid actor, CancellationToken ct);
 }
 
-// Not registered or exposed until owning scope authorization and both atomic
-// storage adapters exist. This contract never substitutes a permissive resolver.
+// Owning scope authorization and both atomic storage adapters are required.
+// This contract never substitutes a permissive resolver.
 public sealed class RetentionHoldService(IOrganizationStore organizations, IRetentionHoldStore holds,
     IRetentionHoldScopeAuthorization scopes, IOrganizationUnitOfWork unit, ICommandActorAuthorization actors, IClock clock)
 {

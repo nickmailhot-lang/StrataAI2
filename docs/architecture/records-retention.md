@@ -1971,3 +1971,14 @@ Additional verified evidence: PostgreSQL CI for `46eb6c30` executed the earlier
 reviewed hold cases successfully, covering actual Card/Comment/Attachment
 evidence, stale refusal, original recovery, changed-review key refusal and
 release. Actor-session proof remains an explicitly identified native fixture.
+
+
+### Confirmed human hold commands (2026-10-12)
+
+The Organization-scoped API now exposes `GET /organizations/{organizationId}/retention-holds/{holdId}`, `POST .../{holdId}/apply`, and `POST .../{holdId}/release`. All replies are private/no-store. Application requires explicit confirmation, a human reason, and exact producer review evidence for classified Card, Comment or Attachment records; broad Organization/class/category scopes require null producer evidence. Release requires explicit confirmation and the reviewed current version. Authenticated actor fencing, elevated current membership, original/current Board authority and immutable original receipt recovery remain server authoritative.
+
+Mutation bodies are bounded to 32 KiB and reject duplicate properties, unknown fields and numeric enum values. Input parsing follows current Organization admission. Current hold grants are exactly seven SELECT columns, INSERT, and UPDATE on version/status/released actor/time only; immutable history/receipts permit API SELECT/INSERT. The separate Worker has no hold capabilities. Both release-image capability checks and native persistence contracts enforce these grants. The native hold contract no longer widens hold privileges before its ordinary command tests; its temporary minimum disposition probe restores canonical privileges afterward.
+
+Executed evidence: fresh full solution build, zero warnings/errors; 66/66 focused Records API cases passed with zero failures/skips and 2,405 unchanged captured source/binary hashes. New HTTP cases exercise all three supported producer kinds, persisted refresh, cross-tenant refusal, changed-input key conflict, stale release, immutable original apply and release receipt recovery, broad Organization/class/category scopes, confirmation, unknown-input rejection and expected-actor fencing. These local API cases use Demo composition. Canonical PostgreSQL execution and exact-image integration for this change are pending CI.
+
+Hold administration UI, authorized realtime delivery and the remaining privacy/redaction/export/disposition/offboarding requirements remain open. This command activation does not satisfy all PRD-70 acceptance criteria.

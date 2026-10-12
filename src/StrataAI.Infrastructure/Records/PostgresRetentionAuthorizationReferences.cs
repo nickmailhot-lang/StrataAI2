@@ -7,7 +7,7 @@ using StrataAI.Application.WorkManagement;
 namespace StrataAI.Infrastructure.Records;
 
 // Source/current-producer hints participate in the owning classification command.
-// Hold readers remain private primitives; no hold runtime capability is granted.
+// Hold hints precede private detail reads under actual current scope authority.
 internal sealed class PostgresRetentionAuthorizationReferences(PostgresConnectionFactory connections)
     : IRetentionAuthorizationReferences, IRetentionWorkSourceReferences
 {

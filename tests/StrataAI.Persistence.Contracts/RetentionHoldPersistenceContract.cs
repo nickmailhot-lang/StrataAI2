@@ -87,12 +87,8 @@ internal static class RetentionHoldPersistenceContract
         var at = DateTimeOffset.UtcNow.AddMinutes(-1);
         try
         {
-            // Prospective grants are restricted to this disposable fixture. Canonical
-            // provisioning retains no hold/source capabilities until activation.
+            // Exercise canonical production hold capabilities without widening them.
             await using (var seed = new NpgsqlCommand("""
-                GRANT SELECT,INSERT,UPDATE ON record_retention_holds TO strataai_api_runtime;
-                GRANT SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts TO strataai_api_runtime;
-                GRANT SELECT ON record_retention_sources TO strataai_api_runtime;
                 INSERT INTO users(id,email,email_normalized,display_name,status,password_hash,created_at,updated_at)
                 VALUES(@actor,@email,upper(@email),'Native hold owner','ACTIVE','unusable-fixture-hash',@at,@at);
                 INSERT INTO organizations(id,name,owner_user_id,status,version,created_at,updated_at,organization_type)
@@ -489,6 +485,7 @@ internal static class RetentionHoldPersistenceContract
             {
                 await using (var minimum = new NpgsqlCommand("""
                     REVOKE SELECT,INSERT,UPDATE ON record_retention_holds FROM strataai_api_runtime;
+                    REVOKE SELECT(id,version),UPDATE(version,status,released_by,released_at) ON record_retention_holds FROM strataai_api_runtime;
                     GRANT SELECT(tenant_id,record_class,category_key,record_id,status) ON record_retention_holds TO strataai_api_runtime;
                     REVOKE SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts FROM strataai_api_runtime;
                     """, admin)) await minimum.ExecuteNonQueryAsync(ct);
@@ -507,7 +504,8 @@ internal static class RetentionHoldPersistenceContract
                 finally
                 {
                     await using var prospective = new NpgsqlCommand("""
-                        GRANT SELECT,INSERT,UPDATE ON record_retention_holds TO strataai_api_runtime;
+                        GRANT SELECT(id,version,tenant_id,record_class,category_key,record_id,status),INSERT ON record_retention_holds TO strataai_api_runtime;
+                        GRANT UPDATE(version,status,released_by,released_at) ON record_retention_holds TO strataai_api_runtime;
                         GRANT SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts TO strataai_api_runtime;
                         """, admin);
                     await prospective.ExecuteNonQueryAsync(CancellationToken.None);
@@ -567,8 +565,7 @@ internal static class RetentionHoldPersistenceContract
                     "Private work reason", workKey, "private-retry", ct)).ErrorCode == "retention_hold_not_found"
                 && privateGuard.Reads == 0 && privateGuard.Writes == 0,
                 "Native application gate denial occurred after private body reads or disclosed a revision conflict.");
-            // Prospective classification capability exists only in this disposable
-            // contract; canonical runtime provisioning is still unchanged.
+            // Classification capabilities are canonical and remain immutable.
             await using (var grantSource = new NpgsqlCommand("GRANT INSERT ON record_retention_sources TO strataai_api_runtime; GRANT SELECT,INSERT ON record_retention_source_receipts TO strataai_api_runtime;", admin))
                 await grantSource.ExecuteNonQueryAsync(ct);
             var sourceAuthorization = new RetentionProducerAuthorization(producers, workStore, actualBoards, organizations, actors);
@@ -746,8 +743,10 @@ internal static class RetentionHoldPersistenceContract
         {
             await using var restore = new NpgsqlCommand("""
                 REVOKE SELECT,INSERT,UPDATE ON record_retention_holds FROM strataai_api_runtime;
-                GRANT SELECT(tenant_id,record_class,category_key,record_id,status) ON record_retention_holds TO strataai_api_runtime;
-                REVOKE SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts FROM strataai_api_runtime;
+                REVOKE SELECT(id,version),UPDATE(version,status,released_by,released_at) ON record_retention_holds FROM strataai_api_runtime;
+                GRANT SELECT(id,version,tenant_id,record_class,category_key,record_id,status),INSERT ON record_retention_holds TO strataai_api_runtime;
+                GRANT UPDATE(version,status,released_by,released_at) ON record_retention_holds TO strataai_api_runtime;
+                GRANT SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts TO strataai_api_runtime;
                 REVOKE UPDATE(version) ON record_retention_sources FROM strataai_api_runtime;
                 """, admin);
             await restore.ExecuteNonQueryAsync(CancellationToken.None);

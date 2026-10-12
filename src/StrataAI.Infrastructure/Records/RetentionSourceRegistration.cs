@@ -33,6 +33,7 @@ public static class RetentionSourceRegistration
             services.AddSingleton<IRetentionAdministrationTransaction, PostgresRetentionAdministrationTransaction>();
             services.AddSingleton<IRetentionWorkDisposition, PostgresRetentionWorkDisposition>();
             services.AddSingleton<IRetentionOrganizationDisposition, PostgresRetentionOrganizationDisposition>();
+            services.AddSingleton<IRetentionHoldStore, PostgresRetentionHoldStore>();
             services.AddSingleton<PostgresRetentionSourceStore>();
             services.AddSingleton<IRetentionSourceCommandStore>(p => p.GetRequiredService<PostgresRetentionSourceStore>());
             services.AddSingleton<IRetentionSourceReferenceReader>(p => p.GetRequiredService<PostgresRetentionSourceStore>());
@@ -46,6 +47,7 @@ public static class RetentionSourceRegistration
         services.AddSingleton<IRetentionHoldScopeAuthorization>(p => p.GetRequiredService<RetentionHoldAuthorization>());
         services.AddSingleton<RetentionSourceReviewService>();
         services.AddSingleton<RetentionHoldReviewService>();
+        services.AddSingleton<RetentionHoldService>();
         services.AddSingleton<RetentionSourceClassificationService>();
     }
 }

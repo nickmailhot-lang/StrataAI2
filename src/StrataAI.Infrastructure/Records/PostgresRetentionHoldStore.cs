@@ -9,8 +9,8 @@ using StrataAI.Infrastructure.Persistence;
 
 namespace StrataAI.Infrastructure.Records;
 
-// Not registered until actual owning record authorization and Demo source parity
-// exist. All IO borrows the already admitted Organization transaction.
+// Human commands enforce actual owning record authorization and Demo source parity.
+// All IO borrows the already admitted Organization transaction.
 internal sealed class PostgresRetentionHoldStore(PostgresConnectionFactory connections,
     IOrganizationStore organizations, IIdentityStore identities, ICommandActorAuthorization actors,
     IRetentionHoldScopeAuthorization scopes, IClock clock) : IRetentionHoldStore

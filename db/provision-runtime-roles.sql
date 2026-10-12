@@ -65,9 +65,11 @@ GRANT INSERT ON record_retention_policy_history,record_retention_policy_receipts
 -- Explicit human classification owns immutable source/receipt insertion only.
 -- The separate Worker cannot read or mutate this private command graph.
 GRANT SELECT,INSERT ON record_retention_sources,record_retention_source_receipts TO strataai_api_runtime;
--- Ordinary Work deletion reads only the minimal current hold scope. Hold reasons,
--- history, receipt bodies and all hold mutations remain outside this capability.
-GRANT SELECT(tenant_id,record_class,category_key,record_id,status) ON record_retention_holds TO strataai_api_runtime;
+-- Human hold commands own current transitions and immutable history/receipts.
+-- Ordinary disposition continues to project only scope. The Worker has no access.
+GRANT SELECT(id,version,tenant_id,record_class,category_key,record_id,status),INSERT ON record_retention_holds TO strataai_api_runtime;
+GRANT UPDATE(version,status,released_by,released_at) ON record_retention_holds TO strataai_api_runtime;
+GRANT SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts TO strataai_api_runtime;
 GRANT SELECT,INSERT,UPDATE ON organization_configurations TO strataai_api_runtime;
 GRANT SELECT,INSERT ON organization_configuration_history,organization_configuration_receipts TO strataai_api_runtime;
 GRANT SELECT ON organization_configuration_events TO strataai_api_runtime;

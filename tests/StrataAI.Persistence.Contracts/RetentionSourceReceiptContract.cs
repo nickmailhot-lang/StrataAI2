@@ -31,21 +31,9 @@ internal static class RetentionSourceReceiptContract
             FROM (VALUES('record_retention_sources'),('record_retention_source_receipts')) r(relation);
             """, admin))
             Require(await capabilities.ExecuteScalarAsync(ct) is true, "Canonical classification runtime capabilities differ from API SELECT/INSERT only.");
-        await using (var holdCapabilities = new NpgsqlCommand("""
-            SELECT NOT has_table_privilege('strataai_api_runtime','record_retention_holds','SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
-              AND NOT has_any_column_privilege('strataai_api_runtime','record_retention_holds','INSERT,UPDATE,REFERENCES')
-              AND (SELECT bool_and(has_column_privilege('strataai_api_runtime','record_retention_holds',a.attname,'SELECT')
-                = (a.attname IN ('tenant_id','record_class','category_key','record_id','status')))
-                FROM pg_attribute a WHERE a.attrelid='record_retention_holds'::regclass AND a.attnum>0 AND NOT a.attisdropped)
-              AND NOT has_any_column_privilege('strataai_worker_runtime','record_retention_holds','SELECT,INSERT,UPDATE,REFERENCES')
-              AND NOT has_table_privilege('strataai_worker_runtime','record_retention_holds','SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
-              AND (SELECT bool_and(NOT has_any_column_privilege(r.role,t.relation,'SELECT,INSERT,UPDATE,REFERENCES')
-                AND NOT has_table_privilege(r.role,t.relation,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'))
-                FROM (VALUES('strataai_api_runtime'),('strataai_worker_runtime')) r(role)
-                CROSS JOIN (VALUES('record_retention_hold_history'),('record_retention_hold_receipts')) t(relation));
-            """, admin))
-            Require(await holdCapabilities.ExecuteScalarAsync(ct) is true,
-                "Canonical disposition capability must read exactly five current scope columns without private hold bodies, history, receipts or mutation rights.");
+        await using (var holdCapabilities = new NpgsqlCommand(await File.ReadAllTextAsync(
+            Path.Combine(FindRepoRoot(), "scripts/ci/assert-record-retention-runtime-capabilities.sql"), ct), admin))
+            await holdCapabilities.ExecuteNonQueryAsync(ct);
         try
         {
             await using (var seed = new NpgsqlCommand("""
@@ -166,4 +154,10 @@ internal static class RetentionSourceReceiptContract
     }
     private static void Require(bool condition, string rule)
     { if (!condition) throw new InvalidOperationException(rule); }
+    private static string FindRepoRoot()
+    {
+        for (var directory = new DirectoryInfo(Directory.GetCurrentDirectory()); directory is not null; directory = directory.Parent)
+            if (File.Exists(Path.Combine(directory.FullName, "scripts/ci/assert-record-retention-runtime-capabilities.sql"))) return directory.FullName;
+        throw new InvalidOperationException("Canonical retention capability verifier was not found.");
+    }
 }

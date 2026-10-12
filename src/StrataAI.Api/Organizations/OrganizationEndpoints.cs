@@ -11,6 +11,7 @@ public static class OrganizationEndpoints
         group.MapOrganizationConfigurationEndpoints();
         StrataAI.Api.Records.RetentionPolicyEndpoints.MapRetentionPolicyEndpoints(group);
         StrataAI.Api.Records.RetentionSourceEndpoints.MapRetentionSourceEndpoints(group);
+        StrataAI.Api.Records.RetentionHoldEndpoints.MapRetentionHoldEndpoints(group);
         group.MapOrganizationOperationalLifecycleEndpoints();
         group.MapGet("/{organizationId:guid}/lifecycle-events", async (Guid organizationId, Guid? expectedActorId,
                 HttpContext context, IOrganizationLifecycleEventReader reader, CancellationToken cancellationToken) =>
