@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, CircularProgress, Stack, Typography } from '@mui/material';
+import { CardDescriptionPreview } from './CardDescriptionPreview';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { ActivityHistoryControl } from './ActivityHistoryControl';
@@ -55,7 +56,7 @@ function Reader(props: Props) {
   return <Stack spacing={2}>
     <Alert severity="info">This Card or its List is archived. Details are read-only.</Alert>
     <Typography component="h3" variant="h6" sx={{ overflowWrap: 'anywhere' }}>{detail.title}</Typography>
-    {detail.description && <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{detail.description}</Typography>}
+    <CardDescriptionPreview description={detail.description ?? ''} />
     <SourceRetentionEntry organizationId={props.organizationId} boardId={props.boardId}
       cardId={props.cardId} cardVersion={detail.version} kind="card" recordId={props.cardId} sourceVersion={detail.version}
       canAdminister={props.canAdminister ?? false} unavailable={props.unavailable} onRefresh={props.onRefresh} />

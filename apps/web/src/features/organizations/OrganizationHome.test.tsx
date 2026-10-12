@@ -311,6 +311,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     stubFetch(async path => response(path === '/organizations/org-1' ? organizations[0]
       : { organizationId: 'org-1', items: [first], nextCursor: first.id }));
     mount('/app/org-1'); await screen.findByRole('link', { name: first.name });
+    await waitFor(() => expect(lifecycle.watch).toHaveBeenCalledTimes(1));
     screen.getByRole('button', { name: 'Next Board page' }).focus();
     act(() => state === 'account' ? lifecycle.watch.mock.calls[0][0].accountUnavailable()
       : lifecycle.watch.mock.calls[0][0].update(state));

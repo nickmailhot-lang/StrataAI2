@@ -163,6 +163,8 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Lists and Cards
 
+- [Safe Card description Markdown, original-source and live-peer verification (PRD-09)](card-description-markdown.md)
+
 - [Card dates foundation — PRD-12](architecture/card-dates.md)
 - [Checklists and items (PRD-13)](architecture/checklists.md)
 - [Archived card discovery (PRD-18)](archived-card-directory.md)

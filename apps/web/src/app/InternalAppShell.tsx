@@ -1,4 +1,5 @@
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import { DescriptionParserWarmup } from '../features/kanban/CardDescriptionPreview';
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
@@ -143,6 +144,7 @@ function InternalLayout() {
         }}
       >
         <Toolbar />
+        <DescriptionParserWarmup />
         <List aria-label="Internal application navigation">
           {navigation.map((item) => (
             <ListItem key={item.label} disablePadding>

@@ -91,6 +91,7 @@ const mutations = [
   ['strict source classification Worker policy check omitted', value => { const entry = step(value, 'Strict verified-account source classification and original recovery'); entry.run = entry.run.split('\n').filter(line => !line.includes('exec -T worker printenv')).join('\n'); }],
   ['strict source classification cases filtered', value => { step(value, 'Strict verified-account source classification and original recovery').run += ' --grep card'; }],
   ['strict Board label workflows omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/card-labels.spec.ts', ''); }],
+  ['safe Card description workflows omitted', value => { const entry = step(value, 'Strict verified-account Board management and personal preferences'); entry.run = entry.run.replace(' tests/browser/card-description.spec.ts', ''); }],
   ...['Invitation-backed closed registration and atomic expiry against exact release API',
     'Verified-email invitation discovery and retry-safe acceptance',
     'Board administrator demotion continuity and atomic recovery'].map(name =>

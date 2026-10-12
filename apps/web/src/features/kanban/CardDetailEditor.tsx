@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { Alert, Box, Button, TextField, Typography } from "@mui/material";
 import { WorkRequestError, type WorkCard } from "../../api/workManagement";
+import { CardDescriptionPreview } from './CardDescriptionPreview';
 
 type Props = {
   card: WorkCard;
@@ -117,8 +118,12 @@ export function CardDetailEditor({
       <TextField
         name="description"
         label="Description"
+        helperText="Markdown: headings, bold, italic, links, lists, code and blockquotes."
         multiline
-        minRows={3}
+        // Keep the raw source scrollable at a stable height. Autosizing a long
+        // description forces synchronous shadow-textarea layout during mount;
+        // the complete formatted preview remains immediately available below.
+        slotProps={{ input: { inputComponent: 'textarea' }, htmlInput: { rows: 6 } }}
         fullWidth
         margin="normal"
         value={draft.description}
@@ -127,6 +132,7 @@ export function CardDetailEditor({
         }
         disabled={!editable || busy}
       />
+      <CardDescriptionPreview description={draft.description} />
       {editable && (
         <Button type="submit" disabled={busy || conflict}>
           Save card

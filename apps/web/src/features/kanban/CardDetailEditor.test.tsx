@@ -29,6 +29,21 @@ function props() {
   };
 }
 describe("PRD-09/22 drafts across incoming versions", () => {
+  it("previews a dirty Markdown draft without replacing its original source or accepting a remote description", () => {
+    const initial = props();
+    const { rerender } = render(<CardDetailEditor {...initial} />);
+    const description = screen.getByLabelText('Description');
+    act(() => description.focus());
+    fireEvent.change(description, { target: { value: '# My draft\n\n**Original source**' } });
+    expect(screen.getByRole('heading', { name: 'My draft' })).toBeVisible();
+    expect(description).toHaveFocus();
+    rerender(<CardDetailEditor {...initial} card={{ ...card, version: 4, description: '# Remote description' }} />);
+    expect(description).toHaveValue('# My draft\n\n**Original source**');
+    expect(screen.getByRole('heading', { name: 'My draft' })).toBeVisible();
+    expect(screen.queryByRole('heading', { name: 'Remote description' })).toBeNull();
+    expect(description).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Save card' })).toBeDisabled();
+  });
   it("initially focuses the title and preserves description focus through a clean incoming revision", () => {
     const initial = props();
     const { rerender } = render(<CardDetailEditor {...initial} />);

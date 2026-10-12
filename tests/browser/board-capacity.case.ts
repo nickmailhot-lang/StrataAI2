@@ -329,6 +329,10 @@ for (const width of [1280, 768, 390]) {
     expect(destinationX).toBeGreaterThan(left); expect(destinationX).toBeLessThan(right);
     const destinationY = (Math.max(0, destinationBox!.y) + Math.min(844, destinationBox!.y + destinationBox!.height)) / 2;
     await page.mouse.move(destinationX, destinationY);
+    await settleDrag();
+    // The protocol move acknowledgment precedes dnd-kit's collision/geometry
+    // commit. Release only when this exact admitted target owns the drop.
+    await expect(destinationDrop).toHaveAttribute('data-card-drop-over', 'true');
     const transferReply = page.waitForResponse(response => response.request().method() === 'POST'
       && new URL(response.url()).pathname === `/cards/${moving.id}/move`);
     await page.mouse.up(); expect((await transferReply).status()).toBe(200);

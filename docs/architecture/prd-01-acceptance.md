@@ -1,5 +1,18 @@
 # PRD-01 foundation acceptance and closure audit
 
+## Current Card description dependency verification
+
+The [PRD-09 Markdown implementation and evidence](../card-description-markdown.md)
+adds the missing safe description subset, original-source preservation, live
+peer delivery and active/archive/session-withdrawal cases. The full frontend
+suite passes 2,536 cases; both rich cached-detail cases and all five original
+normal budgets pass locally. The complete 200-List/5,000-active/100,000-archived
+rank/capacity chain passes all three viewports after observing the exact admitted
+drop target before release. Earlier source, timing and pointer failures remain
+recorded separately. This is current local compiled-runtime proof; the entire
+foundation scope and current immutable-image CI still govern closure.
+Estimated work remaining stays **34%** (planning estimate).
+
 [PRD-01](https://github.com/nickmailhot-lang/StrataAI2/issues/1) remains open at
 **34% estimated work remaining** (planning estimate). The complete issue body,
 including its functional requirements, acceptance criteria, thirteen scenarios
