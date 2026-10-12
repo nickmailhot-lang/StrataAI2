@@ -1,5 +1,20 @@
 # Board filtering (PRD-10 / PRD-16)
 
+## Current label and assignee review admission evidence
+
+The [Card-label/live verification record](board-label-api.md#current-card-label-and-filter-keyboard-verification)
+retains the `7911917e` exact-image missing-control failures and separates them
+from the three unchanged current local passing cases. Read-only Card-label and
+filter openings now observe their actual region/dialog through the existing
+bounded admitted keyboard helper. All side-effecting commands, exact dispatch
+counts, privacy, persisted state, replay, live delivery and deadlines remain.
+The final complete three-case invocation passes with strict verified accounts,
+canonical restricted schema-146 PostgreSQL and actual current Nginx/API/Worker;
+source/web hashes and owned cleanup are independently verified. This local
+result does not establish a sole product root cause or a green repaired full
+immutable-image pipeline. PRD-16 stays open at **18% estimated work remaining**
+(planning estimate); all original acceptance requirements still apply.
+
 ## Current executed evidence
 
 At `e77195d`, [run 37241937689](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37241937689) passed the exact-image global search fixture (private isolation, literal matching, 50+2 UUID continuation, actor/query binding and archived-List scope). Both 1280px and 390px native global-search cases passed: two independently authenticated browser contexts, cross-Organization contextual results and keyboard pagination, actual MUI Card edits, foreground refresh, offline disclosure withdrawal, online recovery after scoped Worker delivery and Axe checks. Both native deadline-filter cases and the two-browser label/member filtering case also passed. The release failed other native cases; this evidence does not establish a green release or complete PRD-16 acceptance.

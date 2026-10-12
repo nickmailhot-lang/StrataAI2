@@ -1,6 +1,6 @@
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
 test('PRD-10/16: desktop label changes refresh phone filters through Worker delivery and socket recovery', async ({ page, context, browser }) => {
@@ -37,9 +37,9 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     const boardPath = `/app/${org}/boards/${board}`;
     await other.goto(boardPath); await expect(other.getByText('Live updates connected.', { exact: true })).toBeVisible();
     const openFilters = other.getByRole('button', { name: 'Filter Board Cards', exact: true });
-    await expect(openFilters).toBeEnabled(); await openFilters.focus(); await expect(openFilters).toBeFocused();
-    await openFilters.press('Enter');
     const filters = other.getByRole('dialog', { name: 'Filter Board Cards' });
+    await expect(openFilters).toBeEnabled(); await openFilters.focus(); await expect(openFilters).toBeFocused();
+    await openAdmittedReview(openFilters, filters);
     const priority = filters.getByRole('checkbox', { name: 'Priority (red)', exact: true });
     await expect(priority).toBeEnabled(); await priority.press('Space');
     await filters.getByRole('button', { name: 'Apply filters', exact: true }).press('Enter');
@@ -166,7 +166,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     expect(await other.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await other.goto(boardPath);
     await expect(other.getByRole('img', { name: 'Assigned to Label collaboration fixture', exact: true })).toBeVisible();
-    await expect(openFilters).toBeEnabled(); await openFilters.press('Enter');
+    await expect(openFilters).toBeEnabled(); await openAdmittedReview(openFilters, filters);
     const chooseMembers = filters.getByRole('button', { name: 'Choose assignees', exact: true });
     await pressAdmittedAction(chooseMembers);
     const selectedMember = filters.getByRole('checkbox', { name: 'Label collaboration fixture', exact: true });

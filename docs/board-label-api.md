@@ -1,5 +1,47 @@
 # Board label command foundation
 
+## Current Card-label and filter keyboard verification
+
+The [retained-image notifications/browser job](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38210310792/job/114689750933)
+on `7911917e` passed 30 of its 32 cases, but failed desktop Card-label disclosure
+and label/filter live review. Original assertions failed at Card-label contents
+and the missing Choose assignees control. The retained desktop snapshot still
+shows Show labels, indicating the requested disclosure was closed; it does not
+prove a server permission/data failure or a sole product root cause.
+
+All three complete, unchanged Card-label/live cases subsequently pass on current
+main in a strict canonical Production/Nginx environment in **198.39 seconds**,
+with no unexpected/skipped/flaky results. Thus the old CI failure is not claimed
+to be reproduced locally or automatically fixed by an unrelated product change.
+
+The selected read-only disclosure/filter openings now use the existing
+[bounded admitted review helper](../tests/browser/keyboardAdmission.ts), which
+checks enabled keyboard focus and observes the actual opened region/dialog.
+Only an opening that still has no visible review can be attempted again within
+its existing five-second bound. Assignment, Apply/Clear, editing, moves and
+deletion retain their original single-activation and exact request-count checks.
+All label text/order, protected state, persisted deletion, original receipts,
+Worker/socket recovery, viewport, keyboard/focus and per-case deadlines remain.
+The helper also covers the later empty Card-label disclosure after deletion.
+
+The final complete files pass **3/3** in **201.76 seconds**, with zero test
+retries/skipped/flaky/unexpected results. Both invocations use readonly current
+compiled API/Worker, current web/Nginx/security headers, PostgreSQL 17/pgvector
+schema 146 and canonical restricted roles, strict verified accounts and the
+maintained disposable-account verification helper. All **2,070 captured source/
+compiled hashes** and all **four hosted web files** match for the final run;
+owned containers/database/credentials are removed and original data preserved.
+An initial TypeScript declaration-order error in the test edit was fixed before
+the final run. Browser type checking, all **212** integration/shard guard tests,
+386-case/143-file intact shard collection and fresh full solution build pass.
+
+These are local compiled-runtime results. The older exact-image failure remains
+retained; the complete repaired immutable-image job and full PRD acceptance
+still require verification. PRD-10 remains open at **35% estimated work remaining**
+(planning estimate); PRD-16 remains open at **18%**.
+
+## Command contract
+
 PRD-10 now has authenticated bounded label directory reads and create, update,
 and confirmed soft-delete commands. Names may be blank, have a 160-character
 limit, and are trimmed. Colors use the documented fixed palette. Updates accept

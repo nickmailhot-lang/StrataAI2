@@ -1,7 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
-import { focusAdmittedControl, pressAdmittedAction } from './keyboardAdmission';
+import { focusAdmittedControl, openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
 for (const width of [1280, 390]) {
@@ -117,7 +117,7 @@ for (const width of [1280, 390]) {
       const details = page.getByRole('dialog');
       const show = page.getByRole('button', { name: 'Show labels', exact: true });
       await expect(show).toBeEnabled();
-      await show.press('Enter');
+      await openAdmittedReview(show, details.getByRole('region', { name: 'Card labels', exact: true }));
       await expect(details.getByLabel('Priority, red', { exact: true })).toBeVisible();
       await expect(details.getByLabel('Unnamed label, blue', { exact: true })).toBeVisible();
       await expect(details.getByText('blue label', { exact: true })).toBeVisible();
@@ -290,7 +290,8 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
       await expect(face.getByLabel('Urgent, purple', { exact: true })).toHaveCount(0);
       expect((await context.request.delete(`/labels/${labels[1]}?version=1&confirmed=true`, { headers })).status()).toBe(200);
-      await page.goto(path); await expect(show).toBeEnabled(); await show.press('Enter');
+      await page.goto(path); await expect(show).toBeEnabled();
+      await openAdmittedReview(show, page.getByRole('region', { name: 'Card labels', exact: true }));
       await expect(page.getByText('No labels assigned.', { exact: true })).toBeVisible();
       await expect(page.getByLabel('Priority, red', { exact: true })).toHaveCount(0);
       await expect(page.getByRole('textbox', { name: 'Card title' })).toHaveValue('Labeled work');
