@@ -86,8 +86,23 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await pressAdmittedAction(page.getByRole('button', { name: 'Confirm revocation' }));
       await expect(page.getByText(/Revocation could not be confirmed/)).toBeVisible();
       await expect(page.getByText('Invitation revocation confirmed.')).toHaveCount(0);
-      await pressAdmittedAction(page.getByRole('button', { name: 'Check revocation' }));
+      const confirmed = page.getByText('Invitation revocation confirmed.');
+      const check = page.getByRole('button', { name: 'Check revocation' });
+      // A live or foreground read can recover the committed DELETE before the
+      // explicit check is activated. Accept only canonical confirmation; this
+      // loop never repeats revocation and keeps both recovery paths bounded.
+      await expect(async () => {
+        if (await confirmed.isVisible()) return;
+        await expect(check).toBeEnabled({ timeout: 500 });
+        await check.focus({ timeout: 500 });
+        if (await confirmed.isVisible()) return;
+        await expect(check).toBeFocused({ timeout: 500 });
+        await expect(check).toBeEnabled({ timeout: 500 });
+        await check.press('Enter', { timeout: 500 });
+        await expect(confirmed).toBeVisible({ timeout: 500 });
+      }).toPass({ timeout: 5_000 });
       await expect(page.getByText('Invitation revocation confirmed.')).toBeVisible();
+      await expect(page.getByText(/Revocation could not be confirmed/)).toHaveCount(0);
       await expect(page.getByText('Revoked', { exact: true })).toBeVisible(); expect(revocations).toBe(1);
       const history = await context.request.get(`/boards/${board}/invitations`); expect(history.status()).toBe(200);
       const rows = (await history.json()).items; expect(rows).toHaveLength(1);

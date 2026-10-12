@@ -85,6 +85,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Global identity events](architecture/identity-events.md)
 - [Identity realtime recovery](architecture/identity-realtime.md)
 - [Administrator invitation creation](architecture/invitation-administration-ui.md)
+- [Canonical recovery after a lost revocation acknowledgment](architecture/invitation-canonical-recovery-verification.md)
 - [Invitation command transactions](architecture/invitation-command-transactions.md)
 - [Retry-safe invitation creation](architecture/invitation-creation-retries.md)
 - [Verified-email invitation discovery and acceptance](architecture/invitation-discovery.md)

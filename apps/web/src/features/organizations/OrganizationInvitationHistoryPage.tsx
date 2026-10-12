@@ -223,6 +223,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
           const recovered = result.body.items.find(row => row.id === recoveryId.current);
           if (recovered) {
             recoveryId.current = undefined; setUnconfirmed(undefined);
+            setError(undefined);
             setNotice(recovered.revokedAt ? 'Invitation revocation confirmed.' : recovered.acceptedAt
               ? 'This invitation was accepted. Existing access is managed separately.' : 'Revocation was not confirmed. Review the current invitation before trying again.');
           } else setError('Revocation is still unconfirmed. Review the remaining invitation pages to locate its current state.');

@@ -2,6 +2,10 @@
 
 The GitHub architecture PRDs (ARCH-01 through ARCH-12) are authoritative.
 
+[Invitation canonical recovery](invitation-canonical-recovery-verification.md)
+records automatic versus explicit read-only recovery, stale-error removal,
+the exactly-one-DELETE proof and complete desktop/mobile verification.
+
 [Attachment review opening verification](attachment-review-opening-verification.md)
 records the paired archive/cover reproduction and ordinary browser proof while
 preserving access guards, exact byte/write checks and simulated-provider limits.

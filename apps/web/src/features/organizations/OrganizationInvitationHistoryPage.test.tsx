@@ -124,6 +124,21 @@ describe('PRD-60 administrator invitation history and revocation', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Check revocation' })); await screen.findByText('Invitation revocation confirmed.');
     expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
   });
+  it('clears the lost-acknowledgment error after quiet canonical recovery without another delete', async () => {
+    const mock = fetcher(reply(page()), new Error('lost'), reply(page([{ ...row, revokedAt: '2034-01-02T00:00:00Z' }])));
+    mount(); await review(); fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));
+    await screen.findByText(/Revocation could not be confirmed/);
+    expect(screen.queryByText('Invitation revocation confirmed.')).not.toBeInTheDocument();
+    await waitFor(() => expect(identity.watch).toHaveBeenCalled());
+    await act(async () => { identity.watch.mock.calls.at(-1)![0].invalidate(); });
+    await screen.findByText('Invitation revocation confirmed.');
+    expect(screen.queryByText(/Revocation could not be confirmed/)).not.toBeInTheDocument();
+    expect(screen.getByText('Revoked')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Check revocation' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Refresh invitations' })).toBeEnabled();
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
+  });
+
   it('does not treat an ambiguous not-found response as confirmed revocation', async () => {
     fetcher(reply(profile), reply(page()), reply({ title: 'private diagnostics' }, 404), reply(profile), reply(page()));
     mount(); await review(); fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));

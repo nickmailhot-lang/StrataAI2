@@ -251,3 +251,17 @@ membership unchanged. See the
 [baseline, final execution and release limits](browser-recovery-ci.md#automatic-organization-metadata-routing-in-native-browser-acceptance).
 PRD-03 stays open at **8%**, and PRD-60 at **18% estimated work remaining**
 (planning estimates). Current immutable CI and full acceptance remain required.
+
+## Canonical recovery and resolved error display
+
+The [canonical recovery verification](invitation-canonical-recovery-verification.md)
+records a real committed/lost DELETE, automatic protected history confirmation
+before the obsolete Check control is activated, and a paired diagnostic plus
+complete ordinary desktop/mobile invocation. Recovery may finish automatically
+or through the read-only Check action; exactly one DELETE and the canonical
+revoked row remain mandatory. Quiet successful recovery now removes the stale
+ambiguous error. The component regression fails before that targeted fix and
+all 50 history cases pass afterward. Original issuance keys, confirmation,
+cancellation, role/authority guards and deadlines remain. Current complete
+immutable CI and the remaining AC/DoD still govern closure; PRD-60 remains open
+at **18% estimated work remaining**.
