@@ -159,6 +159,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Archived Card recovery admission verification](architecture/archived-card-recovery-admission-verification.md)
 - [Permission-order state component diagnostics](architecture/watch-order-component-diagnostics.md)
 - [Checklist and invitation directory opening verification](architecture/readonly-directory-opening-verification.md)
+- [Invitation history head admission verification](architecture/invitation-history-head-admission-verification.md)
 - [Movement and peer activity admission verification](architecture/movement-activity-admission-verification.md)
 - [Retention source opening verification](architecture/retention-source-opening-verification.md)
 - [Board member directory authority](board-member-directory.md)

@@ -5,6 +5,7 @@
 [Movement and peer activity admission](movement-activity-admission-verification.md) records the busy-Board drag trace and complete desktop/mobile movement and strict activity checks.
 
 [Read-only checklist and invitation opening verification](readonly-directory-opening-verification.md) records retained hosted failures, the mobile navigation correction and complete final desktop/mobile cases.
+[Invitation history head admission](invitation-history-head-admission-verification.md) records immediate authority withdrawal, the Cancel-focus regression and complete desktop/phone verification.
 
 [Permission-order component diagnostics](watch-order-component-diagnostics.md) preserves complete state comparisons and records a deliberate failure probe for safe hosted diagnosis.
 

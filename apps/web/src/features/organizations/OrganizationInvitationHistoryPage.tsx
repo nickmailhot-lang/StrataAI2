@@ -87,7 +87,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
           boardAdmission.current = true; setBoardReady(true); boardHead.resolve();
         }
       };
-      return watchBoard({ organizationId, boardId, invalidate, initialHead: admitHead,
+      return watchBoard({ organizationId, boardId, invalidate, initialHead: admitHead, immediateInvalidation: true,
         status: status => {
           if (status === 'connecting') return;
           if (!boardAdmission.current) {

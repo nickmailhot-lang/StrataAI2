@@ -175,6 +175,42 @@ function boardMount() {
   return render(<RouterProvider router={createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId/invitations', element: <BoardInvitationHistoryPage /> }],
     { initialEntries: [`/app/${org}/boards/${board}/invitations`] })} />);
 }
+it('keeps fresh Board revocation consent after the changed-head read has completed', async () => {
+  const actual = await vi.importActual<typeof import('../../api/boardLive')>('../../api/boardLive');
+  let deliver!: (value: unknown) => void;
+  const connection = {
+    start: vi.fn(async () => {}), stop: vi.fn(async () => {}),
+    stream: vi.fn(() => ({ subscribe: (observer: { next(value: unknown): void }) => {
+      deliver = value => observer.next(value); return { dispose: vi.fn() };
+    } })),
+    onreconnecting: vi.fn(), onreconnected: vi.fn(), onclose: vi.fn(),
+  };
+  boardLive.watch.mockImplementation(options => actual.watchBoard({ ...options,
+    connection: connection as unknown as ReturnType<typeof actual.createBoardConnection> }));
+  const mock = vi.fn(async (path: string, _options?: RequestInit) => reply(path === '/me' ? currentProfile
+    : path === `/boards/${board}` ? boardScope : { items: [boardRow], nextCursor: null }));
+  vi.stubGlobal('fetch', mock); boardMount();
+  await waitFor(() => expect(connection.stream).toHaveBeenCalled());
+  const head = { cursor: '0', events: [], hasMore: false, pending: false, resetRequired: false };
+  await act(async () => deliver(head));
+  await screen.findByRole('button', { name: `Revoke invitation for ${row.email}` });
+  // Finish bootstrap recovery before measuring the independent changed head.
+  await act(async () => new Promise(resolve => setTimeout(resolve, 150)));
+  vi.useFakeTimers();
+  await act(async () => deliver({ ...head, cursor: '1', events: [{
+    eventId: '50000000-0000-4000-8000-000000000005', organizationId: org, boardId: board, sequence: '1',
+  }] }));
+  await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+  const launch = screen.getByRole('button', { name: `Revoke invitation for ${row.email}` });
+  expect(launch).toBeEnabled();
+  await act(async () => fireEvent.click(launch));
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  await act(async () => vi.advanceTimersByTimeAsync(300));
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+  expect(screen.getByRole('button', { name: 'Confirm revocation' })).toBeEnabled();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+});
 it.each(['Organization', 'Board'])('recovers %s invitation expiry display after another session changes preferences without retiring unchanged consent', async surface => {
   const mock = vi.fn(async (path: string, _options?: RequestInit) => reply(path === '/me' ? currentProfile
     : path === `/boards/${board}` ? boardScope : { items: [surface === 'Board' ? boardRow : row], nextCursor: null }));
