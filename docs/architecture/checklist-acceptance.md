@@ -274,3 +274,17 @@ phone failure or prove its cause. Full command/lifecycle/capacity/performance,
 current immutable-image and all original PRD acceptance remain required.
 Estimated PRD-13 work remaining stays **33%** (planning estimate); issue stays open.
 See [retained CI investigation](browser-recovery-ci.md#retained-immutable-image-run-37999375942-2026-10-10-inspection).
+
+## Current complete nested review recovery
+
+The [review admission verification](checklist-review-admission-verification.md)
+records a current complete baseline with one missing editor and the repaired
+complete desktop/mobile invocation. The five-second read-only opening loop now
+checks the final canonical edit field and can reload only an explicitly rejected,
+unsubmitted item read. All original dirty-draft, completion, server conflict,
+socket/revision, committed receipt, revoked-access, backing-state and accessibility
+requirements remain, as do application version/access guards and the scenario
+deadline. All 75 management component cases and 213 CI coverage guards pass;
+source/runtime/web hashes and owned cleanup are independently checked. Current
+immutable/full CI and the remaining full AC/DoD still govern closure. Estimated
+PRD-13 work remaining stays **33%**.

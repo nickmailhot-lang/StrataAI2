@@ -2,6 +2,10 @@
 
 The GitHub architecture PRDs (ARCH-01 through ARCH-12) are authoritative.
 
+[Checklist review admission](checklist-review-admission-verification.md) records
+the failed nested opening, complete desktop/mobile repair proof and preserved
+conflict, dirty-draft, socket, original-receipt and revocation requirements.
+
 [Watch-order state investigation](watch-order-state-investigation.md) records
 complete current four-role local execution while preserving the unresolved
 hosted whole-state hash failure and every original assertion.

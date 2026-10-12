@@ -39,21 +39,39 @@ for (const width of [1280, 390]) {
       async function edit(target: Page, text = 'Initial preparation') {
         const manage = target.getByRole('button', { name: 'Manage checklists', exact: true });
         const items = target.getByRole('button', { name: 'Manage items in Preparations', exact: true });
-        // Opening this current directory is read-only. A parent admission can
-        // withdraw its unsubmitted activation; observe the resulting current
-        // items before continuing. The later save commands remain single sends.
-        await expect(async () => {
-          if (!await items.isVisible()) {
-            await expect(manage).toBeEnabled({ timeout: 500 });
-            await manage.focus({ timeout: 500 }); await expect(manage).toBeFocused({ timeout: 500 });
-            await expect(manage).toBeEnabled({ timeout: 500 }); await manage.press('Enter', { timeout: 500 });
-          }
-          await expect(items).toBeEnabled({ timeout: 500 });
-        }).toPass({ timeout: 5_000 });
-        await pressAdmittedAction(items);
-        const review = target.getByRole('button', { name: 'Review checklist items', exact: true }); await pressAdmittedAction(review);
+        const review = target.getByRole('button', { name: 'Review checklist items', exact: true });
         const item = target.getByRole('button', { name: `Edit item: ${text}`, exact: true });
-        await pressAdmittedAction(item);
+        const editor = target.getByRole('textbox', { name: 'Checklist item text' });
+        // A parent admission can retire any stage of this read-only opening.
+        // Recover a rejected read only before an editable draft is admitted;
+        // the later text/completion changes and save commands stay outside.
+        await expect(async () => {
+          if (await editor.isVisible()) {
+            await expect(editor).toHaveValue(text, { timeout: 500 }); return;
+          }
+          if (await target.getByText('Unable to review current checklist items. Load the current Card and checklist before trying again.', { exact: true }).isVisible()) {
+            const discard = target.getByRole('button', { name: 'Discard item review and load latest', exact: true });
+            await expect(discard).toBeEnabled({ timeout: 500 }); await discard.focus({ timeout: 500 });
+            await expect(discard).toBeFocused({ timeout: 500 }); await discard.press('Enter', { timeout: 500 });
+          }
+          if (!await items.isVisible()) {
+            if (!await review.isVisible() && !await item.isVisible()) {
+              await expect(manage).toBeEnabled({ timeout: 500 });
+              await manage.focus({ timeout: 500 }); await expect(manage).toBeFocused({ timeout: 500 });
+              await expect(manage).toBeEnabled({ timeout: 500 }); await manage.press('Enter', { timeout: 500 });
+            }
+          } else {
+            await expect(items).toBeEnabled({ timeout: 500 }); await items.focus({ timeout: 500 });
+            await expect(items).toBeFocused({ timeout: 500 }); await items.press('Enter', { timeout: 500 });
+          }
+          if (await review.isVisible()) {
+            await expect(review).toBeEnabled({ timeout: 500 }); await review.focus({ timeout: 500 });
+            await expect(review).toBeFocused({ timeout: 500 }); await review.press('Enter', { timeout: 500 });
+          }
+          await expect(item).toBeEnabled({ timeout: 500 }); await item.focus({ timeout: 500 });
+          await expect(item).toBeFocused({ timeout: 500 }); await item.press('Enter', { timeout: 500 });
+          await expect(editor).toHaveValue(text, { timeout: 500 });
+        }).toPass({ timeout: 5_000 });
       }
       const show = peer.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
       await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible();
