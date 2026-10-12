@@ -42,4 +42,15 @@ Image rollback is permitted only when the previous image is compatible with the 
 
 ## Current evidence and limits
 
+The release health script requires HTTP 200 from all six health/readiness
+endpoints, rejects redirects, discards response bodies and bounds each request.
+Six real-HTTP redirect cases fail against the former script because it reports
+success. The repaired gate passes all 18 real-HTTP fixture checks, including all
+six redirects, all six unavailable endpoints, healthy discovery, a stalled
+response and four invalid timeout settings. The test fixture also has an outer
+deadline so a missing request timeout cannot leave CI hanging. These fixtures
+verify the deployment check's refusal behavior, not the candidate application's
+actual health. The two startup refusal guards and 21 release-artifact integrity
+checks also pass; workflow lint passes. Full current CI is still required.
+
 The example configuration was rendered from two differently named release directories: both select the same project, PostgreSQL volume and activity-key volume. A distinct staging project selects separate volume identities. These checks are read-only Compose configuration checks; no live application or existing volume was changed. Current exact-candidate CI, retained-image promotion/rollback rehearsal, backup restoration and managed-provider validation remain pending. ARCH-12 stays open.

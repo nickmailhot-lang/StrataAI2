@@ -82,6 +82,7 @@ jobs:
           node scripts/ci/verify-integration-suites.mjs
           node --test tests/integration-suites.test.mjs
           node --test tests/release-bundle-startup.test.mjs
+          node --test tests/health-check.test.mjs
 
       - name: Verify complete browser shard coverage
         run: |

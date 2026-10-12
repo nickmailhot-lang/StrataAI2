@@ -66,6 +66,14 @@ docker compose --env-file .env -f compose.release.yml up -d --wait
 ./health-check.sh
 ```
 
+The health script requires HTTP 200 from all six web/API/Worker health and
+readiness checks; redirects and unavailable endpoints fail promotion. Requests
+use a five-second connection limit and a 30-second total limit each. Set
+`STRATAAI_HEALTH_TIMEOUT_SECONDS` to an integer from 1 to 300 to adjust the
+per-request total limit. Response bodies are discarded. Configure the documented
+service URLs to their actual deployment addresses; a login or redirect page is
+not readiness evidence.
+
 Start PostgreSQL first, then migrate and provision restricted roles before starting
 the application hosts. Their readiness requires the current schema and those roles.
 
