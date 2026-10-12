@@ -1,13 +1,18 @@
 # Records retention contracts — PRD-70
 
 [PRD-70](https://github.com/nickmailhot-lang/StrataAI2/issues/71) remains open.
-Estimated work remaining: **82%**. Domain contracts, private policy storage,
-transactional Demo parity and authorized policy HTTP commands/reads are implemented
-and locally tested. The internal MUI policy create/edit/review and retry workflow
-is implemented with component and scoped desktop/mobile browser coverage; remaining browser/release acceptance, runtime
-holds, redaction, export and disposition workflows remain incomplete. This shared boundary is also required by
-[PRD-20](https://github.com/nickmailhot-lang/StrataAI2/issues/21) and the remaining
-[PRD-27 acceptance](prd-27-acceptance.md). Retained configuration history alone
+Estimated work remaining: **60%** (planning estimate). Current implementations
+include private policy administration, explicit classified Card/Comment/Attachment
+sources, confirmed hold apply/release with original receipt recovery, complete
+Work/Organization hold admission, authorized directory/history and private
+SignalR replay. MUI desktop/mobile workflows have executed local native proof.
+Current exact immutable-image CI and the remaining owning producers,
+redaction/privacy/export/disposition/offboarding requirements still govern full
+acceptance. Earlier sections below are chronological evidence; later activation
+and capability notes supersede their initial foundation-only statements.
+
+This shared boundary is also required by [PRD-20](https://github.com/nickmailhot-lang/StrataAI2/issues/21)
+and [PRD-27 acceptance](prd-27-acceptance.md). Retained configuration history alone
 cannot establish legal-hold behavior.
 
 ## Persistent producer identity foundation
@@ -2032,3 +2037,10 @@ The MUI Existing holds section offers source review without manually entering a 
 Executed directory evidence: full solution build zero warnings/errors; 70/70 focused Records API cases, no failures/skips, 2,415 captured source/binary hashes unchanged. API tests verify all three record kinds, 27 visible heads across exact 25/2 pages, unavailable earlier-sorted classified source exclusion, visible-only continuation, safe foreign refusal and admission before malformed cursor errors. Complete native PostgreSQL contract passed, including indexed 25-row nonoverlapping pages across more than 1,000 heads, current-role/foreign refusal and unchanged 2,041 source/binary hashes. 38/38 focused directory/hold/live/surface cases, typecheck/lint/production web build passed (existing bundle warning). Eight maintained repository production browser cases passed at 1280px/390px with canonical roles and verified accounts, including directory selection, shared release/history/withdrawal and both unchanged configuration sign-out assertions. Zero skips/flaky outcomes; 2,070 hosted source/binary hashes unchanged. Disposable fixtures/credentials removed, preserving original PostgreSQL. Local proxy/compiled-client proof complements the exact immutable-image CI gate, still required for the corrected head.
 
 Remaining producer modules, privacy/redaction/export/disposition/offboarding and remaining PRD-70 acceptance criteria stay open.
+
+
+### Common hold audit clocks (2026-10-12)
+
+RetentionHold now exposes common `createdAt` and `updatedAt` fields required by FOUND-FR-009. They project the existing accepted persistent lifecycle clocks: `createdAt = appliedAt`; `updatedAt = releasedAt ?? appliedAt`. No read-time clock, second independent write or invented historical backfill is used. The aliases flow through current reads, directory, immutable history, receipt recovery and SignalR snapshots. The client validates both against their lifecycle source and refuses inconsistent values. Original application receipts retain their original update time even after a current release; rejected repeats do not advance accepted clocks. This repairs this entity convention, not every outstanding mutable clock candidate or all PRD-01 acceptance.
+
+Executed: full solution build zero warnings/errors; one Domain lifecycle/clock regression, 70/70 focused Records API cases and full native PostgreSQL contract passed. API/source hashes (2,415), Domain/source hashes (2,108) and native/source hashes (2,041) all remained unchanged. All 12 focused hold/directory/live web cases, typecheck/lint and production web build passed (existing bundle warning). The two maintained production desktop/mobile shared-release/history/withdrawal cases passed with canonical roles and verified accounts; 2,070 hosted source/binary hashes unchanged, zero skips/flaky outcomes. Disposable fixtures and credentials removed, original PostgreSQL preserved. Exact corrected-head immutable-image CI remains required.

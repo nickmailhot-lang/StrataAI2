@@ -288,3 +288,8 @@ audit state. Baseline 7/10 and repaired complete three-class 17/17 results are
 separate; full repaired API/current immutable CI remain pending. This does not
 resolve legacy persisted provenance or full FOUND-FR-009. Estimated PRD-01 work
 remaining stays **34%**, and the ticket remains open.
+
+
+## Current hold entity clock convention
+
+The subsequently introduced RetentionHold current state now projects the common entity `createdAt`/`updatedAt` names from its accepted persisted `appliedAt`/`releasedAt` lifecycle clocks. All current/directory/history/receipt/live representations carry the same exact clocks. Release preserves creation and advances update to its accepted release; original receipt recovery and refused repeats preserve their captured time. Client response validation refuses aliases inconsistent with their source. The Domain regression, all 70 focused Records API cases, complete restricted native PostgreSQL contract and two maintained production desktop/mobile release/history cases passed. This closes a specific newer entity convention gap; the wider mutable writer catalog, performance/current immutable CI and complete acceptance remain required. Estimated PRD-01 work remaining stays **34%**.

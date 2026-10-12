@@ -7,7 +7,7 @@ import { parseRetentionSourceReview, type RetentionSourceKind, type RetentionSou
 export type HoldClass = RetentionPolicy['recordClass'];
 export type RetentionHold = { id: string; organizationId: string; version: number; recordClass: HoldClass | null;
   category: string | null; recordId: string | null; status: 'active' | 'released'; reason: string;
-  appliedBy: string; appliedAt: string; releasedBy: string | null; releasedAt: string | null };
+  appliedBy: string; appliedAt: string; releasedBy: string | null; releasedAt: string | null; createdAt:string;updatedAt:string };
 export type HoldApplication = Pick<RetentionHold, 'recordClass' | 'category' | 'recordId' | 'reason'> & { review: RetentionSourceReview | null; confirmed: true };
 export type HoldIntent = { actorId: string; organizationId: string; holdId: string; key: string;
   operation: 'apply' | 'release'; body: HoldApplication | { version: number; confirmed: true } };
@@ -28,12 +28,13 @@ function scope(recordClass: unknown, category: unknown, recordId: unknown) {
 export function parseHold(value: unknown, organization: string, id: string): RetentionHold {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return unavailable();
   const row = value as RetentionHold;
-  if (Object.keys(row).sort().join(',') !== ['id','organizationId','version','recordClass','category','recordId','status','reason','appliedBy','appliedAt','releasedBy','releasedAt'].sort().join(',')
+  if (Object.keys(row).sort().join(',') !== ['id','organizationId','version','recordClass','category','recordId','status','reason','appliedBy','appliedAt','releasedBy','releasedAt','createdAt','updatedAt'].sort().join(',')
     || row.id !== id || row.organizationId !== organization || !Number.isSafeInteger(row.version) || row.version < 1
     || !scope(row.recordClass, row.category, row.recordId) || typeof row.reason !== 'string' || !row.reason.trim()
     || row.reason.length > 2000 || row.reason.trim() !== row.reason || !notificationUuid(row.appliedBy) || !['active','released'].includes(row.status)) return unavailable();
   try {
     const applied = notificationInstant(row.appliedAt);
+    if(row.createdAt!==row.appliedAt || row.updatedAt!==(row.releasedAt??row.appliedAt)) return unavailable();
     if (row.status === 'active' ? row.releasedBy !== null || row.releasedAt !== null
       : row.version < 2 || !notificationUuid(row.releasedBy) || row.releasedAt === null || notificationInstant(row.releasedAt).ticks < applied.ticks) return unavailable();
   } catch { return unavailable(); }

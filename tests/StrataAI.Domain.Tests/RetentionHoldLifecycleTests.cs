@@ -10,6 +10,18 @@ public sealed class RetentionHoldLifecycleTests
     private static RetentionHold Applied() => RetentionHoldLifecycle.Apply(Guid.NewGuid(),
         new(Organization, RetentionRecordClass.Document, "contracts", Guid.NewGuid()), Guid.NewGuid(), "Reviewed hold source", At).Hold!;
 
+    [Fact]
+    public void PRD_01_hold_common_clocks_follow_accepted_lifecycle_and_refused_changes_preserve_original()
+    {
+        var original=Applied();var snapshot=original;
+        Assert.Equal(At,original.CreatedAt);Assert.Equal(At,original.UpdatedAt);
+        var released=RetentionHoldLifecycle.Release(Organization,original,1,Guid.NewGuid(),At.AddHours(1));
+        Assert.True(released.Succeeded);Assert.Equal(At,released.Hold!.CreatedAt);Assert.Equal(At.AddHours(1),released.Hold.UpdatedAt);
+        Assert.Equal(snapshot,original);Assert.Equal(At,original.UpdatedAt);
+        var refused=RetentionHoldLifecycle.Release(Organization,released.Hold,2,Guid.NewGuid(),At.AddHours(2));
+        Assert.False(refused.Succeeded);Assert.Equal(At.AddHours(1),released.Hold.UpdatedAt);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]

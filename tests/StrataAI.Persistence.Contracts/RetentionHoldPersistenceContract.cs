@@ -191,6 +191,10 @@ internal static class RetentionHoldPersistenceContract
             Require((await service.ReadAsync(tenant, actor, hold, ct)).Value == applied.Value, "Native persisted refresh differs.");
             var released = await service.ReleaseAsync(tenant, actor, hold, 1, Guid.NewGuid(), "native-hold-contract", ct);
             Require(released.Succeeded && released.Value is { Version: 2, Status: RetentionHoldStatus.Released }, "Native release failed.");
+            Require(applied.Value!.CreatedAt == applied.Value.AppliedAt && applied.Value.UpdatedAt == applied.Value.AppliedAt
+                && released.Value!.CreatedAt == applied.Value.CreatedAt && released.Value.UpdatedAt == released.Value.ReleasedAt,
+                "Native hold common clocks differ from accepted persistent lifecycle clocks.");
+
             var replayPage = await service.ReadSyncAsync(tenant, actor, hold, 0, ct);
             Require(replayPage.Succeeded && replayPage.Value!.Events.Count == 2
                 && replayPage.Value.Events[0].EventType == "RETENTION_HOLD_APPLIED"

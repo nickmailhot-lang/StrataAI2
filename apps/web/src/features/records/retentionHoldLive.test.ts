@@ -2,8 +2,8 @@ import { parseHoldSync, watchRetentionHold, type HoldEvent, type createHoldConne
 import type { RetentionHold } from './retentionHoldClient';
 const org='11111111-1111-4111-8111-111111111111',actor='22222222-2222-4222-8222-222222222222',id='33333333-3333-4333-8333-333333333333';
 const source:RetentionHold={id,organizationId:org,version:1,recordClass:null,category:null,recordId:null,status:'active',reason:'Private reviewed reason',
-  appliedBy:actor,appliedAt:'2026-10-11T01:00:00Z',releasedBy:null,releasedAt:null};
-const released:RetentionHold={...source,version:2,status:'released',releasedBy:actor,releasedAt:'2026-10-11T02:00:00Z'};
+  appliedBy:actor,appliedAt:'2026-10-11T01:00:00Z',createdAt:'2026-10-11T01:00:00Z',updatedAt:'2026-10-11T01:00:00Z',releasedBy:null,releasedAt:null};
+const released:RetentionHold={...source,version:2,status:'released',releasedBy:actor,releasedAt:'2026-10-11T02:00:00Z',updatedAt:'2026-10-11T02:00:00Z'};
 function event(version:1|2):HoldEvent {return {eventId:version===1?'44444444-4444-4444-8444-444444444444':'55555555-5555-4555-8555-555555555555',
   eventType:version===1?'RETENTION_HOLD_APPLIED':'RETENTION_HOLD_RELEASED',organizationId:org,actorId:actor,actingCapacity:'ORGANIZATION_OWNER',entityType:'RETENTION_HOLD',
   entityId:id,entityVersion:version,correlationId:'original-audit',createdAt:version===1?source.appliedAt:released.releasedAt!,metadata:{status:version===1?'ACTIVE':'RELEASED',scopeKind:'ORGANIZATION'}};}
@@ -15,6 +15,7 @@ it('accepts original audit replay, quiet heartbeats and missed release while rej
   expect(parseHoldSync(page(source,[]),source,actor,1,seen).events).toEqual([]);
   expect(parseHoldSync(page(released,[event(2)]),source,actor,1,seen).current).toEqual(released);
   for (const invalid of [page(released,[]),{...page(source,[event(1)]),userId:id},page({...source,reason:'Unauthorized changed reason'},[event(1)]),
+    page({...source,createdAt:'2026-10-11T02:00:00Z'},[event(1)]),page({...released,updatedAt:source.appliedAt},[event(2)]),
     page(source,[{...event(1),correlationId:'changed-original'}]),page(source,[{...event(1),entityId:actor}])])
     expect(()=>parseHoldSync(invalid,source,actor,invalid.current.version===2?1:0,seen)).toThrow();
 });

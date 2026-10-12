@@ -25,8 +25,8 @@ function fixture() {
       if (state.unavailable) return new Response('{}',{status:503});
       const id = input.split('/').at(-2)!, body = JSON.parse(options.body as string);
       const current = state.holds.get(id) ?? { id,organizationId:org,version:1,recordClass:body.recordClass,category:body.category,
-        recordId:body.recordId,status:'active',reason:body.reason,appliedBy:actor,appliedAt:'2026-10-11T01:00:00Z',releasedBy:null,releasedAt:null };
-      const result = input.endsWith('/release') ? { ...current,version:2,status:'released',releasedBy:actor,releasedAt:'2026-10-11T02:00:00Z' } : current;
+        recordId:body.recordId,status:'active',reason:body.reason,appliedBy:actor,appliedAt:'2026-10-11T01:00:00Z',createdAt:'2026-10-11T01:00:00Z',updatedAt:'2026-10-11T01:00:00Z',releasedBy:null,releasedAt:null };
+      const result = input.endsWith('/release') ? { ...current,version:2,status:'released',releasedBy:actor,releasedAt:'2026-10-11T02:00:00Z',updatedAt:'2026-10-11T02:00:00Z' } : current;
       state.holds.set(id,result); return new Response(JSON.stringify(result));
     }
     const id=input.split('/').at(-1)!; return new Response(JSON.stringify(state.holds.get(id) ?? {}),{status:state.holds.has(id)?200:404});

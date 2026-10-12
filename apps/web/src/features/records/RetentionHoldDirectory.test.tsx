@@ -5,7 +5,7 @@ import { RetentionHoldDirectory } from './RetentionHoldDirectory';
 const org='11111111-1111-4111-8111-111111111111',actor='22222222-2222-4222-8222-222222222222';
 const id=(index:number)=>`10000000-0000-4000-8000-${index.toString().padStart(12,'0')}`;
 const hold=(index:number)=>({id:id(index),organizationId:org,version:1,recordClass:null,category:null,recordId:null,status:'active',reason:`Preservation ${index}`,
-  appliedBy:actor,appliedAt:'2026-10-11T01:00:00Z',releasedBy:null,releasedAt:null});
+  appliedBy:actor,appliedAt:'2026-10-11T01:00:00Z',createdAt:'2026-10-11T01:00:00Z',updatedAt:'2026-10-11T01:00:00Z',releasedBy:null,releasedAt:null});
 function fixture() {
   const server={denied:false,invalid:false};
   vi.stubGlobal('fetch',vi.fn(async(path:string)=>new Response(JSON.stringify(path==='/me'?{id:actor,version:1,status:'ACTIVE',emailVerified:true,locale:'en-CA',timezone:'UTC'}

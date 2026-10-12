@@ -20,7 +20,13 @@ public sealed record RecordRetentionPolicy(Guid Id, Guid OrganizationId, long Ve
 public sealed record RetentionHold(Guid Id, Guid OrganizationId, long Version,
     RetentionRecordClass? RecordClass, string? Category, Guid? RecordId,
     RetentionHoldStatus Status, string Reason, Guid AppliedBy, DateTimeOffset AppliedAt,
-    Guid? ReleasedBy, DateTimeOffset? ReleasedAt);
+    Guid? ReleasedBy, DateTimeOffset? ReleasedAt)
+{
+    // Common entity clocks are projections of the accepted persisted lifecycle
+    // clocks. Reading or recovering a receipt never invents a new update time.
+    public DateTimeOffset CreatedAt => AppliedAt;
+    public DateTimeOffset UpdatedAt => ReleasedAt ?? AppliedAt;
+}
 
 public sealed record RetentionRecord(Guid Id, Guid OrganizationId, long Version,
     RetentionRecordClass RecordClass, string Category, string? Jurisdiction,
