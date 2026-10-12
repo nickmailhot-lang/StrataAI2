@@ -1061,3 +1061,15 @@ This does not identify or dismiss the older immutable full-state hash failures.
 Current exact-commit build-once CI, integrated notification/watch acceptance
 and all remaining PRD requirements are still required. Estimated PRD-17 work
 remaining stays **15%**. The issue remains open.
+
+## Current four-role whole-state investigation, 2026-10-12
+
+The [state investigation](watch-order-state-investigation.md) repeats all four
+roles against current compiled hosts and restricted PostgreSQL. Both the atomic
+private-state diagnostic and complete ordinary repository file pass without
+assertion changes, skips or flaky cases. Original whole-state hashes, observed
+lock order, single/bulk read authorization and receipt bodies remain mandatory.
+The hosted fingerprint mismatch remains unreproduced and unresolved; neither
+local pass supports a repair or closure claim. Current complete immutable CI and
+all broader acceptance criteria remain required. Estimated remaining work stays
+**15%**.

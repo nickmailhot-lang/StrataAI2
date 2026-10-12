@@ -192,6 +192,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Notifications and activity
 
+- [Current watch permission-order state investigation and unresolved hosted gap](architecture/watch-order-state-investigation.md)
 - [Activity history admission during Board recovery](architecture/activity-history-recovery-verification.md)
 - [PRD-17 notification and watching acceptance map — open](architecture/prd-17-acceptance.md)
 

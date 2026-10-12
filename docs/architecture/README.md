@@ -2,6 +2,10 @@
 
 The GitHub architecture PRDs (ARCH-01 through ARCH-12) are authoritative.
 
+[Watch-order state investigation](watch-order-state-investigation.md) records
+complete current four-role local execution while preserving the unresolved
+hosted whole-state hash failure and every original assertion.
+
 [Invitation canonical recovery](invitation-canonical-recovery-verification.md)
 records automatic versus explicit read-only recovery, stale-error removal,
 the exactly-one-DELETE proof and complete desktop/mobile verification.
