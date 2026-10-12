@@ -155,6 +155,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Board label command foundation](board-label-api.md)
 - [Board label storage](board-label-storage.md)
 - [Label keyboard admission verification](architecture/label-keyboard-admission-verification.md)
+- [Archived Card recovery admission verification](architecture/archived-card-recovery-admission-verification.md)
 - [Board member directory authority](board-member-directory.md)
 - [Board member administration](board-members-ui.md)
 - [Board metadata review and recovery](board-metadata-control.md)

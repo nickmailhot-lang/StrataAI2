@@ -1,5 +1,7 @@
 # StrataAI2 architecture
 
+[Archived Card recovery admission](archived-card-recovery-admission-verification.md) records observed original receipt recovery and complete desktop/mobile verification supporting the operational MVP.
+
 [Board starring review opening](board-star-opening-verification.md) records the hosted admission interruption and complete local desktop/mobile verification for the operational MVP.
 
 [Label keyboard admission verification](label-keyboard-admission-verification.md) records the hosted consent interruption and local desktop/mobile checks supporting the operational MVP.

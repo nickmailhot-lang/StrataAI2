@@ -1,6 +1,6 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { openAdmittedReview } from './keyboardAdmission';
+import { focusAdmittedControl, openAdmittedReview } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at ${width}px`, async ({ page, context }) => {
@@ -75,7 +75,17 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Cancel restore', exact: true })).toHaveCount(0);
       await expect(other.getByRole('link', { name: 'Archived work', exact: true })).toBeVisible();
       const retryRestore = page.getByRole('button', { name: 'Retry this restore', exact: true });
-      await expect(retryRestore).toBeEnabled(); await retryRestore.press('Enter');
+      // The original restore remains unresolved even when discovery is empty.
+      // Admission can disable Retry during Enter. Stop activation as soon as
+      // the one recovery request is observed; its original key/body remain.
+      await expect(async () => {
+        if (writes.length === 1) {
+          await focusAdmittedControl(retryRestore);
+          await retryRestore.press('Enter', { timeout: 500 });
+        }
+        await expect.poll(() => writes.length, { timeout: 500 }).toBe(2);
+      }).toPass({ timeout: 5_000 });
+      await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(page.getByText('No archived cards on this page.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Check current archived cards', exact: true })).toBeFocused();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]); expect(JSON.parse(writes[0].body!)).toEqual({ version: 2 });
