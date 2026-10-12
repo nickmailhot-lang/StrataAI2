@@ -113,7 +113,7 @@ def verify_bundle(bundle, images=None, security_input=None):
             for name in ("build-metadata.json", "image-provenance.json", "SHA256SUMS"):
                 if (original / name).read_bytes() != (copied / name).read_bytes():
                     raise ValueError("changed_original_evidence")
-    required = {"compose.release.yml", "compose.metrics.yml", "compose.attachments.yml", ".env.release.example", "README.md",
+    required = {"compose.release.yml", "compose.metrics.yml", "compose.attachments.yml", ".env.release.example", "README.md", "promotion-and-rollback.md",
                 "health-check.sh", "apply-migrations.sh", "migration-stream.sh", "provision-runtime-roles.sh", "deploy/metrics/collector.yml", "db/provision-runtime-roles.sql"}
     required.update(f"images/strataai-{host}.tar.gz" for host in HOSTS)
     if not required <= set(files) or not any(name.startswith("db/migrations/") and name.endswith(".sql") for name in files):

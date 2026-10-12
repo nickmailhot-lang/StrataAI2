@@ -43,7 +43,7 @@ class ReleaseArtifactTests(unittest.TestCase):
         shutil.copyfile(self.images/'build-metadata.json',self.bundle/'build-metadata.json'); shutil.copytree(self.security,self.bundle/'security')
         (self.bundle/'sbom').mkdir()
         for p in self.security.glob('*.cdx.json'): shutil.copyfile(p,self.bundle/'sbom'/p.name)
-        names=['compose.release.yml','compose.metrics.yml','compose.attachments.yml','.env.release.example','README.md','health-check.sh','apply-migrations.sh','migration-stream.sh','provision-runtime-roles.sh','deploy/metrics/collector.yml','db/provision-runtime-roles.sql','db/migrations/001_initial.sql']
+        names=['compose.release.yml','compose.metrics.yml','compose.attachments.yml','.env.release.example','README.md','promotion-and-rollback.md','health-check.sh','apply-migrations.sh','migration-stream.sh','provision-runtime-roles.sh','deploy/metrics/collector.yml','db/provision-runtime-roles.sql','db/migrations/001_initial.sql']
         for name in names:
             p=self.bundle/name; p.parent.mkdir(parents=True,exist_ok=True); p.write_bytes(b'synthetic fixture')
         self.checksums(self.bundle)
@@ -89,6 +89,14 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_missing_hidden_environment_example_rejected(self):
         self.make_bundle(); (self.bundle/'.env.release.example').unlink(); self.checksums(self.bundle)
         with self.assertRaises(ValueError): release.verify_bundle(self.bundle)
+
+    def test_missing_promotion_guide_rejected_even_with_recalculated_checksums(self):
+        self.make_bundle(); (self.bundle/'promotion-and-rollback.md').unlink(); self.checksums(self.bundle)
+        with self.assertRaisesRegex(ValueError, 'incomplete_bundle'): release.verify_bundle(self.bundle)
+
+    def test_unexpected_root_file_rejected_even_with_recalculated_checksums(self):
+        self.make_bundle(); (self.bundle/'unexpected.md').write_bytes(b'synthetic fixture'); self.checksums(self.bundle)
+        with self.assertRaisesRegex(ValueError, 'unexpected_root_file'): release.verify_bundle(self.bundle)
 
     def test_unexpected_hidden_secret_file_rejected(self):
         self.make_bundle(); (self.bundle/'.env').write_bytes(b'PRIVATE_SECRET'); self.checksums(self.bundle)
