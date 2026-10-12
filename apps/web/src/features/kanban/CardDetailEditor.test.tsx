@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { WorkRequestError, type WorkCard } from "../../api/workManagement";
 
@@ -29,6 +29,16 @@ function props() {
   };
 }
 describe("PRD-09/22 drafts across incoming versions", () => {
+  it("initially focuses the title and preserves description focus through a clean incoming revision", () => {
+    const initial = props();
+    const { rerender } = render(<CardDetailEditor {...initial} />);
+    expect(screen.getByLabelText(/Card title/)).toHaveFocus();
+    const description = screen.getByLabelText("Description");
+    act(() => description.focus());
+    rerender(<CardDetailEditor {...initial} card={{ ...card, version: 4, description: "Remote notes" }} />);
+    expect(description).toHaveValue("Remote notes");
+    expect(description).toHaveFocus();
+  });
   it("preserves dirty text, focus and baseline on refresh, and blocks an unsafe save", () => {
     const initial = props();
     const { rerender } = render(<CardDetailEditor {...initial} />);

@@ -293,3 +293,20 @@ remaining stays **34%**, and the ticket remains open.
 ## Current hold entity clock convention
 
 The subsequently introduced RetentionHold current state now projects the common entity `createdAt`/`updatedAt` names from its accepted persisted `appliedAt`/`releasedAt` lifecycle clocks. All current/directory/history/receipt/live representations carry the same exact clocks. Release preserves creation and advances update to its accepted release; original receipt recovery and refused repeats preserve their captured time. Client response validation refuses aliases inconsistent with their source. The Domain regression, all 70 focused Records API cases, complete restricted native PostgreSQL contract and two maintained production desktop/mobile release/history cases passed. This closes a specific newer entity convention gap; the wider mutable writer catalog, performance/current immutable CI and complete acceptance remain required. Estimated PRD-01 work remaining stays **34%**.
+
+## Current normal performance and source acceptance evidence
+
+The [current schema-146 repeated normal matrix](../kanban-performance.md#current-schema-146-cached-detail-focus-and-repeated-normal-matrix)
+retains the dated-Card cached-detail baseline failure at 211.32 ms, the diagnostic
+failure and the subsequent focus placement repair. Two fresh-database invocations
+each pass all five unchanged desktop/phone cases within the original readiness,
+cached-detail, feedback and mutation-p95 budgets, with no retries/skips/flaky
+results and independently verified samples, source/web hashes and cleanup.
+These compiled local Nginx observations establish this normal-condition scope;
+they do not replace current release capacity, physical-device or full acceptance.
+
+Hosted source checks on `1c068329` additionally pass all 993 Domain and 912 API
+tests with zero failures/skips; [the recorded scope](source-test-results.md#schema-146-hosted-source-result-follow-up)
+keeps that source SHA separate from the subsequent frontend focus repair and
+pending complete immutable-image integration. All original requirements remain.
+Estimated PRD-01 work remaining stays **34%** (planning estimate).

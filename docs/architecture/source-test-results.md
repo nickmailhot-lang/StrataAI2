@@ -1,5 +1,19 @@
 # Source test result artifacts — ARCH-11-FR-018/090
 
+## Schema-146 hosted source result follow-up
+
+The [.NET source job](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38211744933/job/114687289697)
+for exact source `1c0683291d31f51732de3598108efdd96d5dae74` completed successfully:
+**993/993 Domain tests** and **912/912 API tests**, with zero failed or skipped
+cases. The API invocation lasted 25m 11.794s. The same run's PostgreSQL,
+frontend, source gate, build-once images and security jobs also completed
+successfully at inspection; container integration remained live/queued.
+This is completed source evidence, not a claim that the complete release gate
+passed. The subsequent cached-detail frontend focus repair has separate local
+editor/Board and repeated production-web evidence in [the performance record](../kanban-performance.md#current-schema-146-cached-detail-focus-and-repeated-normal-matrix).
+
+## Retained source result contract
+
 Required source jobs now retain machine-readable result summaries in `source-test-results-web-<sha>` and `source-test-results-dotnet-<sha>`. Both download the [initial metadata document](initial-build-metadata.md) from the same workflow run. Each summary embeds its canonical repository, source SHA, workflow run identity and application version; it cannot be substituted with another run's metadata when executed in GitHub Actions.
 
 The complete web unit/component suite still runs, with Vitest's default console reporter plus JUnit output. The complete Domain and API source suites still run, with the pinned MTP 2.4.0 TRX extension in the two test projects. The [Microsoft report extension documentation](https://learn.microsoft.com/en-us/dotnet/core/testing/microsoft-testing-platform-test-reports) explains registration and `--report-trx`. No filters, test retries, ignored failures, product dependencies, or image rebuilds are added to CI.

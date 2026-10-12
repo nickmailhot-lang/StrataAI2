@@ -786,3 +786,56 @@ historical failed matrices or establish full-ticket acceptance. The strict
 31-case Board rerun passed both repaired member-consent cases but finished with
 29 passes and two failures in phone metadata and label keyboard activation;
 the pending fixture repairs require another complete phase result.
+
+## Current schema-146 cached-detail focus and repeated normal matrix
+
+On 2026-10-12 UTC, the complete unchanged five-case normal matrix against
+`1c068329` passed four cases but failed desktop dated-Card cached detail:
+**211.32 ms**, above the original **200 ms** budget. Board readiness was
+956.57 ms and date-command p95 was 74.22 ms. The failed report remains retained;
+it is not replaced by later successes. A separate CPU diagnostic also failed
+its original detail assertion. Its sampling changed runtime overhead and is
+diagnostic evidence only, not an acceptance run or proof of a sole root cause.
+
+The title now receives initial focus in a React layout effect, after the dialog's
+DOM mutations have finished, instead of native autofocus during control insertion.
+All detail controls remain present immediately. The editor stays keyed by Card
+identity, so incoming revisions and draft updates do not repeat initial focus.
+A new regression verifies initial title focus and preserves description focus
+through a clean incoming revision. The complete editor/Board invocation passed
+44 cases before that new regression; the final editor invocation passes all six
+cases. TypeScript, lint, production web build and fresh full solution build pass.
+
+Two subsequent independent fresh-database invocations each pass **5/5** unchanged
+maintained cases, with no skipped, flaky or unexpected results and no retries.
+The original fixtures, assertions, rate pacing, tracing and timing limits remain.
+The measured matrices complete in **156.16 s** and **155.81 s**:
+
+| Scenario | Usable Board, runs 1 / 2 (<1500 ms) | Cached detail, runs 1 / 2 (<200 ms) | Feedback, runs 1 / 2 (<100 ms) | Mutation p95, runs 1 / 2 (<500 ms) |
+| --- | ---: | ---: | ---: | ---: |
+| Desktop, 50 dated Cards | 958.57 / 970.90 | 182.02 / 192.19 | — | 67.28 / 69.69 |
+| Desktop Kanban, mouse | 642.18 / 641.00 | 149.22 / 144.28 | 61.50 / 58.20 | 107.87 / 106.02 |
+| Phone Kanban, Chromium touch | 615.91 / 614.86 | 150.44 / 141.01 | 61.90 / 62.00 | 110.48 / 103.64 |
+| Desktop List feedback | — | — | 40.60 / 41.40 | — |
+| Phone List feedback, Chromium touch | — | — | 45.00 / 37.90 | — |
+
+Each invocation uses current compiled readonly API/Worker, PostgreSQL 17/pgvector
+with all 146 migrations and canonical restricted roles, current production web
+output, and the actual current Nginx configuration/security headers. Optional
+verification matches the original normal-condition fixture. This is local
+Chromium evidence, including touch emulation; it is not physical-device or
+immutable release-image certification. The canonical privacy-safe reporter retains
+**unverified runtime** and a null release revision. The cached Nginx runtime image
+does not establish that these compiled application mounts are release images.
+
+Independent checks validate all twenty samples and nearest-rank sample 19 for
+each of three mutation reports in each run. All **2,070 captured source/compiled
+hashes** and all **four hosted web files** match in each invocation. The actual
+Playwright reports establish five cases per run; an inherited wrapper retention
+case label is not used as test evidence. Every owned container/database and
+credential file is removed; the original PostgreSQL container/data is preserved.
+
+These two repetitions establish current local normal-budget evidence. Current
+complete build-once CI, large-capacity proof against the current release, the
+remaining accessibility/role/lifecycle matrices and full acceptance still govern
+closure. PRD-06 remains open at **25% estimated work remaining** (planning estimate).

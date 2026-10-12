@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Alert, Box, Button, TextField, Typography } from "@mui/material";
 import { WorkRequestError, type WorkCard } from "../../api/workManagement";
 
@@ -37,6 +37,13 @@ export function CardDetailEditor({
   onDiscard,
   onRefresh,
 }: Props) {
+  const titleInput = useRef<HTMLInputElement>(null);
+  // Focus after the complete dialog DOM mutation, rather than forcing layout
+  // while React is still inserting its remaining controls. The editor is keyed
+  // by Card identity; revisions and dirty-draft updates never steal focus.
+  useLayoutEffect(() => {
+    if (titleInput.current && !titleInput.current.disabled) titleInput.current.focus();
+  }, []);
   const [draft, setDraft] = useState(() => initial(card));
   const dirty =
     draft.title !== draft.base.title ||
@@ -96,7 +103,7 @@ export function CardDetailEditor({
         </Button>
       )}
       <TextField
-        autoFocus
+        inputRef={titleInput}
         name="title"
         label="Card title"
         slotProps={{ htmlInput: { maxLength: 500 } }}
