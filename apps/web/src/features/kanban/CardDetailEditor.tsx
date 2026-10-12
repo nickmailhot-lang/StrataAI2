@@ -123,7 +123,11 @@ export function CardDetailEditor({
         // Keep the raw source scrollable at a stable height. Autosizing a long
         // description forces synchronous shadow-textarea layout during mount;
         // the complete formatted preview remains immediately available below.
-        slotProps={{ input: { inputComponent: 'textarea' }, htmlInput: { rows: 6 } }}
+        slotProps={{ input: { inputComponent: 'textarea' }, htmlInput: { rows: 6 },
+          // Instructions remain readable even when the associated editor is
+          // disabled for a read-only visitor or during a pending operation.
+          formHelperText: !editable || busy
+            ? { sx: { '&.Mui-disabled': { color: 'text.secondary' } } } : undefined }}
         fullWidth
         margin="normal"
         value={draft.description}

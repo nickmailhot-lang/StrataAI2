@@ -18,6 +18,9 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
   surface: 'INTERNAL' | 'PORTAL'; children: ReactNode; deniedContent?: ReactNode;
 }) {
   const navigate=useNavigate();
+  // Fallback presentation can change during same-scope navigation. Only its
+  // availability affects admission/session policy; React element identity does not.
+  const hasDeniedContent=Boolean(deniedContent);
   const confirmSession=useRef<(() => void) | undefined>(undefined);
   const { organizationId: routeId } = useParams();
   const organizationId = routeId?.toLowerCase();
@@ -59,7 +62,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
     const checkSession = () => {
       const previous=currentResult.current;
       const hadProtectedAdmission=previous?.scope===scope && (previous.status==='admitted' || previous.previouslyAdmitted===true);
-      if (retired || sessionPending || deniedContent && !hadProtectedAdmission) return;
+      if (retired || sessionPending || hasDeniedContent && !hadProtectedAdmission) return;
       const controller=new AbortController();sessionPending=controller;
       // The boundary may remove a child before its session-loss handler runs.
       // Only a fresh authenticated HTTP refusal redirects; membership/Portal
@@ -112,7 +115,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
       if (refreshAdmission.current === refresh) refreshAdmission.current = undefined;
       if(confirmSession.current===checkSession)confirmSession.current=undefined;
       pending?.abort();sessionPending?.abort(); };
-  }, [organizationId, surface, scope, retry,navigate,deniedContent]);
+  }, [organizationId, surface, scope, retry,navigate,hasDeniedContent]);
   useEffect(() => {
     // Portal grants are independent; an internal-member stream cannot admit it.
     if (surface !== 'INTERNAL' || !lifecycleUuid(organizationId)) return;

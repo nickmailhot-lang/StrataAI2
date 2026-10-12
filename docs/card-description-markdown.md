@@ -1,7 +1,7 @@
 # Card description Markdown — PRD-09
 
 [PRD-09](https://github.com/nickmailhot-lang/StrataAI2/issues/10) remains open at
-**20% estimated work remaining** (planning estimate). This implements
+**19% estimated work remaining** (planning estimate). This implements
 DETAIL-FR-008/009 and verifies a focused AC-DETAIL-09-03 consumer path; it does not
 certify the whole Card Detail ticket or its dependencies.
 
@@ -117,3 +117,55 @@ Current complete immutable-image CI, the complete role/lifecycle/recovery and
 accessibility matrices, documented telemetry, performance repeatability and all
 original dependencies/Definition of Done still govern closure. No acceptance
 requirement is waived by these local results.
+
+## Read-only roles, contrast and stable admission (2026-10-12)
+
+The description file now includes four additional desktop/phone cases for a
+distinct ordinary Organization member viewing an ORGANIZATION Board without a
+Board grant, and an anonymous PUBLIC Board visitor. Each confirms canonical
+read-only access, safe formatting, inert unsafe links/images/scripts, native
+Tab/Shift+Tab link focus with a visible outline and tagged Axe checks. A real
+owner update reaches the open reader without a manual reload. A refused reader
+edit leaves every List/Card unchanged. Making the Board PRIVATE removes the
+preview and raw source, masks subsequent reads and preserves the owner's
+stored description. The authenticated reader keeps its session; the anonymous
+visitor is not incorrectly redirected to sign-in for Board visibility withdrawal.
+
+The first complete six-case baseline passes **4/6 in 273.20 seconds**. Both
+anonymous cases expose Markdown instructions at **2.67:1** contrast when their
+associated editor is disabled. The helper now uses MUI's themed secondary text
+color while read-only or busy. The next complete run passes all four role cases
+but fails both original cached-opening checks at **209.91/240.49 ms**. Limiting
+the extra styling to disabled states then yields **5/6 in 273.33 seconds**, with
+the desktop opening still failing at **207.18 ms**. Those reports remain retained;
+they do not establish styling as the sole cause of timing variation.
+
+A separate reproduced boundary regression proves that changing only the
+fallback React element starts another same-scope admission read, in both admitted
+and denied states: two new tests fail before the repair. The boundary now keys
+that effect by fallback availability. Scope changes, explicit checks, periodic
+and focus checks, live authority withdrawal and fresh session-loss handling
+remain active. Regression coverage also proves that removing an independent
+fallback for protected navigation performs an additional fresh session check.
+
+The final complete invocation combines all six description cases with both
+unchanged Organization configuration-live cases: **8/8 in 368.65 seconds**, one
+attempt each, zero skips/unexpected/flaky outcomes or report errors. Rich cached
+openings measure **175.48 ms desktop / 198.14 ms phone** under the original
+**200 ms** budget. Owner editing/live delivery/archive/logout, the four reader
+cases and original configuration live unsent-work/keyboard/sign-out contracts
+all pass together. All **2,074** hosted and **1,409** native captured hashes match;
+independent comparison also matches all four served web files. Owned API/Worker/
+edge/PostgreSQL fixtures and credential files are removed; original PostgreSQL
+is preserved.
+
+All **51** focused boundary/rendering/editor regressions, web/browser types,
+targeted lint, web build and a fresh warning-free solution build pass. The
+complete browser collection is now **392 cases / 144 intact files**, partitioned
+**99/98/113/82**. The original mandatory description invocation and full-browser
+file ownership are retained. Local runtime provenance, administrator-verified
+disposable accounts, narrow timing samples and cached runtime support remain
+explicit. The prior full frontend, normal and capacity reports precede this
+boundary change; current full immutable CI, broader role/lifecycle/recovery and
+performance repeatability remain necessary. PRD-09 stays open at **19% estimated
+work remaining**.

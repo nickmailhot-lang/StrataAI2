@@ -134,6 +134,53 @@ function mount(surface: 'INTERNAL' | 'PORTAL' = 'INTERNAL', fallback = false) {
 }
 const response = (organizationId: string, surface = 'INTERNAL') => new Response(JSON.stringify({ organizationId, surface }));
 
+it.each([true, false])('does not recheck unchanged authority when only fallback UI changes (admitted: %s)', async initiallyAdmitted => {
+  let granted = initiallyAdmitted;
+  const fetcher = vi.fn(async (path: string) => path === '/me'
+    ? new Response(JSON.stringify(liveProfile)) : granted ? response(liveOrg) : new Response('{}', { status: 404 }));
+  vi.stubGlobal('fetch', fetcher);
+  function Harness() {
+    const [revision, setRevision] = useState(0);
+    return <><button onClick={() => setRevision(value => value + 1)}>Update fallback presentation</button>
+      <SurfaceAdmission surface="INTERNAL" deniedContent={<div>Independent Board fallback {revision}</div>}><Content /></SurfaceAdmission></>;
+  }
+  const router = createMemoryRouter([{ path: '/:organizationId', element: <Harness /> }], { initialEntries: [`/${liveOrg}`] });
+  render(<RouterProvider router={router} />);
+  await screen.findByText(initiallyAdmitted ? `Admitted ${liveOrg}` : 'Independent Board fallback 0');
+  const before = fetcher.mock.calls.length;
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Update fallback presentation' })));
+  expect(fetcher).toHaveBeenCalledTimes(before);
+  granted = false;
+  fireEvent.focus(window);
+  await screen.findByText('Independent Board fallback 1');
+  expect(screen.queryByText(`Admitted ${liveOrg}`)).not.toBeInTheDocument();
+  expect(fetcher).toHaveBeenCalledTimes(before + 1);
+});
+
+it('checks the anonymous session when same-scope navigation removes the independent fallback', async () => {
+  const fetcher = vi.fn<(path: string) => Promise<Response>>(async () => new Response('{}', { status: 401 }));
+  vi.stubGlobal('fetch', fetcher);
+  function Harness() {
+    const [fallback, setFallback] = useState(true);
+    return <><button onClick={() => setFallback(false)}>Open protected area</button>
+      <SurfaceAdmission surface="INTERNAL" deniedContent={fallback ? <div>Independent public Board</div> : undefined}>
+        <Content />
+      </SurfaceAdmission></>;
+  }
+  const router = createMemoryRouter([{ path: '/:organizationId', element: <Harness /> },
+    { path: '/login', element: <div>Fresh sign-in required</div> }], { initialEntries: [`/${liveOrg}`] });
+  render(<RouterProvider router={router} />);
+  await screen.findByText('Independent public Board');
+  // The independent lifecycle observer may already have checked the profile.
+  // Entering the protected area must perform an additional fresh session check.
+  const profileReads = fetcher.mock.calls.filter(call => call[0] === '/me').length;
+  fireEvent.click(screen.getByRole('button', { name: 'Open protected area' }));
+  await screen.findByText('Fresh sign-in required');
+  expect(router.state.location.pathname).toBe('/login');
+  expect(fetcher.mock.calls.filter(call => call[0] === '/me')).toHaveLength(profileReads + 1);
+  expect(screen.queryByText('Independent public Board')).not.toBeInTheDocument();
+});
+
 it('clears this Organization private policy recovery when the outer boundary withdraws the page', async () => {
   const key = `strataai:retention-policy-change:v1:${liveActor}:${liveOrg}`;
   const other = `strataai:retention-policy-change:v1:${liveActor}:44444444-4444-4444-8444-444444444444`;

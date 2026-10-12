@@ -115,3 +115,93 @@ for (const width of [1280, 390]) {
     } finally { await peer.close(); restoreWorker(); }
   });
 }
+
+for (const width of [1280, 390]) for (const audience of ['organization-reader', 'anonymous'] as const) {
+  test(`PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for ${audience} at ${width}px`, async ({ context, browser }) => {
+    test.setTimeout(120_000);
+    const headers = { 'X-StrataAI-Request': '1' };
+    const ownerCredentials = { email: `description-role-owner-${width}-${audience}-${Date.now()}@example.test`,
+      password: 'description-role-correct-horse', displayName: 'Description owner' };
+    const owner = await registerNotificationAccount(context.request, ownerCredentials);
+    const client = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 844 } });
+    let restoreWorker = () => {};
+    try {
+      const organization = await context.request.post('/organizations', { headers, data: { name: 'Description role scope' } });
+      expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
+      if (audience === 'organization-reader') {
+        const credentials = { email: `description-reader-${width}-${Date.now()}@example.test`,
+          password: 'description-reader-correct-horse', displayName: 'Description reader' };
+        const recipient = await registerNotificationAccount(client.request, credentials);
+        expect(recipient.user.id).not.toBe(owner.user.id);
+        const invitation = await context.request.post(`/organizations/${org}/invitations`, {
+          headers, data: { email: credentials.email, surface: 'INTERNAL', targetRole: 'MEMBER' },
+        });
+        expect(invitation.status()).toBe(201);
+        expect((await client.request.post(`/me/invitations/${(await invitation.json()).id}/accept`, { headers })).status()).toBe(200);
+      } else expect((await client.request.get('/me')).status()).toBe(401);
+      const createdBoard = await context.request.post('/boards', { headers, data: {
+        organizationId: org, name: 'Read-only descriptions', visibility: audience === 'anonymous' ? 'PUBLIC' : 'ORGANIZATION',
+      } });
+      expect(createdBoard.status()).toBe(201); const board = (await createdBoard.json()).id;
+      const createdList = await context.request.post(`/boards/${board}/lists`, { headers, data: { name: 'Read-only List' } });
+      expect(createdList.status()).toBe(201); const list = (await createdList.json()).id;
+      const original = '# Authorized description\n\n**Read-only strong** and *read-only emphasis*.\n\n[Reference](https://example.test/reference)\n\n- Visible item\n\n> Visible quote\n\n`literal code`\n\n<script>globalThis.descriptionAttack = true</script>\n\n[Unsafe](javascript:alert(1))\n\n![Inert alternative](https://description-probe.example.test/reader)';
+      const createdCard = await context.request.post(`/lists/${list}/cards`, { headers, data: { title: 'Read-only Markdown Card', description: original } });
+      expect(createdCard.status()).toBe(201); const card = (await createdCard.json()).id;
+      restoreWorker = scopedBoardWorker(org); await waitForBoardDelivery(context.request, board);
+      const admission = await client.request.get(`/boards/${board}`); expect(admission.status()).toBe(200);
+      expect((await admission.json()).access).toMatchObject({ canView: true, canEdit: false, canAdminister: false });
+      const page = await client.newPage(); let externalRequests = 0; let documents = 0;
+      page.on('request', request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++; });
+      await page.route('https://description-probe.example.test/**', async route => { externalRequests++; await route.fulfill({ status: 403, body: '' }); });
+      const path = `/app/${org}/boards/${board}/cards/${card}`; const reads = trackBoardReads(page, board, path);
+      await page.goto(path); await waitForBoardReads(page, reads, 2);
+      const preview = page.getByRole('region', { name: 'Description preview', exact: true });
+      await expect(preview.getByRole('heading', { name: 'Authorized description', exact: true })).toBeVisible();
+      await expect(preview.locator('strong')).toHaveText('Read-only strong');
+      await expect(preview.locator('em')).toHaveText('read-only emphasis');
+      const reference = preview.getByRole('link', { name: 'Reference', exact: true });
+      await expect(reference).toHaveAttribute('href', 'https://example.test/reference');
+      await reference.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
+      await expect(reference).toBeFocused();
+      expect(await reference.evaluate(node => Number.parseFloat(getComputedStyle(node).outlineWidth))).toBeGreaterThan(0);
+      await expect(preview.getByRole('link', { name: 'Unsafe', exact: true })).toHaveCount(0);
+      await expect(preview.locator('img,script,iframe,svg')).toHaveCount(0);
+      await expect(preview.getByText('Inert alternative', { exact: true })).toBeVisible();
+      await expect(page.getByRole('textbox', { name: 'Description', exact: true })).toBeDisabled();
+      await expect(page.getByRole('button', { name: 'Save card', exact: true })).toHaveCount(0);
+      expect(await page.evaluate(() => (globalThis as typeof globalThis & { descriptionAttack?: boolean }).descriptionAttack)).toBeUndefined();
+      expect(externalRequests).toBe(0);
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      const updated = original.replace('# Authorized description', '# Current authorized description');
+      const saved = await context.request.patch(`/cards/${card}`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+        data: { title: 'Read-only Markdown Card', description: updated, version: 1 } });
+      expect(saved.status()).toBe(200); expect(await saved.json()).toMatchObject({ id: card, description: updated, version: 2 });
+      await waitForBoardDelivery(context.request, board);
+      await expect(preview.getByRole('heading', { name: 'Current authorized description', exact: true })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByRole('textbox', { name: 'Description', exact: true })).toHaveValue(updated);
+      const before = await context.request.get(`/boards/${board}`); expect(before.status()).toBe(200); const snapshot = await before.json();
+      const refused = await client.request.patch(`/cards/${card}`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
+        data: { title: 'Unauthorized change', description: 'Unauthorized source', version: 2 } });
+      expect(refused.status()).toBe(audience === 'anonymous' ? 401 : 404);
+      if (audience === 'organization-reader') expect((await refused.json()).code).toBe('card_not_found');
+      else expect(await refused.text()).not.toContain('Current authorized description');
+      const unchanged = await context.request.get(`/boards/${board}`); expect(unchanged.status()).toBe(200);
+      expect((await unchanged.json()).lists).toEqual(snapshot.lists);
+      const withdrawal = await context.request.patch(`/boards/${board}/visibility`, {
+        headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { visibility: 'PRIVATE', version: snapshot.board.version },
+      });
+      expect(withdrawal.status()).toBe(200); await waitForBoardDelivery(context.request, board);
+      await expect(preview).toHaveCount(0, { timeout: 20_000 });
+      await expect(page.getByText('Current authorized description', { exact: true })).toHaveCount(0);
+      await expect(page.getByRole('textbox', { name: 'Description', exact: true })).toHaveCount(0);
+      const denied = await client.request.get(`/boards/${board}`); expect(denied.status()).toBe(404);
+      expect(await denied.text()).not.toContain('Current authorized description');
+      await expect(page).not.toHaveURL(/\/login$/);
+      expect((await client.request.get('/me')).status()).toBe(audience === 'anonymous' ? 401 : 200);
+      const retained = await context.request.get(`/boards/${board}`); expect(retained.status()).toBe(200);
+      expect((await retained.json()).lists).toEqual(snapshot.lists);
+      expect(documents).toBe(1); expect(externalRequests).toBe(0);
+    } finally { restoreWorker(); await client.close(); }
+  });
+}

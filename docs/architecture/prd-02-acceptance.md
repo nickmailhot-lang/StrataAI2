@@ -840,3 +840,15 @@ request identity and recovery. Independently verified cleanup is complete. This
 does not reproduce or resolve the old immutable CI failure by inference; current
 immutable/full acceptance remains required. Estimated PRD-02 work remaining
 stays **16%**; the ticket remains open.
+
+## Stable same-scope surface admission
+
+The [current description/admission verification](../card-description-markdown.md#read-only-roles-contrast-and-stable-admission-2026-10-12)
+records a reproduced extra authority read caused by fallback presentation identity.
+The boundary now follows fallback availability while preserving scope, explicit,
+periodic, focus and live checks. Protected navigation still performs a fresh session
+check; complete native description/logout and original configuration-live cases pass
+together (8/8). All 51 focused boundary/rendering/editor regressions pass. These are
+local current compiled-runtime results; complete immutable CI and all original
+identity/policy/provider acceptance remain required. PRD-02 stays open at **16%
+estimated work remaining**.
