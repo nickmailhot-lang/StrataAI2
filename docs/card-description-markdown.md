@@ -227,3 +227,57 @@ web build and fresh warning-free solution build pass. Full collection is now
 guard regressions pass. Current immutable-image verification of the code fix,
 opening-time repeatability and the complete remaining original AC/DoD are still
 required. PRD-09 remains open at **18% estimated work remaining**.
+
+## MUI title input and full current geometry verification (2026-10-12)
+
+The title field now uses MUI InputBase with a visible MUI label and themed border,
+focus outline, disabled text and 56-pixel minimum control height. This removes
+the floating-label/FormControl/notched-outline composition from the initial
+title render. The required 500-character native input, name/value, immediate
+layout-effect focus, dirty draft, reviewed revision and server validation remain.
+No capability is deferred, hidden or bypassed to meet the opening budget.
+
+The complete unchanged ten-case description file passes **10/10 in 472.64
+seconds**, zero skips/unexpected/flaky/report errors. Rich cached openings are
+**180.19 ms desktop / 166.77 ms phone** under the original **200 ms** assertion.
+This includes all original owner assertions, distinct MEMBER/ADMIN edits and
+grant loss, ordinary Organization and anonymous reading, literal-code keyboard
+scrolling, source/unsafe-capability checks, tagged Axe and session withdrawal.
+The earlier 206.96-ms failure remains retained; this result does not establish
+a sole cause for every prior timing variation.
+
+The unchanged complete normal matrix separately passes **5/5 in 155.86 seconds**:
+
+| Case | Usable ms | Cached detail ms | Feedback ms | Mutation p95 ms |
+| --- | ---: | ---: | ---: | ---: |
+| Dated desktop Board | 948.56 | 174.77 | — | 68.93 |
+| Desktop Kanban | 678.61 | 142.51 | 61.80 | 116.04 |
+| Phone Kanban | 572.16 | 148.46 | 61.90 | 114.43 |
+| Desktop List creation | — | — | 44.90 | — |
+| Phone List creation | — | — | 41.40 | — |
+
+All original 1,500/200/100/500-ms budgets and 20 mutation samples per owning case
+remain. API/Worker optional verification in this normal fixture matches its
+maintained CI conditions; the description role fixture uses strict verification.
+
+The complete original concurrent-rank and supported-capacity chain also passes,
+including **3/3 desktop/tablet/phone cases in 177.91 seconds**. It retains 200
+Lists, over 5,000 active Cards and 100,000 archived Cards, keyboard and pointer
+movement, immediate title focus, Back/Forward/Close, all four nested scroll
+offsets, windowing, responsive width and tagged Axe assertions. The original
+final count and complete archived-record fingerprint remain unchanged.
+
+All three captures independently match **2,074** hosted and **1,409** native
+source/runtime hashes; owned containers/database/credentials are removed and
+original PostgreSQL is preserved. The first capacity harness stops before tests
+because the disk fills while copying runtime files. Only unused Windows native
+debug symbols in this chat's terminal temporary runtime copies are removed,
+recovering 6.69 GB; original source/binaries, Linux runtime files, manifests,
+reports and traces remain. Its fresh-build retry executes the entire original
+chain successfully. These local compiled applications/current Nginx/cached
+runtime results do not certify current retained release images.
+
+All 24 focused rendering/editor regressions, types/lint/web build and fresh
+warning-free solution build pass. Current full immutable CI, the older recorded
+unrelated browser failures and complete remaining AC/DoD still govern closure.
+PRD-09 stays open at **18% estimated work remaining**.

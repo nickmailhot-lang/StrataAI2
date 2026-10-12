@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef, useState } from "react";
-import { Alert, Box, Button, TextField, Typography } from "@mui/material";
+import { useId, useLayoutEffect, useRef, useState } from "react";
+import { Alert, Box, Button, InputBase, TextField, Typography } from "@mui/material";
 import { WorkRequestError, type WorkCard } from "../../api/workManagement";
 import { CardDescriptionPreview } from './CardDescriptionPreview';
 
@@ -39,6 +39,7 @@ export function CardDetailEditor({
   onRefresh,
 }: Props) {
   const titleInput = useRef<HTMLInputElement>(null);
+  const titleId = useId();
   // Focus after the complete dialog DOM mutation, rather than forcing layout
   // while React is still inserting its remaining controls. The editor is keyed
   // by Card identity; revisions and dirty-draft updates never steal focus.
@@ -106,18 +107,25 @@ export function CardDetailEditor({
           Discard edits and load latest card
         </Button>
       )}
-      <TextField
-        inputRef={titleInput}
-        name="title"
-        label="Card title"
-        slotProps={{ htmlInput: { maxLength: 500 } }}
-        required
-        fullWidth
-        margin="normal"
-        value={draft.title}
-        onChange={(event) => setDraft({ ...draft, title: event.target.value })}
-        disabled={!editable || busy}
-      />
+      <Box sx={{ mt: 2, mb: 1 }}>
+        <Typography component="label" htmlFor={titleId} variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+          Card title <span aria-hidden="true">*</span>
+        </Typography>
+        <InputBase
+          id={titleId}
+          inputRef={titleInput}
+          name="title"
+          inputProps={{ maxLength: 500 }}
+          required
+          fullWidth
+          value={draft.title}
+          onChange={(event) => setDraft({ ...draft, title: event.target.value })}
+          disabled={!editable || busy}
+          sx={{ minHeight: 56, px: 2, border: 1, borderColor: 'divider', borderRadius: 1,
+            '&.Mui-focused': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 1 },
+            '& input.Mui-disabled': { color: 'text.secondary', WebkitTextFillColor: 'currentColor' } }}
+        />
+      </Box>
       <TextField
         name="description"
         label="Description"
