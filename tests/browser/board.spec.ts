@@ -23,6 +23,17 @@ for (const viewport of [
         await button.press("Enter");
       } else await button.click();
     }
+    // Opening a creation form has no write side effect. A protected foreground
+    // read can disable its launcher between focus and activation; confirm the
+    // form before continuing. Create/Save submissions still activate once.
+    async function openCreation(name: string, fieldName: string) {
+      const field = page.getByLabel(fieldName, { exact: false });
+      await expect(async () => {
+        if (await field.isVisible()) return;
+        await activate(name);
+        await expect(field).toBeVisible({ timeout: 500 });
+      }).toPass({ timeout: 5_000 });
+    }
     async function expectViewportFit(view: Page = page) {
       await expect.poll(() => view.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     }
@@ -67,14 +78,14 @@ for (const viewport of [
     await expect(
       page.getByRole("heading", { name: "Browser board", exact: true }),
     ).toBeVisible();
-    await activate("Add list");
+    await openCreation("Add list", "List name");
     await page.getByLabel("List name", { exact: false }).fill("Planning");
     await activate("Create");
     await expect(
       page.getByRole("heading", { name: "Planning", exact: true }),
     ).toBeVisible();
     await expectViewportFit();
-    await activate("Add card to Planning");
+    await openCreation("Add card to Planning", "Card title");
     await page.getByLabel("Card title", { exact: false }).fill("Inspect roof");
     // The server commits, but the first response is lost. An unchanged UI retry
     // must use the same intent key and recover exactly one persisted card.

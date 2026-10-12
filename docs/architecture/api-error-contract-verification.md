@@ -68,3 +68,14 @@ Complete current source and immutable-image CI remain required.
 
 See [the middleware](../../src/StrataAI.Api/UnexpectedApiErrorMiddleware.cs) and
 [HTTP/boundary regressions](../../tests/StrataAI.Api.Tests/UnexpectedApiErrorTests.cs).
+
+## Full hosted source verification for the reliability checkpoint
+
+[CI run 38287805799](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38287805799)
+for exact commit `1d03b0c9` passes the complete hosted backend source suite:
+993 Domain and 932 API cases, zero failures or skips. Web quality, PostgreSQL
+integration, the source-quality gate and build-once image job also pass. This
+extends the handler/readiness focused proof to the full source suite. Security
+and container integration were still in progress when recorded. Newer main
+commits add browser/component checks and documentation; this result certifies
+the named checkpoint and does not establish a completed current release.

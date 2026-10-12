@@ -337,3 +337,16 @@ independently verified. The earlier host-bootstrap failure is retained separatel
 This updates local supported-capacity evidence to the current schema and cached-
 detail repair; current immutable-image/full CI and all original broader
 requirements still govern closure. Estimated work remaining stays **34%**.
+
+## Creation form admission during protected Board reads
+
+The [creation admission verification](board-creation-admission-verification.md)
+records a clean controlled reproduction of missed List opening on tablet/mobile,
+the complete repaired three-viewport diagnostic, and all three ordinary repository
+scenarios without injection. A five-second read-only opening loop confirms the
+List/Card creation field while preserving desktop pointer input, tablet/mobile
+keyboard input, all Create/Save submissions, original retry keys/counts,
+conflict drafts, navigation and tenant/public-reader isolation. The original
+test deadline and release pacing remain. Captured source/runtime/web hashes and
+owned cleanup are independently verified. Local compiled-runtime evidence does
+not replace current immutable/full CI; estimated remaining work stays **34%**.

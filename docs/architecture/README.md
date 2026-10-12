@@ -2,6 +2,10 @@
 
 The GitHub architecture PRDs (ARCH-01 through ARCH-12) are authoritative.
 
+[Creation form admission verification](board-creation-admission-verification.md)
+records the retained tablet failure, controlled protected-read reproduction,
+and complete desktop/tablet/mobile persistence and isolation verification.
+
 [Activity history recovery verification](activity-history-recovery-verification.md)
 records the retained CI trace, controlled before/after reproduction and complete
 ordinary desktop/mobile verification while preserving protected-page purging.

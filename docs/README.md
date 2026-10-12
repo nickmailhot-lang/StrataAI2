@@ -217,6 +217,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Retaining CI evidence for main commits](architecture/ci-run-retention.md)
 - [PRD-18 acceptance audit](architecture/lifecycle-acceptance.md)
 - [PRD-01 foundation acceptance and closure audit](architecture/prd-01-acceptance.md)
+- [List/Card creation form admission and complete three-viewport verification](architecture/board-creation-admission-verification.md)
 - [PRD-04 acceptance and closure audit](architecture/prd-04-acceptance.md)
 - [PRD-05 sharing and permission acceptance audit](architecture/prd-05-acceptance.md)
 - [PRD-15 acceptance map — open](architecture/prd-15-acceptance.md)
