@@ -1810,3 +1810,40 @@ private hold history/receipt capability. Internal routine and immutable graph
 checks remain mandatory. Execution of the repaired SQL gates and full API
 regression remains pending; local Docker engines were unavailable during this
 increment. No issue acceptance or release is claimed from the failed run.
+
+### Broad hold administration admission
+
+[RetentionHoldAuthorization](../../src/StrataAI.Application/Records/RetentionHoldAuthorization.cs)
+composes the existing typed Work authority with a dedicated broad retention
+administration boundary. Organization, record-class and category holds require
+an already-owned tenant transaction, a currently verified actor, an active
+Organization and current Owner/Admin membership, matching the explicit role
+boundary for retention policy administration. No constituent record title,
+count or body is loaded to authorize the broad scope. Unknown classes, invalid
+categories and malformed broad reference context are refused.
+
+Record-specific scopes continue through the existing original, application and
+current Board admission. A broad administration role cannot substitute for those
+record gates, supply missing classification, or fabricate retained context.
+Both runtime compositions obtain transaction ownership from their actual Demo
+scope or PostgreSQL connection factory. Hold writes still use the existing
+owning Organization command and rollback/audit/receipt graph.
+
+Executed local evidence: **48/48 focused Records API cases passed**, with all
+**2,395 captured source/binary hashes matching**. The new real Demo cases apply,
+read, release and recover original receipts for Organization/class/category
+holds, verify private audit metadata and foreign refusal, suspend complete
+unclassified Work families and Comment bodies, and observe clear state after
+release. Actual membership changes prove ordinary Member refusal, current Admin
+admission and immediate refusal after Admin authority is withdrawn. The separate
+admission case checks unowned scope, malformed hints and record admission that
+cannot be replaced by broad authority. Fresh full solution builds passed with
+zero warnings/errors. Native coverage now exercises the actual PostgreSQL
+ownership adapter and composite authority for all three broad scopes, including
+private reads, release and immutable original recovery; execution of those added
+native cases remains pending while local Docker is unavailable.
+
+This is the owning administration prerequisite. Production hold-writing
+registration, transport review/confirmation and administration UI remain
+unactivated; no runtime hold capabilities were broadened by this increment.
+Production HTTP/browser proof and complete PRD-70 acceptance remain open.

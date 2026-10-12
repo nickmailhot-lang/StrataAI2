@@ -13,6 +13,7 @@ public static class RetentionSourceRegistration
     {
         if (runtime.Mode == RuntimeMode.Demo)
         {
+            services.AddSingleton<IRetentionAdministrationTransaction, DemoRetentionAdministrationTransaction>();
             services.AddSingleton<InMemoryRetentionHoldStore>();
             services.AddSingleton<IRetentionHoldStore>(p => p.GetRequiredService<InMemoryRetentionHoldStore>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(p => p.GetRequiredService<InMemoryRetentionHoldStore>());
@@ -28,6 +29,7 @@ public static class RetentionSourceRegistration
         }
         else
         {
+            services.AddSingleton<IRetentionAdministrationTransaction, PostgresRetentionAdministrationTransaction>();
             services.AddSingleton<IRetentionWorkDisposition, PostgresRetentionWorkDisposition>();
             services.AddSingleton<PostgresRetentionSourceStore>();
             services.AddSingleton<IRetentionSourceCommandStore>(p => p.GetRequiredService<PostgresRetentionSourceStore>());
@@ -37,7 +39,9 @@ public static class RetentionSourceRegistration
         }
         services.AddSingleton<RetentionProducerAuthorization>();
         services.AddSingleton<RetentionWorkAuthorization>();
-        services.AddSingleton<IRetentionHoldScopeAuthorization>(p => p.GetRequiredService<RetentionWorkAuthorization>());
+        services.AddSingleton<RetentionAdministrationAuthorization>();
+        services.AddSingleton<RetentionHoldAuthorization>();
+        services.AddSingleton<IRetentionHoldScopeAuthorization>(p => p.GetRequiredService<RetentionHoldAuthorization>());
         services.AddSingleton<RetentionSourceReviewService>();
         services.AddSingleton<RetentionSourceClassificationService>();
     }

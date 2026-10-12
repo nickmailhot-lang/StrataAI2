@@ -471,6 +471,33 @@ internal static class RetentionHoldPersistenceContract
             Require(!await Authorize(async a => await a.VerifyHoldAsync((await references.ReadHoldAsync(tenant, workHold, ct))!, actor, ct),
                 new BoardGate(actualBoards, destination)), "Native application Board refusal was bypassed after a later source move.");
             var realAuthorization = new RetentionWorkAuthorization(references, references, workStore, actualBoards, organizations, actors);
+            var administrativeAuthority = new RetentionHoldAuthorization(realAuthorization,
+                new RetentionAdministrationAuthorization(organizations, actors, new PostgresRetentionAdministrationTransaction(db)));
+            var administrativeStore = new PostgresRetentionHoldStore(db, organizations, identities, actors, administrativeAuthority, clock);
+            var administrativeService = new RetentionHoldService(organizations, administrativeStore, administrativeAuthority, unit, actors, clock);
+            Require(!await administrativeAuthority.VerifyAsync(new RetentionHoldScope(tenant, null, null, null), actor, ct),
+                "Native broad administration admitted an unowned transaction.");
+            foreach (var broadScope in new[] { new RetentionHoldScope(tenant, null, null, null),
+                new(tenant, RetentionRecordClass.Document, null, null),
+                new(tenant, RetentionRecordClass.Document, "native.administration", null) })
+            {
+                var broadId = Guid.NewGuid(); var broadKey = Guid.NewGuid(); var releaseKey = Guid.NewGuid();
+                var appliedBroad = await administrativeService.ApplyAsync(tenant, actor, broadId, broadScope,
+                    "Private administrative hold reason", broadKey, "native-broad-apply", ct);
+                Require(appliedBroad.Succeeded && appliedBroad.Value is { Version: 1, Status: RetentionHoldStatus.Active },
+                    "Native actual broad hold administration apply failed.");
+                Require((await administrativeService.ReadAsync(tenant, actor, broadId, ct)).Value == appliedBroad.Value,
+                    "Native broad private read did not retain owning administration.");
+                var releasedBroad = await administrativeService.ReleaseAsync(tenant, actor, broadId, 1, releaseKey, "native-broad-release", ct);
+                Require(releasedBroad.Succeeded && releasedBroad.Value is { Version: 2, Status: RetentionHoldStatus.Released },
+                    "Native actual broad hold administration release failed.");
+                Require((await administrativeService.ApplyAsync(tenant, actor, broadId, broadScope,
+                    "Private administrative hold reason", broadKey, "native-broad-original-apply", ct)).Value == appliedBroad.Value
+                    && (await administrativeService.ReleaseAsync(tenant, actor, broadId, 1, releaseKey,
+                        "native-broad-original-release", ct)).Value == releasedBroad.Value,
+                    "Native actual broad administration lost immutable original acknowledgments.");
+            }
+            Console.WriteLine("Native broad hold administration: actual owning Organization/class/category authority, private reads, release and original receipt recovery passed; actor session remains a native fixture.");
             var realStore = new PostgresRetentionHoldStore(db, organizations, identities, actors, realAuthorization, clock);
             var realService = new RetentionHoldService(organizations, realStore, realAuthorization, unit, actors, clock);
             Require((await realService.ReadAsync(tenant, actor, workHold, ct)).Succeeded, "Native real reference-admitted private read failed.");
