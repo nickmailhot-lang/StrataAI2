@@ -1,5 +1,7 @@
 # StrataAI2 architecture
 
+[Label keyboard admission verification](label-keyboard-admission-verification.md) records the hosted consent interruption and local desktop/mobile checks supporting the operational MVP.
+
 The GitHub architecture PRDs (ARCH-01 through ARCH-12) are authoritative.
 
 [Checklist review admission](checklist-review-admission-verification.md) records

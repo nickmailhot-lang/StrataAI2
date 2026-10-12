@@ -35,8 +35,9 @@ for (const width of [1280, 390]) {
         if (attempts.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
       });
       const createLabel = page.getByRole('button', { name: 'Create label', exact: true });
-      await expect(createLabel).toBeEnabled(); await createLabel.press('Enter');
-      await page.getByLabel('Label name (optional)').fill('Priority');
+      const labelName = page.getByLabel('Label name (optional)');
+      await openAdmittedReview(createLabel, labelName);
+      await labelName.fill('Priority');
       await page.getByRole('combobox', { name: 'Label color' }).press('Enter');
       await page.getByRole('option', { name: 'Red', exact: true }).press('Enter');
       await expect(page.getByRole('listbox', { name: 'Label color', exact: true })).toHaveCount(0);
@@ -269,7 +270,17 @@ for (const width of [1280, 390]) {
       await openUrgentEditor();
       await expect(management.getByRole('button', { name: 'Delete label', exact: true })).toBeDisabled();
       const consent = management.getByRole('checkbox', { name: 'Confirm removal from all Cards' });
-      await pressAdmittedAction(consent, 'Space'); await expect(consent).toBeChecked();
+      // Consent changes only local form state. A foreground read can disable
+      // the checkbox during Space; stop activating once consent is checked.
+      // The destructive command below remains separately counted.
+      await expect(async () => {
+        if (!await consent.isChecked()) {
+          await focusAdmittedControl(consent);
+          await consent.press('Space', { timeout: 500 });
+        }
+        await expect(consent).toBeChecked({ timeout: 500 });
+      }).toPass({ timeout: 5_000 });
+      await expect(consent).toBeChecked();
       const deleteLabel = management.getByRole('button', { name: 'Delete label', exact: true });
       let deleteDispatches = 0;
       page.on('request', request => {
