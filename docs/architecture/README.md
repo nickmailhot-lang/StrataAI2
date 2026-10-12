@@ -2,6 +2,10 @@
 
 The GitHub architecture PRDs (ARCH-01 through ARCH-12) are authoritative.
 
+[Current invitation, comment and cover verification](invitation-comment-cover-verification.md)
+records the complete native browser invocation, confirmation focus regressions,
+and the distinction between actual persistence and simulated cover providers.
+
 The [PRD-01 foundation acceptance map](prd-01-acceptance.md) links the complete
 hierarchy/navigation requirements, acceptance criteria, test scenarios and
 remaining audit/release scope to their verification sources.

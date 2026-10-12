@@ -226,6 +226,21 @@ it.each(['Organization', 'Board'])('retires %s preference recovery after history
   expect(mock).toHaveBeenCalledTimes(readCount);
   expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
 });
+it.each(['Organization', 'Board'])('preserves the chosen %s confirmation focus during a quiet preference update without submitting', async surface => {
+  const mock = vi.fn(async (path: string, _options?: RequestInit) => reply(path === '/me' ? currentProfile
+    : path === `/boards/${board}` ? boardScope : { items: [surface === 'Board' ? boardRow : row], nextCursor: null }));
+  vi.stubGlobal('fetch', mock); if (surface === 'Board') boardMount(); else mount(); await review();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+  const confirm = screen.getByRole('button', { name: 'Confirm revocation' });
+  act(() => confirm.focus()); expect(confirm).toHaveFocus();
+  await waitFor(() => expect(identity.watch).toHaveBeenCalledTimes(1));
+  currentProfile = { ...profile, timezone: 'Asia/Tokyo' };
+  await act(async () => identity.watch.mock.calls[0][0].invalidate());
+  await screen.findByText(/Expires:.*03:00/);
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(confirm).toBeEnabled(); expect(confirm).toHaveFocus();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+});
 it('recovers preferences periodically and retires timers and listeners on unmount', async () => {
   vi.useFakeTimers(); const stop = vi.fn(); identity.watch.mockReturnValue(stop);
   const mock = vi.fn(async (path: string) => reply(path === '/me' ? currentProfile : page()));
