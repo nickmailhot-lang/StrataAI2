@@ -1847,3 +1847,61 @@ This is the owning administration prerequisite. Production hold-writing
 registration, transport review/confirmation and administration UI remain
 unactivated; no runtime hold capabilities were broadened by this increment.
 Production HTTP/browser proof and complete PRD-70 acceptance remain open.
+
+### Organization deletion admission
+
+Organization deletion now requires a clear current hold catalog before the
+parent becomes DELETING. The owning command verifies current Owner admission
+and the exact parent revision first, then checks every active hold scope under
+the retained Organization gate. Any active Organization, class, category or
+record hold prevents offboarding: making the parent unavailable would also
+make its hold administration unavailable. This check does not depend on a
+paged record directory, known classification or a bounded hold preview.
+
+[IRetentionOrganizationDisposition](../../src/StrataAI.Application/Records/RetentionWorkDisposition.cs)
+uses actual [Demo](../../src/StrataAI.Infrastructure/Records/InMemoryRetentionOrganizationDisposition.cs)
+and [PostgreSQL](../../src/StrataAI.Infrastructure/Records/PostgresRetentionOrganizationDisposition.cs)
+adapters. The PostgreSQL projection reads only current tenant/status fields
+under the existing minimum hold grant; no hold identity, reason, history,
+receipt or mutation capability is added. Missing/unowned projections are
+unavailable. Released heads do not reactivate historical Active revisions.
+
+A refusal happens before Board gates, reminder changes, parent transition,
+deletion audit, receipt or durable job publication. The parent remains active
+so an authorized administrator can review/release the hold. After release,
+the original refused key may be reused. Already-accepted receipt recovery
+acknowledges its original request without another disposition or job publication.
+The deletion page explains the fixed hold refusal without private hold fields;
+an unavailable check retains the exact original actor, revision, route and key
+for recovery. Definitive refusal requires a fresh review and confirmation.
+
+Executed local evidence: **113/113 related Records/Organization API cases
+passed**, with zero skips/failures and all **2,398 captured source/binary hashes
+matching**. Actual mapped deletion tests use real Demo hold administration for
+all four scopes, prove authority/revision checks precede projection reads,
+private denial, unchanged parent/audit/receipt and absent job on refusal,
+release followed by original-key acceptance, PENDING observation and unchanged
+original acknowledgment recovery. A separately identified unavailable-projection
+fixture verifies fail-closed admission and original request recovery.
+**43/43 focused deletion-page/Problem tests passed**. Web type checking,
+changed-file lint, production web build and fresh full solution compilation
+passed; the existing large web bundle warning remains.
+
+Added native cases exercise clear/held/released Organization admission while
+temporarily restoring the exact canonical current-hold columns and denying
+private history/receipt access. They also test foreign/unowned refusal and
+complete current holds beyond the bounded preview. Execution of these new
+Organization cases and their exact-commit container CI is pending; local
+Docker engines remain unavailable. Policy-governed disposal, retained history,
+secure export, complete offboarding verification and Worker integration remain
+open. This admission check does not claim all RECORDS-FR-008 acceptance.
+
+Additional verified evidence for earlier commits: captured Windows API
+regression for `af52ce42` completed with **862 passed, 24 Linux-only cases not
+executed, zero failures**, and all **2,392 hashes matching**. Exact-commit Linux
+CI executed **886/886 API cases**, with zero skips/failures, and passed the
+repaired minimum-capability SQL gate in the four initially running container
+suites. For `74a47c6b`, PostgreSQL integration actually executed the added broad
+Organization/class/category administration, private read, release and original
+receipt recovery cases successfully; actor-session proof remains explicitly
+a native fixture. Complete final image/release gates remain separately tracked.

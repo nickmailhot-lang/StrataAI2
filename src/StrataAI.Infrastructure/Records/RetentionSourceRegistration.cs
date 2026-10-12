@@ -20,6 +20,7 @@ public static class RetentionSourceRegistration
             services.AddSingleton<Func<InMemoryRetentionHoldStore>>(p => () => p.GetRequiredService<InMemoryRetentionHoldStore>());
             services.AddSingleton<Func<InMemoryRetentionSourceStore>>(p => () => p.GetRequiredService<InMemoryRetentionSourceStore>());
             services.AddSingleton<IRetentionWorkDisposition, InMemoryRetentionWorkDisposition>();
+            services.AddSingleton<IRetentionOrganizationDisposition, InMemoryRetentionOrganizationDisposition>();
             services.AddSingleton<InMemoryRetentionSourceStore>();
             services.AddSingleton<IRetentionSourceCommandStore>(p => p.GetRequiredService<InMemoryRetentionSourceStore>());
             services.AddSingleton<IRetentionSourceReferenceReader>(p => p.GetRequiredService<InMemoryRetentionSourceStore>());
@@ -31,6 +32,7 @@ public static class RetentionSourceRegistration
         {
             services.AddSingleton<IRetentionAdministrationTransaction, PostgresRetentionAdministrationTransaction>();
             services.AddSingleton<IRetentionWorkDisposition, PostgresRetentionWorkDisposition>();
+            services.AddSingleton<IRetentionOrganizationDisposition, PostgresRetentionOrganizationDisposition>();
             services.AddSingleton<PostgresRetentionSourceStore>();
             services.AddSingleton<IRetentionSourceCommandStore>(p => p.GetRequiredService<PostgresRetentionSourceStore>());
             services.AddSingleton<IRetentionSourceReferenceReader>(p => p.GetRequiredService<PostgresRetentionSourceStore>());

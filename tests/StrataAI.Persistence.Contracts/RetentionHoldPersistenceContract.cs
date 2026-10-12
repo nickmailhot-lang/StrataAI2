@@ -475,6 +475,56 @@ internal static class RetentionHoldPersistenceContract
                 new RetentionAdministrationAuthorization(organizations, actors, new PostgresRetentionAdministrationTransaction(db)));
             var administrativeStore = new PostgresRetentionHoldStore(db, organizations, identities, actors, administrativeAuthority, clock);
             var administrativeService = new RetentionHoldService(organizations, administrativeStore, administrativeAuthority, unit, actors, clock);
+            var organizationDisposition = new PostgresRetentionOrganizationDisposition(db);
+            Require(await organizationDisposition.CheckAsync(tenant, ct) == RetentionDispositionAdmission.Unavailable,
+                "Native Organization disposition admitted an unowned scope.");
+            var offboardingProbe = Guid.NewGuid();
+            var createdProbe = await unit.ExecuteAsync(offboardingProbe, actor, null, true, async () =>
+            {
+                await organizations.CreateOrganizationAsync(actor, offboardingProbe, "Native offboarding probe", null, clock.UtcNow, ct);
+                return OrganizationOperation<bool>.Success(true);
+            }, ct);
+            Require(createdProbe.Succeeded, "Native owning offboarding probe creation failed.");
+            async Task ProveMinimumOrganizationDisposition(Guid organization, RetentionDispositionAdmission expected)
+            {
+                await using (var minimum = new NpgsqlCommand("""
+                    REVOKE SELECT,INSERT,UPDATE ON record_retention_holds FROM strataai_api_runtime;
+                    GRANT SELECT(tenant_id,record_class,category_key,record_id,status) ON record_retention_holds TO strataai_api_runtime;
+                    REVOKE SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts FROM strataai_api_runtime;
+                    """, admin)) await minimum.ExecuteNonQueryAsync(ct);
+                try
+                {
+                    var checkedRoot = await unit.ExecuteAsync(organization, actor, null, false, async () =>
+                    {
+                        Require(await organizationDisposition.CheckAsync(organization, ct) == expected,
+                            "Native current Organization hold admission differs from its complete scope.");
+                        Require(await organizationDisposition.CheckAsync(other, ct) == RetentionDispositionAdmission.Unavailable,
+                            "Native Organization disposition accepted a foreign owning scope.");
+                        return OrganizationOperation<bool>.Success(true);
+                    }, ct);
+                    Require(checkedRoot.Succeeded, "Native minimum-capability Organization disposition failed.");
+                }
+                finally
+                {
+                    await using var prospective = new NpgsqlCommand("""
+                        GRANT SELECT,INSERT,UPDATE ON record_retention_holds TO strataai_api_runtime;
+                        GRANT SELECT,INSERT ON record_retention_hold_history,record_retention_hold_receipts TO strataai_api_runtime;
+                        """, admin);
+                    await prospective.ExecuteNonQueryAsync(CancellationToken.None);
+                }
+            }
+            await ProveMinimumOrganizationDisposition(tenant, RetentionDispositionAdmission.Held);
+            await ProveMinimumOrganizationDisposition(offboardingProbe, RetentionDispositionAdmission.Clear);
+            var offboardingHold = Guid.NewGuid();
+            Require((await administrativeService.ApplyAsync(offboardingProbe, actor, offboardingHold,
+                new(offboardingProbe, RetentionRecordClass.Governance, "native.future", null),
+                "Private offboarding hold", Guid.NewGuid(), "native-offboarding-hold", ct)).Succeeded,
+                "Native offboarding hold application failed.");
+            await ProveMinimumOrganizationDisposition(offboardingProbe, RetentionDispositionAdmission.Held);
+            Require((await administrativeService.ReleaseAsync(offboardingProbe, actor, offboardingHold, 1,
+                Guid.NewGuid(), "native-offboarding-release", ct)).Succeeded, "Native offboarding hold release failed.");
+            await ProveMinimumOrganizationDisposition(offboardingProbe, RetentionDispositionAdmission.Clear);
+            Console.WriteLine("Native Organization disposition: minimum canonical scope columns, no private hold/history/receipt read, complete active holds, release and foreign/unowned refusal passed; actor session remains a native fixture.");
             Require(!await administrativeAuthority.VerifyAsync(new RetentionHoldScope(tenant, null, null, null), actor, ct),
                 "Native broad administration admitted an unowned transaction.");
             foreach (var broadScope in new[] { new RetentionHoldScope(tenant, null, null, null),

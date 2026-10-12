@@ -20,6 +20,13 @@ internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organization
     private readonly Dictionary<(Guid Organization, Guid Hold, long Version), DemoRetentionHoldRevision> _history = [];
     private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), RetentionHoldReceipt> _receipts = [];
     private readonly HashSet<Guid> _eventIds = [];
+    internal bool HasAnyActiveDispositionHold(Guid organization, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!scope.OwnsOrganizationCommand(organization))
+            throw new InvalidOperationException("Organization disposition requires its owning command.");
+        return _current.Values.Any(h => h.OrganizationId == organization && h.Status == RetentionHoldStatus.Active);
+    }
     internal bool HasActiveDispositionHold(Guid organization, RetentionRecordClass recordClass, Guid record, string? category, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();

@@ -1,5 +1,6 @@
 using StrataAI.Application.Common;
 using StrataAI.Application.WorkManagement;
+using StrataAI.Application.Records;
 
 namespace StrataAI.Application.Organizations;
 
@@ -13,7 +14,7 @@ public sealed class OrganizationService(
     CardReminderContainerScheduling reminders, IOrganizationMetadataReplayStore metadataReplays,
     IOrganizationDepartureReplayStore departureReplays, IOrganizationRemovalReplayStore removalReplays,
     IOrganizationCreationReplayStore creationReplays, IOrganizationDeletionReplayStore deletionReplays,
-    IOrganizationDeletionJobPublisher deletionJobs) : IOrganizationService
+    IOrganizationDeletionJobPublisher deletionJobs, IRetentionOrganizationDisposition retention) : IOrganizationService
 {
     public async Task<OrganizationOperation<OrganizationDirectoryPage>> ListPageAsync(Guid actorUserId,
         Guid? after, CancellationToken cancellationToken = default)
@@ -560,11 +561,15 @@ public sealed class OrganizationService(
             return OrganizationOperation<bool>.Failure("organization_not_found");
         }
 
-        if ((await store.FindOrganizationAsync(organizationId, cancellationToken))?.Status != OrganizationStatus.Active)
+        var parent = await store.FindOrganizationAsync(organizationId, cancellationToken);
+        if (parent?.Status != OrganizationStatus.Active)
             return OrganizationOperation<bool>.Failure("organization_not_found");
         // Reserve the accepted and terminal revisions before any mutation.
-        if (expectedVersion >= long.MaxValue - 1)
+        if (expectedVersion < 1 || expectedVersion != parent.Version || expectedVersion >= long.MaxValue - 1)
             return OrganizationOperation<bool>.Failure("version_conflict");
+
+        var disposition = (await retention.CheckAsync(organizationId, cancellationToken)).ErrorCode();
+        if (disposition is not null) return OrganizationOperation<bool>.Failure(disposition);
 
         // The Organization command owns the parent gate. Lock every chosen
         // Board in stable order before making the parent unavailable; never use

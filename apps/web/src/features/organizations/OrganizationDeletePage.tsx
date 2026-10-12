@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
+import { retentionDispositionNotice } from '../../api/retentionDisposition';
 import { boundedWorkRead } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { clearDeletionRecovery, parseDeletionObservation, readDeletionRecovery, saveDeletionRecovery } from './deletionObservation';
@@ -146,11 +147,14 @@ function Deletion({ organizationId }: { organizationId: string }) {
         saveDeletionRecovery(organizationId, original, true); return;
       }
       if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
+      const retentionNotice = retentionDispositionNotice(result.status,
+        result.body && typeof result.body === 'object' ? (result.body as { code?: unknown }).code : undefined);
       if ([400, 409, 429].includes(result.status)) {
         clearDeletionRecovery(organizationId);
         intentRef.current = undefined; setIntent(undefined);
-        setError('The deletion request was refused. Review current permission and version before considering another request.'); return;
+        setError(retentionNotice ?? 'The deletion request was refused. Review current permission and version before considering another request.'); return;
       }
+      if (retentionNotice) { setError(retentionNotice); return; }
       throw new Error('Missing acknowledgment');
     } catch {
       if (current(controller)) {

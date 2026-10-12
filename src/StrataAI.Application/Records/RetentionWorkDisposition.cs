@@ -13,6 +13,13 @@ public interface IRetentionWorkDisposition
         Guid record, CancellationToken ct);
 }
 
+// Organization offboarding makes every record and its administration unavailable.
+// It must retain the owning Organization gate and refuse any current active hold.
+public interface IRetentionOrganizationDisposition
+{
+    Task<RetentionDispositionAdmission> CheckAsync(Guid organization, CancellationToken ct);
+}
+
 public static class RetentionDispositionAdmissionErrors
 {
     public static string? ErrorCode(this RetentionDispositionAdmission admission) => admission switch

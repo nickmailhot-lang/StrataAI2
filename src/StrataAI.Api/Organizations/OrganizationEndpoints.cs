@@ -417,6 +417,12 @@ public static class OrganizationEndpoints
                 StatusCodes.Status409Conflict,
                 errorCode,
                 "The Organization changed elsewhere. Refresh and retry."),
+            "retention_hold_prevents_disposition" => Problem(
+                StatusCodes.Status409Conflict, errorCode,
+                "An active retention hold prevents Organization deletion. Ask an authorized Records administrator to review it."),
+            "retention_disposition_unavailable" => Problem(
+                StatusCodes.Status503ServiceUnavailable, errorCode,
+                "Retention requirements could not be confirmed. Retry the original deletion when access and storage are available."),
             "sole_owner" => Problem(
                 StatusCodes.Status409Conflict,
                 errorCode,

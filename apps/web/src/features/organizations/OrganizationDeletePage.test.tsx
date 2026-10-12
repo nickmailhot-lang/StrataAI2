@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationDeletePage } from './OrganizationDeletePage';
+import { retentionHoldDeletionNotice, retentionDispositionUnavailableNotice } from '../../api/retentionDisposition';
 const actor = '22222222-2222-4222-8222-222222222222';
 const org = '55555555-5555-4555-8555-555555555555';
 const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'UTC' };
@@ -16,6 +17,35 @@ async function confirm() {
   fireEvent.click(screen.getByRole('button', { name: 'Confirm deletion request' }));
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); sessionStorage.clear(); });
+
+it.each([{ status: 409, code: 'retention_hold_prevents_disposition', notice: retentionHoldDeletionNotice },
+  { status: 503, code: 'retention_disposition_unavailable', notice: retentionDispositionUnavailableNotice }])(
+  'explains Organization retention $status privately and retains only uncertain original request recovery', async ({ status, code, notice }) => {
+    const commands: { path: string; init: RequestInit }[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (path: string, init: RequestInit) => {
+      if (init.method === 'DELETE') {
+        commands.push({ path, init });
+        return commands.length === 1 ? response({ code, title: 'private SQL', reason: 'Private hold reason', holdId: 'private hold ID' }, status)
+          : response(null, 202);
+      }
+      return response(path === '/me' ? profile : review);
+    }));
+    mount(); await confirm(); await screen.findByText(notice);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(document.body.textContent).not.toContain('Private hold reason'); expect(document.body.textContent).not.toContain('private SQL');
+    expect(document.body.textContent).not.toContain('private hold ID'); expect(commands).toHaveLength(1);
+    expect(screen.queryByText('Private Council')).not.toBeInTheDocument();
+    if (status === 409) {
+      expect(screen.queryByRole('button', { name: 'Retry original deletion request' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Confirm deletion request' })).not.toBeInTheDocument();
+      expect(screen.queryByText(/Review current permission and version/)).not.toBeInTheDocument();
+    } else {
+      const retry = await screen.findByRole('button', { name: 'Retry original deletion request' }); await waitFor(() => expect(retry).toBeEnabled());
+      fireEvent.click(retry); await screen.findByText('Deletion request acknowledged. Deletion has not been confirmed complete.');
+      expect(commands).toHaveLength(2); expect(commands[1].path).toBe(commands[0].path); expect(commands[1].init.body).toBe(commands[0].init.body);
+      expect(new Headers(commands[1].init.headers).get('Idempotency-Key')).toBe(new Headers(commands[0].init.headers).get('Idempotency-Key'));
+    }
+  });
 
 it('requires explicit keyboard-safe confirmation and cancels without a deletion request', async () => {
   const fetcher = vi.fn(async (path: string) => response(path === '/me' ? profile : review)); vi.stubGlobal('fetch', fetcher); mount();
