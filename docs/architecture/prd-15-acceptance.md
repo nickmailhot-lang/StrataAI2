@@ -561,3 +561,16 @@ included six early returns and cannot prove those checks executed.
 ## Complete combined strict Board verification
 
 The [complete fourteen-file/31-case strict invocation](integration-ci-groups.md#complete-fourteen-file-strict-board-invocation) passes together in 21.7 minutes with zero skips/retries/flaky cases. Current compiled Production API/separate Worker, frozen original-key recovery web, restricted schema-114 PostgreSQL17/pgvector and verified-email enforcement were used; owned fixtures were removed. Original complete scenario assertions and deadlines remain. This is local runtime evidence, not current immutable/full acceptance. Estimated PRD-15 work remaining: **34%**.
+
+## Late Board recovery and immutable actor admission
+
+The [recovery verification](activity-history-recovery-verification.md) matches
+the retained hosted failure to a later parent access-generation reset, reproduces
+the outside-loop count failure on both viewports using one actual read-only Board
+refresh, and records the repaired paired diagnostic plus complete ordinary
+desktop/mobile invocation. Both historical captions are now verified in one
+admitted DOM snapshot inside the existing five-second paging loop. The
+component's access purge and all command, keyboard, reconnect, revocation and
+private-body requirements remain. The component file passes 17/17 and both
+native browser invocations pass 2/2 without skips or flaky cases; current
+immutable/full CI is still required. Estimated PRD-15 work remaining stays **34%**.

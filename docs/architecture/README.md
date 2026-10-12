@@ -2,6 +2,10 @@
 
 The GitHub architecture PRDs (ARCH-01 through ARCH-12) are authoritative.
 
+[Activity history recovery verification](activity-history-recovery-verification.md)
+records the retained CI trace, controlled before/after reproduction and complete
+ordinary desktop/mobile verification while preserving protected-page purging.
+
 The [operational MVP milestone](operational-mvp-milestone.md) prioritizes core
 workflow reliability and verified deployment before new governance and AI work.
 The [API contract acceptance map](prd-21-acceptance.md) and

@@ -221,3 +221,25 @@ it('does not steal focus from another dialog control after a delayed page read',
   await waitFor(() => expect(reads()).toHaveLength(1)); const other = screen.getByRole('button', { name: 'Another control' }); other.focus(); release(page([]));
   await screen.findByText('No activity to review yet. Authorized changes will appear here.'); expect(other).toHaveFocus();
 });
+it('retires an older continuation on access recovery and readmits immutable historical attribution', async () => {
+  const first = page(Array.from({ length: 50 }, (_, index) => ({ ...item(100 - index), actorLabel: 'Current author' })), 'opaque');
+  const historical = page([{ ...item(50), actorLabel: 'Original departed author' }]);
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : path.includes('?after=') ? historical : first);
+  const p = props(); const view = render(wrap(p));
+  fireEvent.click(screen.getByRole('button', { name: 'Review Card activity' }));
+  await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(50));
+  fireEvent.click(screen.getByRole('button', { name: 'Older activity' }));
+  await screen.findByText('Original departed author updated a Card.');
+  expect(screen.getByRole('button', { name: 'Newer activity' })).toBeEnabled();
+  view.rerender(wrap({ ...p, unavailable: true, refreshSequence: '2' }));
+  expect(screen.queryByRole('listitem')).toBeNull();
+  expect(screen.getByRole('button', { name: 'Newer activity' })).toBeDisabled();
+  view.rerender(wrap({ ...p, refreshSequence: '3' }));
+  await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(50));
+  expect(reads().at(-1)?.[0]).toBe(`/cards/${id(3)}/activity`);
+  expect(screen.getByRole('button', { name: 'Newer activity' })).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Older activity' }));
+  await screen.findByText('Original departed author updated a Card.');
+  expect(reads()).toHaveLength(4);
+  expect(reads().at(-1)?.[0]).toBe(`/cards/${id(3)}/activity?after=opaque`);
+});

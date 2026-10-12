@@ -190,6 +190,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Notifications and activity
 
+- [Activity history admission during Board recovery](architecture/activity-history-recovery-verification.md)
 - [PRD-17 notification and watching acceptance map — open](architecture/prd-17-acceptance.md)
 
 - [Assignment notification persistence (PRD-11 / PRD-17)](architecture/assignment-notifications.md)

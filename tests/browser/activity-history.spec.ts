@@ -169,9 +169,13 @@ for (const width of [1280, 390]) {
           await boardOlder.press('Enter', { timeout: 500 });
         }
         await expect(boardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1, { timeout: 500 });
+        // Compare both captions in one admitted DOM snapshot. A later Board
+        // access refresh may legitimately discard this older continuation.
+        const historicalLabels = await boardHistory.getByText('Activity reader updated a Card.', { exact: true })
+          .or(boardHistory.getByText('Renamed activity reader updated a Card.', { exact: true }))
+          .evaluateAll(elements => elements.map(element => element.textContent));
+        expect(historicalLabels).toEqual(['Activity reader updated a Card.']);
       }).toPass({ timeout: 5_000 });
-      await expect(boardHistory.getByText('Activity reader updated a Card.', { exact: true })).toHaveCount(1);
-      await expect(boardHistory.getByText('Renamed activity reader updated a Card.', { exact: true })).toHaveCount(0);
     } finally { try { restoreWorker(); } finally { await peer.close(); } }
   });
 }
