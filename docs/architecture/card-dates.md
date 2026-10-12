@@ -664,3 +664,39 @@ API and Worker both enforce verified email; isolated schema-113 fixtures are
 removed. Current compiled local evidence does not establish current immutable/full
 release acceptance or provider delivery. PRD-12 stays open at **24% estimated work
 remaining** (planning estimate).
+
+## Native timezone entry after current Board admission
+
+The complete five-file browser baseline covered Board members, Card labels,
+archived previews, Board timezone policy and Card dates at desktop and phone
+widths. It passed **9 of 10 cases** in **461,962.864 ms**. The phone Card-date
+case submitted UTC instead of the intended Pacific/Honolulu timezone. Its
+retained trace shows the timezone input being replaced between entry and save;
+the adjacent-input component regression passed without a product change, so
+this evidence does not establish a stale React state setter defect.
+
+The maintained [Card-date scenario](../../tests/browser/card-dates.spec.ts)
+now drains its actual scoped Worker delivery, observes two successful protected
+Board reads on the intended route, and opens the read-only date review through
+the existing bounded keyboard admission helper. It enters the timezone by
+keyboard, verifies both actual input values, and activates Save once. The
+original 90-second scenario budget, first lost acknowledgment, two identical
+request bodies and keys, persisted timezone, completion, Board policy,
+two-session preference recovery and clearing assertions remain required.
+
+The complete same five-file invocation passed **10 of 10 cases** in
+**493,066.165 ms**, with zero skips, flaky cases or report errors. The date
+editor/draft suites passed **16 tests**; web and browser type checks, lint,
+the **213 CI guard tests**, and a fresh full solution build passed. Independent
+checks found zero mismatches across **2,074 hosted source/runtime files**,
+**1,409 native capture files** and all **four compiled web files**. Owned
+containers, the disposable PostgreSQL database, roles and credential files were
+removed; the original stopped PostgreSQL container and volume were preserved.
+
+This is current compiled local API/Worker/Nginx evidence, not certification of
+retained immutable release images. The archive-preview cases simulate provider
+metadata and bytes; they do not prove actual object-storage delivery. The other
+four browser files passed unchanged in both invocations and do not establish a
+repair of separately observed CI failures. Full immutable-image CI, reminder
+provider delivery and complete acceptance remain required. PRD-12 stays open
+at **24% estimated work remaining** (planning estimate).

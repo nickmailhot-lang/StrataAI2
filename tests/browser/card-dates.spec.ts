@@ -1,4 +1,7 @@
 import { expect, test } from './releaseTest';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
+import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-12: persisted dates, viewing timezone and completion display across two sessions at ${width}px`, async ({ page, context, browser }) => {
@@ -17,18 +20,27 @@ for (const width of [1280, 390]) {
     expect(cardReply.status()).toBe(201); const card = (await cardReply.json()).id;
     const dateInput = { startAt: null, dueAt: '2040-01-02', dueTimezone: 'Pacific/Honolulu', dueHasTime: false, dueComplete: false, version: 1 };
     const route = `/app/${org}/boards/${board}/cards/${card}`;
+    const restoreWorker = scopedBoardWorker(org);
+    try {
+    await waitForBoardDelivery(context.request, board);
+    const reads = trackBoardReads(page, board, route);
     await page.goto(route);
+    await waitForBoardReads(page, reads, 2);
     const attempts: { key: string | undefined; body: string | null }[] = []; let drop = true;
     await page.route(`**/cards/${card}/dates`, async intercepted => {
       attempts.push({ key: intercepted.request().headers()['idempotency-key'], body: intercepted.request().postData() });
       const result = await intercepted.fetch(); expect(result.status()).toBe(200);
       if (drop) { drop = false; await intercepted.abort('failed'); } else await intercepted.fulfill({ response: result });
     });
-    const edit = page.getByRole('button', { name: 'Edit dates' }); await expect(edit).toBeEnabled();
-    await edit.focus(); await expect(edit).toBeFocused(); await page.keyboard.press('Enter');
+    const edit = page.getByRole('button', { name: 'Edit dates' });
+    await openAdmittedReview(edit, page.getByLabel('Due date', { exact: true }));
     await page.getByLabel('Due date', { exact: true }).fill('2040-01-02');
-    await page.getByLabel('Date timezone', { exact: true }).fill('Pacific/Honolulu');
-    await page.getByRole('button', { name: 'Save dates', exact: true }).click();
+    const timezone = page.getByLabel('Date timezone', { exact: true });
+    await timezone.press('ControlOrMeta+A');
+    await timezone.pressSequentially('Pacific/Honolulu');
+    await expect(timezone).toHaveValue('Pacific/Honolulu');
+    await expect(page.getByLabel('Due date', { exact: true })).toHaveValue('2040-01-02');
+    await pressAdmittedAction(page.getByRole('button', { name: 'Save dates', exact: true }));
     const retry = page.getByRole('button', { name: 'Retry date save' }); await expect(retry).toBeEnabled();
     await expect(page.getByLabel('Due date', { exact: true })).toBeDisabled();
     await retry.focus(); await expect(retry).toBeFocused(); await page.keyboard.press('Enter');
@@ -82,5 +94,6 @@ for (const width of [1280, 390]) {
       expect(clear.status()).toBe(200); await page.reload(); await peer.reload();
       await expect(region).toHaveCount(0); await expect(peerDates).toHaveCount(0);
     } finally { await other.close(); }
+    } finally { restoreWorker(); }
   });
 }

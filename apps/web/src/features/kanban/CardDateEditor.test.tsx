@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { CardDateEditor } from './CardDateEditor';
 import { workRequest, WorkRequestError, type WorkCard } from '../../api/workManagement';
 vi.mock('../../api/workManagement', async importOriginal => ({ ...await importOriginal<typeof import('../../api/workManagement')>(), workRequest: vi.fn() }));
@@ -10,6 +10,25 @@ const props = () => ({ card, organizationId: 'org', boardId: 'board', listId: 'l
 const ack = () => ({ changed: true, card: { ...card, organizationId: 'org', boardId: 'board', listId: 'list', version: 4,
   dueAt: '2040-01-02T23:59:59.999999Z', dueTimezone: 'UTC' } });
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+it('preserves adjacent date and timezone edits in the submitted command', async () => {
+  vi.mocked(workRequest).mockImplementation(async path => path === '/me' ? profile : {
+    ...ack(), card: { ...ack().card, dueAt: '2040-01-03T09:59:59.999999Z', dueTimezone: 'Pacific/Honolulu' },
+  });
+  render(<CardDateEditor {...props()} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Edit dates' }));
+  const due = await screen.findByLabelText('Due date');
+  const zone = screen.getByLabelText('Date timezone');
+  act(() => {
+    fireEvent.change(zone, { target: { value: 'Pacific/Honolulu' } });
+    fireEvent.change(due, { target: { value: '2040-01-02' } });
+  });
+  expect(zone).toHaveValue('Pacific/Honolulu');
+  expect(due).toHaveValue('2040-01-02');
+  fireEvent.click(screen.getByRole('button', { name: 'Save dates' }));
+  await screen.findByText('Dates saved.');
+  const request = vi.mocked(workRequest).mock.calls.find(([path]) => path.endsWith('/dates'))!;
+  expect(JSON.parse(request[1]!.body as string)).toMatchObject({ dueTimezone: 'Pacific/Honolulu', dueAt: '2040-01-02' });
+});
 async function edit() {
   fireEvent.click(screen.getByRole('button', { name: 'Edit dates' }));
   await screen.findByLabelText('Due date'); fireEvent.change(screen.getByLabelText('Due date'), { target: { value: '2040-01-02' } });
