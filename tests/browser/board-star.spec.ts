@@ -2,6 +2,7 @@ import { registerNotificationAccount as registerVerifiedAccountFixture } from '.
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { openAdmittedReview } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-04: personal star isolation, lost acknowledgment and later-state recovery at ${width}px`, async ({ page, context, browser }) => {
@@ -43,8 +44,10 @@ for (const width of [1280, 390]) {
         // The live bootstrap retires the first snapshot while it rechecks
         // admission. Require its protected follow-up read before keyboard use.
         await expect.poll(admissionReads.get(client)!).toBeGreaterThanOrEqual(2);
-        await expect(client.getByRole('button', { name: 'Board starring', exact: true })).toBeEnabled();
-        await client.getByRole('button', { name: 'Board starring', exact: true }).press('Enter');
+        await openAdmittedReview(
+          client.getByRole('button', { name: 'Board starring', exact: true }),
+          client.getByRole('dialog', { name: 'Board starring', exact: true }),
+        );
         await expect(client.getByText('You have not starred this Board.', { exact: true })).toBeVisible();
       }
       await expect.poll(() => initialPrivateFrame).toBe(true);
@@ -139,8 +142,10 @@ for (const width of [1280, 390]) {
       }
       await mirror.close();
       await page.reload();
-      await expect(page.getByRole('button', { name: 'Board starring', exact: true })).toBeEnabled();
-      await page.getByRole('button', { name: 'Board starring', exact: true }).focus(); await page.keyboard.press('Enter');
+      await openAdmittedReview(
+        page.getByRole('button', { name: 'Board starring', exact: true }),
+        page.getByRole('dialog', { name: 'Board starring', exact: true }),
+      );
       await expect(page.getByText('You have not starred this Board.', { exact: true })).toBeVisible();
     } finally { await outsider.close(); restoreWorker(); }
   });

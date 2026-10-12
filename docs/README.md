@@ -159,6 +159,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Board member administration](board-members-ui.md)
 - [Board metadata review and recovery](board-metadata-control.md)
 - [Personal Board starring](board-star-preference.md)
+- [Board starring review opening verification](architecture/board-star-opening-verification.md)
 - [Board visibility administration](board-visibility-ui.md)
 - [Large-Board viewport rendering](board-windowing.md)
 - [Keyboard pickup instructions](kanban-pickup-announcement.md)
