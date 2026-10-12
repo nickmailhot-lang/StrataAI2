@@ -1174,3 +1174,32 @@ can satisfy that checking assertion. There were zero failed/skipped/flaky cases
 or global errors; all **1,363 native and 1,953 hosted captured hashes matched**.
 Current build-once release-image CI and the rest of PRD-27 acceptance remain
 required. PRD-27 stays open at **24% estimated work remaining**.
+
+## Current authority during configuration transport gaps
+
+Exact-image Demo foundation CI for `74a47c6b` found that external logout could
+leave the configuration route visible at both desktop and phone widths. A
+successful HTTP admission recheck had restored the page while the live
+connection remained unconfirmed; subsequent revocation could wait behind the
+transport reconnect backoff. The existing browser assertion still requires
+sign-in navigation and removal of private form/proposal/Activity values.
+
+The configuration watcher now retains admission rechecks once per second
+while initial subscription or reconnect is unconfirmed. The page coalesces
+them through its existing single bounded read, which checks the current
+account before and after actual Organization configuration admission. A valid
+current-generation stream page stops the fallback. Old stream frames cannot
+confirm recovery; disposal stops timers and callbacks. SignalR replay,
+canonical cursor validation and source-only invalidation remain unchanged.
+Successful HTTP reads preserve authorized drafts and original receipts;
+actual denial withdraws them and session denial routes to sign-in.
+
+Executed local evidence: **29/29 focused watcher/fallback/configuration-page
+cases passed**. The integrated page case uses the actual watcher with an
+unconfirmed transport and verifies later logout removes private configuration
+and the unsent proposal, routes to sign-in and sends no mutation. Lifecycle
+coverage verifies old-frame fencing and stopping rechecks after a valid current
+stream page or unmount. Web type checking, changed-file lint and production
+build passed, retaining the existing bundle-size warning. Exact-image browser
+verification of this repair remains pending; no green release or PRD closure
+is claimed from the failed CI run. Estimated PRD-27 remaining stays **24%**.

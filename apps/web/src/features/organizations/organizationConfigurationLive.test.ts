@@ -19,18 +19,28 @@ const initial = { organizationId: org, userId: user, page: { cursor: 'protected-
 const delivered = { ...initial, page: { ...initial.page, resetRequired: false, events: [source] } };
 type Observer = { next(value: unknown): void; error(error: unknown): void; complete(): void };
 function fixture() {
-  let observer: Observer; let reconnect = () => {};
+  let observer: Observer; let reconnect = () => {}; let reconnecting = () => {};
   const stop = vi.fn().mockResolvedValue(undefined), dispose = vi.fn();
   const stream = vi.fn(() => ({ subscribe: (value: Observer) => { observer = value; return { dispose }; } }));
-  const connection = { start: vi.fn().mockResolvedValue(undefined), stop, stream, onreconnecting: vi.fn(),
+  const connection = { start: vi.fn().mockResolvedValue(undefined), stop, stream, onreconnecting: (value: () => void) => { reconnecting = value; },
     onreconnected: (value: () => void) => { reconnect = value; }, onclose: vi.fn() };
   const invalidate = vi.fn(), reset = vi.fn(), unavailable = vi.fn();
   const cleanup = watchOrganizationConfiguration({ organizationId: org, userId: user, invalidate, reset, unavailable,
     connection: connection as unknown as ReturnType<typeof createOrganizationConfigurationConnection> });
   return { stream, stop, dispose, invalidate, reset, unavailable, cleanup, next: (value: unknown) => observer.next(value),
-    previous: () => observer, reconnect: () => reconnect() };
+    previous: () => observer, reconnect: () => reconnect(), reconnecting: () => reconnecting() };
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it('keeps admission current during a reconnect gap and does not let an old stream confirm recovery', async () => {
+  vi.useFakeTimers(); const f = fixture(); await Promise.resolve(); f.next(initial);
+  const old = f.previous(); f.reconnecting(); expect(f.unavailable).toHaveBeenCalledTimes(1);
+  await vi.advanceTimersByTimeAsync(2000); expect(f.unavailable).toHaveBeenCalledTimes(3);
+  old.next(initial); await vi.advanceTimersByTimeAsync(1000); expect(f.unavailable).toHaveBeenCalledTimes(4);
+  f.reconnect(); f.next({ ...initial, page: { ...initial.page, resetRequired: false } });
+  await vi.advanceTimersByTimeAsync(3000); expect(f.unavailable).toHaveBeenCalledTimes(4);
+  f.reconnecting(); f.cleanup(); const count = f.unavailable.mock.calls.length;
+  await vi.advanceTimersByTimeAsync(3000); expect(f.unavailable).toHaveBeenCalledTimes(count);
+});
 it('coalesces newer canonical configuration revisions without losing the highest delivered revision', async () => {
   vi.useFakeTimers(); const f = fixture(); await Promise.resolve();
   f.next(delivered);

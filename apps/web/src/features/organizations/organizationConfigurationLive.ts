@@ -1,6 +1,7 @@
 import { HubConnectionBuilder, HttpTransportType, LogLevel } from '@microsoft/signalr';
 import { validateOrganizationConfigurationSync } from './organizationConfigurationSync';
 import { boundedWorkRead, workRequest } from '../../api/workManagement';
+import { configurationAuthorityFallback } from './configurationAuthorityFallback';
 
 export function createOrganizationConfigurationConnection() {
   return new HubConnectionBuilder().withUrl('/organizations/live/configuration', {
@@ -13,9 +14,10 @@ export function watchOrganizationConfiguration(options: {
 
   connection?: ReturnType<typeof createOrganizationConfigurationConnection>;
 }) {
+  const authority = configurationAuthorityFallback(options.unavailable);
   let connection: ReturnType<typeof createOrganizationConfigurationConnection>;
   try { connection = options.connection ?? createOrganizationConfigurationConnection(); }
-  catch { options.unavailable(); return () => {}; }
+  catch { authority.unavailable(); return () => authority.dispose(); }
   let disposed = false, generation = 0, attempt = 0;
   let runtimeConfirmed = !!options.connection;
   const runtimeRead = new AbortController();
@@ -50,6 +52,7 @@ export function watchOrganizationConfiguration(options: {
         if (disposed || active !== generation) return;
         const page = validateOrganizationConfigurationSync(value, options.organizationId, options.userId, seen);
         if (!page) { fail(); return; }
+        authority.confirmed();
         // Ciphertext may change on every heartbeat. Only a canonical source or
         // reset invalidates the view; no numeric position or content hash is used.
         if (page.resetRequired) { seen.clear(); options.reset(); }
@@ -65,7 +68,7 @@ export function watchOrganizationConfiguration(options: {
       queueMicrotask(() => {
         if (disposed || active !== generation) return;
         ++generation;
-        options.unavailable();
+        authority.unavailable();
         void connection.stop().catch(() => {}).finally(schedule);
       });
     }
@@ -83,14 +86,15 @@ export function watchOrganizationConfiguration(options: {
       await connection.start();
       if (disposed) { await connection.stop(); return; }
       subscribe();
-    } catch { if (!disposed) { options.unavailable(); schedule(); } }
+    } catch { if (!disposed) { authority.unavailable(); schedule(); } }
   }
-  connection.onreconnecting(() => { if (!disposed) { ++generation; options.unavailable(); } });
-  connection.onreconnected(() => { if (!disposed) { subscribe(); invalidate(); } });
-  connection.onclose(() => { if (!disposed) { ++generation; options.unavailable(); schedule(); } });
+  connection.onreconnecting(() => { if (!disposed) { ++generation; authority.unavailable(); } });
+  connection.onreconnected(() => { if (!disposed) { authority.pending(); subscribe(); invalidate(); } });
+  connection.onclose(() => { if (!disposed) { ++generation; authority.unavailable(); schedule(); } });
   void start();
   return () => {
     disposed = true; ++generation;
+    authority.dispose();
     runtimeRead.abort();
     clearTimeout(retry); clearTimeout(refresh);
     subscription?.dispose();

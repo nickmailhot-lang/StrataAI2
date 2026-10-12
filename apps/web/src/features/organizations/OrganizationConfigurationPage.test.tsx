@@ -24,10 +24,10 @@ function record(version: number, legalName = 'Recorded legal name'): Configurati
     createdAt: '2026-10-10T13:00:00.0000001Z', updatedAt: '2026-10-10T13:00:00.0000002Z' };
 }
 function fixture(initial: ConfigurationRevision | null = record(1)) {
-  const state = { current: initial, denied: false, writes: [] as RequestInit[], lost: false, conflicted: false, boardUnavailable: false, listPages: false };
+  const state = { current: initial, denied: false, sessionGone: false, writes: [] as RequestInit[], lost: false, conflicted: false, boardUnavailable: false, listPages: false };
   const receipts = new Map<string, ConfigurationRevision>();
   vi.stubGlobal('fetch', vi.fn(async (url: string, options: RequestInit = {}) => {
-    if (url === '/me') return reply(profile);
+    if (url === '/me') return state.sessionGone ? reply({}, 401) : reply(profile);
     if (state.denied) return reply({ code: 'organization_not_found', detail: 'Private diagnostic' }, 404);
     if (url === path && options.method === 'PATCH') {
       state.writes.push(options);
@@ -73,6 +73,23 @@ async function review() {
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); sessionStorage.clear(); live.watch.mockClear(); configurationLive.watch.mockClear(); });
 describe('PRD-27 configuration form, human review and recovery', () => {
+  it('withdraws private configuration after logout while the real watcher has no confirmed transport', async () => {
+    const actual = await vi.importActual<typeof import('./organizationConfigurationLive')>('./organizationConfigurationLive');
+    const connection = { start: vi.fn().mockResolvedValue(undefined), stop: vi.fn().mockResolvedValue(undefined),
+      stream: vi.fn(() => ({ subscribe: vi.fn(() => ({ dispose: vi.fn() })) })),
+      onreconnecting: vi.fn(), onreconnected: vi.fn(), onclose: vi.fn() };
+    configurationLive.watch.mockImplementationOnce(options => actual.watchOrganizationConfiguration({ ...options,
+      connection: connection as unknown as ReturnType<typeof actual.createOrganizationConfigurationConnection> }));
+    const state = fixture(); const router = mount();
+    fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Private reconnect proposal' } });
+    await waitFor(() => expect(reviewButton()).toBeEnabled());
+    state.sessionGone = true;
+    await screen.findByRole('heading', { name: 'Sign in' }, { timeout: 3000 });
+    expect(router.state.location.pathname).toBe('/login');
+    expect(screen.queryByLabelText(/^Legal name/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Private reconnect proposal')).not.toBeInTheDocument();
+    expect(state.writes).toHaveLength(0); expect(connection.stop).toHaveBeenCalled();
+  });
   it('returns keyboard focus to review after cancelling a freshly verified configuration without writing', async () => {
     const state = fixture(); mount();
     fireEvent.change(await screen.findByLabelText(/^Legal name/), { target: { value: 'Unsent cancelled proposal' } });
