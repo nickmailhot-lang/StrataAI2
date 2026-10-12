@@ -1483,13 +1483,15 @@ jobs:
           cp scripts/provision-compose-runtime-roles.sh bundle/provision-runtime-roles.sh
           cp -R db bundle/db
           cp docs/release/README.md bundle/README.md
+          cp docs/release/promotion-and-rollback.md bundle/promotion-and-rollback.md
           python3 - <<'PY'
           import json
           from pathlib import Path
           build = json.loads(Path('image-artifacts/build-metadata.json').read_text())
-          readme = Path('bundle/README.md')
           prefix = f"https://github.com/{build['repository']}/blob/{build['commitSha']}/docs/architecture/"
-          readme.write_text(readme.read_text().replace('](../architecture/', '](' + prefix))
+          for name in ('README.md', 'promotion-and-rollback.md'):
+              document = Path('bundle') / name
+              document.write_text(document.read_text().replace('](../architecture/', '](' + prefix))
           PY
 
           cp image-artifacts/build-metadata.json bundle/build-metadata.json

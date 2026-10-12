@@ -46,6 +46,12 @@ gunzip -c images/strataai-worker.tar.gz | docker load
 
 Copy `.env.release.example` to `.env`, replace the placeholder values, and ensure
 the three image variables point at the image tags recorded in `build-metadata.json`.
+Choose a unique, stable `COMPOSE_PROJECT_NAME` for this environment before its
+first deployment. For an existing deployment, retain its current project name
+instead of adopting the example's name. Preserve it when extracting another
+release into a different directory; the PostgreSQL and activity-key volumes
+belong to that project. See [promotion and rollback](promotion-and-rollback.md)
+for retaining the prior release and checking schema compatibility.
 The initially empty API retry-key fields are required: configure a current key
 version and a JSON ring of base64 32-byte secrets before starting the API. See
 [required production configuration](../architecture/configuration.md).

@@ -18,6 +18,7 @@ Use this index to find every document in `docs/`. Architecture documents describ
 - Implementing a ticket: [dependency audit](ticket-dependencies.md), [linked dependency map](ticket-dependency-map.md), the feature document below, then its shared contracts and acceptance records.
 - Reviewing completion: [foundation acceptance](architecture/prd-01-acceptance.md), [Board acceptance](architecture/prd-04-acceptance.md), [activity acceptance](architecture/prd-15-acceptance.md), and the relevant evidence documents. Match every result to its recorded revision and test scope.
 - Operating the application: [release guide](release/README.md), [database roles](architecture/runtime-database-roles.md), [schema upgrades](architecture/schema-upgrades.md), and [operator metrics](architecture/operator-metrics.md).
+- Promoting or recovering a release: [immutable promotion and rollback](release/promotion-and-rollback.md), including stable deployment identity and the prior known-good record.
 
 ## How to navigate
 
