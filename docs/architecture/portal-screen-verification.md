@@ -44,8 +44,8 @@ The complete unchanged surface-admission and watch-permission-order files first
 finish **5/8 in 572.37 seconds**. Three Portal-width cases fail their former
 post-logout surface-denial-panel expectation; all four watch lock-order roles
 pass unchanged. Their older retained-image failures are not reproduced or claimed
-repaired by this run. One old Portal expectation passes before the final session
-redirect; that result does not prove the old panel is the final unauthenticated UI.
+repaired by this run. One former Portal expectation passes in the baseline;
+that old assertion does not verify the final route after session handling.
 
 The fixture now observes the actual sign-in route after Portal logout/reload,
 within the same original five-second expectation budget, and independently
