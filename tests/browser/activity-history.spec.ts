@@ -89,8 +89,24 @@ for (const width of [1280, 390]) {
         socket = route; route.connectToServer();
       });
       const peerReads = trackBoardReads(peerPage, board, cardPath); await peerPage.goto(cardPath); await expect.poll(peerReads).toBeGreaterThanOrEqual(2);
-      const peerOpen = peerPage.getByRole('button', { name: 'Review Card activity', exact: true }); await pressAdmittedAction(peerOpen);
-      const peerHistory = peerPage.getByRole('region', { name: 'Card activity', exact: true }); await expect(peerHistory.getByRole('listitem')).toHaveCount(50);
+      const peerOpen = peerPage.getByRole('button', { name: 'Review Card activity', exact: true });
+      const peerHistory = peerPage.getByRole('region', { name: 'Card activity', exact: true });
+      const peerNewest = peerHistory.getByRole('button', { name: 'Newest activity', exact: true });
+      // Observe the actual first page. Foreground admission can withdraw the
+      // opening or its read; only the unopened review/current-page read may
+      // reactivate. The expected 50 immutable rows remain mandatory.
+      await expect(async () => {
+        if (await peerHistory.getByRole('listitem').count() === 50) return;
+        const action = await peerOpen.isVisible() ? peerOpen : await peerNewest.isVisible() ? peerNewest : undefined;
+        if (action) {
+          await expect(action).toBeEnabled({ timeout: 500 });
+          await action.focus({ timeout: 500 });
+          await expect(action).toBeFocused({ timeout: 500 });
+          await action.press('Enter', { timeout: 500 });
+        }
+        await expect(peerHistory.getByRole('listitem')).toHaveCount(50, { timeout: 500 });
+      }).toPass({ timeout: 5_000 });
+      await expect(peerHistory.getByRole('listitem')).toHaveCount(50);
       // A command from this account's other client changes its viewing policy;
       // the open history must recover without reloading the document.
       const viewingProfile = await (await peer.request.get('/me')).json();

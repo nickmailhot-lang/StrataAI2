@@ -1,6 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { focusAdmittedControl } from './keyboardAdmission';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-06/08: keyboard ${viewport.width === 390 ? 'relative' : 'append'} move recovers a lost acknowledgment and updates another client at ${viewport.width}px`, async ({ page, context, browser }) => {
@@ -125,8 +126,16 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         await expect(page.getByRole('region', { name: 'Planning', exact: true }).getByRole('link', { name: 'Move this card', exact: true })).toBeVisible();
       }
       if (viewport.width === 1280) {
+        async function preparePointerDrag() {
+          await waitForBoardDelivery(context.request, board);
+          const reads = trackBoardReads(page, board, `/app/${org}/boards/${board}`);
+          await page.reload();
+          await expect.poll(reads).toBeGreaterThanOrEqual(2);
+          await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+        }
         async function dragBefore(handleName: string, target: import('@playwright/test').Locator) {
-          const handle = page.getByRole('button', { name: handleName, exact: true }); await expect(handle).toBeEnabled();
+          const handle = page.getByRole('button', { name: handleName, exact: true });
+          await focusAdmittedControl(handle);
           const source = await handle.boundingBox(); const destination = await target.boundingBox();
           expect(source).not.toBeNull(); expect(destination).not.toBeNull();
           await page.mouse.move(source!.x + source!.width / 2, source!.y + source!.height / 2); await page.mouse.down();
@@ -136,13 +145,14 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
           await expect(page.getByRole('link', { name: handleName.slice(5, -5), exact: true })).toBeFocused();
         }
         await page.unroute(`**/cards/${card}/move`);
+        await preparePointerDrag();
         await dragBefore('Drag Move this card card', page.getByText('Drop card at end of Planning', { exact: true }));
         let persistedBoard = await (await context.request.get(`/boards/${board}`)).json();
         expect(persistedBoard.lists.find((column: { list: { id: string } }) => column.list.id === lists[0]).cards[0]).toMatchObject({ id: card, version: 3 });
         expect(persistedBoard.lists.find((column: { list: { id: string } }) => column.list.id === lists[1]).cards).toHaveLength(0);
         const extra = await context.request.post(`/lists/${lists[0]}/cards`, { headers, data: { title: 'Reorder anchor' } });
         expect(extra.status()).toBe(201); const extraId = (await extra.json()).id;
-        await page.reload();
+        await preparePointerDrag();
         await dragBefore('Drag Reorder anchor card', page.getByRole('link', { name: 'Move this card', exact: true }));
         persistedBoard = await (await context.request.get(`/boards/${board}`)).json();
         const planning = persistedBoard.lists.find((column: { list: { id: string } }) => column.list.id === lists[0]).cards;
