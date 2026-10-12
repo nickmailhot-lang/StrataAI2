@@ -403,3 +403,32 @@ current immutable build-once release acceptance remain separate requirements.
 The later schema-128 Work receipt clock change has its own verification and
 is not certified by this schema-127 browser report. PRD-18 remains open at
 **15% estimated work remaining** (planning estimate).
+
+### Current archive review admission verification (2026-10-12)
+
+The complete six-file local reproduction against current compiled API/Worker,
+current Nginx/web and fresh restricted PostgreSQL 17/pgvector schema 146 first
+finishes **10/12** in **590.19 seconds**. Both desktop/phone archive cases fail
+to display the read-only archive confirmation. The other ten cases in invitation
+administration, starring, comments, simulated-cover review and cross-Board move
+pass unchanged; their earlier CI failures are not reproduced by this run.
+
+The archive fixture now uses the existing bounded `openAdmittedReview` helper
+to observe the actual named confirmation. Only opening that read-only review
+may retry inside the original five-second observation budget. The confirm-archive
+mutation, lost committed response, original-key/body recovery, exact command
+counts, parent-change refusal, restoration and original test deadline remain.
+The complete same six-file invocation then passes **12/12** in **588.85 seconds**,
+with one attempt per case, zero skips/unexpected/flaky outcomes and no report
+errors. All **2,074** hosted captured hashes match; an independent comparison of
+all **1,409** native source hashes also matches. Owned fixture containers,
+database and credential files are removed; the original database is preserved.
+
+This uses current compiled applications with cached runtime support rather than
+certifying current immutable release images. The general fixture follows CI's
+optional API verification and mandatory Worker verification settings; the cover
+file explicitly simulates its metadata/provider responses. Full immutable CI,
+the broader lifecycle/role/reconnect matrix, provider/backup authority and the
+remaining original acceptance criteria still govern closure. PRD-18 remains
+open at **15% estimated work remaining** (planning estimate).
+

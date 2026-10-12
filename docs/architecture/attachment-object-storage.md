@@ -701,3 +701,33 @@ current immutable full-release CI. Complex/large/adversarial encodings, remainin
 role/recovery/lifecycle combinations, retention/purge reconciliation and the full
 cross-feature/performance/AC/DoD matrix remain open.
 Estimated PRD-14 work remaining: **32%**.
+# Current complete provider-pipeline verification (2026-10-12)
+
+Current compiled API/separate Worker and current Nginx/web pass the unchanged
+two-viewport Board-background pipeline **2/2 in 84.57 seconds**, followed by the
+complete current attachment lifecycle file **18/18 in 667.27 seconds**. Reports
+have zero skips, unexpected/flaky outcomes or errors. This includes distinct
+member permission withdrawal, connected/reconnecting cover withdrawal, browser
+PNG/JPEG/WebP/PDF uploads, original-response loss recovery, scanner quarantine,
+untrusted labels and invalid-file refusal. Real upload, restricted Worker scan,
+contained decoding and sanitized publication occur before the browser checks.
+
+The subsequent original HTTP checks also pass: concurrent selection and original
+receipt bytes, sanitized private PNG delivery, selected-cover archive clearing,
+source tombstone refusal, independent Board image copy/retention, Board archive,
+public/private withdrawal, logout/readmission and selection retirement. All
+**2,074 captured hashes** match. Independent inspection confirms all owned
+containers, provider volume and credential files removed; original PostgreSQL
+data is preserved.
+
+The fresh schema-146 database uses canonical restricted roles and capability
+assertions. Local storage and scanner protocol simulation remain explicit. The
+Worker uses current managed binaries with cached native runtime support; the
+launcher source is unchanged from that cached image revision. Two earlier local
+harness startup failures (Windows junction permissions and missing native launcher)
+remain retained. These are local runtime results, not immutable-release image
+certification or deployed external provider acceptance. The earlier CI desktop
+background-review failure is not reproduced, so its cause and repair are not
+claimed. Current complete immutable CI and all remaining PRD-14 acceptance/DoD
+requirements remain necessary. Estimated PRD-14 work remaining stays **32%**.
+

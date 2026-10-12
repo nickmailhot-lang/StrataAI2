@@ -1,5 +1,6 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { openAdmittedReview } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at ${width}px`, async ({ page, context }) => {
@@ -38,7 +39,8 @@ for (const width of [1280, 390]) {
         if (archives.length === 1) await route.abort('failed'); else await route.fulfill({ response });
       });
       await page.getByRole('link', { name: 'Archived work', exact: true }).focus(); await page.keyboard.press('Enter');
-      await page.getByRole('button', { name: 'Archive Card', exact: true }).focus(); await page.keyboard.press('Enter');
+      await openAdmittedReview(page.getByRole('button', { name: 'Archive Card', exact: true }),
+        page.getByText('Archive Archived work from Planning?', { exact: true }));
       await expect(page.getByText('Archive Archived work from Planning?', { exact: true })).toBeVisible();
       await page.getByRole('button', { name: 'Confirm Card archive', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Retry this Card archive', exact: true })).toBeEnabled();

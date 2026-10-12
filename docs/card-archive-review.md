@@ -24,3 +24,6 @@ with a deliberately lost committed response before exercising reviewed restorati
 Collection is not runtime execution proof. Remaining full-ticket requirements,
 including copy, cross-Board movement, watch, large-data behavior and telemetry,
 still need implementation/evidence; this increment does not close PRD-08 or PRD-18.
+
+Current schema-146 desktop/phone archive review admission verification and its
+retained failed baseline are recorded in [lifecycle acceptance](architecture/lifecycle-acceptance.md#current-archive-review-admission-verification-2026-10-12).
