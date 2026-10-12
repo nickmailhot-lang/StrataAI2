@@ -13,6 +13,8 @@ using StrataAI.Infrastructure.Runtime;
 using StrataAI.Infrastructure.WorkManagement;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = ApiErrorContract.Customize);
+builder.Services.AddSingleton<IProblemDetailsWriter, ApiErrorFallbackWriter>();
 builder.Services.AddMetrics();
 builder.Services.AddStrataAiOperatorMetrics(builder.Configuration, typeof(Program).Assembly);
 builder.Services.AddSingleton<BoardSharingTelemetry>();
@@ -91,6 +93,7 @@ var app = builder.Build();
 app.Services.InitializeAttachmentRuntime(attachmentsEnabled);
 
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseStatusCodePages(ApiErrorContract.WriteEmptyError);
 app.UseMiddleware<BoardSharingTelemetryMiddleware>();
 app.UseMiddleware<OrganizationTelemetryMiddleware>();
 app.UseMiddleware<RuntimeDatabaseSecurityMiddleware>();

@@ -6,6 +6,8 @@ The complete paginated issue snapshot was refreshed on 2026-10-11 and processed 
 
 ## Dependency groups
 
+Current execution priority: complete the [operational task-management MVP release milestone](architecture/operational-mvp-milestone.md) before expanding governance and AI modules. Implement its shared contracts and core reliability slices in dependency order; preserve the complete inventory, existing controls and every ticket's acceptance criteria. Deferral does not close a ticket.
+
 A dependency-first traversal of strongly connected components produces the groups below. Within a cycle there is no whole-ticket topological order: implement shared contracts and producer/consumer slices sequentially, then verify each ticket's complete acceptance criteria. The grouping does not waive a dependency, acceptance criterion, or adopted architecture requirement.
 
 1. PRD-01, PRD-02, PRD-03, PRD-04, PRD-05, PRD-06, PRD-07, PRD-08, PRD-09, PRD-10, PRD-11, PRD-12, PRD-13, PRD-14, PRD-15, PRD-16, PRD-17, PRD-18, PRD-19, PRD-20, PRD-21, PRD-22, PRD-23, PRD-24, PRD-25 (cycle)

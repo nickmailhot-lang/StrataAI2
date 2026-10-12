@@ -10,6 +10,8 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 ## Start here
 
+The next release milestone is a [deployable, stable operational task-management MVP](docs/architecture/operational-mvp-milestone.md). Core workflow reliability and verified deployment take priority before new governance and AI modules; the complete PRD roadmap remains in force.
+
 **Demo login:** `demo@strataai.test` / `StrataAI-Demo-2026!`.
 Set `STRATAAI_RUNTIME_MODE=demo`, open `/login`, and sign in without registering.
 See [Demo sign-in](#demo-sign-in) for account access and reset behavior.

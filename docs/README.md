@@ -43,6 +43,8 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Planning and dependency order
 
+- [Operational task-management MVP release milestone](architecture/operational-mvp-milestone.md)
+- [API contract acceptance and remaining evidence](architecture/prd-21-acceptance.md)
 - [Canonical ticket dependency audit](ticket-dependencies.md)
 - [Ticket dependency inventory](ticket-dependency-map.md)
 

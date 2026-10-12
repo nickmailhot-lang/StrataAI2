@@ -2,6 +2,12 @@
 
 The GitHub architecture PRDs (ARCH-01 through ARCH-12) are authoritative.
 
+The [operational MVP milestone](operational-mvp-milestone.md) prioritizes core
+workflow reliability and verified deployment before new governance and AI work.
+The [API contract acceptance map](prd-21-acceptance.md) and
+[error-envelope verification](api-error-contract-verification.md) distinguish
+implemented contracts from the remaining complete release evidence.
+
 [Current invitation, comment and cover verification](invitation-comment-cover-verification.md)
 records the complete native browser invocation, confirmation focus regressions,
 and the distinction between actual persistence and simulated cover providers.

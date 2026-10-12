@@ -1,0 +1,42 @@
+# API error envelope verification
+
+PRD-21 API-FR-003 requires code, message and correlationId in error responses.
+The shared Problem Details customization preserves existing domain codes and
+public titles and adds the actual response correlation reference. Empty errors
+from authentication, CSRF or malformed JSON binding use the same contract.
+HEAD responses retain bodyless HTTP semantics. A fallback Problem Details writer
+also applies the contract when the default writer cannot negotiate a JSON Accept
+header. Runtime serialization preserves validation errors.
+
+The 11 HTTP host regressions cover authentication, CSRF, missing resources,
+malformed binding, JSON/HTML/plain-text Accept headers, sanitized request
+references, domain validation with identical canonical Board state, and HEAD.
+All 11 pass. Before customization, all four initial envelope cases failed; the
+non-JSON Accept regressions then exposed two additional failures before the
+fallback writer repair. Existing domain assertions were retained.
+
+After a successful solution build, the final Linux run passes all **993 Domain
+tests and 923 API tests**, with zero failures or skips. The API run completes in
+3,034,451 ms. Its 2,530 captured source/runtime file hashes have zero mismatches,
+confirmed independently after completion. All owned containers are removed;
+the pre-existing stopped PostgreSQL container and volume are preserved.
+The earlier Linux baseline passed 993 Domain and 920 API cases before the
+fallback writer and three media-type regressions were added.
+
+These are compiled-source tests hosted in the pinned Linux ASP.NET runtime,
+with the application's real entry point and middleware and controlled Demo
+persistence. The explicit ASP.NET testing content root points at the mounted
+source. This is not a build-once retained-image, PostgreSQL/RLS, managed-provider,
+or complete PRD acceptance claim. The focused client compatibility tests also
+pass: 20 Work request and 22 shared Problem/fetch cases.
+
+Unexpected exception and failed-readiness response contracts remain incomplete.
+Private probes reproduce both gaps; an isolated exception-handler draft proves
+safe correlated 500 responses, subsequent host recovery, private-content-free
+logs, preservation of cancellation/already-started responses, and bodyless HEAD.
+Those draft results do not certify a production implementation. Optional field
+error mapping, full endpoint/consumer inventories and current immutable CI
+remain required by the [PRD-21 acceptance map](prd-21-acceptance.md).
+
+The [operational MVP milestone](operational-mvp-milestone.md) prioritizes these
+core reliability and deployment gaps while retaining the complete roadmap.
