@@ -160,6 +160,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Permission-order state component diagnostics](architecture/watch-order-component-diagnostics.md)
 - [Checklist and invitation directory opening verification](architecture/readonly-directory-opening-verification.md)
 - [Movement and peer activity admission verification](architecture/movement-activity-admission-verification.md)
+- [Retention source opening verification](architecture/retention-source-opening-verification.md)
 - [Board member directory authority](board-member-directory.md)
 - [Board member administration](board-members-ui.md)
 - [Board metadata review and recovery](board-metadata-control.md)

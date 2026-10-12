@@ -10,9 +10,23 @@ async function press(page: Page, name: string) {
   await expect(button).toBeEnabled(); await button.focus(); await page.keyboard.press('Enter');
 }
 async function sourceEntry(page: Page, kind: string) {
-  if (kind === 'cardComment') await press(page, 'Review Card comments');
-  if (kind === 'attachment') await press(page, 'Show attachments');
-  await press(page, `Retention classification for this ${kind === 'card' ? 'Card' : kind === 'cardComment' ? 'Comment' : 'Attachment'}`);
+  const classification = page.getByRole('region', { name: 'Source retention classification', exact: true });
+  const entry = page.getByRole('button', { name: `Retention classification for this ${kind === 'card' ? 'Card' : kind === 'cardComment' ? 'Comment' : 'Attachment'}`, exact: true });
+  const parent = kind === 'cardComment' ? page.getByRole('button', { name: 'Review Card comments', exact: true })
+    : kind === 'attachment' ? page.getByRole('button', { name: 'Show attachments', exact: true }) : undefined;
+  // Only unopened source disclosures may reactivate. Observe admitted source
+  // classification before review; consent and the original command stay below.
+  await expect(async () => {
+    if (await classification.isVisible()) return;
+    const action = await entry.isVisible() ? entry : parent && await parent.isVisible() ? parent : undefined;
+    if (action) {
+      await expect(action).toBeEnabled({ timeout: 500 });
+      await action.focus({ timeout: 500 });
+      await expect(action).toBeFocused({ timeout: 500 });
+      await action.press('Enter', { timeout: 500 });
+    }
+    await expect(classification).toBeVisible({ timeout: 500 });
+  }).toPass({ timeout: 5_000 });
 }
 async function chooseHold(page: Page, name: string, option: string) {
   const select = page.getByRole('combobox', { name, exact: true }); await expect(select).toBeEnabled();

@@ -1,5 +1,7 @@
 # StrataAI2 architecture
 
+[Retention source opening verification](retention-source-opening-verification.md) records the existing Comment disclosure failure and all 14 final classification/hold browser cases.
+
 [Movement and peer activity admission](movement-activity-admission-verification.md) records the busy-Board drag trace and complete desktop/mobile movement and strict activity checks.
 
 [Read-only checklist and invitation opening verification](readonly-directory-opening-verification.md) records retained hosted failures, the mobile navigation correction and complete final desktop/mobile cases.
