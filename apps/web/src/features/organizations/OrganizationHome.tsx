@@ -345,6 +345,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               {organizationId && organization?.status === 0 && ownRole !== undefined && ownRole <= 1 && (
                 <Button component={Link} to={`/app/${organizationId}/retention-policies`}>Retention policies</Button>
               )}
+              {organizationId && organization?.status === 0 && ownRole !== undefined && ownRole <= 1 && (
+                <Button component={Link} to={`/app/${organizationId}/retention-holds`}>Retention holds</Button>
+              )}
               {data.organizations.some(item => item.organization.id === organizationId && item.organization.status === 0 && item.role <= 1) && (
                 <Button component={Link} to={`/app/${organizationId}/members`}>Organization members</Button>
               )}
