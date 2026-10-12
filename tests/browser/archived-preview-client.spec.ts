@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import { openAdmittedReview } from './keyboardAdmission';
 import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -39,9 +40,12 @@ for (const width of [1280, 390]) {
       await waitForBoardDelivery(context.request, board);
       const cardPath = `/app/${org}/boards/${board}/cards/${card}`; const reads = trackBoardReads(page, board, cardPath);
       await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
-      const manage = page.getByRole('button', { name: 'Manage attachments', exact: true }); await expect(manage).toBeEnabled(); await manage.press('Enter');
-      const archive = page.getByRole('button', { name: 'Review attachment archive', exact: true }); await expect(archive).toBeEnabled(); await archive.press('Enter');
-      const review = page.getByRole('button', { name: 'Show archived image preview', exact: true }); await expect(review).toBeEnabled();
+      const manage = page.getByRole('button', { name: 'Manage attachments', exact: true });
+      const archive = page.getByRole('button', { name: 'Review attachment archive', exact: true });
+      const review = page.getByRole('button', { name: 'Show archived image preview', exact: true });
+      await expect(manage).toBeEnabled(); await openAdmittedReview(manage, archive);
+      await expect(archive).toBeEnabled(); await openAdmittedReview(archive, review);
+      await expect(review).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Restore attachment Retained.webp', exact: true })).toBeDisabled();
       await expect(page.getByRole('button', { name: 'Delete attachment Retained.webp', exact: true })).toBeDisabled(); expect(images).toBe(0);
       await review.press('Enter'); const image = page.getByRole('img', { name: 'Sanitized preview of Retained.webp', exact: true });

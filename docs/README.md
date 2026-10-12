@@ -183,6 +183,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Attachments and file storage
 
+- [Archive and cover review opening during protected Board reads](architecture/attachment-review-opening-verification.md)
 - [Attachment covers and lifecycle decisions](architecture/attachment-covers-lifecycle.md)
 - [Attachment object storage decision and provider contract](architecture/attachment-object-storage.md)
 - [Actual scanner engine runtime verification](architecture/attachment-scanner-runtime.md)

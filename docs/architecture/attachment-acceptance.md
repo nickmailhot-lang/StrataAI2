@@ -1160,3 +1160,18 @@ Official coverage/update operations, deployed providers, hostile inputs, remaini
 role/outage/lifecycle combinations, retention/purge, performance and full AC/DoD
 still require proof. Current full GitHub CI remains queued. No release approval
 or issue closure is claimed. Estimated PRD-14 work remaining: **32%**.
+
+## Protected Board reads during archive and cover review opening
+
+The [review-opening verification](attachment-review-opening-verification.md)
+records the retained hosted missing-review failures, a matching-policy unchanged
+four-case baseline, a declared 600-ms protected Board-read delay that reproduces
+all four failures, and the repaired diagnostic plus complete ordinary four-case
+invocation. Only read-only review opening is retried within the existing five-
+second helper. Byte/download checks, public consent, exact original cover keys
+and write counts, command locking, focus, accessibility, withdrawal and unchanged
+canonical backing state remain. All 36 management/cover component cases pass.
+Captured source/runtime/web hashes and owned cleanup are independently verified.
+Metadata, bytes and cover receipts remain explicitly simulated; current complete
+immutable CI and all remaining provider/AC/DoD proof still govern closure.
+Estimated PRD-14 work remaining stays **32%**.

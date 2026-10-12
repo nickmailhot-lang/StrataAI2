@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import { openAdmittedReview } from './keyboardAdmission';
 import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -66,8 +67,9 @@ for (const width of [1280, 390]) {
       await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       expect(imageReads).toBe(0);
       const review = page.getByRole('button', { name: 'Review Card cover', exact: true });
-      await expect(review).toBeEnabled(); await review.press('Enter');
-      await page.getByRole('button', { name: 'Use Cover photo.png as cover', exact: true }).press('Enter');
+      const candidate = page.getByRole('button', { name: 'Use Cover photo.png as cover', exact: true });
+      await expect(review).toBeEnabled(); await openAdmittedReview(review, candidate);
+      await candidate.press('Enter');
       const confirm = page.getByRole('button', { name: 'Confirm Card cover', exact: true }); await expect(confirm).toBeDisabled();
       const consent = page.getByRole('checkbox', { name: 'I understand this cover image will be publicly visible', exact: true });
       await expect(consent).toBeFocused(); await consent.press('Space'); await expect(confirm).toBeEnabled(); await confirm.press('Enter');
@@ -80,7 +82,8 @@ for (const width of [1280, 390]) {
       await expect.poll(() => image.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
       await expect(review).toBeFocused();
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-      await review.press('Enter'); await page.getByRole('button', { name: 'Remove Card cover', exact: true }).press('Enter');
+      const removal = page.getByRole('button', { name: 'Remove Card cover', exact: true });
+      await openAdmittedReview(review, removal); await removal.press('Enter');
       await expect(consent).toHaveCount(0); await page.getByRole('button', { name: 'Confirm cover removal', exact: true }).press('Enter');
       await expect(page.getByText('Card cover removed.', { exact: true })).toBeVisible(); await expect(image).toHaveCount(0);
       await expect(review).toBeEnabled(); await expect(review).toBeFocused(); expect(writes).toHaveLength(3); expect(imageReads).toBeGreaterThan(0);
