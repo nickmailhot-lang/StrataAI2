@@ -47,6 +47,7 @@ public sealed partial class ApiHostTests
     {
         public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct) => inner.ReadApplicableAsync(record, ct);
         public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadReferenceAsync(organization, hold, ct);
+        public Task<IReadOnlyList<RetentionHoldReference>> ReadDirectoryReferencesAsync(Guid organization, Guid actor, Guid? after, CancellationToken ct) => inner.ReadDirectoryReferencesAsync(organization, actor, after, ct);
         public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => inner.ReadReceiptReferenceAsync(organization, actor, key, ct);
         public Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadAsync(organization, hold, ct);
         public Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadHistoryAsync(organization, hold, ct);

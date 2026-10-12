@@ -42,8 +42,9 @@ for (const width of [1280,390]) {
       const id=crypto.randomUUID(),path=`/organizations/${org}/retention-holds/${id}`;
       const applied=await owner.request.post(path+'/apply',{headers:{...headers,'Idempotency-Key':crypto.randomUUID()},data:{recordClass:null,category:null,recordId:null,
         reason:'Live private preservation reason',review:null,confirmed:true}});expect(applied.status()).toBe(200);
-      await page.goto(`/app/${org}/retention-holds`);const identifier=page.getByRole('textbox',{name:'Hold identifier',exact:true});await expect(identifier).toBeEnabled();await identifier.fill(id);
-      await press(page,'Load current hold');await expect(page.getByText('Status: active. Version: 1.',{exact:true})).toBeVisible();
+      await page.goto(`/app/${org}/retention-holds`);
+      const directory=page.getByRole('region',{name:'Available retention holds'});await expect(directory).toContainText('Live private preservation reason');
+      await press(page,`Review active hold ${id}`);await expect(page.getByText('Status: active. Version: 1.',{exact:true})).toBeVisible();
       await expect.poll(()=>frames.some(frame=>frame.userId===admin.user.id && frame.holdId===id && frame.events.some(event=>event.eventType==='RETENTION_HOLD_APPLIED'))).toBe(true);
       await press(page,'View hold history');await expect(page.getByRole('region',{name:'Retained hold history'})).toContainText('Applied by Live hold Owner as Organization Owner');
       await page.getByRole('checkbox',{name:'I reviewed this version and confirm release of this hold.',exact:true}).focus();await page.keyboard.press('Space');

@@ -69,6 +69,21 @@ internal sealed class InMemoryRetentionHoldStore(IOrganizationStore organization
         RequireScope(organization, ct);
         return Task.FromResult(_current.GetValueOrDefault((organization, hold)));
     }
+    public async Task<IReadOnlyList<RetentionHoldReference>> ReadDirectoryReferencesAsync(Guid organization, Guid actor, Guid? after, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        var result = new List<RetentionHoldReference>();
+        foreach (var current in _current.Values.Where(x => x.OrganizationId == organization && (after is null || x.Id.CompareTo(after.Value) > 0)).OrderBy(x => x.Id))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!_history.TryGetValue((organization, current.Id, current.Version), out var revision))
+                throw new InvalidOperationException("Hold directory head is incomplete.");
+            if (!await scopes.VerifyAsync(revision.Reference, actor, ct)) continue;
+            result.Add(revision.Reference);
+            if (result.Count == RetentionHoldService.DirectoryPageSize + 1) break;
+        }
+        return result.AsReadOnly();
+    }
     public Task<RetentionHoldReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct)
     {
         RequireScope(organization, ct);

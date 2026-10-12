@@ -14,6 +14,7 @@ export type HoldIntent = { actorId: string; organizationId: string; holdId: stri
 export type HoldRevision = { hold:RetentionHold;actorId:string;actorLabel:string;actingCapacity:0|1;
   eventId:string;correlationId:string;createdAt:string };
 export type HoldTimeline = {current:RetentionHold;revisions:HoldRevision[]};
+export type HoldDirectory = {organizationId:string;items:RetentionHold[];nextAfter:string|null};
 const admissionCursor = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 const classes = ['operationalWork', 'governance', 'audit', 'correspondence', 'document', 'ai'];
 function unavailable(): never { throw new WorkRequestError(503, null); }
@@ -47,6 +48,28 @@ export function readHold(organization: string, id: string, actor: string, signal
     const hold = parseHold(await response.json(), organization, id); bounded.throwIfAborted();
     await readRetentionPolicies(organization, bounded, actor, admissionCursor); return hold;
   }, signal);
+}
+export function readHoldDirectory(organization:string,actor:string,signal:AbortSignal,after?:string) {
+  const tenant=identity(organization),boundary=after===undefined?undefined:identity(after);
+  return boundedWorkRead(async bounded=>{
+    await readRetentionPolicies(tenant,bounded,actor,admissionCursor);
+    const response=await apiFetch(`/organizations/${tenant}/retention-holds${boundary?`?after=${boundary}`:''}`,
+      {signal:bounded,headers:{'X-StrataAI-Expected-Actor':actor}});
+    if (!response.ok) throw new WorkRequestError(response.status,null);
+    const value:unknown=await response.json();bounded.throwIfAborted();
+    if (!value || typeof value!=='object' || Array.isArray(value) || Object.keys(value).sort().join(',')!=='items,nextAfter,organizationId') return unavailable();
+    const row=value as HoldDirectory;
+    if (row.organizationId!==tenant || !Array.isArray(row.items) || row.items.length>25) return unavailable();
+    let previous=boundary;
+    const items=row.items.map(item=>{
+      if (!item || typeof item!=='object' || !notificationUuid(item.id) || item.id!==item.id.toLowerCase()) return unavailable();
+      const hold=parseHold(item,tenant,item.id);
+      if (hold.version>2 || previous!==undefined && hold.id<=previous) return unavailable();
+      previous=hold.id;return hold;
+    });
+    if (row.nextAfter!==null && (items.length!==25 || row.nextAfter!==items.at(-1)!.id)) return unavailable();
+    await readRetentionPolicies(tenant,bounded,actor,admissionCursor);return {organizationId:tenant,items,nextAfter:row.nextAfter};
+  },signal);
 }
 export function readHoldTimeline(organization:string,id:string,actor:string,signal:AbortSignal) {
   return boundedWorkRead(async bounded=>{

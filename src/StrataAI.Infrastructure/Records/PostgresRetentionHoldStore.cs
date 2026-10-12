@@ -53,6 +53,53 @@ internal sealed class PostgresRetentionHoldStore(PostgresConnectionFactory conne
         await using var reader = await command.ExecuteReaderAsync(ct);
         return await reader.ReadAsync(ct) ? Decode(reader) : null;
     }
+    public async Task<IReadOnlyList<RetentionHoldReference>> ReadDirectoryReferencesAsync(Guid organization, Guid actor, Guid? after, CancellationToken ct)
+    {
+        RequireScope(organization, ct);
+        await using var session = await connections.OpenTenantSessionAsync(organization, ct);
+        // Current retention administrators can administer/view retained Boards.
+        // Prune unsupported or unavailable typed sources before LIMIT, so hidden
+        // records cannot create empty pages or leak through a continuation flag.
+        // Application authority still verifies every selected hint under gates.
+        await using var command = new NpgsqlCommand("""
+            SELECT p.id FROM record_retention_holds p
+            JOIN record_retention_hold_history h ON(h.tenant_id,h.hold_id,h.version)=(p.tenant_id,p.id,p.version)
+            JOIN organizations o ON o.id=p.tenant_id AND o.status='ACTIVE'
+            JOIN organization_members member ON member.tenant_id=p.tenant_id AND member.user_id=@actor
+              AND member.status='ACTIVE' AND member.role IN('OWNER','ADMIN')
+            LEFT JOIN record_retention_sources r ON(r.tenant_id,r.record_class,r.record_id)=(h.tenant_id,h.record_class,h.record_id)
+            LEFT JOIN cards c ON c.tenant_id=r.tenant_id AND c.id=CASE WHEN r.source_kind='CARD' THEN r.record_id ELSE r.parent_card_id END
+            LEFT JOIN board_lists l ON(l.tenant_id,l.id,l.board_id)=(c.tenant_id,c.list_id,c.board_id)
+            LEFT JOIN boards original ON(original.tenant_id,original.id)=(h.tenant_id,h.classification_board_id)
+            LEFT JOIN boards application ON(application.tenant_id,application.id)=(h.tenant_id,h.application_board_id)
+            LEFT JOIN boards current_board ON(current_board.tenant_id,current_board.id)=(c.tenant_id,c.board_id)
+            LEFT JOIN card_comments comment ON r.source_kind='CARD_COMMENT'
+              AND(comment.tenant_id,comment.id,comment.card_id)=(r.tenant_id,r.record_id,r.parent_card_id)
+            LEFT JOIN attachments attachment ON r.source_kind='ATTACHMENT'
+              AND(attachment.tenant_id,attachment.id,attachment.card_id)=(r.tenant_id,r.record_id,r.parent_card_id)
+            WHERE p.tenant_id=@tenant AND(@after IS NULL OR p.id>@after)
+              AND(h.record_id IS NULL AND h.authorization_context_version IS NULL
+                AND h.classification_board_id IS NULL AND h.application_board_id IS NULL AND h.application_source_version IS NULL
+                OR h.record_id IS NOT NULL AND h.authorization_context_version=1 AND h.application_source_version>0
+                AND r.authorization_context_version=1 AND r.source_version>0 AND r.original_board_id=h.classification_board_id
+                AND original.lifecycle_state IN('ACTIVE','ARCHIVED') AND application.lifecycle_state IN('ACTIVE','ARCHIVED')
+                AND current_board.lifecycle_state IN('ACTIVE','ARCHIVED') AND c.lifecycle_state IN('ACTIVE','ARCHIVED') AND l.lifecycle_state IN('ACTIVE','ARCHIVED')
+                AND(r.source_kind='CARD' AND r.record_class='OPERATIONAL_WORK' AND r.parent_card_id IS NULL
+                  OR r.source_kind='CARD_COMMENT' AND r.record_class='OPERATIONAL_WORK' AND comment.id IS NOT NULL AND comment.deleted_at IS NULL
+                  OR r.source_kind='ATTACHMENT' AND r.record_class='DOCUMENT' AND attachment.lifecycle_state IN('ACTIVE','ARCHIVED')))
+            ORDER BY p.id LIMIT @limit;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("tenant", organization); command.Parameters.AddWithValue("actor", actor);
+        command.Parameters.AddWithValue("after", NpgsqlDbType.Uuid, (object?)after ?? DBNull.Value);
+        command.Parameters.AddWithValue("limit", RetentionHoldService.DirectoryPageSize + 1);
+        var ids = new List<Guid>();
+        await using (var reader = await command.ExecuteReaderAsync(ct))
+            while (await reader.ReadAsync(ct)) ids.Add(reader.GetGuid(0));
+        var rows = new List<RetentionHoldReference>();
+        foreach (var id in ids) rows.Add(await references.ReadHoldAsync(organization, id, ct)
+            ?? throw new InvalidOperationException("Hold directory head is incomplete."));
+        return rows.AsReadOnly();
+    }
     public async Task<RetentionHoldReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct)
     {
         RequireScope(organization, ct);

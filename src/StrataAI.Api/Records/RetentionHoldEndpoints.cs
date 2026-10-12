@@ -32,10 +32,28 @@ public static class RetentionHoldEndpoints
     }
     public static void MapRetentionHoldEndpoints(this RouteGroupBuilder group)
     {
+        group.MapGet("/{organizationId:guid}/retention-holds", DirectoryAsync);
         group.MapGet("/{organizationId:guid}/retention-holds/{holdId:guid}", ReadAsync);
         group.MapGet("/{organizationId:guid}/retention-holds/{holdId:guid}/history", HistoryAsync);
         group.MapPost("/{organizationId:guid}/retention-holds/{holdId:guid}/apply", ApplyAsync);
         group.MapPost("/{organizationId:guid}/retention-holds/{holdId:guid}/release", ReleaseAsync);
+    }
+    public static async Task<IResult> DirectoryAsync(Guid organizationId, HttpContext context,
+        RetentionSourceReviewService admission, RetentionHoldService commands, CancellationToken ct)
+    {
+        context.Response.Headers.CacheControl = "private, no-store";
+        var actor = Actor(context); if (actor is null) return Error("session_unavailable");
+        var admitted = await admission.AdmitAsync(organizationId, actor.Value, ct);
+        if (!admitted.Succeeded) return Error(admitted.ErrorCode);
+        Guid? after = null;
+        if (context.Request.Query.TryGetValue("after", out var values))
+        {
+            if (values.Count != 1 || !Guid.TryParseExact(values[0], "D", out var parsed) || parsed == Guid.Empty)
+                return Error("invalid_retention_hold_cursor");
+            after = parsed;
+        }
+        var result = await commands.ReadDirectoryAsync(organizationId, actor.Value, after, ct);
+        return result.Succeeded ? Results.Json(result.Value, Options) : Error(result.ErrorCode);
     }
     public static async Task<IResult> ReadAsync(Guid organizationId, Guid holdId, HttpContext context,
         RetentionHoldService commands, CancellationToken ct)
@@ -121,7 +139,7 @@ public static class RetentionHoldEndpoints
             "idempotency_key_conflict" => (409, "This retry key belongs to a different request."),
             "idempotency_key_expired" => (409, "The original acknowledgment expired."),
             "idempotency_key_required" => (400, "A nonempty UUID retry key is required."),
-            "invalid_retention_hold_request" or "invalid_retention_hold" or "invalid_retention_hold_review" => (400, "Review the hold scope, reason and source evidence, then explicitly confirm."),
+            "invalid_retention_hold_cursor" or "invalid_retention_hold_request" or "invalid_retention_hold" or "invalid_retention_hold_review" => (400, "Review the hold scope, reason and source evidence, then explicitly confirm."),
             _ => (404, "The hold was not found.")
         };
         return Results.Problem(statusCode: status, title: title,

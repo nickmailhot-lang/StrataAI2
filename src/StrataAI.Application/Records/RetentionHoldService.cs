@@ -19,6 +19,7 @@ public sealed record RetentionHoldEvent(Guid EventId, string EventType, Guid Org
     string ActingCapacity, string EntityType, Guid EntityId, long EntityVersion, string CorrelationId,
     DateTimeOffset CreatedAt, RetentionHoldEventMetadata Metadata);
 public sealed record RetentionHoldTimeline(RetentionHold Current, IReadOnlyList<RetentionHoldRevision> Revisions);
+public sealed record RetentionHoldDirectory(Guid OrganizationId, IReadOnlyList<RetentionHold> Items, Guid? NextAfter);
 public sealed record RetentionHoldSyncPage(Guid OrganizationId, Guid UserId, Guid HoldId, RetentionHold Current,
     long AfterVersion, bool ResetRequired, IReadOnlyList<RetentionHoldEvent> Events);
 public enum RetentionHoldWriteResult { Written, VersionConflict, KeyConflict, SourceUnavailable }
@@ -30,6 +31,7 @@ public interface IRetentionHoldStore
     Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct);
     Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct);
     Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct);
+    Task<IReadOnlyList<RetentionHoldReference>> ReadDirectoryReferencesAsync(Guid organization, Guid actor, Guid? after, CancellationToken ct);
     Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct);
     Task<RetentionHoldReceipt?> ReadReceiptAsync(Guid organization, Guid actor, Guid key, CancellationToken ct);
     // All current/history/receipt/audit writes belong to the existing transaction.
@@ -48,6 +50,40 @@ public interface IRetentionHoldScopeAuthorization
 public sealed class RetentionHoldService(IOrganizationStore organizations, IRetentionHoldStore holds,
     IRetentionHoldScopeAuthorization scopes, IOrganizationUnitOfWork unit, ICommandActorAuthorization actors, IClock clock)
 {
+    public const int DirectoryPageSize = 25;
+    public Task<OrganizationOperation<RetentionHoldDirectory>> ReadDirectoryAsync(Guid organization, Guid actor, Guid? after,
+        CancellationToken ct = default) => Owned(organization, actor, async () =>
+        {
+            OrganizationOperation<RetentionHoldDirectory> Fail(string code) => OrganizationOperation<RetentionHoldDirectory>.Failure(code);
+            if (after == Guid.Empty) return Fail("invalid_retention_hold_cursor");
+            var references = await holds.ReadDirectoryReferencesAsync(organization, actor, after, ct);
+            if (references.Count > DirectoryPageSize + 1) return Fail("retention_hold_source_unavailable");
+            Guid? previous = after;
+            // Candidate pruning is a storage optimization, never an authority
+            // grant. Validate every result, including the pagination witness.
+            foreach (var reference in references)
+            {
+                if (reference.OrganizationId != organization || reference.HoldId == Guid.Empty
+                    || previous is not null && reference.HoldId.CompareTo(previous.Value) <= 0
+                    || !await scopes.VerifyAsync(reference, actor, ct)) return Fail("retention_hold_source_unavailable");
+                previous = reference.HoldId;
+            }
+            var rows = new List<RetentionHold>();
+            foreach (var reference in references.Take(DirectoryPageSize))
+            {
+                var current = await ReadCurrentAsync(organization, actor, reference.HoldId, ct);
+                if (!current.Succeeded) return Fail(current.ErrorCode!);
+                if (current.Value is null || !Matches(reference, current.Value)
+                    || !Valid(current.Value, organization, reference.HoldId, clock.UtcNow)) return Fail("retention_hold_source_unavailable");
+                rows.Add(current.Value);
+            }
+            foreach (var reference in references)
+                if (await holds.ReadReferenceAsync(organization, reference.HoldId, ct) != reference
+                    || !await scopes.VerifyAsync(reference, actor, ct)) return Fail("retention_hold_source_unavailable");
+            return OrganizationOperation<RetentionHoldDirectory>.Success(new(organization, rows.AsReadOnly(),
+                references.Count > DirectoryPageSize ? rows[^1].Id : null));
+        }, ct);
+
     public Task<OrganizationOperation<RetentionHoldTimeline>> ReadTimelineAsync(Guid organization, Guid actor, Guid hold,
         CancellationToken ct = default) => Owned(organization, actor, async () =>
         {

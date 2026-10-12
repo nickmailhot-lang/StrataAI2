@@ -19,6 +19,18 @@ function mountLive(surface: 'INTERNAL' | 'PORTAL' = 'INTERNAL') {
   const router = createMemoryRouter([{ path: '/:organizationId', element: <SurfaceAdmission surface={surface}><Content /></SurfaceAdmission> }],
     { initialEntries: [`/${liveOrg}`] }); render(<RouterProvider router={router} />); return router;
 }
+it.each([true,false])('confirms session loss after the outer boundary retires private children (%s)',async sessionGone=>{
+  let gone=false;
+  vi.stubGlobal('fetch',vi.fn(async(path:string)=>path==='/me'
+    ? gone && sessionGone ? new Response('{}',{status:401}) : new Response(JSON.stringify(liveProfile)) : response(liveOrg)));
+  const router=createMemoryRouter([{path:'/:organizationId',element:<SurfaceAdmission surface="INTERNAL"><div>Private child draft</div></SurfaceAdmission>},
+    {path:'/login',element:<div>Sign in again</div>}],{initialEntries:[`/${liveOrg}`]});render(<RouterProvider router={router}/>);
+  await screen.findByText('Private child draft');await waitFor(()=>expect(operational.options).toBeDefined());gone=true;
+  act(()=>operational.options!.denied(sessionGone?401:404,false));
+  expect(screen.queryByText('Private child draft')).not.toBeInTheDocument();
+  if(sessionGone){await screen.findByText('Sign in again');expect(router.state.location.pathname).toBe('/login');}
+  else{await screen.findByText('Access to this Organization surface is unavailable.');expect(router.state.location.pathname).toBe(`/${liveOrg}`);}
+});
 it.each(['SUSPENDED', 'DEACTIVATED'] as const)('withdraws operational content immediately for live %s and checks fresh admission on reactivation', async status => {
   const fetcher = vi.fn(async (path: string) => path === '/me' ? new Response(JSON.stringify(liveProfile)) : response(liveOrg));
   vi.stubGlobal('fetch', fetcher); mountLive(); await screen.findByText(`Admitted ${liveOrg}`);

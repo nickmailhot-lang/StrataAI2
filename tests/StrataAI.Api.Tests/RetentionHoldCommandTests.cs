@@ -19,6 +19,7 @@ public sealed partial class ApiHostTests
         private static RetentionHoldReference? Reference(RetentionHold? hold) => hold is null ? null : new(hold.OrganizationId, hold.Id,
             hold.Version, hold.RecordClass, hold.Category is not null, hold.RecordId, null, null, null, null);
         public Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct) => throw new NotSupportedException("Command probe does not establish history.");
+        public Task<IReadOnlyList<RetentionHoldReference>> ReadDirectoryReferencesAsync(Guid organization, Guid actor, Guid? after, CancellationToken ct) => throw new NotSupportedException("Command probe does not establish directory scope.");
         public RetentionHold? Current { get; set; }
         public RetentionHoldReceipt? Receipt { get; set; }
         public RetentionHoldWrite? LastWrite { get; private set; }

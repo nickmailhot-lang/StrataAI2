@@ -51,6 +51,11 @@ public sealed partial class ApiHostTests
         Assert.Equal(original, await replayApply.Content.ReadAsStringAsync(ct));
         using var head = await owner.GetAsync(path, ct); var state = await head.Content.ReadFromJsonAsync<JsonElement>(ct);
         Assert.Equal(2L, state.GetProperty("version").GetInt64()); Assert.Equal("released", state.GetProperty("status").GetString());
+        using var directory = await owner.GetAsync($"/organizations/{f.Organization}/retention-holds", ct);
+        Assert.Equal(HttpStatusCode.OK, directory.StatusCode);
+        var directoryBody = await directory.Content.ReadFromJsonAsync<JsonElement>(ct);
+        Assert.Equal(state.GetProperty("id").GetGuid(), Assert.Single(directoryBody.GetProperty("items").EnumerateArray()).GetProperty("id").GetGuid());
+
         using var history = await owner.GetAsync(path + "/history", ct); Assert.Equal(HttpStatusCode.OK, history.StatusCode);
         var timeline = await history.Content.ReadFromJsonAsync<JsonElement>(ct);
         var revisions = timeline.GetProperty("revisions").EnumerateArray().ToArray(); Assert.Equal(2, revisions.Length);

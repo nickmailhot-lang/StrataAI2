@@ -57,6 +57,7 @@ internal static class RetentionHoldPersistenceContract
         public int Reads { get; private set; }
         public int Writes { get; private set; }
         public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadReferenceAsync(organization, hold, ct);
+        public Task<IReadOnlyList<RetentionHoldReference>> ReadDirectoryReferencesAsync(Guid organization, Guid actor, Guid? after, CancellationToken ct) => inner.ReadDirectoryReferencesAsync(organization, actor, after, ct);
         public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => inner.ReadReceiptReferenceAsync(organization, actor, key, ct);
         public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct) => throw new NotSupportedException();
         public Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct) { Reads++; return inner.ReadAsync(organization, hold, ct); }
@@ -68,6 +69,7 @@ internal static class RetentionHoldPersistenceContract
     {
         public Task<RetentionHoldCandidates> ReadApplicableAsync(RetentionRecord record, CancellationToken ct) => inner.ReadApplicableAsync(record, ct);
         public Task<RetentionHoldReference?> ReadReferenceAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadReferenceAsync(organization, hold, ct);
+        public Task<IReadOnlyList<RetentionHoldReference>> ReadDirectoryReferencesAsync(Guid organization, Guid actor, Guid? after, CancellationToken ct) => inner.ReadDirectoryReferencesAsync(organization, actor, after, ct);
         public Task<RetentionHoldReference?> ReadReceiptReferenceAsync(Guid organization, Guid actor, Guid key, CancellationToken ct) => inner.ReadReceiptReferenceAsync(organization, actor, key, ct);
         public Task<RetentionHold?> ReadAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadAsync(organization, hold, ct);
         public Task<IReadOnlyList<RetentionHoldRevision>> ReadHistoryAsync(Guid organization, Guid hold, CancellationToken ct) => inner.ReadHistoryAsync(organization, hold, ct);
@@ -200,6 +202,12 @@ internal static class RetentionHoldPersistenceContract
                 && afterApply.Value.Events[0] == replayPage.Value!.Events[1], "Native missed release replay changed identity.");
             Require(!(await service.ReadTimelineAsync(other, actor, hold, ct)).Succeeded, "Native foreign hold history disclosed.");
             Console.WriteLine("Native hold history and replay: bounded original audit identities, missed release recovery and foreign refusal passed; actor session remains a native fixture.");
+            var directory = await service.ReadDirectoryAsync(tenant, actor, null, ct);
+            Require(directory.Succeeded && directory.Value!.Items.Count <= RetentionHoldService.DirectoryPageSize,
+                "Native hold directory did not enforce its bounded current scope.");
+            Require(!(await service.ReadDirectoryAsync(tenant, Guid.NewGuid(), null, ct)).Succeeded,
+                "Native foreign actor directory disclosed.");
+
 
             Require((await service.ApplyAsync(tenant, actor, hold, scope, "Private native hold reason", key, "retry", ct)).Value == applied.Value,
                 "Native Apply recovery substituted current Released head.");
@@ -331,6 +339,14 @@ internal static class RetentionHoldPersistenceContract
             }
             await AddCategoryHolds(998); await CheckBound(true, 1000);
             await AddCategoryHolds(3); await CheckBound(false, 1001);
+            var firstDirectory = await service.ReadDirectoryAsync(tenant, actor, null, ct);
+            Require(firstDirectory.Succeeded && firstDirectory.Value!.Items.Count == 25 && firstDirectory.Value.NextAfter == firstDirectory.Value.Items[^1].Id,
+                "Native indexed directory lost its authorized continuation.");
+            var secondDirectory = await service.ReadDirectoryAsync(tenant, actor, firstDirectory.Value!.NextAfter, ct);
+            Require(secondDirectory.Succeeded && secondDirectory.Value!.Items.Count == 25
+                && !firstDirectory.Value.Items.Select(x => x.Id).Intersect(secondDirectory.Value.Items.Select(x => x.Id)).Any(),
+                "Native indexed directory overlapped pages.");
+            Console.WriteLine("Native hold directory: indexed authorized current pages, bounded size, stable nonoverlapping continuation and foreign actor refusal passed; actor session remains a native fixture.");
             var workHold = Guid.NewGuid(); var workKey = Guid.NewGuid();
             Require((await service.ApplyAsync(tenant, actor, workHold,
                 new(tenant, RetentionRecordClass.OperationalWork, null, card), "Private work reason", workKey, "native-reference", ct)).Succeeded,

@@ -1203,3 +1203,10 @@ stream page or unmount. Web type checking, changed-file lint and production
 build passed, retaining the existing bundle-size warning. Exact-image browser
 verification of this repair remains pending; no green release or PRD closure
 is claimed from the failed CI run. Estimated PRD-27 remaining stays **24%**.
+
+
+### Outer-boundary session-loss repair (2026-10-12)
+
+The 796e0fe9 exact-image foundation job reproduced configuration sign-out failures at both widths: the outer access boundary could retire the configuration page before its own session-loss callback navigated to sign-in. SurfaceAdmission now performs a fresh bounded `/me` check after definitive live denial or an unauthorized surface read and redirects only after an actual HTTP 401. Checks are coalesced and retired with their scope. Current membership/Portal denial and transport uncertainty retain their own denial/recovery semantics. Anonymous independently authorized Public Board viewing is preserved when there was no protected admission to retire.
+
+New boundary tests cover removal of the child before session confirmation, genuine session loss, authenticated membership denial and independent Public Board admission. All 38 focused surface/hold/directory/live cases passed, along with typecheck/lint/build. The unchanged organization-configuration-distinct-accounts browser cases passed at both 1280px and 390px against real production API/Worker/PostgreSQL in the eight-case native browser run; no assertion or timeout was relaxed. Exact corrected-head immutable-image CI remains pending.

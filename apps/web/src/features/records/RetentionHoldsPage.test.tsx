@@ -12,6 +12,7 @@ function fixture() {
     if (input === '/me') return new Response(JSON.stringify({ id:actor,version:1,status:'ACTIVE',emailVerified:true,locale:'en-CA',timezone:'UTC' }));
     if (state.denied) return new Response('{}',{status:404});
     if (input.includes('/retention-policies')) return new Response(JSON.stringify({ organizationId:org,items:[],nextAfter:null }));
+    if (input.endsWith('/retention-holds')) return new Response(JSON.stringify({organizationId:org,items:[...state.holds.values()],nextAfter:null}));
     if (input.endsWith('/review')) {
       const parts=input.split('/'), id=parts.at(-2)!, kind=parts.at(-3)!;
       const card=kind === 'card' ? id : '44444444-4444-4444-8444-444444444444';

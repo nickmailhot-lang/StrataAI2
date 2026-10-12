@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Alert, Box, Button, CircularProgress, Stack } from '@mui/material';
 import { ThemeProvider, useTheme } from '@mui/material/styles';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../api/workManagement';
 import { isNotificationProfile } from '../features/notifications/notificationInbox';
 import { lifecycleUuid } from '../features/organizations/operationalLifecycle';
@@ -17,6 +17,8 @@ type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previous
 export function SurfaceAdmission({ surface, children, deniedContent }: {
   surface: 'INTERNAL' | 'PORTAL'; children: ReactNode; deniedContent?: ReactNode;
 }) {
+  const navigate=useNavigate();
+  const confirmSession=useRef<(() => void) | undefined>(undefined);
   const { organizationId: routeId } = useParams();
   const organizationId = routeId?.toLowerCase();
   const scope = `${surface}:${organizationId ?? ''}`;
@@ -53,6 +55,21 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
   useEffect(() => {
     let retired = false;
     let pending: AbortController | undefined;
+    let sessionPending: AbortController | undefined;
+    const checkSession = () => {
+      const previous=currentResult.current;
+      const hadProtectedAdmission=previous?.scope===scope && (previous.status==='admitted' || previous.previouslyAdmitted===true);
+      if (retired || sessionPending || deniedContent && !hadProtectedAdmission) return;
+      const controller=new AbortController();sessionPending=controller;
+      // The boundary may remove a child before its session-loss handler runs.
+      // Only a fresh authenticated HTTP refusal redirects; membership/Portal
+      // denial and transport uncertainty do not become a sign-out decision.
+      void boundedWorkRead(signal=>workRequest<unknown>('/me',{signal}),controller.signal).catch(reason=>{
+        if (!retired && !controller.signal.aborted && reason instanceof WorkRequestError && reason.status===401)
+          navigate('/login',{replace:true});
+      }).finally(()=>{if(sessionPending===controller)sessionPending=undefined;});
+    };
+    confirmSession.current=checkSession;
     const read = async () => {
       if (retired || pending) return;
       if (!organizationId) { setResult({ scope, status: 'denied' }); return; }
@@ -74,6 +91,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
           throw new Error('Invalid admission');
         if (!retired && currentGeneration === generation.current) setResult({ scope, status: 'admitted' });
       } catch (reason) {
+        if (!retired && reason instanceof WorkRequestError && reason.status===401) checkSession();
         if (!retired && currentGeneration === generation.current) {
           const status = reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status) ? 'denied' : 'error';
           setResult(previous => ({ scope, status, previouslyAdmitted: status === 'error' && previous?.scope === scope
@@ -92,8 +110,9 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
     window.addEventListener('focus', refresh);
     return () => { retired = true; clearInterval(interval); window.removeEventListener('focus', refresh);
       if (refreshAdmission.current === refresh) refreshAdmission.current = undefined;
-      pending?.abort(); };
-  }, [organizationId, surface, scope, retry]);
+      if(confirmSession.current===checkSession)confirmSession.current=undefined;
+      pending?.abort();sessionPending?.abort(); };
+  }, [organizationId, surface, scope, retry,navigate,deniedContent]);
   useEffect(() => {
     // Portal grants are independent; an internal-member stream cannot admit it.
     if (surface !== 'INTERNAL' || !lifecycleUuid(organizationId)) return;
@@ -111,7 +130,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
       // Transport uncertainty withdraws presentation, but is not a newer
       // authority decision. An already pending bounded HTTP check must still
       // resolve, especially a denial that admits independent lifecycle recovery.
-      if (status === 'denied') ++generation.current;
+      if (status === 'denied') {++generation.current;confirmSession.current?.();}
       setResult(previous => ({ scope,
         // A stream transport failure cannot turn a definitive surface denial
         // into an unknown grant. Keep the shell withdrawn while the independent

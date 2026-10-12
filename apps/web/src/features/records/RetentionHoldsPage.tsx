@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Button, Checkbox, Container, FormControlLabel, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
+import { RetentionHoldDirectory } from './RetentionHoldDirectory';
 import { watchRetentionHold } from './retentionHoldLive';
 import { WorkRequestError } from '../../api/workManagement';
 import { readRetentionPolicies } from './retentionPolicyClient';
@@ -147,6 +148,10 @@ function HoldScreen({ organizationId }: { organizationId: string }) {
           holdId:crypto.randomUUID(),key:crypto.randomUUID(),operation:'apply',body:{ recordClass:scope === 'organization' ? null : scope === 'record' ? kind === 'attachment' ? 'document' : 'operationalWork' : recordClass,
             category:scope === 'category' ? category : null,recordId:scope === 'record' ? recordId.toLowerCase() : null,reason:reason.trim(),review:scope === 'record' ? review! : null,confirmed:true } })}>Apply confirmed hold</Button>
       </Stack></Paper>
+      {actor && <RetentionHoldDirectory key={`${organizationId}:${actor}`} organizationId={organizationId} actorId={actor}
+        enabled={admitted && (!hold || holdConfirmed) && !intent && !recoveryBlocked} accessLost={()=>withdraw(true)} select={selected=>{
+          setHoldId(selected.id);setHoldConfirmed(false);setTimeline(undefined);setLiveNotice(undefined);setReleaseConfirmed(false);setHold(selected);
+        }}/>}
       <Paper variant="outlined" sx={{ p:2 }}><Stack spacing={2}>
         <Typography variant="h6" component="h2">Review or release a hold</Typography>
         <TextField label="Hold identifier" value={holdId} disabled={disabled} onChange={e => { setHoldId(e.target.value); setHold(undefined); setHoldConfirmed(false); setTimeline(undefined); setLiveNotice(undefined); setReleaseConfirmed(false); }} />
