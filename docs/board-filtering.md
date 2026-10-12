@@ -812,3 +812,34 @@ This is local Production evidence, not proof of current immutable release CI or
 all search requirements. PRD-16 remains open at **18% estimated work remaining**
 (planning estimate); full release, performance/capacity and remaining acceptance
 evidence are still required.
+# Current global search session recovery verification (2026-10-12)
+
+The complete global-search-live and comment-mass-mentions files first finish
+**4/6 in 490.15 seconds** on current compiled API/Worker/web/current Nginx and
+fresh restricted schema-146 PostgreSQL. Both account-preference cases and both
+mention cases pass unchanged. Search recovery still expects the former surface
+denial panel after logout: desktop fails at that expectation; phone exceeds its
+original 180-second deadline during withdrawal/re-entry. The older mention
+withdrawal CI failure is not reproduced or claimed repaired.
+
+The search fixture now observes the actual sign-in route after confirmed session
+withdrawal, within the same original 25-second budget. It retains removal of all
+result links, paging and three criteria fields, actual HTTP 401 and exact unchanged
+protected Board graph through an independently authenticated editor session.
+Counting one main-frame document request additionally proves withdrawal required
+no reload. After fresh API authentication, explicit re-entry replaces the obsolete
+Check access again gesture; all criteria must be empty before the original search
+submission and recovered-result assertion. Offline recovery, live changes,
+cross-Organization results, preferences, Axe and original deadlines remain.
+
+The same complete two-file invocation then passes **6/6 in 298.56 seconds**,
+zero skips/unexpected/flaky outcomes or report errors. All **2,074** captured
+hosted source/runtime and **1,409** native hashes match. Owned API/Worker/edge/
+PostgreSQL fixtures and credential files are removed, preserving original
+PostgreSQL. Both failed baseline cases and their diagnostics remain retained.
+
+Fresh warning-free solution build, browser type checking and diff validation
+pass. This is local compiled-runtime/cached-support evidence using the general
+CI policy (API optional verification, Worker mandatory verification). Full current
+immutable-image CI and remaining original AC/DoD still govern closure. PRD-16
+remains open at **18% estimated work remaining**.

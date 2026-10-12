@@ -32,7 +32,9 @@ for (const width of [1280, 390]) {
     let restoreWorker = () => {};
     let closePeer = async () => {};
     try {
-      await page.goto(`/app/${records[0].org}/search`);
+      const searchPath = `/app/${records[0].org}/search`; let documents = 0;
+      page.on('request', request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++; });
+      await page.goto(searchPath);
       await page.getByRole('textbox', { name: 'Card text', exact: true }).fill('needle');
       await page.getByRole('textbox', { name: 'Label name', exact: true }).fill('prior');
       await page.getByRole('textbox', { name: 'Member name', exact: true }).fill('search reader');
@@ -97,16 +99,19 @@ for (const width of [1280, 390]) {
       expect((await context.request.post('/auth/logout', {
         headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: {},
       })).status()).toBe(204);
-      await expect(page.getByText('Access to this Organization surface is unavailable.', { exact: true })).toBeVisible({ timeout: 25_000 });
+      await expect(page).toHaveURL(/\/login$/, { timeout: 25_000 });
       await expect(page.getByRole('link', { name: /^Global needle/ })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Next search page', exact: true })).toHaveCount(0);
       for (const name of ['Card text', 'Label name', 'Member name'])
         await expect(page.getByRole('textbox', { name, exact: true })).toHaveCount(0);
+      expect(documents).toBe(1);
       expect((await context.request.get('/search?q=needle')).status()).toBe(401);
       const afterWithdrawal = await peer.request.get(`/boards/${current.board}`);
       expect(afterWithdrawal.status()).toBe(200); expect(await afterWithdrawal.json()).toEqual(protectedBefore);
       expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
-      await page.getByRole('button', { name: 'Check access again', exact: true }).press('Enter');
+      // The confirmed expired session removed the protected search surface.
+      // After fresh authentication, re-enter it; submitted criteria must be gone.
+      await page.goto(searchPath);
       for (const name of ['Card text', 'Label name', 'Member name'])
         await expect(page.getByRole('textbox', { name, exact: true })).toHaveValue('');
       await page.getByRole('textbox', { name: 'Card text', exact: true }).fill('needle recovered');
