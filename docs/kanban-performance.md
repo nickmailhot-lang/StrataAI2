@@ -839,3 +839,46 @@ These two repetitions establish current local normal-budget evidence. Current
 complete build-once CI, large-capacity proof against the current release, the
 remaining accessibility/role/lifecycle matrices and full acceptance still govern
 closure. PRD-06 remains open at **25% estimated work remaining** (planning estimate).
+
+## Current schema-146 full rank and three-viewport capacity chain
+
+The entire maintained [rank/concurrency runner](../scripts/ci/test-work-ranks.sh)
+now completes against source `ac0d04848277abb3f264eadecbd88c7232ee531c`, including
+its unchanged [capacity browser cases](../tests/browser/board-capacity.case.ts).
+It uses current compiled readonly API/Worker, restricted PostgreSQL 17/pgvector
+with all 146 migrations, the current production web bundle and actual current
+Nginx/security headers. Its disposable data contains 200 Lists, over 5,000
+active Cards in the populated List and exactly 100,000 archived Cards.
+
+The original checks pass concurrent independent List/Card creation, default
+append allocation at scale, concurrent moves, before-Card insertion using
+current neighbors without sibling renumbering, relative List positioning,
+original non-reapplying command receipts and rank-exhaustion refusal. The same
+real scoped Worker and persisted data then serve all **3/3** desktop/tablet/phone
+cases at **1280/768/390 pixels**, completed in **177.87 seconds**, with zero
+skips, flaky/unexpected outcomes or retries. Original per-case deadlines remain.
+
+Browser assertions cover bounded window geometry/DOM size, real keyboard Card
+and List movement, authoritative revisions, detail focus, Back/Forward/Close
+focus restoration, exact preservation of four nested scroll offsets, document
+width and the original tagged Axe accessibility checks. Every viewport restores
+its transferred Card through the actual command before the next case. The
+runner's final database count and complete-record fingerprint confirm all
+**100,000 archived Cards unchanged after all three cases**, and the complete
+shell process exits zero. This is capacity behavior evidence; its observed
+readiness timing does not replace the separate normal-condition timing budgets.
+
+The first local invocation stopped before browser execution because Git Bash
+selected its native `cat` ahead of the Windows UUID bridge. That failed bootstrap
+remains retained. The successful invocation explicitly installs the adapter's
+PATH in the executing shell. Host adapters provide cryptographic UUIDs,
+native Docker invocation and native Windows fixture paths; neither the maintained
+rank runner nor browser scenarios/assertions are rewritten or weakened.
+
+Independent checks match all **2,070 source/compiled hashes** and all **four
+hosted web files**. Owned containers, database and credential files are removed;
+the original PostgreSQL container and volume remain preserved. This is current
+local compiled-runtime Nginx evidence, not exact release-image or physical-device
+certification. Complete current build-once CI, the remaining full role/lifecycle/
+accessibility matrices and the entire Definition of Done still govern closure.
+PRD-06 remains open at **25% estimated work remaining** (planning estimate).

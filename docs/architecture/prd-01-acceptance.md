@@ -310,3 +310,17 @@ tests with zero failures/skips; [the recorded scope](source-test-results.md#sche
 keeps that source SHA separate from the subsequent frontend focus repair and
 pending complete immutable-image integration. All original requirements remain.
 Estimated PRD-01 work remaining stays **34%** (planning estimate).
+
+## Current full supported Board capacity verification
+
+The [schema-146 complete rank/capacity chain](../kanban-performance.md#current-schema-146-full-rank-and-three-viewport-capacity-chain)
+now passes unchanged against `ac0d0484`, including original concurrent commands,
+durable replay/refusal checks and all three desktop/tablet/phone cases. All
+Back/Forward/Close focus, four nested scroll offsets, keyboard movement,
+windowing, responsive-width and tagged accessibility assertions pass. The final
+count and complete-record fingerprint prove all 100,000 archived Cards unchanged
+after every viewport. Captured source/compiled/web hashes and owned cleanup are
+independently verified. The earlier host-bootstrap failure is retained separately.
+This updates local supported-capacity evidence to the current schema and cached-
+detail repair; current immutable-image/full CI and all original broader
+requirements still govern closure. Estimated work remaining stays **34%**.

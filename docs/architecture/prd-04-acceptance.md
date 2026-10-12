@@ -2,6 +2,20 @@
 
 This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 15%.
 
+## Current supported-scale Board verification
+
+The [complete schema-146 rank/capacity chain](../kanban-performance.md#current-schema-146-full-rank-and-three-viewport-capacity-chain)
+passes against `ac0d0484`: original concurrent allocation/move/position/replay/
+refusal checks followed by all three desktop/tablet/phone Board cases on 200
+Lists, over 5,000 active Cards and 100,000 archived Cards. Keyboard movement,
+authoritative revisions, Back/Forward/Close focus, exact four-axis nested scroll
+restoration, responsive width, windowing and original Axe assertions pass.
+All complete archived record contents remain unchanged after the browser phase.
+Source/web hashes and owned cleanup are independently verified. This is current
+compiled local Nginx evidence, with retained host-bootstrap failure; it does not
+replace complete immutable-image CI, physical devices or remaining full ticket
+acceptance. Estimated work remaining stays **15%** (planning estimate).
+
 ## Executed metadata, copy and lifecycle acceptance
 
 Six native desktop/phone cases passed in one 4.2-minute invocation against the
