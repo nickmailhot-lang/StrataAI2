@@ -268,6 +268,9 @@ jobs:
       - name: Verify optional production mail role provisioning and password refusals
         run: python3 -m unittest discover -s tests -p 'identity_role_provision_test.py'
 
+      - name: Verify List movement parent commits and tenant isolation
+        run: python3 -m unittest discover -s tests -p 'list_move_parent_integrity_test.py'
+
       - name: Verify every migrated tenant table retains its isolation boundary
         run: scripts/ci/test-tenant-schema.sh
 

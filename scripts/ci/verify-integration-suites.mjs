@@ -67,6 +67,12 @@ function owners(step) {
 export function verifyIntegrationSuites(workflow, registry, attachmentSources = readAttachmentSources()) {
   const jobs = workflow.jobs;
   const postgresSteps = jobs['postgres-integration'].steps;
+  const listParentIntegrity = postgresSteps.find(step => step.name === 'Verify List movement parent commits and tenant isolation');
+  assert.equal(listParentIntegrity?.run, "python3 -m unittest discover -s tests -p 'list_move_parent_integrity_test.py'",
+    'List parent commit and isolation verification must run intact');
+  assert.equal(listParentIntegrity.if, undefined, 'List parent verification cannot be skipped');
+  assert.equal(listParentIntegrity['continue-on-error'] ?? false, false);
+  assert.ok(postgresSteps.indexOf(listParentIntegrity) > postgresSteps.findIndex(step => step.name === 'Apply ordered migrations'));
   const holdPersistence = postgresSteps.find(step => step.name === 'Retention hold owning PostgreSQL adapter and rollback contract');
   assert.equal(holdPersistence?.run,
     'dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --configuration Release --no-build -- --retention-holds-only',
