@@ -2,6 +2,10 @@
 
 This supports the [operational MVP milestone](operational-mvp-milestone.md) and extends the [state investigation](watch-order-state-investigation.md). The hosted fingerprint failure remains unresolved.
 
+[Grouped job-column hashes and URL draft failure evidence](failure-field-diagnostics.md)
+extends the same atomic snapshot with hash-only column diagnostics, preserving
+all original full-state assertions and recording separate negative controls.
+
 ## Retained failure and diagnostic contract
 
 [CI run 38287805799](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38287805799), commit `1d03b0c9ec56d50c336f319099fe37922a174739`, finishes its fourth full browser shard with four permission-order failures. MEMBER and PUBLIC_READER fail the first replay-state comparison; ADMIN and ORGANIZATION_READER fail the later read-order comparison. Exact preceding receipt-body comparisons pass. Retained container logs and traces do not establish which fingerprint component changed.

@@ -43,6 +43,7 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
     const watchState = () => query(`SELECT md5(jsonb_agg(to_jsonb(w) ORDER BY id)::text) FROM watch_subscriptions w WHERE tenant_id='${org}' AND user_id='${recipient}';`);
     const originalWatches = watchState();
     const stateComponents = new Map<string, Record<string, string>>();
+    const jobFields = new Map<string, Record<string, Record<string, string>>>();
     const privateState = () => {
       // Keep the original complete text hash. Component hashes share its SQL
       // snapshot and disclose no record contents, identifiers or job payloads.
@@ -57,19 +58,38 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
       'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY recipient_id) FROM notification_event_streams s WHERE tenant_id='${org}'),
       'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY actor_id,key_id) FROM work_command_replays r WHERE tenant_id='${org}'))::text AS snapshot)
       SELECT jsonb_build_object('hash',md5(snapshot),'components',
-        (SELECT jsonb_object_agg(key,md5(value::text)) FROM jsonb_each(snapshot::jsonb)))::text FROM source_snapshot;`)) as {
-        hash: string; components: Record<string, string>;
+        (SELECT jsonb_object_agg(key,md5(value::text)) FROM jsonb_each(snapshot::jsonb)),
+        'jobFields',(SELECT COALESCE(jsonb_object_agg(job_type,fields),'{}'::jsonb) FROM (
+          SELECT job_type,jsonb_object_agg(field_name,field_hash) AS fields FROM (
+            SELECT job.entry->>'job_type' AS job_type,field.key AS field_name,
+              md5(jsonb_agg(field.value ORDER BY job.entry->>'id')::text) AS field_hash
+            FROM jsonb_array_elements(COALESCE(NULLIF(snapshot::jsonb->'jobs','null'::jsonb),'[]'::jsonb)) AS job(entry)
+            CROSS JOIN LATERAL jsonb_each(job.entry) AS field
+            GROUP BY job.entry->>'job_type',field.key
+          ) AS grouped_fields GROUP BY job_type
+        ) AS grouped_jobs))::text FROM source_snapshot;`)) as {
+        hash: string; components: Record<string, string>; jobFields: Record<string, Record<string, string>>;
       };
       stateComponents.set(captured.hash, captured.components);
+      jobFields.set(captured.hash, captured.jobFields);
       return captured.hash;
     };
     const expectPrivateState = async (expected: string) => {
       const actual = privateState();
       if (actual !== expected) {
         const before = stateComponents.get(expected), after = stateComponents.get(actual);
+        const jobFieldsBefore = jobFields.get(expected) ?? {}, jobFieldsAfter = jobFields.get(actual) ?? {};
+        const changedJobFields: Record<string, string[]> = {};
+        for (const type of new Set([...Object.keys(jobFieldsBefore), ...Object.keys(jobFieldsAfter)])) {
+          const oldFields = jobFieldsBefore[type] ?? {}, newFields = jobFieldsAfter[type] ?? {};
+          const changed = [...new Set([...Object.keys(oldFields), ...Object.keys(newFields)])]
+            .filter(field => oldFields[field] !== newFields[field]).sort();
+          if (changed.length) changedJobFields[type] = changed;
+        }
         await test.info().attach('permission-state-component-hashes', {
           body: Buffer.from(JSON.stringify({ role, before, after,
-            changedFields: Object.keys(after ?? {}).filter(key => before?.[key] !== after?.[key]) })),
+            changedFields: Object.keys(after ?? {}).filter(key => before?.[key] !== after?.[key]),
+            jobFieldsBefore, jobFieldsAfter, changedJobFields })),
           contentType: 'application/json',
         });
       }

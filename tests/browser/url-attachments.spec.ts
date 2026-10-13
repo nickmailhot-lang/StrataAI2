@@ -23,7 +23,28 @@ for (const width of [1280, 390]) {
     const add = page.getByRole('button', { name: 'Add link attachment', exact: true }); await expect(add).toBeEnabled(); await add.press('Enter');
     const title = page.getByRole('textbox', { name: 'New link attachment title', exact: true }); const url = page.getByRole('textbox', { name: 'Attachment URL', exact: true });
     await title.fill('External reference'); await url.fill('javascript:alert(1)');
-    const create = page.getByRole('button', { name: 'Create link attachment', exact: true }); await expect(create).toBeEnabled(); await create.press('Enter');
+    const create = page.getByRole('button', { name: 'Create link attachment', exact: true });
+    try { await expect(create).toBeEnabled(); }
+    catch (error) {
+      // Observe only declared fixture-value matches after failure; never attach
+      // user input, account identifiers or request/response bodies.
+      const observations = await Promise.allSettled([
+        title.inputValue({ timeout: 500 }).then(value => value === 'External reference'),
+        url.inputValue({ timeout: 500 }).then(value => value === 'javascript:alert(1)'),
+        create.isEnabled({ timeout: 500 }),
+        page.getByText('This Card changed elsewhere. Your title and URL are preserved.', { exact: true }).isVisible(),
+        page.getByText('Checking current Card access…', { exact: true }).isVisible(),
+      ]);
+      const values = observations.map(result => result.status === 'fulfilled' ? result.value : null);
+      await test.info().attach('url-attachment-draft-admission', {
+        body: Buffer.from(JSON.stringify({ viewportWidth: width, observedAfterFailure: true,
+          titleMatchesFixture: values[0], urlMatchesFixture: values[1], createEnabled: values[2],
+          revisionConflictVisible: values[3], accessCheckVisible: values[4] })),
+        contentType: 'application/json',
+      }).catch(() => {});
+      throw error;
+    }
+    await create.press('Enter');
     await expect(page.getByText('Enter an HTTP(S) link without embedded credentials.', { exact: true })).toBeVisible(); expect(writes).toHaveLength(0);
     await url.fill('https://example.test/reference?q=1#section'); await expect(create).toBeEnabled(); await create.press('Enter');
     const retry = page.getByRole('button', { name: 'Retry link attachment creation', exact: true }); await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();

@@ -183,6 +183,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Checklists and items (PRD-13)](architecture/checklists.md)
 - [Nested checklist review admission and complete collaboration verification](architecture/checklist-review-admission-verification.md)
 - [Checklist reads and file chooser opening verification](architecture/checklist-file-opening-verification.md)
+- [Permission job columns and URL draft failure evidence](architecture/failure-field-diagnostics.md)
 - [Archived card discovery (PRD-18)](archived-card-directory.md)
 - [Archived List discovery (PRD-07 / PRD-18)](archived-list-directory.md)
 - [Reviewed active Card archival (PRD-08 / PRD-18)](card-archive-review.md)

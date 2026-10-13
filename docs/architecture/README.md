@@ -1,5 +1,7 @@
 # StrataAI2 architecture
 
+[Job-column and URL draft failure evidence](failure-field-diagnostics.md) preserves full comparisons and documents the six original scenarios plus controlled diagnostic failures.
+
 [Organization review and removal recovery verification](organization-review-recovery-verification.md) records three reproduced recovery-state defects and complete desktop/phone configuration and membership verification.
 
 [Checklist reads and file chooser opening verification](checklist-file-opening-verification.md) records retained hosted opening failures, the retired-launcher helper correction and all four final desktop/phone cases.
