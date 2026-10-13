@@ -1,17 +1,39 @@
 // Serialized into the browser: keep this function independent of Node imports.
 // Numerical diagnostics only; never retain entity IDs, content or credentials.
 export function installCapacityScrollDiagnostics() {
+  type InputPoint = { at: number | null; x: number | null; y: number | null; buttons: number | null };
+  type InputChannel = { count: number; last: InputPoint | null };
+  const input = { pointerCapture: { count: 0, last: null } as InputChannel,
+    pointerBubble: { count: 0, last: null } as InputChannel,
+    mouseCapture: { count: 0, last: null } as InputChannel,
+    mouseBubble: { count: 0, last: null } as InputChannel,
+    pointerCancel: { count: 0, last: null } as InputChannel,
+    pointerUp: { count: 0, last: null } as InputChannel };
   type Sample = { at: number; kind: string; axis: string; left: number; top: number;
     arguments: (number | null)[]; pointer: { x: number; y: number } | null;
     viewport: { left: number | null; top: number | null; right: number | null; bottom: number | null;
       width: number | null; height: number | null } | null };
-  const target = window as unknown as { __capacityScrollDiagnostics?: { schema: number; dropped: number; samples: Sample[] } };
+  const target = window as unknown as { __capacityScrollDiagnostics?: { schema: number; dropped: number; samples: Sample[]; input: typeof input } };
   if (target.__capacityScrollDiagnostics) return;
-  const evidence = { schema: 2, dropped: 0, samples: [] as Sample[] };
+  const evidence = { schema: 3, dropped: 0, samples: [] as Sample[], input };
   target.__capacityScrollDiagnostics = evidence;
   let pointer: { x: number; y: number } | null = null;
-  document.addEventListener('pointermove', event => { pointer = { x: event.clientX, y: event.clientY }; });
   const numeric = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value : null;
+  const observeInput = (channel: InputChannel, event: MouseEvent) => {
+    try {
+      channel.last = { at: numeric(window.performance.now()), x: numeric(event.clientX), y: numeric(event.clientY), buttons: numeric(event.buttons) };
+      channel.count = Math.min(Number.MAX_SAFE_INTEGER, channel.count + 1);
+    } catch { /* Input diagnostics must not interfere with native event dispatch. */ }
+  };
+  document.addEventListener('pointermove', event => observeInput(input.pointerCapture, event), true);
+  document.addEventListener('pointermove', event => {
+    observeInput(input.pointerBubble, event);
+    pointer = { x: event.clientX, y: event.clientY };
+  });
+  document.addEventListener('mousemove', event => observeInput(input.mouseCapture, event), true);
+  document.addEventListener('mousemove', event => observeInput(input.mouseBubble, event));
+  document.addEventListener('pointercancel', event => observeInput(input.pointerCancel, event), true);
+  document.addEventListener('pointerup', event => observeInput(input.pointerUp, event), true);
   const option = (value: object, key: string) => {
     // Do not invoke an accessor a second time before the native operation.
     try { return numeric(Object.getOwnPropertyDescriptor(value, key)?.value); } catch { return null; }

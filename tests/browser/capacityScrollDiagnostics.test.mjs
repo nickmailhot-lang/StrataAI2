@@ -20,7 +20,7 @@ function fixture() {
     scrollIntoView(...args) { calls.push(['view', this, ...args]); return 'native-view'; }
   }
   const window = { performance: { now: () => 12 } };
-  const context = vm.createContext({ Element, window, document: { addEventListener: (type, fn) => listeners.set(type, fn) } });
+  const context = vm.createContext({ Element, window, document: { addEventListener: (type, fn, capture) => listeners.set(capture ? type + ':capture' : type, fn) } });
   vm.runInContext(`(${installCapacityScrollDiagnostics.toString()})()`, context);
   const samples = () => JSON.parse(JSON.stringify(window.__capacityScrollDiagnostics));
   return { Element, window, context, calls, listeners, samples };
@@ -77,10 +77,39 @@ test('scroll geometry retains only finite viewport numbers and never private rec
   node.clientWidth = 342; node.clientHeight = 500;
   node.getBoundingClientRect = () => ({ left: 24, right: 366, top: 80, bottom: Infinity, privateBody: 'secret' });
   node.scrollBy(-8, 0);
-  assert.equal(f.samples().schema, 2);
+  assert.equal(f.samples().schema, 3);
   assert.deepEqual(f.samples().samples[0].viewport, { left: 24, right: 366, top: 80, bottom: null, width: 342, height: 500 });
   assert.doesNotMatch(JSON.stringify(f.samples()), /secret|privateBody/);
   node.getBoundingClientRect = () => { throw new Error('Geometry failure'); };
   assert.equal(node.scrollBy(-8, 0), 'native-result');
   assert.equal(f.samples().samples[1].viewport, null);
+});
+
+test('capture-only movement distinguishes withdrawn bubbling without changing the original scroll pointer', () => {
+  const f = fixture(), node = new f.Element();
+  f.listeners.get('pointermove')({ clientX: 30, clientY: 90, buttons: 1 });
+  const event = { clientX: 449, clientY: 470.5, buttons: 1, target: { privateBody: 'secret' }, stopPropagation() { throw new Error('Do not alter input'); } };
+  f.listeners.get('pointermove:capture')(event);
+  f.listeners.get('mousemove:capture')(event);
+  node.scrollBy(-8, 0);
+  const evidence = f.samples();
+  assert.deepEqual(evidence.samples[0].pointer, { x: 30, y: 90 });
+  assert.deepEqual(evidence.input.pointerCapture, { count: 1, last: { at: 12, x: 449, y: 470.5, buttons: 1 } });
+  assert.deepEqual(evidence.input.pointerBubble.last, { at: 12, x: 30, y: 90, buttons: 1 });
+  assert.equal(evidence.input.mouseBubble.count, 0);
+  assert.doesNotMatch(JSON.stringify(evidence), /secret|privateBody|target|stopPropagation/);
+});
+
+test('input channels keep only their latest finite point and observe release/cancellation without retaining event objects', () => {
+  const f = fixture();
+  for (let i = 0; i < 3000; i++) f.listeners.get('mousemove')({ clientX: i, clientY: Infinity, buttons: 1, privateBody: 'secret' });
+  f.listeners.get('pointercancel:capture')({ clientX: NaN, clientY: 9, buttons: 0 });
+  f.listeners.get('pointerup:capture')({ clientX: 7, clientY: 9, buttons: 0 });
+  const evidence = f.samples();
+  assert.equal(evidence.input.mouseBubble.count, 3000);
+  assert.deepEqual(evidence.input.mouseBubble.last, { at: 12, x: 2999, y: null, buttons: 1 });
+  assert.equal(evidence.input.pointerCancel.last.x, null);
+  assert.equal(evidence.input.pointerUp.last.buttons, 0);
+  assert.equal(evidence.samples.length, 0);
+  assert.doesNotMatch(JSON.stringify(evidence), /secret|privateBody/);
 });
