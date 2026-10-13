@@ -82,19 +82,82 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
 """
         if cls.sql(seed).returncode:
             raise AssertionError('Synthetic List graph seed failed')
-        graph = "SELECT md5(jsonb_build_object('lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l),'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c))::text);"
+        graph = "SELECT md5(jsonb_build_object('lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l WHERE tenant_id IN ('14700000-0000-0000-0000-000000000001','14700000-0000-0000-0000-000000000002')),'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c))::text);"
         before_upgrade = cls.sql(graph).stdout
-        remaining = ''.join(p.read_text(encoding='utf-8') + '\n' for p in paths if p.name >= upgrade)
+        if cls.sql((cls.repo / 'db/migrations' / upgrade).read_text()).returncode:
+            raise AssertionError('List parent deferral upgrade failed')
+        if cls.sql((cls.repo / 'scripts/ci/configuration-list-history-before-upgrade.sql').read_text()).returncode:
+            raise AssertionError('Real historical configuration source fixture failed')
+        cls.history_hash = cls.sql(cls.configuration_hash_sql()).stdout
+        graph_before_history_upgrade = cls.sql(cls.complete_graph_hash_sql()).stdout
+        remaining = ''.join(p.read_text(encoding='utf-8') + '\n' for p in paths if p.name > upgrade)
         if cls.sql(remaining).returncode:
             raise AssertionError('List parent-integrity upgrade failed')
         if cls.sql(graph).stdout != before_upgrade:
             raise AssertionError('Upgrade changed existing List/Card data')
+        if cls.sql(cls.complete_graph_hash_sql()).stdout != graph_before_history_upgrade:
+            raise AssertionError('Historical identity upgrade changed the complete seeded graph')
         if cls.sql((cls.repo / 'db/provision-runtime-roles.sql').read_text(encoding='utf-8')).returncode:
             raise AssertionError('Restricted runtime role provision failed')
 
     @classmethod
     def command(cls, *arguments, input=None):
         return subprocess.run([cls.docker, *arguments], input=input, capture_output=True, timeout=90)
+
+    @staticmethod
+    def complete_graph_hash_sql():
+        return "SELECT md5(jsonb_build_object('lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l),'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c))::text);"
+
+    @staticmethod
+    def configuration_hash_sql():
+        return """SELECT md5(jsonb_build_object(
+          'current',(SELECT jsonb_agg(to_jsonb(c) ORDER BY tenant_id) FROM organization_configurations c),
+          'history',(SELECT jsonb_agg(to_jsonb(h) ORDER BY tenant_id,version) FROM organization_configuration_history h),
+          'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY tenant_id,version) FROM organization_configuration_receipts r),
+          'audit',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM audit_events a),
+          'events',(SELECT jsonb_agg(to_jsonb(e) ORDER BY tenant_id,version) FROM organization_configuration_events e))::text);"""
+
+    def test_configuration_history_preserves_original_parent_without_pinning_former_intake(self):
+        self.assertEqual(self.sql(self.configuration_hash_sql()).stdout, self.history_hash,
+                         'Upgrade must preserve complete configuration history, current source, receipts and audit/events')
+        schema = self.sql((self.repo / 'scripts/ci/assert-organization-configuration-schema.sql').read_text())
+        self.assertEqual(schema.returncode, 0, 'Installed configuration keys, RLS and restricted capabilities must pass')
+        prefix = "BEGIN; SET LOCAL app.tenant_id='14800000-0000-0000-0000-000000000001';\n"
+        parent = "UPDATE board_lists SET board_id='14800000-0000-0000-0000-000000000012',version=version+1,updated_at=now() WHERE id='14800000-0000-0000-0000-0000000000{}';"
+        before_current_refusal = self.sql(self.complete_graph_hash_sql()).stdout
+        current = self.sql(prefix + parent.format('22') + ' COMMIT;', runtime=True)
+        self.assertNotEqual(current.returncode, 0)
+        self.assertIn(b'23503', current.stderr, 'Current intake binding must still reject reparenting')
+        self.assertEqual(self.sql(self.complete_graph_hash_sql()).stdout, before_current_refusal)
+        moved = self.sql(prefix + parent.format('21') + ' COMMIT;', runtime=True)
+        self.assertEqual(moved.returncode, 0, 'Former intake List should move through the restricted runtime login')
+        preserved = self.sql("""SELECT
+          (SELECT board_id='14800000-0000-0000-0000-000000000012' AND version=2 FROM board_lists WHERE id='14800000-0000-0000-0000-000000000021')
+          AND (SELECT intake_board_id='14800000-0000-0000-0000-000000000011' AND intake_list_id='14800000-0000-0000-0000-000000000021'
+            FROM organization_configuration_history WHERE tenant_id='14800000-0000-0000-0000-000000000001' AND version=1);""")
+        self.assertEqual(preserved.stdout.strip(), b't')
+        self.assertEqual(self.sql(self.configuration_hash_sql()).stdout, self.history_hash)
+        # Manufacturing a revision with a mismatched live parent remains denied.
+        forged = self.sql(prefix + """UPDATE organization_configurations SET version=3,
+          record_json=record_json || jsonb_build_object('Version',3,'UpdatedAt',now(),
+            'Configuration',(record_json->'Configuration') || jsonb_build_object('IntakeBoardId','14800000-0000-0000-0000-000000000012'));
+          COMMIT;""", runtime=True)
+        self.assertNotEqual(forged.returncode, 0)
+        self.assertIn(b'23514', forged.stderr)
+        history = self.sql(prefix + """INSERT INTO organization_configuration_history(tenant_id,version,record_json)
+          SELECT tenant_id,3,record_json || jsonb_build_object('Version',3,'EventId',gen_random_uuid())
+          FROM organization_configurations; COMMIT;""", runtime=True)
+        self.assertNotEqual(history.returncode, 0)
+        self.assertIn(b'23514', history.stderr, 'History must still match its exact current configuration source')
+        mutation = self.sql(prefix + 'UPDATE organization_configuration_history SET record_json=record_json; COMMIT;', runtime=True)
+        self.assertNotEqual(mutation.returncode, 0)
+        self.assertIn(b'42501', mutation.stderr, 'Runtime cannot rewrite immutable history')
+        missing = self.sql('SELECT count(*) FROM organization_configuration_history;', runtime=True)
+        self.assertEqual(missing.stdout.strip(), b'0')
+        other = self.sql("BEGIN; SET LOCAL app.tenant_id='14700000-0000-0000-0000-000000000001'; SELECT count(*) FROM organization_configuration_history; ROLLBACK;", runtime=True)
+        self.assertEqual(other.stdout.strip(), b'0', 'Another tenant must not see historical configuration sources')
+        self.assertEqual(self.sql(self.configuration_hash_sql()).stdout, self.history_hash,
+                         'All refusals preserve complete configuration sources')
 
     @classmethod
     def sql(cls, statement, runtime=False):
@@ -115,7 +178,7 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
         data = json.loads(inspected.stdout)[0]
         assert data['Name'] == '/' + cls.name and data['Config']['Labels']['strataai.fixture'] == 'list-move-parent'
         cls.command('stop', cls.name)
-        if cls.command('rm', cls.name).returncode:
+        if cls.command('rm', '--volumes', cls.name).returncode:
             raise AssertionError('Owned List fixture cleanup failed')
 
     @classmethod
@@ -134,12 +197,12 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
         prefix = "BEGIN; SET LOCAL app.tenant_id='14700000-0000-0000-0000-000000000001';\n"
         defer = 'SET CONSTRAINTS cards_list_id_board_id_tenant_id_fkey DEFERRED;\n'
         move = "UPDATE board_lists SET board_id='14700000-0000-0000-0000-000000000012',version=version+1,updated_at=now() WHERE id='14700000-0000-0000-0000-000000000021';\n"
-        before = self.sql("SELECT md5(jsonb_build_object('lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l),'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c))::text);").stdout
+        before = self.sql("SELECT md5(jsonb_build_object('lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l WHERE tenant_id IN ('14700000-0000-0000-0000-000000000001','14700000-0000-0000-0000-000000000002')),'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c))::text);").stdout
         for statements in (prefix + move + 'COMMIT;', prefix + defer + move + 'COMMIT;'):
             denied = self.sql(statements, runtime=True)
             self.assertNotEqual(denied.returncode, 0)
             self.assertIn(b'23503', denied.stderr, 'Incomplete graph must fail its parent constraint')
-            after = self.sql("SELECT md5(jsonb_build_object('lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l),'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c))::text);").stdout
+            after = self.sql("SELECT md5(jsonb_build_object('lists',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM board_lists l WHERE tenant_id IN ('14700000-0000-0000-0000-000000000001','14700000-0000-0000-0000-000000000002')),'cards',(SELECT jsonb_agg(to_jsonb(c) ORDER BY id) FROM cards c))::text);").stdout
             self.assertEqual(after, before, 'Failed statement/commit must preserve complete graph')
         cross = self.sql(prefix + defer + "UPDATE board_lists SET board_id='14700000-0000-0000-0000-000000000013' WHERE id='14700000-0000-0000-0000-000000000021'; COMMIT;", runtime=True)
         self.assertNotEqual(cross.returncode, 0)
@@ -151,7 +214,7 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
         forbidden = self.sql(prefix + "INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at) VALUES (gen_random_uuid(),'14700000-0000-0000-0000-000000000002','14700000-0000-0000-0000-000000000013','14700000-0000-0000-0000-000000000022','Forbidden',repeat('6',30),now(),now()); COMMIT;", runtime=True)
         self.assertNotEqual(forbidden.returncode, 0)
         self.assertIn(b'42501', forbidden.stderr, 'Deferral cannot admit another tenant write')
-        stable_fields = "SELECT md5(jsonb_build_object('lists',(SELECT jsonb_agg(to_jsonb(l)-'board_id'-'version'-'updated_at' ORDER BY id) FROM board_lists l),'cards',(SELECT jsonb_agg(to_jsonb(c)-'board_id'-'version'-'updated_at' ORDER BY id) FROM cards c))::text);"
+        stable_fields = "SELECT md5(jsonb_build_object('lists',(SELECT jsonb_agg(to_jsonb(l)-'board_id'-'version'-'updated_at' ORDER BY id) FROM board_lists l WHERE tenant_id IN ('14700000-0000-0000-0000-000000000001','14700000-0000-0000-0000-000000000002')),'cards',(SELECT jsonb_agg(to_jsonb(c)-'board_id'-'version'-'updated_at' ORDER BY id) FROM cards c))::text);"
         stable_before = self.sql(stable_fields).stdout
         complete = self.sql(prefix + defer + move + "UPDATE cards SET board_id='14700000-0000-0000-0000-000000000012',version=version+1,updated_at=now() WHERE list_id='14700000-0000-0000-0000-000000000021'; COMMIT;", runtime=True)
         self.assertEqual(complete.returncode, 0, 'Complete deferred parent transition must commit')

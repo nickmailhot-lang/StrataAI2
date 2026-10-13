@@ -44,7 +44,7 @@ BEGIN
   ('organization_configurations',ARRAY['intake_board_id','tenant_id'],'boards',ARRAY['id','tenant_id'],'r',false,false),
   ('organization_configuration_history',ARRAY['intake_board_id','tenant_id'],'boards',ARRAY['id','tenant_id'],'r',false,false),
   ('organization_configurations',ARRAY['intake_list_id','intake_board_id','tenant_id'],'board_lists',ARRAY['id','board_id','tenant_id'],'r',false,false),
-  ('organization_configuration_history',ARRAY['intake_list_id','intake_board_id','tenant_id'],'board_lists',ARRAY['id','board_id','tenant_id'],'r',false,false),
+  ('organization_configuration_history',ARRAY['intake_list_id','tenant_id'],'board_lists',ARRAY['id','tenant_id'],'r',false,false),
   ('organization_configuration_history',ARRAY['actor_id'],'users',ARRAY['id'],'r',false,false),
   ('organization_configuration_receipts',ARRAY['actor_id'],'users',ARRAY['id'],'r',false,false),
   ('organization_configuration_receipts',ARRAY['tenant_id','version'],'organization_configuration_history',ARRAY['tenant_id','version'],'r',false,false),

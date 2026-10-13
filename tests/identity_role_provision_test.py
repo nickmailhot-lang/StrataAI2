@@ -77,7 +77,7 @@ class IdentityRoleProvisionTests(unittest.TestCase):
         assert data['Config']['Labels']['strataai.fixture'] == 'identity-role-provision'
         assert data['Name'] == '/' + cls.name
         cls.command('stop', cls.name)
-        if cls.command('rm', cls.name).returncode:
+        if cls.command('rm', '--volumes', cls.name).returncode:
             raise AssertionError('Owned role fixture cleanup failed')
 
     @classmethod
