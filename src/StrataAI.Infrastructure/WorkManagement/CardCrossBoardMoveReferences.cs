@@ -39,7 +39,9 @@ internal sealed partial class PostgresWorkManagementStore
             while (await rows.ReadAsync(ct)) members.Add(new(rows.GetGuid(0), rows.GetGuid(1), rows.GetFieldValue<DateTimeOffset>(2), rows.GetInt64(3)));
         }
         var copied = new List<Guid>();
-        foreach (var label in labels) copied.Add((await CreateLabelAsync(destination, Guid.NewGuid(), label.Name, label.Color, now, ct)).Id);
+        var labelPlan = CardLabelTransferPlan.Create(tenant, source, [card], labels,
+            labels.Select(label => new CardLabelTransferAssociation(card, label.Id)));
+        foreach (var label in labelPlan.Labels) copied.Add((await CreateLabelAsync(destination, Guid.NewGuid(), label.Name, label.Color, now, ct)).Id);
         await using (var clear = new NpgsqlCommand("DELETE FROM card_labels WHERE tenant_id=@tenant AND card_id=@card; " +
             "DELETE FROM card_members WHERE tenant_id=@tenant AND card_id=@card;", session.Connection, session.Transaction))
         {

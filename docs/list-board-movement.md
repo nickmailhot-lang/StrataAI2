@@ -24,6 +24,12 @@ The mandatory CI case uses a uniquely owned, network-isolated PostgreSQL/pgvecto
 
 This establishes the storage constraint prerequisite, not transfer authorization, the complete reference graph, HTTP behavior or retained-image release acceptance. Current immutable CI and the remaining layers below still govern completion. Estimated PRD-07 work remaining stays **35%**.
 
+## Shared label reference planning
+
+`CardLabelTransferPlan` captures source definitions and Card associations before mutation. Multiple Cards sharing a source label retain one planned definition and every distinct association. It rejects mismatched Organization/Board definitions, unknown Cards or labels, and conflicting versions of a definition. Deleted and unreferenced definitions do not become destination labels; source ordering uses ordinal rank. The plan owns an immutable snapshot and grants no destination authorization. Both existing single-Card stores now use this shared planning rule before creating destination labels.
+
+All **14 focused planner cases pass**, including 100,000 supplied Card associations sharing one definition. This is an in-memory reference-planning check, not a database throughput or complete List-transfer test. The fresh solution build has zero warnings/errors, and all 217 CI coverage guards pass. Existing movement/label HTTP checks on Windows pass **14 cases**, with one private-file case explicitly skipped because private staging requires Linux. Restricted PostgreSQL and retained-image Linux/browser acceptance remain required; no release certification follows from these local checks. Estimated PRD-07 work remaining stays **35%**.
+
 ## Remaining implementation
 
 - Admit current move rights and active lifecycle in both Boards, bind the actual Organization and version, and preserve neutral refusals after permission/session changes.

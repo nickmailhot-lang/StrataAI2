@@ -759,8 +759,10 @@ internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore org
                 var last = _labels.Values.Where(l => l.BoardId == destination.BoardId && !l.Deleted)
                     .Select(l => l.Rank).Order(StringComparer.Ordinal).LastOrDefault();
                 var copied = new List<BoardLabelRecord>();
-                foreach (var label in _cardLabels.Where(a => a.CardId == cardId).Select(a => _labels[a.LabelId])
-                    .Where(l => !l.Deleted).OrderBy(l => l.Rank, StringComparer.Ordinal).ThenBy(l => l.Id))
+                var sourceLabels = _cardLabels.Where(a => a.CardId == cardId).Select(a => _labels[a.LabelId]).ToArray();
+                var labelPlan = CardLabelTransferPlan.Create(card.OrganizationId, card.BoardId, [cardId], sourceLabels,
+                    sourceLabels.Select(label => new CardLabelTransferAssociation(cardId, label.Id)));
+                foreach (var label in labelPlan.Labels)
                 {
                     last = RankToken.After(last);
                     copied.Add(label with { Id = Guid.NewGuid(), BoardId = destination.BoardId, Rank = last,
