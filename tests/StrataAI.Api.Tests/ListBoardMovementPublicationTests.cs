@@ -143,7 +143,7 @@ public sealed partial class ApiHostTests
         Assert.Equal(afterReminder, await reminderStore.FindAsync(f.Organization, f.Recipient, card.Id, ct));
     }
 
-    [Fact]
+    [Fact(Skip = "Large-load acceptance is deferred until after the operational MVP.", SkipUnless = nameof(PostMvpLoadEnabled))]
     public async Task PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph()
     {
         var ct = TestContext.Current.CancellationToken;

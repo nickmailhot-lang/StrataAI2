@@ -32,31 +32,41 @@ public sealed class ListBoardMovementService(ListBoardMovementCommand command, I
                 throw new InvalidOperationException("List transfer publication scope does not match its command.");
             var candidates = (await work.ListReminderCandidateCardIdsAsync(original.OrganizationId, destinationBoardId, listId, ct)).ToHashSet();
             var seen = new HashSet<Guid>();
-            foreach (var subject in transfer.Cards)
+            // Bounded publication buffers do not truncate the transferred graph.
+            foreach (var chunk in transfer.Cards.Chunk(1000))
             {
-                ct.ThrowIfCancellationRequested();
-                var current = await work.FindCardAsync(subject.Id, ct, includeDeleted: true);
-                if (!seen.Add(subject.Id) || current is null || current.OrganizationId != original.OrganizationId
-                    || current.BoardId != destinationBoardId || current.ListId != listId
-                    || current.Version != checked(subject.SourceVersion + 1) || current.LifecycleState != subject.LifecycleState)
-                    throw new InvalidOperationException("List transfer Card publication does not match persisted state.");
-                await work.AppendAuditAsync(current.OrganizationId, actorId, "CARD_MOVED", "Card", current.Id, correlationId, ct);
-                var change = new WorkEvent(Guid.NewGuid(), current.OrganizationId, destinationBoardId, actorId,
-                    "CARD_MOVED", "Card", current.Id, current.Version, correlationId, clock.UtcNow);
-                await events.AppendAsync(change, ct);
-                await events.AppendAsync(change with { EventId = Guid.NewGuid(), BoardId = sourceBoardId }, ct);
-                await watches.AppendAsync(change, null, ct);
-                if (candidates.Contains(current.Id))
-                    await reminders.RescheduleAsync(current with { BoardId = sourceBoardId, Version = subject.SourceVersion },
-                        current, actorId, correlationId, ct);
+                var admitted = new List<(CardRecord Card, ListTransferredCard Subject, WorkEvent Change)>();
+                var publications = new List<WorkEvent>();
+                foreach (var subject in chunk)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    var current = await work.FindCardAsync(subject.Id, ct, includeDeleted: true);
+                    if (!seen.Add(subject.Id) || current is null || current.OrganizationId != original.OrganizationId
+                        || current.BoardId != destinationBoardId || current.ListId != listId
+                        || current.Version != checked(subject.SourceVersion + 1) || current.LifecycleState != subject.LifecycleState)
+                        throw new InvalidOperationException("List transfer Card publication does not match persisted state.");
+                    await work.AppendAuditAsync(current.OrganizationId, actorId, "CARD_MOVED", "Card", current.Id, correlationId, ct);
+                    var change = new WorkEvent(Guid.NewGuid(), current.OrganizationId, destinationBoardId, actorId,
+                        "CARD_MOVED", "Card", current.Id, current.Version, correlationId, clock.UtcNow);
+                    publications.Add(change);
+                    publications.Add(change with { EventId = Guid.NewGuid(), BoardId = sourceBoardId });
+                    admitted.Add((current, subject, change));
+                }
+                await events.AppendBatchAsync(publications, ct);
+                foreach (var (current, subject, change) in admitted)
+                {
+                    await watches.AppendAsync(change, null, ct);
+                    if (candidates.Contains(current.Id))
+                        await reminders.RescheduleAsync(current with { BoardId = sourceBoardId, Version = subject.SourceVersion },
+                            current, actorId, correlationId, ct);
+                }
             }
             if (!candidates.IsSubsetOf(seen))
                 throw new InvalidOperationException("List transfer omitted a Reminder candidate.");
             await work.AppendAuditAsync(original.OrganizationId, actorId, "LIST_MOVED", "List", listId, correlationId, ct);
             var listChange = new WorkEvent(Guid.NewGuid(), original.OrganizationId, destinationBoardId, actorId,
                 "LIST_MOVED", "List", listId, transfer.List.Version, correlationId, clock.UtcNow);
-            await events.AppendAsync(listChange, ct);
-            await events.AppendAsync(listChange with { EventId = Guid.NewGuid(), BoardId = sourceBoardId }, ct);
+            await events.AppendBatchAsync([listChange, listChange with { EventId = Guid.NewGuid(), BoardId = sourceBoardId }], ct);
             return WorkOperation<BoardListRecord>.Success(transfer.List);
         }, ct);
 }

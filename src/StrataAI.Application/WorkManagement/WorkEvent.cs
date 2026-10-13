@@ -12,6 +12,10 @@ public sealed record WorkEvent(Guid EventId, Guid OrganizationId, Guid BoardId,
 public interface IWorkEventStore
 {
     Task AppendAsync(WorkEvent change, CancellationToken cancellationToken = default);
+    async Task AppendBatchAsync(IReadOnlyList<WorkEvent> changes, CancellationToken cancellationToken = default)
+    {
+        foreach (var change in changes) await AppendAsync(change, cancellationToken);
+    }
 }
 
 public interface IWorkEventDeliveryStore

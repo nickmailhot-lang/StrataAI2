@@ -38,6 +38,30 @@ public sealed class PostgresBackgroundJobStore(PostgresConnectionFactory connect
         return await command.ExecuteNonQueryAsync(cancellationToken) == 1;
     }
 
+    public async Task<int> PublishBatchAsync(TenantDbSession session, IReadOnlyList<NewBackgroundJob> publications,
+        CancellationToken cancellationToken = default)
+    {
+        var snapshot = publications.ToArray();
+        if (snapshot.Any(job => job.OrganizationId != session.OrganizationId))
+            throw new ArgumentException("Job Organization must match the transaction.", nameof(publications));
+        if (snapshot.Length == 0) return 0;
+        var payload = System.Text.Json.JsonSerializer.Serialize(snapshot.Select(job => new
+        {
+            id = job.Id, tenant = job.OrganizationId, type = job.JobType, key = job.IdempotencyKey,
+            actor = job.ActorId, service = job.ServiceIdentity, correlation = job.CorrelationId,
+            metadata = job.SafeMetadataJson, available = job.AvailableAt?.ToUniversalTime()
+        }));
+        await using var command = new NpgsqlCommand("""
+            INSERT INTO background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,safe_metadata,available_at)
+            SELECT id,tenant,type,key,actor,service,correlation,metadata::jsonb,COALESCE(available,clock_timestamp())
+            FROM jsonb_to_recordset(@rows) AS x(id uuid,tenant uuid,type text,key text,actor uuid,service text,
+                correlation text,metadata text,available timestamptz)
+            ON CONFLICT (tenant_id,job_type,idempotency_key) DO NOTHING;
+            """, session.Connection, session.Transaction);
+        command.Parameters.AddWithValue("rows", NpgsqlDbType.Jsonb, payload);
+        return await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     public async Task<ClaimedBackgroundJob?> ClaimAsync(Guid organizationId, Guid workerId, CancellationToken cancellationToken = default)
     {
         ValidateIdentity(workerId);

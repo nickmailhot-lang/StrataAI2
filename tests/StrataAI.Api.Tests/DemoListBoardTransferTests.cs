@@ -11,7 +11,9 @@ namespace StrataAI.Api.Tests;
 
 public sealed partial class ApiHostTests
 {
-    [Fact]
+    public static bool PostMvpLoadEnabled => Environment.GetEnvironmentVariable("STRATAAI_POST_MVP_LOAD_TESTS") == "1";
+
+    [Fact(Skip = "Large-load acceptance is deferred until after the operational MVP.", SkipUnless = nameof(PostMvpLoadEnabled))]
     public async Task PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition()
     {
         var ct = TestContext.Current.CancellationToken;

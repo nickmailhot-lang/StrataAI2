@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed class PostgresWorkEventStore(PostgresConnectionFactory connections,
+internal sealed partial class PostgresWorkEventStore(PostgresConnectionFactory connections,
     PostgresBackgroundJobStore jobs) : IWorkEventStore
 {
     public async Task AppendAsync(WorkEvent change, CancellationToken cancellationToken = default)
