@@ -22,8 +22,9 @@ public sealed class Board : DomainEntity, IOrganizationScoped
 
     public void Rename(string name, DateTimeOffset updatedAt)
     {
-        Name = RequireName(name);
+        var normalizedName = RequireName(name);
         MarkUpdated(updatedAt);
+        Name = normalizedName;
     }
 
     private static string RequireName(string value)

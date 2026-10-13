@@ -48,8 +48,9 @@ public sealed class Card : DomainEntity, IOrganizationScoped
 
     public void Rename(string title, DateTimeOffset updatedAt)
     {
-        Title = Require(title, nameof(title));
+        var normalizedTitle = Require(title, nameof(title));
         MarkUpdated(updatedAt);
+        Title = normalizedTitle;
     }
 
     public void Move(Guid boardId, Guid listId, string rank, DateTimeOffset updatedAt)
@@ -64,10 +65,11 @@ public sealed class Card : DomainEntity, IOrganizationScoped
             throw new ArgumentException("List ID cannot be empty.", nameof(listId));
         }
 
+        var normalizedRank = Require(rank, nameof(rank));
+        MarkUpdated(updatedAt);
         BoardId = boardId;
         ListId = listId;
-        Rank = Require(rank, nameof(rank));
-        MarkUpdated(updatedAt);
+        Rank = normalizedRank;
     }
 
     private static string Require(string value, string parameterName)

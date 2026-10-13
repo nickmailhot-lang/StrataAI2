@@ -8,6 +8,12 @@
 
 Nine focused Domain cases cover identity/history preservation, subsequent movement and complete unchanged state for invalid scope, destination, rank and time. Together with the four existing canonical hierarchy cases, **13/13 pass**, zero skipped or failed. A fresh solution build succeeds with no warnings/errors; all 213 immutable CI coverage guards pass. These checks establish the entity transition, not a working transfer endpoint or full PRD acceptance.
 
+## Domain rejection atomicity
+
+The graph review found that `Card.Move` assigned parent IDs before rank validation, and canonical rename/reorder methods assigned fields before rejecting backwards timestamps. A rejected operation could therefore leave a partially changed in-memory entity. These methods now normalize input and complete clock validation before assigning their fields. Accepted values, normalization and successful version/time advancement remain unchanged.
+
+Before the repair, nine of ten targeted rejection cases fail complete serialized-state comparisons; the new List-to-Board transition already passes its corresponding guard. After the repair, all rejection cases and seven successful mutation paths pass. Combined with List movement and canonical hierarchy coverage, **30/30 pass**, zero failed/skipped. The final solution build has no warnings/errors and all 217 CI coverage guards pass. This establishes Domain validation behavior; it does not prove transfer persistence, HTTP authorization or the whole graph transaction. The complete List-transfer implementation below remains necessary, with estimated PRD-07 work remaining unchanged at **35%**.
+
 ## PostgreSQL parent-integrity prerequisite
 
 Migration `147_list_board_move_parent_integrity` makes the composite Card-to-List parent constraint deferrable while retaining its **initially immediate** behavior. Ordinary writes still reject parent mismatches immediately. The future owning transfer transaction can explicitly defer this one constraint while updating the List and its contained Cards; an inconsistent final graph still cannot commit. The runtime schema check now requires migration 147 before accepting Production traffic. Apply the migration before starting the new hosts, as with the existing release procedure.

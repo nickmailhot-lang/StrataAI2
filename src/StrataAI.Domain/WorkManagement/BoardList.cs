@@ -42,14 +42,16 @@ public sealed class BoardList : DomainEntity, IOrganizationScoped
 
     public void Rename(string name, DateTimeOffset updatedAt)
     {
-        Name = Require(name, nameof(name));
+        var normalizedName = Require(name, nameof(name));
         MarkUpdated(updatedAt);
+        Name = normalizedName;
     }
 
     public void Reorder(string rank, DateTimeOffset updatedAt)
     {
-        Rank = Require(rank, nameof(rank));
+        var normalizedRank = Require(rank, nameof(rank));
         MarkUpdated(updatedAt);
+        Rank = normalizedRank;
     }
 
     public void MoveToBoard(Guid destinationOrganizationId, Guid destinationBoardId, string rank, DateTimeOffset updatedAt)
