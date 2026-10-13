@@ -46,3 +46,42 @@ not proven. Compiled runtimes/assets are mounted in pinned runtime/edge images,
 so local results do not certify the build-once retained candidate. Current full
 CI and the complete [PRD-01 acceptance map](prd-01-acceptance.md) govern closure.
 Estimated PRD-01 work remaining stays **34%**.
+
+## Bounded focus admission follow-up
+
+Retained `adb07463` strict browser CI fails the tablet Add list opening. Its
+trace records a successful 3.260 ms focus call, then a failed 5,000.862 ms
+focused assertion and no Enter activation. The local opening loop still called
+the mutation activation helper, nesting an unbounded/default control wait
+inside its five-second opening deadline.
+
+The complete unchanged local strict-profile workflow passes 3/3 in
+119,344.722 ms; that alone does not reproduce the hosted failure. A declared
+probe invokes the existing read-only Board refresh before Add list and delays
+only its first real response 600 ms, then falls through to the original handler.
+It confirms the launcher is temporarily disabled without changing server
+content, entities or commands. The old helper passes desktop but fails tablet
+and mobile at the opening loop: 1/3 in 114,567.678 ms, zero skips/flaky cases.
+
+The opening loop now checks the current visible/enabled launcher and bounds
+focus, focused/enabled checks, Enter/click and target observation at 500 ms
+within its original five-second window. Desktop pointer activation and
+tablet/mobile keyboard activation remain. If a launcher retires or loses focus,
+the loop can observe/retry the read-only opening rather than exhaust its entire
+budget in a nested wait. The separate mutation activation function is unchanged.
+
+The repaired declared probe passes 3/3 in 113,010.714 ms. The complete ordinary
+repository workflow passes 3/3 in 110,410.867 ms, without injection. Both have
+zero failures, skips or flaky cases and retain original 30-second scenario
+deadlines, original retry keys/request counts, persistence, conflict drafts,
+history, cross-tenant/public-reader restrictions and viewport checks. Browser
+types, a fresh solution build and 213 CI coverage guards pass.
+
+Both final captures independently match 2,109 hosted source/runtime hashes,
+1,414 native source hashes and four web assets with zero mismatches. Primary
+remains frozen during each capture. Shared read-only compiled builds avoid
+runtime duplication. Owned containers, database/roles and credentials are
+removed; original stopped PostgreSQL data remains intact. Strict fixture-account
+activation does not prove managed mail, and mounted builds do not certify
+retained immutable images. Complete current CI and original acceptance remain
+required. Estimated PRD-01 work remaining stays **34%**; the issue remains open.

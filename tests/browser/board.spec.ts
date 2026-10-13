@@ -30,7 +30,15 @@ for (const viewport of [
       const field = page.getByLabel(fieldName, { exact: false });
       await expect(async () => {
         if (await field.isVisible()) return;
-        await activate(name);
+        const button = page.getByRole("button", { name, exact: true });
+        if (await button.isVisible() && await button.isEnabled({ timeout: 500 })) {
+          if (viewport.name !== "desktop") {
+            await button.focus({ timeout: 500 });
+            await expect(button).toBeFocused({ timeout: 500 });
+            await expect(button).toBeEnabled({ timeout: 500 });
+            await button.press("Enter", { timeout: 500 });
+          } else await button.click({ timeout: 500 });
+        }
         await expect(field).toBeVisible({ timeout: 500 });
       }).toPass({ timeout: 5_000 });
     }
