@@ -28,12 +28,22 @@ internal static class WorkEventBatchPersistenceContract
             """);
         await using var db = new PostgresConnectionFactory(apiConnection);
         var events = new PostgresWorkEventStore(db, new PostgresBackgroundJobStore(db));
-        var now = DateTimeOffset.UtcNow;
+        // A seventh fractional digit makes JSON timestamp rounding differ from
+        // Npgsql's binary microsecond binding unless publication normalizes it.
+        var now = new DateTimeOffset(DateTimeOffset.UtcNow.UtcTicks / 10 * 10 + 7, TimeSpan.Zero);
         WorkEvent Change(Guid board) => new(Guid.NewGuid(), tenant, board, actor, "CARD_MOVED", "Card", Guid.NewGuid(), 2, "work-event-batch-test", now);
         var seed = new[] { Change(source), Change(destination), Change(source) };
         try { await events.AppendBatchAsync(seed, ct); throw new InvalidOperationException("Unowned event batch was accepted."); }
         catch (InvalidOperationException e) when (e.Message == "Work event batches require one owning tenant command.") { }
         await db.ExecuteTenantCommandAsync(tenant, async () => { await events.AppendBatchAsync(seed, ct); return true; }, x => x, ct);
+        await db.ExecuteTenantCommandAsync(tenant, async () =>
+        {
+            await using var session = await db.OpenTenantSessionAsync(tenant, ct);
+            await using var q = new NpgsqlCommand("SELECT bool_and(created_at=@created) FROM work_events WHERE tenant_id=@tenant;", session.Connection, session.Transaction);
+            q.Parameters.AddWithValue("created", now); q.Parameters.AddWithValue("tenant", tenant);
+            Require(await q.ExecuteScalarAsync(ct) is true, "Batched event time differs from binary timestamp binding.");
+            return true;
+        }, x => x, ct);
         await db.ExecuteTenantCommandAsync(tenant, async () => { await events.AppendBatchAsync(seed.Concat(seed).ToArray(), ct); return true; }, x => x, ct);
         Require(await Count($"SELECT count(*) FROM work_events WHERE tenant_id='{tenant}';") == 3, "Duplicate batch repeated Work events.");
         Require(await Count($"SELECT count(*) FROM background_jobs WHERE tenant_id='{tenant}';") == 3, "Duplicate batch repeated delivery jobs.");

@@ -133,6 +133,16 @@ internal sealed partial class PostgresWorkManagementStore : IListBoardMovementSt
         move.Parameters.AddWithValue("definitions", NpgsqlDbType.Jsonb, definitionJson);
         move.Parameters.AddWithValue("prior_planner", priorPlanner);
         await move.ExecuteNonQueryAsync(ct);
-        return new(current with { BoardId = destinationBoard, Rank = rank, UpdatedAt = now, Version = checked(current.Version + 1) }, Array.AsReadOnly(cards.ToArray()));
+        // Return the persisted timestamp precision and canonical record. The
+        // caller's clock may have finer ticks than PostgreSQL can retain.
+        await using var acknowledgment = new NpgsqlCommand("""
+            SELECT id,tenant_id,board_id,name,rank,lifecycle_state,created_at,updated_at,version,archived_at,deleted_at,deleted_by
+            FROM board_lists WHERE tenant_id=@tenant AND board_id=@destination AND id=@list;
+            """, session.Connection, session.Transaction);
+        acknowledgment.Parameters.AddWithValue("tenant", organization);
+        acknowledgment.Parameters.AddWithValue("destination", destinationBoard); acknowledgment.Parameters.AddWithValue("list", list);
+        await using var acknowledged = await acknowledgment.ExecuteReaderAsync(ct);
+        if (!await acknowledged.ReadAsync(ct)) throw new InvalidOperationException("List transfer acknowledgment was unavailable.");
+        return new(ReadList(acknowledged), Array.AsReadOnly(cards.ToArray()));
     }
 }

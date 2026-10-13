@@ -70,7 +70,9 @@ internal sealed partial class PostgresWorkEventStore
         {
             id = e.EventId, board = e.BoardId, sequence = ++sequences[e.BoardId], actor = e.ActorId,
             type = e.EventType, entity_type = e.EntityType, entity = e.EntityId, version = e.Version,
-            correlation = e.CorrelationId, created = e.CreatedAt
+            // Match the existing Npgsql binary timestamp binding. PostgreSQL
+            // text/JSON input rounds a seventh digit instead of truncating it.
+            correlation = e.CorrelationId, created = new DateTimeOffset(e.CreatedAt.UtcTicks / 10 * 10, TimeSpan.Zero)
         }).ToArray());
         await using (var append = Query("""
             INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at)
