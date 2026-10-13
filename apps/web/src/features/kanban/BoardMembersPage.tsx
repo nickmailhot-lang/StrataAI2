@@ -77,7 +77,7 @@ function Members({ org, id }: { org: string; id: string }) {
   });
   useEffect(() => {
     if (!subscribed) return;
-    return watchBoard({ organizationId: org, boardId: id, invalidate: () => invalidate(), status: setLiveStatus });
+    return watchBoard({ organizationId: org, boardId: id, invalidate: () => invalidate(), status: setLiveStatus, immediateInvalidation: true });
   }, [org, id, subscribed]);
   const retryLatest = useEffectEvent(() => { void load(position.current.cursor, position.current.previous, true); });
   useEffect(() => {

@@ -20,6 +20,39 @@ function mount(...responses: (Response | Error)[]) {
     { initialEntries: [`/app/${org}/boards/${board}/members`] })} />); return mock;
 }
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+it('retains fresh member consent after a changed head and explicit protected directory read', async () => {
+  const actual = await vi.importActual<typeof import('../../api/boardLive')>('../../api/boardLive');
+  let deliver!: (value: unknown) => void;
+  const connection = {
+    start: vi.fn(async () => {}), stop: vi.fn(async () => {}),
+    stream: vi.fn(() => ({ subscribe: (observer: { next(value: unknown): void }) => {
+      deliver = value => observer.next(value); return { dispose: vi.fn() };
+    } })),
+    onreconnecting: vi.fn(), onreconnected: vi.fn(), onclose: vi.fn(),
+  };
+  vi.mocked(watchBoard).mockImplementationOnce(options => actual.watchBoard({ ...options,
+    connection: connection as unknown as ReturnType<typeof actual.createBoardConnection> }));
+  const mock = mount(reply(scope), reply([row]));
+  mock.mockImplementation(async (path: string) => reply(path === `/boards/${board}` ? scope : [row]));
+  await screen.findByRole('button', { name: 'Make administrator: Jordan' });
+  await waitFor(() => expect(connection.stream).toHaveBeenCalled());
+  const head = { cursor: '0', events: [], hasMore: false, pending: false, resetRequired: false };
+  await act(async () => deliver(head));
+  vi.useFakeTimers();
+  await act(async () => deliver({ ...head, cursor: '1', events: [{
+    eventId: '50000000-0000-4000-8000-000000000005', organizationId: org, boardId: board, sequence: '1',
+  }] }));
+  await act(async () => vi.advanceTimersByTimeAsync(0));
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Check current members' })));
+  expect(mock.mock.calls.filter(call => call[0] === `/boards/${board}/members`).length).toBeGreaterThanOrEqual(2);
+  const launch = screen.getByRole('button', { name: 'Make administrator: Jordan' });
+  expect(launch).toBeEnabled(); await act(async () => fireEvent.click(launch));
+  await act(async () => vi.advanceTimersByTimeAsync(300));
+  expect(screen.getByRole('dialog', { name: 'Change Board role?' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+  expect(screen.getByRole('button', { name: 'Confirm member change' })).toBeEnabled();
+  expect(mock.mock.calls.filter(call => ['PATCH', 'DELETE'].includes(call[1]?.method))).toHaveLength(0);
+});
 it('describes same-name member actions with the correct profile and role without exposing former profiles', async () => {
   const second = { ...participant(1), displayName: row.displayName };
   const former = { ...participant(2), displayName: null, email: null, organizationMemberActive: false };

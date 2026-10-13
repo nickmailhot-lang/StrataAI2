@@ -6,6 +6,7 @@
 
 [Read-only checklist and invitation opening verification](readonly-directory-opening-verification.md) records retained hosted failures, the mobile navigation correction and complete final desktop/mobile cases.
 [Invitation history head admission](invitation-history-head-admission-verification.md) records immediate authority withdrawal, the Cancel-focus regression and complete desktop/phone verification.
+[Board member consent after live admission](member-history-head-admission-verification.md) records the retained timeout, reviewed-dialog regression and complete strict browser verification.
 
 [Permission-order component diagnostics](watch-order-component-diagnostics.md) preserves complete state comparisons and records a deliberate failure probe for safe hosted diagnosis.
 
