@@ -41,7 +41,12 @@ class IdentityRoleProvisionTests(unittest.TestCase):
         if result.returncode:
             raise AssertionError('Disposable PostgreSQL role fixture could not start')
         for _ in range(80):
-            if cls.command('exec', cls.name, 'pg_isready', '-q', '-U', 'postgres').returncode == 0:
+            # The image's temporary init server accepts Unix-socket requests
+            # before database creation/restart. Require the final TCP server.
+            ready = cls.command('exec', cls.name, 'sh', '-c',
+                                'PGPASSWORD="$POSTGRES_PASSWORD" psql -X -w -qAt -h 127.0.0.1 '
+                                '-U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 1"')
+            if ready.returncode == 0 and ready.stdout.strip() == b'1':
                 break
             time.sleep(0.25)
         else:

@@ -54,6 +54,13 @@ source-free startup checks, workflow validation and shell syntax checks pass.
 The verifier refuses payloads missing either the helper or its SQL even if
 checksums are recalculated. Packaging retains the original immutable images.
 
+The first hosted run fails during fixture migrations before capability checks.
+Its initial Unix-socket readiness probe can admit the image's temporary init
+server, which does not listen on TCP. The fixture now requires an authenticated
+TCP SELECT against its intended database before migration. The complete local
+rerun passes; current hosted verification remains required. This changes setup
+admission, not role grants, test assertions or their readiness deadline.
+
 The SENT lease-function check uses a synthetic provider receipt. This verifies
 database capability and provisioning, not managed mail delivery, sender-domain
 verification or current retained-image deployment. Current complete CI and full
