@@ -168,8 +168,8 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(other.getByRole('img', { name: 'Assigned to Label collaboration fixture', exact: true })).toBeVisible();
     await expect(openFilters).toBeEnabled(); await openAdmittedReview(openFilters, filters);
     const chooseMembers = filters.getByRole('button', { name: 'Choose assignees', exact: true });
-    await pressAdmittedAction(chooseMembers);
     const selectedMember = filters.getByRole('checkbox', { name: 'Label collaboration fixture', exact: true });
+    await openAdmittedReview(chooseMembers, selectedMember);
     await pressAdmittedAction(selectedMember, 'Space'); await expect(selectedMember).toBeChecked();
     await pressAdmittedAction(filters.getByRole('button', { name: 'Apply filters', exact: true }));
     await expect(matching).toBeVisible();
