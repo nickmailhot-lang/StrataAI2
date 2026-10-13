@@ -18,7 +18,7 @@ After extracting the artifact ZIP, verify it before loading images:
 sha256sum --check SHA256SUMS
 (cd images && sha256sum --check SHA256SUMS)
 (cd security && sha256sum --check SHA256SUMS)
-chmod +x health-check.sh apply-migrations.sh migration-stream.sh provision-runtime-roles.sh
+chmod +x health-check.sh apply-migrations.sh migration-stream.sh provision-runtime-roles.sh provision-identity-mail-role.sh
 ```
 
 The ZIP uploader does not preserve executable permissions. The environment example
@@ -117,6 +117,35 @@ startup. Nginx supports the `/boards/live` WebSocket upgrade route in the tested
 Automatic routing is available for deletion and metadata delivery. Review the
 explicit general-job scope when adding Organizations that need other Work or
 provider processing. Identity mail delivery uses its separate configuration and role.
+
+## Optional verification and recovery mail role
+
+The bundle includes `provision-identity-mail-role.sh` and
+`db/provision-identity-mail-role.sql`. To use the supplied dedicated role, set
+`STRATAAI_IDENTITY_DELIVERY_DB_PASSWORD` to a distinct secret of at least 20
+characters before creating the PostgreSQL service. After migrations and general
+runtime-role provisioning, run:
+
+```bash
+COMPOSE_FILE=compose.release.yml ./provision-identity-mail-role.sh
+```
+
+This creates or reprovisions `strataai_identity_mail_runtime` with only the mail
+job, required identity-column and schema-version grants. It refuses privileged,
+role-member or application-object-owning existing roles before changing their
+credentials. Reprovisioning removes obsolete public-table and column grants.
+Password validation errors now return a failing exit status in both provisioners.
+
+Configure `STRATAAI_IDENTITY_DELIVERY_CONNECTION_STRING` for this role and the
+same secret, using correctly encoded Npgsql connection-string syntax. Supply
+the sender, HTTPS origin, signing keys, provider account and Worker-only provider
+credential described in [identity mail configuration](../architecture/identity-email.md).
+The helper does not enable mail, create provider resources or send messages.
+On an existing deployment, these helpers read secrets from the PostgreSQL
+container environment: refresh that service's environment with its existing
+data volume before provisioning changed secrets. Plan that restart as part of
+promotion; changing the environment alone does not rotate an existing database
+administrator password.
 
 ## Stop
 

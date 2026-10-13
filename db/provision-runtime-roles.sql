@@ -5,8 +5,7 @@ SELECT length(:'api_password') >= 20 AND length(:'worker_password') >= 20
     AND :'api_password' <> :'worker_password' AS passwords_valid \gset
 \if :passwords_valid
 \else
-\echo 'Distinct runtime passwords of at least 20 characters are required.'
-\quit 3
+DO $$ BEGIN RAISE EXCEPTION 'Distinct runtime passwords of at least 20 characters are required.'; END $$;
 \endif
 BEGIN;
 DO $$ BEGIN

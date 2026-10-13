@@ -69,7 +69,9 @@ The identity Worker role needs schema usage; EXECUTE on
 SELECT on token tables' `id,user_id,token_hash,used_at,revoked_at,expires_at`. It
 must not have password-hash or Organization/Board grants, SUPERUSER/BYPASSRLS,
 or ownership of domain tables. Provision a distinct runtime login with these
-column grants, not the migration/owner credential. Jobs use forced service-scope
+column grants, not the migration/owner credential. The optional bundled
+[production role provisioner](identity-mail-role-provisioning.md) supplies this
+boundary with password validation and reproducible grants. Jobs use forced service-scope
 RLS and SECURITY INVOKER functions. The API's identity writer needs token/user
 writes and outbox INSERT in the same transaction.
 

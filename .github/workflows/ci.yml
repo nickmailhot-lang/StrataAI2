@@ -265,6 +265,9 @@ jobs:
       - name: Apply ordered migrations
         run: scripts/ci/apply-migrations.sh
 
+      - name: Verify optional production mail role provisioning and password refusals
+        run: python3 -m unittest discover -s tests -p 'identity_role_provision_test.py'
+
       - name: Verify every migrated tenant table retains its isolation boundary
         run: scripts/ci/test-tenant-schema.sh
 
@@ -1483,6 +1486,7 @@ jobs:
           cp scripts/apply-compose-migrations.sh bundle/apply-migrations.sh
           cp scripts/migration-stream.sh bundle/migration-stream.sh
           cp scripts/provision-compose-runtime-roles.sh bundle/provision-runtime-roles.sh
+          cp scripts/provision-compose-identity-mail-role.sh bundle/provision-identity-mail-role.sh
           cp -R db bundle/db
           cp docs/release/README.md bundle/README.md
           cp docs/release/promotion-and-rollback.md bundle/promotion-and-rollback.md

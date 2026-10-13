@@ -1,5 +1,7 @@
 # StrataAI2 architecture
 
+[Optional identity-mail role provisioning](identity-mail-role-provisioning.md) records restricted grants, reliable password refusal, real PostgreSQL tests and release payload checks.
+
 [Release authentication policy configuration](release-auth-policy-verification.md) records actual Compose forwarding regressions and ten compiled-host refusal checks.
 
 [Job-column and URL draft failure evidence](failure-field-diagnostics.md) preserves full comparisons and documents the six original scenarios plus controlled diagnostic failures.
