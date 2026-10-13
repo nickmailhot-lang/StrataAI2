@@ -36,6 +36,14 @@ if (args.Contains("--work-event-batch-only", StringComparer.Ordinal))
     await WorkEventBatchPersistenceContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
+if (args.Contains("--mvp-functional-fixtures-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await WorkEventBatchPersistenceContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionCandidatesContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await OrganizationDeletionScaleContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    return;
+}
 if (args.Contains("--list-board-transfer-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);

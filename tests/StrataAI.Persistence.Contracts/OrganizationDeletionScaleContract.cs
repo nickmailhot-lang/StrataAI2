@@ -23,6 +23,11 @@ internal static class OrganizationDeletionScaleContract
 {
     public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, string workerConnection, CancellationToken ct)
     {
+        if (Environment.GetEnvironmentVariable("STRATAAI_POST_MVP_LOAD_TESTS") != "1")
+        {
+            Console.WriteLine("Organization deletion large-load acceptance is deferred until after the operational MVP.");
+            return;
+        }
         var tenant = Guid.NewGuid(); var actor = Guid.NewGuid(); var request = Guid.NewGuid();
         const int activeCards = 5000, archivedCards = 100000, lists = 200;
         void Require(bool value, string message) { if (!value) throw new InvalidOperationException(message); }

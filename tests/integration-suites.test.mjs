@@ -9,6 +9,27 @@ const workflow = () => readWorkflow(source);
 const integration = value => value.jobs['container-integration'];
 const step = (value, name) => integration(value).steps.find(entry => entry.name === name);
 
+test('post-MVP capacity stages remain registered and require the explicit phase flag', () => {
+  const phases = JSON.parse(readFileSync('scripts/ci/post-mvp-load-steps.json', 'utf8'));
+  assert.equal(phases.length, 27);
+  for (const name of phases) {
+    const value = workflow();
+    step(value, name).if = step(value, name).if.replace("vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && ", '');
+    assert.throws(() => verifyIntegrationSuites(value, registry), /phase gate/);
+  }
+});
+
+test('post-MVP flag cannot defer functional image and deployment checks', () => {
+  const value = workflow();
+  step(value, 'Start release topology').if = "vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')";
+  assert.throws(() => verifyIntegrationSuites(value, registry), /Functional checks cannot be deferred/);
+});
+
+test('large fixtures cannot be hard-enabled in the normal workflow', () => {
+  const value = workflow(); value.env.STRATAAI_POST_MVP_LOAD_TESTS = '1';
+  assert.throws(() => verifyIntegrationSuites(value, registry), /post-MVP flag/);
+});
+
 test('every mandatory check has an owner and every group uses retained images', () => {
   assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 124 });
 });

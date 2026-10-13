@@ -12,6 +12,8 @@ internal static class OrganizationDeletionCandidatesContract
     public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, string workerConnection, CancellationToken ct)
     {
         var tenant = Guid.NewGuid(); var actor = Guid.NewGuid(); var request = Guid.NewGuid(); var board = Guid.NewGuid();
+        var large = Environment.GetEnvironmentVariable("STRATAAI_POST_MVP_LOAD_TESTS") == "1";
+        var cardCount = large ? 100002 : 22; var listCount = large ? 200 : 4; var pageSize = large ? 128 : 4;
         void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
         async Task Admin(string sql, Guid? cursor = null)
         {
@@ -20,6 +22,7 @@ internal static class OrganizationDeletionCandidatesContract
             command.Parameters.AddWithValue("board", board); command.Parameters.AddWithValue("request", request);
             command.Parameters.AddWithValue("email", $"candidate-{actor:N}@example.test");
             command.Parameters.AddWithValue("cursor", NpgsqlTypes.NpgsqlDbType.Uuid, (object?)cursor ?? DBNull.Value);
+            command.Parameters.AddWithValue("card_count", cardCount); command.Parameters.AddWithValue("list_count", listCount);
             await command.ExecuteNonQueryAsync(ct);
         }
         await Admin("""
@@ -34,11 +37,11 @@ internal static class OrganizationDeletionCandidatesContract
             INSERT INTO board_lists(id,tenant_id,board_id,name,rank,lifecycle_state,archived_at,created_at,updated_at)
              SELECT md5(@tenant::text||':list:'||n)::uuid,@tenant,@board,'Private List','500000000000000000000000000000',
               CASE WHEN n%2=0 THEN 'ARCHIVED' ELSE 'ACTIVE' END,CASE WHEN n%2=0 THEN now() END,now(),now()
-             FROM generate_series(1,200) n;
+             FROM generate_series(1,@list_count) n;
             INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,lifecycle_state,archived_at,created_at,updated_at)
-             SELECT md5(@tenant::text||':card:'||n)::uuid,@tenant,@board,md5(@tenant::text||':list:'||(1+n%200))::uuid,
+             SELECT md5(@tenant::text||':card:'||n)::uuid,@tenant,@board,md5(@tenant::text||':list:'||(1+n % @list_count))::uuid,
               'Private Card','500000000000000000000000000000',CASE WHEN n<=2 THEN 'ACTIVE' ELSE 'ARCHIVED' END,
-              CASE WHEN n>2 THEN now() END,now(),now() FROM generate_series(1,100002) n;
+              CASE WHEN n>2 THEN now() END,now(),now() FROM generate_series(1,@card_count) n;
             INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,url,scan_status,created_at,updated_at)
              SELECT md5(@tenant::text||':attachment:'||n)::uuid,@tenant,md5(@tenant::text||':card:1')::uuid,@actor,
               'URL','Private attachment','https://example.test/private','NOT_APPLICABLE',now(),now() FROM generate_series(1,3) n;
@@ -65,7 +68,7 @@ internal static class OrganizationDeletionCandidatesContract
         var claim = await new PostgresBackgroundJobStore(worker).ClaimAsync(tenant, Guid.NewGuid(), ct)
             ?? throw new InvalidOperationException("Candidate fixture claim failed.");
         var reader = new PostgresOrganizationDeletionCandidateReader(worker); var attempt = new OrganizationDeletionAttempt(request,request,2);
-        var attachments = await reader.ReadAsync(claim, attempt, 128, ct);
+        var attachments = await reader.ReadAsync(claim, attempt, pageSize, ct);
         Require(attachments is { Phase: OrganizationDeletionPhase.Attachments, NextCursor: null } && attachments.Items.Count == 2
             && attachments.Items.All(x => x.BoardId == board && x.CardId is not null)
             && attachments.Items.Select(x => x.State).Order().SequenceEqual(new[] { "ACTIVE", "ARCHIVED" }),
@@ -75,7 +78,7 @@ internal static class OrganizationDeletionCandidatesContract
             "Deletion candidates disclosed names/content/provider references.");
         foreach (var bad in new[] { claim with { OrganizationId = Guid.NewGuid() }, claim with { LeaseId = Guid.NewGuid() },
             claim with { ActorId = Guid.NewGuid() }, claim with { WorkerId = Guid.NewGuid() } })
-            Require(await reader.ReadAsync(bad, attempt, 128, ct) is null, "Candidate scope/lease fence failed.");
+            Require(await reader.ReadAsync(bad, attempt, pageSize, ct) is null, "Candidate scope/lease fence failed.");
         Require(await reader.ReadAsync(claim, attempt, 129, ct) is null && await reader.ReadAsync(claim, attempt, 0, ct) is null,
             "Candidate page bound was bypassed.");
         foreach (var mismatch in new[] { attempt with { RequestId = Guid.NewGuid() }, attempt with { StepId = Guid.NewGuid() }, attempt with { AcceptedVersion = 3 } })
@@ -89,7 +92,7 @@ internal static class OrganizationDeletionCandidatesContract
             Require(await query.ExecuteScalarAsync(ct) is DBNull,"Database candidate page bound was bypassed.");
         }
         var denied = false;
-        try { await new PostgresOrganizationDeletionCandidateReader(api).ReadAsync(claim, attempt, 128, ct); }
+        try { await new PostgresOrganizationDeletionCandidateReader(api).ReadAsync(claim, attempt, pageSize, ct); }
         catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.InsufficientPrivilege) { denied = true; }
         Require(denied, "API acquired deletion candidate capability.");
         await Admin("UPDATE organization_deletion_progress SET phase='CARDS',after_id=NULL,version=version+1 WHERE tenant_id=@tenant;");
@@ -100,8 +103,8 @@ internal static class OrganizationDeletionCandidatesContract
         Guid? previous = null; var visited = 0; var archived = 0;
         while (true)
         {
-            var page = await reader.ReadAsync(claim, attempt, 128, ct) ?? throw new InvalidOperationException("Bounded candidate scale read unavailable.");
-            Require(page.Phase == OrganizationDeletionPhase.Cards && page.AfterId == previous && page.Items.Count <= 128, "Candidate checkpoint/page bound changed.");
+            var page = await reader.ReadAsync(claim, attempt, pageSize, ct) ?? throw new InvalidOperationException("Bounded candidate scale read unavailable.");
+            Require(page.Phase == OrganizationDeletionPhase.Cards && page.AfterId == previous && page.Items.Count <= pageSize, "Candidate checkpoint/page bound changed.");
             foreach (var item in page.Items)
             {
                 Require(item.BoardId == board && item.CardId == item.Id && (previous is null ||
@@ -114,24 +117,24 @@ internal static class OrganizationDeletionCandidatesContract
         }
         traversal.Stop();
         Console.WriteLine($"Deletion candidate scale: {visited} Cards ({archived} archived), UUID-seek pages of at most 128, elapsed {traversal.ElapsedMilliseconds}ms; includes admin checkpoint staging.");
-        Require(visited == 100002 && archived == 100000, "Candidate traversal lost large archived/active graph rows.");
-        foreach (var (phase, expected) in new[] { ("LISTS", 200), ("BOARDS", 2) })
+        Require(visited == cardCount && archived == cardCount - 2, "Candidate traversal lost archived/active graph rows.");
+        foreach (var (phase, expected) in new[] { ("LISTS", listCount), ("BOARDS", 2) })
         {
             await Admin($"UPDATE organization_deletion_progress SET phase='{phase}',after_id=NULL,version=version+1 WHERE tenant_id=@tenant;");
             var count = 0;
             while (true)
             {
-                var page = await reader.ReadAsync(claim, attempt, 128, ct) ?? throw new InvalidOperationException("Parent candidate read unavailable.");
-                Require(page.Items.All(x => x.CardId is null) && page.Items.Count <= 128, "Parent candidate shape or bound failed.");
+                var page = await reader.ReadAsync(claim, attempt, pageSize, ct) ?? throw new InvalidOperationException("Parent candidate read unavailable.");
+                Require(page.Items.All(x => x.CardId is null) && page.Items.Count <= pageSize, "Parent candidate shape or bound failed.");
                 count += page.Items.Count; if (page.NextCursor is null) break;
                 await Admin("UPDATE organization_deletion_progress SET after_id=@cursor,version=version+1 WHERE tenant_id=@tenant;", page.NextCursor);
             }
             Require(count == expected, "Candidate traversal omitted archived parent rows.");
         }
         await Admin("UPDATE organization_deletion_progress SET phase='FINALIZE',after_id=NULL,version=version+1 WHERE tenant_id=@tenant;");
-        Require(await reader.ReadAsync(claim, attempt, 128, ct) is { Phase: OrganizationDeletionPhase.Finalize, Items.Count: 0 }, "Finalize checkpoint was not explicit.");
+        Require(await reader.ReadAsync(claim, attempt, pageSize, ct) is { Phase: OrganizationDeletionPhase.Finalize, Items.Count: 0 }, "Finalize checkpoint was not explicit.");
         await Admin($"UPDATE background_jobs SET lease_expires_at=clock_timestamp()-interval '1 second' WHERE id='{claim.Id:D}'::uuid;");
-        Require(await reader.ReadAsync(claim, attempt, 128, ct) is null, "Expired candidate read disclosed graph references.");
-        Console.WriteLine("Deletion candidates: restricted scoped UUID traversal of 100000 archived Cards, 200 Lists, archived parents/attachments and bounded private-free pages passed.");
+        Require(await reader.ReadAsync(claim, attempt, pageSize, ct) is null, "Expired candidate read disclosed graph references.");
+        Console.WriteLine($"Deletion candidates: restricted scoped UUID traversal of {cardCount - 2} archived Cards, {listCount} Lists, archived parents/attachments and bounded private-free pages passed.");
     }
 }

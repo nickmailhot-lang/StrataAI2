@@ -7,6 +7,8 @@ import { shardCount } from './verify-browser-shards.mjs';
 
 export const suites = ['commands', 'browser-foundation', 'browser-notifications', 'browser-full'];
 const evidenceScopes = JSON.parse(readFileSync(new URL('./evidence-artifacts.json', import.meta.url), 'utf8'));
+const postMvpLoadSteps = new Set(JSON.parse(readFileSync(new URL('./post-mvp-load-steps.json', import.meta.url), 'utf8')));
+const loadPhase = "vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && ";
 
 function readAttachmentSources() {
   return {
@@ -54,6 +56,12 @@ export function readWorkflow(source) {
 // Deliberately accept only the small condition language used by this matrix.
 // New conditions require review, rather than silently losing mandatory checks.
 function owners(step) {
+  if (postMvpLoadSteps.has(step.name)) {
+    assert.ok(step.if?.includes(loadPhase), `Deferred load stage must retain its phase gate: ${step.name}`);
+    step = { ...step, if: step.if.replace(loadPhase, '') };
+  } else {
+    assert.ok(!step.if?.includes('STRATAAI_POST_MVP_LOAD_TESTS'), `Functional checks cannot be deferred: ${step.name}`);
+  }
   if (!step.if || ['always()', 'failure()'].includes(step.if)) return suites;
   const expression = step.if.replace(/^(always\(\)|failure\(\)) && /, '');
   assert.match(expression, /^\(matrix\.suite == '[a-z-]+'(?: \|\| matrix\.suite == '[a-z-]+')*\)$/,
@@ -65,6 +73,9 @@ function owners(step) {
 }
 
 export function verifyIntegrationSuites(workflow, registry, attachmentSources = readAttachmentSources()) {
+  assert.equal(workflow.env.STRATAAI_POST_MVP_LOAD_TESTS, "${{ vars.STRATAAI_POST_MVP_LOAD_TESTS || '0' }}", 'Large fixtures must use the explicit post-MVP flag, defaulting to disabled');
+  const deferred = workflow.jobs['container-integration'].steps.filter(s => postMvpLoadSteps.has(s.name));
+  assert.equal(deferred.length, postMvpLoadSteps.size, 'Every deferred capacity stage must remain registered');
   const jobs = workflow.jobs;
   const postgresSteps = jobs['postgres-integration'].steps;
   const listParentIntegrity = postgresSteps.find(step => step.name === 'Verify List movement parent commits and tenant isolation');

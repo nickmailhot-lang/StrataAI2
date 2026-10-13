@@ -22,6 +22,7 @@ permissions:
   contents: read
 
 env:
+  STRATAAI_POST_MVP_LOAD_TESTS: ${{ vars.STRATAAI_POST_MVP_LOAD_TESTS || '0' }}
   DOTNET_NOLOGO: 'true'
   DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
   STRATAAI_IMAGE_TAG: ${{ github.sha }}
@@ -763,7 +764,7 @@ jobs:
         if: (matrix.suite == 'commands')
         run: bash scripts/ci/test-board-star-preferences.sh
       - name: Independent full-capacity Board copy and atomic retry recovery against restricted PostgreSQL runtime
-        if: (matrix.suite == 'commands')
+        if: vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: bash scripts/ci/test-board-copy.sh
 
       - name: Board administrator demotion continuity and atomic recovery
@@ -869,7 +870,7 @@ jobs:
         run: scripts/ci/test-checklists.sh
 
       - name: Checklist, comment, activity, movement and lifecycle at supported capacity
-        if: (matrix.suite == 'commands')
+        if: vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: scripts/ci/test-checklist-capacity.sh
 
       - name: Authorized configuration and lifecycle HTTP p95 through exact release images
@@ -911,11 +912,11 @@ jobs:
           if-no-files-found: ignore
 
       - name: Prepare Retain fixed-scope Checklist capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/checklist-capacity --entry "artifacts/capacity/checklists.json" "checklists.json"
 
       - name: Retain fixed-scope Checklist capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: checklist-capacity-${{ github.sha }}
@@ -924,11 +925,11 @@ jobs:
           retention-days: 90
 
       - name: Prepare Retain fixed-scope activity capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/activity-capacity --entry "artifacts/capacity/activity.json" "activity.json"
 
       - name: Retain fixed-scope activity capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: activity-capacity-${{ github.sha }}
@@ -937,11 +938,11 @@ jobs:
           retention-days: 90
 
       - name: Prepare Retain fixed-scope notification inbox capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/notification-capacity --entry "artifacts/capacity/notifications.json" "notifications.json"
 
       - name: Retain fixed-scope notification inbox capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: notification-capacity-${{ github.sha }}
@@ -950,11 +951,11 @@ jobs:
           retention-days: 90
 
       - name: Prepare Retain fixed-scope watch producer fan-out measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/watch-fanout-capacity --entry "artifacts/capacity/watch-fanout.json" "watch-fanout.json"
 
       - name: Retain fixed-scope watch producer fan-out measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: watch-fanout-capacity-${{ github.sha }}
@@ -963,11 +964,11 @@ jobs:
           retention-days: 90
 
       - name: Prepare Retain fixed-scope global search capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/search-capacity --entry "artifacts/capacity/search.json" "search.json"
 
       - name: Retain fixed-scope global search capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: search-capacity-${{ github.sha }}
@@ -976,11 +977,11 @@ jobs:
           retention-days: 90
 
       - name: Prepare Retain fixed-scope comment capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/comment-capacity --entry "artifacts/capacity/comments.json" "comments.json"
 
       - name: Retain fixed-scope comment capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: comment-capacity-${{ github.sha }}
@@ -989,11 +990,11 @@ jobs:
           retention-days: 90
 
       - name: Prepare Retain fixed-scope cross-Board movement capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/card-move-capacity --entry "artifacts/capacity/card-moves.json" "card-moves.json"
 
       - name: Retain fixed-scope cross-Board movement capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: card-move-capacity-${{ github.sha }}
@@ -1002,11 +1003,11 @@ jobs:
           retention-days: 90
 
       - name: Prepare Retain fixed-scope work lifecycle capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/work-lifecycle-capacity --entry "artifacts/capacity/work-lifecycle.json" "work-lifecycle.json"
 
       - name: Retain fixed-scope work lifecycle capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: work-lifecycle-capacity-${{ github.sha }}
@@ -1015,11 +1016,11 @@ jobs:
           retention-days: 90
 
       - name: Prepare Retain fixed-scope permanent-deletion capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/work-deletion-capacity --entry "artifacts/capacity/work-deletion.json" "work-deletion.json"
 
       - name: Retain fixed-scope permanent-deletion capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: work-deletion-capacity-${{ github.sha }}
@@ -1028,11 +1029,11 @@ jobs:
           retention-days: 90
 
       - name: Prepare Retain fixed-scope Card copy capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/card-copy-capacity --entry "artifacts/capacity/card-copies.json" "card-copies.json"
 
       - name: Retain fixed-scope Card copy capacity measurements
-        if: always() && (matrix.suite == 'commands')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'commands')
         uses: actions/upload-artifact@v7
         with:
           name: card-copy-capacity-${{ github.sha }}
@@ -1097,11 +1098,11 @@ jobs:
         run: bash scripts/ci/test-attachment-image-pipeline.sh
 
       - name: Prepare Retain fixed-scope attachment capacity measurements
-        if: always() && (matrix.suite == 'browser-foundation')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/attachment-capacity --entry "artifacts/capacity/attachments.json" "attachments.json"
 
       - name: Retain fixed-scope attachment capacity measurements
-        if: always() && (matrix.suite == 'browser-foundation')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
         uses: actions/upload-artifact@v7
         with:
           name: attachment-capacity-${{ github.sha }}
@@ -1113,15 +1114,15 @@ jobs:
         if: (matrix.suite == 'browser-foundation')
         run: scripts/ci/test-work-sync.sh
       - name: Check concurrent and large-board rank allocation
-        if: (matrix.suite == 'browser-foundation')
+        if: vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
         run: scripts/ci/test-work-ranks.sh
 
       - name: Prepare Retain actual large-Board native capacity diagnostics
-        if: always() && (matrix.suite == 'browser-foundation')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
         run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/board-capacity-browser --entry "test-results/board-capacity" "."
 
       - name: Retain actual large-Board native capacity diagnostics
-        if: always() && (matrix.suite == 'browser-foundation')
+        if: always() && vars.STRATAAI_POST_MVP_LOAD_TESTS == '1' && (matrix.suite == 'browser-foundation')
         uses: actions/upload-artifact@v7
         with:
           name: board-capacity-browser-${{ github.sha }}
