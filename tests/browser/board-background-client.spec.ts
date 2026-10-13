@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { openAdmittedReview } from './keyboardAdmission';
 
 // Native client contract with simulated publication, receipt and PNG delivery.
 // Genuine restricted PostgreSQL/Worker publication and HTTP ownership are
@@ -50,8 +51,9 @@ for (const width of [1280, 390]) {
       const path = `/app/${org}/boards/${board}/cards/${card}`; const tracked = trackBoardReads(page, board, path);
       await page.goto(path); await expect.poll(tracked).toBeGreaterThanOrEqual(2); expect(reads).toBe(0);
       const review = page.getByRole('button', { name: 'Review Board background images', exact: true });
-      await expect(review).toBeEnabled(); await review.press('Enter');
-      await page.getByRole('button', { name: 'Use Checked background.png as Board background', exact: true }).press('Enter');
+      const candidate = page.getByRole('button', { name: 'Use Checked background.png as Board background', exact: true });
+      await expect(review).toBeEnabled(); await openAdmittedReview(review, candidate);
+      await candidate.press('Enter');
       const save = page.getByRole('button', { name: 'Confirm Board background image', exact: true }); await expect(save).toBeDisabled();
       const consent = page.getByRole('checkbox', { name: 'I understand this Board background image will be publicly visible', exact: true });
       await expect(consent).toBeFocused(); await consent.press('Space'); await expect(save).toBeEnabled(); await save.press('Enter');
