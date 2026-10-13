@@ -130,6 +130,15 @@ provider processing. Identity mail delivery uses its separate configuration and 
 
 ## Optional verification and recovery mail role
 
+The included `.env.release.example` lists the complete optional mail setup,
+disabled by default. Configure its sender, exact HTTPS public origin, provider
+account and token-signing key ring in both API and Worker. The provider API key
+and dedicated delivery connection are Worker-only settings; the API receives
+neither. Keep real credentials out of source control and retain signing-key
+versions needed by existing tokens and queued work. Complete the role procedure
+below and the [mail transport configuration](../architecture/identity-email.md)
+before enabling mail or verified-account enrollment.
+
 The bundle includes `provision-identity-mail-role.sh` and
 `db/provision-identity-mail-role.sql`. To use the supplied dedicated role, set
 `STRATAAI_IDENTITY_DELIVERY_DB_PASSWORD` to a distinct secret of at least 20

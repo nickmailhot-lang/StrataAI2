@@ -50,7 +50,7 @@ class ReleaseAuthenticationPolicyTests(unittest.TestCase):
                                      'config', '--format', 'json'], env=environment, capture_output=True, timeout=30)
             self.assertEqual(result.returncode, 0, 'Release Compose rejected a disposable policy fixture')
             model = json.loads(result.stdout)
-            # Return only policy fields, never the complete resolved secret-bearing model.
+            # Return only requested fields; never print the resolved secret-bearing model.
             return {host: {key: model['services'][host]['environment'].get(key)
                            for key in keys}
                     for host, keys in host_fields.items()}
@@ -93,6 +93,34 @@ class ReleaseAuthenticationPolicyTests(unittest.TestCase):
     def test_malformed_discovery_settings_reach_worker_validation(self):
         invalid = dict.fromkeys(DISCOVERY_DEFAULTS, 'invalid')
         self.assertEqual(self.discovery_model(invalid), invalid)
+
+    def test_mail_example_has_complete_disabled_setup_without_embedded_secrets(self):
+        sample = (Path(__file__).resolve().parents[1] / '.env.release.example').read_text(encoding='utf-8')
+        entries = [line.split('=', 1) for line in sample.splitlines() if line and not line.startswith('#')]
+        self.assertEqual(len(entries), len(dict(entries)), 'Example must not repeat settings')
+        values = dict(entries)
+        fields = ('STRATAAI_IDENTITY_EMAIL_FROM', 'STRATAAI_PUBLIC_ORIGIN', 'STRATAAI_IDENTITY_EMAIL_ACCOUNT',
+                  'STRATAAI_IDENTITY_TOKEN_CURRENT_KEY', 'STRATAAI_IDENTITY_TOKEN_KEYS',
+                  'STRATAAI_IDENTITY_EMAIL_API_KEY', 'STRATAAI_IDENTITY_DELIVERY_CONNECTION_STRING',
+                  'STRATAAI_IDENTITY_DELIVERY_DB_PASSWORD')
+        self.assertTrue(set(fields).issubset(values), 'Complete identity-mail configuration must be documented')
+        self.assertEqual(values.get('STRATAAI_IDENTITY_EMAIL_ENABLED'), 'false')
+        self.assertTrue(all(values[key] == '' for key in fields), 'Example must leave identity values for operator configuration')
+
+    def test_mail_shared_configuration_and_worker_only_credentials_reach_expected_hosts(self):
+        shared = {'STRATAAI_IDENTITY_EMAIL_ENABLED': 'true', 'STRATAAI_IDENTITY_EMAIL_FROM': 'sender@example.test',
+                  'STRATAAI_PUBLIC_ORIGIN': 'https://app.example.test', 'STRATAAI_IDENTITY_EMAIL_ACCOUNT': 'fixture-account',
+                  'STRATAAI_IDENTITY_TOKEN_CURRENT_KEY': 'fixture', 'STRATAAI_IDENTITY_TOKEN_KEYS': '{"fixture":"fixture-only-key"}'}
+        private = {'STRATAAI_IDENTITY_EMAIL_API_KEY': 'fixture-only-provider-key',
+                   'STRATAAI_IDENTITY_DELIVERY_CONNECTION_STRING': 'Host=postgres;Database=strataai;Username=strataai_identity_mail_runtime;Password=fixture-only-mail-password'}
+        fields = (*shared, 'STRATAAI_IDENTITY_EMAIL_API_KEY', 'ConnectionStrings__IdentityDeliveryPostgres')
+        model = self.model({**shared, **private}, dict.fromkeys(('api', 'worker'), fields))
+        # Compare sensitive fixture settings through booleans, never secret-bearing assertion diffs.
+        self.assertTrue(all(model[host][key] == value for host in model for key, value in shared.items()), 'Shared mail settings must reach both hosts')
+        self.assertTrue(model['api']['STRATAAI_IDENTITY_EMAIL_API_KEY'] is None)
+        self.assertTrue(model['api']['ConnectionStrings__IdentityDeliveryPostgres'] is None)
+        self.assertTrue(model['worker']['STRATAAI_IDENTITY_EMAIL_API_KEY'] == private['STRATAAI_IDENTITY_EMAIL_API_KEY'])
+        self.assertTrue(model['worker']['ConnectionStrings__IdentityDeliveryPostgres'] == private['STRATAAI_IDENTITY_DELIVERY_CONNECTION_STRING'])
 
 
 if __name__ == '__main__':
