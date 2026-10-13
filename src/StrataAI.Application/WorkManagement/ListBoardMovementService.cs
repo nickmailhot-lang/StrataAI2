@@ -6,6 +6,7 @@ namespace StrataAI.Application.WorkManagement;
 // The command owns authorization, receipt, final admission and rollback. Every
 // publication below borrows that transaction; this is not a second commit.
 public sealed class ListBoardMovementService(ListBoardMovementCommand command, IListBoardMovementStore movement,
+    IListBoardMovementPublicationStore publication,
     IWorkManagementStore work, IWorkEventStore events, CardWatchNotificationProducer watches,
     CardReminderScheduling reminders, IdentityPolicy policy, IClock clock)
 {
@@ -35,23 +36,25 @@ public sealed class ListBoardMovementService(ListBoardMovementCommand command, I
             // Bounded publication buffers do not truncate the transferred graph.
             foreach (var chunk in transfer.Cards.Chunk(1000))
             {
+                var ids = chunk.Select(card => card.Id).ToArray();
+                var cards = await publication.ReadCardsAsync(transfer.List, ids, ct);
                 var admitted = new List<(CardRecord Card, ListTransferredCard Subject, WorkEvent Change)>();
                 var publications = new List<WorkEvent>();
                 foreach (var subject in chunk)
                 {
                     ct.ThrowIfCancellationRequested();
-                    var current = await work.FindCardAsync(subject.Id, ct, includeDeleted: true);
+                    var current = cards.GetValueOrDefault(subject.Id);
                     if (!seen.Add(subject.Id) || current is null || current.OrganizationId != original.OrganizationId
                         || current.BoardId != destinationBoardId || current.ListId != listId
                         || current.Version != checked(subject.SourceVersion + 1) || current.LifecycleState != subject.LifecycleState)
                         throw new InvalidOperationException("List transfer Card publication does not match persisted state.");
-                    await work.AppendAuditAsync(current.OrganizationId, actorId, "CARD_MOVED", "Card", current.Id, correlationId, ct);
                     var change = new WorkEvent(Guid.NewGuid(), current.OrganizationId, destinationBoardId, actorId,
                         "CARD_MOVED", "Card", current.Id, current.Version, correlationId, clock.UtcNow);
                     publications.Add(change);
                     publications.Add(change with { EventId = Guid.NewGuid(), BoardId = sourceBoardId });
                     admitted.Add((current, subject, change));
                 }
+                await publication.AppendCardAuditsAsync(transfer.List, actorId, ids, correlationId, ct);
                 await events.AppendBatchAsync(publications, ct);
                 foreach (var (current, subject, change) in admitted)
                 {

@@ -36,6 +36,12 @@ if (args.Contains("--work-event-batch-only", StringComparer.Ordinal))
     await WorkEventBatchPersistenceContract.RunAsync(admin,apiConnection,workerConnection,ct);
     return;
 }
+if (args.Contains("--list-publication-batches-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await ListPublicationBatchContract.RunAsync(admin,apiConnection,ct);
+    return;
+}
 if (args.Contains("--mvp-functional-fixtures-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
@@ -399,6 +405,7 @@ try
     await UserMentionHandleStoreContract.RunAsync(admin,apiConnection,ct);
     await ListBoardTransferPersistenceContract.RunAsync(admin,apiConnection,ct);
     await WorkEventBatchPersistenceContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await ListPublicationBatchContract.RunAsync(admin,apiConnection,ct);
     Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, metadata/scan-job rollback and retained expiry passed.");
 }
 finally
