@@ -114,7 +114,17 @@ with the exact public browser origin (scheme, hostname and port). If it is empty
 the API uses `STRATAAI_PUBLIC_ORIGIN`; if both are empty, live transport is disabled
 while normal read/write APIs remain available. Invalid configured origins reject
 startup. Nginx supports the `/boards/live` WebSocket upgrade route in the tested image.
-Automatic routing is available for deletion and metadata delivery. Review the
+Automatic routing also covers Organization configuration and operational
+lifecycle delivery, invitation recipient authority and invitation issuer
+authority. The six discovery settings in `.env.release.example` reach the Worker;
+set the corresponding setting to `false` to disable that automatic discovery
+loop. Explicit general-job scope remains independently configured. Omitted
+settings retain the Production default of `true`. Explicit empty or malformed
+settings reach Worker validation and refuse startup. Releases before this fix
+ignored the configuration and operational-lifecycle settings in `.env`, and
+replaced empty discovery values with defaults; review existing values during
+promotion. See [discovery configuration verification](../architecture/release-auth-policy-verification.md#worker-discovery-settings).
+Review the
 explicit general-job scope when adding Organizations that need other Work or
 provider processing. Identity mail delivery uses its separate configuration and role.
 

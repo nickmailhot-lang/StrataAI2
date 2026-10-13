@@ -15,9 +15,20 @@ POLICY_DEFAULTS = {
     'STRATAAI_AUTH_SECURITY_TOKEN_MINUTES': '30',
 }
 
+DISCOVERY_DEFAULTS = dict.fromkeys((
+    'STRATAAI_ORGANIZATION_DELETION_DISCOVERY_ENABLED',
+    'STRATAAI_ORGANIZATION_METADATA_DISCOVERY_ENABLED',
+    'STRATAAI_ORGANIZATION_CONFIGURATION_DISCOVERY_ENABLED',
+    'STRATAAI_ORGANIZATION_OPERATIONAL_LIFECYCLE_DISCOVERY_ENABLED',
+    'STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED',
+    'STRATAAI_INVITATION_ISSUER_AUTHORITY_DISCOVERY_ENABLED',
+), 'true')
+
 
 class ReleaseAuthenticationPolicyTests(unittest.TestCase):
-    def model(self, settings):
+    def model(self, settings, host_fields=None):
+        if host_fields is None:
+            host_fields = {'api': POLICY_DEFAULTS, 'worker': ('STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL',)}
         docker = shutil.which('docker')
         if not docker and os.name == 'nt':
             candidate = Path(os.environ.get('LOCALAPPDATA', '')) / 'Programs/DockerDesktop/resources/bin/docker.exe'
@@ -41,8 +52,8 @@ class ReleaseAuthenticationPolicyTests(unittest.TestCase):
             model = json.loads(result.stdout)
             # Return only policy fields, never the complete resolved secret-bearing model.
             return {host: {key: model['services'][host]['environment'].get(key)
-                           for key in (POLICY_DEFAULTS if host == 'api' else ('STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL',))}
-                    for host in ('api', 'worker')}
+                           for key in keys}
+                    for host, keys in host_fields.items()}
 
     def test_omission_retains_production_policy_defaults(self):
         for host, policy in self.model({}).items():
@@ -62,6 +73,26 @@ class ReleaseAuthenticationPolicyTests(unittest.TestCase):
         configured = dict.fromkeys(POLICY_DEFAULTS, 'invalid')
         for host, policy in self.model(configured).items():
             self.assertEqual(policy, {key: configured[key] for key in policy}, host)
+
+    def discovery_model(self, settings):
+        model = self.model(settings, dict.fromkeys(('api', 'worker'), DISCOVERY_DEFAULTS))
+        self.assertEqual(model['api'], dict.fromkeys(DISCOVERY_DEFAULTS), 'Discovery settings belong to Worker')
+        return model['worker']
+
+    def test_discovery_omission_retains_production_defaults(self):
+        self.assertEqual(self.discovery_model({}), DISCOVERY_DEFAULTS)
+
+    def test_operator_can_disable_each_discovery_loop(self):
+        disabled = dict.fromkeys(DISCOVERY_DEFAULTS, 'false')
+        self.assertEqual(self.discovery_model(disabled), disabled)
+
+    def test_explicit_empty_discovery_settings_reach_worker_validation(self):
+        empty = dict.fromkeys(DISCOVERY_DEFAULTS, '')
+        self.assertEqual(self.discovery_model(empty), empty)
+
+    def test_malformed_discovery_settings_reach_worker_validation(self):
+        invalid = dict.fromkeys(DISCOVERY_DEFAULTS, 'invalid')
+        self.assertEqual(self.discovery_model(invalid), invalid)
 
 
 if __name__ == '__main__':
