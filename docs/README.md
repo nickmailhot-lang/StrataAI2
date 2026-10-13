@@ -56,6 +56,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Embedded build identity (ARCH-01-AC-002 / ARCH-11)](architecture/build-identity.md)
 - [Assembled release payload startup and graceful restart](architecture/release-bundle-startup.md)
 - [Configuration and secrets](architecture/configuration.md)
+- [Release authentication policy forwarding and startup verification](architecture/release-auth-policy-verification.md)
 - [Dependency locking (ARCH-01 / ARCH-11)](architecture/dependency-locking.md)
 - [Mandatory integration CI groups and coverage guard (ARCH-11)](architecture/integration-ci-groups.md)
 - [Initial exact-commit build metadata and release versions (ARCH-11)](architecture/initial-build-metadata.md)

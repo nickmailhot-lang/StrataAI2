@@ -56,6 +56,16 @@ The initially empty API retry-key fields are required: configure a current key
 version and a JSON ring of base64 32-byte secrets before starting the API. See
 [required production configuration](../architecture/configuration.md).
 
+The included authentication policy defaults disable self-registration and
+require verified email. To permit initial account enrollment, set
+`STRATAAI_AUTH_ALLOW_SELF_REGISTRATION=true` after configuring the intended
+verification/mail transport and its restricted Worker database role. Keep the
+verification requirement enabled for that flow. The release Compose file now
+forwards the documented policy settings from `.env`; password length, session
+hours and security-token minutes apply to the API, and verification policy also
+reaches Worker handlers. Explicit empty or malformed API settings refuse startup.
+See [policy configuration and verification](../architecture/release-auth-policy-verification.md).
+
 ## Start and migrate
 
 ```bash

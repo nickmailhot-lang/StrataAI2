@@ -126,6 +126,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
           python3 -m unittest discover -s tests -p 'evidence_artifacts_test.py'
           python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
+          python3 -m unittest discover -s tests -p 'release_auth_policy_test.py'
           python3 -m unittest discover -s tests -p 'image_labels_test.py'
 
       - name: Unit and component tests

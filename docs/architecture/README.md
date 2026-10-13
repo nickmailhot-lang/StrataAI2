@@ -1,5 +1,7 @@
 # StrataAI2 architecture
 
+[Release authentication policy configuration](release-auth-policy-verification.md) records actual Compose forwarding regressions and ten compiled-host refusal checks.
+
 [Job-column and URL draft failure evidence](failure-field-diagnostics.md) preserves full comparisons and documents the six original scenarios plus controlled diagnostic failures.
 
 [Organization review and removal recovery verification](organization-review-recovery-verification.md) records three reproduced recovery-state defects and complete desktop/phone configuration and membership verification.

@@ -32,6 +32,13 @@ the setting and its allowed form without echoing the supplied value.
 | `STRATAAI_AUTH_SECURITY_TOKEN_MINUTES` | Integer from 5 to 1440 | 30 |
 
 Boolean parsing is case-insensitive; integer parsing uses invariant culture.
+
+The release Compose file forwards all five settings to the API and the
+verification requirement to Worker handlers. Set them in the deployment `.env`
+or runtime environment. When omitted, the production Compose defaults match
+the table above. Explicit empty or malformed API values remain supplied values
+and reach startup validation; Compose does not replace them with defaults.
+See [release authentication configuration verification](release-auth-policy-verification.md).
 Existing valid configuration keeps exactly its requested policy. Before upgrading
 an environment that previously supplied invalid values, correct those settings
 or omit them deliberately to select the defaults. An empty environment value is
