@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { openAdmittedReview } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-13: keyboard checklist reads, canonical progress and two-session live refresh at ${width}px`, async ({ page, context, browser }) => {
@@ -26,10 +27,12 @@ for (const width of [1280, 390]) {
       const peer = await peerContext.newPage();
       for (const reader of [page, peer]) {
         await reader.goto(route);
-        const show = reader.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
-        await expect(reader.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible();
-        const children = reader.getByRole('button', { name: 'Show items in Preparations', exact: true }); await children.press('Enter');
-        await expect(reader.getByText('Incomplete: Prepare materials', { exact: true })).toBeVisible();
+        const show = reader.getByRole('button', { name: 'Show checklists', exact: true });
+        const progress = reader.getByText('0 of 1 items complete (0%)', { exact: true });
+        await openAdmittedReview(show, progress); await expect(progress).toBeVisible();
+        const children = reader.getByRole('button', { name: 'Show items in Preparations', exact: true });
+        const incomplete = reader.getByText('Incomplete: Prepare materials', { exact: true });
+        await openAdmittedReview(children, incomplete); await expect(incomplete).toBeVisible();
         expect((await new AxeBuilder({ page: reader }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       }
       const complete = await peerContext.request.patch(`/cards/${card}/checklists/${parent.id}/items/${item.id}`, {

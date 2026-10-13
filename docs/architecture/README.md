@@ -1,5 +1,7 @@
 # StrataAI2 architecture
 
+[Checklist reads and file chooser opening verification](checklist-file-opening-verification.md) records retained hosted opening failures, the retired-launcher helper correction and all four final desktop/phone cases.
+
 [Retention source opening verification](retention-source-opening-verification.md) records the existing Comment disclosure failure and all 14 final classification/hold browser cases.
 
 [Movement and peer activity admission](movement-activity-admission-verification.md) records the busy-Board drag trace and complete desktop/mobile movement and strict activity checks.

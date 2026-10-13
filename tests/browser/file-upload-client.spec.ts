@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { openAdmittedReview } from './keyboardAdmission';
 
 // Native browser/file/keyboard client proof against the exact web image.
 // File-provider replies are simulated; this does not claim S3 publication.
@@ -44,8 +45,9 @@ for (const width of [1280, 390]) {
       const cardPath = `/app/${org}/boards/${board}/cards/${card}`;
       const reads = trackBoardReads(page, board, cardPath);
       await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
-      const add = page.getByRole('button', { name: 'Add file attachment', exact: true }); await expect(add).toBeEnabled(); await add.press('Enter');
-      const file = page.getByLabel('File to attach', { exact: true }); await expect(file).toBeEnabled(); await expect(file).toBeFocused();
+      const add = page.getByRole('button', { name: 'Add file attachment', exact: true });
+      const file = page.getByLabel('File to attach', { exact: true });
+      await openAdmittedReview(add, file); await expect(file).toBeEnabled(); await expect(file).toBeFocused();
       await file.setInputFiles({ name: 'Résumé.png', mimeType: 'image/png', buffer: bytes });
       await page.getByRole('button', { name: 'Upload selected file', exact: true }).press('Enter');
       const retry = page.getByRole('button', { name: 'Retry original file upload', exact: true }); await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();

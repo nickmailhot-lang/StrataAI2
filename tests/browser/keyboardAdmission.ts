@@ -23,7 +23,14 @@ export async function pressAdmittedAction(button: Locator, key: 'Enter' | 'Space
 export async function openAdmittedReview(button: Locator, dialog: Locator) {
   await expect(async () => {
     if (await dialog.isVisible()) return;
-    await pressAdmittedAction(button);
+    // A successful opening can retire its launcher before the protected read
+    // finishes. Observe the target instead of waiting on that retired control.
+    if (await button.isVisible() && await button.isEnabled()) {
+      await button.focus({ timeout: 500 });
+      await expect(button).toBeFocused({ timeout: 500 });
+      await expect(button).toBeEnabled({ timeout: 500 });
+      await button.press('Enter', { timeout: 500 });
+    }
     await expect(dialog).toBeVisible({ timeout: 500 });
   }).toPass({ timeout: 5_000 });
 }
