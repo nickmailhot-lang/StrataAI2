@@ -25,6 +25,7 @@ public static class OrganizationRegistration
             services.AddSingleton<IOrganizationStore>(provider => provider.GetRequiredService<InMemoryOrganizationStore>());
             services.AddSingleton<IDemoOrganizationTransactionParticipant>(provider => provider.GetRequiredService<InMemoryOrganizationStore>());
             services.AddSingleton<InMemoryOrganizationConfigurationStore>();
+            services.AddSingleton<DemoOrganizationConfigurationState>();
             services.AddSingleton<IOrganizationConfigurationStore>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
             services.AddSingleton<IOrganizationConfigurationEventReader>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());
             services.AddSingleton<IOrganizationConfigurationAttributionReader>(provider => provider.GetRequiredService<InMemoryOrganizationConfigurationStore>());

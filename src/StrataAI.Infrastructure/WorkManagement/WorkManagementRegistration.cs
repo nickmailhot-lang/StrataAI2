@@ -160,5 +160,6 @@ public static class WorkManagementRegistration
         services.AddSingleton<CardReminderService>();
         services.AddSingleton<ICardReminderEventPublisher, CardReminderEvents>();
         services.AddSingleton<CardWatchNotificationProducer>();
+        services.AddSingleton<IListBoardMovementStore>(provider => (IListBoardMovementStore)provider.GetRequiredService<IWorkManagementStore>());
     }
 }

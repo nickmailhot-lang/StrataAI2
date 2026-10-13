@@ -3,7 +3,8 @@ using StrataAI.Application.Organizations;
 
 namespace StrataAI.Infrastructure.WorkManagement;
 
-internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore organizations, DemoWorkTransactionScope transactionScope, StrataAI.Application.Common.IClock clock) : IWorkManagementStore, ICardDateStore
+internal sealed partial class InMemoryWorkManagementStore(IOrganizationStore organizations, DemoWorkTransactionScope transactionScope, StrataAI.Application.Common.IClock clock,
+    StrataAI.Infrastructure.Organizations.DemoOrganizationConfigurationState configurationState) : IWorkManagementStore, ICardDateStore
 {
     private readonly object _sync = new();
     private readonly Dictionary<Guid, BoardRecord> _boards = [];

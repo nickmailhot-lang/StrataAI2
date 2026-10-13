@@ -9,11 +9,12 @@ using StrataAI.Application.Common;
 namespace StrataAI.Infrastructure.Organizations;
 
 internal sealed class InMemoryOrganizationConfigurationStore(IOrganizationStore organizations,
-    ICommandActorAuthorization actors, DemoWorkTransactionScope scope, IWorkManagementStore work, IClock clock, IIdentityStore identities)
+    ICommandActorAuthorization actors, DemoWorkTransactionScope scope, IWorkManagementStore work, IClock clock, IIdentityStore identities,
+    DemoOrganizationConfigurationState configurationState)
     : IOrganizationConfigurationStore, IOrganizationConfigurationEventReader, IOrganizationConfigurationAttributionReader, IDemoOrganizationTransactionParticipant
 {
     // Serialized snapshots prevent callers from mutating nested private collections in history.
-    private readonly Dictionary<Guid, string> _current = [];
+    private readonly Dictionary<Guid, string> _current = configurationState.Current;
     private readonly Dictionary<(Guid Organization, long Version), string> _history = [];
     private readonly Dictionary<(Guid Organization, Guid Actor, Guid Key), string> _receipts = [];
     private readonly Dictionary<(Guid Organization, long Version), OrganizationConfigurationEvent> _events = [];
