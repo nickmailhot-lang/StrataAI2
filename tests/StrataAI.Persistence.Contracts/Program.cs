@@ -30,6 +30,12 @@ var organization = Guid.NewGuid(); var foreignOrganization = Guid.NewGuid(); var
 var board = Guid.NewGuid(); var foreignBoard = Guid.NewGuid(); var list = Guid.NewGuid(); var foreignList = Guid.NewGuid();
 var card = Guid.NewGuid(); var foreignCard = Guid.NewGuid();
 await using var admin = new NpgsqlConnection(adminConnection); await admin.OpenAsync(ct);
+if (args.Contains("--list-board-transfer-only", StringComparer.Ordinal))
+{
+    await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
+    await ListBoardTransferPersistenceContract.RunAsync(admin,apiConnection,ct);
+    return;
+}
 if (args.Contains("--retention-holds-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
@@ -377,6 +383,7 @@ try
     await CommentMentionNotificationContract.RunAsync(admin,provider,organization,card,user,foreignUser,ct);
     await CardMassMentionQuotaContract.RunAsync(admin,provider,organization,card,user,foreignOrganization,foreignCard,foreignUser,ct);
     await UserMentionHandleStoreContract.RunAsync(admin,apiConnection,ct);
+    await ListBoardTransferPersistenceContract.RunAsync(admin,apiConnection,ct);
     Console.WriteLine("Restricted C# upload persistence: scope, concurrent writers, nonce/revision CAS, reconciliation, metadata/scan-job rollback and retained expiry passed.");
 }
 finally
