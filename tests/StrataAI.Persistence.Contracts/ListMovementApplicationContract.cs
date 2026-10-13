@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using StrataAI.Application.Common;
+using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Organizations;
 using StrataAI.Application.Records;
@@ -39,13 +40,13 @@ internal static class ListMovementApplicationContract
         }
     }
 
-    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
+    public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, string workerConnection, CancellationToken ct)
     {
-        await RunCaseAsync(admin, apiConnection, true, ct);
-        await RunCaseAsync(admin, apiConnection, false, ct);
+        await RunCaseAsync(admin, apiConnection, workerConnection, true, ct);
+        await RunCaseAsync(admin, apiConnection, workerConnection, false, ct);
     }
 
-    private static async Task RunCaseAsync(NpgsqlConnection admin, string apiConnection, bool eligible, CancellationToken ct)
+    private static async Task RunCaseAsync(NpgsqlConnection admin, string apiConnection, string workerConnection, bool eligible, CancellationToken ct)
     {
         var tenant = Guid.NewGuid(); var actor = Guid.NewGuid(); var member = Guid.NewGuid(); var recipient = Guid.NewGuid();
         var source = Guid.NewGuid(); var destination = Guid.NewGuid(); var list = Guid.NewGuid();
@@ -135,6 +136,10 @@ internal static class ListMovementApplicationContract
         }, value => value, ct);
         Require(await Scalar($"SELECT count(*) FROM background_jobs WHERE tenant_id='{tenant}' AND job_type='CARD_REMINDER';") == "2", "Fixture did not queue both original overdue Reminder jobs.");
         var queuedBefore = await Scalar($"SELECT jsonb_agg(to_jsonb(j) ORDER BY id)::text FROM background_jobs j WHERE tenant_id='{tenant}' AND job_type='CARD_REMINDER';");
+        var originalJobs = new HashSet<Guid>();
+        await using (var q = new NpgsqlCommand($"SELECT id FROM background_jobs WHERE tenant_id='{tenant}' AND job_type='CARD_REMINDER';", admin))
+        await using (var r = await q.ExecuteReaderAsync(ct))
+            while (await r.ReadAsync(ct)) originalJobs.Add(r.GetGuid(0));
         var before = await Scalar(GraphHash());
         var denied = await movement.MoveAsync(list, member, source, destination, 999, null, "list-app-test", ct);
         Require(denied.ErrorCode == "list_not_found", "Destination refusal disclosed a version conflict.");
@@ -179,6 +184,45 @@ internal static class ListMovementApplicationContract
         var withdrawn = await Scalar(GraphHash());
         Require((await movement.MoveAsync(list, actor, source, destination, 1, null, "list-app-test", ct)).ErrorCode == "list_not_found", "Replay ignored original source lifecycle withdrawal.");
         Require(await Scalar(GraphHash()) == withdrawn, "Withdrawn replay changed protected state.");
+        await using var worker = new PostgresConnectionFactory(workerConnection);
+        var queue = new PostgresBackgroundJobStore(worker); var workerId = Guid.NewGuid();
+        var delivery = new PostgresCardReminderDeliveryStore(worker, requireVerifiedEmail: true);
+        var delivered = 0; var superseded = 0;
+        for (var n = 0; n < 2; n++)
+        {
+            var claim = await queue.ClaimAsync(tenant, workerId, ct);
+            Require(claim is not null && claim.JobType == CardReminderDeliveryHandler.Type && originalJobs.Remove(claim.Id),
+                "Worker did not claim an original overdue Reminder job.");
+            var attempt = CardReminderAttempt.Parse(claim!.SafeMetadataJson);
+            var result = await delivery.DeliverAsync(claim, attempt, ct);
+            Require(result is CardReminderDeliveryResult.Delivered or CardReminderDeliveryResult.Superseded, "Original Reminder delivery lost its lease.");
+            var effects = await Scalar(GraphHash());
+            Require(await delivery.DeliverAsync(claim, attempt, ct) == result && await Scalar(GraphHash()) == effects,
+                "Live-lease Reminder redelivery repeated its effect.");
+            if (result == CardReminderDeliveryResult.Delivered) delivered++; else superseded++;
+            Require(await queue.CompleteAsync(tenant, claim.Id, claim.LeaseId, workerId, ct), "Worker did not acknowledge original Reminder delivery.");
+            var acknowledged = await Scalar(GraphHash());
+            Require(await delivery.DeliverAsync(claim, attempt, ct) == CardReminderDeliveryResult.LeaseLost
+                && await Scalar(GraphHash()) == acknowledged, "Completed Reminder lease produced another effect.");
+        }
+        Require(originalJobs.Count == 0 && delivered == (eligible ? 1 : 0) && superseded == (eligible ? 1 : 2),
+            "Worker delivered a hidden/ineligible Reminder or lost the eligible original job.");
+        Require(await Scalar($"SELECT count(*) FROM background_jobs WHERE tenant_id='{tenant}' AND job_type='CARD_REMINDER' AND state='SUCCEEDED';") == "2",
+            "Worker did not retain both original successful acknowledgments.");
+        Require(await Scalar($"SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='{tenant}' AND notification_type='REMINDER_FIRED';") == (eligible ? "1" : "0"),
+            "Reminder delivery duplicated or leaked its private notice.");
+        if (eligible)
+        {
+            Require(await Scalar($"SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='{tenant}' AND notification_type='REMINDER_FIRED' AND board_id='{destination}' AND card_id='{activeCard}' AND recipient_id='{recipient}';") == "1",
+                "Original Reminder delivered against the former source Board.");
+            Require(await Scalar($"SELECT count(*) FROM card_reminders WHERE tenant_id='{tenant}' AND card_id='{activeCard}' AND status='FIRED' AND generation=1 AND version=2;") == "1",
+                "Original eligible Reminder did not fire exactly once.");
+        }
+        Require(await Scalar($"SELECT count(*) FROM audit_events WHERE tenant_id='{tenant}' AND event_type='REMINDER_FIRED';") == (eligible ? "1" : "0"),
+            "Original delivery lost or repeated its audit fact.");
+        Require(await Scalar($"SELECT count(*) FROM work_events WHERE tenant_id='{tenant}' AND event_type='REMINDER_FIRED' AND board_id='{destination}';") == (eligible ? "1" : "0"),
+            "Original delivery lost or repeated its destination event.");
         Console.WriteLine($"List movement Application: three lifecycles, populated watches/overdue Reminders, destination eligibility {eligible}, complete late rollback, original-key retry/replay and source withdrawal passed; session admission controlled.");
+        Console.WriteLine($"Original Reminder Worker delivery: {delivered} delivered, {superseded} superseded; live-lease retry unchanged, original acknowledgment retained, completed lease withdrawn.");
     }
 }
