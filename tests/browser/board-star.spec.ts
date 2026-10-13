@@ -90,8 +90,8 @@ for (const width of [1280, 390]) {
       expect(keys).toHaveLength(2); expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/); expect(keys[1]).toBe(keys[0]);
       for (const [client, revisions] of [[page, 2], [other, 1], [mirror, 2]] as const) {
         const review = client.getByRole('button', { name: 'Review your star history', exact: true });
-        await expect(review).toBeEnabled(); await review.focus(); await client.keyboard.press('Enter');
         const history = client.getByRole('region', { name: 'Your star history', exact: true });
+        await openAdmittedReview(review, history);
         await expect(history.getByRole('listitem')).toHaveCount(revisions);
         await expect(history.getByText(`You changed your Board star (revision ${revisions}).`, { exact: true })).toBeVisible();
         const sourceReply = await client.request.get(`/boards/${board.id}/star/events?after=0`);
