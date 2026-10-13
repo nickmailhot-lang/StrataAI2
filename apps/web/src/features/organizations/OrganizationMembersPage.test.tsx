@@ -37,6 +37,52 @@ const confirm = () => screen.getByRole('button', { name: 'Confirm member removal
 async function open() { fireEvent.click(await screen.findByRole('button', { name: 'Review removal of Council member' })); await screen.findByRole('dialog'); }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 describe('Organization member administration and renewed removal consent', () => {
+  it('keeps explicit re-review available when live invalidation rejects an in-flight member read', async () => {
+    const changed = { ...row, role: 1, version: 3 };
+    let resolve!: (response: Response) => void;
+    const mock = vi.fn().mockResolvedValueOnce(reply(page))
+      .mockImplementationOnce(() => new Promise<Response>(done => { resolve = done; }))
+      .mockResolvedValueOnce(reply({ ...page, items: [changed] }))
+      .mockResolvedValueOnce(reply({ ...review, member: changed }));
+    stubFetch(mock); mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Review removal of Council member' }));
+    await waitFor(() => expect(mock).toHaveBeenCalledTimes(2));
+    act(() => live.watch.mock.calls.at(-1)![0].invalidate());
+    await act(async () => resolve(reply(review)));
+    await screen.findByRole('button', { name: 'Review removal of Council member' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Review current membership' }));
+    await screen.findByText('Current role: Admin');
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+  });
+  it('preserves removal uncertainty through a background access check', async () => {
+    const mock = fetcher(reply(review), new Error('lost'), reply({ ...page, items: [] }));
+    mount(); await open(); fireEvent.click(confirm());
+    await screen.findByText(/The removal could not be confirmed/);
+    act(() => live.watch.mock.calls.at(-1)![0].invalidate());
+    await screen.findByText('Current access checked. Retry the original removal before reviewing later membership.');
+    expect(screen.getByText(/The removal could not be confirmed/)).toBeVisible();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Review current membership' })).toBeDisabled();
+    expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
+  });
+  it('preserves explicit current membership review after acknowledgment and a later live refresh', async () => {
+    const changed = { ...row, role: 1, version: 3 };
+    const mock = fetcher(reply(review), new Error('lost'), reply(undefined, 204),
+      reply({ ...page, items: [changed] }), reply({ ...review, member: changed }));
+    mount(); await open(); fireEvent.click(confirm());
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry original removal' }));
+    await screen.findByText('Original removal acknowledged. Review current membership to check later access.');
+    act(() => live.watch.mock.calls.at(-1)![0].invalidate());
+    await screen.findByRole('button', { name: 'Review removal of Council member' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Review current membership' }));
+    await screen.findByText('Current role: Admin');
+    expect(mock.mock.calls.at(-1)?.[0]).toBe(`/organizations/${org}/members/${target}`);
+    const writes = mock.mock.calls.filter(call => call[1]?.method === 'DELETE');
+    expect(writes).toHaveLength(2);
+    expect(writes[1][1].headers.get('Idempotency-Key')).toBe(writes[0][1].headers.get('Idempotency-Key'));
+  });
   it('retires live stale confirmation and reviews the newly read version before any removal', async () => {
     const changed = { ...row, displayName: 'Updated council member', version: 2 };
     const mock = fetcher(reply(review), reply({ ...page, items: [changed] }), reply({ ...review, member: changed }), reply(undefined, 204));

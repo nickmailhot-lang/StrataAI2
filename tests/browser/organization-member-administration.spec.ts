@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-03-TC-04/05/08/11/12: keyboard member review and missing removal acknowledgment at ${viewport.width}px`, async ({ page, context, browser }) => {
@@ -56,7 +57,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const restoredResponse = await context.request.get(`/organizations/${org}/members/${ids[1]}`); expect(restoredResponse.status()).toBe(200);
       const restored = (await restoredResponse.json()).member; expect(restored.userId).toBe(ids[1]);
       const retry = page.getByRole('button', { name: 'Retry original removal' }); await expect(retry).toBeEnabled();
-      await retry.focus(); await retry.press('Enter');
+      await pressAdmittedAction(retry);
       await expect(page.getByText('Original removal acknowledged. Review current membership to check later access.', { exact: true })).toBeVisible();
       await expect(page.getByRole('status')).toBeFocused();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]); expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
@@ -65,7 +66,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       expect((await preservedResponse.json()).member).toEqual(restored);
       expect((await recipient.request.get(`/organizations/${org}/members`)).status()).toBe(200);
       const currentReview = page.getByRole('button', { name: 'Review current membership' }); await expect(currentReview).toBeEnabled();
-      await currentReview.focus(); await currentReview.press('Enter');
+      await openAdmittedReview(currentReview, page.getByText('Current role: Admin'));
       await expect(page.getByText('Current role: Admin')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Cancel removal' })).toBeFocused();
       await page.keyboard.press('Enter'); await expect(page.getByRole('dialog')).toHaveCount(0);

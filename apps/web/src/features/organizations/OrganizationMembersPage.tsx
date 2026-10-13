@@ -60,7 +60,7 @@ function Members({ organizationId }: { organizationId: string }) {
     if (!actorId) return;
     const refresh = () => {
       epoch.current++; refreshQueued.current = true;
-      setPage(undefined); setSelected(undefined); setReviewId(undefined);
+      setPage(undefined); setSelected(undefined);
       setLiveNotice('Checking current membership and access. Any original removal retry is preserved.');
       setReloadVersion(value => value + 1);
     };
@@ -83,9 +83,11 @@ function Members({ organizationId }: { organizationId: string }) {
     setHistory([]); setCursor(null); setDenied(true); setError('Organization members are unavailable to your account.');
     if (status === 401) navigate('/login', { replace: true });
   }
-  function begin() {
+  function begin(clearError = true) {
     if (pending.current) return undefined;
-    const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); return controller;
+    const controller = new AbortController(); pending.current = controller; setBusy(true);
+    if (clearError) setError(undefined);
+    return controller;
   }
   function finish(controller: AbortController) {
     if (mounted.current && pending.current === controller) { pending.current = undefined; setBusy(false); }
@@ -100,7 +102,7 @@ function Members({ organizationId }: { organizationId: string }) {
   }
   async function load(after: string | null, previous: (string | null)[], live = false) {
     if (retryIntent && !live) return;
-    const controller = begin(); if (!controller) return;
+    const controller = begin(!live || !currentIntent.current); if (!controller) return;
     const started = epoch.current;
     setPage(undefined); setSelected(undefined);
     if (!live) { setNotice(undefined); setRecovered(false); }
@@ -123,7 +125,9 @@ function Members({ organizationId }: { organizationId: string }) {
         if (live && currentIntent.current) {
           setLiveNotice('Current access checked. Retry the original removal before reviewing later membership.'); return;
         }
-        setPage(data); setCursor(after); setHistory(previous); setReviewId(undefined); setDenied(false);
+        setPage(data); setCursor(after); setHistory(previous);
+        if (!live) setReviewId(undefined);
+        setDenied(false);
         if (live) setLiveNotice('Current members checked. Review a membership again before confirming removal.');
       }, controller.signal);
     } catch { if (mounted.current && pending.current === controller) setError('Unable to load current members. Please retry.'); }

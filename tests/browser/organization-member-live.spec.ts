@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { pressAdmittedAction } from './keyboardAdmission';
 import { scopedBoardWorker } from './scopedBoardWorker';
 
 for (const width of [1280, 390]) {
@@ -147,7 +148,7 @@ for (const width of [1280, 390]) {
       const source = delivered.find(row => row.actorId === accounts[1].id && row.version === 3)!;
       expect(source.entityType).toBe('OrganizationMembership'); expect(source.entityId).toBe(restored.membershipId);
       expect(source.boardId).toBeNull(); expect(source.metadata).toEqual({});
-      const retry = page.getByRole('button', { name: 'Retry original removal' }); await retry.focus(); await retry.press('Enter');
+      const retry = page.getByRole('button', { name: 'Retry original removal' }); await pressAdmittedAction(retry);
       await expect(page.getByText('Original removal acknowledged. Review current membership to check later access.', { exact: true })).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]); expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
       expect((await (await context.request.get(`/organizations/${org}/members/${accounts[1].id}`)).json()).member).toEqual(restored);

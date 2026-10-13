@@ -1,4 +1,5 @@
 import { expect, test } from './releaseTest';
+import { openAdmittedReview } from './keyboardAdmission';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker } from './scopedBoardWorker';
 
@@ -39,8 +40,8 @@ for (const width of [1280, 390]) {
       await page.getByRole('combobox', { name: 'Intake List', exact: true }).click();
       await page.getByRole('option', { name: 'Reviewed intake List', exact: true }).click();
       const review = page.getByRole('button', { name: 'Review configuration change', exact: true });
-      await review.focus(); await page.keyboard.press('Enter');
-      const dialog = page.getByRole('dialog', { name: 'Review configuration change', exact: true }); await expect(dialog).toBeVisible();
+      const dialog = page.getByRole('dialog', { name: 'Review configuration change', exact: true });
+      await openAdmittedReview(review, dialog); await expect(dialog).toBeVisible();
       await expect(dialog.getByRole('button', { name: 'Return to draft' })).toBeFocused();
       for (const value of ['Reviewed legal name', 'Reviewed manager', 'Reviewed intake Board', 'Reviewed intake List', 'Source: Administrator supplied', 'Notes: Review annually'])
         await expect(dialog.getByText(value, { exact: true })).toBeVisible();
@@ -54,8 +55,15 @@ for (const width of [1280, 390]) {
         emergencyContacts: [{ name: 'Reviewed contact', phone: 'Reviewed telephone' }], defaultCategories: ['Maintenance'], defaultPriorities: ['Urgent'],
         jurisdictionPolicies: [{ key: 'review_cycle', value: '12', source: 'Administrator supplied', notes: 'Review annually' }] });
       await page.reload(); await expect(page.getByLabel(/^Legal name/)).toHaveValue('Reviewed legal name');
-      await page.getByRole('button', { name: 'View configuration history' }).click();
-      const history = page.getByRole('region', { name: 'Configuration history' }); await expect(history.getByRole('heading', { name: 'Revision 1', exact: true })).toBeVisible();
+      const history = page.getByRole('region', { name: 'Configuration history' });
+      const revision = history.getByRole('heading', { name: 'Revision 1', exact: true });
+      const viewHistory = page.getByRole('button', { name: 'View configuration history' });
+      await expect(async () => {
+        if (await revision.isVisible()) return;
+        if (await viewHistory.isVisible() && await viewHistory.isEnabled()) await viewHistory.click({ timeout: 500 });
+        await expect(revision).toBeVisible({ timeout: 500 });
+      }).toPass({ timeout: 5_000 });
+      await expect(revision).toBeVisible();
       await expect(history.getByText('Source: Administrator supplied', { exact: true })).toBeVisible();
       await expect(history.getByRole('heading', { name: 'Configuration history', exact: true })).toBeFocused();
     } finally { restoreWorker(); }
