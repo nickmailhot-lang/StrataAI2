@@ -114,6 +114,7 @@ public static class WorkManagementRegistration
                 provider.GetRequiredService<StrataAI.Application.Identity.ICommandActorAuthorization>()));
         services.AddSingleton<IWorkBoardAuthorization>(provider => (IWorkBoardAuthorization)provider.GetRequiredService<IWorkManagementService>());
         services.AddSingleton<ListBoardMovementCommand>();
+        services.AddSingleton<ListBoardMovementService>();
         services.AddSingleton<CardMassMentionPlanning>();
         services.AddSingleton<WorkSynchronizationService>();
         services.AddSingleton<OrganizationBoardSynchronizationService>();

@@ -26,7 +26,8 @@ public sealed class CardReminderScheduling(ICardReminderStore reminders, ICardRe
         {
             if (candidate.OrganizationId != after.OrganizationId || candidate.CardId != after.Id || !candidate.Enabled)
                 throw new InvalidOperationException("Invalid reminder candidate scope.");
-            var contextActive = before.BoardId == after.BoardId || await eligibility.CanReceiveAsync(after, candidate.UserId, ct);
+            var contextActive = before.BoardId == after.BoardId || after.LifecycleState == WorkItemLifecycleState.Active
+                && await eligibility.CanReceiveAsync(after, candidate.UserId, ct);
             // An eligible recipient keeps an already queued overdue attempt when
             // only its Board context changed. Ineligible recipients must lose it.
             if (contextActive && before.DueAt == after.DueAt && before.DueComplete == after.DueComplete &&
