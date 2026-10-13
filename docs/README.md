@@ -194,6 +194,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Permanent Card deletion (PRD-08 / PRD-18)](card-deletion-consent.md)
 - [Card movement controls](card-movement-ui.md)
 - [List copying](list-copy.md)
+- [List movement between Boards (implementation in progress)](list-board-movement.md)
 - [Permanent List deletion consent (PRD-07 / PRD-18)](list-deletion-consent.md)
 - [List position persistence](list-position-persistence.md)
 - [List rename review and recovery (PRD-07)](list-rename-persistence.md)

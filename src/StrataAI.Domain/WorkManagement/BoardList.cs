@@ -34,7 +34,7 @@ public sealed class BoardList : DomainEntity, IOrganizationScoped
 
     public Guid OrganizationId { get; }
 
-    public Guid BoardId { get; }
+    public Guid BoardId { get; private set; }
 
     public string Name { get; private set; }
 
@@ -50,6 +50,25 @@ public sealed class BoardList : DomainEntity, IOrganizationScoped
     {
         Rank = Require(rank, nameof(rank));
         MarkUpdated(updatedAt);
+    }
+
+    public void MoveToBoard(Guid destinationOrganizationId, Guid destinationBoardId, string rank, DateTimeOffset updatedAt)
+    {
+        if (destinationOrganizationId != OrganizationId)
+        {
+            throw new ArgumentException("List movement must remain within its Organization.", nameof(destinationOrganizationId));
+        }
+
+        if (destinationBoardId == Guid.Empty)
+        {
+            throw new ArgumentException("Board ID cannot be empty.", nameof(destinationBoardId));
+        }
+
+        var normalizedRank = Require(rank, nameof(rank));
+        // Complete validation before changing the canonical parent or rank.
+        MarkUpdated(updatedAt);
+        BoardId = destinationBoardId;
+        Rank = normalizedRank;
     }
 
     private static string Require(string value, string parameterName)
