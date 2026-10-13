@@ -96,6 +96,9 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
       expect(actual).toBe(expected);
     };
     const retainedState = () => query(`SELECT md5(jsonb_build_object('notifications',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='${org}'),'journal',(SELECT jsonb_agg(to_jsonb(e) ORDER BY recipient_id,sequence) FROM notification_events e WHERE tenant_id='${org}'),'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY recipient_id) FROM notification_event_streams s WHERE tenant_id='${org}'))::text);`);
+    const waitForOriginalAuthorityDelivery = async () => {
+      await expect.poll(() => query(`SELECT count(*) > 0 AND bool_and(state='SUCCEEDED') FROM background_jobs WHERE tenant_id='${org}' AND job_type='INVITATION_RECIPIENT_AUTHORITY_PAGE';`), { timeout: 30_000 }).toBe('t');
+    };
     let version = 1;
     for (const withdrawalFirst of [true, false]) {
       const current = await context.request.get(`/boards/${board}`); expect(current.status()).toBe(200);
@@ -117,6 +120,7 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
       const inbox = await member.request.get(`/organizations/${org}/notifications`); expect(inbox.status()).toBe(200); expect((await inbox.json()).items).toEqual([]);
       const sync = await member.request.get(`/organizations/${org}/notifications/sync?after=0`); expect(sync.status()).toBe(200); expect((await sync.json()).events).toEqual([]);
       for (const watch of watches) expect((await member.request.get(watch.path)).status()).toBe(404);
+      await waitForOriginalAuthorityDelivery();
       const committed = privateState(), retained = retainedState();
       if (!withdrawalFirst) {
         const id = query(`SELECT id FROM card_assignment_notifications WHERE tenant_id='${org}' AND recipient_id='${recipient}';`);
@@ -188,6 +192,7 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
         expect(receiptCount()).toBe(beforeReceipts + 1);
       }
       expect(query(`SELECT count(*) FROM notification_events WHERE tenant_id='${org}' AND recipient_id='${recipient}' AND notification_id IN (${selection}) AND event_type='NOTIFICATION_READ';`)).toBe(withdrawalFirst ? '0' : String(ids.length));
+      await waitForOriginalAuthorityDelivery();
       const committed = privateState(), retained = retainedState();
       const deniedRetry = await read(); expect(deniedRetry.status()).toBe(404); expect((await deniedRetry.json()).code).toBe('notification_not_found');
       const inbox = await member.request.get(`/organizations/${org}/notifications`); expect(inbox.status()).toBe(200); expect((await inbox.json()).items).toEqual([]);
@@ -212,6 +217,7 @@ test(`PRD-05/17: ${role} permission withdrawal and actual activity obey observed
       expect(query(`SELECT count(DISTINCT read_at) FROM card_assignment_notifications WHERE tenant_id='${org}' AND id IN (${selection});`)).toBe('1');
       expect(query(`SELECT count(*) FROM notification_events WHERE tenant_id='${org}' AND recipient_id='${recipient}' AND notification_id IN (${selection}) AND event_type='NOTIFICATION_READ';`)).toBe(String(ids.length));
       await expectPersistedNotificationDelivery(member.request, org, recipient, []);
+      await waitForOriginalAuthorityDelivery();
       const acknowledged = privateState();
       const retry = await read(); expect(retry.status()).toBe(200); expect(await retry.text()).toBe(originalReadText);
       await expectPrivateState(acknowledged);
