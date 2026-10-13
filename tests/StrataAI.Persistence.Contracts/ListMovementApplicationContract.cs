@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Cryptography;
 using Npgsql;
 using StrataAI.Application.Common;
 using StrataAI.Application.BackgroundJobs;
@@ -24,6 +25,21 @@ internal static class ListMovementApplicationContract
         public Task<bool> VerifyAsync(Guid actorId, CancellationToken ct = default) => Task.FromResult(Allowed);
     }
     private sealed class Context : IWorkCommandContext { public Guid? IdempotencyKey { get; set; } = Guid.NewGuid(); }
+    private sealed class FileObjects(AttachmentObjectReference reference, byte[] bytes) : IAttachmentObjectStorage
+    {
+        public int Reads { get; private set; }
+        public Func<Task>? AfterRead { get; set; }
+        public Task<StoredAttachmentObject> WritePrivateAsync(AttachmentObjectReference target, Stream source, long maximumBytes, CancellationToken ct)
+            => throw new InvalidOperationException("Read-only object fixture.");
+        public Task<bool> DeletePrivateAsync(AttachmentObjectReference target, CancellationToken ct) => Task.FromResult(false);
+        public async Task<Stream?> OpenPrivateReadAsync(AttachmentObjectReference target, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested(); Reads++;
+            if (target != reference) return null;
+            if (AfterRead is { } after) await after();
+            return new MemoryStream(bytes, writable: false);
+        }
+    }
     private sealed class PublicationClock : IClock
     {
         public DateTimeOffset UtcNow { get; } = new(DateTimeOffset.UtcNow.AddMinutes(1).UtcTicks / 10 * 10 + 7, TimeSpan.Zero);
@@ -103,6 +119,7 @@ internal static class ListMovementApplicationContract
               'streams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY board_id) FROM work_event_streams s WHERE tenant_id='{{tenant}}'),
               'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='{{tenant}}'),
               'reminders',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM card_reminders r WHERE tenant_id='{{tenant}}'),
+              'files',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM attachments a WHERE tenant_id='{{tenant}}'),
               'watches',(SELECT jsonb_agg(to_jsonb(w) ORDER BY id) FROM watch_subscriptions w WHERE tenant_id='{{tenant}}'),
               'notices',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='{{tenant}}'),
               'noticeStreams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY recipient_id) FROM notification_event_streams s WHERE tenant_id='{{tenant}}'),
@@ -127,6 +144,23 @@ internal static class ListMovementApplicationContract
         var connections = provider.GetRequiredService<PostgresConnectionFactory>();
         var reminderStore = provider.GetRequiredService<ICardReminderStore>();
         var activeCard = Guid.Parse(await Scalar($"SELECT id FROM cards WHERE tenant_id='{tenant}' AND lifecycle_state='ACTIVE';"));
+        var file = Guid.NewGuid(); var reference = new AttachmentObjectReference(tenant, file);
+        var bytes = Enumerable.Range(0, 128).Select(n => (byte)n).ToArray();
+        var digest = Convert.ToHexStringLower(SHA256.HashData(bytes));
+        // Existing clean metadata is admin-staged; this is not scanner or
+        // managed-provider certification. The actual reader verifies all bytes.
+        await Sql($$"""
+            INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,mime_type,size_bytes,storage_key,sha256,
+              scan_status,scanned_at,created_at,updated_at,version)
+            VALUES ('{{file}}','{{tenant}}','{{activeCard}}','{{actor}}','FILE','Private file','application/pdf',128,
+              '{{reference.ObjectKey}}','{{digest}}','CLEAN',now(),now(),now(),2);
+            """);
+        var fileBefore = await Scalar($"SELECT to_jsonb(a)::text FROM attachments a WHERE id='{file}';");
+        var objects = new FileObjects(reference, bytes);
+        var downloadAdmission = provider.GetRequiredService<AttachmentDownloadAdmissionService>();
+        var download = new AttachmentDownloadService(downloadAdmission, new PrivateAttachmentDownloadPreparer(objects));
+        var oldFileGrant = (await downloadAdmission.AdmitAsync(activeCard, file, recipient, ct)).Value;
+        Require(oldFileGrant is not null, "Source file admission fixture was unavailable.");
         var activeReminderBefore = await Scalar($"SELECT to_jsonb(r)::text FROM card_reminders r WHERE tenant_id='{tenant}' AND card_id='{activeCard}';");
         await connections.ExecuteTenantCommandAsync(tenant, async () =>
         {
@@ -180,6 +214,38 @@ internal static class ListMovementApplicationContract
         Require(await Scalar(GraphHash()) == committed, "Replay reapplied movement or publication.");
         Require((await movement.MoveAsync(list, actor, source, destination, 1, Guid.NewGuid(), "list-app-test", ct)).ErrorCode == "idempotency_key_reused", "Changed replay body was admitted.");
         Require(await Scalar(GraphHash()) == committed, "Changed replay mutated protected state.");
+        Require(await Scalar($"SELECT to_jsonb(a)::text FROM attachments a WHERE id='{file}';") == fileBefore,
+            "List movement changed stable File identity, integrity or lifecycle metadata.");
+        Require(!(await downloadAdmission.RevalidateAsync(oldFileGrant!, recipient, ct)).Succeeded,
+            "File admission from the former source Board survived movement.");
+        var beforeRead = objects.Reads;
+        Require(!(await download.PrepareAsync(activeCard, file, member, ct)).Succeeded && objects.Reads == beforeRead,
+            "Source-only member reached moved File provider bytes.");
+        var content = await download.PrepareAsync(activeCard, file, recipient, ct);
+        Require(content.Succeeded == eligible, "File delivery ignored current private-destination membership.");
+        if (content.Value is { } admittedFile)
+        {
+            await using (admittedFile)
+            {
+                using var copied = new MemoryStream(); await admittedFile.Bytes.CopyToAsync(copied, ct);
+                Require(copied.ToArray().SequenceEqual(bytes), "Moved File changed its integrity-bound bytes.");
+            }
+        }
+        else Require(objects.Reads == beforeRead, "Destination-ineligible File request reached provider bytes.");
+        if (eligible)
+        {
+            objects.AfterRead = () => Sql($"UPDATE board_members SET status='REMOVED',updated_at=now() WHERE tenant_id='{tenant}' AND board_id='{destination}' AND user_id='{recipient}';");
+            try
+            {
+                Require(!(await download.PrepareAsync(activeCard, file, recipient, ct)).Succeeded && objects.Reads == beforeRead + 2,
+                    "Destination permission loss during File read retained delivery.");
+            }
+            finally
+            {
+                objects.AfterRead = null;
+                await Sql($"UPDATE board_members SET status='ACTIVE',updated_at=now() WHERE tenant_id='{tenant}' AND board_id='{destination}' AND user_id='{recipient}';");
+            }
+        }
         await Sql($"UPDATE boards SET lifecycle_state='ARCHIVED',archived_at=now(),updated_at=now(),version=version+1 WHERE id='{source}';");
         var withdrawn = await Scalar(GraphHash());
         Require((await movement.MoveAsync(list, actor, source, destination, 1, null, "list-app-test", ct)).ErrorCode == "list_not_found", "Replay ignored original source lifecycle withdrawal.");
@@ -224,5 +290,6 @@ internal static class ListMovementApplicationContract
             "Original delivery lost or repeated its destination event.");
         Console.WriteLine($"List movement Application: three lifecycles, populated watches/overdue Reminders, destination eligibility {eligible}, complete late rollback, original-key retry/replay and source withdrawal passed; session admission controlled.");
         Console.WriteLine($"Original Reminder Worker delivery: {delivered} delivered, {superseded} superseded; live-lease retry unchanged, original acknowledgment retained, completed lease withdrawn.");
+        Console.WriteLine("Moved original File: stable metadata/bytes, former admission withdrawn, current destination rights, pre-I/O denial and late permission loss passed; object provider/clean metadata are fixtures.");
     }
 }
