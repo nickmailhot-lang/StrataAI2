@@ -158,3 +158,43 @@ Bash syntax checks pass. This change closes an owned-cleanup observation gap;
 it does not explain the earlier machine-wide network inventory discrepancy or
 turn that outer audit into a pass. Current complete immutable-image release CI
 and provider acceptance remain required; ARCH-11 stays open.
+
+## Compose v2 restart compatibility — 2026-10-14
+
+Retained `17bc37d7` run `38565885906` passed every source, security and runtime
+integration group and its required aggregate, but release job `115952894805`
+failed after healthy startup and graceful API/Worker stop: its Compose runner
+rejected `start --wait` with `unknown flag: --wait`. No completed release bundle
+is claimed for that run.
+
+The driver now restarts only API/Worker with
+`up --no-deps --no-recreate --wait --wait-timeout 120`. The same runner already
+supports waiting on `up` for initial startup. The
+[Compose up contract](https://docs.docker.com/reference/cli/docker/compose/up/)
+defines `--no-recreate` to preserve existing containers and `--wait` to require
+running/healthy services. Existing graceful exit/OOM checks, original container
+IDs, verified image IDs, post-restart health/build identity and deadlines remain
+mandatory. There is no fallback that ignores readiness or recreates a failed host.
+
+An executable regression rejects the original unsupported command before the
+repair. Nine restart scenarios then pass for portable restart, API/Worker exit
+failures, API/Worker OOM, each replacement container, failed readiness waiting
+and failed post-restart runtime verification. All **20 startup tests**, **242
+CI/startup guards** and Bash syntax checks pass.
+
+The complete changed worktree driver also exits zero against original once-built
+`3f9957d2` images: migration/provisioning, Production startup, health/proxy/build
+identity, graceful stop, same-container/image restart and scoped cleanup pass.
+The capture explicitly records a dirty worktree and driver SHA-256
+`168b2d26a299e3b627fd027956e5e8ad2cb1cff23c5f7d30fe06c95353b34b7c`;
+this is supporting repair evidence, not a fully green new-commit release.
+All 161 captured inputs match and original image archive hashes are unchanged.
+Private evidence is under `mvp-bundle-c00b45b3`.
+
+The outer whole-network inventory audit still exits one because only the
+built-in `bridge` ID changes; its replacement cause is unestablished. Independent
+checks preserve all original containers/volumes and every other network ID, find
+zero owned resources and confirm removal of three loaded images, ZIP/tar copies
+and temporary credentials/inspection. Current full immutable CI and actual
+release assembly/post-startup integrity remain required. ARCH-11 and the MVP
+milestone stay open; large-load tests remain disabled.

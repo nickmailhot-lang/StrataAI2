@@ -32,6 +32,67 @@ test('startup refuses existing operator settings without rewriting or requiring 
   });
 });
 
+const startupSource = readFileSync(script, 'utf8');
+const restartStart = startupSource.indexOf('\napi=$(');
+const restartEnd = startupSource.lastIndexOf('\necho ');
+assert.ok(restartStart >= 0 && restartEnd > restartStart, 'Maintained restart sequence must be present');
+const restartSequence = startupSource.slice(restartStart + 1, restartEnd);
+for (const scenario of [
+  { name: 'portable Compose restart keeps existing containers', status: 0 },
+  { name: 'API exit failure', badExit: 'api-original', status: 1 },
+  { name: 'Worker exit failure', badExit: 'worker-original', status: 1 },
+  { name: 'API OOM', badOom: 'api-original', status: 1 },
+  { name: 'Worker OOM', badOom: 'worker-original', status: 1 },
+  { name: 'API replacement', replacement: 'api', status: 1 },
+  { name: 'Worker replacement', replacement: 'worker', status: 1 },
+  { name: 'restart readiness failure', waitFailure: true, status: 9 },
+  { name: 'post-restart runtime failure', healthFailure: true, status: 12 },
+]) test(`release restart: ${scenario.name}`, () => {
+  fixture(root => {
+    const driver = join(root, 'restart-test.sh');
+    writeFileSync(driver, `#!/usr/bin/env bash
+set -euo pipefail
+compose=(docker compose)
+docker() {
+  printf '%s\\n' "$*" >> calls.log
+  if [ "$1" = inspect ]; then
+    case "$3" in
+      '{{.State.ExitCode}}') if [ "$STRATAAI_TEST_BAD_EXIT" = "$4" ]; then printf 143; else printf 0; fi ;;
+      '{{.State.OOMKilled}}') if [ "$STRATAAI_TEST_BAD_OOM" = "$4" ]; then printf true; else printf false; fi ;;
+      *) return 64 ;;
+    esac
+    return 0
+  fi
+  if [ "$1" != compose ]; then return 64; fi
+  case "$2" in
+    ps) if [ -f restarted ] && [ "$STRATAAI_TEST_REPLACEMENT" = "$4" ]; then printf '%s-replacement' "$4"; else printf '%s-original' "$4"; fi ;;
+    stop) test "$*" = 'compose stop --timeout 20 api worker' ;;
+    start) printf 'unknown flag: --wait\\n' >&2; return 64 ;;
+    up)
+      test "$*" = 'compose up --no-deps --no-recreate --wait --wait-timeout 120 api worker'
+      if [ "$STRATAAI_TEST_WAIT_FAILURE" = 1 ]; then return 9; fi
+      printf restarted > restarted ;;
+    *) return 64 ;;
+  esac
+}
+check_runtime() {
+  if [ "$STRATAAI_TEST_HEALTH_FAILURE" = 1 ]; then return 12; fi
+  printf verified > runtime.checked
+}
+${restartSequence}
+`);
+    const result = spawnSync(bash, [driver], { cwd: root, encoding: 'utf8', env: { ...process.env, BASH_ENV: undefined,
+      STRATAAI_TEST_BAD_EXIT: scenario.badExit ?? '', STRATAAI_TEST_BAD_OOM: scenario.badOom ?? '',
+      STRATAAI_TEST_REPLACEMENT: scenario.replacement ?? '',
+      STRATAAI_TEST_WAIT_FAILURE: scenario.waitFailure ? '1' : '0', STRATAAI_TEST_HEALTH_FAILURE: scenario.healthFailure ? '1' : '0' } });
+    assert.equal(result.status, scenario.status, result.stderr);
+    if (scenario.status === 0) {
+      assert.equal(readFileSync(join(root, 'runtime.checked'), 'utf8'), 'verified');
+      assert.ok(readFileSync(join(root, 'calls.log'), 'utf8').includes('compose up --no-deps --no-recreate --wait --wait-timeout 120 api worker'));
+    } else assert.throws(() => readFileSync(join(root, 'runtime.checked')), { code: 'ENOENT' });
+  });
+});
+
 test('startup refuses application checkouts before secret creation or Docker/SDK commands', () => {
   for (const source of ['.git', 'src', 'apps']) fixture((root, run) => {
     mkdirSync(join(root, source));

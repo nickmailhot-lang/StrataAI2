@@ -96,7 +96,9 @@ for container in "$api" "$worker"; do
   test "$(docker inspect --format '{{.State.ExitCode}}' "$container")" = 0
   test "$(docker inspect --format '{{.State.OOMKilled}}' "$container")" = false
 done
-"${compose[@]}" start --wait --wait-timeout 120 api worker >/dev/null
+# Older Compose v2 runners support waiting on up, but not on start. Restart
+# only these existing hosts and keep the same-container assertions below.
+"${compose[@]}" up --no-deps --no-recreate --wait --wait-timeout 120 api worker >/dev/null
 test "$("${compose[@]}" ps -q api)" = "$api"
 test "$("${compose[@]}" ps -q worker)" = "$worker"
 check_runtime

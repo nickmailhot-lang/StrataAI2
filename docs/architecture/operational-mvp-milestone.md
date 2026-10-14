@@ -309,3 +309,12 @@ Independent checks find zero owned containers/volumes/networks and confirm
 removal of three loaded images, downloaded archives and temporary credentials.
 This supports deployment readiness but is not a passing current full release;
 ARCH-11 and the milestone remain open, and large-load testing remains disabled.
+
+The [Compose restart compatibility repair](release-bundle-startup.md#compose-v2-restart-compatibility--2026-10-14)
+fixes the retained release job's rejected `start --wait` flag by using waited
+`up` without dependencies or recreation. Original shutdown, container/image
+identity, readiness and deadlines remain required. All 20 startup tests and 242
+guards pass; the complete changed native driver passes against retained images.
+Independent owned cleanup passes, with the separate built-in bridge-ID audit
+failure documented. A complete new-commit immutable CI and release bundle are
+still required. The milestone stays pending and large-load tests stay disabled.
