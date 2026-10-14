@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.DataProtection;
 using System.Security.Cryptography;
 using Npgsql;
 using StrataAI.Application.Common;
@@ -145,6 +147,9 @@ internal static class ListMovementApplicationContract
               'notices',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='{{tenant}}'),
               'noticeStreams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY recipient_id) FROM notification_event_streams s WHERE tenant_id='{{tenant}}'),
               'noticeEvents',(SELECT jsonb_agg(to_jsonb(e) ORDER BY event_id) FROM notification_events e WHERE tenant_id='{{tenant}}'),
+              'navigation',(SELECT jsonb_agg(to_jsonb(e) ORDER BY event_id) FROM navigation_interaction_events e WHERE organization_id='{{tenant}}'),
+              'navigationReceipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY request_id) FROM navigation_interaction_replays r
+                WHERE event_id IN (SELECT event_id FROM navigation_interaction_events WHERE organization_id='{{tenant}}')),
               'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM work_command_replays r WHERE tenant_id='{{tenant}}'))::text);
             """;
         var actors = new ActorFence(); var context = new Context();
@@ -152,6 +157,15 @@ internal static class ListMovementApplicationContract
         services.AddSingleton(new PostgresConnectionFactory(apiConnection));
         services.AddSingleton<PublicationClock>(); services.AddSingleton<IClock>(p => p.GetRequiredService<PublicationClock>());
         services.AddSingleton<PostgresBackgroundJobStore>();
+        // Fixture-owned ephemeral keys; no host key files or copied runtimes.
+        var identityConfiguration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["STRATAAI_AUTH_RETRY_CURRENT_KEY"] = "contract",
+            ["STRATAAI_AUTH_RETRY_KEYS"] = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string>
+                { ["contract"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)) })
+        }).Build();
+        services.AddStrataAiIdentity(identityConfiguration, new(RuntimeMode.Production, "contract", "contract"));
+        services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
         services.AddSingleton(new IdentityPolicy(false, true, 12, TimeSpan.FromDays(1), TimeSpan.FromMinutes(30)));
         services.AddSingleton<ICommandActorAuthorization>(actors); services.AddSingleton<IWorkCommandContext>(context);
         services.AddSingleton<IIdentityStore, PostgresIdentityStore>();
@@ -263,6 +277,21 @@ internal static class ListMovementApplicationContract
         await using (var q = new NpgsqlCommand($"SELECT id FROM background_jobs WHERE tenant_id='{tenant}' AND job_type='CARD_REMINDER';", admin))
         await using (var r = await q.ExecuteReaderAsync(ct))
             while (await r.ReadAsync(ct)) originalJobs.Add(r.GetGuid(0));
+        var activeVersionBefore = long.Parse(await Scalar($"SELECT version FROM cards WHERE id='{activeCard}';"));
+        var search = provider.GetRequiredService<GlobalSearchService>();
+        var binding = new GlobalSearchBinding(recipient, "Stable Card", "", "", true, GlobalSearchLifecycleScope.Active);
+        var originalSearch = await search.SearchAsync(binding, null, ct);
+        Require(originalSearch.Succeeded && originalSearch.Value is { Items.Count: 1, NextCursor: not null }
+            && originalSearch.Value.Items[0].Card.Id == activeCard, "Restricted source search was unavailable.");
+        var navigation = provider.GetRequiredService<NavigationInteractionReplayProducer>();
+        Task<IdentityOperation<NavigationInteractionEvent>> Observe(Guid boardId, long version, Guid key)
+        {
+            var fingerprint = WorkCommand.Create(recipient, key, "NavigationObservation", activeCard,
+                new { kind = "card", organizationId = tenant, boardId, cardId = activeCard, version }, "navigation_unavailable").Fingerprint.ToLowerInvariant();
+            return navigation.CardAsync(recipient, tenant, boardId, activeCard, version, key, fingerprint, ct);
+        }
+        var navigationKey = Guid.NewGuid();
+        Require((await Observe(source, activeVersionBefore, navigationKey)).Succeeded, "Restricted original Card observation failed.");
         // Retention provenance rejects future registration clocks. Use live time
         // for that setup, then retain the deliberate seventh-digit List/event
         // precision probe only for the movement operation.
@@ -271,7 +300,6 @@ internal static class ListMovementApplicationContract
         var auditsBefore = int.Parse(await Scalar($"SELECT count(*) FROM audit_events WHERE tenant_id='{tenant}';"));
         var eventsBefore = int.Parse(await Scalar($"SELECT count(*) FROM work_events WHERE tenant_id='{tenant}';"));
         var readyJobsBefore = int.Parse(await Scalar($"SELECT count(*) FROM background_jobs WHERE tenant_id='{tenant}' AND job_type='WORK_EVENT_READY';"));
-        var activeVersionBefore = long.Parse(await Scalar($"SELECT version FROM cards WHERE id='{activeCard}';"));
         var denied = await movement.MoveAsync(list, member, source, destination, 999, null, "list-app-test", ct);
         Require(denied.ErrorCode == "list_not_found", "Destination refusal disclosed a version conflict.");
         Require(await Scalar(GraphHash()) == before, "Unauthorized movement changed protected state.");
@@ -311,6 +339,34 @@ internal static class ListMovementApplicationContract
         Require(await Scalar(GraphHash()) == committed, "Replay reapplied movement or publication.");
         Require((await movement.MoveAsync(list, actor, source, destination, 1, Guid.NewGuid(), "list-app-test", ct)).ErrorCode == "idempotency_key_reused", "Changed replay body was admitted.");
         Require(await Scalar(GraphHash()) == committed, "Changed replay mutated protected state.");
+        provider.GetRequiredService<PublicationClock>().Live = true;
+        var afterSearch = await search.SearchAsync(binding, null, ct);
+        Require(afterSearch.Succeeded && afterSearch.Value!.Items.Count == (eligible ? 1 : 0), "Moved search ignored current destination membership.");
+        if (eligible) Require(afterSearch.Value!.Items[0].Card is { } result && result.Id == activeCard && result.BoardId == destination
+            && result.ListId == list && result.Version == activeVersionBefore + 1, "Moved search retained stale source context.");
+        var continuedSearch = await search.SearchAsync(binding, originalSearch.Value!.NextCursor, ct);
+        Require(continuedSearch.Succeeded && (eligible || continuedSearch.Value!.Items.Count == 0)
+            && continuedSearch.Value!.Items.All(item => item.Card.BoardId == destination), "Original search cursor leaked former or unauthorized scope.");
+        Require(!(await Observe(source, activeVersionBefore, navigationKey)).Succeeded, "Old source-bound navigation receipt survived movement.");
+        var destinationNavigationKey = Guid.NewGuid();
+        var destinationNavigation = await Observe(destination, activeVersionBefore + 1, destinationNavigationKey);
+        Require(destinationNavigation.Succeeded == eligible, "New navigation observation ignored destination authority.");
+        if (eligible)
+        {
+            var navigationBefore = await Scalar(GraphHash());
+            Require(await Observe(destination, activeVersionBefore + 1, destinationNavigationKey) == destinationNavigation,
+                "Destination navigation replay changed its original acknowledgment.");
+            Require(await Scalar(GraphHash()) == navigationBefore, "Navigation replay changed stored state.");
+            await Sql($"UPDATE board_members SET status='REMOVED',updated_at=now() WHERE tenant_id='{tenant}' AND board_id='{destination}' AND user_id='{recipient}';");
+            try
+            {
+                Require(!(await Observe(destination, activeVersionBefore + 1, destinationNavigationKey)).Succeeded,
+                    "Revoked destination retained private navigation receipt delivery.");
+                var hiddenSearch = await search.SearchAsync(binding, null, ct);
+                Require(hiddenSearch.Succeeded && hiddenSearch.Value!.Items.Count == 0, "Revoked destination retained moved search results.");
+            }
+            finally { await Sql($"UPDATE board_members SET status='ACTIVE',updated_at=now() WHERE tenant_id='{tenant}' AND board_id='{destination}' AND user_id='{recipient}';"); }
+        }
         Require(await Scalar($"SELECT to_jsonb(a)::text FROM attachments a WHERE id='{file}';") == fileBefore,
             "List movement changed stable File identity, integrity or lifecycle metadata.");
         Require(await Scalar($"SELECT to_jsonb(h)::text FROM record_retention_holds h WHERE id='{holdId}';") == holdBefore
@@ -449,5 +505,6 @@ internal static class ListMovementApplicationContract
         Console.WriteLine("Moved original File: stable metadata/bytes, former admission withdrawn, current destination rights, pre-I/O denial and late permission loss passed; measured bytes and scanner verdict are fixtures.");
         Console.WriteLine("Moved cover: actual Worker preview publication and cover command, stable selection/history, preview namespace/integrity, old admission withdrawal and current/late destination permission checks passed; encoding/provider are fixtures.");
         Console.WriteLine("Moved File retention: actual restricted review/classification/hold, unchanged context/history, current destination disposition, source archive, release and immutable original receipt recovery passed; actor/session admission controlled.");
+        Console.WriteLine("Moved discovery: actual restricted global search/cursor and owning navigation receipts, current destination context/admission, source withdrawal, unchanged replay and revoked access passed; actor/session admission and ephemeral keys are fixtures.");
     }
 }
