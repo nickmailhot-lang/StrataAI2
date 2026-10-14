@@ -151,3 +151,54 @@ it('PRD-01 recovers a lost confirmation after returning to the same Board with a
   expect(requests).toHaveLength(2); expect(requests[0][0]).toBe(requests[1][0]);
   expect(new Headers(requests[0][1].headers).get('Idempotency-Key')).toBe(new Headers(requests[1][1].headers).get('Idempotency-Key'));
 });
+
+async function pendingReturnedOriginal() {
+  let currentActor = actor;
+  let finish!: (value: Response) => void;
+  const writes: { path: string; init: RequestInit }[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/me') return response({ id: currentActor });
+    writes.push({ path, init: init! });
+    if (writes.length === 1) throw new TypeError('Lost original reply');
+    return new Promise<Response>(resolve => { finish = resolve; });
+  }));
+  const first = render(<NavigationConfirmation target={target} />);
+  await screen.findByRole('button', { name: 'Retry navigation confirmation' });
+  first.unmount();
+  const view = render(<NavigationConfirmation target={{ ...target, version: 4 }} />);
+  await waitFor(() => expect(writes).toHaveLength(2));
+  return { view, writes, finish: (value: Response) => finish(value), changeActor: (value: string) => { currentActor = value; } };
+}
+
+it('PRD-01 keeps one original replay alive through protected-read admission changes', async () => {
+  const replay = await pendingReturnedOriginal();
+  replay.view.rerender(<NavigationConfirmation target={{ ...target, version: 4 }} admitted={false} />);
+  expect(replay.writes[1].init.signal?.aborted).toBe(false);
+  replay.view.rerender(<NavigationConfirmation target={{ ...target, version: 4 }} admitted />);
+  expect(replay.writes).toHaveLength(2);
+  await act(async () => replay.finish(response(source)));
+  await waitFor(() => expect(sessionStorage.length).toBe(0));
+  expect(replay.writes).toHaveLength(2);
+  expect(replay.writes[1].path).toBe(replay.writes[0].path);
+  expect(new Headers(replay.writes[1].init.headers).get('Idempotency-Key')).toBe(new Headers(replay.writes[0].init.headers).get('Idempotency-Key'));
+  expect(screen.queryByRole('button', { name: 'Retry navigation confirmation' })).toBeNull();
+});
+
+it('PRD-01 scope retirement still aborts a replay and preserves its unresolved original', async () => {
+  const replay = await pendingReturnedOriginal();
+  replay.view.rerender(<NavigationConfirmation target={{ ...target, version: 4 }} admitted={false} />);
+  replay.view.unmount();
+  expect(replay.writes[1].init.signal?.aborted).toBe(true);
+  await act(async () => replay.finish(response(source)));
+  expect(sessionStorage.length).toBe(1); expect(replay.writes).toHaveLength(2);
+});
+
+it('PRD-01 a changed final actor cannot acknowledge a replay during a protected read', async () => {
+  const replay = await pendingReturnedOriginal();
+  replay.view.rerender(<NavigationConfirmation target={{ ...target, version: 4 }} admitted={false} />);
+  replay.changeActor('99999999-9999-4999-8999-999999999999');
+  await act(async () => replay.finish(response(source)));
+  replay.view.rerender(<NavigationConfirmation target={{ ...target, version: 4 }} admitted />);
+  expect(sessionStorage.length).toBe(1); expect(replay.writes).toHaveLength(2);
+  expect(screen.queryByRole('button', { name: 'Retry navigation confirmation' })).toBeNull();
+});

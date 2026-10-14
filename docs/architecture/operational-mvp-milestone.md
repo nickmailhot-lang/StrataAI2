@@ -145,3 +145,26 @@ container identities using only 2,424 bytes of archives, then removes them.
 This identity probe is not production startup/restart or full immutable-release
 acceptance. Those complete gates remain required, and large-load tests remain
 disabled until after the MVP milestone.
+
+## Additional navigation and deployment evidence (2026-10-14)
+
+The [navigation replay repair](../navigation-observations.md#original-navigation-replay-across-protected-reads-2026-10-14)
+keeps an admitted original request alive through protected reads without a
+third dispatch, preserving scope/account withdrawal. All three unchanged
+viewport scenarios and all 26 navigation checks pass; the full web suite passes
+2,581 tests across 174 files. Original counts, receipts, session retirement,
+later visits, Back, accessibility and deadlines remain. Captured inputs match
+and owned fixtures are removed. Current complete immutable CI still governs
+acceptance.
+
+The maintained source-free deployment helper also exits 0 locally with retained
+`5f399e35` images and the `48cb14ab` driver: migrations, restricted roles,
+Production health/proxy/readiness, archive-bound image/build identity, graceful
+API/Worker stop and restart of the same containers pass. Its outer private
+audit exits 1 afterward on whole-machine network-ID equality; that is recorded
+as a failed outer audit. Independent scoped checks prove the owned network's
+create/destroy events and zero owned containers/volumes/networks, with images,
+archives/tool, credentials and inspection removed. Original stopped PostgreSQL,
+its volume and custom network are preserved. This supporting local execution
+does not certify a physically clean host or new full release. Large-load tests
+remain disabled; these samples close no ticket or milestone.

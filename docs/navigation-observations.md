@@ -245,6 +245,40 @@ release proof; its result is pending. The full scenario selection, original
 assertions and zero test retries remain. PRD-01 stays open at **34% estimated work
 remaining** (planning estimate).
 
+## Original navigation replay across protected reads (2026-10-14)
+
+Retained run `38507457807`, shard 3 job `115697267209`, fails all three
+viewports with three Card requests where two are required. Their keys/revisions
+are identical: the first reply is deliberately lost, then a protected read
+cancels the returned original replay and renewed admission dispatches it again.
+A new component regression reproduces that second-request cancellation.
+
+`NavigationConfirmation` now keeps one active original replay through temporary
+presentation withdrawal, finishing server/final-account checks without a
+duplicate POST. Scope retirement/unmount always aborts; first observations still
+cancel, and changed-account acknowledgments remain refused. Original target,
+revision, key, session recovery and confirmed-visit deduplication remain intact.
+No browser assertion, request count, retry policy or deadline is relaxed.
+
+Three added regressions cover read overlap, scope retirement and changed final
+account. The unchanged component records one failure and 12 passes; after the
+repair all four navigation files pass **26/26**. The full web suite passes
+**2,581 tests across 174 files**, with no skips. Lint, browser types, build,
+224 CI/shard/startup guards and 398-case shard collection pass; the existing
+frontend chunk-size warning remains.
+
+The complete unchanged desktop/tablet/phone browser file passes **3/3 in
+140,197.574 ms**, with zero skips, unexpected/flaky results, retries, top-level
+errors or diagnostic hooks. Actual server event, lost first reply, exactly two
+identical original requests, newer Card detail, session-original retirement,
+fresh later visit, keyboard Back, accessibility and 120-second deadlines remain.
+Independent checks match 2,143 hosted inputs, 1,441 native inputs, 168 frozen
+browser files and four served assets. Owned fixtures, credentials and newly
+pulled support images are removed; original stopped PostgreSQL is preserved.
+This is compiled-runtime/controlled-account support, not current immutable/full
+release certification. PRD-01 stays open at **34% estimated work remaining**;
+large-load testing remains disabled until after the MVP.
+
 ### Complete schema-115 Board phase passed
 
 The fresh current compiled-source invocation passes **31/31 cases across all

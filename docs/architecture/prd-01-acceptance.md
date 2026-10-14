@@ -350,3 +350,16 @@ conflict drafts, navigation and tenant/public-reader isolation. The original
 test deadline and release pacing remain. Captured source/runtime/web hashes and
 owned cleanup are independently verified. Local compiled-runtime evidence does
 not replace current immutable/full CI; estimated remaining work stays **34%**.
+
+## Original navigation replay during protected reads
+
+The [navigation replay repair](../navigation-observations.md#original-navigation-replay-across-protected-reads-2026-10-14)
+records three retained viewport failures, the canceled replay's original key
+and revision, and a failing component regression. One active replay now survives
+temporary read admission changes, retaining scope/account fences. The complete
+unchanged three-viewport scenario passes 3/3 with exact original requests,
+receipt/session retirement, later fresh visit, keyboard Back, accessibility and
+deadlines. All 26 navigation checks and the full 2,581-test web suite pass.
+Inputs and owned cleanup are independently verified. Current immutable/full
+acceptance remains required; work remaining stays **34%**, with large-load
+testing deferred until after the MVP.
