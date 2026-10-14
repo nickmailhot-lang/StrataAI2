@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 import { trackBoardHistoryChanges, trackInvitationAdmission } from './invitationAdmissionTracker';
 
 // Real account invitations, explicit Board membership and Card assignment.
@@ -164,9 +164,12 @@ for (const width of [1280, 390]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       const memberPage = await teammate.newPage(); const memberReads = trackBoardReads(memberPage, board, cardPath);
       await memberPage.goto(cardPath); await expect.poll(memberReads).toBeGreaterThanOrEqual(2);
-      await memberPage.getByRole('button', { name: 'Review Card comments', exact: true }).press('Enter');
-      await memberPage.getByRole('button', { name: 'Add comment', exact: true }).press('Enter');
-      await memberPage.getByRole('textbox', { name: 'New comment', exact: true }).fill('Member self @card @board');
+      const memberReview = memberPage.getByRole('button', { name: 'Review Card comments', exact: true });
+      const memberAdd = memberPage.getByRole('button', { name: 'Add comment', exact: true });
+      const memberEditor = memberPage.getByRole('textbox', { name: 'New comment', exact: true });
+      await openAdmittedReview(memberReview, memberAdd);
+      await openAdmittedReview(memberAdd, memberEditor);
+      await memberEditor.fill('Member self @card @board');
       await expect(memberPage.getByRole('checkbox', { name: 'Notify all current board participants (@board)', exact: true })).toBeDisabled();
       await memberPage.getByRole('checkbox', { name: 'Notify current teammates assigned to this Card (@card)', exact: true }).press('Space');
       await save(memberPage);

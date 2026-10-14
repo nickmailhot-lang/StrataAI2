@@ -227,3 +227,13 @@ local baseline passes and is not claimed as reproduction. The complete
 changed case passes 1/1 in 77,774.484 ms. Inputs match and owned fixtures are
 removed. PRD-17 remains open pending current immutable/full CI and remaining
 acceptance, with large-load tests deferred until after the operational MVP.
+
+The [member group-mention admission follow-up](comments-mentions-activity.md#member-group-mention-review-admission-2026-10-14)
+observes read-only review/editor opening before member text entry. The retained
+phone trace stalls before a member comments read; the unchanged local baseline
+passes and is not claimed as reproduction. The changed complete desktop/phone
+file passes 2/2 in 149,827.496 ms with original receipt, explicit consent, role,
+private delivery, actual rolling-quota refusal, withdrawal and accessibility
+checks intact. Inputs match and owned fixtures are removed. PRD-15 remains
+open pending current immutable/full CI and remaining acceptance. This small
+functional fixture does not run the deferred large-load tests.

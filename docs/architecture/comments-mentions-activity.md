@@ -1612,3 +1612,35 @@ the original stopped database is preserved. This mounted compiled-runtime and
 controlled-account evidence supports fixture admission, not strict managed-mail
 or current immutable/full release certification. Estimated PRD-15 work remaining
 stays **34%**. Large-load testing remains disabled.
+
+## Member group-mention review admission (2026-10-14)
+
+Retained run 38505687589, partition 2 job 115689442307, times out in
+the phone group-mention case while pressing the member's `Add comment`.
+Its trace completes the owner confirmation/delivery and rolling-quota checks,
+then records the member review keypress without a subsequent member comments
+GET before the unfinished Add keypress. This locates the stalled read-only
+opening; it does not establish a server mention/delivery defect.
+
+The member path now uses the existing bounded opening helper to observe Add
+comment and then the new-comment editor. Text entry and the later Save remain
+outside that helper. The fixture still uses two actors, one assigned recipient
+and a few comments; it is a functional role/confirmation/quota test.
+
+The unchanged complete desktop/phone baseline passes 2/2 in 150,544.760 ms,
+so the retained hosted timeout is not claimed as locally reproduced. The
+changed complete file passes **2/2 in 149,827.496 ms**, with no skipped,
+failed, flaky or retried cases. Explicit @card/@board consent, exact original
+creation/recovery body/key, single deduplicated delivery, unconfirmed mention,
+three deliveries in the rolling window and real 429 refusal, member role
+restriction/self-exclusion, persisted private events, withdrawal, accessibility
+and both original 180-second deadlines remain intact.
+
+Browser types, 224 CI guards and intact 398-case shard coverage pass. All
+2,143 hosted inputs, 1,441 native inputs, 168 frozen browser files and four
+served assets independently match. Owned containers/credentials are removed
+and the original stopped database is preserved. Controlled account setup and
+mounted compiled applications provide supporting evidence; strict provider,
+current immutable/full release CI and complete PRD acceptance remain required.
+PRD-15 stays open at **34% estimated work remaining**. Large-load testing
+remains deferred until after the operational MVP.
