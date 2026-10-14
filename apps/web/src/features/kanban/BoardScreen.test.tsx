@@ -960,7 +960,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const user = '55555555-5555-5555-5555-555555555555', rank = '500000000000000000000000000000';
     const active = { ...fixture, board: { ...fixture.board, id: board, organizationId: org },
       lists: [{ ...fixture.lists[0], list: { ...fixture.lists[0].list, id: list, rank, version: 1 } }] };
-    const destination = { ...active, board: { ...active.board, id: target, name: 'Delivery' }, lists: [] };
+    const destination = { ...active, board: { ...active.board, id: target, name: 'Delivery', visibility:'PRIVATE' }, lists: [] };
     let moved = false; const writes: RequestInit[] = [];
     vi.stubGlobal('fetch', vi.fn((path: string, init?: RequestInit) => {
       if (path === '/me') return Promise.resolve(response({ id: user, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' }));

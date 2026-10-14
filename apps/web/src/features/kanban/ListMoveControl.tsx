@@ -5,7 +5,7 @@ import { isNotificationProfile, notificationUuid } from '../notifications/notifi
 
 type Board = { id: string; name: string; version: number };
 type Draft = { id: string; name: string; rank: string; version: number; destination: string };
-type Review = Draft & { destinationName: string; userId: string };
+type Review = Draft & { destinationName: string; destinationVisibility: 'PRIVATE' | 'ORGANIZATION' | 'PUBLIC'; userId: string };
 type Intent = Review & { key: string };
 type Props = { snapshot: BoardSnapshot; disabled: boolean; refreshing?: boolean; unavailableListIds: Set<string>;
   onBusyChange: (value: boolean) => void; onRecoveryChange: (value: boolean) => void;
@@ -82,9 +82,11 @@ function MoveDialog(props: Props) {
         const target = await workRequest<BoardSnapshot>(`/boards/${encodeURIComponent(draft.destination)}`, { signal });
         if (target?.board?.id !== draft.destination || target.board.id === board.id || target.board.organizationId !== board.organizationId
           || target.board.lifecycleState !== 'active' || target.access?.canView !== true || target.access.canMove !== true
+          || !['PRIVATE','ORGANIZATION','PUBLIC'].includes(target.board.visibility ?? '')
           || typeof target.board.name !== 'string' || !target.board.name.trim() || target.board.name.length > 160)
           throw new Error('Unavailable destination');
-        await actor(signal, userId); return { ...draft, destinationName: target.board.name, userId };
+        await actor(signal, userId); return { ...draft, destinationName: target.board.name,
+          destinationVisibility: target.board.visibility as Review['destinationVisibility'], userId };
       }, c.signal);
       if (live(c)) setReview(result);
     } catch (error) { if (live(c)) {
@@ -149,6 +151,9 @@ function MoveDialog(props: Props) {
           <Button disabled={busy || commandBlocked || !draft?.destination || !boards || changed || blocked} onClick={() => void prepare()}>Review List move</Button>
         </>}
         {review && <Typography sx={{ overflowWrap: 'anywhere' }}>Move {review.name} to the end of {review.destinationName}?</Typography>}
+        {review && <Typography>Destination visibility: {review.destinationVisibility === 'PUBLIC' ? 'Public'
+          : review.destinationVisibility === 'ORGANIZATION' ? 'Organization' : 'Private'}.</Typography>}
+        {review?.destinationVisibility === 'PUBLIC' && <Alert severity="warning">People outside your Organization can view this public Board, including the moved active Cards and their selected cover previews.</Alert>}
         {intent && <Alert severity="info">The original move is unresolved. Keep its source and destination unchanged until its acknowledgment is recovered.</Alert>}
         <Button disabled={busy} onClick={() => callbacks.current.onRefresh()}>Check current Board for this move</Button>
       </Stack></DialogContent><DialogActions>

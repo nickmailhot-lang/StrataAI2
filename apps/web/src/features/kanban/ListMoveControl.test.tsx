@@ -9,7 +9,7 @@ const profile = { id: user, version: 1, status: 'ACTIVE', emailVerified: true, l
 const list = { id, name: 'Planning', rank, version: 2, lifecycleState: 'active' };
 const snapshot: BoardSnapshot = { board: { id: board, organizationId: org, name: 'Source', description: null, lifecycleState: 'active' },
   access: { canView: true, canEdit: true, canMove: true, canAdminister: false }, lists: [{ list, cards: [] }] };
-const target = { ...snapshot, board: { ...snapshot.board, id: destination, name: 'Delivery' }, lists: [] };
+const target = { ...snapshot, board: { ...snapshot.board, id: destination, name: 'Delivery', visibility: 'PRIVATE' as const }, lists: [] };
 const directory = [{ id: board, name: 'Source', version: 1 }, { id: destination, name: 'Delivery', version: 1 }];
 const ack = { id, organizationId: org, boardId: destination, name: 'Planning', rank, lifecycleState: 'active', version: 3 };
 const props = { snapshot, disabled: false, unavailableListIds: new Set<string>(), onBusyChange: vi.fn(), onRecoveryChange: vi.fn(),
@@ -89,6 +89,21 @@ it('refuses a target lacking move rights without rendering its protected name or
   await screen.findByText('The destination could not be checked for moving. Review it again.');
   expect(screen.queryByText('Protected title')).not.toBeInTheDocument();
   expect(fetch.mock.calls.some(call => call[0] === `/lists/${id}/move`)).toBe(false);
+});
+it.each(['PRIVATE','ORGANIZATION','PUBLIC'] as const)('discloses the reviewed %s destination visibility before confirmation', async visibility => {
+  fixture([reply(directory), reply({ ...target, board: { ...target.board, visibility } })]);
+  render(<ListMoveControl {...props} />); await review();
+  expect(screen.getByText(`Destination visibility: ${visibility === 'PUBLIC' ? 'Public' : visibility === 'ORGANIZATION' ? 'Organization' : 'Private'}.`)).toBeVisible();
+  const publicNotice = screen.queryByText(/People outside your Organization can view this public Board/);
+  if (visibility === 'PUBLIC') expect(publicNotice).toBeVisible(); else expect(publicNotice).not.toBeInTheDocument();
+});
+it('refuses an unrecognized destination visibility instead of presenting an incomplete review', async () => {
+  fixture([reply(directory), reply({ ...target, board: { ...target.board, visibility: 'UNRECOGNIZED' } })]);
+  render(<ListMoveControl {...props} />); fireEvent.click(screen.getByRole('button', { name: 'Move list' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Reload move destinations' })).toBeEnabled());
+  select('List to move','Planning'); select('Destination Board','Delivery'); fireEvent.click(screen.getByRole('button', { name: 'Review List move' }));
+  await screen.findByText('The destination could not be checked for moving. Review it again.');
+  expect(screen.getByRole('button', { name: 'Confirm List move' })).toBeDisabled();
 });
 it('withdraws a reviewed request on account change before writing', async () => {
   let current = profile; const fetch = fixture([reply(directory), reply(target)], () => current);
