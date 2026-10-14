@@ -33,6 +33,18 @@ export async function pressObservedRequest(button: Locator, requestCount: () => 
   }).toPass({ timeout: 5_000 });
 }
 
+// Pickup has no mutation side effect. Stop admission when dnd-kit reports the
+// active drag, and recheck after focusing so Space cannot toggle an active drag.
+export async function startKeyboardDrag(handle: Locator) {
+  await expect(async () => {
+    if (await handle.getAttribute('aria-pressed') !== 'true') {
+      await focusAdmittedControl(handle);
+      if (await handle.getAttribute('aria-pressed') !== 'true') await handle.press('Space', { timeout: 500 });
+    }
+    await expect(handle).toHaveAttribute('aria-pressed', 'true', { timeout: 500 });
+  }).toPass({ timeout: 5_000 });
+}
+
 // Opening a review has no write side effect. A foreground admission refresh can
 // disable the launcher between focus and Enter; observe the actual dialog and
 // retry this opening only. Mutation controls must use one activation above.

@@ -178,3 +178,13 @@ unchanged two-viewport browser file pass. Original save/receipt/revision, live
 peer, draft, reload, focus and deadline checks remain. Captured inputs match and
 owned fixtures are removed. These supporting results do not replace current
 complete immutable CI or close PRD-04; large-load testing stays disabled.
+
+The [Card move admission follow-up](../card-move-browser-evidence.md#observed-request-and-keyboard-pickup-admission-2026-10-14)
+observes initial/recovery POSTs and actual keyboard pickup before proceeding.
+Both unchanged and changed complete desktop/phone files pass locally; no hosted
+failure reproduction or product root cause is claimed. The changed file passes
+2/2 in 106,328.281 ms while preserving original requests/receipt, rank/version,
+peer delivery, focus, zero-write cancellation, one committed keyboard drag,
+pointer ordering, reload and deadlines. Captured inputs match and owned fixtures
+are removed. Current immutable/full CI remains required; neither movement PRD
+is closed, and large-load testing remains disabled.

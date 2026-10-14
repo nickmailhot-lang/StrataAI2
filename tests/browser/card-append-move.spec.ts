@@ -1,7 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
-import { focusAdmittedControl } from './keyboardAdmission';
+import { focusAdmittedControl, pressObservedRequest, startKeyboardDrag } from './keyboardAdmission';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-06/08: keyboard ${viewport.width === 390 ? 'relative' : 'append'} move recovers a lost acknowledgment and updates another client at ${viewport.width}px`, async ({ page, context, browser }) => {
@@ -72,12 +72,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         await expect(page.getByRole('listbox', { name: 'Card position' })).toBeVisible();
         await page.getByRole('option', { name: 'Before Position anchor', exact: true }).focus(); await page.keyboard.press('Enter');
       }
-      await page.getByRole('button', { name: 'Confirm card move' }).focus(); await page.keyboard.press('Enter');
+      await pressObservedRequest(page.getByRole('button', { name: 'Confirm card move' }), () => writes, 1);
       await expect(page.getByText(/The move could not be confirmed/)).toBeVisible();
       await expect(other.getByRole('region', { name: 'Complete', exact: true }).getByRole('link', { name: 'Move this card' })).toBeVisible({ timeout: 20_000 });
       expect(writes).toBe(1);
       const retry = page.getByRole('button', { name: 'Retry this move' }); await expect(retry).toBeEnabled();
-      await retry.focus(); await page.keyboard.press('Enter');
+      await pressObservedRequest(retry, () => writes, 2);
       await expect(page.getByText('Move acknowledged. Current placement is being checked.')).toBeVisible();
       expect(writes).toBe(2);
       const current = await context.request.get(`/boards/${board}`); expect(current.status()).toBe(200);
@@ -99,7 +99,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         const beforeDrag = await (await context.request.get(`/boards/${board}`)).json();
         let dragWrites = 0;
         page.on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === `/cards/${card}/move`) dragWrites++; });
-        await dragHandle.focus(); await page.keyboard.press('Space');
+        await startKeyboardDrag(dragHandle);
         await expect(dragHandle).toHaveAttribute('aria-pressed', 'true');
         // Pickup renders before the keyboard sensor installs its document
         // listener and measures the scrolled targets. Let that frame settle.
@@ -110,7 +110,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         await expect(dragHandle).not.toHaveAttribute('aria-pressed', 'true');
         expect(dragWrites).toBe(0);
         expect((await (await context.request.get(`/boards/${board}`)).json()).lists).toEqual(beforeDrag.lists);
-        await dragHandle.focus(); await page.keyboard.press('Space');
+        await startKeyboardDrag(dragHandle);
         await expect(dragHandle).toHaveAttribute('aria-pressed', 'true');
         await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
         await page.keyboard.press('ArrowLeft');
