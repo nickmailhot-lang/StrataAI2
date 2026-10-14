@@ -182,3 +182,30 @@ The fixture compiled with zero warnings/errors at `6c5f91e` and executed
 successfully in the completed PostgreSQL job (111424468186) of
 [CI run 37198252289](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/37198252289).
 The full release/native gate remains pending.
+
+## Original recovery keyboard admission follow-up (2026-10-14)
+
+Retained run `38505687589`, shard 1 job `115689442230`, fails the phone
+acknowledgment after source removal. Its trace contains only the first move
+POST, deliberately lost after the actual commit; focus and Enter occur on the
+retry button without a second POST. Current unchanged local desktop/phone
+scenarios pass **2/2 in 109,761.524 ms**, so no local hosted-failure reproduction
+or new product root cause is claimed.
+
+Initial confirmation and original recovery now use the existing observed-request
+admission helper. Keyboard activation stops when the intended POST is observed,
+including while its response remains pending. The exact original body/key,
+two total requests, canonical source disappearance, destination placement,
+two real peer streams, activity facts/current Board attribution, focus,
+reload/overflow and original 150-second scenario deadlines remain unchanged.
+
+The complete changed desktop/phone file passes **2/2 in 109,064.009 ms**, zero
+skips, unexpected/flaky results, retries, report errors or diagnostic hooks.
+Browser types, 224 CI/shard/startup guards and all 398 cases across intact shards
+pass; collection is not execution. Independent verification matches 2,143 hosted
+inputs, 1,441 native inputs, 168 frozen browser files and four served assets.
+Owned fixtures, credentials and newly pulled support images are removed;
+original stopped PostgreSQL is preserved. These compiled-runtime/controlled-
+account results do not certify current immutable/full CI or managed providers.
+Estimated PRD-08 work remaining stays **35%**; large-load testing remains
+disabled until after the operational MVP milestone.

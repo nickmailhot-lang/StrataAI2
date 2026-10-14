@@ -188,3 +188,13 @@ peer delivery, focus, zero-write cancellation, one committed keyboard drag,
 pointer ordering, reload and deadlines. Captured inputs match and owned fixtures
 are removed. Current immutable/full CI remains required; neither movement PRD
 is closed, and large-load testing remains disabled.
+
+The [cross-Board recovery follow-up](cross-board-card-movement.md#original-recovery-keyboard-admission-follow-up-2026-10-14)
+observes initial/recovery POST admission. Retained phone evidence shows a
+committed first request followed by a retry keypress without another POST;
+the unchanged local baseline passes and is not claimed as a reproduction.
+The complete changed desktop/phone file passes 2/2 in 109,064.009 ms, preserving
+original body/key/count, source removal, destination placement, both peer
+streams, two activity facts, focus/reload/overflow and deadlines. Inputs match
+and owned fixtures are removed. Current immutable/full CI remains required;
+PRD-08 stays open, and large-load testing remains disabled.

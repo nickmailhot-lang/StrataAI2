@@ -1,6 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { pressObservedRequest } from './keyboardAdmission';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-08/15 cross-Board keyboard move recovers after source removal and updates both streams at ${viewport.width}px`, async ({ page, context, browser }) => {
@@ -53,14 +54,14 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const listChoice = page.getByRole('combobox', { name: 'Destination List on another Board', exact: true }); await expect(listChoice).toBeEnabled();
       await listChoice.press('ArrowDown'); await page.getByRole('option', { name: 'Destination Board List', exact: true }).focus(); await page.keyboard.press('Enter');
       const confirm = page.getByRole('button', { name: 'Confirm move to another Board', exact: true }); await expect(confirm).toBeEnabled();
-      await confirm.focus(); await page.keyboard.press('Enter');
+      await pressObservedRequest(confirm, () => writes, 1);
       const retry = page.getByRole('button', { name: 'Retry this cross-Board move', exact: true }); await expect(retry).toBeEnabled();
       await expect(sourcePeer.getByRole('link', { name: 'Stable cross Board Card', exact: true })).toHaveCount(0);
       await expect(destinationPeer.getByRole('link', { name: 'Stable cross Board Card', exact: true })).toBeVisible({ timeout: 20_000 });
       const canonicalSource = await context.request.get(`/boards/${boards[0]}`);
       expect((await canonicalSource.json()).lists.flatMap((c: { cards: { id: string }[] }) => c.cards).some((c: { id: string }) => c.id === card)).toBe(false);
       expect(writes).toBe(1);
-      await retry.focus(); await page.keyboard.press('Enter');
+      await pressObservedRequest(retry, () => writes, 2);
       await expect(page.getByText('Move acknowledged. Check the destination Board for current placement.')).toBeVisible(); expect(writes).toBe(2);
       await page.getByRole('button', { name: 'Close', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
