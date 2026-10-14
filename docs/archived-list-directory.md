@@ -108,3 +108,14 @@ product root cause. Browser type checking, four-case discovery, all 398 cases'
 shard coverage and 222 CI guard tests pass. Discovery does not execute the
 scenarios; current retained-image execution is pending. PRD-07 remains open at
 **17% estimated work remaining**, and PRD-18 at **15%**.
+
+The subsequent six-case local execution at `c2ac8cdc` finishes **3/6** in
+320,267.437 ms. Phone archived Lists and both checklist-read cases pass; desktop
+archived Lists fail at the missing `Retry this restore` control after confirmation.
+The desktop trace shows a new archive read during activation and no restore POST.
+The two other failures are List-move fixture lookups, documented in
+[List movement](list-board-movement.md). This is supporting compiled-runtime
+evidence, not a passing full suite or retained release. A temporary foreground
+helper adjustment does not repair archive activation and is reverted. The
+desktop archive failure remains unresolved; estimates and open issue status
+remain unchanged. All owned fixtures and newly pulled support images are removed.

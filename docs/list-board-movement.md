@@ -182,6 +182,42 @@ All 61 List-move/Board-screen regressions pass, including the three visibility b
 
 ## Remaining implementation
 
+### Current small-browser execution and unresolved recovery
+
+The first six-case local functional run at `c2ac8cdc` finished **3/6** in
+320,267.437 ms: phone archived Lists and both checklist-read viewports passed;
+desktop archive recovery and both List-move cases failed. List-move initially
+failed because the recovery dialog makes the background Board inaccessible to
+ordinary role queries. Its `Add list` assertion now explicitly includes hidden
+controls and still requires the command fence to disable that control.
+
+The next execution exposed an incorrect full-description expectation against
+the compact archived-card directory, whose PostgreSQL projection deliberately
+returns a null description. The scenario now checks that compact projection and
+also reads the authorized destination archived-detail endpoint, requiring the
+original description, title, identity and current version. The former Board's
+archived-detail endpoint must refuse with 404. Original-request recovery,
+mutation counts, versions, ranks, child lifecycles, accessibility, focus and
+120-second scenario deadline remain. Review opening uses the existing bounded
+read-only helper; confirmation and retry use enabled focus and one activation.
+
+The complete corrected List-move file finishes **1/2** in 112,168.578 ms, with
+zero skips or flaky outcomes. Phone passes the entire real-socket outage,
+missed-event recovery, repeated transfer, stable identities and reload sequence.
+Desktop still fails at the focus assertion after keyboard receipt retry, with
+the recovery dialog open. Its trace contains the first committed/lost move but
+no recovery POST. Enabled-focus preparation has not resolved this activation
+failure; it is not claimed repaired, and no retry or deadline is added to hide
+it. A temporary shared foreground-helper change also failed and was reverted.
+
+All 2,143 hosted source/runtime hashes, 1,441 browser-source hashes and four
+served web files match their captured inputs. Owned PostgreSQL/API/Worker/Nginx
+containers, credential files and newly pulled support images are removed; the
+original stopped database remains untouched. These are read-only mounted local
+compiled applications with controlled account setup, not retained-image release
+certification. No large-load tests run. Full PRD-07 work remaining stays **17%**;
+the desktop activation failure and current immutable CI remain open acceptance.
+
 Migration `148_configuration_historical_list_identity` removes a permanent pin caused by immutable configuration history: a former intake List could not change Boards even after the owning configuration selected a different intake List. History now references the stable List within its tenant and retains the original Board attribution separately. Current configuration keeps its composite Board/List constraint. Its existing live-parent/source guard and exact-record history journal remain unchanged; current intake movement and fabricated configuration/history sources still fail. Historical records, receipts, audit and events are not rewritten, and historical references grant no current destination access. Hosts now require migration 148, so upgrade the database before starting them.
 
 The mandatory real PostgreSQL parent suite seeds two genuine configuration revisions through the current-source/history/receipt guards before upgrading. The old historical constraint refuses former-intake movement. After upgrade, authenticated restricted-runtime movement succeeds for the former intake List, current-intake movement fails with a complete unchanged graph, and history retains its original Board. Complete seeded graph and configuration/current/history/receipt/audit/event hashes are unchanged by the upgrade. Forged live-parent changes, mismatched history sources, runtime history updates and unscoped/other-tenant history reads remain refused or withdrawn. Both comprehensive database cases pass, as does the restricted-role provisioning regression. Forty focused Domain/planner cases, 219 CI/startup guards and a zero-warning/error build pass. Owned fixtures remove containers and anonymous volumes. These are database prerequisite checks; the complete transfer, HTTP/MUI flow and immutable-image acceptance below remain required. Estimates remain PRD-07 **35%**, PRD-27 **24%**.

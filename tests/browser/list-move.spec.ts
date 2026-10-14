@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280,390]) {
   test(`PRD-07: whole-List move recovers a lost reply and destination peer after reconnect at ${width}px`, async ({ page,context,browser }) => {
@@ -41,25 +42,28 @@ for (const width of [1280,390]) {
         const response = await route.fetch(); expect(response.status()).toBe(200);
         if (attempts.length===1) await route.abort('failed'); else await route.fulfill({ response });
       });
-      const entry = page.getByRole('button',{ name:'Move list',exact:true }); await expect(entry).toBeEnabled(); await entry.press('Enter');
+      const entry = page.getByRole('button',{ name:'Move list',exact:true });
+      await openAdmittedReview(entry,page.getByRole('button',{ name:'Reload move destinations' }));
       await expect(page.getByRole('button',{ name:'Reload move destinations' })).toBeEnabled();
       async function choose(label:string,name:string) {
         await page.getByRole('combobox',{ name:label }).focus(); await page.keyboard.press('Enter');
         await page.getByRole('option',{ name,exact:true }).focus(); await page.keyboard.press('Enter');
       }
       await choose('List to move','Planning'); await choose('Destination Board','Delivery');
-      await page.getByRole('button',{ name:'Review List move',exact:true }).press('Enter');
-      await expect(page.getByText('Move Planning to the end of Delivery?',{ exact:true })).toBeVisible();
+      await openAdmittedReview(page.getByRole('button',{ name:'Review List move',exact:true }),
+        page.getByText('Move Planning to the end of Delivery?',{ exact:true }));
       expect((await new AxeBuilder({ page }).include('[role="dialog"]').analyze()).violations).toEqual([]);
-      await page.getByRole('button',{ name:'Confirm List move',exact:true }).press('Enter');
+      await pressAdmittedAction(page.getByRole('button',{ name:'Confirm List move',exact:true }));
       const retry = page.getByRole('button',{ name:'Retry this List move',exact:true }); await expect(retry).toBeEnabled();
       await expect(page.getByRole('button',{ name:'Cancel move' })).toHaveCount(0);
       await expect(page.getByRole('heading',{ name:'Planning',exact:true })).toHaveCount(0);
-      await expect(page.getByRole('button',{ name:'Add list',exact:true })).toBeDisabled();
+      // MUI excludes the background Board from the accessibility tree while
+      // this modal is open; its command fence must still disable the control.
+      await expect(page.getByRole('button',{ name:'Add list',exact:true,includeHidden:true })).toBeDisabled();
       await expect(peer.getByRole('heading',{ name:'Planning',exact:true })).toBeVisible();
       await expect(peer.getByRole('link',{ name:'Moved active work',exact:true })).toBeVisible();
       await expect(peer.getByRole('link',{ name:'Moved archived work',exact:true })).toHaveCount(0);
-      await retry.press('Enter'); await expect(page.getByRole('button',{ name:'Refresh board',exact:true })).toBeFocused();
+      await pressAdmittedAction(retry); await expect(page.getByRole('button',{ name:'Refresh board',exact:true })).toBeFocused();
       await expect(page.getByText('List move acknowledged. Check the destination Board for its current contents.',{ exact:true })).toBeVisible();
       expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
       expect(JSON.parse(attempts[0].body!)).toEqual({ sourceBoardId:source.id,destinationBoardId:destination.id,expectedVersion:1 });
@@ -69,7 +73,14 @@ for (const width of [1280,390]) {
       expect(column.list).toMatchObject({ id:list.id,name:list.name,version:2,lifecycleState:'active' });
       expect(column.cards).toHaveLength(1); expect(column.cards[0]).toMatchObject({ id:active.id,title:active.title,description:active.description,rank:active.rank,version:2 });
       const archive = await context.request.get(`/boards/${destination.id}/archived-cards`); expect(archive.status()).toBe(200);
-      expect((await archive.json()).items[0].card).toMatchObject({ id:archived.id,title:archived.title,description:archived.description,rank:archived.rank,version:3,lifecycleState:'archived' });
+      // The directory deliberately omits full descriptions. Read the owning
+      // archived-detail contract to verify preserved content and current scope.
+      expect((await archive.json()).items[0].card).toMatchObject({ id:archived.id,title:archived.title,description:null,rank:archived.rank,version:3,lifecycleState:'archived' });
+      const archivedDetail = await context.request.get(`/boards/${destination.id}/cards/${archived.id}/archived-details`);
+      expect(archivedDetail.status()).toBe(200);
+      expect(await archivedDetail.json()).toMatchObject({ organizationId:org,boardId:destination.id,cardId:archived.id,
+        title:archived.title,description:archived.description,version:3 });
+      expect((await context.request.get(`/boards/${source.id}/cards/${archived.id}/archived-details`)).status()).toBe(404);
       const old = await context.request.get(`/boards/${source.id}`); expect(old.status()).toBe(200); expect((await old.json()).lists).toHaveLength(0);
       // Use an independent browser context so only this peer misses delivery.
       // Explicitly close its forwarded real socket and refuse replacement

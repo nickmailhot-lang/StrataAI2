@@ -57,3 +57,14 @@ Browser type checking, four-case discovery, all 398 cases' shard coverage and
 222 CI guard tests pass. These checks do not establish the cause of the original
 failure or execute the retained-image scenarios; that execution remains pending.
 PRD-13 stays open at **33% estimated work remaining**.
+
+The subsequent small six-case local execution at `c2ac8cdc` passes both complete
+checklist-read viewports, including original-key lost-response recovery,
+two-session canonical refresh/progress and accessibility assertions. The combined
+invocation is **3/6** in 320,267.437 ms because desktop archive recovery and both
+List-move cases fail; it is not reported as a passing suite. Actual restricted
+PostgreSQL, API, separate Worker and browser transport are used with controlled
+account setup and mounted compiled applications. Owned fixtures, credential
+files and newly pulled support images are removed. This supplements the
+type/discovery checks but does not certify the retained release or complete
+PRD-13. Estimated work remaining stays **33%**.
