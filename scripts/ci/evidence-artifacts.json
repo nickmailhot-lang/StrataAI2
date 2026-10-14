@@ -176,6 +176,10 @@
         "compose.log"
       ],
       [
+        "watch-order-worker.log",
+        "watch-order-worker.log"
+      ],
+      [
         "demo-metadata-compose.log",
         "demo-metadata-compose.log"
       ],

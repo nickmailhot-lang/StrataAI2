@@ -1229,6 +1229,9 @@ jobs:
           # Enable this real dispatcher only here and restore that default even
           # when a browser assertion fails; keep the immutable Worker image.
           restore_authority_discovery() {
+            # Recreating the Worker retires this container's logs. Capture the
+            # active dispatcher before restoring the fixture-wide setting.
+            docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml logs --no-color worker > watch-order-worker.log 2>&1 || true
             STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED=false docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker
           }
           trap restore_authority_discovery EXIT
@@ -1310,7 +1313,7 @@ jobs:
 
       - name: Prepare Upload integration diagnostics
         if: failure()
-        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/container-integration-diagnostics --entry "compose-ps.txt" "compose-ps.txt" --entry "compose.log" "compose.log" --entry "demo-metadata-compose.log" "demo-metadata-compose.log" --entry "$RUNNER_TEMP/identity-mail-failure.json" "identity-mail-failure.json"
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/container-integration-diagnostics --entry "compose-ps.txt" "compose-ps.txt" --entry "compose.log" "compose.log" --entry "watch-order-worker.log" "watch-order-worker.log" --entry "demo-metadata-compose.log" "demo-metadata-compose.log" --entry "$RUNNER_TEMP/identity-mail-failure.json" "identity-mail-failure.json"
 
       - name: Upload integration diagnostics
         if: failure()

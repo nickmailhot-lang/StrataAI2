@@ -52,6 +52,19 @@ class EvidenceArtifactTests(unittest.TestCase):
         self.assertTrue(self.stage([(source, "test-results")]))
         self.assertEqual((self.output / "test-results/case/attachments/trace.zip").read_bytes(), b'trace')
 
+    def test_pre_restore_worker_evidence_survives_current_container_log_replacement(self):
+        original = b'Original authority dispatcher failure\n'
+        restored = b'Restored fixture Worker\n'
+        worker = self.root / "watch-order-worker.log"; worker.write_bytes(original)
+        compose = self.root / "compose.log"; compose.write_bytes(b'Before restoration\n')
+        compose.write_bytes(restored)
+        self.assertTrue(self.stage([(worker, "watch-order-worker.log"), (compose, "compose.log")]))
+        self.assertEqual((self.output / "watch-order-worker.log").read_bytes(), original)
+        self.assertEqual((self.output / "compose.log").read_bytes(), restored)
+        sums = dict(line.split("  ")[::-1] for line in (self.output / "SHA256SUMS").read_text().splitlines())
+        self.assertEqual(sums["watch-order-worker.log"], hashlib.sha256(original).hexdigest())
+        self.assertEqual(sums["compose.log"], hashlib.sha256(restored).hexdigest())
+
     def test_missing_or_empty_evidence_does_not_publish_identity_only(self):
         empty = self.root / "empty"; empty.mkdir()
         self.assertFalse(self.stage([(self.root / "missing", "missing.json"), (empty, ".")]))
