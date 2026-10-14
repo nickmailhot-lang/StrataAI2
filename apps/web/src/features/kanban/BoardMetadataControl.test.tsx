@@ -22,6 +22,44 @@ it('saves reviewed name, description and approved background and returns focus a
   expect(new Headers(fetch.mock.calls[0][1].headers).get('Idempotency-Key')).toMatch(/^[0-9a-f-]{36}$/);
   await waitFor(() => expect(screen.getByRole('button', { name: 'Edit Board details' })).toHaveFocus());
 });
+
+it('restores its acknowledged launcher after a protected read disables and blurs it', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply({ ...board, version: 3 })));
+  const view = render(<BoardMetadataControl {...props} />); open();
+  fireEvent.click(screen.getByRole('button', { name: 'Save Board details' }));
+  await screen.findByText('Board changes acknowledged. Current Board state is being checked.');
+  const launch = await screen.findByRole('button', { name: 'Edit Board details' });
+  await waitFor(() => expect(launch).toHaveFocus());
+  view.rerender(<BoardMetadataControl {...props} disabled />);
+  act(() => launch.blur()); expect(document.body).toHaveFocus();
+  view.rerender(<BoardMetadataControl {...props} />);
+  await waitFor(() => expect(launch).toHaveFocus());
+});
+
+it('keeps another control as the user destination through later protected reads', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply({ ...board, version: 3 })));
+  const content = (disabled: boolean) => <><BoardMetadataControl {...props} disabled={disabled} /><button>Other Board action</button></>;
+  const view = render(content(false)); open();
+  fireEvent.click(screen.getByRole('button', { name: 'Save Board details' }));
+  await screen.findByText('Board changes acknowledged. Current Board state is being checked.');
+  const launch = await screen.findByRole('button', { name: 'Edit Board details' });
+  await waitFor(() => expect(launch).toHaveFocus());
+  const other = screen.getByRole('button', { name: 'Other Board action' }); act(() => other.focus());
+  view.rerender(content(true)); view.rerender(content(false)); expect(other).toHaveFocus();
+});
+
+it('does not reclaim body focus after the user-chosen destination is removed by a refresh', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(reply({ ...board, version: 3 })));
+  const content = (disabled: boolean, showOther: boolean) => <><BoardMetadataControl {...props} disabled={disabled} />{showOther && <button>Other Board action</button>}</>;
+  const view = render(content(false, true)); open();
+  fireEvent.click(screen.getByRole('button', { name: 'Save Board details' }));
+  await screen.findByText('Board changes acknowledged. Current Board state is being checked.');
+  const launch = await screen.findByRole('button', { name: 'Edit Board details' });
+  await waitFor(() => expect(launch).toHaveFocus());
+  act(() => screen.getByRole('button', { name: 'Other Board action' }).focus());
+  view.rerender(content(true, false)); expect(document.body).toHaveFocus();
+  view.rerender(content(false, false)); expect(document.body).toHaveFocus();
+});
 it('preserves an original save and its fields after canonical data has advanced', async () => {
   const fetch = vi.fn().mockRejectedValueOnce(new Error('Private failure')).mockResolvedValueOnce(reply({ ...board, version: 3, name: 'Updated' }));
   vi.stubGlobal('fetch', fetch); const view = render(<BoardMetadataControl {...props} />); open();

@@ -587,3 +587,13 @@ per-case deadlines, two file workers and no retries. Earlier clipping/fixture
 failures and the first 2,034/2,037 source result remain retained. This does not
 replace current immutable/full CI or complete PRD acceptance. Estimated PRD-04
 work remaining stays **15%**; the ticket remains open.
+
+The [owned metadata focus follow-up](../board-metadata-control.md#owned-focus-after-protected-reads-2026-10-14)
+records a retained successful replay followed by failed phone focus, a corrected
+component reproduction of protected-read focus loss, and the ownership repair.
+User-chosen destinations release recovery; scope/admission withdrawal and all
+save/receipt/revision/privacy behavior remain. All 27 metadata/focus and 40
+Board-screen checks pass, as does the complete unchanged desktop/phone file
+2/2 with original counts, peer/draft/reload/focus assertions and deadlines.
+Inputs and cleanup are independently verified. Current immutable/full evidence
+still governs closure; work remaining stays **15%** and no large-load tests run.

@@ -37,4 +37,38 @@ After observation integration, the focused metadata/archive suites have 28 passi
 
 All 36 Board screen/drag cases pass; the full-screen metadata recovery case verifies that competing archive/create commands stay fenced and focus returns after receipt recovery. The Board workspace now exposes a named region, constrains long name/description wrapping and preserves description line breaks. Web type checking, lint and production build pass. These local checks do not prove native/API/PostgreSQL acceptance; rigorous CI runtime evidence remains pending.
 
-The serial release browser suite includes board-metadata.spec.ts at 1280px and 390px, using the existing real scoped Worker and two live clients. Keyboard scenarios deliberately lose a committed save response, recover the identical request, reconcile a concurrent revision while preserving/reviewing the draft, verify a new request key after renewed review, and check canonical persisted name/description/color after reload. A 160-character unbroken name and multiline description check viewport overflow and fixed background/whitespace rendering. Browser TypeScript and discovery pass; actual native execution remains unverified until rigorous CI runs the immutable-image full suite. Production request limits, serial workers, zero retries and release gates remain unchanged.
+The serial release browser suite includes board-metadata.spec.ts at 1280px and 390px, using the existing real scoped Worker and two live clients. Keyboard scenarios deliberately lose a committed save response, recover the identical request, reconcile a concurrent revision while preserving/reviewing the draft, verify a new request key after renewed review, and check canonical persisted name/description/color after reload. A 160-character unbroken name and multiline description check viewport overflow and fixed background/whitespace rendering. Production request limits, serial workers, zero retries and release gates remain unchanged. Supporting native execution is recorded below; current immutable-image full acceptance remains required.
+
+## Owned focus after protected reads (2026-10-14)
+
+Retained run `38512205117`, shard 1 job `115707086314`, fails phone focus
+return after original-save recovery. Its trace shows both PATCH requests,
+identical keys, successful replay and acknowledged notice before the inactive
+launcher assertion. This is a focus failure, not a missing replay request.
+The exact hosted focus-loss mechanism is not claimed as locally reproduced.
+
+A component regression reproduces loss when a protected read disables/blurs the
+returned launcher. Focus recovery now retains its owned return through that
+read, parks an activated dialog control before disabling/removing it, and uses
+the existing ownership rules for dialog/body fallbacks. Choosing another control
+releases recovery, including when a later refresh removes that destination.
+Admission/scope loss releases it. Save bytes, keys, receipts, revision review,
+authorization, data withdrawal and telemetry remain unchanged.
+
+The corrected unchanged baseline records one failure and 21 passes. The first
+two draft tests failed by querying before dialog exit; their failures remain
+retained and are not counted as reproductions. With three final regressions,
+all **27 metadata/focus checks** and **40 Board-screen checks** pass. Lint,
+browser types/build and 224 CI/shard/startup guards pass. The complete unchanged
+desktop/phone browser file passes **2/2 in 101,104.196 ms**, with zero skips,
+unexpected/flaky results, retries, top-level errors or diagnostic hooks. It
+retains original request/replay counts and fields, concurrent retained draft
+review, new revision/key, live peer updates, long-content rendering, focus,
+canonical reload and original 120-second deadlines.
+
+All 2,143 hosted inputs, 1,441 native inputs, 168 frozen browser files and four
+served assets independently match. Owned fixtures, credentials and newly pulled
+support images are removed; original stopped PostgreSQL is preserved. This is
+compiled-runtime/controlled-account support, not strict managed-mail, current
+immutable-image or complete release acceptance. Estimated PRD-04 work remaining
+stays **15%**; large-load testing remains disabled until after the MVP.

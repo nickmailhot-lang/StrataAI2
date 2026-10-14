@@ -168,3 +168,13 @@ archives/tool, credentials and inspection removed. Original stopped PostgreSQL,
 its volume and custom network are preserved. This supporting local execution
 does not certify a physically clean host or new full release. Large-load tests
 remain disabled; these samples close no ticket or milestone.
+
+The [Board-edit focus repair](../board-metadata-control.md#owned-focus-after-protected-reads-2026-10-14)
+preserves owned launcher focus through read admission, releasing it when the
+user chooses another control. Retained phone evidence shows successful original
+save/replay before focus fails; a corrected component case reproduces read-driven
+focus loss. All 27 metadata/focus checks, 40 Board-screen checks and the complete
+unchanged two-viewport browser file pass. Original save/receipt/revision, live
+peer, draft, reload, focus and deadline checks remain. Captured inputs match and
+owned fixtures are removed. These supporting results do not replace current
+complete immutable CI or close PRD-04; large-load testing stays disabled.

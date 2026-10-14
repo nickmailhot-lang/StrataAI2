@@ -3,6 +3,7 @@ import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuI
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot } from '../../api/workManagement';
 import { boardColors } from './boardBackground';
 import { activityEvent, activityResult } from './activityTelemetry';
+import { ownsRecoveryFocus, parkRecoveryFocus } from './focusRecovery';
 type Review = { id: string; organizationId: string; version: number; name: string; description: string | null; backgroundType: string; backgroundValue: string | null };
 type Intent = { review: Review; key: string; name: string; description: string | null; selection: string };
 type Props = { snapshot: BoardSnapshot; disabled: boolean; onBusyChange: (busy: boolean) => void; onRecoveryChange: (unresolved: boolean) => void;
@@ -13,6 +14,7 @@ export function BoardMetadataControl({ snapshot, disabled, onBusyChange, onRecov
   const [busy, setBusy] = useState(false); const [conflict, setConflict] = useState(false); const [notice, setNotice] = useState<string>();
   const mounted = useRef(false); const pending = useRef<AbortController | undefined>(undefined); const action = useRef<HTMLButtonElement>(null);
   const focusRequested = useRef(false); const board = snapshot.board;
+  const focusOwner = useRef<HTMLElement | null>(null); const focusDialog = useRef<HTMLElement | null>(null);
   const admitted = snapshot.access.canView && snapshot.access.canEdit && board.lifecycleState === 'active';
   const available = admitted && Number.isSafeInteger(board.version) && Number(board.version) > 0 && ['COLOR', 'IMAGE'].includes(board.backgroundType ?? '')
     && typeof board.name === 'string' && !!board.name.trim() && board.name.length <= 160 && (board.description === null || typeof board.description === 'string')
@@ -22,26 +24,49 @@ export function BoardMetadataControl({ snapshot, disabled, onBusyChange, onRecov
   useEffect(() => { onRecoveryChange(!!intent); return () => onRecoveryChange(false); }, [intent, onRecoveryChange]);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; pending.current?.abort(); if (pending.current) onBusyChange(false); }; }, [onBusyChange]);
   useEffect(() => {
+    function chosenFocus(event: FocusEvent) {
+      if (focusRequested.current && event.target !== action.current
+        && !ownsRecoveryFocus(event.target, focusOwner.current, focusDialog.current)) focusRequested.current = false;
+    }
+    document.addEventListener('focusin', chosenFocus);
+    return () => document.removeEventListener('focusin', chosenFocus);
+  }, []);
+  useEffect(() => {
     if (admitted && (!review || board.id === review.id && board.organizationId === review.organizationId)) return;
     if (!review && !intent && !pending.current) return;
     pending.current?.abort(); pending.current = undefined; setBusy(false); onBusyChange(false); setReview(undefined); setIntent(undefined);
+    focusRequested.current = false; focusOwner.current = null; focusDialog.current = null;
     setName(''); setDescription(''); setSelection('preserve'); setNotice('Board editing is unavailable.');
   }, [admitted, board.id, board.organizationId, review, intent, onBusyChange]);
+  function requestReturnFocus() {
+    const owner = document.activeElement instanceof HTMLElement ? document.activeElement : action.current;
+    focusOwner.current = owner; focusDialog.current = owner?.closest<HTMLElement>('[role="dialog"][data-mui-focusable]') ?? null;
+    focusRequested.current = true; parkRecoveryFocus(owner);
+  }
   function restoreFocus() {
-    focusRequested.current = disabled || busy; if (focusRequested.current) return;
-    if (action.current && !action.current.disabled) action.current.focus({ preventScroll: true }); else onReturnFocus();
+    if (!focusRequested.current || disabled || busy) return;
+    if (document.activeElement !== action.current && !ownsRecoveryFocus(document.activeElement, focusOwner.current, focusDialog.current)) {
+      focusRequested.current = false; return;
+    }
+    if (action.current && !action.current.disabled) {
+      // Keep owned recovery through a read that disables/blurs this launcher.
+      // Choosing another control releases it through the focus listener above.
+      focusOwner.current = action.current; focusDialog.current = null;
+      if (document.activeElement !== action.current) action.current.focus({ preventScroll: true });
+    } else { focusRequested.current = false; onReturnFocus(); }
   }
   useEffect(() => { if (!review && !disabled && !busy && focusRequested.current) restoreFocus(); }, [review, disabled, busy]);
   function currentReview(): Review { return { id: board.id, organizationId: board.organizationId, version: board.version!, name: board.name,
     description: board.description, backgroundType: board.backgroundType!, backgroundValue: board.backgroundValue! }; }
   function open() { activityEvent('board_metadata_update', 'open'); setReview(currentReview()); setName(board.name); setDescription(board.description ?? ''); setSelection('preserve'); setNotice(undefined); setConflict(false); }
-  function close() { if (!busy && !intent) { setReview(undefined); setNotice(undefined); } }
+  function close() { if (!busy && !intent) { requestReturnFocus(); setReview(undefined); setNotice(undefined); } }
   async function save() {
     if (pending.current || disabled || !admitted || !review || !intent && (changed || conflict)) return;
     if (!intent && (!name.trim() || name.trim().length > 160 || !['preserve', 'default', ...boardColors].includes(selection))) {
       setNotice('Use a Board name with 1 to 160 characters and an available background choice.'); return;
     }
     const command = intent ?? { review, name: name.trim(), description: description.trim() || null, selection, key: crypto.randomUUID() };
+    requestReturnFocus();
     const started = performance.now(); activityEvent('board_metadata_update', intent ? 'retry' : 'use');
     const c = new AbortController(); pending.current = c; setBusy(true); onBusyChange(true); setNotice(undefined);
     try {
