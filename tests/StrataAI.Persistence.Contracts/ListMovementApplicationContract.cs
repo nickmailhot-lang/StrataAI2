@@ -14,6 +14,7 @@ using StrataAI.Infrastructure.Organizations;
 using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.Records;
 using StrataAI.Infrastructure.WorkManagement;
+using StrataAI.Domain.WorkManagement;
 
 // Actual registered production orchestration and restricted persistence.
 // Actor/session admission is controlled; this is not an HTTP session fixture.
@@ -27,15 +28,18 @@ internal static class ListMovementApplicationContract
     private sealed class Context : IWorkCommandContext { public Guid? IdempotencyKey { get; set; } = Guid.NewGuid(); }
     private sealed class FileObjects(AttachmentObjectReference reference, byte[] bytes) : IAttachmentObjectStorage
     {
+        private readonly HashSet<AttachmentObjectReference> _references = [reference];
+        public void AddPreview(AttachmentObjectReference preview) => _references.Add(preview);
         public int Reads { get; private set; }
+        public AttachmentObjectReference? LastRead { get; private set; }
         public Func<Task>? AfterRead { get; set; }
         public Task<StoredAttachmentObject> WritePrivateAsync(AttachmentObjectReference target, Stream source, long maximumBytes, CancellationToken ct)
             => throw new InvalidOperationException("Read-only object fixture.");
         public Task<bool> DeletePrivateAsync(AttachmentObjectReference target, CancellationToken ct) => Task.FromResult(false);
         public async Task<Stream?> OpenPrivateReadAsync(AttachmentObjectReference target, CancellationToken ct)
         {
-            ct.ThrowIfCancellationRequested(); Reads++;
-            if (target != reference) return null;
+            ct.ThrowIfCancellationRequested(); Reads++; LastRead = target;
+            if (!_references.Contains(target)) return null;
             if (AfterRead is { } after) await after();
             return new MemoryStream(bytes, writable: false);
         }
@@ -43,6 +47,11 @@ internal static class ListMovementApplicationContract
     private sealed class PublicationClock : IClock
     {
         public DateTimeOffset UtcNow { get; } = new(DateTimeOffset.UtcNow.AddMinutes(1).UtcTicks / 10 * 10 + 7, TimeSpan.Zero);
+    }
+    private sealed class CleanScanner : IAttachmentMalwareScanner
+    {
+        public async Task<AttachmentScannerVerdict> ScanAsync(Stream source, CancellationToken ct)
+        { await source.CopyToAsync(Stream.Null, ct); return AttachmentScannerVerdict.Clean; }
     }
     private sealed class LateActorLoss(IWorkEventStore inner, ActorFence actors, Guid source) : IWorkEventStore
     {
@@ -120,6 +129,9 @@ internal static class ListMovementApplicationContract
               'jobs',(SELECT jsonb_agg(to_jsonb(j) ORDER BY id) FROM background_jobs j WHERE tenant_id='{{tenant}}'),
               'reminders',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM card_reminders r WHERE tenant_id='{{tenant}}'),
               'files',(SELECT jsonb_agg(to_jsonb(a) ORDER BY id) FROM attachments a WHERE tenant_id='{{tenant}}'),
+              'uploads',(SELECT jsonb_agg(to_jsonb(u) ORDER BY id) FROM attachment_upload_intents u WHERE tenant_id='{{tenant}}'),
+              'previews',(SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM attachment_previews p WHERE tenant_id='{{tenant}}'),
+              'publications',(SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM attachment_preview_publications p WHERE tenant_id='{{tenant}}'),
               'watches',(SELECT jsonb_agg(to_jsonb(w) ORDER BY id) FROM watch_subscriptions w WHERE tenant_id='{{tenant}}'),
               'notices',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='{{tenant}}'),
               'noticeStreams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY recipient_id) FROM notification_event_streams s WHERE tenant_id='{{tenant}}'),
@@ -145,18 +157,69 @@ internal static class ListMovementApplicationContract
         var reminderStore = provider.GetRequiredService<ICardReminderStore>();
         var activeCard = Guid.Parse(await Scalar($"SELECT id FROM cards WHERE tenant_id='{tenant}' AND lifecycle_state='ACTIVE';"));
         var file = Guid.NewGuid(); var reference = new AttachmentObjectReference(tenant, file);
-        var bytes = Enumerable.Range(0, 128).Select(n => (byte)n).ToArray();
+        var bytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a9xkAAAAASUVORK5CYII=");
         var digest = Convert.ToHexStringLower(SHA256.HashData(bytes));
-        // Existing clean metadata is admin-staged; this is not scanner or
-        // managed-provider certification. The actual reader verifies all bytes.
-        await Sql($$"""
-            INSERT INTO attachments(id,tenant_id,card_id,uploader_id,kind,display_name,mime_type,size_bytes,storage_key,sha256,
-              scan_status,scanned_at,created_at,updated_at,version)
-            VALUES ('{{file}}','{{tenant}}','{{activeCard}}','{{actor}}','FILE','Private file','application/pdf',128,
-              '{{reference.ObjectKey}}','{{digest}}','CLEAN',now(),now(),now(),2);
-            """);
-        var fileBefore = await Scalar($"SELECT to_jsonb(a)::text FROM attachments a WHERE id='{file}';");
+        // Measured storage claims are fixtures. Persist real upload transitions,
+        // Pending metadata and a scan job through owning restricted adapters.
+        var at = AttachmentMetadataMapping.DatabaseTimestamp(DateTimeOffset.UtcNow);
+        var uploads = provider.GetRequiredService<IAttachmentUploadIntentStore>();
+        var metadata = provider.GetRequiredService<IAttachmentMetadataStore>();
         var objects = new FileObjects(reference, bytes);
+        await connections.ExecuteTenantCommandAsync(tenant, async () =>
+        {
+            var intent = AttachmentUploadIntent.Prepare(file, tenant, activeCard, actor, Guid.NewGuid(), 1,
+                "Private file", bytes.Length, digest, at.AddHours(1), at);
+            Require(await uploads.PrepareUploadAsync(intent, ct) is not null, "Upload prepare failed.");
+            var lease = Guid.NewGuid();
+            Require(await uploads.TryChangeUploadAsync(tenant, activeCard, actor, file, 1,
+                new(AttachmentUploadAction.StartWrite, at, lease, at.AddMinutes(5)), ct) is not null, "Upload writer failed.");
+            Require(await uploads.TryChangeUploadAsync(tenant, activeCard, actor, file, 2,
+                new(AttachmentUploadAction.RecordStored, at, lease, Measured: new(reference, bytes.Length, digest), VerifiedMimeType: "image/png"), ct)
+                is not null, "Upload measurement failed.");
+            await metadata.CreateFileAttachmentAsync(new(reference, bytes.Length, digest), activeCard, actor, "Private file", "image/png", at, ct);
+            var published = await uploads.TryChangeUploadAsync(tenant, activeCard, actor, file, 3, new(AttachmentUploadAction.Publish, at), ct);
+            var pending = await metadata.FindFileAttachmentAsync(tenant, activeCard, file, ct);
+            Require(published is not null && pending is not null && await provider.GetRequiredService<IAttachmentScanJobPublisher>()
+                .PublishScanAsync(published, pending, actor, "list-app-scan", ct), "Upload scan publication failed.");
+            return true;
+        }, value => value, ct);
+        Guid previewId;
+        await using (var previewWorker = new PostgresConnectionFactory(workerConnection))
+        {
+            var previewQueue = new PostgresBackgroundJobStore(previewWorker, previewJobs: true);
+            var previewWorkerId = Guid.NewGuid();
+            var scanClaim = await previewQueue.ClaimAsync(tenant, previewWorkerId, ct);
+            Require(scanClaim is not null && scanClaim.JobType == AttachmentScanJobs.Type
+                && AttachmentScanAttempt.Parse(scanClaim.SafeMetadataJson).AttachmentId == file, "Worker did not claim the original scan.");
+            await new AttachmentScanDeliveryHandler(new PostgresAttachmentScanDeliveryStore(previewWorker, previewEnabled: true),
+                new AttachmentQuarantineScanner(objects, new CleanScanner())).ExecuteAsync(scanClaim!, ct);
+            Require(await previewQueue.CompleteAsync(tenant, scanClaim!.Id, scanClaim.LeaseId, previewWorkerId, ct), "Scan acknowledgment failed.");
+            var claim = await previewQueue.ClaimAsync(tenant, previewWorkerId, ct);
+            Require(claim is not null && claim.JobType == AttachmentPreviewJobs.Type, "Preview Worker did not claim the automatically published job.");
+            previewId = claim!.Id;
+            var attempt = AttachmentPreviewAttempt.Parse(claim!.SafeMetadataJson);
+            var publication = new PostgresAttachmentPreviewIntentStore(previewWorker);
+            var loaded = await publication.LoadAsync(claim, attempt, ct);
+            Require(loaded.Status == AttachmentPreviewLoadStatus.Ready && loaded.Source is not null, "Preview source was not admitted.");
+            var measurement = new AttachmentPreviewMeasurement(bytes.Length, digest, 1, 1);
+            Require(await publication.DeclareAsync(claim, attempt, loaded.Source!, "image/png", measurement, ct) == AttachmentPreviewDeclaration.Declared,
+                "Preview declaration was not persisted.");
+            var previewReference = AttachmentObjectReference.ForPreview(tenant, previewId); objects.AddPreview(previewReference);
+            Require(await publication.FinishAsync(claim, attempt, new AttachmentPreviewStoredOutput(previewReference, measurement), ct) == AttachmentPreviewCompletion.Applied,
+                "Actual Worker preview publication failed.");
+            Require(await previewQueue.CompleteAsync(tenant, claim.Id, claim.LeaseId, previewWorkerId, ct), "Preview Worker acknowledgment failed.");
+        }
+        var movementKey = context.IdempotencyKey; context.IdempotencyKey = Guid.NewGuid();
+        var coverCard = (await provider.GetRequiredService<IWorkManagementStore>().FindCardAsync(activeCard, ct))!;
+        Require((await provider.GetRequiredService<CardAttachmentCoverService>().SetAsync(activeCard, actor,
+            new SetCardCoverInput(file, coverCard.Version, 3), "list-app-cover", ct)).Succeeded, "Actual cover selection command failed.");
+        context.IdempotencyKey = movementKey;
+        var fileBefore = await Scalar($"SELECT to_jsonb(a)::text FROM attachments a WHERE id='{file}';");
+        var previewBefore = await Scalar($"SELECT to_jsonb(p)::text FROM attachment_preview_publications p WHERE id='{previewId}';");
+        var coverAdmission = provider.GetRequiredService<CardCoverAdmissionService>();
+        var coverRead = new CardCoverReadService(coverAdmission, new PrivateAttachmentDownloadPreparer(objects));
+        var oldCoverGrant = (await coverAdmission.AdmitAsync(activeCard, recipient, ct)).Value;
+        Require(oldCoverGrant is not null, "Source cover admission was unavailable.");
         var downloadAdmission = provider.GetRequiredService<AttachmentDownloadAdmissionService>();
         var download = new AttachmentDownloadService(downloadAdmission, new PrivateAttachmentDownloadPreparer(objects));
         var oldFileGrant = (await downloadAdmission.AdmitAsync(activeCard, file, recipient, ct)).Value;
@@ -175,6 +238,10 @@ internal static class ListMovementApplicationContract
         await using (var r = await q.ExecuteReaderAsync(ct))
             while (await r.ReadAsync(ct)) originalJobs.Add(r.GetGuid(0));
         var before = await Scalar(GraphHash());
+        var auditsBefore = int.Parse(await Scalar($"SELECT count(*) FROM audit_events WHERE tenant_id='{tenant}';"));
+        var eventsBefore = int.Parse(await Scalar($"SELECT count(*) FROM work_events WHERE tenant_id='{tenant}';"));
+        var readyJobsBefore = int.Parse(await Scalar($"SELECT count(*) FROM background_jobs WHERE tenant_id='{tenant}' AND job_type='WORK_EVENT_READY';"));
+        var activeVersionBefore = long.Parse(await Scalar($"SELECT version FROM cards WHERE id='{activeCard}';"));
         var denied = await movement.MoveAsync(list, member, source, destination, 999, null, "list-app-test", ct);
         Require(denied.ErrorCode == "list_not_found", "Destination refusal disclosed a version conflict.");
         Require(await Scalar(GraphHash()) == before, "Unauthorized movement changed protected state.");
@@ -195,9 +262,9 @@ internal static class ListMovementApplicationContract
         var success = await movement.MoveAsync(list, actor, source, destination, 1, null, "list-app-test", ct);
         Require(success.Succeeded && success.Value is { Version: 2 } && success.Value.BoardId == destination, "Original-key retry failed.");
         var changedReminders = eligible ? 1 : 2;
-        Require(await Scalar($"SELECT count(*) FROM audit_events WHERE tenant_id='{tenant}';") == (4 + changedReminders).ToString(), "Complete List/Card/Reminder audit count differs.");
-        Require(await Scalar($"SELECT count(*) FROM work_events WHERE tenant_id='{tenant}';") == (8 + changedReminders).ToString(), "Both Board streams omitted List/Card/Reminder events.");
-        Require(await Scalar($"SELECT count(*) FROM background_jobs WHERE tenant_id='{tenant}' AND job_type='WORK_EVENT_READY';") == (8 + changedReminders).ToString(), "Movement omitted delivery jobs.");
+        Require(await Scalar($"SELECT count(*) FROM audit_events WHERE tenant_id='{tenant}';") == (auditsBefore + 4 + changedReminders).ToString(), "Complete List/Card/Reminder audit count differs.");
+        Require(await Scalar($"SELECT count(*) FROM work_events WHERE tenant_id='{tenant}';") == (eventsBefore + 8 + changedReminders).ToString(), "Both Board streams omitted List/Card/Reminder events.");
+        Require(await Scalar($"SELECT count(*) FROM background_jobs WHERE tenant_id='{tenant}' AND job_type='WORK_EVENT_READY';") == (readyJobsBefore + 8 + changedReminders).ToString(), "Movement omitted delivery jobs.");
         Require(await Scalar($"SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='{tenant}';") == (eligible ? "1" : "0"), "Watch deduplication or destination admission failed.");
         Require(await Scalar($"SELECT count(*) FROM card_assignment_notifications WHERE tenant_id='{tenant}' AND recipient_id IN ('{actor}','{member}');") == "0", "Actor/source-only Board watch received a move notice.");
         if (eligible)
@@ -207,8 +274,8 @@ internal static class ListMovementApplicationContract
         }
         Require(await Scalar($"SELECT count(*) FROM card_reminders WHERE tenant_id='{tenant}' AND status='SUSPENDED' AND generation=2 AND version=2 AND trigger_at IS NULL;") == changedReminders.ToString(), "Hidden/ineligible Reminder remained scheduled.");
         Require(await Scalar($"SELECT jsonb_agg(to_jsonb(j) ORDER BY id)::text FROM background_jobs j WHERE tenant_id='{tenant}' AND job_type='CARD_REMINDER';") == queuedBefore, "Move replaced or altered original overdue jobs.");
-        Require(await Scalar($"SELECT count(*) FROM work_command_replays WHERE tenant_id='{tenant}' AND result_json IS NOT NULL;") == "1", "Original success receipt was not retained once.");
-        Require(await Scalar($"SELECT count(*) FROM cards WHERE tenant_id='{tenant}' AND board_id='{destination}' AND version=2;") == "3", "Movement lost a contained lifecycle.");
+        Require(await Scalar($"SELECT count(*) FROM work_command_replays WHERE tenant_id='{tenant}' AND key_id='{movementKey}' AND result_json IS NOT NULL;") == "1", "Original success receipt was not retained once.");
+        Require(await Scalar($"SELECT count(*) FROM cards WHERE tenant_id='{tenant}' AND board_id='{destination}' AND ((id='{activeCard}' AND version={activeVersionBefore + 1}) OR (id<>'{activeCard}' AND version=2));") == "3", "Movement lost a contained lifecycle.");
         var committed = await Scalar(GraphHash());
         Require(await movement.MoveAsync(list, actor, source, destination, 1, null, "list-app-test", ct) == success, "Original receipt replay differs.");
         Require(await Scalar(GraphHash()) == committed, "Replay reapplied movement or publication.");
@@ -239,6 +306,42 @@ internal static class ListMovementApplicationContract
             {
                 Require(!(await download.PrepareAsync(activeCard, file, recipient, ct)).Succeeded && objects.Reads == beforeRead + 2,
                     "Destination permission loss during File read retained delivery.");
+            }
+            finally
+            {
+                objects.AfterRead = null;
+                await Sql($"UPDATE board_members SET status='ACTIVE',updated_at=now() WHERE tenant_id='{tenant}' AND board_id='{destination}' AND user_id='{recipient}';");
+            }
+        }
+        Require(await Scalar($"SELECT to_jsonb(p)::text FROM attachment_preview_publications p WHERE id='{previewId}';") == previewBefore,
+            "List movement rewrote immutable preview publication history.");
+        Require(await Scalar($"SELECT cover_attachment_id::text FROM cards WHERE id='{activeCard}';") == file.ToString(),
+            "List movement lost the stable selected cover.");
+        Require(!(await coverAdmission.RevalidateAsync(oldCoverGrant!, recipient, ct)).Succeeded,
+            "Former source cover admission survived movement.");
+        var coverReads = objects.Reads;
+        Require(!(await coverRead.PrepareAsync(activeCard, member, ct)).Succeeded
+            && !(await coverRead.PrepareAsync(activeCard, null, ct)).Succeeded && objects.Reads == coverReads,
+            "Private moved cover widened source-only/anonymous access before provider I/O.");
+        var coverContent = await coverRead.PrepareAsync(activeCard, recipient, ct);
+        Require(coverContent.Succeeded == eligible, "Moved cover ignored current destination membership.");
+        if (coverContent.Value is { } admittedCover)
+        {
+            await using (admittedCover)
+            {
+                using var copied = new MemoryStream(); await admittedCover.Bytes.CopyToAsync(copied, ct);
+                Require(copied.ToArray().SequenceEqual(bytes) && objects.LastRead == AttachmentObjectReference.ForPreview(tenant, previewId),
+                    "Moved cover did not use its integrity-bound preview namespace.");
+            }
+        }
+        else Require(objects.Reads == coverReads, "Ineligible cover request reached private preview bytes.");
+        if (eligible)
+        {
+            objects.AfterRead = () => Sql($"UPDATE board_members SET status='REMOVED',updated_at=now() WHERE tenant_id='{tenant}' AND board_id='{destination}' AND user_id='{recipient}';");
+            try
+            {
+                Require(!(await coverRead.PrepareAsync(activeCard, recipient, ct)).Succeeded && objects.Reads == coverReads + 2,
+                    "Late destination permission loss retained cover delivery.");
             }
             finally
             {
@@ -290,6 +393,7 @@ internal static class ListMovementApplicationContract
             "Original delivery lost or repeated its destination event.");
         Console.WriteLine($"List movement Application: three lifecycles, populated watches/overdue Reminders, destination eligibility {eligible}, complete late rollback, original-key retry/replay and source withdrawal passed; session admission controlled.");
         Console.WriteLine($"Original Reminder Worker delivery: {delivered} delivered, {superseded} superseded; live-lease retry unchanged, original acknowledgment retained, completed lease withdrawn.");
-        Console.WriteLine("Moved original File: stable metadata/bytes, former admission withdrawn, current destination rights, pre-I/O denial and late permission loss passed; object provider/clean metadata are fixtures.");
+        Console.WriteLine("Moved original File: stable metadata/bytes, former admission withdrawn, current destination rights, pre-I/O denial and late permission loss passed; measured bytes and scanner verdict are fixtures.");
+        Console.WriteLine("Moved cover: actual Worker preview publication and cover command, stable selection/history, preview namespace/integrity, old admission withdrawal and current/late destination permission checks passed; encoding/provider are fixtures.");
     }
 }
