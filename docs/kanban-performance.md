@@ -882,3 +882,50 @@ local compiled-runtime Nginx evidence, not exact release-image or physical-devic
 certification. Complete current build-once CI, the remaining full role/lifecycle/
 accessibility matrices and the entire Definition of Done still govern closure.
 PRD-06 remains open at **25% estimated work remaining** (planning estimate).
+
+## Operational MVP normal-board budget follow-up (2026-10-14)
+
+Large-load testing remains deferred until after the operational MVP. The
+maintained normal-board case uses three Lists, 50 Cards and 20 mutation samples
+per desktop/phone viewport. Its <1500 ms readiness, <100 ms optimistic movement
+feedback, <200 ms cached detail and p95 <500 ms mutation budgets are unchanged.
+
+An unchanged current compiled-service invocation runs both maintained cases
+with command/network traces, no DOM snapshot recording and no diagnostic hooks.
+Desktop fails cached detail; phone passes. These measurements retain failures:
+
+| Viewport | Readiness ms | Feedback ms | Cached detail ms | Mutation p95 ms | Result |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 1280x844 | 1169.141 | 97.900 | **200.772** | 162.728 | Detail budget fails |
+| 390x844 | 921.994 | 82.700 | 178.978 | 150.669 | Passes |
+
+This independently confirms a current local budget failure alongside the
+retained hosted desktop detail failure of 212.625 ms (run 38507457807, job
+115697267175). It does not prove those samples have one identical root cause.
+
+A separate diagnostic-only frozen copy collects renderer CPU and metrics around
+the original detail action. Instrumentation adds overhead: desktop detail is
+287.304 ms, including 154.653 ms script, 4.888 ms layout and 8.884 ms style
+recalculation; phone detail is 189.097 ms, including 102.572 ms script, 3.859 ms
+layout and 4.937 ms style recalculation. React/styled-component rendering,
+router-link work, focus and browser-automation selectors appear in the sampled
+frames. These overlapping diagnostic timings are not acceptance measurements
+or proof that any single component causes the failure.
+
+A temporary native-anchor/Board-owned navigation prototype, despite passing
+eight link checks and 40 Board component checks, does not establish improvement.
+Its unchanged complete browser file again fails desktop: feedback 113.700 ms
+and detail 226.300 ms; phone measures 80.400/198.744 ms. The prototype and its
+temporary tests are removed. Original source bytes are restored and the web
+bundle rebuilt; no unsupported optimization, relaxed threshold, narrowed
+scenario or passing-only retry is retained.
+
+All baseline source/compiled input hashes match after restoration. Owned
+containers, credentials and newly pulled support images are removed; the
+original stopped database remains preserved. This uses readonly compiled
+API/Worker mounts and controlled-account setup. The maintained attachment's
+static release-topology label does not certify immutable images in this local
+capture. Current exact-image/full CI and actual normal-budget resolution remain
+required. PRD-06 stays open with **25% estimated work remaining**. The next
+performance investigation must separate actual render/foreground work from
+automation overhead without changing the original budgets or excluding failures.

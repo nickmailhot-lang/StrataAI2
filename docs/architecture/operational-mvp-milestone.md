@@ -237,3 +237,13 @@ private delivery, actual rolling-quota refusal, withdrawal and accessibility
 checks intact. Inputs match and owned fixtures are removed. PRD-15 remains
 open pending current immutable/full CI and remaining acceptance. This small
 functional fixture does not run the deferred large-load tests.
+
+The [normal-board budget follow-up](../kanban-performance.md#operational-mvp-normal-board-budget-follow-up-2026-10-14)
+confirms a current local desktop detail failure at 200.772 ms against the
+unchanged <200 ms budget; phone passes at 178.978 ms. A diagnostic renderer
+profile and discarded link prototype do not establish a verified fix. The
+prototype's complete browser run still fails desktop feedback/detail and is
+retained as failed evidence. Original source and bundle are restored, owned
+fixtures are removed, and PRD-06 remains open at 25% estimated work remaining.
+Normal responsiveness remains an MVP stability requirement; large-load
+testing stays deferred until after that milestone.
