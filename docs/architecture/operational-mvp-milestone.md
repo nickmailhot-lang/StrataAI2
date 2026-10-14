@@ -218,3 +218,12 @@ conflict, recovery, withdrawal, receipt and accessibility assertions intact.
 Captured inputs match and owned fixtures are removed. PRD-13 stays open;
 current immutable/full CI remains required, and large-load tests stay deferred
 until after the operational MVP.
+
+The [notification read recovery follow-up](notification-inbox.md#observe-original-read-and-recovery-admission-2026-10-14)
+observes both intended POST admissions while preserving original key/body,
+exactly two writes, one peer event, unread state and returned focus. The
+retained hosted retry keypress sent no second browser POST; the unchanged
+local baseline passes and is not claimed as reproduction. The complete
+changed case passes 1/1 in 77,774.484 ms. Inputs match and owned fixtures are
+removed. PRD-17 remains open pending current immutable/full CI and remaining
+acceptance, with large-load tests deferred until after the operational MVP.

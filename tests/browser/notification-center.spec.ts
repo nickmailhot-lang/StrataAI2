@@ -3,6 +3,7 @@ import { expectPersistedNotificationDelivery } from './persistedNotificationDeli
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { pressObservedRequest } from './keyboardAdmission';
 
 test('PRD-17: recipient inbox recovers real assignment and read changes across desktop and phone', async ({ page, context, browser, baseURL }) => {
   test.setTimeout(150_000);
@@ -123,11 +124,12 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
       }
     });
     const read = other.getByRole('button', { name: 'Mark read', exact: true });
-    await expect(read).toBeEnabled(); await read.press('Enter');
+    await pressObservedRequest(read, () => writes, 1);
     await expect(other.getByRole('button', { name: 'Retry mark read' })).toBeEnabled();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
     await expect.poll(() => desktopLive.events.filter(type => type === 'NOTIFICATION_READ').length).toBe(1);
-    const retry = other.getByRole('button', { name: 'Retry mark read' }); await expect(retry).toBeEnabled(); await retry.press('Enter');
+    const retry = other.getByRole('button', { name: 'Retry mark read' });
+    await pressObservedRequest(retry, () => writes, 2);
     await expect(retry).toHaveCount(0);
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible(); expect(writes).toBe(2);
     await expect(other.getByRole('button', { name: 'Refresh notifications' })).toBeFocused();

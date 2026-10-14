@@ -202,3 +202,29 @@ with the previously denied key. Full graph and canonical attribution checks rema
 All five combined cases pass in eight minutes on the strict local Production
 fixture. Current immutable release and complete native/PRD-wide acceptance remain
 required; PRD-17 stays open at **15% estimated work remaining**.
+
+## Observe original read and recovery admission (2026-10-14)
+
+Retained run 38512205117, notification job 115707086315, fails when
+`Retry mark read` remains after Enter. The trace records the first browser
+POST with a lost response and its successful intercepted server fetch. No
+second browser POST follows the retry keypress. This supports strengthening
+keyboard request admission; it does not establish a server receipt failure.
+
+The maintained case now observes the first intended POST and the original
+recovery POST through the existing route counter. Admission stops activating
+once that request begins. Exact two writes, identical original key/body, one
+peer read event, unread state and returned focus remain asserted. Assignment,
+preference changes, live updates, accessibility and the 150-second deadline
+remain; no response outcome is relaxed.
+
+The unchanged local baseline passes 1/1 in 69,100.542 ms, so hosted failure
+reproduction is not claimed. The changed complete case passes **1/1 in
+77,774.484 ms** with no skipped, failed, flaky or retried tests. Browser types,
+224 CI guards and intact 398-case shard collection pass. Independently checked
+2,143 hosted inputs, 1,441 native inputs, 168 frozen browser files and four
+web assets match. Owned containers/credentials are removed and the original
+stopped database is preserved. The controlled compiled-application capture
+supplements current immutable/full CI and strict provider acceptance, which
+remain required. PRD-17 stays open at **15% estimated work remaining**.
+Large-load tests remain deferred until after the operational MVP.
