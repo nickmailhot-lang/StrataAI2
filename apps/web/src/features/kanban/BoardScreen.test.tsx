@@ -954,6 +954,42 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh board' })).toHaveFocus());
   }, 10_000);
+  it('retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery', async () => {
+    const board = '11111111-1111-1111-1111-111111111111', org = '22222222-2222-2222-2222-222222222222';
+    const list = '33333333-3333-3333-3333-333333333333', target = '44444444-4444-4444-4444-444444444444';
+    const user = '55555555-5555-5555-5555-555555555555', rank = '500000000000000000000000000000';
+    const active = { ...fixture, board: { ...fixture.board, id: board, organizationId: org },
+      lists: [{ ...fixture.lists[0], list: { ...fixture.lists[0].list, id: list, rank, version: 1 } }] };
+    const destination = { ...active, board: { ...active.board, id: target, name: 'Delivery' }, lists: [] };
+    let moved = false; const writes: RequestInit[] = [];
+    vi.stubGlobal('fetch', vi.fn((path: string, init?: RequestInit) => {
+      if (path === '/me') return Promise.resolve(response({ id: user, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' }));
+      if (path === `/organizations/${org}/boards`) return Promise.resolve(response([{ id: board, name: 'Persisted board', version: 1 }, { id: target, name: 'Delivery', version: 1 }]));
+      if (path === `/boards/${target}`) return Promise.resolve(response(destination));
+      if (path === `/lists/${list}/move` && init?.method === 'POST') {
+        writes.push(init); moved = true;
+        return writes.length === 1 ? Promise.reject(new Error('Lost response')) : Promise.resolve(response({ id: list,
+          organizationId: org, boardId: target, name: 'Planning', rank, version: 2, lifecycleState: 'active' }));
+      }
+      return Promise.resolve(response(moved ? { ...active, lists: [] } : active));
+    }));
+    mount(`/app/${org}/boards/${board}`);
+    fireEvent.click(await screen.findByRole('button', { name: 'Move list' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Reload move destinations' })).toBeEnabled());
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'List to move' })); fireEvent.click(screen.getByRole('option', { name: 'Planning' }));
+    fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Destination Board' })); fireEvent.click(screen.getByRole('option', { name: 'Delivery' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Review List move' })); await screen.findByText('Move Planning to the end of Delivery?');
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm List move' }));
+    const retry = await screen.findByRole('button', { name: 'Retry this List move' }); await waitFor(() => expect(retry).toBeEnabled());
+    expect(screen.queryByText('Planning', { selector: 'h3' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add list', hidden: true })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Cancel move' })).not.toBeInTheDocument();
+    fireEvent.click(retry); await screen.findByText('List move acknowledged. Check the destination Board for its current contents.');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh board' })).toHaveFocus());
+    expect(writes).toHaveLength(2); expect(writes[1].body).toBe(writes[0].body);
+    expect(JSON.parse(writes[0].body as string)).toEqual({ sourceBoardId: board, destinationBoardId: target, expectedVersion: 1 });
+    expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe(new Headers(writes[0].headers).get('Idempotency-Key'));
+  });
   it('keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery', async () => {
     const board = '11111111-1111-1111-1111-111111111111'; const org = '22222222-2222-2222-2222-222222222222';
     const list = '33333333-3333-3333-3333-333333333333'; const copiedId = '44444444-4444-4444-4444-444444444444';

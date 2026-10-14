@@ -69,6 +69,7 @@ import { boardBackgroundColor } from './boardBackground';
 import { BoardBackgroundImage } from './BoardBackgroundImage';
 import { BoardBackgroundImageControl } from './BoardBackgroundImageControl';
 import { ListCopyControl } from './ListCopyControl';
+import { ListMoveControl } from './ListMoveControl';
 import { CardReminderControl } from './CardReminderControl';
 import { previewListMove, type ListMovePreview } from "./listMovePreview";
 import { DndContext, PointerSensor, KeyboardSensor, TraversalOrder, useSensor, useSensors } from '@dnd-kit/core';
@@ -127,7 +128,9 @@ function BoardContent() {
   const [boardCopyRecovery, setBoardCopyRecovery] = useState(false);
   const archiveRecovery = listArchiveRecovery || boardArchiveRecovery || boardMetadataRecovery || boardCopyRecovery;
   const [cardArchiveRecovery, setCardArchiveRecovery] = useState(false);
-  const [copyRecovery, setCopyRecovery] = useState(false);
+  const [listCopyRecovery, setCopyRecovery] = useState(false);
+  const [listMoveRecovery, setListMoveRecovery] = useState(false);
+  const copyRecovery = listCopyRecovery || listMoveRecovery;
   const [labelRecovery, setLabelRecovery] = useState(false);
   const [labelManageRecovery, setLabelManageRecovery] = useState(false);
   const [assignmentRecovery, setAssignmentRecovery] = useState(false);
@@ -543,10 +546,17 @@ function BoardContent() {
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           <ListCopyControl snapshot={snapshot}
-            disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || labelRecovery || labelManageRecovery || !!loadError || cardRecovery || !!cardId || !!creation}
+            disabled={listMoveRecovery || cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || labelRecovery || labelManageRecovery || !!loadError || cardRecovery || !!cardId || !!creation}
             refreshing={snapshotReading}
             unavailableListIds={new Set([...listRecovery, ...renameRecovery])}
             onBusyChange={setBusy} onRecoveryChange={setCopyRecovery}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
+            onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
+          <ListMoveControl snapshot={snapshot}
+            disabled={listCopyRecovery || cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || !!loadError || cardRecovery || !!cardId || !!creation}
+            refreshing={snapshotReading}
+            unavailableListIds={new Set([...listRecovery, ...renameRecovery])}
+            onBusyChange={setBusy} onRecoveryChange={setListMoveRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           <LabelCreateControl snapshot={snapshot} disabled={labelManageRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || snapshotReading || !!loadError || cardRecovery || !!cardId || !!creation}
