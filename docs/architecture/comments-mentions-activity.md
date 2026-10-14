@@ -1644,3 +1644,35 @@ mounted compiled applications provide supporting evidence; strict provider,
 current immutable/full release CI and complete PRD acceptance remain required.
 PRD-15 stays open at **34% estimated work remaining**. Large-load testing
 remains deferred until after the operational MVP.
+
+## Return-to-Board activity review admission (2026-10-14)
+
+Retained-image run 38548240040, partition 1 job 115818682964, passes
+102 cases and fails the phone activity case after returning from an archived
+Card to its Board. The trace records the enabled/focused Board-review keypress
+but no subsequent Board-activity GET before the strict archive-caption assertion
+finds zero entries. That return path is unchanged on `661f8310`; this does not
+establish missing server history.
+
+The return path now reuses the existing bounded first-page opening helper, as
+the scenario's initial Board/Card and peer reviews already do. It observes
+50 actual first-page entries before the unchanged exact archive-caption check.
+Only read-only opening/current-page admission is retried; archive/delete commands,
+canonical state, subsequent deletion caption and paging stay outside the helper.
+The full 180-second scenario deadline remains.
+
+The unchanged local desktop/phone baseline passes 2/2 in 151,998.798 ms, so
+hosted reproduction is not claimed. The entire changed file passes **2/2 in
+148,553.389 ms**, with no skipped, failed, flaky or retried cases and no
+diagnostic source overrides. Historical literal caption, timestamp/preferences,
+50/17-row paging, actual two-client socket recovery, body exclusion, membership
+withdrawal, archived/deleted history, account deactivation, inaccessible cursors,
+accessibility and viewport assertions remain intact.
+
+Browser types, 224 CI guards and intact 398-case shard coverage pass. Independent
+verification matches 2,145 hosted inputs, 1,443 native inputs, 170 frozen browser
+files and four served assets. Owned containers/credentials/new support images
+are removed; the original stopped database is preserved. This controlled
+compiled-application capture supplements current immutable/full CI and strict
+provider acceptance; it does not close PRD-15. Estimated work remaining stays
+**34%**. Large-load testing stays deferred until after the operational MVP.

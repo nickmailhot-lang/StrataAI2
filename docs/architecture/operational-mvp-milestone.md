@@ -267,3 +267,13 @@ unchanged baselines fail; the complete changed two-file run passes 2/2 in
 budgets passing. Inputs match and owned fixtures are removed. PRD-12/13 remain
 open pending current immutable/full CI and full acceptance. Large-load tests
 remain deferred until after the operational MVP.
+
+The [return-to-Board activity follow-up](comments-mentions-activity.md#return-to-board-activity-review-admission-2026-10-14)
+observes the actual first page before asserting the archived-Card caption.
+Retained partition 1 passes 102 cases and fails this phone opening, with no
+Board-activity GET after the keypress. The unchanged local baseline passes
+and is not claimed as reproduction. The complete changed desktop/phone file
+passes 2/2 in 148,553.389 ms, preserving archive/delete, immutable history,
+recovery, privacy/revocation, paging and accessibility checks. Inputs match
+and owned fixtures are removed. Current immutable/full CI remains required;
+PRD-15 stays open and large-load tests stay deferred.

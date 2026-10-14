@@ -165,7 +165,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Add comment', exact: true })).toBeDisabled();
       const returnReads = trackBoardReads(page, board, boardPath);
       await page.goto(boardPath); await expect.poll(returnReads).toBeGreaterThanOrEqual(2);
-      await pressAdmittedAction(boardOpen);
+      await openFirstActivityPage(boardOpen, boardHistory);
       await expect(boardHistory.getByText(`${caption} archived a Card.`, { exact: true })).toHaveCount(1);
       const deleted = await context.request.delete(`/cards/${card}?version=${version}&confirmed=true`, { headers });
       expect(deleted.status()).toBe(200);
