@@ -1,10 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from './releaseTest';
+import { expect, test, type WebSocketRoute } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const width of [1280,390]) {
-  test(`PRD-07: whole-List move recovers a lost reply after source removal and reaches the destination peer at ${width}px`, async ({ page,context }) => {
+  test(`PRD-07: whole-List move recovers a lost reply and destination peer after reconnect at ${width}px`, async ({ page,context,browser }) => {
     test.setTimeout(120_000); await page.setViewportSize({ width,height:844 });
     const headers = { 'X-StrataAI-Request':'1' };
     const account = { email:`list-move-${width}-${Date.now()}@example.test`,password:'list-move-correct-horse-battery',displayName:'List mover' };
@@ -21,10 +21,16 @@ for (const width of [1280,390]) {
     const active = await create(`/lists/${list.id}/cards`,{ title:'Moved active work',description:'Stable contents' });
     const archived = await create(`/lists/${list.id}/cards`,{ title:'Moved archived work',description:'Stable archived contents' });
     expect((await context.request.post(`/cards/${archived.id}/archive`,{ headers,data:{ version:1 } })).status()).toBe(200);
+    const peerContext = await browser.newContext({ storageState:await context.storageState() });
     const restoreWorker = scopedBoardWorker(org);
     try {
       await waitForBoardDelivery(context.request,source.id);
-      const peer = await context.newPage(); await peer.setViewportSize({ width,height:844 });
+      const peer = await peerContext.newPage(); await peer.setViewportSize({ width,height:844 });
+      let unavailable = false; let socket: WebSocketRoute | undefined;
+      await peer.routeWebSocket('**/boards/live*',route => {
+        if (unavailable) { route.close({ code:1013 }); return; }
+        socket = route; route.connectToServer();
+      });
       await peer.goto(`/app/${org}/boards/${destination.id}`);
       await expect(peer.getByText('Live updates connected.',{ exact:true })).toBeVisible();
       await page.goto(`/app/${org}/boards/${source.id}`);
@@ -65,8 +71,32 @@ for (const width of [1280,390]) {
       const archive = await context.request.get(`/boards/${destination.id}/archived-cards`); expect(archive.status()).toBe(200);
       expect((await archive.json()).items[0].card).toMatchObject({ id:archived.id,title:archived.title,description:archived.description,rank:archived.rank,version:3,lifecycleState:'archived' });
       const old = await context.request.get(`/boards/${source.id}`); expect(old.status()).toBe(200); expect((await old.json()).lists).toHaveLength(0);
+      // Use an independent browser context so only this peer misses delivery.
+      // Explicitly close its forwarded real socket and refuse replacement
+      // sockets during the outage; no fabricated SignalR frames are supplied.
+      expect(socket).toBeDefined(); unavailable = true; await socket!.close({ code:1012 });
+      await peerContext.setOffline(true);
+      const returned = await context.request.post(`/lists/${list.id}/move`,{ headers:{ ...headers,'Idempotency-Key':crypto.randomUUID() },
+        data:{ sourceBoardId:destination.id,destinationBoardId:source.id,expectedVersion:2 } });
+      expect(returned.status()).toBe(200); expect(await returned.json()).toMatchObject({ id:list.id,boardId:source.id,version:3 });
+      await waitForBoardDelivery(context.request,destination.id);
+      await expect(page.getByRole('heading',{ name:'Planning',exact:true })).toBeVisible();
+      unavailable = false; await peerContext.setOffline(false);
+      await expect(peer.getByText('Live updates connected.',{ exact:true })).toBeVisible({ timeout:45_000 });
+      await expect(peer.getByRole('heading',{ name:'Planning',exact:true })).toHaveCount(0);
+      await expect(peer.getByRole('link',{ name:'Moved active work',exact:true })).toHaveCount(0);
+      const movedAgain = await context.request.post(`/lists/${list.id}/move`,{ headers:{ ...headers,'Idempotency-Key':crypto.randomUUID() },
+        data:{ sourceBoardId:source.id,destinationBoardId:destination.id,expectedVersion:3 } });
+      expect(movedAgain.status()).toBe(200); expect(await movedAgain.json()).toMatchObject({ id:list.id,boardId:destination.id,version:4 });
+      await waitForBoardDelivery(context.request,destination.id);
+      await expect(peer.getByRole('heading',{ name:'Planning',exact:true })).toBeVisible();
+      await expect(peer.getByRole('link',{ name:'Moved active work',exact:true })).toBeVisible();
+      await expect(page.getByRole('heading',{ name:'Planning',exact:true })).toHaveCount(0);
+      const current = await context.request.get(`/boards/${destination.id}`); expect(current.status()).toBe(200);
+      const latest = (await current.json()).lists[0]; expect(latest.list).toMatchObject({ id:list.id,version:4 });
+      expect(latest.cards[0]).toMatchObject({ id:active.id,version:4 });
       await peer.reload(); await expect(peer.getByRole('heading',{ name:'Planning',exact:true })).toBeVisible();
       await expect(peer.getByRole('link',{ name:'Moved active work',exact:true })).toBeVisible();
-    } finally { restoreWorker(); }
+    } finally { try { await peerContext.close(); } finally { restoreWorker(); } }
   });
 }
