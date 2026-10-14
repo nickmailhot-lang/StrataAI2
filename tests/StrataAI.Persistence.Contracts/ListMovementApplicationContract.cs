@@ -15,6 +15,7 @@ using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.Records;
 using StrataAI.Infrastructure.WorkManagement;
 using StrataAI.Domain.WorkManagement;
+using StrataAI.Domain.Records;
 
 // Actual registered production orchestration and restricted persistence.
 // Actor/session admission is controlled; this is not an HTTP session fixture.
@@ -46,7 +47,9 @@ internal static class ListMovementApplicationContract
     }
     private sealed class PublicationClock : IClock
     {
-        public DateTimeOffset UtcNow { get; } = new(DateTimeOffset.UtcNow.AddMinutes(1).UtcTicks / 10 * 10 + 7, TimeSpan.Zero);
+        private readonly DateTimeOffset _publication = new(DateTimeOffset.UtcNow.AddMinutes(1).UtcTicks / 10 * 10 + 7, TimeSpan.Zero);
+        public bool Live { get; set; } = true;
+        public DateTimeOffset UtcNow => Live ? DateTimeOffset.UtcNow : _publication;
     }
     private sealed class CleanScanner : IAttachmentMalwareScanner
     {
@@ -132,6 +135,12 @@ internal static class ListMovementApplicationContract
               'uploads',(SELECT jsonb_agg(to_jsonb(u) ORDER BY id) FROM attachment_upload_intents u WHERE tenant_id='{{tenant}}'),
               'previews',(SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM attachment_previews p WHERE tenant_id='{{tenant}}'),
               'publications',(SELECT jsonb_agg(to_jsonb(p) ORDER BY id) FROM attachment_preview_publications p WHERE tenant_id='{{tenant}}'),
+              'retention',(SELECT jsonb_build_object(
+                'sources',(SELECT jsonb_agg(to_jsonb(s) ORDER BY record_id) FROM record_retention_sources s WHERE tenant_id='{{tenant}}'),
+                'holds',(SELECT jsonb_agg(to_jsonb(h) ORDER BY id) FROM record_retention_holds h WHERE tenant_id='{{tenant}}'),
+                'history',(SELECT jsonb_agg(to_jsonb(h) ORDER BY hold_id,version) FROM record_retention_hold_history h WHERE tenant_id='{{tenant}}'),
+                'receipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM record_retention_hold_receipts r WHERE tenant_id='{{tenant}}'),
+                'sourceReceipts',(SELECT jsonb_agg(to_jsonb(r) ORDER BY key_id) FROM record_retention_source_receipts r WHERE tenant_id='{{tenant}}'))),
               'watches',(SELECT jsonb_agg(to_jsonb(w) ORDER BY id) FROM watch_subscriptions w WHERE tenant_id='{{tenant}}'),
               'notices',(SELECT jsonb_agg(to_jsonb(n) ORDER BY id) FROM card_assignment_notifications n WHERE tenant_id='{{tenant}}'),
               'noticeStreams',(SELECT jsonb_agg(to_jsonb(s) ORDER BY recipient_id) FROM notification_event_streams s WHERE tenant_id='{{tenant}}'),
@@ -141,12 +150,14 @@ internal static class ListMovementApplicationContract
         var actors = new ActorFence(); var context = new Context();
         var services = new ServiceCollection(); services.AddLogging();
         services.AddSingleton(new PostgresConnectionFactory(apiConnection));
-        services.AddSingleton<IClock, PublicationClock>(); services.AddSingleton<PostgresBackgroundJobStore>();
+        services.AddSingleton<PublicationClock>(); services.AddSingleton<IClock>(p => p.GetRequiredService<PublicationClock>());
+        services.AddSingleton<PostgresBackgroundJobStore>();
         services.AddSingleton(new IdentityPolicy(false, true, 12, TimeSpan.FromDays(1), TimeSpan.FromMinutes(30)));
         services.AddSingleton<ICommandActorAuthorization>(actors); services.AddSingleton<IWorkCommandContext>(context);
         services.AddSingleton<IIdentityStore, PostgresIdentityStore>();
         services.AddSingleton<IOrganizationStore, PostgresOrganizationStore>();
-        services.AddSingleton<IRetentionWorkDisposition, PostgresRetentionWorkDisposition>();
+        services.AddSingleton<IOrganizationUnitOfWork, PostgresOrganizationUnitOfWork>();
+        services.AddStrataAiRetentionSources(new(RuntimeMode.Production, "contract", "contract"));
         services.AddStrataAiWorkManagement(new(RuntimeMode.Production, "contract", "contract"));
         services.AddSingleton<LateActorLoss>(p => new(new PostgresWorkEventStore(p.GetRequiredService<PostgresConnectionFactory>(),
             p.GetRequiredService<PostgresBackgroundJobStore>()), actors, source));
@@ -214,6 +225,21 @@ internal static class ListMovementApplicationContract
         Require((await provider.GetRequiredService<CardAttachmentCoverService>().SetAsync(activeCard, actor,
             new SetCardCoverInput(file, coverCard.Version, 3), "list-app-cover", ct)).Succeeded, "Actual cover selection command failed.");
         context.IdempotencyKey = movementKey;
+        var reviewedFile = await provider.GetRequiredService<RetentionSourceReviewService>()
+            .ReviewAsync(tenant, actor, RetentionProducerKind.Attachment, file, ct);
+        Require(reviewedFile.Succeeded && reviewedFile.Value is not null, "Restricted File retention review failed.");
+        Require((await provider.GetRequiredService<RetentionSourceClassificationService>().ClassifyAsync(tenant, actor, reviewedFile.Value!,
+            "list.movement.fixture", null, Guid.NewGuid(), "list-file-classification", ct)).Succeeded, "Restricted File classification failed.");
+        var holdService = provider.GetRequiredService<RetentionHoldService>();
+        var holdId = Guid.NewGuid(); var holdKey = Guid.NewGuid();
+        var holdScope = new RetentionHoldScope(tenant, RetentionRecordClass.Document, null, file);
+        var held = await holdService.ApplyAsync(tenant, actor, holdId, holdScope, "Private moved File hold", holdKey, "list-file-hold", ct);
+        Require(held.Succeeded, "Actual restricted File hold application failed.");
+        var holdBefore = await Scalar($"SELECT to_jsonb(h)::text FROM record_retention_holds h WHERE id='{holdId}';");
+        var holdHistoryBefore = await Scalar($"SELECT jsonb_agg(to_jsonb(h) ORDER BY version)::text FROM record_retention_hold_history h WHERE hold_id='{holdId}';");
+        async Task<RetentionDispositionAdmission> Disposition(RetentionWorkDispositionKind kind, Guid id)
+            => await connections.ExecuteTenantCommandAsync(tenant, async () =>
+                await provider.GetRequiredService<IRetentionWorkDisposition>().CheckAsync(tenant, kind, id, ct), _ => true, ct);
         var fileBefore = await Scalar($"SELECT to_jsonb(a)::text FROM attachments a WHERE id='{file}';");
         var previewBefore = await Scalar($"SELECT to_jsonb(p)::text FROM attachment_preview_publications p WHERE id='{previewId}';");
         var coverAdmission = provider.GetRequiredService<CardCoverAdmissionService>();
@@ -237,6 +263,10 @@ internal static class ListMovementApplicationContract
         await using (var q = new NpgsqlCommand($"SELECT id FROM background_jobs WHERE tenant_id='{tenant}' AND job_type='CARD_REMINDER';", admin))
         await using (var r = await q.ExecuteReaderAsync(ct))
             while (await r.ReadAsync(ct)) originalJobs.Add(r.GetGuid(0));
+        // Retention provenance rejects future registration clocks. Use live time
+        // for that setup, then retain the deliberate seventh-digit List/event
+        // precision probe only for the movement operation.
+        provider.GetRequiredService<PublicationClock>().Live = false;
         var before = await Scalar(GraphHash());
         var auditsBefore = int.Parse(await Scalar($"SELECT count(*) FROM audit_events WHERE tenant_id='{tenant}';"));
         var eventsBefore = int.Parse(await Scalar($"SELECT count(*) FROM work_events WHERE tenant_id='{tenant}';"));
@@ -283,6 +313,14 @@ internal static class ListMovementApplicationContract
         Require(await Scalar(GraphHash()) == committed, "Changed replay mutated protected state.");
         Require(await Scalar($"SELECT to_jsonb(a)::text FROM attachments a WHERE id='{file}';") == fileBefore,
             "List movement changed stable File identity, integrity or lifecycle metadata.");
+        Require(await Scalar($"SELECT to_jsonb(h)::text FROM record_retention_holds h WHERE id='{holdId}';") == holdBefore
+            && await Scalar($"SELECT jsonb_agg(to_jsonb(h) ORDER BY version)::text FROM record_retention_hold_history h WHERE hold_id='{holdId}';") == holdHistoryBefore,
+            "List movement rewrote immutable hold context/history.");
+        foreach (var (kind, id) in new[] { (RetentionWorkDispositionKind.Attachment, file), (RetentionWorkDispositionKind.Card, activeCard),
+            (RetentionWorkDispositionKind.List, list), (RetentionWorkDispositionKind.Board, destination) })
+            Require(await Disposition(kind, id) == RetentionDispositionAdmission.Held, "Moved descendant hold did not protect its current destination family.");
+        Require(await Disposition(RetentionWorkDispositionKind.Board, source) == RetentionDispositionAdmission.Clear,
+            "Former Board retained a moved descendant in disposition traversal.");
         Require(!(await downloadAdmission.RevalidateAsync(oldFileGrant!, recipient, ct)).Succeeded,
             "File admission from the former source Board survived movement.");
         var beforeRead = objects.Reads;
@@ -353,6 +391,21 @@ internal static class ListMovementApplicationContract
         var withdrawn = await Scalar(GraphHash());
         Require((await movement.MoveAsync(list, actor, source, destination, 1, null, "list-app-test", ct)).ErrorCode == "list_not_found", "Replay ignored original source lifecycle withdrawal.");
         Require(await Scalar(GraphHash()) == withdrawn, "Withdrawn replay changed protected state.");
+        provider.GetRequiredService<PublicationClock>().Live = true;
+        Require(await Disposition(RetentionWorkDispositionKind.List, list) == RetentionDispositionAdmission.Held
+            && await Disposition(RetentionWorkDispositionKind.Board, destination) == RetentionDispositionAdmission.Held,
+            "Source archival lost the moved descendant hold.");
+        Require((await holdService.ReadAsync(tenant, actor, holdId, ct)).Value == held.Value,
+            "Current hold read lost its immutable original application context.");
+        Require((await holdService.ReleaseAsync(tenant, actor, holdId, 1, Guid.NewGuid(), "list-file-release", ct)).Succeeded,
+            "Restricted release after source archival failed.");
+        var releasedHash = await Scalar(GraphHash());
+        Require((await holdService.ApplyAsync(tenant, actor, holdId, holdScope, "Private moved File hold", holdKey, "list-file-hold-recovery", ct)).Value == held.Value,
+            "Original hold receipt recovery rewrote application evidence.");
+        Require(await Scalar(GraphHash()) == releasedHash, "Original hold recovery reactivated or rewrote retention state.");
+        foreach (var (kind, id) in new[] { (RetentionWorkDispositionKind.Attachment, file), (RetentionWorkDispositionKind.Card, activeCard),
+            (RetentionWorkDispositionKind.List, list), (RetentionWorkDispositionKind.Board, destination) })
+            Require(await Disposition(kind, id) == RetentionDispositionAdmission.Clear, "Released hold still blocked its destination family.");
         await using var worker = new PostgresConnectionFactory(workerConnection);
         var queue = new PostgresBackgroundJobStore(worker); var workerId = Guid.NewGuid();
         var delivery = new PostgresCardReminderDeliveryStore(worker, requireVerifiedEmail: true);
@@ -395,5 +448,6 @@ internal static class ListMovementApplicationContract
         Console.WriteLine($"Original Reminder Worker delivery: {delivered} delivered, {superseded} superseded; live-lease retry unchanged, original acknowledgment retained, completed lease withdrawn.");
         Console.WriteLine("Moved original File: stable metadata/bytes, former admission withdrawn, current destination rights, pre-I/O denial and late permission loss passed; measured bytes and scanner verdict are fixtures.");
         Console.WriteLine("Moved cover: actual Worker preview publication and cover command, stable selection/history, preview namespace/integrity, old admission withdrawal and current/late destination permission checks passed; encoding/provider are fixtures.");
+        Console.WriteLine("Moved File retention: actual restricted review/classification/hold, unchanged context/history, current destination disposition, source archive, release and immutable original receipt recovery passed; actor/session admission controlled.");
     }
 }
