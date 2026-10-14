@@ -138,3 +138,23 @@ metadata/checksums, 161-input manifest, maintained-driver outcome and independen
 cleanup verification). Current full immutable-image CI, release assembly and
 post-startup integrity remain mandatory. ARCH-11 and the operational MVP
 milestone remain open.
+
+## Fail-closed owned cleanup — 2026-10-14
+
+The maintained startup gate now queries the exact disposable Compose namespace
+for containers, volumes **and networks** after teardown. Previously networks
+were omitted, and a failed Docker inventory command could produce an empty
+string that appeared clean. A leftover resource or a failed query now fails the
+gate. Each inventory is checked even after another fails. The existing teardown,
+private environment/inspection removal and preservation of an earlier startup
+failure remain in place. No pre-existing resource is deleted by these checks.
+
+Nine added executable EXIT-handler scenarios cover clean completion, an earlier
+startup failure, each of the three leftover resource types, each of the three
+inventory failures and Compose teardown failure. Docker is replaced by a test
+stand-in, and each case verifies cleanup of private temporary files and exact
+project-scoped queries. All **11 startup tests**, **233 CI/startup guards** and
+Bash syntax checks pass. This change closes an owned-cleanup observation gap;
+it does not explain the earlier machine-wide network inventory discrepancy or
+turn that outer audit into a pass. Current complete immutable-image release CI
+and provider acceptance remain required; ARCH-11 stays open.

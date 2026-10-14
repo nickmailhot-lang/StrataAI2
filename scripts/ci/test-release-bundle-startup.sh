@@ -34,13 +34,19 @@ fi
 compose=(docker compose --project-name "$project" --env-file .env -f compose.release.yml)
 inspection_file=''
 cleanup() {
-  local code=$?
+  local code=$? remaining resource
   trap - EXIT
   if ! "${compose[@]}" down --volumes --remove-orphans >/dev/null 2>&1; then code=1; fi
   rm -f .env
   if [ -n "$inspection_file" ]; then rm -f "$inspection_file"; fi
-  if [ -n "$(docker ps -aq --filter "label=com.docker.compose.project=$project")" ] \
-    || [ -n "$(docker volume ls -q --filter "label=com.docker.compose.project=$project")" ]; then code=1; fi
+  for resource in container volume network; do
+    if [ "$resource" = container ]; then
+      if ! remaining=$(docker ps -aq --filter "label=com.docker.compose.project=$project"); then code=1; continue; fi
+    else
+      if ! remaining=$(docker "$resource" ls -q --filter "label=com.docker.compose.project=$project"); then code=1; continue; fi
+    fi
+    if [ -n "$remaining" ]; then code=1; fi
+  done
   exit "$code"
 }
 umask 077
