@@ -247,3 +247,13 @@ retained as failed evidence. Original source and bundle are restored, owned
 fixtures are removed, and PRD-06 remains open at 25% estimated work remaining.
 Normal responsiveness remains an MVP stability requirement; large-load
 testing stays deferred until after that milestone.
+
+The [painted detail readiness follow-up](../kanban-performance.md#native-click-painted-detail-readiness-2026-10-14)
+measures the original native click through visible, focused, editable title
+readiness after paint using the browser clock. It retains controller elapsed
+time separately and labels measurement provenance without rewriting history.
+The complete desktop/phone file passes 2/2 in 73,645.508 ms with all four normal
+budgets unchanged; desktop paint/controller timings are 178.400/217.357 ms.
+Missing observations remain failures. Inputs match, owned fixtures are removed
+and original database data is preserved. PRD-06 stays open pending current
+immutable/full CI and remaining acceptance; large-load tests stay deferred.

@@ -5,6 +5,23 @@ import PerformanceReporter, { performanceEntry, performanceProvenance } from './
 const fixture = { lists: 2, cards: 0, viewport: '1280x844', topology: 'exact release images through Nginx' };
 const sample = { fixture, feedbackObserved: true, feedbackMs: 43.5 };
 
+test('painted detail timing retains supplemental automation time and failed or missing observations honestly', () => {
+  const value = { ...sample, fixture: { ...fixture, lists: 3, cards: 50, samples: 20, assets: 'warm', detailTiming: 'browser-painted-editable' },
+    usableMs: 600, detailObserved: true, detailMs: 178, detailAutomationMs: 206,
+    mutationP95Ms: 49, mutationSamplesMs: Array.from({ length: 20 }, (_, index) => index + 31) };
+  const entry = performanceEntry('kanban-performance.json', value, 'failed');
+  assert.equal(entry.status, 'failed'); assert.equal(entry.detailMs, 178); assert.equal(entry.detailAutomationMs, 206);
+  assert.equal(entry.fixture.detailTiming, 'browser-painted-editable'); assert.equal(entry.budgetsMs.detail, 200);
+  const missing = { ...value, detailObserved: false, detailMs: null };
+  assert.equal(performanceEntry('kanban-performance.json', missing, 'failed').detailObserved, false);
+  assert.equal(performanceEntry('kanban-performance.json', missing, 'passed'), undefined);
+  for (const patch of [{ detailObserved: undefined }, { detailAutomationMs: 'private-value' }, { detailMs: null },
+    { detailObserved: false }, { fixture: { ...value.fixture, detailTiming: 'private-value' } }])
+    assert.equal(performanceEntry('kanban-performance.json', { ...value, ...patch }, 'failed'), undefined);
+  const historical = performanceEntry('kanban-performance.json', { ...value, fixture: { ...value.fixture, detailTiming: undefined } }, 'failed');
+  assert.equal(historical.fixture.detailTiming, null); assert.equal(historical.detailAutomationMs, undefined);
+});
+
 test('performance evidence records its trace condition without inventing historical instrumentation', () => {
   for (const tracing of ['commands-and-network', 'dom-snapshots']) {
     const entry = performanceEntry('list-feedback-performance.json', { ...sample, fixture: { ...fixture, tracing } }, 'failed');

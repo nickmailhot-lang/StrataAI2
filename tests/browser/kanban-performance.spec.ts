@@ -2,6 +2,7 @@ import { performanceTrace, performanceTraceCondition } from './performanceTracin
 import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
 import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
+import { armCachedDetailPaint, readCachedDetailPaint } from './cachedDetailPaint';
 
 test.use({ trace: performanceTrace });
 
@@ -142,10 +143,12 @@ test(`PRD-06: normal Board readiness, cached detail and mutation latency meet bu
     try { if (touching) await touch?.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] }); }
     finally { await touch?.detach(); await page.unroute(feedbackRoute); }
   }
+  await page.evaluate(armCachedDetailPaint, { path: `/app/${org}/boards/${board}/cards/${card}`, title: 'Performance card 1' });
   const detailStarted = performance.now();
   await page.getByRole('link', { name: 'Performance card 1', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Card details', exact: true }).getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
-  const detailMs = performance.now() - detailStarted;
+  const detailAutomationMs = performance.now() - detailStarted;
+  const detailMs = await page.evaluate(readCachedDetailPaint);
   const mutations: number[] = [];
   for (let index = 0; index < 20; index++) {
     const began = performance.now();
@@ -156,9 +159,10 @@ test(`PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   }
   const p95Ms = [...mutations].sort((a, b) => a - b)[Math.ceil(mutations.length * .95) - 1];
   await test.info().attach('kanban-performance.json', { contentType: 'application/json', body: JSON.stringify({
-    fixture: { tracing: performanceTraceCondition, lists: 3, cards: 50, samples: 20, viewport: `${width}x844`, input: width === 390 ? 'chromium-touch' : 'chromium-mouse', assets: 'warm', topology: 'exact release images through Nginx' },
+    fixture: { tracing: performanceTraceCondition, detailTiming: 'browser-painted-editable', lists: 3, cards: 50, samples: 20, viewport: `${width}x844`, input: width === 390 ? 'chromium-touch' : 'chromium-mouse', assets: 'warm', topology: 'exact release images through Nginx' },
     usableMs, feedbackMs: Number.isFinite(feedbackMs) ? feedbackMs : null, feedbackObserved: Number.isFinite(feedbackMs),
-    detailMs, mutationP95Ms: p95Ms, mutationSamplesMs: mutations,
+    detailObserved: Number.isFinite(detailMs), detailMs: Number.isFinite(detailMs) ? detailMs : null,
+    detailAutomationMs, mutationP95Ms: p95Ms, mutationSamplesMs: mutations,
   }) });
   expect(usableMs).toBeLessThan(1500);
   expect(feedbackMs).toBeLessThan(100);

@@ -929,3 +929,52 @@ capture. Current exact-image/full CI and actual normal-budget resolution remain
 required. PRD-06 stays open with **25% estimated work remaining**. The next
 performance investigation must separate actual render/foreground work from
 automation overhead without changing the original budgets or excluding failures.
+
+## Native-click painted detail readiness (2026-10-14)
+
+The current cached-detail check distinguishes user-ready paint from test-controller
+elapsed time. A corrected diagnostic on unchanged application code observes
+178.200/156.000 ms desktop/phone painted readiness versus 206.005/184.401 ms
+automation elapsed time. Intended clicked Card identities match, document time
+origins are unchanged, and the title is focused, visible, enabled and correct
+across the following animation frame. Earlier missing observations were invalid
+private-probe results caused by referencing the imported Node clock inside a
+browser callback; they are not application defects or passing measurements.
+
+The maintained case now arms [a browser-clock observer](../tests/browser/cachedDetailPaint.ts)
+before its original native click. The 200 ms target applies to that click through
+painted, focused, editable title readiness. Wrong clicks cannot start the sample;
+disabled, wrong-title, hidden/inert, zero-size, offscreen or unfocused inputs
+cannot complete it. Readiness is rechecked after the following animation frame.
+Loss of readiness retains the entire original elapsed interval. Missing activation
+or readiness produces an explicit failed observation after five seconds. The
+original enabled-title assertion, complete scenario and 120-second deadline stay.
+
+`detailAutomationMs` retains controller elapsed time, including locator,
+actionability and serialization overhead. Reports mark new samples as
+`browser-painted-editable`, leave historical timing unspecified rather than
+relabeling it, retain failed status and reject missing/malformed observations
+as passing evidence. No latency thresholds change.
+
+The entire maintained desktop/phone file passes **2/2 in 73,645.508 ms**, with no
+skips, flaky outcomes or retries and no diagnostic source overrides:
+
+| Viewport | Readiness ms | Feedback ms | Painted detail ms | Automation detail ms | Mutation p95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1280x844 | 1078.641 | 98.700 | 178.400 | 217.357 | 167.740 |
+| 390x844 | 838.550 | 75.500 | 131.200 | 153.223 | 144.017 |
+
+All <1500/<100/<200/p95 <500 ms budgets pass in this capture. In particular,
+optimistic-feedback measurement, held real move, native mouse/touch inputs,
+persisted ordering, 50-Card dataset and all 20 mutation samples remain unchanged.
+The earlier failed runs and discarded prototype remain recorded above; this
+capture does not erase them or establish a margin for future hosted feedback.
+
+All 23 observer/report tests, browser types, 224 CI guards, intact 398-case shard
+coverage and workflow validation pass. CI runs the new observer failure-path
+tests. Independent verification matches 2,145 hosted inputs, 1,443 native inputs,
+170 frozen browser files and four web assets. Owned containers/credentials/new
+support images are removed; the original stopped database is preserved. This
+controlled compiled-application capture does not certify current immutable
+release images or complete PRD-06. Estimated work remaining stays **25%**.
+Large-load testing remains deferred until after the operational MVP.
