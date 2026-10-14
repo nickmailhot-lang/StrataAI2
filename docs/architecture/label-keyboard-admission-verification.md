@@ -28,4 +28,31 @@ The scenario now uses the existing bounded read-only opening helper and observes
 
 The unchanged local baseline passes all three complete Board metadata and live-filter cases in 195,883.930 ms; the revised ordinary capture passes the same three in 191,751.187 ms. Neither capture skips or retries a failed case. Browser types, a fresh solution build and all 213 immutable CI guards pass. Independent checks for both captures find zero mismatches across 2,109 hosted source/runtime files, 1,414 native source files and four web assets. Each capture uses restricted PostgreSQL/RLS, the compiled Production API, separate Worker and verified disposable fixture accounts. Owned containers, database/roles and temporary credentials were removed; the original stopped PostgreSQL volume was preserved.
 
-Two additional private controlled probes are excluded from regression proof: an unsynchronized refresh passes the old opening, while a refresh scheduled before the original press reaches the original scenario timeout without proving the hosted failure. Neither establishes a before/after result. The hosted phone Board metadata focus failure also remains unresolved. Mounted local runtime evidence does not certify the immutable CI images; complete current CI and the original acceptance requirements remain necessary. Estimated PRD-10 work remaining stays **35%**; the issue remains open.
+Two additional private controlled probes are excluded from regression proof: an unsynchronized refresh passes the old opening, while a refresh scheduled before the original press reaches the original scenario timeout without proving the hosted failure. Neither establishes a before/after result. The hosted phone Board metadata focus failure was unresolved at this capture; [its later owned-focus follow-up](../board-metadata-control.md#owned-focus-after-protected-reads-2026-10-14) records supporting repair evidence. Mounted local runtime evidence does not certify the immutable CI images; complete current CI and the original acceptance requirements remain necessary. Estimated PRD-10 work remaining stays **35%**; the issue remains open.
+
+## Label-management refusal-reference opening follow-up (2026-10-14)
+
+Retained run `38505687589`, shard 2 job `115689442307`, fails phone label
+editing while waiting for an absent Edit control. Its trace shows Manage-labels
+focus/Enter, then no browser label read. The missing read places failure before
+the intended refused edit, rather than proving loss of the server reference.
+Current unchanged local read/edit desktop/phone cases pass **4/4 in
+180,653.881 ms**; no hosted-failure reproduction or product root cause is claimed.
+
+The fixture now observes the actual management dialog and edit field using the
+existing bounded read-only opening helper. Save activation stops when its one
+intended PATCH is observed. Actual admitted competing edit, real 400/409 refusal,
+one deliberate failure dispatch, returned 64-character correlation reference,
+canonical unchanged content, reference retirement after reload, viewport,
+accessibility and the 90-second deadlines remain unchanged.
+
+The complete changed file passes **4/4 in 179,620.583 ms**, zero skips,
+unexpected/flaky results, retries, report errors or diagnostic hooks. Browser
+types, 224 CI/shard/startup guards and all 398 cases across intact shards pass;
+collection is not execution. Independent checks match 2,143 hosted inputs,
+1,441 native inputs, 168 frozen browser files and four served assets. Owned
+fixtures, credentials and newly pulled support images are removed; original
+stopped PostgreSQL is preserved. These compiled-runtime/controlled-account
+results do not certify strict managed mail or current immutable/full release
+acceptance. PRD-10 stays open at **35% estimated work remaining**. Large-load
+testing remains disabled until after the operational MVP milestone.

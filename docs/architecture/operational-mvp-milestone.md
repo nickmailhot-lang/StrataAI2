@@ -198,3 +198,13 @@ original body/key/count, source removal, destination placement, both peer
 streams, two activity facts, focus/reload/overflow and deadlines. Inputs match
 and owned fixtures are removed. Current immutable/full CI remains required;
 PRD-08 stays open, and large-load testing remains disabled.
+
+The [label-reference admission follow-up](label-keyboard-admission-verification.md#label-management-refusal-reference-opening-follow-up-2026-10-14)
+observes management/editor opening and one intended PATCH. Retained phone
+evidence has no browser label read after the opening keypress; the unchanged
+local baseline passes, so reproduction is not claimed. The changed complete
+read/edit desktop/phone file passes 4/4 in 179,620.583 ms with actual competing
+edit, real refusal/reference, exact dispatch count, canonical unchanged labels,
+reference retirement, accessibility, viewport and deadlines intact. Inputs match
+and owned fixtures are removed. Current immutable/full CI remains required;
+PRD-10 stays open, and large-load testing remains disabled.
