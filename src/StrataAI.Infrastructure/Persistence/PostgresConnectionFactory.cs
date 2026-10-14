@@ -23,7 +23,7 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
                 nameof(connectionString));
         }
 
-        _dataSource = NpgsqlDataSource.Create(connectionString);
+        _dataSource = NpgsqlDataSource.Create(PostgresTransportConfiguration.Normalize(connectionString));
     }
 
     public async ValueTask<NpgsqlConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)

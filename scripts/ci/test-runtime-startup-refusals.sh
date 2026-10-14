@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # ARCH-05-AC-002 / ARCH-12 / PRD-02: actual retained host images must reject
-# missing/unknown mode, missing Production persistence and invalid API policy.
+# missing/unknown mode, missing Production persistence, unsafe external database
+# transport and invalid API policy.
 api_image="${1:?Pass the exact retained API image}"
 worker_image="${2:?Pass the exact retained Worker image}"
 scratch="$(mktemp -d)"
@@ -33,8 +34,8 @@ expect_refusal() {
   if ! grep -Fq "$expected" "$scratch/refusal"; then
     echo "Startup refusal case $sequence did not produce its expected configuration error." >&2; exit 1
   fi
-  if grep -Fq 'invalid-policy-value' "$scratch/refusal"; then
-    echo 'Startup failure echoed a supplied policy value.' >&2; exit 1
+  if grep -Eq 'invalid-policy-value|invalid-transport-secret' "$scratch/refusal"; then
+    echo 'Startup failure echoed a supplied configuration value.' >&2; exit 1
   fi
   docker stop "$name" >/dev/null 2>&1 || true
   name=''
@@ -43,6 +44,12 @@ for image in "$api_image" "$worker_image"; do
   expect_refusal "$image" '' 'STRATAAI_RUNTIME_MODE is required'
   expect_refusal "$image" hybrid 'STRATAAI_RUNTIME_MODE must be either'
   expect_refusal "$image" production 'Production mode requires a database connection string or complete runtime credentials.'
+  expect_refusal "$image" production 'PostgreSQL SSL Mode=Disable requires' \
+    -e 'ConnectionStrings__Postgres=Host=external.invalid;Database=fixture;Username=fixture;Password=invalid-transport-secret;SSL Mode=Disable'
+  expect_refusal "$image" production 'PostgreSQL SSL Mode=Disable requires' \
+    -e STRATAAI_DATABASE_HOST=external.invalid -e STRATAAI_DATABASE_NAME=fixture \
+    -e STRATAAI_DATABASE_USERNAME=fixture -e STRATAAI_DATABASE_PASSWORD=invalid-transport-secret \
+    -e STRATAAI_DATABASE_SSL_MODE=Disable
 done
 for mode in demo production; do
   for policy in 'STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL=invalid-policy-value' \
@@ -53,5 +60,5 @@ for mode in demo production; do
       -e "$policy"
   done
 done
-test "$sequence" = 12
-echo 'Both retained hosts reject missing/unknown mode and missing Production persistence; API policy refuses across both modes (12 startup cases).'
+test "$sequence" = 16
+echo 'Both retained hosts reject missing/unknown mode, missing Production persistence and external plaintext; API policy refuses across both modes (16 startup cases).'

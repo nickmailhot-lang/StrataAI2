@@ -23,4 +23,4 @@ services:
       STRATAAI_IDENTITY_TOKEN_KEYS: ${STRATAAI_TEST_TOKEN_KEYS:?Set ephemeral CI token keys}
       STRATAAI_IDENTITY_EMAIL_API_KEY: ci-test-provider-key
       STRATAAI_IDENTITY_EMAIL_TEST_ENDPOINT: http://host.docker.internal:19090/emails
-      ConnectionStrings__IdentityDeliveryPostgres: Host=postgres;Port=5432;Database=${POSTGRES_DB:-strataai};Username=strataai_identity_mail_ci;Password=identity-ci-password
+      ConnectionStrings__IdentityDeliveryPostgres: Host=postgres;Port=5432;Database=${POSTGRES_DB:-strataai};Username=strataai_identity_mail_ci;Password=identity-ci-password;SSL Mode=Disable

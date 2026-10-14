@@ -97,9 +97,62 @@ Set the issuer flag to `false` to suspend only account-source routing. Invalid
 values and enabled Demo issuer discovery reject startup. No configured
 Organization IDs are required. See [issuer account authority](invitation-recipient-authority.md#canonical-issuer-account-deactivation).
 
-Hosted PostgreSQL connection strings should require TLS (for example, Npgsql `SSL Mode=Require`
-or stronger certificate validation supported by the deployment environment). Local Compose is
-an explicitly documented exception.
+### PostgreSQL transport
+
+API, general Worker and identity-mail database connections default to
+`SSL Mode=VerifyFull`: encryption, certificate trust and server-name validation
+are required. Install the hosted database's CA in the runtime trust store or
+supply Npgsql's `Root Certificate` setting through the connection string.
+An explicit `Require`, `VerifyCA` or `VerifyFull` mode is preserved; `Require`
+encrypts without validating the server identity. `Allow` and `Prefer` are refused
+because they permit plaintext fallback. Omitted GSS encryption is disabled so
+ambient Kerberos credentials cannot replace the TLS transport; explicitly
+enabled GSS encryption is refused by this TLS contract.
+
+For structured credentials, `STRATAAI_DATABASE_SSL_MODE` accepts `Require`,
+`VerifyCA`, `VerifyFull` or `Disable`. Omission selects `VerifyFull`; an empty,
+unknown or numeric setting refuses startup. A supplied
+`ConnectionStrings__Postgres` takes precedence over structured credentials;
+put `SSL Mode` in that connection string. The separate
+`ConnectionStrings__IdentityDeliveryPostgres` uses the same transport guard.
+Refusal messages do not echo connection strings, passwords or parser errors.
+
+Plaintext requires an explicit `SSL Mode=Disable` and every configured host must
+be the private Compose service `postgres`, a loopback address/`localhost`, or a
+Unix socket directory. External and mixed local/external host lists are refused.
+The bundled local Compose files explicitly set
+`STRATAAI_DATABASE_SSL_MODE=Disable` for their private PostgreSQL service;
+restricted CI connection strings also state their local exception explicitly.
+For the optional mail role on that service, include `SSL Mode=Disable` in its
+separate connection string. Do not reuse that exception for a hosted database.
+
+The previous application inherited the driver's `Prefer` default and ignored
+structured SSL-mode configuration. Operators upgrading from that behavior must
+configure a trusted hosted certificate or an explicit supported mode; an
+unencrypted external server will no longer be accepted. See
+[Npgsql's TLS modes](https://www.npgsql.org/doc/security.html#encryption-ssltls).
+
+Verification for the transport repair: the pre-change implementation fails
+19 of the initial 27 focused cases; all 31 final
+[transport cases](../../tests/StrataAI.Api.Tests/PostgresTransportTests.cs) pass.
+A real loopback TCP probe observes the driver's SSL request and then refuses
+TLS: the repaired client closes without sending a plaintext startup packet.
+The original client sent a subsequent byte instead. Four compiled Release
+API/Worker startups reject external plaintext through both connection-string
+and structured configuration, without echoing the supplied credential.
+The [retained-image startup gate](../../scripts/ci/test-runtime-startup-refusals.sh)
+includes those four cases, bringing its required total to 16; execution for the
+new immutable candidate remains required.
+
+The Release solution builds with zero warnings/errors. The 242 CI/shard/startup
+guards, workflow lint and 11 actual Compose-rendering checks pass. A complete
+Windows Domain run reports 1,017 passed and 16 failed; the pre-existing Debug
+binaries without the transport guard reproduce the same 16 cases and diagnostics
+apart from random fixture IDs. They concern Windows timezone data, Unix sockets,
+symlink privileges and the Linux Worker path. This is an explicit local platform
+limitation, not a green full-suite claim. The full API run and new candidate's
+Linux/retained-image CI remain pending; the earlier `24f56246` release does not
+certify this repair or deployed hosted certificates.
 
 Promotion means moving the exact image tag/digest produced by green CI. Rollback means
 redeploying the previous known-good tag/digest without recompilation. Irreversible database

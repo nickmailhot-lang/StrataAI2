@@ -42,7 +42,37 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
-The milestone is pending. The current source and container evidence must be distinguished from complete, successful CI and a retained release artifact. Continue core API reliability and current container/browser CI repairs first; do not treat an earlier commit or fixture-only provider evidence as a successful current release.
+A verified operational release candidate is available at
+`24f562464f706884e4a27577b61c65ff385b4263`:
+[run 38603745814](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38603745814)
+passed every required source, PostgreSQL, build-once, security, integration,
+browser, aggregate and final release gate. Its
+[tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38603745814/artifacts/11925418731)
+contains the exact three tested image archives and all 149 migrations.
+Independent download verification matches the GitHub artifact digest, all
+181 checksummed bundle files, original image/security identity and provenance,
+and unchanged SBOM copies. The assembled source-free payload passed migrations,
+restricted Production startup, health/proxy/build identity, graceful API/Worker
+shutdown and restart in the mandatory release job.
+
+Full-browser groups passed 103, 96, 115 and 82 cases. The second group's two
+conditional mail cases passed in the dedicated 85-case notification group;
+the foundation group passed 50 cases. All 27 registered capacity stages stayed
+skipped, and the two 100,000-Card API cases stayed explicitly deferred. The six
+retained normal-fixture performance measurements meet their unchanged budgets.
+These counts do not establish production capacity or managed-provider readiness.
+
+The milestone remains pending deployment acceptance. Confirm the operator's
+public origin, durable key rings, Worker Organization scopes, verification/mail
+transport and enabled attachment providers using the configuration and release
+guides. Private storage/scanner and isolated mail fixtures do not prove deployed
+AWS/IAM, antivirus or managed mail. Complete the remaining architecture and
+feature acceptance audits before closing their tickets. Later main changes,
+including the PostgreSQL transport repair, require their own immutable CI;
+do not attribute the candidate's results to a different revision.
+
+The following entries preserve earlier investigation and supporting local
+evidence in their original revision scope.
 
 Small local browser evidence now includes the complete archived-List,
 checklist-read and List-move files at desktop/phone: **6/6 in 318,145.017 ms**,

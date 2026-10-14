@@ -41,8 +41,11 @@ public static class RuntimeConfiguration
             var port = 5432;
             if (portText is not null && (!int.TryParse(portText, out port) || port is < 1 or > 65535))
                 throw new InvalidOperationException("Runtime database port is invalid.");
-            connectionString = new Npgsql.NpgsqlConnectionStringBuilder
-            { Host=host,Port=port,Database=database,Username=username,Password=password }.ConnectionString;
+            var settings = new Npgsql.NpgsqlConnectionStringBuilder
+            { Host=host,Port=port,Database=database,Username=username,Password=password };
+            var sslMode = configuration["STRATAAI_DATABASE_SSL_MODE"];
+            if (sslMode is not null) settings.SslMode = PostgresTransportConfiguration.ParseStructuredMode(sslMode);
+            connectionString = settings.ConnectionString;
         }
 
         services.AddSingleton(new PostgresConnectionFactory(connectionString));

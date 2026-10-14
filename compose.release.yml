@@ -25,6 +25,7 @@ services:
       STRATAAI_RUNTIME_MODE: production
       ASPNETCORE_ENVIRONMENT: Production
       STRATAAI_DATABASE_HOST: postgres
+      STRATAAI_DATABASE_SSL_MODE: Disable
       STRATAAI_DATABASE_NAME: ${POSTGRES_DB:-strataai}
       STRATAAI_DATABASE_USERNAME: strataai_api_runtime
       STRATAAI_ACTIVITY_KEY_DIRECTORY: /var/lib/strataai/activity-keys
@@ -61,6 +62,7 @@ services:
       STRATAAI_RUNTIME_MODE: production
       ASPNETCORE_ENVIRONMENT: Production
       STRATAAI_DATABASE_HOST: postgres
+      STRATAAI_DATABASE_SSL_MODE: Disable
       STRATAAI_DATABASE_NAME: ${POSTGRES_DB:-strataai}
       STRATAAI_DATABASE_USERNAME: strataai_worker_runtime
       STRATAAI_DATABASE_PASSWORD: ${STRATAAI_WORKER_DB_PASSWORD}

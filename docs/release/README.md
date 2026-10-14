@@ -156,7 +156,12 @@ credentials. Reprovisioning removes obsolete public-table and column grants.
 Password validation errors now return a failing exit status in both provisioners.
 
 Configure `STRATAAI_IDENTITY_DELIVERY_CONNECTION_STRING` for this role and the
-same secret, using correctly encoded Npgsql connection-string syntax. Supply
+same secret, using correctly encoded Npgsql connection-string syntax. Include
+`SSL Mode=Disable` only for this private local `postgres` service; use
+`SSL Mode=VerifyFull` and configured certificate trust for a hosted database.
+The main API/Worker local connections make their plaintext exception explicit
+in Compose. See [database transport configuration](../architecture/configuration.md#postgresql-transport)
+before connecting either database role to an external service. Supply
 the sender, HTTPS origin, signing keys, provider account and Worker-only provider
 credential described in [identity mail configuration](../architecture/identity-email.md).
 The helper does not enable mail, create provider resources or send messages.

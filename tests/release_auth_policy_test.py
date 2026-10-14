@@ -59,6 +59,15 @@ class ReleaseAuthenticationPolicyTests(unittest.TestCase):
         for host, policy in self.model({}).items():
             self.assertEqual(policy, {key: POLICY_DEFAULTS[key] for key in policy}, host)
 
+    def test_private_postgres_transport_exception_reaches_api_and_worker_explicitly(self):
+        fields = ('STRATAAI_DATABASE_HOST', 'STRATAAI_DATABASE_SSL_MODE')
+        model = self.model({}, dict.fromkeys(('api', 'worker'), fields))
+        for host, configuration in model.items():
+            self.assertEqual(configuration, {
+                'STRATAAI_DATABASE_HOST': 'postgres',
+                'STRATAAI_DATABASE_SSL_MODE': 'Disable',
+            }, host)
+
     def test_explicit_operator_policy_reaches_both_hosts(self):
         configured = dict(zip(POLICY_DEFAULTS, ('true', 'false', '24', '48', '60')))
         for host, policy in self.model(configured).items():
