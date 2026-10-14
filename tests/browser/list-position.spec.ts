@@ -1,5 +1,6 @@
 import { expect, test } from './releaseTest';
 import { trackBoardReads } from './boardReadTracker';
+import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-06: keyboard list positioning persists at ${viewport.width}px`, async ({ page, context }) => {
@@ -20,11 +21,13 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const reads = trackBoardReads(page, board, `/app/${org}/boards/${board}`);
     await page.goto(`/app/${org}/boards/${board}`); await expect.poll(reads).toBeGreaterThanOrEqual(2);
     const move = page.getByRole('button', { name: 'Move Second list', exact: true });
-    await expect(move).toBeEnabled(); await move.focus(); await page.keyboard.press('Enter');
-    const position = page.getByRole('combobox', { name: 'Position for Second' }); await position.press('ArrowDown');
-    await expect(page.getByRole('listbox', { name: 'Position for Second' })).toBeVisible();
+    const position = page.getByRole('combobox', { name: 'Position for Second' });
+    await openAdmittedReview(move,position);
+    // Foreground reads may briefly disable the select after opening its review.
+    // Observe the read-only menu opening; do not retry the mutation below.
+    await openAdmittedReview(position,page.getByRole('listbox', { name: 'Position for Second' }));
     await page.getByRole('option', { name: 'Before First', exact: true }).focus(); await page.keyboard.press('Enter');
-    await page.getByRole('button', { name: 'Confirm list move', exact: true }).focus(); await page.keyboard.press('Enter');
+    await pressAdmittedAction(page.getByRole('button', { name: 'Confirm list move', exact: true }));
     await expect(page.getByText('List move acknowledged. Current ordering is being checked.')).toBeVisible();
     await expect(move).toBeEnabled();
     await expect(move).toBeFocused();

@@ -111,3 +111,9 @@ temporarily disable it. Moving focus to another control releases that ownership.
 All nine focused List-position source tests pass, including a second admission
 refresh and an explicit focus move elsewhere. The existing native browser focus
 assertion remains unchanged; exact-image verification of this repair is pending.
+
+### Keyboard menu admission in retained-image tests
+
+CI run [38452533316](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38452533316), at `a6301cb3`, fails the desktop and phone List-position cases because the position listbox never opens after its keyboard input. The fixture focused/activated the launcher and immediately pressed the select without observing refreshed admission; protected foreground reads can temporarily disable these controls.
+
+Both read-only openings now use the existing admitted-review helper: first observe the position review, then observe its actual MUI listbox. The mutation uses one admitted activation. Original ordering, rank, version, focus, drag cancellation, single-write counts and five-second opening budgets remain unchanged. Browser types, discovery and 222 CI/startup guards pass; retained-image execution remains pending. This is a fixture admission correction, not a passing native browser result or altered product ordering rule. No large-load tests run. Estimated full PRD-06 work remaining stays **25%** (provisional); the issue remains open.

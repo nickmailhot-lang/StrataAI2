@@ -1221,8 +1221,19 @@ jobs:
         env:
           STRATAAI_E2E_VERIFY_NOTIFICATION_ACCOUNTS: '1'
           STRATAAI_E2E_RATE_PACING: '1'
+          STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED: 'true'
         run: |
           set -euo pipefail
+          # This matrix waits for original recipient-authority queue delivery.
+          # The job-wide default isolates other fixtures by disabling discovery.
+          # Enable this real dispatcher only here and restore that default even
+          # when a browser assertion fails; keep the immutable Worker image.
+          restore_authority_discovery() {
+            STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED=false docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker
+          }
+          trap restore_authority_discovery EXIT
+          docker compose -f compose.release.yml -f scripts/ci/compose.identity-test.yml up -d --no-deps --force-recreate --wait --wait-timeout 180 worker
+          test "$(docker compose -f compose.release.yml exec -T worker printenv STRATAAI_INVITATION_RECIPIENT_AUTHORITY_DISCOVERY_ENABLED)" = true
           test "$(docker compose -f compose.release.yml exec -T api printenv STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL)" = true
           npx playwright test tests/browser/watch-trigger-order.spec.ts tests/browser/watch-permission-order.spec.ts
 

@@ -42,3 +42,11 @@ PRD-17 work remaining stays **15%**.
 The refreshed 2026-10-12 [dependency audit](../ticket-dependencies.md) still
 contains 92 canonical definitions, 91 open tickets and three dependency cycles.
 All 92 requirement-body hashes match the prior inventory; no ticket was closed.
+
+## Hosted authority-wait setup correction, October 13
+
+The latest failed [CI run 38452533316](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38452533316), at `a6301cb3`, fails all four permission roles at the added wait for original `INVITATION_RECIPIENT_AUTHORITY_PAGE` jobs to reach `SUCCEEDED`. The job-wide fixture environment disables recipient-authority discovery, and the strict watch-order step had not enabled it. Production Board/Organization authority producers still enqueue those pages. The required real dispatcher was therefore absent from the hosted setup, while earlier local captures used the enabled discovery loop.
+
+The strict watch-order step now enables only recipient-authority discovery, recreates the already-built immutable Worker with the existing identity fixture overlay, and verifies its effective flag before running the browser matrix. An exit trap restores the job-wide disabled discovery setting even after failure. Issuer discovery, general Work job scope, source/permission assertions, original complete hashes, the 30-second delivery wait and 180-second case limits are unchanged. No rows are rewritten to simulate delivery, and no browser case or mutation is retried.
+
+Workflow lint, browser TypeScript and 222 CI/startup guards pass. All five watch-order cases and the two List-position cases are discovered; actual exact-image execution is still pending. This corrects the observed dispatcher setup failure; it does not by itself prove that every earlier replay-state mismatch is resolved. No large-load tests are enabled. Estimated full PRD-17 work remaining stays **15%**, and PRD-05 stays **14%** (provisional); both issues remain open.
