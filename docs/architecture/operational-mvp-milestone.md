@@ -289,3 +289,13 @@ current full-release/managed-provider certification. Inputs match; owned
 containers, credentials, three images and about 1.04 GB of archives are removed
 without runtime/symbol copies. Full current CI remains required, and large-load
 tests stay deferred until after the milestone.
+
+The [invitation receipt recovery follow-up](invitation-recipient-events.md#original-acceptance-event-before-explicit-receipt-recovery--2026-10-14)
+orders explicit same-ID recovery after the original acceptance's live event and
+protected discovery. The unchanged local file reproduced four missing-link
+failures; the changed complete desktop/phone Internal/Portal/Board file passes
+18/18. Stale-link withdrawal, account checks, exact receipts, authoritative
+history and accessibility remain required. Captured inputs match and owned
+fixtures are removed. PRD-60 remains open at 18% estimated work remaining;
+current full immutable-image CI remains required and large-load tests stay
+post-MVP.

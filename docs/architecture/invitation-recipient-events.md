@@ -739,3 +739,36 @@ The five frozen candidate files still match their original manifest. Reports:
 These close the previously pending source-suite scopes for the repair committed
 as `f696daf7`; current immutable-image CI remains a separate closure requirement.
 Estimated PRD-03 work remaining stays **8%**.
+
+## Original acceptance event before explicit receipt recovery — 2026-10-14
+
+Retained immutable-image partition 3 for `49129310` passed 114 cases and failed
+`recipient-invitation-account.spec.ts` at the desktop Internal confirmation link.
+Its trace contains both successful acceptance POSTs and successful account
+checks, followed by protected discovery after the original acceptance's delayed
+live event. That event must withdraw acknowledgment links under the existing
+recipient authority contract; keeping the link visible would weaken it.
+
+The complete unchanged 18-case local file reproduced four missing-link failures:
+desktop Internal, Portal and Board, plus phone Internal. Fourteen cases passed
+in 548,050.397 ms. The recovery branch now observes the original transition's
+live status and completion of its protected discovery before explicitly
+refreshing and retrying the same invitation. This is an event-based ordering
+check, with no added delay, widened deadline or mutation retry loop. It also
+asserts that only the original POST exists before explicit recovery.
+
+The complete changed file passed **18/18 in 531,695.969 ms**, with zero skips,
+flaky results or retries. Original account substitution and unavailable-account
+withdrawal, exact actor-bound URL/receipt replay, server history, separate
+Internal/Portal/Board grants, keyboard operation and WCAG checks remain intact.
+All 65 affected invitation page component checks, browser typing, 224 CI guards
+and collection of 398 cases across 145 intact browser files passed.
+
+This supporting fixture uses fresh restricted-role PostgreSQL, the actual
+compiled API/Worker and current frontend assets; it does not certify a current
+immutable-image release or managed providers. All 2,145 captured inputs, 170
+browser files and four frontend assets independently match the worktree. Owned
+containers, database/roles, credentials and newly pulled support images were
+removed. The original stopped database was preserved. Full current CI and the
+remaining PRD acceptance criteria are still required. Estimated PRD-60 work
+remaining stays **18%**; large-load tests remain deferred until after the MVP.

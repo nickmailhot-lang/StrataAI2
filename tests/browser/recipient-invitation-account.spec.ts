@@ -81,6 +81,12 @@ for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'B
         const retry = await context.request.post(`${path}?expectedActorId=${actor}`, { headers });
         expect(retry.status()).toBe(200); expect(await retry.json()).toEqual(acknowledgment);
       } else {
+        // The original committed acceptance emits a live invalidation. Observe
+        // its protected recovery before confirming the original receipt again;
+        // that event must still withdraw stale acknowledgment links.
+        await expect(page.getByRole('status')).toHaveText('Invitations changed. Checking current invitations.');
+        await expect(page.getByRole('progressbar', { name: 'Loading invitation request' })).toHaveCount(0);
+        expect(writes).toHaveLength(1);
         await page.getByRole('button', { name: 'Refresh invitations' }).focus(); await page.keyboard.press('Enter');
         const retry = page.getByRole('button', { name: 'Retry invitation acceptance' }); await expect(retry).toBeEnabled();
         expect(writes).toHaveLength(1); await retry.focus(); await retry.press('Enter');
