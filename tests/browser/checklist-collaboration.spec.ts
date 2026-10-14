@@ -2,7 +2,6 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackCardVersion } from './boardReadTracker';
-import { pressAdmittedAction } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-13-TC-05/08/09: concurrent item drafts, socket recovery and revoked scope at ${width}px`, async ({ page, context, browser }) => {
@@ -76,6 +75,21 @@ for (const width of [1280, 390]) {
       const show = peer.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
       await expect(peer.getByText('0 of 1 items complete (0%)', { exact: true })).toBeVisible();
       await edit(peer); const dirty = peer.getByRole('textbox', { name: 'Checklist item text' }); await dirty.fill('Contributor dirty draft'); await peer.getByRole('checkbox', { name: 'Item complete', exact: true }).press('Space');
+      async function discardPeerReview() {
+        const discard = peer.getByRole('button', { name: 'Discard item review and load latest', exact: true });
+        // Only the scenario's explicit discard may close the existing draft.
+        // A previously pushed Card version does not prove Enter closed it.
+        await expect(async () => {
+          if (await dirty.isVisible()) {
+            await expect(discard).toBeEnabled({ timeout: 500 });
+            await discard.focus({ timeout: 500 });
+            await expect(discard).toBeFocused({ timeout: 500 });
+            await expect(discard).toBeEnabled({ timeout: 500 });
+            await discard.press('Enter', { timeout: 500 });
+          }
+          await expect(dirty).toHaveCount(0, { timeout: 500 });
+        }).toPass({ timeout: 5_000 });
+      }
       await edit(page); await page.getByRole('textbox', { name: 'Checklist item text' }).fill('Owner canonical change');
       const path = `/cards/${card}/checklists/${checklist.id}/items`;
       let held = false; const competing = new Promise<void>(resolve => { releaseConflict = resolve; });
@@ -92,7 +106,7 @@ for (const width of [1280, 390]) {
       await expect(peer.getByText('This Card changed elsewhere. Your item text and completion choice are preserved.', { exact: true })).toBeVisible({ timeout: 20_000 });
       await expect(dirty).toHaveValue('Contributor dirty draft'); await expect(peer.getByRole('checkbox', { name: 'Item complete', exact: true })).toBeChecked(); await expect(peer.getByRole('button', { name: 'Save checklist item', exact: true })).toBeDisabled();
       const canonical = await context.request.get(path); expect(canonical.status()).toBe(200); const state = await canonical.json(); expect(state.cardVersion).toBe(4); expect(state.items[0].text).toBe('Owner canonical change'); expect(state.items[0].completed).toBe(false);
-      await pressAdmittedAction(peer.getByRole('button', { name: 'Discard item review and load latest', exact: true }));
+      await discardPeerReview();
       // The owner committed revision 4. Reopening is an independent review and
       // must wait for its actual protected parent admission after discard.
       await expect.poll(admittedPeerVersion).toBe(4);
@@ -114,7 +128,7 @@ for (const width of [1280, 390]) {
       expect((await new AxeBuilder({ page: peer }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       // Exercise revocation with an actual committed command whose reply was
       // lost, as well as the dirty-draft conflict already checked above.
-      await peer.getByRole('button', { name: 'Discard item review and load latest', exact: true }).press('Enter');
+      await discardPeerReview();
       // The independent editor must use the pushed revision after discard refresh.
       await expect.poll(admittedPeerVersion).toBeGreaterThanOrEqual(6);
       await expect(peer.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');

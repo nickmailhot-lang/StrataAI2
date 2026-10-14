@@ -288,3 +288,13 @@ deadline. All 75 management component cases and 213 CI coverage guards pass;
 source/runtime/web hashes and owned cleanup are independently checked. Current
 immutable/full CI and the remaining full AC/DoD still govern closure. Estimated
 PRD-13 work remaining stays **33%**.
+
+The [explicit discard follow-up](checklist-review-admission-verification.md#observe-explicit-discard-before-independent-reopening)
+addresses the later retained desktop reconnect failure while keeping the strict
+canonical editor-value assertion. Both explicit discard points must remove the
+old editor before an independent opening and new typing. Complete desktop/phone
+collaboration scenarios pass **2/2 in 133,758.085 ms**, with original conflict,
+preserved text/completion, socket recovery, versions, committed receipt,
+revocation, unchanged state, accessibility and deadline checks. Captured inputs
+match during execution and owned fixtures are removed. Current immutable/full
+acceptance remains pending; estimated work remaining stays **33%**.

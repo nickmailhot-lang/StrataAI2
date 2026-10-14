@@ -76,3 +76,36 @@ retain their prior request, progress, two-session and accessibility assertions.
 All captured inputs match and owned fixtures/credentials/new support images are
 removed. Current retained-image CI and full PRD-13 acceptance remain pending;
 estimated work remaining stays **33%**.
+
+## Observe explicit discard before independent reopening
+
+Retained-image run 38488633147, browser partition 2 job 115637762773, fails
+the desktop collaboration case at reopening after reconnect: the editor still
+contains `Draft during socket outage` instead of `After socket reconnect`.
+That path is unchanged on `7b155f49`. The preceding revision check can already
+be satisfied by the pushed version before the discard keypress, so it does not
+prove that the old editor closed. This does not establish stale server content
+or justify silently discarding the draft inside the opening helper.
+
+Both scenario-owned explicit discard points now check enabled focus and observe
+the old editor's removal within a bounded five-second phase. Only that existing
+review can close; the independent opening, canonical initial-value assertion,
+new typing and Save/PATCH stay outside. The editor's strict initial-value check
+is retained. The obsolete unused helper import is removed after capture.
+
+Both complete maintained desktop/phone scenarios pass in **133,758.085 ms**,
+zero failures/skips/flaky outcomes or diagnostic source hooks. Original two
+actors, actual server-409 concurrent conflict, preserved text/completion choice,
+canonical versions, socket outage/reconnect, pushed item, committed/lost response,
+exact original body/key, membership withdrawal, denied old-receipt replay,
+unchanged canonical state, accessibility and 180-second deadline remain. No
+mutation is repeated by discard admission, and no large-load tests run.
+
+Browser types, 222 CI guards and 398-case shard coverage pass. During capture,
+all 2,143 hosted source/runtime hashes, 1,441 browser-source hashes, 168 frozen
+browser files and four web files match. Owned containers, credentials, fixture
+volumes and newly pulled support images are removed, preserving original
+stopped PostgreSQL data. Read-only mounted compiled applications and controlled
+account setup provide supporting interaction evidence; current retained-image,
+strict provider and full PRD acceptance remain pending. Estimated PRD-13 work
+remaining stays **33%**; the issue remains open.

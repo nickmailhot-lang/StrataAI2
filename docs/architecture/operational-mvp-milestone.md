@@ -69,3 +69,11 @@ account-withdrawal, receipt/count, unchanged graph, comment version/redaction,
 preference, accessibility and deadline checks remain. Captured inputs match and
 owned fixtures are removed. The complete current immutable-image pipeline and
 all release gates remain pending; large-load testing stays disabled.
+
+A separate complete checklist-collaboration invocation passes desktop/phone
+**2/2 in 133,758.085 ms** after explicit discard is required to remove the old
+editor before reopening. The strict canonical-value check, preserved dirty
+draft/completion, conflict, actual socket recovery, committed receipt and revoked
+replay, unchanged state, accessibility and deadline assertions remain. Captured
+inputs match during execution and owned fixtures are removed. This supplements
+the current candidate and does not certify the full immutable release pipeline.
