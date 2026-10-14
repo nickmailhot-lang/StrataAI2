@@ -300,7 +300,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
       'set -euo pipefail',
       ...['web', 'api', 'worker'].map(host => `gunzip -c image-artifacts/strataai-${host}.tar.gz | docker load`),
       'docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json',
-      'python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json',
+      'python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json --archives image-artifacts',
     ], 'Load every retained archive and verify complete provenance before executing or scanning images');
   }
   assert.deepEqual(security.needs, ['metadata', 'build-images-once']);

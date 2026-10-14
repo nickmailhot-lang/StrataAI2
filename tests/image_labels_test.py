@@ -1,10 +1,13 @@
 import copy
+import hashlib
+import io
 import importlib.util
 import json
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import tarfile
 import unittest
 
 spec = importlib.util.spec_from_file_location("image_labels", Path(__file__).parents[1] / "scripts/ci/verify-image-labels.py")
@@ -111,6 +114,122 @@ class ImageProvenanceTests(unittest.TestCase):
         changed = copy.deepcopy(record); changed["imageIds"]["api"] = changed["imageIds"]["web"]; mutations.append(changed)
         for changed in mutations:
             with self.assertRaises(ValueError): labels.verify_record(META, changed)
+
+
+def saved_image(root, host, inspected, transform=None):
+    config = json.dumps({"architecture": "amd64", "os": "linux", "config": inspected["Config"],
+                         "rootfs": {"type": "layers", "diff_ids": []}}, separators=(",", ":")).encode()
+    config_id = "sha256:" + hashlib.sha256(config).hexdigest()
+    manifest = json.dumps({"schemaVersion": 2, "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "config": {"mediaType": "application/vnd.oci.image.config.v1+json", "digest": config_id, "size": len(config)}, "layers": []}, separators=(",", ":")).encode()
+    manifest_id = "sha256:" + hashlib.sha256(manifest).hexdigest()
+    descriptor = {"mediaType": "application/vnd.oci.image.manifest.v1+json", "digest": manifest_id, "size": len(manifest),
+                  "annotations": {"io.containerd.image.name": "docker.io/library/" + META["images"][host],
+                                  "org.opencontainers.image.ref.name": META["imageTag"]}}
+    index = {"schemaVersion": 2, "manifests": [descriptor]}
+    entries = [("index.json", json.dumps(index).encode()), ("blobs/sha256/" + manifest_id[7:], manifest),
+               ("blobs/sha256/" + config_id[7:], config), ("oci-layout", b'{"imageLayoutVersion":"1.0.0"}'),
+               ("manifest.json", json.dumps([{"Config": "blobs/sha256/" + config_id[7:],
+                 "RepoTags": [META["images"][host]], "Layers": []}]).encode())]
+    if transform: entries = transform(entries)
+    with tarfile.open(root / f"strataai-{host}.tar.gz", "w:gz") as archive:
+        for name, raw in entries:
+            entry = tarfile.TarInfo(name); entry.size = len(raw); archive.addfile(entry, io.BytesIO(raw))
+    return config_id, manifest_id, descriptor
+
+
+class LoadedArchiveIdentityTests(unittest.TestCase):
+    def fixture(self, root, reverse=False):
+        images = inspection(); ids = {}
+        # Each host needs a distinct config, as the real build record requires.
+        for host, image in zip(labels.HOSTS, images):
+            image["Config"]["Env"] = ["PUBLIC_FIXTURE_HOST=" + host]
+            config_id, manifest_id, descriptor = saved_image(root, host, image)
+            image["Id"] = config_id if reverse else manifest_id
+            if not reverse: image["Descriptor"] = descriptor
+            ids[host] = manifest_id if reverse else config_id
+        return images, {"schemaVersion": 1, "build": META, "imageIds": ids}
+
+    def test_classic_to_containerd_binding_preserves_original_record_and_inspection_order(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); images, expected = self.fixture(root)
+            original = copy.deepcopy(expected)
+            self.assertEqual(labels.verify_loaded_record(META, list(reversed(images)), expected, root), original)
+            self.assertEqual(expected, original)
+
+    def test_containerd_to_classic_binding_uses_the_same_saved_manifest_and_config(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); images, expected = self.fixture(root, reverse=True)
+            self.assertEqual(labels.verify_loaded_record(META, images, expected, root), expected)
+
+    def test_matching_labels_and_tags_do_not_authorize_id_conversion_without_archives(self):
+        with tempfile.TemporaryDirectory() as folder:
+            images, expected = self.fixture(Path(folder))
+            with self.assertRaises(ValueError): labels.verify_loaded_record(META, images, expected)
+
+    def test_missing_archive_and_different_saved_config_refuse_each_host(self):
+        for host in labels.HOSTS:
+            with self.subTest(host=host), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder); images, expected = self.fixture(root)
+                (root / f"strataai-{host}.tar.gz").unlink()
+                with self.assertRaises((ValueError, KeyError)): labels.verify_loaded_record(META, images, expected, root)
+                other = copy.deepcopy(next(image for image in images if META["images"][host] in image["RepoTags"]))
+                other["Config"]["Env"] = ["PRIVATE DIFFERENT CONFIG"]
+                saved_image(root, host, other)
+                with self.assertRaises(ValueError): labels.verify_loaded_record(META, images, expected, root)
+
+    def test_loaded_id_and_descriptor_cannot_be_substituted(self):
+        for field, value in (("Id", "sha256:" + "f" * 64), ("Descriptor", None),
+                ("Descriptor", {"digest": "sha256:" + "f" * 64}),
+                ("Descriptor", {"digest": "sha256:" + "1" * 64, "mediaType": "PRIVATE TYPE", "size": 0})):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder); images, expected = self.fixture(root); images[0][field] = value
+                with self.assertRaises(ValueError): labels.verify_loaded_record(META, images, expected, root)
+
+    def test_missing_foreign_and_ambiguous_index_refused(self):
+        changes = [lambda entries: entries[1:], lambda entries: entries + [entries[0]],
+                   lambda entries: [("index.json", b'{"schemaVersion":2,"manifests":[]}')] + entries[1:],
+                   lambda entries: [("index.json", b'{"schemaVersion":2,"schemaVersion":2,"manifests":[]}')] + entries[1:]]
+        for change in changes:
+            with self.subTest(change=changes.index(change)), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder); images, expected = self.fixture(root); saved_image(root, "web", images[0], change)
+                with self.assertRaises((ValueError, KeyError)): labels.verify_loaded_record(META, images, expected, root)
+
+    def test_modified_manifest_and_config_bytes_cannot_reuse_digest_names(self):
+        for target in (1, 2):
+            with self.subTest(target=target), tempfile.TemporaryDirectory() as folder:
+                root = Path(folder); images, expected = self.fixture(root)
+                def change(entries):
+                    entries[target] = (entries[target][0], entries[target][1] + b" ")
+                    return entries
+                saved_image(root, "web", images[0], change)
+                with self.assertRaises(ValueError): labels.verify_loaded_record(META, images, expected, root)
+
+    def test_archive_labels_cannot_differ_from_loaded_image_even_with_self_consistent_hashes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); images, expected = self.fixture(root)
+            other = copy.deepcopy(images[0]); other["Config"]["Labels"]["extra"] = "PRIVATE ARCHIVE LABEL"
+            config_id, manifest_id, descriptor = saved_image(root, "web", other)
+            images[0]["Id"] = manifest_id; images[0]["Descriptor"] = descriptor; expected["imageIds"]["web"] = config_id
+            with self.assertRaises(ValueError): labels.verify_loaded_record(META, images, expected, root)
+
+    def test_cli_conversion_retains_public_record_and_sanitizes_corrupt_archive_failure(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); images, expected = self.fixture(root)
+            for name, data in (("metadata.json", META), ("images.json", images), ("expected.json", expected)):
+                (root / name).write_text(json.dumps(data))
+            args = [sys.executable, labels.__file__, "--metadata", str(root / "metadata.json"),
+                    "--images", str(root / "images.json"), "--expected", str(root / "expected.json"),
+                    "--archives", str(root), "--output", str(root / "verified.json")]
+            result = subprocess.run(args, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads((root / "verified.json").read_text()), expected)
+            (root / "strataai-web.tar.gz").write_bytes(b"PRIVATE CORRUPT ARCHIVE")
+            (root / "verified.json").unlink()
+            result = subprocess.run(args, capture_output=True)
+            self.assertEqual(result.returncode, 1)
+            self.assertNotIn(b"PRIVATE", result.stdout + result.stderr)
+            self.assertFalse((root / "verified.json").exists())
 
 
 if __name__ == "__main__": unittest.main()

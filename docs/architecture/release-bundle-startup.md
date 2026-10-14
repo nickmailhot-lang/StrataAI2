@@ -11,16 +11,17 @@ assembled folder and refuses application source folders, `.git` or an existing
 operator `.env`. It uses only that payload's archives, metadata, Compose file,
 migrations and supplied runtime scripts. It does not compile or rebuild images,
 mount application source or invoke Node/.NET SDK tools. Bash, Docker/Compose,
-curl, jq and openssl are CI orchestration tools; the ordinary operator commands
+curl, jq, openssl and Python's provenance verifier are CI orchestration tools; the ordinary operator commands
 retain their documented requirements.
 
 The check creates a uniquely named Compose project and disposable secrets, masked
-on GitHub Actions. It loads each archive and matches the retained image ID, starts
+on GitHub Actions. It loads each archive and verifies the retained image identity,
+including archive-proven config/manifest ID conversion described below, then starts
 a fresh PostgreSQL/pgvector volume, applies all ordered migrations with the
 payload's advisory-lock runner, and provisions separate restricted API/Worker
 roles. The actual Production hosts must pass the supplied health script, including
 readiness and the web-to-API proxy. Web/API/Worker runtime revision/version and
-running image IDs must match the payload.
+running image IDs must match the verified local IDs bound to the payload.
 
 API and Worker are stopped with a 20-second bound. Both must exit 0 without OOM,
 then [Compose start](https://docs.docker.com/reference/cli/docker/compose/start/)
@@ -66,3 +67,41 @@ physically clean host, cold-start timing, deployed object storage/mail/scanner
 settings, optional metrics/attachment overlays, production job durability under
 restart, or successful current full GitHub CI. The CI check still needs execution
 on its gated candidate and retained artifacts. ARCH-11 remains open.
+
+## Image identity across Docker stores (2026-10-14)
+
+Docker supports [classic and containerd image stores](https://docs.docker.com/engine/storage/containerd/).
+When the retained `7b155f49` archives were loaded locally, CI's three configuration
+IDs differed from Desktop's three manifest IDs. Each original archive manifest
+hashed to the loaded descriptor and referred to the exact configuration digest
+recorded in CI. The old literal-ID comparison would reject this unchanged image.
+[OCI manifests describe configuration by digest](https://github.com/opencontainers/image-spec/blob/main/manifest.md).
+
+The provenance CLI retains strict ID equality by default. With `--expected` and
+`--archives`, a differing ID requires the original saved archive's single image
+manifest and configuration: hash-checked metadata blobs, canonical descriptor
+types/sizes, matching immutable labels, and the loaded descriptor for a manifest
+ID. The retained and loaded IDs must both belong to that same digest pair.
+Missing/foreign/corrupt archives, changed content under a digest name, ambiguous
+metadata and a substituted loaded descriptor are refused. It reads bounded
+metadata without extracting layers or copying runtime/symbol trees. Original
+provenance/schema, checksums, build identity, security evidence and image labels
+remain unchanged; labels alone cannot authorize conversion.
+
+Integration and security load gates require this proof against their retained
+archives. The source-free startup driver invokes the same verifier before
+starting services, then fences each running container against its verified local
+image ID through shutdown/restart. Its private inspection file is removed by
+cleanup. Python is a CI verification tool; the supplied operator startup commands
+retain their requirements and do not need an application checkout or SDK.
+
+All **18 provenance tests**, **25 release-artifact tests**, **224 CI/shard/startup
+guards**, actionlint and Bash syntax checks pass. A real Desktop probe loads
+three explicitly synthetic scratch-image archives totaling **2,424 bytes**:
+unproved conversion is refused, archive-bound conversion preserves the original
+record, and three created-but-unstarted containers report those verified local
+IDs. Owned containers, images and archives are removed. These tiny identity
+fixtures do not establish production startup, graceful process restart, cold
+capacity or a current full release. The existing full bundle startup/restart and
+post-startup integrity gates remain mandatory in current CI. ARCH-11 stays open;
+large-load testing stays disabled until after the operational MVP milestone.

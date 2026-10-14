@@ -133,3 +133,15 @@ revocation, accessibility and deadline checks remain. Captured inputs match,
 owned fixtures are removed, and [the supporting evidence](comments-mentions-activity.md#selected-teammate-review-admission-follow-up)
 keeps current immutable CI and full release acceptance pending. Large-load
 testing remains disabled.
+
+The [deployment identity follow-up](release-bundle-startup.md#image-identity-across-docker-stores-2026-10-14)
+requires original-archive digest proof when Desktop and CI report different
+configuration/manifest IDs. Matching labels cannot bypass identity. Integration,
+security and source-free startup use this proof while keeping the original
+provenance and checksums, and running containers must retain the verified local
+IDs. Eighteen provenance tests, 25 artifact tests and 224 CI/shard/startup guards
+pass; a real Desktop probe verifies three scratch images and three unstarted
+container identities using only 2,424 bytes of archives, then removes them.
+This identity probe is not production startup/restart or full immutable-release
+acceptance. Those complete gates remain required, and large-load tests remain
+disabled until after the MVP milestone.

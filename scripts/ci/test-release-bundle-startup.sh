@@ -2,11 +2,15 @@
 set -euo pipefail
 # ARCH-11-FR-052/082: execute only the assembled operator payload and loaded images.
 test "$#" -eq 1
+script_path=${BASH_SOURCE[0]}
+if [[ "$script_path" != /* && "$script_path" != [A-Za-z]:/* ]]; then script_path="$PWD/$script_path"; fi
 cd "$1"
 test -f build-metadata.json
 test ! -e .env
 test ! -L .env
 for source in .git src apps; do test ! -e "$source"; done
+# This is CI orchestration; runtime commands still use only the payload.
+verification_dir=${script_path%/*}
 revision=$(jq -er '.commitSha' build-metadata.json)
 version=$(jq -er '.version' build-metadata.json)
 [[ "$revision" =~ ^([a-f0-9]{40}|[a-f0-9]{64})$ ]]
@@ -28,11 +32,13 @@ if [ "${GITHUB_ACTIONS:-}" = true ]; then
   done
 fi
 compose=(docker compose --project-name "$project" --env-file .env -f compose.release.yml)
+inspection_file=''
 cleanup() {
   local code=$?
   trap - EXIT
   if ! "${compose[@]}" down --volumes --remove-orphans >/dev/null 2>&1; then code=1; fi
   rm -f .env
+  if [ -n "$inspection_file" ]; then rm -f "$inspection_file"; fi
   if [ -n "$(docker ps -aq --filter "label=com.docker.compose.project=$project")" ] \
     || [ -n "$(docker volume ls -q --filter "label=com.docker.compose.project=$project")" ]; then code=1; fi
   exit "$code"
@@ -49,12 +55,15 @@ trap cleanup EXIT
     "STRATAAI_AUTH_RETRY_CURRENT_KEY=$STRATAAI_AUTH_RETRY_CURRENT_KEY" "STRATAAI_AUTH_RETRY_KEYS='$STRATAAI_AUTH_RETRY_KEYS'" \
     "STRATAAI_WEB_IMAGE=$STRATAAI_WEB_IMAGE" "STRATAAI_API_IMAGE=$STRATAAI_API_IMAGE" "STRATAAI_WORKER_IMAGE=$STRATAAI_WORKER_IMAGE"
 } > .env
+declare -A loaded_image_ids
 for host in web api worker; do
   gunzip -c "images/strataai-$host.tar.gz" | docker load >/dev/null
-  actual=$(docker image inspect --format '{{.Id}}' "strataai-$host:$revision")
-  expected=$(jq -er --arg host "$host" '.imageIds[$host]' images/image-provenance.json)
-  test "$actual" = "$expected"
+  loaded_image_ids[$host]=$(docker image inspect --format '{{.Id}}' "strataai-$host:$revision")
 done
+inspection_file=$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/strataai-bundle-images.XXXXXX")
+docker image inspect "$STRATAAI_WEB_IMAGE" "$STRATAAI_API_IMAGE" "$STRATAAI_WORKER_IMAGE" > "$inspection_file"
+python3 "$verification_dir/verify-image-labels.py" --metadata build-metadata.json --images "$inspection_file" \
+  --expected images/image-provenance.json --archives images
 chmod +x apply-migrations.sh migration-stream.sh provision-runtime-roles.sh health-check.sh
 "${compose[@]}" up -d --wait --wait-timeout 120 postgres >/dev/null
 COMPOSE_FILE=compose.release.yml bash apply-migrations.sh >/dev/null
@@ -69,7 +78,7 @@ check_runtime() {
   for host in web api worker; do
     container=$("${compose[@]}" ps -q "$host")
     actual=$(docker inspect --format '{{.Image}}' "$container")
-    expected=$(jq -er --arg host "$host" '.imageIds[$host]' images/image-provenance.json)
+    expected=${loaded_image_ids[$host]}
     test "$actual" = "$expected"
   done
 }
