@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { focusAdmittedControl, openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-14 URL attachments: keyboard creation, lost reply, original retry and safe disclosure at ${width}px`, async ({ page, context }) => {
@@ -20,9 +21,12 @@ for (const width of [1280, 390]) {
       else await route.fulfill({ response: result });
     });
     await page.goto(`/app/${org}/boards/${board}/cards/${card}`);
-    const add = page.getByRole('button', { name: 'Add link attachment', exact: true }); await expect(add).toBeEnabled(); await add.press('Enter');
+    const add = page.getByRole('button', { name: 'Add link attachment', exact: true }); await expect(add).toBeEnabled();
     const title = page.getByRole('textbox', { name: 'New link attachment title', exact: true }); const url = page.getByRole('textbox', { name: 'Attachment URL', exact: true });
-    await title.fill('External reference'); await url.fill('javascript:alert(1)');
+    await openAdmittedReview(add, title);
+    await focusAdmittedControl(title); await title.fill('External reference');
+    await focusAdmittedControl(url); await url.fill('javascript:alert(1)');
+    await expect(title).toHaveValue('External reference'); await expect(url).toHaveValue('javascript:alert(1)');
     const create = page.getByRole('button', { name: 'Create link attachment', exact: true });
     try { await expect(create).toBeEnabled(); }
     catch (error) {
@@ -44,22 +48,28 @@ for (const width of [1280, 390]) {
       }).catch(() => {});
       throw error;
     }
-    await create.press('Enter');
-    await expect(page.getByText('Enter an HTTP(S) link without embedded credentials.', { exact: true })).toBeVisible(); expect(writes).toHaveLength(0);
-    await url.fill('https://example.test/reference?q=1#section'); await expect(create).toBeEnabled(); await create.press('Enter');
+    const invalidUrl = page.getByText('Enter an HTTP(S) link without embedded credentials.', { exact: true });
+    // The asserted unsafe URL is rejected locally; observing this validation
+    // cannot send an attachment command. Keep the separate zero-write check.
+    await openAdmittedReview(create, invalidUrl);
+    await expect(invalidUrl).toBeVisible(); expect(writes).toHaveLength(0);
+    await focusAdmittedControl(url); await url.fill('https://example.test/reference?q=1#section');
+    await expect(url).toHaveValue('https://example.test/reference?q=1#section');
+    await expect(create).toBeEnabled(); await pressObservedRequest(create, () => writes.length, 1);
     const retry = page.getByRole('button', { name: 'Retry link attachment creation', exact: true }); await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
     await expect(title).toHaveValue('External reference'); await expect(url).toHaveValue('https://example.test/reference?q=1#section');
     await expect(title).toBeDisabled(); await expect(page.getByRole('button', { name: 'Add checklist', exact: true })).toBeDisabled(); expect(writes).toHaveLength(1);
     const committed = await context.request.get(path); expect(committed.status()).toBe(200);
     const first = await committed.json(); expect(first.cardVersion).toBe(2); expect(first.items).toHaveLength(1);
-    await retry.press('Enter'); await expect(page.getByText('Link attachment created.', { exact: true })).toBeVisible();
+    await pressObservedRequest(retry, () => writes.length, 2); await expect(page.getByText('Link attachment created.', { exact: true })).toBeVisible();
     await expect(add).toBeEnabled(); await expect(add).toBeFocused();
     expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]); expect(JSON.parse(writes[0].body)).toEqual({ title: 'External reference', url: 'https://example.test/reference?q=1#section', cardVersion: 1 });
     expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
     const final = await context.request.get(path); expect(final.status()).toBe(200);
     const current = await final.json(); expect(current.cardVersion).toBe(2); expect(current.items).toHaveLength(1); expect(current.items[0].id).toBe(first.items[0].id);
-    const show = page.getByRole('button', { name: 'Show attachments', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
-    const link = page.getByRole('link', { name: 'External reference (opens in a new tab)', exact: true }); await expect(link).toBeVisible();
+    const show = page.getByRole('button', { name: 'Show attachments', exact: true }); await expect(show).toBeEnabled();
+    const link = page.getByRole('link', { name: 'External reference (opens in a new tab)', exact: true });
+    await openAdmittedReview(show, link); await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('href', 'https://example.test/reference?q=1#section'); await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer'); await expect(link).toHaveAttribute('referrerpolicy', 'no-referrer');
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);

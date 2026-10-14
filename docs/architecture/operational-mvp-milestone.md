@@ -87,3 +87,14 @@ All captured inputs independently match and owned fixtures are removed. The
 unchanged URL cases passing locally do not prove repair of their separately
 retained input-loss failure. Current complete immutable-image CI and the release
 gates remain required; large-load testing stays disabled.
+
+A separate complete ordinary URL attachment file now passes desktop/phone
+**2/2 in 69,368.46 ms**, without diagnostic hooks, after focus-before-single-fill
+and observed local-validation/command admission. A declared protected-read
+overlap passes **2/2 in 69,453.412 ms** after the same change; its unchanged
+baseline fails desktop local validation and passes phone. The exact retained
+empty-URL failure remains for the current immutable pipeline to confirm.
+Original receipt/count, persisted identity/version, safety, accessibility and
+deadline checks remain. Captured inputs match and owned fixtures are removed.
+The live repository capacity setting is rechecked as `0`; large-load testing
+remains disabled, and full release acceptance is still pending.

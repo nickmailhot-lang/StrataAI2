@@ -20,6 +20,51 @@ repair of the retained URL failure or full attachment acceptance. No input
 refill loop, weaker draft assertion, test retry or larger deadline is added.
 Estimated PRD-14 work remaining stays **32%**; the issue remains open.
 
+## URL draft focus and one observed command
+
+The retained trace also starts an actual protected Board GET during the URL
+fill operation. This supports investigating input admission; it does not by
+itself prove why the URL was empty. A separate declared diagnostic requests a
+genuine window-foreground refresh on the first URL focus and holds actual Board
+GET responses for 600 ms. It changes no response body, input value, command,
+assertion, retry policy or scenario deadline. The unchanged desktop case fails
+to observe local unsafe-URL validation; phone passes (**1/2**, 71,906.54 ms).
+That is a related keyboard-admission failure, not a reproduction of the exact
+retained empty-URL assertion.
+
+The maintained URL scenario now observes the draft opening and admits enabled
+keyboard focus before each single field fill. It separately asserts both
+initial field values and the replacement valid URL; there is no refill loop.
+The asserted unsafe URL can only produce local validation, so its existing
+bounded read-only helper observes the validation message and the independent
+zero-write assertion remains. Valid creation and explicit original recovery
+use the request observer: keyboard admission stops once their respective POST
+is observed, including while its response is pending. The exact two-write
+count, identical original key/body, one persisted attachment, canonical IDs,
+Card versions 1/2, disabled recovery fields/other commands, focus, safe link
+attributes, accessibility and original 120-second deadline remain. Attachment
+disclosure observes the actual link instead of assuming Enter opened it.
+
+With the change, both complete diagnostic cases pass **2/2 in 69,453.412 ms**.
+The ordinary complete file, without diagnostic hooks, passes **2/2 in
+69,368.46 ms**. Both have zero skipped, unexpected or flaky outcomes. The
+diagnostic's sole frozen browser difference is explicitly declared. Its captured
+2,143 hosted and 1,441 native source/runtime hashes and four web assets match;
+the unchanged baseline differs from current source only in this browser file.
+The ordinary run additionally matches all 168 frozen browser files, with no
+diagnostic override. Each uses the compiled Production API, separate Worker,
+Nginx and restricted PostgreSQL/pgvector with all 149 migrations and the
+declared optional-verification controlled-account policy. Owned containers,
+volumes, roles, credentials and newly pulled support images are removed; the
+original stopped PostgreSQL remains preserved.
+
+Browser TypeScript, 222 CI/startup guards and exact 398-case/145-file shard
+coverage pass. These results support the fixture repair; the current complete
+immutable-image pipeline must still confirm the retained failure is gone.
+Managed providers and remaining AC/DoD remain separate. Estimated PRD-14 work
+remaining stays **32%**; the issue remains open, and large-load testing remains
+disabled until after the operational MVP.
+
 The retained `914d5c4f` fourth browser shard passes 77 cases and fails five:
 both URL attachment viewports and MEMBER, ORGANIZATION_READER and PUBLIC_READER
 permission-order cases. ADMIN passes. The three permission failures change only

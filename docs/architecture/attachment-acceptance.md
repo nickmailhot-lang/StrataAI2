@@ -1175,3 +1175,19 @@ Captured source/runtime/web hashes and owned cleanup are independently verified.
 Metadata, bytes and cover receipts remain explicitly simulated; current complete
 immutable CI and all remaining provider/AC/DoD proof still govern closure.
 Estimated PRD-14 work remaining stays **32%**.
+
+## URL draft and submission admission
+
+The [URL focus verification](failure-field-diagnostics.md#url-draft-focus-and-one-observed-command)
+records retained missing-input evidence, a separately declared foreground-read
+overlap that fails local validation on desktop, and the complete changed
+diagnostic (**2/2**) and ordinary (**2/2**) file. The fixture admits keyboard
+focus before each single fill and checks the actual field values. Local unsafe
+URL validation retains zero writes. Valid creation and explicit original
+recovery stop admission when each request is observed; exact original key/body,
+two requests, one persisted attachment, unchanged replay version, focus, command
+locking, link safety, accessibility and scenario deadline remain intact.
+Captured inputs and owned cleanup are independently checked. This is compiled
+controlled-account support, not strict mail, managed-provider or complete
+current immutable release proof. PRD-14 stays open at **32%** estimated work
+remaining until its remaining acceptance evidence is satisfied.
