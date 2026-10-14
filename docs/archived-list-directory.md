@@ -92,3 +92,19 @@ This uses current compiled applications/current Nginx/cached runtime support and
 the general CI policy (API optional verification, Worker mandatory verification).
 Current complete immutable-image CI and all remaining PRD-07/18 AC/DoD remain
 necessary for closure. PRD-18 stays open at **15% estimated work remaining**.
+
+### Archive and restore keyboard admission follow-up
+
+Retained-image CI run 38449472806 failed the phone archive recovery at the
+acknowledgement following keyboard retry. The fixture now rechecks enabled focus
+through `pressAdmittedAction` before each archive/restore confirmation and retry;
+each mutation still receives exactly one activation. Restore review opening uses
+the existing bounded read-only `openAdmittedReview` helper.
+
+The exact two requests, original key/body, mixed child states, versions, peer
+withdrawal/restoration, focus, viewport assertions and scenario deadline remain
+unchanged. A focus-triggered refresh is a possible explanation, not a verified
+product root cause. Browser type checking, four-case discovery, all 398 cases'
+shard coverage and 222 CI guard tests pass. Discovery does not execute the
+scenarios; current retained-image execution is pending. PRD-07 remains open at
+**17% estimated work remaining**, and PRD-18 at **15%**.

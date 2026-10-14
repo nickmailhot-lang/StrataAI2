@@ -64,8 +64,8 @@ for (const width of [1280, 390]) {
       expect(JSON.parse(attempts[0].body!)).toEqual({ title: 'Follow-up preparation', cardVersion: 4 });
       await page.unroute(`**/cards/${card}/checklists`);
       for (const reader of [page, peer]) {
-        const show = reader.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
-        await expect(reader.getByRole('heading', { name: 'Follow-up preparation', exact: true })).toBeVisible();
+        const show = reader.getByRole('button', { name: 'Show checklists', exact: true });
+        await openAdmittedReview(show, reader.getByRole('heading', { name: 'Follow-up preparation', exact: true }));
         await expect(reader.getByText('0 of 0 items complete (0%)', { exact: true })).toBeVisible();
         expect((await new AxeBuilder({ page: reader }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       }

@@ -43,3 +43,17 @@ remaining stays **33%**; the issue remains open.
 
 Related: [complete browser scenarios](../../tests/browser/checklist-collaboration.spec.ts),
 [item-viewer access/version guards](../../apps/web/src/features/kanban/ChecklistItemManageControl.tsx).
+
+### Checklist read reopening admission follow-up
+
+Retained-image CI run 38449472806 failed desktop checklist reads at the final
+reopening of `Show checklists`: the expected newly created heading was absent.
+That read-only opening now uses the existing bounded `openAdmittedReview` helper
+to observe the actual heading. The two-session refresh, lost-response recovery,
+exact two mutation requests with the original key/body, typed versions, canonical
+progress, accessibility checks and scenario deadline remain unchanged.
+
+Browser type checking, four-case discovery, all 398 cases' shard coverage and
+222 CI guard tests pass. These checks do not establish the cause of the original
+failure or execute the retained-image scenarios; that execution remains pending.
+PRD-13 stays open at **33% estimated work remaining**.
