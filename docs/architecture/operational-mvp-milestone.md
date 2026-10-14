@@ -55,3 +55,10 @@ read-only mounted compiled applications supplement the current CI candidate;
 they do not satisfy the exact-image release, full browser matrix or managed
 provider gates above. Large-load testing remains disabled until this milestone
 is actually achieved.
+
+A separate complete Activity-history invocation passes desktop/phone **2/2 in
+173,724.01 ms** after first-page read-only opening admission is aligned with the
+existing peer pattern. Pagination, immutable captions, preferences, real socket
+recovery, revocation, lifecycle commands, accessibility and deadlines remain.
+Captured inputs match and owned fixtures are removed. This is a separate small
+functional run, not an aggregate full browser or immutable release result.

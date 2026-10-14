@@ -1,9 +1,28 @@
 import { focusAdmittedControl, pressAdmittedAction } from './keyboardAdmission';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
+import type { Locator } from '@playwright/test';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+
+// Foreground admission can withdraw the opening or its first-page read. Only
+// reopen the read-only review/current page; never page past the required rows.
+async function openFirstActivityPage(launcher: Locator, history: Locator) {
+  const newest = history.getByRole('button', { name: 'Newest activity', exact: true });
+  await expect(async () => {
+    if (await history.getByRole('listitem').count() === 50) return;
+    const action = await launcher.isVisible() ? launcher : await newest.isVisible() ? newest : undefined;
+    if (action) {
+      await expect(action).toBeEnabled({ timeout: 500 });
+      await action.focus({ timeout: 500 });
+      await expect(action).toBeFocused({ timeout: 500 });
+      await expect(action).toBeEnabled({ timeout: 500 });
+      await action.press('Enter', { timeout: 500 });
+    }
+    await expect(history.getByRole('listitem')).toHaveCount(50, { timeout: 500 });
+  }).toPass({ timeout: 5_000 });
+}
 
 // Actual account/Board commands and domain history; no feed/authorization reply
 // is mocked. Each viewport has two distinct accounts and issuing sessions.
@@ -49,8 +68,8 @@ for (const width of [1280, 390]) {
       const boardPath = `/app/${org}/boards/${board}`;
       const boardReads = trackBoardReads(page, board, boardPath); await page.goto(boardPath); await expect.poll(boardReads).toBeGreaterThanOrEqual(2);
       const boardOpen = page.getByRole('button', { name: 'Review Board activity', exact: true });
-      await pressAdmittedAction(boardOpen);
       const boardHistory = page.getByRole('region', { name: 'Board activity', exact: true });
+      await openFirstActivityPage(boardOpen, boardHistory);
       await expect(boardHistory.getByRole('listitem')).toHaveCount(50);
       await expect(boardHistory.getByRole('button', { name: 'Older activity', exact: true })).toBeEnabled();
       await boardHistory.getByRole('button', { name: 'Close activity', exact: true }).press('Enter');
@@ -58,7 +77,7 @@ for (const width of [1280, 390]) {
       await page.getByRole('link', { name: 'Activity Card 65', exact: true }).press('Enter');
       const cardHistory = page.getByRole('region', { name: 'Card activity', exact: true });
       const open = page.getByRole('button', { name: 'Review Card activity', exact: true });
-      await pressAdmittedAction(open);
+      await openFirstActivityPage(open, cardHistory);
       await expect(cardHistory.getByRole('listitem')).toHaveCount(50);
       expect(await cardHistory.locator('script').count()).toBe(0);
       await expect(cardHistory.getByText(`${caption} updated a Card.`, { exact: true })).toHaveCount(50);
@@ -91,21 +110,7 @@ for (const width of [1280, 390]) {
       const peerReads = trackBoardReads(peerPage, board, cardPath); await peerPage.goto(cardPath); await expect.poll(peerReads).toBeGreaterThanOrEqual(2);
       const peerOpen = peerPage.getByRole('button', { name: 'Review Card activity', exact: true });
       const peerHistory = peerPage.getByRole('region', { name: 'Card activity', exact: true });
-      const peerNewest = peerHistory.getByRole('button', { name: 'Newest activity', exact: true });
-      // Observe the actual first page. Foreground admission can withdraw the
-      // opening or its read; only the unopened review/current-page read may
-      // reactivate. The expected 50 immutable rows remain mandatory.
-      await expect(async () => {
-        if (await peerHistory.getByRole('listitem').count() === 50) return;
-        const action = await peerOpen.isVisible() ? peerOpen : await peerNewest.isVisible() ? peerNewest : undefined;
-        if (action) {
-          await expect(action).toBeEnabled({ timeout: 500 });
-          await action.focus({ timeout: 500 });
-          await expect(action).toBeFocused({ timeout: 500 });
-          await action.press('Enter', { timeout: 500 });
-        }
-        await expect(peerHistory.getByRole('listitem')).toHaveCount(50, { timeout: 500 });
-      }).toPass({ timeout: 5_000 });
+      await openFirstActivityPage(peerOpen, peerHistory);
       await expect(peerHistory.getByRole('listitem')).toHaveCount(50);
       // A command from this account's other client changes its viewing policy;
       // the open history must recover without reloading the document.

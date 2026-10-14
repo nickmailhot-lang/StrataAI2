@@ -58,3 +58,37 @@ existing test helper; this does not prove managed email-provider delivery.
 Compiled runtimes and web assets are mounted in pinned runtime/edge containers;
 this is not an immutable-image release certification. Current complete CI and
 the remaining [PRD-15 acceptance](prd-15-acceptance.md) still govern closure.
+
+## First Board activity opening follow-up
+
+Retained-image CI run 38488633147, notification job 115637762805, passes
+41/42 cases in its strict Board-management invocation. Phone Activity history
+fails at the initial Board review: the first-page assertion expects 50 rows and
+receives zero. The scenario is unchanged between that candidate and `5d29125b`;
+this failure is distinct from the later immutable-caption paging repair above.
+
+Initial Board and Card openings now use the same bounded read-only admission
+pattern already used by the peer. `openFirstActivityPage` observes the required
+50 rows, choosing only the unopened review or the newest-page read if a
+foreground generation withdraws admission. It checks enabled focus again before
+Enter. The peer uses that shared helper as well. No mutation repeats, mocked
+feed/authorization responses, relaxed row counts or wider deadlines are added.
+The failure alone does not establish a new product root cause.
+
+The complete maintained file passes both desktop/phone cases in
+**173,724.01 ms**, zero failures/skips/flaky outcomes and no diagnostic source
+hooks. Original 50/17-row pagination, focus, safe immutable captions, both
+timezones and pushed preference change, actual two-client socket outage/recovery,
+private-body exclusion, membership/session withdrawal, archive/delete/deactivation
+commands, accessibility and 180-second scenario deadline remain. The 65 edits
+are a small functional pagination fixture; no large-load testing runs.
+
+Browser types, 222 CI guards and 398-case shard coverage pass. All 2,143 hosted
+source/runtime hashes, 1,441 browser-source hashes, 168 frozen browser files and
+four web files match. Owned containers, credentials, anonymous fixture volumes
+and newly pulled support images are removed, preserving the original stopped
+database. Actual restricted PostgreSQL, API, separate Worker and browser
+transport use read-only mounted compiled applications and controlled account
+setup. This is supporting interaction evidence; strict managed-mail/provider,
+current retained-image/full CI and broader PRD acceptance remain required.
+Estimated PRD-15 work remaining stays **34%**; the issue remains open.

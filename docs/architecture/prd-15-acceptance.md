@@ -574,3 +574,13 @@ component's access purge and all command, keyboard, reconnect, revocation and
 private-body requirements remain. The component file passes 17/17 and both
 native browser invocations pass 2/2 without skips or flaky cases; current
 immutable/full CI is still required. Estimated PRD-15 work remaining stays **34%**.
+
+The [initial Board/Card opening follow-up](activity-history-recovery-verification.md#first-board-activity-opening-follow-up)
+matches the newer retained phone failure (50 first-page rows expected, zero
+received) and applies the existing peer's bounded read-only admission pattern
+to initial openings. The complete maintained desktop/phone file passes **2/2 in
+173,724.01 ms**, with original pagination, captions, preferences, reconnect,
+revocation, mutation, accessibility and deadline assertions. Captured inputs
+match and owned fixtures are removed. This does not prove a new product root
+cause or certify current retained-image acceptance. Estimated work remaining
+stays **34%**; no large-load tests run.
