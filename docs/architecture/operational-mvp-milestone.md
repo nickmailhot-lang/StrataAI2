@@ -328,3 +328,13 @@ move/replay/live-order/version/accessibility assertions and deadlines. Inputs
 match and owned fixtures are removed. PRD-13 remains open at 33% estimated work
 remaining; full current immutable CI remains required and large-load tests stay
 deferred.
+
+The [Board timezone clear admission follow-up](card-dates.md#board-timezone-clear-keyboard-admission--2026-10-14)
+requires an enabled focused empty input before the existing one Save action,
+and observes exactly one explicit-null/current-version PATCH. Retained evidence
+shows UTC sent after the failed clear; the unchanged local baseline passes and
+is not claimed as reproduction. The complete changed desktop/phone file passes
+2/2 with original replay, persistence, live timezone/due-state and accessibility
+assertions and deadlines. Inputs match and owned fixtures are removed. PRD-12
+stays open at 24% estimated work remaining; full current immutable CI remains
+required and large-load testing stays disabled until after the milestone.

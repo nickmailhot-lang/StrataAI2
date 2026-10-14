@@ -75,9 +75,23 @@ for (const width of [1280, 390]) {
       await policyPeer.getByRole('button', { name: 'Save timezone policy' }).press('Enter');
       await expect(input).toHaveValue('UTC'); await expect(dates).toContainText('Due Jan 3, 2040');
       await expect(canvasCard).toHaveAccessibleDescription('Due soon');
-      await input.press('ControlOrMeta+A'); await input.press('Backspace');
+      const clearBodies: string[] = [];
+      page.on('request', request => {
+        if (request.method() === 'PATCH' && new URL(request.url()).pathname === `/boards/${board}/date-policy`)
+          clearBodies.push(request.postData() ?? '');
+      });
+      // A late policy invalidation can retire the input during selection.
+      // Re-admit this keyboard edit only; the save below remains one action.
+      await expect(async () => {
+        await expect(input).toBeEnabled({ timeout: 500 }); await input.focus({ timeout: 500 });
+        await expect(input).toBeFocused({ timeout: 500 });
+        await input.press('ControlOrMeta+A', { timeout: 500 }); await input.press('Backspace', { timeout: 500 });
+        await expect(input).toBeEnabled({ timeout: 500 }); await expect(input).toBeFocused({ timeout: 500 });
+        await expect(input).toHaveValue('', { timeout: 500 });
+      }).toPass({ timeout: 5_000 });
       await page.getByRole('button', { name: 'Save timezone policy' }).press('Enter');
       await expect(input).toHaveValue(''); await expect(peerInput).toHaveValue('');
+      expect(clearBodies).toHaveLength(1); expect(JSON.parse(clearBodies[0])).toEqual({ timezone: null, version: 3 });
       await expect(dates).not.toContainText('Board timezone policy.'); await expect(dates).toContainText('Viewing timezone: UTC.');
       const current = (await (await context.request.get(`/boards/${board}`)).json());
       expect(current.board).toMatchObject({ dateTimezoneOverride: null, version: 4 });

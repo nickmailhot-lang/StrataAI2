@@ -700,3 +700,35 @@ four browser files passed unchanged in both invocations and do not establish a
 repair of separately observed CI failures. Full immutable-image CI, reminder
 provider delivery and complete acceptance remain required. PRD-12 stays open
 at **24% estimated work remaining** (planning estimate).
+
+## Board timezone clear keyboard admission — 2026-10-14
+
+Retained `3f9957d2` browser partition 1, job `115938083086`, passes 102 cases and
+fails the desktop policy-clear assertion. The trace shows the initial Honolulu
+write/replay, the peer's UTC change and a final successful PATCH containing
+`{timezone:"UTC",version:3}` rather than explicit null. The input was retired
+and readmitted during the clear sequence. Production intentionally withdraws
+stale drafts on live policy changes; its behavior is unchanged.
+
+The clear step now re-admits only the keyboard edit within five seconds:
+require an enabled focused current input, select/delete using the keyboard,
+then confirm enabled focus and the empty value. The existing single Save
+activation follows. A request observer additionally requires exactly one clear
+PATCH with `{timezone:null,version:3}`; it never rewrites a body or retries a
+mutation. Original first-change receipt/key equality, final Board version 4,
+unchanged Card dates/version, both policy viewers, Card/canvas due status,
+personal viewing-timezone delivery, accessibility and 120-second deadlines stay.
+
+The complete unchanged local file passes **2/2 in 143,163.753 ms**, so local
+reproduction is not claimed. The complete changed desktop/phone file passes
+**2/2 in 139,739.279 ms**, with two total attempts and zero skips/retries/flaky
+results/errors. All 19 existing policy component tests, browser typing, 242
+CI/startup guards and collection of 398 cases across 145 intact files pass.
+Independently matched 2,145 captured inputs, 170 browser files and four web assets.
+Owned containers, database/roles, credentials and newly pulled support images
+are removed; the original stopped database is preserved.
+
+These fresh restricted-role PostgreSQL, compiled API/Worker and current-asset
+checks support the test repair; full current immutable-image CI and remaining
+acceptance stay required. Estimated PRD-12 work remaining stays **24%**. The MVP
+milestone remains pending and large-load tests remain disabled.
