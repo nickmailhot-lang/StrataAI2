@@ -505,6 +505,15 @@ public static partial class WorkManagementEndpoints
                 ? Results.Created($"/lists/{result.Value.Id}", result.Value) : ErrorFor(result.ErrorCode);
         }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
         MapListLifecycle(app, "restore", WorkItemLifecycleState.Active);
+        app.MapPost("/lists/{listId:guid}/move", async (Guid listId, MoveListRequest request,
+            HttpContext context, ListBoardMovementService service, CancellationToken cancellationToken) =>
+        {
+            var actor = GetUserId(context);
+            if (actor is null) return Results.Unauthorized();
+            return ToMutationResult(await service.MoveAsync(listId, actor.Value, request.SourceBoardId,
+                request.DestinationBoardId, request.ExpectedVersion, request.BeforeListId,
+                context.TraceIdentifier, cancellationToken));
+        }).RequireAuthorization().AddEndpointFilter<BoardSharingResultFilter>();
 
         app.MapDelete(
                 "/lists/{listId:guid}",
@@ -845,6 +854,7 @@ public static partial class WorkManagementEndpoints
             "invalid_search" => Problem(400, errorCode, "Use text criteria of at most 160 characters, ANY or ALL, active or archived scope, and this search's current cursor."),
             "invalid_board_member_cursor" => Problem(400, errorCode, "The member cursor must be a nonempty UUID."),
             "invalid_card_member_version" => Problem(400, errorCode, "Use the Card's current positive revision."),
+            "invalid_version" => Problem(400, errorCode, "Use the item's current positive revision."),
             "label_not_found" => Problem(404, errorCode, "The label was not found."),
             "session_unavailable" => Problem(
                 StatusCodes.Status401Unauthorized,

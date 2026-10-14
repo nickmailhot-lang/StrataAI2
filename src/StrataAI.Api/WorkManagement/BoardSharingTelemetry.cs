@@ -97,6 +97,7 @@ public sealed class BoardSharingTelemetry
             ("/lists/{listId:guid}/archive", "POST") => "list_archive",
             ("/lists/{listId:guid}/restore", "POST") => "list_restore",
             ("/lists/{listId:guid}/copy", "POST") => "list_copy",
+            ("/lists/{listId:guid}/move", "POST") => "list_move",
             ("/lists/{listId:guid}", "DELETE") => "list_delete",
             ("/lists/{listId:guid}/cards", "POST") => "card_create",
             ("/cards/{cardId:guid}", "PATCH") => "card_update",
@@ -137,7 +138,7 @@ public sealed class BoardSharingTelemetry
                 or "invalid_visibility" or "invalid_board_role" or "invalid_member_version"
                 or "invalid_board_member_cursor" or "invalid_invitation_cursor" or "invalid_email"
                 or "invalid_invitation_role" or "member_not_eligible" or "sole_board_admin"
-                or "version_conflict" or "idempotency_key_reused" or "idempotency_key_expired"
+                or "version_conflict" or "invalid_version" or "idempotency_key_reused" or "idempotency_key_expired"
                 or "invalid_idempotency_key" or "insufficient_permission"
                 or "list_not_found" or "card_not_found" or "invalid_list_name" or "invalid_rank"
                 or "invalid_move_position" or "rank_space_exhausted"

@@ -5,7 +5,7 @@ namespace StrataAI.Application.WorkManagement;
 
 // Owning command boundary for the complete transfer/publication operation.
 // Original source is explicit so a replay never derives its admission boundary
-// from an already moved List. This does not expose a public move endpoint.
+// from an already moved List, including public endpoint retries.
 public sealed class ListBoardMovementCommand(IWorkManagementStore work, IWorkBoardAuthorization boards,
     IOrganizationStore organizations, ICommandActorAuthorization actors,
     IWorkManagementUnitOfWork transactions, IWorkCommandContext context)
