@@ -109,3 +109,29 @@ stopped PostgreSQL data. Read-only mounted compiled applications and controlled
 account setup provide supporting interaction evidence; current retained-image,
 strict provider and full PRD acceptance remain pending. Estimated PRD-13 work
 remaining stays **33%**; the issue remains open.
+
+## Observe complete review retirement (2026-10-14)
+
+Retained run 38512205117, partition 2 job 115707086305, reaches the
+independent reopening with the contributor's old draft still present. A
+protected read can temporarily remove the text box while retaining its
+item-management review. The explicit discard helper now observes removal of
+the entire named item-management section and still checks text-box removal
+before reopening. The five-second bound, both explicit discard points, strict
+canonical initial-value assertion and 180-second scenario deadlines remain.
+
+The unchanged local baseline passes 2/2 in 120,435.002 ms; the hosted failure
+is not claimed as locally reproduced. The changed complete desktop/phone file
+passes **2/2 in 123,530.732 ms**, with no skips, failures, flaky outcomes or
+retries. Conflict/draft preservation, socket recovery, actual committed/lost
+response, original body/key, membership withdrawal, denied old-receipt replay,
+canonical state and accessibility assertions remain intact.
+
+Browser types, 224 CI guards and intact 398-case shard collection pass. An
+independent check confirms all 2,143 hosted inputs, 1,441 native inputs, 168
+frozen browser files and four web assets match. Owned containers and private
+credentials are removed; the original database remains stopped and preserved.
+This controlled compiled-application capture supplements release evidence;
+current immutable/full CI and full acceptance remain required. PRD-13 remains
+open with estimated work remaining **33%**. Large-load testing stays deferred
+until after the operational MVP.

@@ -208,3 +208,13 @@ edit, real refusal/reference, exact dispatch count, canonical unchanged labels,
 reference retirement, accessibility, viewport and deadlines intact. Inputs match
 and owned fixtures are removed. Current immutable/full CI remains required;
 PRD-10 stays open, and large-load testing remains disabled.
+
+The [checklist discard follow-up](checklist-review-admission-verification.md#observe-complete-review-retirement-2026-10-14)
+requires the entire item-management review to retire before independent
+reopening, since protected reads can temporarily hide its text box. The
+unchanged local baseline passes; hosted reproduction is not claimed. The
+complete changed desktop/phone file passes 2/2 in 123,530.732 ms with the
+conflict, recovery, withdrawal, receipt and accessibility assertions intact.
+Captured inputs match and owned fixtures are removed. PRD-13 stays open;
+current immutable/full CI remains required, and large-load tests stay deferred
+until after the operational MVP.

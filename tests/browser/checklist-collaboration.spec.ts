@@ -77,16 +77,20 @@ for (const width of [1280, 390]) {
       await edit(peer); const dirty = peer.getByRole('textbox', { name: 'Checklist item text' }); await dirty.fill('Contributor dirty draft'); await peer.getByRole('checkbox', { name: 'Item complete', exact: true }).press('Space');
       async function discardPeerReview() {
         const discard = peer.getByRole('button', { name: 'Discard item review and load latest', exact: true });
+        const section = peer.getByRole('region', { name: 'Manage checklist items', exact: true, includeHidden: true });
         // Only the scenario's explicit discard may close the existing draft.
         // A previously pushed Card version does not prove Enter closed it.
         await expect(async () => {
-          if (await dirty.isVisible()) {
+          // A protected read can remove the editor while retaining this review.
+          // Observe retirement of the entire item-management component instead.
+          if (await section.count()) {
             await expect(discard).toBeEnabled({ timeout: 500 });
             await discard.focus({ timeout: 500 });
             await expect(discard).toBeFocused({ timeout: 500 });
             await expect(discard).toBeEnabled({ timeout: 500 });
             await discard.press('Enter', { timeout: 500 });
           }
+          await expect(section).toHaveCount(0, { timeout: 500 });
           await expect(dirty).toHaveCount(0, { timeout: 500 });
         }).toPass({ timeout: 5_000 });
       }
