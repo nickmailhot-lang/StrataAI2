@@ -98,3 +98,14 @@ Original receipt/count, persisted identity/version, safety, accessibility and
 deadline checks remain. Captured inputs match and owned fixtures are removed.
 The live repository capacity setting is rechecked as `0`; large-load testing
 remains disabled, and full release acceptance is still pending.
+
+A separate complete ordinary Board-member invocation passes desktop/phone
+**2/2 in 95,045.416 ms**, without diagnostic hooks, after consent opening and
+request observation share bounded admission. The retained desktop failure's
+last unfinished action waited on a retired role dialog; activation now stops
+when the intended request is observed. The competing 409, exact role/removal
+counts and headers/keys, lost responses, fresh directory recovery, denied
+recipient access, unchanged Organization membership, layout and original
+90-second deadlines remain. Captured inputs independently match and owned
+fixtures are removed. Current complete immutable-image CI and remaining
+acceptance gates still govern release; large-load testing remains disabled.

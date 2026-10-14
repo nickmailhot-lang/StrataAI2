@@ -1,6 +1,6 @@
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
-import { focusAdmittedControl } from './keyboardAdmission';
+import type { Locator } from '@playwright/test';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
@@ -11,6 +11,27 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     const recipient = await browser.newContext({ baseURL: test.info().project.use.baseURL });
     const headers = { 'X-StrataAI-Request': '1' };
     const email = `board-member-recipient-${viewport.width}-${Date.now()}@example.test`;
+    async function submitReviewedChange(review: Locator, launcher: Locator, requestCount: () => number, expectedCount: number) {
+      expect(requestCount()).toBe(expectedCount - 1);
+      // Live directory reads retire unsubmitted consent. Reopen only that
+      // read-only review; never activate after the intended request starts.
+      await expect(async () => {
+        if (requestCount() === expectedCount - 1) {
+          if (!await review.isVisible()) {
+            await expect(launcher).toBeEnabled({ timeout: 500 });
+            await launcher.focus({ timeout: 500 }); await expect(launcher).toBeFocused({ timeout: 500 });
+            await expect(launcher).toBeEnabled({ timeout: 500 }); await launcher.press('Enter', { timeout: 500 });
+          }
+          const confirm = review.getByRole('button', { name: 'Confirm member change', exact: true });
+          await expect(confirm).toBeEnabled({ timeout: 500 });
+          await confirm.focus({ timeout: 500 }); await expect(confirm).toBeFocused({ timeout: 500 });
+          await expect(confirm).toBeEnabled({ timeout: 500 });
+          // Admission can finish while focus waits; recheck the observer.
+          if (requestCount() === expectedCount - 1) await confirm.press('Enter', { timeout: 500 });
+        }
+        await expect.poll(requestCount, { timeout: 500 }).toBe(expectedCount);
+      }).toPass({ timeout: 5_000 });
+    }
     try {
       for (const [index, client] of [context, recipient].entries()) {
         const data = { email: index ? email : `board-member-owner-${viewport.width}-${Date.now()}@example.test`,
@@ -63,27 +84,12 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         const response = await route.fetch(); expect(response.status()).toBe(roles === 1 ? 409 : 200);
         if (roles === 1) await route.fulfill({ response }); else await route.abort('timedout');
       });
-      await page.getByRole('button', { name: 'Confirm member change' }).focus(); await page.keyboard.press('Enter');
+      const roleReview = page.getByRole('dialog', { name: 'Change Board role?', exact: true });
+      await submitReviewedChange(roleReview, page.getByRole('button', { name: 'Make administrator: Jordan participant', exact: true }), () => roles, 1);
       await expect(page.getByText(/This membership changed|Board membership changed/).first()).toBeVisible();
       await expect(page.getByRole('button', { name: 'Check current members' })).toBeEnabled();
       await page.getByRole('button', { name: 'Check current members' }).focus(); await page.keyboard.press('Enter');
-      const roleReview = page.getByRole('dialog', { name: 'Change Board role?', exact: true });
-      // Current membership delivery can cancel unsubmitted consent after the
-      // directory read. Reopen that review with current enabled focus, then
-      // send its mutation confirmation once, as in the removal flow below.
-      await expect(async () => {
-        if (!await roleReview.isVisible()) {
-          const makeMember = page.getByRole('button', { name: 'Make member: Jordan participant', exact: true });
-          await expect(makeMember).toBeEnabled({ timeout: 500 });
-          await makeMember.focus({ timeout: 500 }); await expect(makeMember).toBeFocused({ timeout: 500 });
-          await expect(makeMember).toBeEnabled({ timeout: 500 }); await makeMember.press('Enter', { timeout: 500 });
-        }
-        const confirm = roleReview.getByRole('button', { name: 'Confirm member change', exact: true });
-        await expect(confirm).toBeEnabled({ timeout: 500 });
-        await confirm.focus({ timeout: 500 }); await expect(confirm).toBeFocused({ timeout: 500 });
-        await expect(confirm).toBeEnabled({ timeout: 500 });
-      }).toPass({ timeout: 5_000 });
-      await roleReview.getByRole('button', { name: 'Confirm member change', exact: true }).press('Enter');
+      await submitReviewedChange(roleReview, page.getByRole('button', { name: 'Make member: Jordan participant', exact: true }), () => roles, 2);
       await expect(page.getByText(/The member change could not be confirmed/)).toBeVisible();
       await page.getByRole('button', { name: 'Check current members' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Make administrator: Jordan participant' })).toBeVisible(); expect(roles).toBe(2);
@@ -96,22 +102,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         expect((await route.fetch()).status()).toBe(204); await route.abort('timedout');
       });
       const removalReview = page.getByRole('dialog', { name: 'Remove Board membership?', exact: true });
-      // A live directory read cancels unsubmitted consent. Reopen that review
-      // after current admission; send the destructive confirmation only once.
-      await expect(async () => {
-        if (!await removalReview.isVisible()) {
-          const remove = page.getByRole('button', { name: 'Remove from Board: Jordan participant', exact: true });
-          await expect(remove).toBeEnabled({ timeout: 500 });
-          await remove.focus({ timeout: 500 }); await expect(remove).toBeFocused({ timeout: 500 });
-          await expect(remove).toBeEnabled({ timeout: 500 }); await remove.press('Enter', { timeout: 500 });
-        }
-        await expect(removalReview).toBeVisible({ timeout: 500 });
-        const confirm = removalReview.getByRole('button', { name: 'Confirm member change', exact: true });
-        await expect(confirm).toBeEnabled({ timeout: 500 });
-        await confirm.focus({ timeout: 500 }); await expect(confirm).toBeFocused({ timeout: 500 });
-        await expect(confirm).toBeEnabled({ timeout: 500 });
-      }).toPass({ timeout: 5_000 });
-      await removalReview.getByRole('button', { name: 'Confirm member change', exact: true }).press('Enter');
+      await submitReviewedChange(removalReview, page.getByRole('button', { name: 'Remove from Board: Jordan participant', exact: true }), () => removals, 1);
       await expect(page.getByText(/The member change could not be confirmed/)).toBeVisible();
       await page.getByRole('button', { name: 'Check current members' }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('heading', { name: 'Board owner', exact: true })).toBeVisible();

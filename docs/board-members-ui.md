@@ -171,3 +171,43 @@ recipient access withdrawal, and unchanged Organization membership. Browser
 TypeScript passes and owned containers/database were removed. This is scoped
 native evidence; the original intermittent cause and combined/current immutable
 acceptance remain unproven. Estimated PRD-05 work remaining stays **15%**.
+
+## Observe a request before leaving reviewed consent
+
+Retained full-browser job 115680518833 in run 38501107451 at `5d29125b`
+passes 102 cases and fails the desktop Board-member case at its 90-second
+deadline. Cleanup reports the browser already closed, but the retained trace's
+last unfinished browser action is `press('Enter')` waiting for Confirm inside
+the missing `Change Board role?` dialog. The earlier focus-only review loop
+finished before that locator wait; live directory reconciliation can retire
+unsubmitted consent between those operations.
+
+The fixture now keeps bounded consent opening/focus and request observation
+together. It reopens only a read-only review while the expected request has not
+started. It rechecks the observer after focus waits and stops activation as
+soon as that PATCH or DELETE is observed, including while its response is
+pending. Exact observer counts refuse extra requests. This applies to the first
+competing-version role command, the second role command and removal. It does
+not retry a committed command, repeat the whole test, widen the original
+90-second deadline or change product permission/recovery behavior. The earlier
+five-second review-admission bound remains; individual operations are bounded
+instead of consuming the case deadline waiting on a retired dialog.
+
+Both complete desktop/phone scenarios pass **2/2 in 95,045.416 ms**, with zero
+skipped, unexpected or flaky outcomes and no diagnostic source hooks. They keep
+real Worker delivery, the competing 409, original If-Match versions and UUID
+keys, exactly two role PATCHes and one member DELETE, lost responses, fresh
+directory recovery without an assumed acknowledgment, withdrawn recipient read
+and write access, identical Organization membership and narrow-layout checks.
+The local compiled Production API, separate Worker and Nginx use restricted
+PostgreSQL/pgvector with all 149 migrations and the declared optional-verification
+controlled-account policy. Independent checks match 2,143 hosted source/runtime
+hashes, 1,441 native source hashes, 168 frozen browser files and four web assets.
+Owned containers, volumes, roles, credentials and newly pulled support images
+are removed; the original stopped PostgreSQL is preserved.
+
+Browser TypeScript, 222 CI/startup guards and 398-case/145-file browser partition
+checks pass. Current complete immutable-image CI, strict mail and remaining
+PRD-05 AC/DoD still govern closure. The current [acceptance audit](architecture/prd-05-acceptance.md)
+retains **14% estimated work remaining**; the 15% estimate above is historical.
+Large-load testing remains disabled until after the operational MVP.

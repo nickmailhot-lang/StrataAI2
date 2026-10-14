@@ -4,6 +4,22 @@ This audit covers the complete [PRD-05 issue](https://github.com/nickmailhot-lan
 
 ## Functional traceability
 
+### Retired role consent and request admission
+
+The [Board-member verification](../board-members-ui.md#observe-a-request-before-leaving-reviewed-consent)
+records a retained desktop deadline failure whose last unfinished action waited
+on Confirm inside a missing role dialog. Bounded read-only consent reopening
+now stops activation when the specific PATCH/DELETE is observed, including
+while its response is pending. Both complete desktop/phone cases pass **2/2 in
+95,045.416 ms**, with no skipped, unexpected or flaky outcomes and no diagnostic
+hooks. Competing-version refusal, exact headers/keys/counts, lost responses,
+fresh directory recovery, denied recipient access, unchanged Organization
+membership, layout and the original 90-second deadlines remain intact.
+Captured local compiled source/runtime/browser/web inputs match independently,
+and owned fixtures are removed. This controlled-account supporting run does
+not certify strict mail or the current complete immutable release. Estimated
+work remaining stays **14%**; PRD-05 remains open.
+
 ### Complete Board-phase history-focus verification
 
 The local 14-file/31-case Board phase using the history-focus frontend repair
