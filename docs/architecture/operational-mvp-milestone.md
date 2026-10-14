@@ -318,3 +318,13 @@ guards pass; the complete changed native driver passes against retained images.
 Independent owned cleanup passes, with the separate built-in bridge-ID audit
 failure documented. A complete new-commit immutable CI and release bundle are
 still required. The milestone stays pending and large-load tests stay disabled.
+
+The [checklist item-position peer opening follow-up](checklist-review-admission-verification.md#item-position-peer-read-admission--2026-10-14)
+observes the first rendered item through the existing read-only admission helper
+before asserting exact captions. Retained desktop evidence has no item GET after
+the keypress; the unchanged local baseline passes and is not claimed as
+reproduction. The complete changed desktop/phone file passes 2/2 with unchanged
+move/replay/live-order/version/accessibility assertions and deadlines. Inputs
+match and owned fixtures are removed. PRD-13 remains open at 33% estimated work
+remaining; full current immutable CI remains required and large-load tests stay
+deferred.

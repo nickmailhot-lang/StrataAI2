@@ -135,3 +135,32 @@ This controlled compiled-application capture supplements release evidence;
 current immutable/full CI and full acceptance remain required. PRD-13 remains
 open with estimated work remaining **33%**. Large-load testing stays deferred
 until after the operational MVP.
+
+## Item-position peer read admission — 2026-10-14
+
+Retained `965b4bbc` browser partition 2, job `115916927102`, passes 95 cases and
+fails the desktop `checklist-item-position.spec.ts` peer's initial item display.
+The trace records the Show-items keypress, successful checklist reads and **no
+item GET** before the unchanged three-caption assertion times out. The case is
+unchanged on current main before this repair.
+
+Only this read-only peer opening now uses the existing `openAdmittedReview`
+helper with the first rendered item as its target. It establishes enabled
+keyboard focus, observes the actual opening and stops once an item is visible.
+The original exact three-caption assertion remains, as do all move controls,
+original-key/body replay, exact request counts, live order, final IDs/versions,
+accessibility and 90-second scenario deadlines. Mutation submission is unchanged.
+
+The complete unchanged local desktop/phone file passes **2/2 in 108,155.189 ms**;
+it is not claimed as local reproduction. The complete changed file passes
+**2/2 in 109,035.072 ms**, with two total attempts, no skips, flaky results,
+retries, errors or private diagnostic hooks. Browser typing, all 242 CI/startup
+guards and collection of 398 cases across 145 intact files pass. Independently
+matched 2,145 captured inputs, 170 browser files and four frontend assets.
+
+These are supporting fresh restricted-role PostgreSQL and compiled API/Worker
+fixtures with current frontend assets, not a complete immutable-image release.
+Owned containers, database/roles, credentials and newly pulled support images
+are removed; the original stopped database remains. Current full CI and the
+remaining PRD acceptance stay required. Estimated PRD-13 work remaining remains
+**33%**; large-load testing stays deferred until after the MVP.

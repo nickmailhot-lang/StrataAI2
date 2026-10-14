@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { openAdmittedReview } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-13: keyboard item positioning, exact retry and live ordering at ${width}px`, async ({ page, context, browser }) => {
@@ -25,8 +26,9 @@ for (const width of [1280, 390]) {
       expect((await peerContext.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
       const peer = await peerContext.newPage(); await peer.goto(route);
       const show = peer.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
-      const showItems = peer.getByRole('button', { name: 'Show items in Preparations', exact: true }); await expect(showItems).toBeEnabled(); await showItems.press('Enter');
       const rows = peer.getByRole('region', { name: 'Card checklists', exact: true }).getByText(/^Incomplete:/);
+      const showItems = peer.getByRole('button', { name: 'Show items in Preparations', exact: true });
+      await openAdmittedReview(showItems, rows.first());
       await expect(rows).toHaveText(['Incomplete: Prepare', 'Incomplete: Execute', 'Incomplete: Review']);
       const manage = page.getByRole('button', { name: 'Manage checklists', exact: true });
       async function move() {
