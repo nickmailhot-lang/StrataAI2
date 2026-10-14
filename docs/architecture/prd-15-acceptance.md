@@ -592,3 +592,13 @@ filter-account files pass together **4/4 in 263,148.308 ms** with original
 receipt, author/version, preference, offline, redaction, event, accessibility and
 deadline assertions. Current immutable/full acceptance remains required;
 estimated work remaining stays **34%**.
+
+The [selected teammate review follow-up](comments-mentions-activity.md#selected-teammate-review-admission-follow-up)
+records a later hosted phone wait on the missing Add-comment control. Its
+unchanged local baseline passes 2/2; the complete changed file also passes
+2/2 after both read-only openings observe their targets. No local reproduction
+or product root cause is claimed. Original selected-identity/revision, receipt,
+private inbox, persisted delivery, revocation, accessibility and deadline
+assertions remain. Inputs and cleanup are independently verified. Current
+immutable/full acceptance remains required; estimated work remaining stays
+**34%**, with large-load tests deferred until after MVP.

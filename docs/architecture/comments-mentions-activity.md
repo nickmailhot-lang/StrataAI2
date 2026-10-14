@@ -1584,3 +1584,31 @@ setup. It does not establish a new product root cause or certify strict managed
 mail, current retained images or full acceptance. Current PRD-15 estimate remains
 **34% work remaining**, consistent with the [acceptance map](prd-15-acceptance.md).
 The issue stays open. No large-load tests run.
+
+## Selected teammate review admission follow-up
+
+Retained run `38501107451`, full-browser shard 2 job `115680518835`, passes
+95 cases and fails the phone selected-teammate scenario. The trace records
+the initial review keypress, then the unfinished `Add comment` keypress waits
+until the original 150-second deadline. It does not prove a new product root
+cause. An unchanged current local desktop/phone baseline passes **2/2 in
+129,312.867 ms**, so the hosted failure is not claimed as locally reproduced.
+
+The scenario now uses the existing bounded read-only opening helper to observe
+the actual comments review and new-comment editor before teammate lookup.
+This does not retry a comment write or the complete test. Identity revision
+reclaim/refusal, deliberate discard, selected-identity payload, two identical
+original creation/recovery requests, one private notification, persisted
+delivery, read event, member revocation, accessibility and the original deadline
+remain unchanged.
+
+The complete changed desktop/phone invocation passes **2/2 in 128,764.381 ms**,
+with zero skips, unexpected/flaky results, retries, top-level errors or diagnostic
+hooks. Browser types, 222 CI guards and 398-case shard collection pass.
+Independent verification matches all 2,143 hosted inputs, 1,441 native inputs,
+168 frozen browser files and four served assets. Owned containers, fixture
+database/roles, credentials and newly pulled support images are removed;
+the original stopped database is preserved. This mounted compiled-runtime and
+controlled-account evidence supports fixture admission, not strict managed-mail
+or current immutable/full release certification. Estimated PRD-15 work remaining
+stays **34%**. Large-load testing remains disabled.

@@ -123,3 +123,13 @@ also records the full web run's one notification timeout and separate 25/25
 rerun. This supports the repair; current complete immutable CI and remaining
 release gates still govern MVP acceptance. The repository capacity setting is
 rechecked as `0`; large-load testing remains deferred until after the milestone.
+
+The complete selected-teammate desktop/phone comment file now passes **2/2 in
+128,764.381 ms** after its two read-only openings observe the review/editor.
+The retained hosted phone failure waits on the missing Add-comment control;
+the unchanged local baseline also passes, so local reproduction is not claimed.
+Original identity revision, receipt/count, private persisted notification,
+revocation, accessibility and deadline checks remain. Captured inputs match,
+owned fixtures are removed, and [the supporting evidence](comments-mentions-activity.md#selected-teammate-review-admission-follow-up)
+keeps current immutable CI and full release acceptance pending. Large-load
+testing remains disabled.

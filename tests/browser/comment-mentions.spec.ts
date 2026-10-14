@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 
 // Real cookies, lookup, identity revision changes, comment/inbox writes and
 // original receipts. Only a successfully committed first reply is replaced.
@@ -63,9 +63,11 @@ for (const width of [1280, 390]) {
       await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       const review = page.getByRole('button', { name: 'Review Card comments', exact: true });
       async function select() {
-        await expect(review).toBeEnabled(); await review.press('Enter');
-        await page.getByRole('button', { name: 'Add comment', exact: true }).press('Enter');
-        await page.getByRole('textbox', { name: 'Teammate username prefix', exact: true }).fill(original.handle);
+        const add = page.getByRole('button', { name: 'Add comment', exact: true });
+        await openAdmittedReview(review, add);
+        const prefix = page.getByRole('textbox', { name: 'Teammate username prefix', exact: true });
+        await openAdmittedReview(add, prefix);
+        await prefix.fill(original.handle);
         await page.getByRole('button', { name: 'Find teammates', exact: true }).press('Enter');
         const choice = page.getByRole('button', { name: `Mention Mention recipient (@${original.handle})`, exact: true });
         await expect(choice).toBeEnabled(); await choice.press('Enter');
