@@ -4,6 +4,17 @@ import { resolve } from 'node:path';
 const statuses = new Set(['passed', 'failed', 'timedOut', 'skipped', 'interrupted']);
 const duration = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
 
+function detailEvidence(value, status) {
+  const mode = value.fixture?.detailTiming;
+  if (mode === undefined) return duration(value.detailMs)
+    ? { fixture: { detailTiming: null }, fields: { detailMs: value.detailMs } } : undefined;
+  if (mode !== 'browser-painted-editable' || !duration(value.detailAutomationMs)
+    || typeof value.detailObserved !== 'boolean'
+    || (value.detailObserved ? !duration(value.detailMs) : value.detailMs !== null || status === 'passed')) return undefined;
+  return { fixture: { detailTiming: mode }, fields: {
+    detailMs: value.detailMs, detailObserved: value.detailObserved, detailAutomationMs: value.detailAutomationMs } };
+}
+
 // Local diagnostic runs use the same scenarios, but cannot certify release images.
 export function performanceProvenance(environment = {}) {
   const revision = /^[0-9a-f]{40,64}$/.test(environment.GITHUB_SHA ?? '') ? environment.GITHUB_SHA : null;
@@ -17,17 +28,19 @@ export function performanceEntry(name, value, status) {
   const tracing = value.fixture?.tracing ?? null;
   if (tracing !== null && !['commands-and-network', 'dom-snapshots'].includes(tracing)) return undefined;
   if (name === 'card-dates-performance.json') {
+    const detail = detailEvidence(value, status);
+    if (!detail) return undefined;
     if (value.fixture?.lists !== 3 || value.fixture.cards !== 50 || value.fixture.datedCards !== 50
       || value.fixture.samples !== 20 || value.fixture.viewport !== '1280x844' || value.fixture.assets !== 'warm'
       || value.fixture.topology !== 'exact release images through Nginx'
-      || ![value.usableMs, value.detailMs, value.mutationP95Ms].every(duration)
+      || ![value.usableMs, value.mutationP95Ms].every(duration)
       || !Array.isArray(value.mutationSamplesMs) || value.mutationSamplesMs.length !== 20
       || !value.mutationSamplesMs.every(duration)) return undefined;
     const p95 = [...value.mutationSamplesMs].sort((a, b) => a - b)[18];
     if (p95 !== value.mutationP95Ms) return undefined;
     return { metric: 'normal-desktop-card-dates', status,
-      fixture: { lists: 3, cards: 50, datedCards: 50, samples: 20, viewport: '1280x844', assets: 'warm', tracing },
-      usableMs: value.usableMs, detailMs: value.detailMs, mutationP95Ms: p95, mutationSamplesMs: [...value.mutationSamplesMs],
+      fixture: { lists: 3, cards: 50, datedCards: 50, samples: 20, viewport: '1280x844', assets: 'warm', tracing, ...detail.fixture },
+      usableMs: value.usableMs, ...detail.fields, mutationP95Ms: p95, mutationSamplesMs: [...value.mutationSamplesMs],
       budgetsMs: { usable: 1500, detail: 200, mutationP95: 500 } };
   }
   const feedback = value.feedbackObserved === true && duration(value.feedbackMs) ? value.feedbackMs
@@ -41,15 +54,11 @@ export function performanceEntry(name, value, status) {
       feedbackObserved: feedback !== null, feedbackMs: feedback, budgetsMs: { feedback: 100 } };
   }
   const checklist = name === 'checklist-performance.json';
-  const paintedDetail = !checklist && value.fixture.detailTiming === 'browser-painted-editable';
-  if (!checklist && value.fixture.detailTiming !== undefined && !paintedDetail) return undefined;
-  if (paintedDetail && (!duration(value.detailAutomationMs)
-    || typeof value.detailObserved !== 'boolean'
-    || (value.detailObserved ? !duration(value.detailMs) : value.detailMs !== null || status === 'passed'))) return undefined;
+  const detail = detailEvidence(value, status);
+  if (!detail) return undefined;
   if ((!checklist && name !== 'kanban-performance.json') || value.fixture.lists !== 3 || value.fixture.cards !== 50
     || value.fixture.samples !== 20 || value.fixture.assets !== 'warm'
     || ![value.usableMs, value.mutationP95Ms].every(duration)
-    || (!paintedDetail && !duration(value.detailMs))
     || !Array.isArray(value.mutationSamplesMs) || value.mutationSamplesMs.length !== 20
     || !value.mutationSamplesMs.every(duration)) return undefined;
   const p95 = [...value.mutationSamplesMs].sort((a, b) => a - b)[18];
@@ -58,12 +67,11 @@ export function performanceEntry(name, value, status) {
     || ![value.itemPageMs, value.nextItemPageMs].every(duration))) return undefined;
   return { metric: checklist ? 'normal-desktop-checklist' : viewport === '390x844' ? 'normal-phone-kanban' : 'normal-desktop-kanban', status,
     fixture: { lists: 3, cards: 50, samples: 20, viewport, assets: 'warm', tracing,
-      ...(!checklist ? { detailTiming: paintedDetail ? 'browser-painted-editable' : null } : {}),
+      ...detail.fixture,
       ...(viewport === '390x844' ? { input: 'chromium-touch' } : {}),
       ...(checklist ? { checklists: 2, items: 63, pageSize: 50 } : {}) },
     ...(checklist ? { itemPageMs: value.itemPageMs, nextItemPageMs: value.nextItemPageMs } : {}),
-    usableMs: value.usableMs, detailMs: value.detailMs, feedbackObserved: feedback !== null, feedbackMs: feedback,
-    ...(paintedDetail ? { detailObserved: value.detailObserved, detailAutomationMs: value.detailAutomationMs } : {}),
+    usableMs: value.usableMs, ...detail.fields, feedbackObserved: feedback !== null, feedbackMs: feedback,
     mutationP95Ms: value.mutationP95Ms, mutationSamplesMs: [...value.mutationSamplesMs],
     budgetsMs: { usable: 1500, feedback: 100, detail: 200, mutationP95: 500 } };
 }

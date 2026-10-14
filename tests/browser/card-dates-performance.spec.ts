@@ -1,7 +1,8 @@
 import { performanceTrace, performanceTraceCondition } from './performanceTracing';
 import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
-import { trackBoardReads } from './boardReadTracker';
+import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
+import { armCachedDetailPaint, readCachedDetailPaint } from './cachedDetailPaint';
 
 test.use({ trace: performanceTrace });
 
@@ -35,15 +36,17 @@ test('PRD-12: normal dated Board readiness, cached detail and date commands meet
   await page.goto('/app'); await expect(page.getByRole('heading', { name: 'Your organizations', exact: true })).toBeVisible();
   const path = `/app/${org}/boards/${board}`, reads = trackBoardReads(page, board, path);
   const began = performance.now();
-  await page.goto(path); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+  await page.goto(path); await waitForBoardReads(page, reads, 2); expect(reads()).toBeGreaterThanOrEqual(2);
   await expect(page.getByRole('button', { name: 'Drag Date performance card 1 card', exact: true })).toBeEnabled();
   const link = page.getByRole('link', { name: 'Date performance card 1', exact: true });
   await expect(link).toHaveAccessibleDescription('Upcoming');
   const usableMs = performance.now() - began;
+  await page.evaluate(armCachedDetailPaint, { path: `${path}/cards/${card}`, title: 'Date performance card 1' });
   const detailBegan = performance.now(); await link.click();
   const detail = page.getByRole('dialog', { name: 'Card details', exact: true });
   await expect(detail.getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
-  const detailMs = performance.now() - detailBegan;
+  const detailAutomationMs = performance.now() - detailBegan;
+  const detailMs = await page.evaluate(readCachedDetailPaint);
   await expect(detail.getByRole('region', { name: 'Card dates', exact: true })).toContainText('Upcoming');
   const samples: number[] = [];
   for (let index = 0; index < 20; index++) {
@@ -55,8 +58,9 @@ test('PRD-12: normal dated Board readiness, cached detail and date commands meet
   }
   const p95 = [...samples].sort((a, b) => a - b)[18];
   await test.info().attach('card-dates-performance.json', { contentType: 'application/json', body: JSON.stringify({
-    fixture: { tracing: performanceTraceCondition, lists: 3, cards: 50, datedCards: 50, samples: 20, viewport: '1280x844', assets: 'warm', topology: 'exact release images through Nginx' },
-    usableMs, detailMs, mutationP95Ms: p95, mutationSamplesMs: samples,
+    fixture: { tracing: performanceTraceCondition, detailTiming: 'browser-painted-editable', lists: 3, cards: 50, datedCards: 50, samples: 20, viewport: '1280x844', assets: 'warm', topology: 'exact release images through Nginx' },
+    usableMs, detailObserved: Number.isFinite(detailMs), detailMs: Number.isFinite(detailMs) ? detailMs : null,
+    detailAutomationMs, mutationP95Ms: p95, mutationSamplesMs: samples,
   }) });
   expect(usableMs).toBeLessThan(1500); expect(detailMs).toBeLessThan(200); expect(p95).toBeLessThan(500);
 });

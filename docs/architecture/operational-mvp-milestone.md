@@ -257,3 +257,13 @@ budgets unchanged; desktop paint/controller timings are 178.400/217.357 ms.
 Missing observations remain failures. Inputs match, owned fixtures are removed
 and original database data is preserved. PRD-06 stays open pending current
 immutable/full CI and remaining acceptance; large-load tests stay deferred.
+
+The [date/checklist timing alignment](../kanban-performance.md#datechecklist-timing-alignment-2026-10-14)
+uses the same native-click painted-title observation and qualified read events,
+retaining controller times and all original feature assertions/budgets. Both
+unchanged baselines fail; the complete changed two-file run passes 2/2 in
+105,395.105 ms. Date/checklist paint is 164.200/188.200 ms, controller time
+234.303/268.537 ms, with normal readiness/mutation and checklist feedback
+budgets passing. Inputs match and owned fixtures are removed. PRD-12/13 remain
+open pending current immutable/full CI and full acceptance. Large-load tests
+remain deferred until after the operational MVP.

@@ -5,6 +5,27 @@ import PerformanceReporter, { performanceEntry, performanceProvenance } from './
 const fixture = { lists: 2, cards: 0, viewport: '1280x844', topology: 'exact release images through Nginx' };
 const sample = { fixture, feedbackObserved: true, feedbackMs: 43.5 };
 
+for (const name of ['card-dates-performance.json', 'checklist-performance.json']) {
+  test(`${name} preserves painted and controller timing without relabeling history or accepting a missing paint`, () => {
+    const value = { ...sample, fixture: { ...fixture, lists: 3, cards: 50, datedCards: 50, checklists: 2,
+      items: 63, pageSize: 50, samples: 20, assets: 'warm', detailTiming: 'browser-painted-editable' },
+      usableMs: 600, detailMs: 178, detailObserved: true, detailAutomationMs: 240, itemPageMs: 80, nextItemPageMs: 90,
+      mutationP95Ms: 49, mutationSamplesMs: Array.from({ length: 20 }, (_, index) => index + 31), body: 'private-content' };
+    const entry = performanceEntry(name, value, 'failed');
+    assert.equal(entry.status, 'failed'); assert.equal(entry.detailMs, 178); assert.equal(entry.detailAutomationMs, 240);
+    assert.equal(entry.fixture.detailTiming, 'browser-painted-editable'); assert.equal(entry.budgetsMs.detail, 200);
+    assert.ok(!JSON.stringify(entry).includes('private'));
+    const missing = { ...value, detailObserved: false, detailMs: null };
+    assert.equal(performanceEntry(name, missing, 'failed').detailObserved, false);
+    assert.equal(performanceEntry(name, missing, 'passed'), undefined);
+    for (const patch of [{ detailAutomationMs: undefined }, { detailObserved: undefined }, { detailMs: null },
+      { fixture: { ...value.fixture, detailTiming: 'private-content' } }])
+      assert.equal(performanceEntry(name, { ...value, ...patch }, 'failed'), undefined);
+    const historical = performanceEntry(name, { ...value, fixture: { ...value.fixture, detailTiming: undefined } }, 'failed');
+    assert.equal(historical.fixture.detailTiming, null); assert.equal(historical.detailAutomationMs, undefined);
+  });
+}
+
 test('painted detail timing retains supplemental automation time and failed or missing observations honestly', () => {
   const value = { ...sample, fixture: { ...fixture, lists: 3, cards: 50, samples: 20, assets: 'warm', detailTiming: 'browser-painted-editable' },
     usableMs: 600, detailObserved: true, detailMs: 178, detailAutomationMs: 206,

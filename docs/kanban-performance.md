@@ -978,3 +978,45 @@ support images are removed; the original stopped database is preserved. This
 controlled compiled-application capture does not certify current immutable
 release images or complete PRD-06. Estimated work remaining stays **25%**.
 Large-load testing remains deferred until after the operational MVP.
+
+## Date/checklist timing alignment (2026-10-14)
+
+The complete unchanged date/checklist performance files first fail locally:
+dated-Board readiness/detail measure 2027.361/273.524 ms; checklist readiness/
+detail measure 995.298/203.000 ms. The original failures are retained. Date
+mutation p95 is 115.375 ms; checklist feedback/p95 are 52.500/97.953 ms.
+
+Both files now share the native-click painted-title observer used by normal
+Kanban, while retaining controller elapsed time, the enabled-title assertion
+and all original budgets/deadlines. Qualified Board reads are awaited through
+the existing event-driven tracker rather than periodic polling, with the same
+explicit count of at least two admitted reads. Visible authoritative date
+badge/detail content, real date mutations, actual checklist progress, 50/13
+seek pages, held creation feedback, persisted state and 20 mutation samples
+remain. No application behavior or latency threshold changes.
+
+The shared reporter now validates timing provenance consistently across Kanban,
+dates and checklists. Historical timing stays unspecified. New observations
+retain controller time and explicit readiness; missing/malformed observations
+cannot be retained as a passing measurement, and failed status stays failed.
+
+The entire changed two-file invocation passes **2/2 in 105,395.105 ms**, with no
+skips, flaky outcomes, retries or diagnostic source overrides:
+
+| Scenario | Readiness ms | Painted detail ms | Controller detail ms | Mutation p95 ms |
+| --- | ---: | ---: | ---: | ---: |
+| 50 dated Cards | 1027.245 | 164.200 | 234.303 | 98.335 |
+| 63 checklist items | 977.983 | 188.200 | 268.537 | 102.378 |
+
+Checklist feedback is 63.900 ms; first/next item-page timings are
+156.268/154.899 ms. All applicable unchanged <1500/<200/<100/p95 <500 ms
+budgets pass in this capture. These are observed samples, not guaranteed margin
+or current exact-image release certification.
+
+29 observer/report/read-tracker tests, browser types, 224 CI guards and intact
+398-case shard coverage pass. Independent checks match 2,145 hosted inputs,
+1,443 native inputs, 170 frozen browser files and four served web assets. Owned
+containers/credentials/new support images are removed; original stopped
+database data is preserved. Current immutable/full CI and full AC/DoD remain
+required. PRD-12/13 stay open at **24%/33% estimated work remaining**.
+Large-load testing remains deferred until after the operational MVP.

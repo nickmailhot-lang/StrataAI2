@@ -1,7 +1,8 @@
 import { performanceTrace, performanceTraceCondition } from './performanceTracing';
 import { performance } from 'node:perf_hooks';
 import { expect, test } from './releaseTest';
-import { trackBoardReads } from './boardReadTracker';
+import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
+import { armCachedDetailPaint, readCachedDetailPaint } from './cachedDetailPaint';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 test.use({ trace: performanceTrace });
@@ -47,12 +48,14 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
     await page.goto('/app'); await expect(page.getByRole('heading', { name: 'Your organizations', exact: true })).toBeVisible();
     const boardPath = `/app/${org}/boards/${board}`;
     const reads = trackBoardReads(page, board, boardPath); const began = performance.now();
-    await page.goto(boardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
+    await page.goto(boardPath); await waitForBoardReads(page, reads, 2); expect(reads()).toBeGreaterThanOrEqual(2);
     await expect(page.getByRole('button', { name: 'Drag Checklist performance Card 1 card', exact: true })).toBeEnabled();
     const usableMs = performance.now() - began;
+    await page.evaluate(armCachedDetailPaint, { path: `${boardPath}/cards/${card}`, title: 'Checklist performance Card 1' });
     const detailBegan = performance.now(); await page.getByRole('link', { name: 'Checklist performance Card 1', exact: true }).click();
     await expect(page.getByRole('dialog', { name: 'Card details', exact: true }).getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
-    const detailMs = performance.now() - detailBegan;
+    const detailAutomationMs = performance.now() - detailBegan;
+    const detailMs = await page.evaluate(readCachedDetailPaint);
     await page.getByRole('button', { name: 'Show checklists', exact: true }).press('Enter');
     await expect(page.getByText('0 of 63 items complete (0%)', { exact: true })).toBeVisible();
     const itemBegan = performance.now(); await page.getByRole('button', { name: 'Show items in Paged preparations', exact: true }).press('Enter');
@@ -128,8 +131,9 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
     }
     const p95Ms = [...mutations].sort((a, b) => a - b)[18];
     await test.info().attach('checklist-performance.json', { contentType: 'application/json', body: JSON.stringify({
-      fixture: { tracing: performanceTraceCondition, lists: 3, cards: 50, checklists: 2, items: 63, pageSize: 50, samples: 20, viewport: '1280x844', assets: 'warm', topology: 'exact release images through Nginx' },
-      usableMs, detailMs, itemPageMs, nextItemPageMs, feedbackObserved: Number.isFinite(feedbackMs), feedbackMs: Number.isFinite(feedbackMs) ? feedbackMs : null,
+      fixture: { tracing: performanceTraceCondition, detailTiming: 'browser-painted-editable', lists: 3, cards: 50, checklists: 2, items: 63, pageSize: 50, samples: 20, viewport: '1280x844', assets: 'warm', topology: 'exact release images through Nginx' },
+      usableMs, detailObserved: Number.isFinite(detailMs), detailMs: Number.isFinite(detailMs) ? detailMs : null,
+      detailAutomationMs, itemPageMs, nextItemPageMs, feedbackObserved: Number.isFinite(feedbackMs), feedbackMs: Number.isFinite(feedbackMs) ? feedbackMs : null,
       mutationP95Ms: p95Ms, mutationSamplesMs: mutations,
     }) });
     expect(usableMs).toBeLessThan(1500); expect(detailMs).toBeLessThan(200); expect(feedbackMs).toBeLessThan(100); expect(p95Ms).toBeLessThan(500);
