@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
+import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 
 // Real comment commands/storage. Only the first already-committed HTTP reply
 // is replaced with 503 to exercise recovery; command bodies and receipts are
@@ -38,13 +39,14 @@ for (const width of [1280, 390]) {
       await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       const peerReads = trackBoardReads(peerPage, board, cardPath); await peerPage.goto(cardPath); await expect.poll(peerReads).toBeGreaterThanOrEqual(2);
       const peerReview = peerPage.getByRole('button', { name: 'Review Card comments', exact: true });
-      await expect(peerReview).toBeEnabled(); await peerReview.press('Enter'); await expect(peerPage.getByText('No comments on this page. Add the first comment.', { exact: true })).toBeVisible();
+      await openAdmittedReview(peerReview, peerPage.getByText('No comments on this page. Add the first comment.', { exact: true }));
       const review = page.getByRole('button', { name: 'Review Card comments', exact: true });
-      await expect(review).toBeEnabled(); await review.press('Enter');
-      await page.getByRole('button', { name: 'Add comment', exact: true }).press('Enter');
-      const text = page.getByRole('textbox', { name: 'New comment', exact: true }); await expect(text).toBeFocused();
+      const add = page.getByRole('button', { name: 'Add comment', exact: true });
+      await openAdmittedReview(review, add);
+      const text = page.getByRole('textbox', { name: 'New comment', exact: true });
+      await openAdmittedReview(add, text); await expect(text).toBeFocused();
       await page.keyboard.insertText('Literal <script>🙂');
-      await page.getByRole('button', { name: 'Save comment', exact: true }).press('Enter');
+      await pressObservedRequest(page.getByRole('button', { name: 'Save comment', exact: true }), () => writes.length, 1);
       const retry = page.getByRole('button', { name: 'Retry original comment change', exact: true });
       await expect(retry).toBeEnabled(); await expect(retry).toBeFocused();
       for (const name of ['Add checklist', 'Save card', 'Add link attachment', 'Manage attachments', 'Review Card cover', 'Close'])
@@ -57,7 +59,7 @@ for (const width of [1280, 390]) {
       // Card details is modal, so its background Board is hidden from the
       // accessibility tree while still owning the current read admission.
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
-      await expect(retry).toBeEnabled(); await retry.press('Enter'); await expect(page.getByText('Comment added.', { exact: true })).toBeVisible();
+      await expect(retry).toBeEnabled(); await pressObservedRequest(retry, () => writes.length, 2); await expect(page.getByText('Comment added.', { exact: true })).toBeVisible();
       await expect(peerPage.getByText('Literal <script>🙂', { exact: true })).toBeVisible();
       expect(writes).toHaveLength(2); expect(writes[1]).toEqual(writes[0]);
       expect(JSON.parse(writes[0].body!)).toEqual({ content: 'Literal <script>🙂', cardVersion: 1 });

@@ -584,3 +584,11 @@ revocation, mutation, accessibility and deadline assertions. Captured inputs
 match and owned fixtures are removed. This does not prove a new product root
 cause or certify current retained-image acceptance. Estimated work remaining
 stays **34%**; no large-load tests run.
+
+The [comment review admission follow-up](comments-mentions-activity.md#comment-review-keyboard-admission-follow-up)
+addresses the later retained phone empty-review failure using the existing
+read-only opening and one-observed-request helpers. Complete comment and
+filter-account files pass together **4/4 in 263,148.308 ms** with original
+receipt, author/version, preference, offline, redaction, event, accessibility and
+deadline assertions. Current immutable/full acceptance remains required;
+estimated work remaining stays **34%**.

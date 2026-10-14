@@ -1,6 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-16 idle Board filter account withdrawal on a still-viewable PUBLIC Board at ${width}px`, async ({ page, context, browser }) => {
@@ -35,12 +36,13 @@ for (const width of [1280, 390]) {
       await page.goto(boardPath);
       await expect.poll(reads).toBeGreaterThanOrEqual(2);
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
-      const trigger = page.getByRole('button', { name: 'Filter Board Cards', exact: true }); await expect(trigger).toBeEnabled(); await trigger.press('Enter');
+      const trigger = page.getByRole('button', { name: 'Filter Board Cards', exact: true });
       const dialog = page.getByRole('dialog', { name: 'Filter Board Cards', exact: true });
-      const keyword = dialog.getByRole('textbox', { name: 'Card keyword', exact: true }); await expect(keyword).toBeEnabled(); await keyword.fill('Personal roof');
+      const keyword = dialog.getByRole('textbox', { name: 'Card keyword', exact: true });
+      await openAdmittedReview(trigger, keyword); await expect(keyword).toBeEnabled(); await keyword.fill('Personal roof');
       const apply = dialog.getByRole('button', { name: 'Apply filters', exact: true }); await expect(apply).toBeEnabled();
       const originalSourceReply = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === `/boards/${board}/cards/filter-change`);
-      await apply.press('Enter');
+      await pressObservedRequest(apply, () => changes, 1);
       const originalReply = await originalSourceReply; expect(originalReply.status()).toBe(200); const originalSource = await originalReply.json();
       expect(originalSource).toMatchObject({ actorId: ownerActor, organizationId: org, boardId: board, eventType: 'BOARD_FILTER_CHANGED' });
       await expect(dialog.getByRole('link', { name: 'Personal roof match — Planning', exact: true })).toBeVisible(); expect(changes).toBe(1);
@@ -53,13 +55,13 @@ for (const width of [1280, 390]) {
       await expect(dialog).toHaveCount(0, { timeout: 20_000 });
       expect(changes).toBe(1);
       const retainedReply = await observer.request.get(`/boards/${board}`); expect(retainedReply.status()).toBe(200); expect(await retainedReply.json()).toEqual(before);
-      await expect(trigger).toBeEnabled(); await trigger.press('Enter'); await expect(keyword).toBeEnabled(); await expect(keyword).toHaveValue('');
+      await openAdmittedReview(trigger, keyword); await expect(keyword).toBeEnabled(); await expect(keyword).toHaveValue('');
       await expect(dialog.getByRole('button', { name: 'Retry original filter change', exact: true })).toHaveCount(0); expect(changes).toBe(1);
       // Recovery must create an incoming-actor observation, without borrowing
       // the previous account's acknowledgment or writing shared Board state.
       await keyword.fill('Personal roof'); await expect(apply).toBeEnabled();
       const recoveredSourceReply = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === `/boards/${board}/cards/filter-change`);
-      await apply.press('Enter'); const recoveredReply = await recoveredSourceReply;
+      await pressObservedRequest(apply, () => changes, 2); const recoveredReply = await recoveredSourceReply;
       expect(recoveredReply.status()).toBe(200); expect(recoveredReply.headers()['cache-control']).toContain('no-store');
       expect(recoveredReply.request().headers()['x-strataai-expected-actor']).toBe(visitorActor);
       expect(recoveredReply.request().headers()['idempotency-key']).not.toBe(originalReply.request().headers()['idempotency-key']);

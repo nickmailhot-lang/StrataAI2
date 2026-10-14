@@ -62,3 +62,10 @@ existing peer pattern. Pagination, immutable captions, preferences, real socket
 recovery, revocation, lifecycle commands, accessibility and deadlines remain.
 Captured inputs match and owned fixtures are removed. This is a separate small
 functional run, not an aggregate full browser or immutable release result.
+
+Another separate complete filter-account/comment invocation passes both widths
+**4/4 in 263,148.308 ms** after keyboard admission corrections. Original
+account-withdrawal, receipt/count, unchanged graph, comment version/redaction,
+preference, accessibility and deadline checks remain. Captured inputs match and
+owned fixtures are removed. The complete current immutable-image pipeline and
+all release gates remain pending; large-load testing stays disabled.

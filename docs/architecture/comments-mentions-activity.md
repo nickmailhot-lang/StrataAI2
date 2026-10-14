@@ -1558,3 +1558,29 @@ both enforce verified email on current compiled schema-113 runtime fixtures.
 Owned fixtures are removed; current immutable/full CI and full PRD acceptance
 remain independently required. PRD-15 stays open at **36% estimated work
 remaining** (planning estimate).
+
+## Comment review keyboard admission follow-up
+
+Retained-image run 38488633147, browser partition 1 job 115637762789, fails
+the phone author-comment scenario at the peer's initial empty review. Peer and
+owner reviews now use the existing bounded read-only opening helper, as does
+opening the new-comment editor. Save and explicit original-receipt recovery use
+observed-request admission that stops activation after the one intended POST
+starts. Exactly two initial/recovery POSTs and their identical key/body remain
+required; the original committed-response 503 fault and response assertions stay.
+
+The complete comment and filter-account files pass desktop/phone together:
+**4/4 in 263,148.308 ms**, zero failures/skips/flaky outcomes or diagnostic
+hooks. Stored author/content/version, two-client publication, changed timezone
+without history mutation, offline editing, tombstone/redaction, historical
+receipt withdrawal, exact event sequence, Card revision, accessibility and the
+120-second comment scenario deadline remain unchanged. Browser types, 222 CI
+guards and 398-case shard coverage pass. All captured source/runtime/frozen
+browser/web inputs match, and owned containers/credentials/fixture volumes/new
+support images are removed, preserving original stopped PostgreSQL data.
+
+This is supporting mounted compiled-runtime evidence with controlled account
+setup. It does not establish a new product root cause or certify strict managed
+mail, current retained images or full acceptance. Current PRD-15 estimate remains
+**34% work remaining**, consistent with the [acceptance map](prd-15-acceptance.md).
+The issue stays open. No large-load tests run.

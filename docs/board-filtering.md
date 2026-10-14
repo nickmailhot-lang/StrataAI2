@@ -843,3 +843,29 @@ pass. This is local compiled-runtime/cached-support evidence using the general
 CI policy (API optional verification, Worker mandatory verification). Full current
 immutable-image CI and remaining original AC/DoD still govern closure. PRD-16
 remains open at **18% estimated work remaining**.
+
+## Account-replacement keyboard admission follow-up
+
+Retained-image run 38488633147, browser partition 1 job 115637762789, fails
+the phone account-withdrawal scenario while waiting for the incoming actor's
+second filter observation. Both filter openings now observe the actual keyword
+review through the existing read-only admission helper. Each Apply uses the
+bounded observed-request helper, stopping activation once its intended POST
+starts. A sent request or failed response is not retried by that helper.
+
+The complete filter-account and comment files pass desktop/phone together:
+**4/4 in 263,148.308 ms**, zero failures/skips/flaky outcomes or diagnostic
+hooks. Filters still require actual cookie replacement, withdrawal while the
+PUBLIC Board remains viewable, empty incoming criteria, exactly two observations,
+the incoming actor header, a distinct receipt/key, null POST body, private
+no-store response, exact event schema, reload persistence and an independently
+unchanged Board graph. The 60-second scenario deadline remains unchanged.
+
+Browser types, 222 CI guards and 398-case shard coverage pass. All 2,143 hosted
+source/runtime hashes, 1,441 browser-source hashes, 168 frozen browser files and
+four web files match. Owned containers, credentials, fixture volumes and newly
+pulled support images are removed, preserving original stopped PostgreSQL data.
+Mounted compiled applications with controlled account setup provide supporting
+interaction evidence; they do not establish the original product root cause,
+current retained-image release or full PRD acceptance. Estimated PRD-16 work
+remaining stays **18%**; the issue remains open. No large-load tests run.
