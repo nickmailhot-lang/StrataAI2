@@ -104,3 +104,44 @@ including one copy POST, HTTP 201 and the matching private revision-one image
 acknowledgment, alongside the existing explicit-provider pipeline. The local
 private object-store/scanner fixture limitations remain. It is not a green
 release: the job later failed the large-Board keyboard stage 63.
+
+## Image-backed copy request admission (2026-10-14)
+
+Retained run 38556979002, foundation job 115856374379, times out in
+the phone image-backed Board-copy case awaiting its response. The trace records
+the visible copy dialog and Create Board copy click but **no copy POST**. The
+case is unchanged on `17bc37d7`. This does not establish a failed server copy.
+
+Confirmation now uses the existing bounded request-admission helper with the
+scenario's request counter. It stops activating when the one intended POST
+starts. Exact one-write count, real 201 response, focused destination link,
+private copied Board, independent image identity/bytes/ownership, actual
+source retirement, public/private consent and 150-second deadlines remain.
+No background, cover, archive, delete or copy outcome assertion is relaxed.
+
+The unchanged complete two-viewport file passes 2/2 in 93,861.798 ms, followed
+by all 18 lifecycle cases in 710,202.609 ms and independent HTTP ownership/
+privacy checks. Hosted reproduction is not claimed. The changed full fixture
+passes **2/2 in 94,235.618 ms** and **18/18 in 701,263.697 ms**, with no skips,
+flaky results, retries or diagnostic source overrides. It retains actual upload,
+restricted Worker scan, contained native decoding, sanitized publication,
+quarantine/refusal, original receipts, source archive/tombstone, independent
+owners, public/private withdrawal, logout/readmission and selection retirement.
+
+The fixture uses original once-built 661f8310 API/Worker images with verified
+archive checksums and OCI manifest/config binding, current web assets/scripts
+and explicit private storage/scanner providers. It creates a fresh restricted
+PostgreSQL fixture. Application/schema/Dockerfile/Compose code is unchanged
+from those images; this hybrid capture does **not** certify current main's
+complete immutable release or managed providers. An initial private inspection
+file used the wrong JSON shape and was rejected; the harness was corrected
+without weakening the image validator before any capture.
+
+Browser types, 224 CI guards and intact 398-case shard coverage pass. Independent
+verification matches all 2,145 captured inputs, 170 frozen browser files and
+four web assets. Owned containers, private provider volume and credentials are
+removed. All three owned application images and **1,039,861,282 bytes** of
+temporary archives are removed; no runtime/symbol trees were copied. The
+original stopped database remains preserved. PRD-04/14 remain open at **15%/32%
+estimated work remaining** pending full acceptance. Large-load tests remain
+deferred until after the operational MVP.

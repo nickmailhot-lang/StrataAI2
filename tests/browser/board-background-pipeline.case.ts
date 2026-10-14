@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
 
 // Explicit alternate config: never discovered by the ordinary .spec.ts suite.
 // The CI shell fixture supplies a real uploaded/published image and owns the
@@ -252,9 +252,10 @@ for (const width of [1280, 390]) {
       && new URL(request.url()).pathname === `/boards/${board}/copy`) copyWrites++; });
     const copyResponse = page.waitForResponse(response => response.request().method() === 'POST'
       && new URL(response.url()).pathname === `/boards/${board}/copy`);
-    // A current Board read can disable confirmation after an enabled assertion.
-    // Native click waits for actual actionability before dispatching one command.
-    const create = page.getByRole('button', { name: 'Create Board copy', exact: true }); await create.click();
+    // A foreground read can invalidate confirmation between actionability and
+    // activation. Observe the one POST and stop activating as soon as it starts.
+    const create = page.getByRole('button', { name: 'Create Board copy', exact: true });
+    await pressObservedRequest(create, () => copyWrites, 1);
     const copyReceipt = await copyResponse; expect(copyReceipt.status()).toBe(201); expect(copyWrites).toBe(1);
     const acknowledgedCopy = await copyReceipt.json();
     const open = page.getByRole('link', { name: 'Open copied Board', exact: true }); await expect(open).toBeVisible(); await expect(open).toBeFocused();

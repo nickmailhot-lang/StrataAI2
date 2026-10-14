@@ -277,3 +277,15 @@ passes 2/2 in 148,553.389 ms, preserving archive/delete, immutable history,
 recovery, privacy/revocation, paging and accessibility checks. Inputs match
 and owned fixtures are removed. Current immutable/full CI remains required;
 PRD-15 stays open and large-load tests stay deferred.
+
+The [image-backed copy admission follow-up](../board-background-images.md#image-backed-copy-request-admission-2026-10-14)
+observes one intended POST before awaiting the unchanged response and copied
+image assertions. Retained phone evidence records a click without a POST; the
+unchanged local baseline passes and is not claimed as reproduction. The changed
+full fixture passes both copy viewports and all 18 lifecycle cases, plus the
+independent ownership/privacy HTTP contracts. It uses verified once-built
+661 images with current frontend assets and explicit private providers, not
+current full-release/managed-provider certification. Inputs match; owned
+containers, credentials, three images and about 1.04 GB of archives are removed
+without runtime/symbol copies. Full current CI remains required, and large-load
+tests stay deferred until after the milestone.
