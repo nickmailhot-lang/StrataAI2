@@ -109,3 +109,17 @@ recipient access, unchanged Organization membership, layout and original
 90-second deadlines remain. Captured inputs independently match and owned
 fixtures are removed. Current complete immutable-image CI and remaining
 acceptance gates still govern release; large-load testing remains disabled.
+
+Original file-upload recovery now survives an overlapping protected Board read
+without abandoning its admitted replay. Five added regressions preserve
+confirmed authority/account/scope withdrawal and first-upload cancellation;
+all 24 component cases pass. The complete small hybrid provider pipeline and
+attachment lifecycle files pass **2/2 and 18/18**, with zero retries/skips,
+followed by the original HTTP privacy, ownership and lifecycle checks. All
+2,143 captured inputs and four frontend assets match. Owned resources and
+approximately 1.04 GB of image archives are removed; the original database is
+preserved. [The verification record](attachment-object-storage.md#original-file-replay-during-a-protected-board-read-2026-10-14)
+also records the full web run's one notification timeout and separate 25/25
+rerun. This supports the repair; current complete immutable CI and remaining
+release gates still govern MVP acceptance. The repository capacity setting is
+rechecked as `0`; large-load testing remains deferred until after the milestone.

@@ -730,3 +730,49 @@ certification or deployed external provider acceptance. The earlier CI desktop
 background-review failure is not reproduced, so its cause and repair are not
 claimed. Current complete immutable CI and all remaining PRD-14 acceptance/DoD
 requirements remain necessary. Estimated PRD-14 work remaining stays **32%**.
+
+## Original file replay during a protected Board read (2026-10-14)
+
+Retained CI run `38507457807`, foundation job `115697267331`, failed the
+desktop PNG original-receipt case. Its trace contains both upload requests:
+the first reply is deliberately lost, then a protected Board read overlaps
+the explicit replay and the client aborts the second request. Retrying keyboard
+activation would not repair this production cancellation.
+
+`FileAttachmentCreateControl` now distinguishes an original replay from first
+upload/preparation. A pending protected read still hides private controls and
+disables new commands, while an admitted original replay finishes its server
+and final account checks. Confirmed edit loss, scope change, unmount and Stop
+still abort; a changed account or denied response cannot disclose an old receipt.
+The same File, name, size, digest, Card revision and idempotency key remain frozen.
+No automatic replay, extra write, broader authority or longer deadline is added.
+
+Five regressions cover overlapping replay/read, permission loss, scope change,
+account replacement and first-upload cancellation. Before the production fix,
+two of the 24 component cases fail; after it, **24/24 pass**. The full web run
+records **2,577 passes and one five-second notification-page timeout**; that
+unchanged notification file separately passes **25/25**. The full run is not
+reported as green. Lint, browser types, frontend build, 222 CI guards and
+398-case shard collection pass; collection is not browser execution.
+
+The unchanged complete local pipeline passes **2/2 in 96,783.602 ms** and the
+attachment lifecycle file **18/18 in 711,514.337 ms**, with zero skips, unexpected
+results, flaky results, retries or top-level errors. Actual restricted Worker
+scanning and contained decoding precede publication. Subsequent HTTP checks
+pass concurrent original-key selection, PNG sanitization/privacy, source archive
+and tombstone withdrawal, independent image copying, Board archive,
+public/private withdrawal, logout/readmission and image retirement.
+
+This capture uses retained backend images from `7b155f49` (backend and migration
+sources unchanged through the captured candidate), the freshly built repaired
+frontend, fresh schema-149 PostgreSQL and canonical restricted roles. Archive
+checksums and manifest/configuration digest binding are verified before use.
+All **2,143 captured inputs** and **four served frontend assets** independently
+match. Local storage and scanner protocol simulation remain explicit;
+controlled verified accounts do not prove managed-mail delivery. This hybrid
+capture does not certify a new immutable release. Owned containers, database,
+roles, provider volume, credentials, newly imported images and approximately
+1.04 GB of image archives are removed; the original stopped database and its
+volume are preserved. Large-load testing remains disabled. Current complete
+immutable CI and remaining PRD-14 acceptance/DoD evidence still govern closure;
+estimated work remaining stays **32%**.

@@ -80,6 +80,67 @@ it.each([new WorkRequestError(503, null), new WorkRequestError(409, null, 'attac
     expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers); expect(attachmentFileDigest).toHaveBeenCalledOnce();
     await waitFor(() => expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false));
   });
+async function pendingOriginalReplay(readProfile = () => profile) {
+  let attempts = 0; let resolve: (value: unknown) => void = () => {};
+  vi.mocked(workRequest).mockImplementation(async path => {
+    if (path === '/me') return readProfile();
+    if (path.endsWith('/attachment-upload-options')) return options;
+    if (++attempts === 1) throw new WorkRequestError(503, null);
+    return new Promise<unknown>(yes => { resolve = yes; });
+  });
+  const p = props(); const view = render(<FileAttachmentCreateControl {...p} />); const file = await review();
+  fireEvent.click(screen.getByRole('button', { name: 'Upload selected file' }));
+  const retry = await screen.findByRole('button', { name: 'Retry original file upload' });
+  await waitFor(() => expect(retry).toBeEnabled()); fireEvent.click(retry);
+  await waitFor(() => expect(writes()).toHaveLength(2));
+  return { p, view, file, resolve: (value: unknown) => resolve(value), signal: writes()[1][1]!.signal as AbortSignal };
+}
+it('finishes one original replay across a transient protected read without exposing the hidden file or sending replacement bytes', async () => {
+  const { p, view, file, resolve, signal } = await pendingOriginalReplay();
+  view.rerender(<FileAttachmentCreateControl {...p} version={7} unavailable />);
+  expect(signal.aborted).toBe(false); expect(screen.queryByText(/Selected file:/)).not.toBeInTheDocument();
+  expect(screen.queryByLabelText('File to attach')).not.toBeInTheDocument();
+  expect(p.onRecoveryChange).toHaveBeenLastCalledWith(true);
+  await act(async () => resolve(ack()));
+  expect(await screen.findByText('File attached. Safety scan pending.')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Add file attachment' })).toBeDisabled();
+  expect(writes()).toHaveLength(2); expect(writes()[0][1]!.body).toBe(file); expect(writes()[1][1]!.body).toBe(file);
+  expect(writes()[1][1]!.headers).toEqual(writes()[0][1]!.headers); expect(attachmentFileDigest).toHaveBeenCalledOnce();
+  expect(p.onBusyChange).toHaveBeenLastCalledWith(false); expect(p.onRecoveryChange).toHaveBeenLastCalledWith(false);
+  view.rerender(<FileAttachmentCreateControl {...p} version={7} />);
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Add file attachment' })).toHaveFocus());
+  expect(writes()).toHaveLength(2);
+});
+it.each(['permission', 'scope'])('still aborts original replay on %s loss and ignores its late acknowledgment', async loss => {
+  const { p, view, resolve, signal } = await pendingOriginalReplay();
+  view.rerender(<FileAttachmentCreateControl {...p} unavailable {...(loss === 'permission' ? { editable: false } : { cardId: id(99) })} />);
+  expect(signal.aborted).toBe(true);
+  await act(async () => resolve(ack()));
+  expect(screen.queryByText('File attached. Safety scan pending.')).not.toBeInTheDocument();
+  expect(screen.queryByText(/Selected file:/)).not.toBeInTheDocument();
+  expect(screen.queryByLabelText('File to attach')).not.toBeInTheDocument(); expect(writes()).toHaveLength(2);
+});
+it('purges original replay after account replacement during a protected read despite a valid old receipt', async () => {
+  let currentProfile = profile;
+  const { p, view, resolve } = await pendingOriginalReplay(() => currentProfile);
+  view.rerender(<FileAttachmentCreateControl {...p} unavailable />); currentProfile = { ...profile, id: id(99) };
+  await act(async () => resolve(ack()));
+  expect(await screen.findByText('This file upload is unavailable. Load the current Card before reviewing another change.')).toBeVisible();
+  expect(screen.queryByText('File attached. Safety scan pending.')).not.toBeInTheDocument();
+  expect(screen.queryByText(/Selected file:/)).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry original file upload' })).not.toBeInTheDocument(); expect(writes()).toHaveLength(2);
+});
+it('still stops a first upload on a protected read while retaining its original uncertainty', async () => {
+  let resolve: (value: unknown) => void = () => {}; respond(() => new Promise<unknown>(yes => { resolve = yes; }));
+  const p = props(); const view = render(<FileAttachmentCreateControl {...p} />); await review();
+  fireEvent.click(screen.getByRole('button', { name: 'Upload selected file' }));
+  await waitFor(() => expect(writes()).toHaveLength(1));
+  view.rerender(<FileAttachmentCreateControl {...p} unavailable />);
+  expect((writes()[0][1]!.signal as AbortSignal).aborted).toBe(true);
+  await act(async () => resolve(ack()));
+  expect(screen.queryByText('File attached. Safety scan pending.')).not.toBeInTheDocument();
+  expect(screen.getByText(/The file upload is unconfirmed/)).toBeVisible(); expect(writes()).toHaveLength(1);
+});
 it.each([{ uploaderId: id(90) }, { sizeBytes: 10 }, { displayName: 'Changed' }, { storageKey: 'private/key' }, { scanStatus: 2, scannedAt: now, version: 2 }])('retains the original request when acknowledgment has different claims or private/terminal fields (%j)', async patch => {
     respond(async () => ({ ...ack(), attachment: { ...ack().attachment, ...patch } })); render(<FileAttachmentCreateControl {...props()} />);
     await review(); fireEvent.click(screen.getByRole('button', { name: 'Upload selected file' }));

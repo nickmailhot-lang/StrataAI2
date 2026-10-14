@@ -32,6 +32,7 @@ function FileControl(props: UrlAttachmentCreateProps) {
   const [draft, setDraft] = useState<Draft>(); const [intent, setIntent] = useState<Intent>();
   const [busy, setBusy] = useState(false); const [blocked, setBlocked] = useState(false); const [notice, setNotice] = useState<string>();
   const [phase, setPhase] = useState<string>(); const pending = useRef<AbortController | undefined>(undefined);
+  const replaying = useRef(false);
   const mounted = useRef(false); const callbacks = useRef(props); callbacks.current = props;
   const action = useRef<HTMLButtonElement>(null); const focusRequested = useRef(false);
   const selection = useRef<HTMLInputElement>(null);
@@ -41,7 +42,12 @@ function FileControl(props: UrlAttachmentCreateProps) {
   // Publish retained-request recovery before paint so the parent fences other
   // commands before the selected-file rejection/retry state becomes visible.
   useLayoutEffect(() => { props.onRecoveryChange(!!intent || blocked); }, [intent, blocked, props.onRecoveryChange]);
-  useEffect(() => { if (props.unavailable || !props.editable) pending.current?.abort(); }, [props.unavailable, props.editable]);
+  useEffect(() => {
+    // A pending read withdraws private controls, but does not establish lost
+    // authority. Let the original replay finish its server and final actor
+    // checks. First uploads and confirmed edit/scope loss still stop.
+    if (!props.editable || props.unavailable && !replaying.current) pending.current?.abort();
+  }, [props.unavailable, props.editable]);
   useEffect(() => {
     if (!focusRequested.current || busy || props.disabled || props.unavailable || !props.editable) return;
     const target = action.current && !action.current.disabled ? action.current : selection.current && !selection.current.disabled ? selection.current : null;
@@ -51,12 +57,12 @@ function FileControl(props: UrlAttachmentCreateProps) {
   const conflict = !!draft && draft.options.cardVersion !== props.version;
   function finish(controller: AbortController) {
     if (mounted.current && pending.current === controller) {
-      pending.current = undefined; setBusy(false); setPhase(undefined); callbacks.current.onBusyChange(false);
+      pending.current = undefined; replaying.current = false; setBusy(false); setPhase(undefined); callbacks.current.onBusyChange(false);
     }
   }
   async function review() {
     if (disabled || pending.current || intent) return;
-    const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); props.onBusyChange(true);
+    const controller = new AbortController(); pending.current = controller; replaying.current = false; setBusy(true); setNotice(undefined); props.onBusyChange(true);
     const version = props.version; setPhase('Checking file upload access…');
     try {
       const reviewed = await boundedWorkRead(async signal => {
@@ -78,7 +84,7 @@ function FileControl(props: UrlAttachmentCreateProps) {
       setNotice('Choose a file with a name of 1 to 255 characters without control characters.'); return;
     }
     if (!intent && (file.size < 1 || file.size > draft.options.maximumBytes)) { setNotice('Choose a nonempty file within the displayed upload size limit.'); return; }
-    const controller = new AbortController(); pending.current = controller; setBusy(true); setNotice(undefined); props.onBusyChange(true);
+    const controller = new AbortController(); pending.current = controller; replaying.current = !!intent; setBusy(true); setNotice(undefined); props.onBusyChange(true);
     let command = intent; let posted = false;
     try {
       const value = await boundedUpload(async signal => {

@@ -1191,3 +1191,19 @@ Captured inputs and owned cleanup are independently checked. This is compiled
 controlled-account support, not strict mail, managed-provider or complete
 current immutable release proof. PRD-14 stays open at **32%** estimated work
 remaining until its remaining acceptance evidence is satisfied.
+
+## Original file replay across protected reads
+
+The [file replay verification](attachment-object-storage.md#original-file-replay-during-a-protected-board-read-2026-10-14)
+records a retained real cancellation after the replay request starts, the
+production repair and five regression cases. Pending Board reads keep private
+controls hidden while the original replay completes server/account checks;
+confirmed authority loss, account changes, scope retirement and explicit Stop
+retain their fences. Original bytes, digest, revision, key and write counts
+remain unchanged. Component checks pass **24/24**; the complete hybrid native
+pipeline and lifecycle files pass **2/2 and 18/18**, followed by the original
+HTTP ownership/privacy/lifecycle checks. Captured inputs and owned cleanup are
+independently verified. The full web run's notification timeout and successful
+separate rerun are recorded without claiming a green full run. Managed-provider
+and complete current immutable-release evidence remain required. PRD-14 stays
+open at **32%** estimated work remaining; large-load testing remains disabled.
