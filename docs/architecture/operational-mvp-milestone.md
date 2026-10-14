@@ -43,3 +43,15 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 ## Current status
 
 The milestone is pending. The current source and container evidence must be distinguished from complete, successful CI and a retained release artifact. Continue core API reliability and current container/browser CI repairs first; do not treat an earlier commit or fixture-only provider evidence as a successful current release.
+
+Small local browser evidence now includes the complete archived-List,
+checklist-read and List-move files at desktop/phone: **6/6 in 318,145.017 ms**,
+zero failures/skips/flaky outcomes, unchanged scenario deadlines, and no
+diagnostic source hooks. Keyboard admission stops when the intended request is
+observed; exact initial-write/original-key recovery counts and state assertions
+remain. All captured source/runtime/browser/web inputs match, and owned
+containers, credentials and newly pulled support images are removed. These
+read-only mounted compiled applications supplement the current CI candidate;
+they do not satisfy the exact-image release, full browser matrix or managed
+provider gates above. Large-load testing remains disabled until this milestone
+is actually achieved.

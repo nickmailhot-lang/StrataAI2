@@ -68,3 +68,11 @@ account setup and mounted compiled applications. Owned fixtures, credential
 files and newly pulled support images are removed. This supplements the
 type/discovery checks but does not certify the retained release or complete
 PRD-13. Estimated work remaining stays **33%**.
+
+After the archive/List-move request-admission correction, the same complete
+three-file invocation passes **6/6 in 318,145.017 ms**, with zero failures,
+skips/flaky outcomes or diagnostic source hooks. Both checklist-read scenarios
+retain their prior request, progress, two-session and accessibility assertions.
+All captured inputs match and owned fixtures/credentials/new support images are
+removed. Current retained-image CI and full PRD-13 acceptance remain pending;
+estimated work remaining stays **33%**.

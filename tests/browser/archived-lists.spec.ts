@@ -1,7 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
-import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-07/18: reviewed archived List restore recovers without changing card states at ${width}px`, async ({ page, context }) => {
@@ -43,11 +43,11 @@ for (const width of [1280, 390]) {
         page.getByRole('combobox', { name: 'List to archive' }));
       await page.getByRole('combobox', { name: 'List to archive' }).click();
       await page.getByRole('option', { name: 'Planning', exact: true }).focus(); await page.keyboard.press('Enter');
-      await pressAdmittedAction(page.getByRole('button', { name: 'Confirm archive', exact: true }));
+      await pressObservedRequest(page.getByRole('button', { name: 'Confirm archive', exact: true }), () => archiveRequests.length, 1);
       await expect(page.getByRole('button', { name: 'Retry this archive', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Cancel archive', exact: true })).toHaveCount(0);
       await expect(other.getByRole('heading', { name: 'Planning', exact: true })).toHaveCount(0);
-      await pressAdmittedAction(page.getByRole('button', { name: 'Retry this archive', exact: true }));
+      await pressObservedRequest(page.getByRole('button', { name: 'Retry this archive', exact: true }), () => archiveRequests.length, 2);
       await expect(page.getByText('List archive acknowledged. Current Board state is being checked.', { exact: true })).toBeVisible();
       expect(archiveRequests).toHaveLength(2); expect(archiveRequests[1]).toEqual(archiveRequests[0]);
       expect(archiveRequests[0].key).toMatch(/^[0-9a-f-]{36}$/); expect(JSON.parse(archiveRequests[0].body!)).toEqual({ version: 1 });
@@ -65,11 +65,11 @@ for (const width of [1280, 390]) {
       });
       await openAdmittedReview(page.getByRole('button', { name: 'Restore Planning list', exact: true }),
         page.getByText('Restore Planning with its 2 contained cards?', { exact: true }));
-      await pressAdmittedAction(page.getByRole('button', { name: 'Confirm restore', exact: true }));
+      await pressObservedRequest(page.getByRole('button', { name: 'Confirm restore', exact: true }), () => requests.length, 1);
       await expect(page.getByRole('button', { name: 'Retry this restore', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Cancel restore', exact: true })).toHaveCount(0);
       await expect(other.getByRole('heading', { name: 'Planning', exact: true })).toBeVisible();
-      await pressAdmittedAction(page.getByRole('button', { name: 'Retry this restore', exact: true }));
+      await pressObservedRequest(page.getByRole('button', { name: 'Retry this restore', exact: true }), () => requests.length, 2);
       await expect(page.getByText('No archived lists on this page.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Check current archived lists', exact: true })).toBeFocused();
       expect(requests).toHaveLength(2); expect(requests[1]).toEqual(requests[0]);

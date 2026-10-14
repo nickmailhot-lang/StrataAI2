@@ -182,41 +182,44 @@ All 61 List-move/Board-screen regressions pass, including the three visibility b
 
 ## Remaining implementation
 
-### Current small-browser execution and unresolved recovery
+### Current small-browser execution and observed keyboard admission
 
-The first six-case local functional run at `c2ac8cdc` finished **3/6** in
-320,267.437 ms: phone archived Lists and both checklist-read viewports passed;
-desktop archive recovery and both List-move cases failed. List-move initially
-failed because the recovery dialog makes the background Board inaccessible to
-ordinary role queries. Its `Add list` assertion now explicitly includes hidden
-controls and still requires the command fence to disable that control.
+Both complete List-move viewports now pass in the combined six-case invocation:
+**6/6 in 318,145.017 ms**, with zero failures, skips, flaky outcomes or diagnostic
+source hooks. Archive and checklist-read scenarios also pass at both widths.
+List movement verifies lost-response recovery, exact original request/key/body,
+disabled background commands, stable identities/lifecycles/ranks/versions,
+authorized archived content, former-Board refusal, focus, accessibility, real
+socket outage/reconnect, subsequent transfers and reload. The 120-second
+scenario deadline and zero whole-test retries remain unchanged.
 
-The next execution exposed an incorrect full-description expectation against
-the compact archived-card directory, whose PostgreSQL projection deliberately
-returns a null description. The scenario now checks that compact projection and
-also reads the authorized destination archived-detail endpoint, requiring the
-original description, title, identity and current version. The former Board's
-archived-detail endpoint must refuse with 404. Original-request recovery,
-mutation counts, versions, ranks, child lifecycles, accessibility, focus and
-120-second scenario deadline remain. Review opening uses the existing bounded
-read-only helper; confirmation and retry use enabled focus and one activation.
+The recovery dialog hides background controls from accessible role queries, so
+the command-fence assertion explicitly includes hidden controls and still
+requires `Add list` to be disabled. The archived directory deliberately returns
+a null description; preserved full content is checked through the authorized
+destination archived-detail endpoint instead, and its former Board must return
+404. Neither contract is weakened to accommodate the fixture.
 
-The complete corrected List-move file finishes **1/2** in 112,168.578 ms, with
-zero skips or flaky outcomes. Phone passes the entire real-socket outage,
-missed-event recovery, repeated transfer, stable identities and reload sequence.
-Desktop still fails at the focus assertion after keyboard receipt retry, with
-the recovery dialog open. Its trace contains the first committed/lost move but
-no recovery POST. Enabled-focus preparation has not resolved this activation
-failure; it is not claimed repaired, and no retry or deadline is added to hide
-it. A temporary shared foreground-helper change also failed and was reverted.
+Earlier desktop failures sent no recovery POST. Temporary archive diagnostics
+captured the admission race: the retry button disabled after focus during a live
+read, lost focus, and Enter reached the page body. A foreground adjustment did
+not repair it and was reverted. `pressObservedRequest` follows the existing
+archived-card fixture pattern: within the bounded five-second admission phase,
+focus/key admission may repeat only until the route observer sees the one
+intended request start. It stops activating after that observation, including a
+recheck after focus waits. This changes the previous single physical-key attempt;
+it does not retry a sent request or failed response. Exact two-request assertions
+still enforce the initial write plus explicit original-key receipt recovery.
 
-All 2,143 hosted source/runtime hashes, 1,441 browser-source hashes and four
-served web files match their captured inputs. Owned PostgreSQL/API/Worker/Nginx
-containers, credential files and newly pulled support images are removed; the
-original stopped database remains untouched. These are read-only mounted local
-compiled applications with controlled account setup, not retained-image release
-certification. No large-load tests run. Full PRD-07 work remaining stays **17%**;
-the desktop activation failure and current immutable CI remain open acceptance.
+Browser types, 222 CI guards and 398-case shard coverage pass. All 2,143 hosted
+source/runtime hashes, 1,441 browser-source hashes, 168 frozen browser files and
+four served web files match. Owned containers, credentials and newly pulled
+support images are removed, preserving the original stopped database. The run
+uses actual restricted PostgreSQL/API/separate Worker/browser transport with
+read-only mounted compiled applications and controlled account setup. Current
+retained-image CI, broader accessibility/acceptance and operational release
+certification remain required. No large-load tests run. Full PRD-07 work
+remaining stays **17%**; the issue remains open.
 
 Migration `148_configuration_historical_list_identity` removes a permanent pin caused by immutable configuration history: a former intake List could not change Boards even after the owning configuration selected a different intake List. History now references the stable List within its tenant and retains the original Board attribution separately. Current configuration keeps its composite Board/List constraint. Its existing live-parent/source guard and exact-record history journal remain unchanged; current intake movement and fabricated configuration/history sources still fail. Historical records, receipts, audit and events are not rewritten, and historical references grant no current destination access. Hosts now require migration 148, so upgrade the database before starting them.
 

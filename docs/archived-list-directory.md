@@ -119,3 +119,23 @@ evidence, not a passing full suite or retained release. A temporary foreground
 helper adjustment does not repair archive activation and is reverted. The
 desktop archive failure remains unresolved; estimates and open issue status
 remain unchanged. All owned fixtures and newly pulled support images are removed.
+
+### Observed request admission verification
+
+Temporary desktop diagnostics captured a restore retry disabling after focus
+during a live archive read. Focus moved to the body, which received Enter;
+no recovery request was sent. A foreground-only adjustment failed and is
+reverted. The fixture now follows the existing archived-card pattern through
+`pressObservedRequest`: bounded focus/key admission can repeat until the route
+observer sees the one intended request start, then activation stops. This
+replaces the previous single physical-key attempt without retrying a sent
+request or failed response. Original-key/body recovery and exact two-request,
+mixed Card lifecycle, version/rank, peer, focus and deadline assertions remain.
+
+The complete maintained archive, checklist-read and List-move files pass together
+at desktop/phone: **6/6 in 318,145.017 ms**, zero unexpected/skipped/flaky outcomes
+and no diagnostic source injection. All 168 frozen browser files and captured
+source/runtime/web inputs match. Owned containers, credentials and newly pulled
+support images are removed. This repairs the fixture's keyboard admission race;
+current retained-image CI and broader PRD acceptance remain pending. Estimated
+work remaining stays PRD-07 **17%**, PRD-18 **15%**. No large-load tests run.

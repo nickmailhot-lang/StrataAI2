@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280,390]) {
   test(`PRD-07: whole-List move recovers a lost reply and destination peer after reconnect at ${width}px`, async ({ page,context,browser }) => {
@@ -53,7 +53,7 @@ for (const width of [1280,390]) {
       await openAdmittedReview(page.getByRole('button',{ name:'Review List move',exact:true }),
         page.getByText('Move Planning to the end of Delivery?',{ exact:true }));
       expect((await new AxeBuilder({ page }).include('[role="dialog"]').analyze()).violations).toEqual([]);
-      await pressAdmittedAction(page.getByRole('button',{ name:'Confirm List move',exact:true }));
+      await pressObservedRequest(page.getByRole('button',{ name:'Confirm List move',exact:true }),() => attempts.length,1);
       const retry = page.getByRole('button',{ name:'Retry this List move',exact:true }); await expect(retry).toBeEnabled();
       await expect(page.getByRole('button',{ name:'Cancel move' })).toHaveCount(0);
       await expect(page.getByRole('heading',{ name:'Planning',exact:true })).toHaveCount(0);
@@ -63,7 +63,7 @@ for (const width of [1280,390]) {
       await expect(peer.getByRole('heading',{ name:'Planning',exact:true })).toBeVisible();
       await expect(peer.getByRole('link',{ name:'Moved active work',exact:true })).toBeVisible();
       await expect(peer.getByRole('link',{ name:'Moved archived work',exact:true })).toHaveCount(0);
-      await pressAdmittedAction(retry); await expect(page.getByRole('button',{ name:'Refresh board',exact:true })).toBeFocused();
+      await pressObservedRequest(retry,() => attempts.length,2); await expect(page.getByRole('button',{ name:'Refresh board',exact:true })).toBeFocused();
       await expect(page.getByText('List move acknowledged. Check the destination Board for its current contents.',{ exact:true })).toBeVisible();
       expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
       expect(JSON.parse(attempts[0].body!)).toEqual({ sourceBoardId:source.id,destinationBoardId:destination.id,expectedVersion:1 });
