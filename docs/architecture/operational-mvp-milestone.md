@@ -77,3 +77,13 @@ draft/completion, conflict, actual socket recovery, committed receipt and revoke
 replay, unchanged state, accessibility and deadline assertions remain. Captured
 inputs match during execution and owned fixtures are removed. This supplements
 the current candidate and does not certify the full immutable release pipeline.
+
+A separate complete live-member/URL-attachment invocation passes desktop/phone
+**4/4 in 213,675.344 ms** after the two explicit read-only member-review openings
+observe the real review. Membership-event attribution, consent retirement,
+original removal replay across restored membership, denied former access,
+attachment receipt/count/URL safety, accessibility and deadlines remain intact.
+All captured inputs independently match and owned fixtures are removed. The
+unchanged URL cases passing locally do not prove repair of their separately
+retained input-loss failure. Current complete immutable-image CI and the release
+gates remain required; large-load testing stays disabled.

@@ -120,3 +120,33 @@ configuration. Production discovery defaults are unchanged. The [Organization ac
 record](prd-03-acceptance.md#replay-snapshots-and-independent-worker-progress)
 records the restricted PostgreSQL/real-HTTP reproduction and its verification
 limits.
+
+## Observe member-removal review before issuing a command
+
+Retained-image job 115637762844 in run 38488633147 passes 114 browser cases
+and fails the desktop live-member scenario before `Cancel removal` exists.
+The test had sent Enter to the review launcher without observing its opening.
+Both explicit openings now use the existing five-second read-only
+`openAdmittedReview` helper, then separately require Cancel to receive focus.
+The helper cannot issue a removal. Confirmation and original recovery remain
+separate from opening; their command count, identical path/key, restored
+membership version, genuine Worker/SignalR delivery, live retirement of consent,
+access withdrawal, accessibility and 240-second scenario deadline remain intact.
+
+A complete local invocation of both member and both unchanged URL attachment
+cases passes **4/4 in 213,675.344 ms**, with zero skipped, unexpected or flaky
+results and no diagnostic source hooks. It uses the compiled Production API,
+separate Worker, Nginx and restricted PostgreSQL/pgvector with all 149 migrations.
+The controlled-account fixture uses optional API verification and excludes the
+managed mail provider; it is supporting evidence, not strict mail or immutable
+release certification. Independent checks match all 2,143 hosted source/runtime
+hashes, 1,441 native source hashes, 168 frozen browser files and four web assets.
+Owned containers, volumes, roles, credentials and newly pulled unreferenced
+support images are removed; the original stopped PostgreSQL remains preserved.
+
+Browser TypeScript, 222 CI/startup guards, all 398 cases partitioned across 145
+intact files and the whitespace check pass. The retained URL input-loss failure
+is separately recorded in [field diagnostics](failure-field-diagnostics.md);
+passing it locally does not prove it repaired. Current full immutable-image CI
+and the remaining AC/DoD still govern closure. Estimated PRD-03 work remaining
+stays **8%**; the issue remains open.

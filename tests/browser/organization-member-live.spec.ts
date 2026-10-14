@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 import { scopedBoardWorker } from './scopedBoardWorker';
 
 for (const width of [1280, 390]) {
@@ -120,13 +120,14 @@ for (const width of [1280, 390]) {
       await expect(observer.getByRole('heading', { name: 'Live joined member', exact: true })).toBeVisible();
       await expect.poll(() => delivered.filter(row => row.actorId === accounts[1].id && row.version === 1).length, { timeout: 30_000 }).toBe(1);
       const action = page.getByRole('button', { name: 'Review removal of Live joined member', exact: true });
-      await expect(action).toBeVisible(); await action.focus(); await action.press('Enter');
-      await expect(page.getByRole('button', { name: 'Cancel removal' })).toBeFocused();
+      const cancelRemoval = page.getByRole('button', { name: 'Cancel removal', exact: true });
+      await expect(action).toBeVisible(); await openAdmittedReview(action, cancelRemoval);
+      await expect(cancelRemoval).toBeFocused();
       await join(2, newcomer);
       await expect.poll(() => delivered.filter(row => row.actorId === accounts[2].id).length, { timeout: 30_000 }).toBe(1);
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(page.getByRole('heading', { name: 'Later joined member', exact: true })).toBeVisible();
-      await action.focus(); await action.press('Enter'); await expect(page.getByRole('button', { name: 'Cancel removal' })).toBeFocused();
+      await openAdmittedReview(action, cancelRemoval); await expect(cancelRemoval).toBeFocused();
       const writes: { url: string; key: string | undefined }[] = [];
       await page.route(`**/organizations/${org}/members/${accounts[1].id}?*`, async route => {
         if (route.request().method() !== 'DELETE') { await route.continue(); return; }

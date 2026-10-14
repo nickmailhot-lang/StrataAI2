@@ -733,3 +733,16 @@ source hashes matching. The original two-worker invocation and test deadlines
 are retained. Current exact-commit immutable execution, other browser
 failures and full acceptance remain required. Estimated PRD-03 work remaining
 stays **8%**.
+
+## Live member review-opening evidence
+
+The [member administration record](organization-member-administration.md#observe-member-removal-review-before-issuing-a-command)
+records a retained desktop failure before the removal review opened. Both
+scenario-owned read-only openings now observe the review before separately
+checking its keyboard focus. The complete desktop/phone member scenarios and
+unchanged URL attachment scenarios pass **4/4 in 213,675.344 ms**, with original
+live delivery, membership restoration, exact removal recovery, revoked access,
+accessibility and deadlines intact. Captured inputs independently match and
+owned local fixtures are removed. This compiled controlled-account run does
+not establish strict managed-mail, current immutable release or full PRD
+acceptance. Estimated work remaining stays **8%**; PRD-03 remains open.

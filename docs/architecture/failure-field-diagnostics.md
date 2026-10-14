@@ -1,5 +1,25 @@
 # Permission job columns and URL draft failure evidence
 
+## Retained URL input loss at 3e547c9f
+
+Full-browser shard 4, job 115637762811 in run 38488633147, passes 81 cases
+and fails the desktop URL attachment scenario before its first write. Its
+retained `url-attachment-draft-admission` trace attachment reports:
+`titleMatchesFixture=true`, `urlMatchesFixture=false`, `createEnabled=false`,
+`revisionConflictVisible=false`, `accessCheckVisible=false`. These observations
+are after the original enabled assertion fails; they do not repair or replace
+that assertion. They identify missing fixture URL input, rather than evidence
+of a currently visible access check or revision conflict. The cause of the
+missing input remains unproven.
+
+Both unchanged URL scenarios pass in a separate complete four-case local
+member/attachment invocation, with zero skipped, unexpected or flaky results.
+The [member review record](organization-member-administration.md#observe-member-removal-review-before-issuing-a-command)
+documents its matched inputs and cleanup. That local pass does not establish
+repair of the retained URL failure or full attachment acceptance. No input
+refill loop, weaker draft assertion, test retry or larger deadline is added.
+Estimated PRD-14 work remaining stays **32%**; the issue remains open.
+
 The retained `914d5c4f` fourth browser shard passes 77 cases and fails five:
 both URL attachment viewports and MEMBER, ORGANIZATION_READER and PUBLIC_READER
 permission-order cases. ADMIN passes. The three permission failures change only
