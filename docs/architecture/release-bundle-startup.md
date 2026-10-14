@@ -105,3 +105,36 @@ fixtures do not establish production startup, graceful process restart, cold
 capacity or a current full release. The existing full bundle startup/restart and
 post-startup integrity gates remain mandatory in current CI. ARCH-11 stays open;
 large-load testing stays disabled until after the operational MVP milestone.
+
+## Retained-image source-free startup follow-up — 2026-10-14
+
+The unmodified maintained startup driver at `436ebe12` passes against the three
+original retained images from `17bc37d7` / CI run `38565885906`. Application,
+schema and image-build source differences between those images and the runtime
+script candidate are empty. Original image archive checksums and metadata are
+verified before loading. The supplied payload contains deployment scripts,
+configuration examples and migrations, without `.git`, application source,
+Node.js or a .NET SDK.
+
+The driver exits zero after migrations, restricted API/Worker role provisioning,
+Production health/proxy/build identity and graceful API/Worker shutdown and
+restart using the same verified image IDs. All 161 captured runtime/schema
+inputs match the worktree, and original archive checksums remain unchanged.
+The fixture keeps large-load testing disabled and does not certify enabled
+mail/object-storage providers or a current full release bundle.
+
+The outer local audit exits one at its final machine-wide network-ID inventory
+comparison, after the maintained driver has passed and cleanup has run. This
+is retained as an audit failure, not a wholly green invocation; its cause is
+not established by the capture. Independent checks confirm zero containers,
+volumes or networks in the exact owned Compose namespace, removal of all three
+newly loaded application images and the downloaded ZIP/image copies, and
+removal of temporary credentials/inspection files. Docker events show creation,
+use and destruction of the owned network. Container and volume inventory
+comparisons pass; the original stopped database remains preserved.
+
+Evidence is retained privately under `mvp-bundle-9d96e413` (startup console,
+metadata/checksums, 161-input manifest, maintained-driver outcome and independent
+cleanup verification). Current full immutable-image CI, release assembly and
+post-startup integrity remain mandatory. ARCH-11 and the operational MVP
+milestone remain open.

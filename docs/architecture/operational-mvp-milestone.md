@@ -299,3 +299,13 @@ history and accessibility remain required. Captured inputs match and owned
 fixtures are removed. PRD-60 remains open at 18% estimated work remaining;
 current full immutable-image CI remains required and large-load tests stay
 post-MVP.
+
+The [retained-image startup follow-up](release-bundle-startup.md#retained-image-source-free-startup-follow-up--2026-10-14)
+passes the unmodified source-free driver at `436ebe12` against retained `17bc37d7`
+images: migrations, restricted roles, health/build identity and graceful
+API/Worker restart. All 161 captured inputs match. The outer machine-wide
+network inventory audit fails separately; its cause remains unestablished.
+Independent checks find zero owned containers/volumes/networks and confirm
+removal of three loaded images, downloaded archives and temporary credentials.
+This supports deployment readiness but is not a passing current full release;
+ARCH-11 and the milestone remain open, and large-load testing remains disabled.
