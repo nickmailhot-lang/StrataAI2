@@ -28,7 +28,9 @@ class Locator {
   }
   async press(key) {
     assert.equal(key, 'Enter'); assert.equal(this.retired, false);
-    this.presses++; this.count++; this.retired = true;
+    this.presses++;
+    if (this.mode === 'unadmitted-keypress' && this.presses === 1) return;
+    this.count++; this.retired = true;
   }
 }
 
@@ -36,6 +38,12 @@ test('an admitted action dispatches exactly one Enter and stops at the expected 
   const button = new Locator('normal');
   await pressObservedRequest(button, () => button.count, 2);
   assert.equal(button.presses, 1); assert.equal(button.count, 2);
+});
+
+test('an ignored keypress admits one request and stops once that request starts', { timeout: 10_000 }, async () => {
+  const button = new Locator('unadmitted-keypress');
+  await pressObservedRequest(button, () => button.count, 2);
+  assert.equal(button.presses, 2); assert.equal(button.focuses, 2); assert.equal(button.count, 2);
 });
 
 for (const mode of ['observed-during-enabled', 'observed-during-focus']) {

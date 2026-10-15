@@ -120,3 +120,47 @@ built, downloaded or imported; the original database is unused. Owned resources
 are removed, full Docker inventory restored and 1,708,149 temporary bytes
 removed. PRD-10 remains open at **35% estimated work remaining**. Large-load
 tests remain disabled until after the operational MVP milestone.
+
+### Live filter assignee write observation (2026-10-15)
+
+Exact-image run `38732211465`, notifications job `116557143247`, finishes with
+**41 passes and one failure** in `label-filter-live.spec.ts`. The final Assign
+activation is recorded, but its matching PUT is absent; the picker stays
+expanded and the original focus assertion fails. Earlier live member changes
+return 200. This establishes the missing observed request, not the precise
+browser/product cause of the activation gap.
+
+Diagnostic artifact `12000664094` is verified entirely in memory against its
+**43,785,657-byte** size and SHA-256
+`fb9cf5ab6b988c5719f5fd9b2e47333105571f5681f1c978042011951dd76bff`.
+All **28 payload hashes** match. Its embedded metadata is byte-identical to
+the independently verified canonical 420-byte metadata archive, binding
+`ff1249f4269ec10f36e34fe931fb1b2ab6f1a542`, run `38732211465` and version
+`0.1.0-1782`. No ZIP or extracted trace is saved locally.
+
+The scenario now observes its desktop Card-member route before changing focus
+expectations. The existing bounded keyboard helper admits the activation only
+until that one request starts; it stops immediately on observation, including
+while a response is pending. Responses and started requests are not retried.
+The original focus check remains first, followed by explicit picker closure
+and exact method/count checks for each intended action. The complete UI-write
+sequence must be **DELETE, PUT, DELETE, PUT**, excluding the initial API seed.
+Phone assignee/filter state, checked criteria, no-extra filter changes, socket
+loss/reconnect, filtered-canvas persistence, viewport and archive withdrawal
+checks remain intact, with the same 180-second case deadline.
+
+The unchanged local scenario passes in **85.396 seconds**; local reproduction
+is not claimed. The corrected complete strict verified-account desktop/phone
+scenario passes in **88.184 seconds**, with one attempt and no flakes/skips.
+Six helper protocol cases pass, including an ignored first keypress with only
+one later request, observer advancement during admission, excess-request refusal
+and already-started-request refusal. Browser typecheck passes.
+
+Both native invocations use a fresh restricted PostgreSQL/Worker fixture,
+current built frontend assets and archive-verified `24f56246` backend images.
+All **175 browser inputs**, **367 frontend inputs** and **four served assets**
+match; owned cleanup restores the original Docker inventory and removes
+**3,335,125** temporary file bytes for the corrected run. No image is built,
+downloaded or imported, the original database is unused and no load test runs.
+Current immutable-image CI remains required. PRD-10 stays open at **35%** and
+PRD-16 at **18% estimated work remaining**, unchanged planning estimates.

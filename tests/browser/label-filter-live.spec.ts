@@ -1,6 +1,6 @@
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
 test('PRD-10/16: desktop label changes refresh phone filters through Worker delivery and socket recovery', async ({ page, context, browser }) => {
@@ -145,7 +145,11 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     }
     await expect((await phoneAssignees()).getByText('Label collaboration fixture', { exact: true })).toBeVisible();
     const editMembers = page.getByRole('button', { name: 'Edit Card assignees', exact: true });
-    async function memberChange(action: string) {
+    const memberWrites: string[] = [], intendedMemberWrites: string[] = [];
+    page.on('request', request => {
+      if (new URL(request.url()).pathname === `/cards/${card}/members/${actor}`) memberWrites.push(request.method());
+    });
+    async function memberChange(action: 'Assign' | 'Unassign') {
       await expect(async () => {
         if (await editMembers.getAttribute('aria-expanded') !== 'true') {
           await expect(editMembers).toBeEnabled({ timeout: 500 });
@@ -157,7 +161,11 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
         await expect(editMembers).toHaveAttribute('aria-expanded', 'true', { timeout: 500 });
       }).toPass({ timeout: 5_000 });
       const change = page.getByRole('button', { name: `${action} Label collaboration fixture`, exact: true });
-      await pressAdmittedAction(change); await expect(editMembers).toBeFocused();
+      intendedMemberWrites.push(action === 'Assign' ? 'PUT' : 'DELETE');
+      await pressObservedRequest(change, () => memberWrites.length, intendedMemberWrites.length);
+      await expect(editMembers).toBeFocused();
+      await expect(editMembers).toHaveAttribute('aria-expanded', 'false');
+      expect(memberWrites).toEqual(intendedMemberWrites);
     }
     await memberChange('Unassign');
     await expect((await phoneAssignees()).getByText('No assignees on this page.', { exact: true })).toBeVisible();
@@ -177,6 +185,7 @@ test('PRD-10/16: desktop label changes refresh phone filters through Worker deli
     await expect(filters.getByText('No Cards match these filters.', { exact: true })).toBeVisible({ timeout: 20_000 });
     await expect(selectedMember).toBeChecked();
     await memberChange('Assign'); await expect(matching).toBeVisible({ timeout: 20_000 });
+    expect(memberWrites).toEqual(['DELETE', 'PUT', 'DELETE', 'PUT']);
     expect(filterChanges).toBe(4);
     expect((await context.request.post(`/boards/${board}/archive`, { headers, data: { version: 1 } })).status()).toBe(200);
     await expect(filters).toHaveCount(0, { timeout: 20_000 });

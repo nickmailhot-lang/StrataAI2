@@ -1,5 +1,15 @@
 # Board filtering (PRD-10 / PRD-16)
 
+The [live filter assignee write observation](architecture/label-keyboard-admission-verification.md#live-filter-assignee-write-observation-2026-10-15)
+addresses a hosted final Assign activation with no matching PUT. The scenario
+now requires exactly its four intended member writes before the original focus
+and phone-filter checks can complete. The unchanged local scenario passes and
+is not claimed as reproduction; the corrected complete scenario also passes,
+with the same privacy, socket, persistence and 180-second deadline checks.
+This uses current frontend assets with retained backend images; full current
+immutable CI remains required. PRD-16 stays open at **18% estimated work
+remaining**, a planning estimate. Large-load testing remains post-MVP.
+
 ## Current label and assignee review admission evidence
 
 The [Card-label/live verification record](board-label-api.md#current-card-label-and-filter-keyboard-verification)
