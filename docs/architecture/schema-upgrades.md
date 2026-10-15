@@ -13,15 +13,18 @@ The release includes `migration-stream.sh` beside `apply-migrations.sh`. Run fro
 the release directory, migrate with the administrator, provision restricted roles,
 and check readiness before routing traffic. Runtime processes never migrate schema.
 
-Every runtime connection requires all 29 current baseline migration versions,
-from `001_foundation` through `029_label_routing`. Missing
+The current API/general Worker connection factory requires all 149 named
+migration versions, from `001_foundation` through
+`149_card_reference_parent_indexes`. The authoritative list is in
+[PostgresConnectionFactory](../../src/StrataAI.Infrastructure/Persistence/PostgresConnectionFactory.cs).
+Missing
 ledger permissions, missing ledger or incomplete baseline refuse database-backed
 operations with a sanitized 503 and readiness failure. Additional forward migrations
 are allowed only when they preserve this image's contract; incompatible changes
 require a phased migration and an updated image compatibility requirement. Ledger
 validation does not replace schema review or protect against manual column changes.
 
-CI exercises clean bootstrap, sequential upgrades from eight through 29 versions,
+CI exercises clean bootstrap and sequential upgrades from eight through 149 versions,
 populated membership/invitation integrity, repeated execution, concurrent runners
 and rollback of failed DDL/ledger changes. Exact release images test refusal
 and recovery with an incomplete baseline.
@@ -48,8 +51,8 @@ of this new catalog guard is still required before treating it as release eviden
 
 ## Runtime migration readiness
 
-Production connections require every named migration through
-`120_organization_access_route_clocks`. The readiness query checks for missing
+The current API/general Worker connections require every named migration through
+`149_card_reference_parent_indexes`. The readiness query checks for missing
 required ledger entries directly, avoiding a separately maintained numeric total.
 Extra later migrations do not substitute for a missing required entry.
 
@@ -58,11 +61,51 @@ CI run `37407613926` exposed the prior mismatch: the required list contained
 was rejected before restricted search traversal. The corrected check preserves
 fail-closed handling for unavailable ledgers and missing privileges.
 `RuntimeSchemaReadinessContract` runs in the mandatory PostgreSQL contract job
-using both restricted API and Worker logins. It checks complete-ledger admission, refusal when
-foundation or navigation entries are temporarily hidden by the fixture admin,
-and recovery after each entry is restored. Fixture mutations are confined to the
-disposable CI database and restored in `finally`. Compilation passed with zero
-warnings/errors; native execution of this repair remains pending CI.
+using both restricted API and Worker logins. It checks complete-ledger admission,
+then individually hides every applied ledger entry, requires both logins to
+refuse it, and checks recovery after each entry is restored. Fixture mutations are confined to the
+disposable CI database and restored in `finally`. The PostgreSQL job for
+[`c053b9d3`](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38667987511/job/116204261658)
+passes the current 149-entry refusal/recovery contract. That is scoped database
+evidence; complete current release CI remains required.
+
+## Complete staged upgrade coverage through 149
+
+The [upgrade runner](../../scripts/ci/test-migration-runner.sh) previously
+stopped at production migration 146 before its synthetic serialization/failure
+fixtures. A clean 149-migration install did not prove the missing populated
+upgrade paths. The runner now applies and repeats all three later migrations:
+
+- 147 preserves an existing List with active/archived Cards, keeps ordinary
+  parent checks immediate, and permits explicit transactional deferral while
+  moving the complete List/Card parent graph.
+- 148 preserves configuration/history/receipt JSON, releases a former intake
+  List's live Board parent while retaining immutable source-time attribution,
+  and still refuses moving the current intake List or deleting the historical
+  List identity.
+- 149 builds the valid, correctly ordered Card-label/member parent indexes
+  over existing associations without changing their versions or JSON.
+
+Before synthetic runner fixtures, the applied ledger's complete ordered names
+must equal the production migration-file manifest. A future migration without
+its upgrade stage therefore fails CI rather than hiding behind a numeric total
+or a synthetic version. Serialization, rollback and missing-ledger fixtures use
+version names after the actual manifest's latest version. Production migration
+files are unchanged. These small fixtures do not establish capacity, previous
+application-image rollback compatibility or managed-provider readiness.
+
+The complete maintained runner passes in fresh, network-disabled PostgreSQL
+with 253 matching captured SQL/runner inputs. An initial seed lacking the
+destination Board membership is correctly rejected by the existing Card-member
+FK; supplying that membership fixes the fixture without weakening production
+constraints. Final staged upgrades, repeated application, serialization and
+failure rollback all pass. Docker inventory is restored and 1,253,414 bytes
+of temporary snapshot files are removed; the original database is unused.
+Separate executions of the exact coverage guard accept the complete manifest
+and reject the old 146-entry ledger, a same-count substituted migration name,
+and a future file without its upgrade stage. These guard fixtures use synthetic
+ledger output; the complete upgrade execution uses real PostgreSQL. Current
+exact-commit CI remains required.
 
 
 ## Membership authority forward upgrade

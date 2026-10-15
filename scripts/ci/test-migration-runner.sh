@@ -1028,37 +1028,67 @@ run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 146
 query "$(cat scripts/ci/retention-source-receipt-after-upgrade.sql)" >/dev/null
 query "$(cat scripts/ci/assert-record-retention-unprovisioned.sql)" >/dev/null
-cat > "$scratch/migrations/147_serialization_fixture.sql" <<'SQL'
+query "$(cat scripts/ci/list-parent-before-upgrade.sql)" >/dev/null
+cp db/migrations/147_list_board_move_parent_integrity.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 147
+query "$(cat scripts/ci/list-parent-after-upgrade.sql)" >/dev/null
+query "$(cat scripts/ci/configuration-list-history-before-upgrade.sql)" >/dev/null
+cp db/migrations/148_configuration_historical_list_identity.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 148
+query "$(cat scripts/ci/configuration-list-history-after-upgrade.sql)" >/dev/null
+query "$(cat scripts/ci/card-reference-indexes-before-upgrade.sql)" >/dev/null
+cp db/migrations/149_card_reference_parent_indexes.sql "$scratch/migrations/"
+run
+run
+test "$(query 'SELECT count(*) FROM schema_migrations')" = 149
+query "$(cat scripts/ci/card-reference-indexes-after-upgrade.sql)" >/dev/null
+# New production migrations must receive an upgrade stage before synthetic
+# runner-failure fixtures. A numeric total alone could hide a substituted name.
+expected_versions=$(for migration in db/migrations/*.sql; do basename "$migration" .sql; done | LC_ALL=C sort)
+actual_versions=$(query 'SELECT version FROM schema_migrations ORDER BY version')
+if [ "$actual_versions" != "$expected_versions" ]; then
+  echo 'Staged upgrades do not cover the complete production migration manifest.' >&2; exit 1
+fi
+last_version=${expected_versions##*$'\n'}
+next_version=$((10#${last_version:0:3}+1))
+serialization_version=$(printf '%03d_serialization_fixture' "$next_version")
+failure_version=$(printf '%03d_failure_fixture' "$((next_version+1))")
+unrecorded_version=$(printf '%03d_unrecorded_fixture' "$((next_version+2))")
+cat > "$scratch/migrations/$serialization_version.sql" <<SQL
 BEGIN;
 SELECT pg_sleep(1);
 CREATE TABLE migration_serialization_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('147_serialization_fixture');
+INSERT INTO schema_migrations(version) VALUES ('$serialization_version');
 COMMIT;
 SQL
 run & first=$!
 run & second=$!
 wait "$first"
 wait "$second"
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='147_serialization_fixture'")" = 1
-cat > "$scratch/migrations/148_failure_fixture.sql" <<'SQL'
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='$serialization_version'")" = 1
+cat > "$scratch/migrations/$failure_version.sql" <<SQL
 BEGIN;
 CREATE TABLE migration_failure_fixture(id integer);
-INSERT INTO schema_migrations(version) VALUES ('148_failure_fixture');
+INSERT INTO schema_migrations(version) VALUES ('$failure_version');
 SELECT 1/0;
 COMMIT;
 SQL
 if run; then echo 'Broken migration succeeded'; exit 1; fi
 test "$(query "SELECT to_regclass('public.migration_failure_fixture') IS NULL")" = t
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='148_failure_fixture'")" = 0
-rm "$scratch/migrations/148_failure_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='$failure_version'")" = 0
+rm "$scratch/migrations/$failure_version.sql"
 run
-cat > "$scratch/migrations/149_unrecorded_fixture.sql" <<'SQL'
+cat > "$scratch/migrations/$unrecorded_version.sql" <<SQL
 BEGIN;
 CREATE TABLE migration_unrecorded_fixture(id integer);
 COMMIT;
 SQL
 if run; then echo 'Unrecorded migration silently succeeded'; exit 1; fi
-test "$(query "SELECT count(*) FROM schema_migrations WHERE version='149_unrecorded_fixture'")" = 0
-rm "$scratch/migrations/149_unrecorded_fixture.sql"
+test "$(query "SELECT count(*) FROM schema_migrations WHERE version='$unrecorded_version'")" = 0
+rm "$scratch/migrations/$unrecorded_version.sql"
 run
 echo 'Clean, repeat, forward upgrade, serialized runners and failure rollback passed.'

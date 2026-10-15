@@ -42,4 +42,8 @@ BEGIN
  EXCEPTION WHEN foreign_key_violation THEN NULL;
  END;
 END $$;
+CREATE TABLE configuration_list_upgrade_fixture(kind text,value jsonb);
+INSERT INTO configuration_list_upgrade_fixture SELECT 'current',to_jsonb(c) FROM organization_configurations c WHERE tenant_id='14800000-0000-0000-0000-000000000001';
+INSERT INTO configuration_list_upgrade_fixture SELECT 'history',to_jsonb(h) FROM organization_configuration_history h WHERE tenant_id='14800000-0000-0000-0000-000000000001';
+INSERT INTO configuration_list_upgrade_fixture SELECT 'receipt',to_jsonb(r) FROM organization_configuration_receipts r WHERE tenant_id='14800000-0000-0000-0000-000000000001';
 COMMIT;
