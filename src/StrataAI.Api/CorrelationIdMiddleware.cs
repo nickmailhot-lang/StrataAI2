@@ -21,7 +21,7 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next)
         context.TraceIdentifier = correlationId;
         context.Response.Headers[HeaderName] = correlationId;
 
-        using (logger.BeginScope(new Dictionary<string, object?>
+        using (ApiDiagnostics.BeginScope(logger, new Dictionary<string, object?>
         {
             ["CorrelationId"] = correlationId,
         }))

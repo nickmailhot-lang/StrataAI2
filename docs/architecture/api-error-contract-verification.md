@@ -69,6 +69,49 @@ Complete current source and immutable-image CI remain required.
 See [the middleware](../../src/StrataAI.Api/UnexpectedApiErrorMiddleware.cs) and
 [HTTP/boundary regressions](../../tests/StrataAI.Api.Tests/UnexpectedApiErrorTests.cs).
 
+## API-owned middleware diagnostics isolation — 2026-10-15
+
+Correlation scope creation/disposal and the unexpected-error, runtime database
+security and CSRF diagnostic calls now use an API-local exception guard. A
+throwing log provider must not prevent the downstream request, replace its
+original failure, or prevent an already chosen 500/503/403 response. Structured
+templates, levels, event identity and correlation fields remain unchanged.
+Provider failure is not logged recursively; raw request/provider exceptions
+remain excluded from these diagnostic messages.
+
+The new middleware regression class runs **14** cases. Before the guard,
+**10 fail and four pass** in 0.424 seconds. Afterward, all **14 pass** in
+0.388 seconds: scope creation/disposal faults, successful and throwing downstream
+delegates, private GET/bodyless HEAD errors, started/cancelled boundaries,
+role/schema 503s, missing-header/cross-site CSRF refusal, one admitted mutation
+and healthy structured logging. Exact downstream call counts and private error
+exclusion are asserted.
+
+Five additional actual HTTP-host tests pass in **11.204 seconds** with a
+provider throwing from the affected warning/error categories. They retain
+correlated sanitized 500s for JSON/HTML Accept headers, specialized role/schema
+503s, a 403 CSRF code and a subsequent healthy request without another diagnostic
+call. An initial new HEAD HTTP probe received 405 because `/api/health` maps GET;
+the final HTTP cases exercise mapped requests. Direct new and existing middleware
+tests retain the HEAD contract; no production route or existing test is changed.
+The existing **three** started/cancelled/HEAD boundary cases also pass in
+0.281 seconds: **22 selected cases** across three invocations, not the full suite.
+
+The full solution builds with zero warnings/errors. The tests run current
+compiled assemblies in the retained Linux .NET runtime with network disabled
+and read-only assembly/source mounts. The HTTP host uses its controlled Demo
+composition, not PostgreSQL or managed providers. Each final invocation verifies
+all **922 captured source inputs** and compiled binaries unchanged and restores
+the original Docker inventory after removing its container. No image build,
+download/import, original database use or large load occurs.
+
+This protects the four named application-owned middleware boundaries. It does
+not bound a provider that blocks indefinitely or protect calls made internally
+by the host/framework or other diagnostic consumers. Full current immutable CI,
+deployed logging and the remaining PRD/architecture acceptance remain required.
+See [the guard](../../src/StrataAI.Api/ApiDiagnostics.cs) and
+[regressions](../../tests/StrataAI.Api.Tests/ApiMiddlewareLoggingTests.cs).
+
 ## Full hosted source verification for the reliability checkpoint
 
 [CI run 38287805799](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38287805799)

@@ -11,7 +11,7 @@ public sealed class UnexpectedApiErrorMiddleware(RequestDelegate next)
         catch (Exception) when (!context.Response.HasStarted && !context.RequestAborted.IsCancellationRequested)
         {
             // The exception itself can contain provider secrets or submitted input.
-            logger.LogError(new EventId(5000, "UnexpectedApiError"),
+            ApiDiagnostics.Error(logger, new EventId(5000, "UnexpectedApiError"),
                 "An API request failed. CorrelationId: {CorrelationId}", context.TraceIdentifier);
             context.Response.Clear();
             context.Response.Headers[CorrelationIdMiddleware.HeaderName] = context.TraceIdentifier;

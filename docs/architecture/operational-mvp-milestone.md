@@ -51,6 +51,14 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [API middleware diagnostics isolation](api-error-contract-verification.md#api-owned-middleware-diagnostics-isolation--2026-10-15)
+preserves correlation scope, original downstream failures and intended
+500/503/403 responses when optional log providers throw. Ten regressions fail
+before the repair; all 22 selected middleware/HTTP/boundary cases pass afterward.
+The solution builds cleanly, frozen inputs match and Docker inventory is restored.
+This is scoped compiled-source evidence; current immutable CI, deployed logging
+and full MVP acceptance remain pending. Large-load testing stays deferred.
+
 The [configuration date-display follow-up](prd-02-acceptance.md#configuration-history-and-activity-date-preferences-2026-10-15)
 repairs two existing administrator timestamp consumers to use final admitted
 account preferences without changing source instants or adding requests. Four

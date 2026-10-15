@@ -22,7 +22,7 @@ public sealed class CsrfProtectionMiddleware(RequestDelegate next)
         if (request.Headers[HeaderName].ToString() != "1" ||
             request.Headers["Sec-Fetch-Site"].ToString() is "cross-site" or "same-site")
         {
-            logger.LogWarning("CSRF protection rejected a mutation. CorrelationId={CorrelationId}", context.TraceIdentifier);
+            ApiDiagnostics.Warning(logger, "CSRF protection rejected a mutation. CorrelationId={CorrelationId}", context.TraceIdentifier);
             await Results.Problem(
                 statusCode: StatusCodes.Status403Forbidden,
                 title: "The request could not be verified. Reload and retry.",
