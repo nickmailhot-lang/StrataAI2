@@ -563,6 +563,10 @@ The application images in this bundle must not be rebuilt before deployment. Pro
 means using these exact tested image artifacts/digests with environment-specific configuration.
 
 Optional operator metrics: start with
+the [API/Worker measurement and configuration guide](../architecture/operator-metrics.md).
+Both services use the configured receiver with independent service/build identity.
+
+Start
 `docker compose -f compose.release.yml -f compose.metrics.yml up -d` to add the
 pinned private OTLP receiver. Scrapes are available only on host loopback at
 `http://127.0.0.1:9464/metrics`. This provides in-memory aggregate collection;

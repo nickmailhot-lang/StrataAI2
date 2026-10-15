@@ -53,6 +53,14 @@ current compiled hosts in cached runtime images; exact current CI remains requir
 
 ## Runtime and provider configuration
 
+Optional [API and Worker metrics](operator-metrics.md) use the explicitly
+configured `STRATAAI_METRICS_OTLP_ENDPOINT` and secret
+`STRATAAI_METRICS_OTLP_HEADERS`. Release Compose forwards both to both services;
+the metrics overlay defaults them to its private pinned Collector. Export is
+disabled without an endpoint. Worker service/build identity and fixed job-outcome
+labels remain separate from API HTTP/feature observations; neither collector
+availability nor export failure is a core readiness dependency.
+
 Build revision/version are embedded in the image at build time and cannot be
 set by runtime environment variables. The web's `/build-metadata.json`, API's
 `/api/runtime` and Worker's `/runtime` report the identifiers of their actual

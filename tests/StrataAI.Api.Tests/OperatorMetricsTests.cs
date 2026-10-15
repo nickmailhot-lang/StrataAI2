@@ -14,6 +14,36 @@ namespace StrataAI.Api.Tests;
 public sealed class OperatorMetricsTests
 {
     [Fact]
+    public void Worker_export_is_disabled_without_explicit_configuration()
+    {
+        var services = new ServiceCollection();
+        Assert.False(services.AddStrataAiWorkerMetrics(Configuration(null), typeof(Program).Assembly));
+        Assert.Empty(services);
+    }
+
+    [Fact]
+    public void Worker_export_has_its_own_service_identity_and_excludes_API_meters()
+    {
+        using var transport = new MetricsTransport();
+        var services = new ServiceCollection(); services.AddLogging(); services.AddMetrics();
+        Assert.True(services.AddStrataAiWorkerMetrics(Configuration("http://collector/v1/metrics"), typeof(Program).Assembly));
+        services.PostConfigure<OtlpExporterOptions>(OperatorMetricsRegistration.ExporterName,
+            options => options.HttpClientFactory = () => new HttpClient(transport, disposeHandler: false));
+        using var provider = services.BuildServiceProvider(); var sdk = provider.GetRequiredService<MeterProvider>();
+        var factory = provider.GetRequiredService<IMeterFactory>();
+        factory.Create("StrataAI.WorkerJobs").CreateCounter<long>("strataai.worker.jobs").Add(1,
+            new KeyValuePair<string, object?>("queue", "organization"), new KeyValuePair<string, object?>("outcome", "completed"));
+        factory.Create("StrataAI.HttpServer").CreateCounter<long>("private-api-observation").Add(1);
+        Assert.True(sdk.ForceFlush(5000)); var sample = Assert.Single(transport.Batches);
+        Assert.Contains("strataai.worker.jobs", sample.WireText); Assert.Contains("strataai-worker", sample.WireText);
+        Assert.Contains("strataai.build.revision", sample.WireText);
+        Assert.DoesNotContain("strataai-api", sample.WireText); Assert.DoesNotContain("private", sample.WireText);
+        transport.Fail = true;
+        factory.Create("StrataAI.WorkerJobs").CreateCounter<long>("strataai.worker.jobs").Add(1);
+        Assert.Null(Record.Exception(() => sdk.ForceFlush(5000)));
+    }
+
+    [Fact]
     public void Metrics_export_is_disabled_without_explicit_configuration()
     {
         var services = new ServiceCollection();

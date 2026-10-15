@@ -33,6 +33,9 @@ if (args.Contains("--verify-attachment-scanner-runtime", StringComparer.Ordinal)
 }
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMetrics();
+builder.Services.AddStrataAiWorkerMetrics(builder.Configuration, typeof(Program).Assembly);
+builder.Services.AddSingleton<WorkerJobTelemetry>();
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.BackgroundJobs;
 using StrataAI.Application.Common;
 using StrataAI.Worker;
@@ -10,19 +11,23 @@ namespace StrataAI.Api.Tests;
 public sealed class OrganizationJobWorkerTests
 {
     [Theory]
-    [InlineData("completed", 2, 0, 2)]
-    [InlineData("handler-failed", 1, 1, 2)]
-    [InlineData("claim-failed", 1, 0, 1)]
+    [InlineData("completed", 2, 0, 2, false)]
+    [InlineData("handler-failed", 1, 1, 2, false)]
+    [InlineData("claim-failed", 1, 0, 1, false)]
+    [InlineData("completed", 2, 0, 2, true)]
     public async Task ARCH_08_LoggingFailureCannotStopTheNextOrganization(
-        string scenario, int completions, int failures, int executions)
+        string scenario, int completions, int failures, int executions, bool metricFailure)
     {
+        using var services = WorkerJobTelemetryTests.Services();
+        using var metrics = WorkerJobTelemetryTests.Capture.For(services, metricFailure);
         var first = Guid.NewGuid(); var second = Guid.NewGuid();
         var store = new Store(first, second, scenario == "claim-failed");
         var handler = new Handler(scenario == "handler-failed" ? first : null);
         var observerLog = new LogSink(true, true);
         var loopLog = new LogSink(scenario != "claim-failed", true);
         var processor = new BackgroundJobProcessor(store, new Clock(), [handler],
-            new BackgroundJobDiagnostics(new Logger<BackgroundJobDiagnostics>(observerLog)));
+            new BackgroundJobDiagnostics(new Logger<BackgroundJobDiagnostics>(observerLog),
+                services.GetRequiredService<WorkerJobTelemetry>()));
         using var worker = new OrganizationJobWorker(processor, new OrganizationJobScope([first, second]),
             new Logger<OrganizationJobWorker>(loopLog));
         try
@@ -35,6 +40,10 @@ public sealed class OrganizationJobWorkerTests
             Assert.True(store.SecondOrganizationDrained.Task.IsCompletedSuccessfully);
             Assert.Equal(completions, store.Completions.Count); Assert.Equal(failures, store.Failures.Count);
             Assert.Equal(executions, handler.Executions.Count);
+            Assert.Equal(completions + failures, metrics.Samples.Count);
+            Assert.All(metrics.Samples, s => { Assert.Equal(1, s.Count); Assert.Equal(2, s.Tags.Count); Assert.Equal("organization", s.Tags["queue"]); });
+            Assert.Equal(completions, metrics.Samples.Count(s => (string?)s.Tags["outcome"] == "completed"));
+            Assert.Equal(failures, metrics.Samples.Count(s => (string?)s.Tags["outcome"] == "retried"));
             Assert.Single(handler.Executions, id => id == second); Assert.Contains(second, store.Completions);
             Assert.Equal(executions, observerLog.InformationCalls);
             Assert.Equal(executions, loopLog.InformationCalls);

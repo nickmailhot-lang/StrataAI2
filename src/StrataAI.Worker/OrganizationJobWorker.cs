@@ -63,9 +63,12 @@ internal sealed class OrganizationJobWorker(
 
 internal sealed record OrganizationJobScope(IReadOnlyList<Guid> OrganizationIds);
 
-internal sealed class BackgroundJobDiagnostics(ILogger<BackgroundJobDiagnostics> logger) : IBackgroundJobDiagnostics
+internal sealed class BackgroundJobDiagnostics(ILogger<BackgroundJobDiagnostics> logger, WorkerJobTelemetry? telemetry = null) : IBackgroundJobDiagnostics
 {
-    public void Record(ClaimedBackgroundJob job, JobProcessingResult outcome) =>
+    public void Record(ClaimedBackgroundJob job, JobProcessingResult outcome)
+    {
+        telemetry?.Record(outcome);
         WorkerLog.Information(logger, "Job {JobId} {JobType} pass {Outcome}, Organization {OrganizationId}, Actor {ActorId}, Service {ServiceIdentity}, Worker {WorkerId}, Attempt {AttemptCount}, CorrelationId {CorrelationId}.",
             job.Id, job.JobType, outcome, job.OrganizationId, job.ActorId, job.ServiceIdentity, job.WorkerId, job.AttemptCount, job.CorrelationId);
+    }
 }

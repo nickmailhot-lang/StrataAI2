@@ -20,9 +20,12 @@ internal sealed class IdentityEmailWorker(IdentityDeliveryProcessor processor,IL
     }
 }
 
-internal sealed class IdentityDeliveryDiagnostics(ILogger<IdentityDeliveryDiagnostics> logger) : IIdentityDeliveryDiagnostics
+internal sealed class IdentityDeliveryDiagnostics(ILogger<IdentityDeliveryDiagnostics> logger,WorkerJobTelemetry? telemetry=null) : IIdentityDeliveryDiagnostics
 {
-    public void Record(IdentityDeliveryJob job,IdentityDeliveryPass outcome) =>
+    public void Record(IdentityDeliveryJob job,IdentityDeliveryPass outcome)
+    {
+        telemetry?.Record(outcome);
         WorkerLog.Information(logger, "Identity job {JobId} {Purpose} {Outcome}, Subject {UserId}, Worker {WorkerId}, Attempt {Attempt}, CorrelationId {CorrelationId}.",
             job.Id,job.Purpose,outcome,job.UserId,job.WorkerId,job.AttemptCount,job.CorrelationId);
+    }
 }

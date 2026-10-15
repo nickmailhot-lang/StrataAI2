@@ -18,6 +18,7 @@ def verify(raw, revision, version):
     names.update(prefix + suffix for prefix in ["strataai_checklist_client_duration", "strataai_activity_client_duration", "strataai_board_sharing_duration", "strataai_organization_duration"]
                  for suffix in ["_bucket", "_count", "_sum"])
     names.add("strataai_http_server_requests")
+    names.add("strataai_worker_jobs")
     names.update("strataai_http_server_duration" + suffix for suffix in ["_bucket", "_count", "_sum"])
     for line in raw.splitlines():
         if not line.startswith("strataai_"):
@@ -27,12 +28,22 @@ def verify(raw, revision, version):
             return False
         labels = dict(re.findall(r'(\w+)="((?:\\.|[^"\\])*)"', match[2]))
         permitted = allowed | {"method", "status_code"} if match[1].startswith("strataai_http_server_") else allowed
+        if match[1] == "strataai_worker_jobs":
+            permitted = {"queue", "outcome", "job", "instance", "service_name", "service_namespace", "service_version", "strataai_build_revision"}
         if set(labels) - permitted or labels.get("instance", "") != "":
             return False
         if labels.get("strataai_build_revision") != revision or labels.get("service_version") != version:
             return False
-        if labels.get("service_name") != "strataai-api" or labels.get("service_namespace") != "strataai":
+        service = "strataai-worker" if match[1] == "strataai_worker_jobs" else "strataai-api"
+        if labels.get("service_name") != service or labels.get("service_namespace") != "strataai":
             return False
+        if match[1] == "strataai_worker_jobs":
+            outcomes = {"organization": {"completed", "retried", "lease_lost", "unknown"},
+                        "identity_email": {"sent", "cancelled", "retried", "failed", "lease_lost", "unknown"}}
+            if labels.get("outcome") not in outcomes.get(labels.get("queue"), set()):
+                return False
+            if not math.isfinite(float(match[3])) or float(match[3]) < 0:
+                return False
         if match[1].startswith("strataai_http_server_"):
             http_labels = {"method", "status_code", "outcome", "le", "job", "instance",
                            "service_name", "service_namespace", "service_version", "strataai_build_revision"}
@@ -51,6 +62,7 @@ def verify(raw, revision, version):
                    for metric, labels, value in samples)
 
     return all([
+        observed("strataai_worker_jobs", {"queue": "organization", "outcome": "completed"}),
         *[observed(metric, {"method": method, "status_code": code, "outcome": "completed"})
           for method, code in [("GET", "200"), ("POST", "400"), ("POST", "401"), ("POST", "403"), ("PATCH", "409")]
           for metric in ["strataai_http_server_requests", "strataai_http_server_duration_count"]],
@@ -124,4 +136,5 @@ if __name__ == "__main__":
                      "configurationLifecycleServerOperations": True, "configurationConflictAndDenial": True,
                      "configurationClientEvents": True, "configurationClientDuration": True,
                      "httpRequestsAndDuration": True, "httpRejectionOutcomes": True,
+                     "workerCommittedJobOutcome": True, "workerBuildIdentity": True,
                      "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")

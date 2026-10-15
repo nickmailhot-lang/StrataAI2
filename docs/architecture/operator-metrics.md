@@ -1,4 +1,56 @@
-# API operator metrics export (ARCH-08, partial)
+# API and Worker operator metrics export (ARCH-08, partial)
+
+## Worker job outcomes — 2026-10-15
+
+The separate Worker now exports `StrataAI.WorkerJobs` through the same explicitly
+configured OTLP transport, with fixed `service.name=strataai-worker` and its own
+embedded build version/revision. API feature/HTTP meters are not selected by the
+Worker exporter. Both release services forward `STRATAAI_METRICS_OTLP_ENDPOINT`
+and optional secret `STRATAAI_METRICS_OTLP_HEADERS`; the optional
+`compose.metrics.yml` overlay enables both against the pinned private receiver.
+Omitting the endpoint keeps export disabled. Endpoint validation, three-second
+timeouts, no redirects and independence from core readiness remain unchanged.
+
+`strataai.worker.jobs` counts reported outcomes of claimed attempts. Its only
+instrument labels are `queue` and `outcome`:
+
+| Queue | Outcomes |
+| --- | --- |
+| `organization` | `completed`, `retried`, `lease_lost`, `unknown` |
+| `identity_email` | `sent`, `cancelled`, `retried`, `failed`, `lease_lost`, `unknown` |
+
+The two existing processor diagnostic adapters record the measurement before
+optional logging, after the processor has decided its result. A logging failure
+therefore cannot suppress a measurement; an instrument/listener failure cannot
+alter that result, stop subsequent work or repeat a provider operation. Empty
+polls produce no measurement. Unknown enum values map to the fixed `unknown`
+label. Job type, tenant/actor/job/Worker IDs, correlation, lease/receipt/token
+values, addresses, provider messages and payloads never enter metric labels.
+
+These are attempt outcomes, not unique jobs, queue depth, end-to-end delivery
+latency or proof that an email reached its recipient. `retried` is the existing
+processor result for an accepted failure acknowledgment; it does not promise
+another execution or describe queue retention/dead-letter policy. Store-claim
+exceptions and shutdown before a decided result do not produce these counters.
+Backlog, lease age, loop errors and provider-specific metrics remain work.
+
+The mandatory exact-image Collector verifier now also requires an Organization
+completion from the actual separate Worker during its small HTTP fixture. It
+checks the Worker's service/build identity independently from API samples and
+refuses private or unknown queue/outcome labels. Current immutable-image
+execution of this extended contract remains pending; email-provider delivery is
+not enabled by the Collector fixture.
+
+Validation passes **53 Linux .NET cases**: 12 fixed metric cases, ten exporter
+cases, four real Organization Worker-loop cases, seven Worker diagnostic/service
+cases and 20 API HTTP regressions. Controlled stores/providers exercise actual
+processors and hosted service loops, including simultaneous metric/log listener
+failure with one committed completion/send and continued processing. This is
+not managed-provider or real PostgreSQL execution. All **934 source/49 binary**
+hashes match during execution; owned containers are removed and Docker inventory
+restored without new images or load tests. Four actual Compose resolutions pass
+for base/overlay and absent/explicit export settings; five Collector verifier
+tests and 37 release-artifact tests pass. ARCH-08 remains open for full acceptance.
 
 ## Overall HTTP outcomes — 2026-10-15
 
@@ -90,7 +142,7 @@ NuGet vulnerability audit pass; Linux test execution is pending. Windows
 Application Control prevents local .NET execution and has not been bypassed.
 
 Remaining work includes exact-image collector ingestion and retained evidence,
-operator dashboards/alerts, Worker/backlog/provider/database/backup instruments,
+operator dashboards/alerts, additional Worker/backlog/provider/database/backup instruments,
 tracing/correlation, encrypted backup/restore proof and full ARCH-08 acceptance.
 This export foundation does not close ARCH-08 or PRD-13.
 

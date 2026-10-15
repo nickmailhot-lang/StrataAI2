@@ -4,6 +4,13 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [separate Worker's job-outcome measurements](operator-metrics.md#worker-job-outcomes--2026-10-15)
+count decided Organization and identity-mail attempt outcomes with fixed labels
+and independent service/build identity. All 53 focused .NET cases, five Collector
+verifier tests, four Compose resolutions and 37 artifact checks pass. Actual
+current-image Collector ingestion, queue-depth instrumentation and deployed
+operational alerts remain required; no large-load test runs.
+
 The [overall API HTTP measurements](operator-metrics.md#overall-http-outcomes--2026-10-15)
 add bounded request counts, response outcomes and elapsed time across normal
 requests, health, unmatched routes and refusals. All 42 focused .NET checks and

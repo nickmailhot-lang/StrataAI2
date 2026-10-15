@@ -10,7 +10,13 @@ namespace StrataAI.Infrastructure.Runtime;
 public static class OperatorMetricsRegistration
 {
     public const string ExporterName = "strataai-operator-metrics";
-    public static bool AddStrataAiOperatorMetrics(this IServiceCollection services, IConfiguration configuration, Assembly hostAssembly)
+    public static bool AddStrataAiOperatorMetrics(this IServiceCollection services, IConfiguration configuration, Assembly hostAssembly) =>
+        AddMetrics(services, configuration, hostAssembly, worker: false);
+
+    public static bool AddStrataAiWorkerMetrics(this IServiceCollection services, IConfiguration configuration, Assembly hostAssembly) =>
+        AddMetrics(services, configuration, hostAssembly, worker: true);
+
+    private static bool AddMetrics(IServiceCollection services, IConfiguration configuration, Assembly hostAssembly, bool worker)
     {
         var value = configuration["STRATAAI_METRICS_OTLP_ENDPOINT"];
         if (string.IsNullOrWhiteSpace(value)) return false;
@@ -24,7 +30,7 @@ public static class OperatorMetricsRegistration
         // may carry machine identity, paths, queries or protected route values.
         var resource = ResourceBuilder.CreateEmpty().AddAttributes(new Dictionary<string, object>
         {
-            ["service.name"] = "strataai-api", ["service.namespace"] = "strataai",
+            ["service.name"] = worker ? "strataai-worker" : "strataai-api", ["service.namespace"] = "strataai",
             ["service.version"] = build.Version, ["strataai.build.revision"] = build.Revision,
         });
         services.Configure<OtlpExporterOptions>(ExporterName, options =>
@@ -41,8 +47,10 @@ public static class OperatorMetricsRegistration
                 reader.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 10_000;
                 reader.PeriodicExportingMetricReaderOptions.ExportTimeoutMilliseconds = 3000;
             });
+        var meters = worker ? new[] { "StrataAI.WorkerJobs" }
+            : new[] { "StrataAI.BoardSharing", "StrataAI.ChecklistClient", "StrataAI.ActivityClient", "StrataAI.Organizations", "StrataAI.HttpServer" };
         services.AddOpenTelemetry().WithMetrics(metrics => metrics.SetResourceBuilder(resource)
-            .AddMeter("StrataAI.BoardSharing", "StrataAI.ChecklistClient", "StrataAI.ActivityClient", "StrataAI.Organizations", "StrataAI.HttpServer")
+            .AddMeter(meters)
             .AddOtlpExporter(ExporterName, configure: (Action<OtlpExporterOptions>?)null));
         return true;
     }

@@ -14,6 +14,7 @@
     <!-- Exercise actual Worker services without importing the separate host entry point. -->
     <Compile Include="../../src/StrataAI.Worker/OrganizationJobWorker.cs" Link="Worker/OrganizationJobWorker.cs" />
     <Compile Include="../../src/StrataAI.Worker/WorkerLog.cs" Link="Worker/WorkerLog.cs" />
+    <Compile Include="../../src/StrataAI.Worker/WorkerJobTelemetry.cs" Link="Worker/WorkerJobTelemetry.cs" />
     <Compile Include="../../src/StrataAI.Worker/WorkerHeartbeat.cs" Link="Worker/WorkerHeartbeat.cs" />
     <Compile Include="../../src/StrataAI.Worker/IdentityEmailWorker.cs" Link="Worker/IdentityEmailWorker.cs" />
     <Compile Include="../../src/StrataAI.Worker/InvitationIssuerAuthorityWorker.cs" Link="Worker/InvitationIssuerAuthorityWorker.cs" />

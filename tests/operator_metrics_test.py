@@ -67,7 +67,17 @@ class OperatorEvidenceTests(unittest.TestCase):
         for method, code in [("GET", "200"), ("POST", "400"), ("POST", "401"), ("POST", "403"), ("PATCH", "409")]:
             for metric in ["strataai_http_server_requests", "strataai_http_server_duration_count"]:
                 observations.append((metric, f'method="{method}",status_code="{code}",outcome="completed"'))
-        return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations)
+        worker_common = common.replace('service_name="strataai-api"', 'service_name="strataai-worker"')
+        return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations) + \
+            f'\nstrataai_worker_jobs{{queue="organization",outcome="completed",{worker_common}}} 1'
+
+    def test_worker_requires_own_service_identity_and_bounded_queue_outcome(self):
+        for original, replacement in [('queue="organization"', 'queue="private-job-type"'),
+                                      ('queue="organization",outcome="completed"', 'queue="organization",outcome="sent"'),
+                                      ('service_name="strataai-worker"', 'service_name="strataai-api"'),
+                                      ('queue="organization"', 'queue="organization",actor_id="opaque"')]:
+            with self.subTest(replacement=replacement):
+                self.assertFalse(metrics.verify(self.fixture().replace(original, replacement), self.revision, self.version))
 
     def test_http_metrics_refuse_unbounded_labels_methods_statuses_and_outcomes(self):
         original = 'method="GET",status_code="200",outcome="completed"'

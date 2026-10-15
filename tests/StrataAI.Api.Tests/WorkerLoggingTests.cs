@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.Common;
 using StrataAI.Application.Identity;
 using StrataAI.Application.Onboarding;
@@ -14,16 +15,21 @@ namespace StrataAI.Api.Tests;
 
 public sealed class WorkerLoggingTests
 {
-    [Fact]
-    public async Task ARCH_08_SentIdentityMailAndNextPassSurviveThrowingDiagnostics()
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task ARCH_08_SentIdentityMailAndNextPassSurviveThrowingDiagnostics(bool metricFailure)
     {
+        using var services = WorkerJobTelemetryTests.Services();
+        using var metrics = WorkerJobTelemetryTests.Capture.For(services, metricFailure);
         var store = new IdentityStore(); var provider = new EmailProvider(); var log = new Sink { ThrowInformation = true, ThrowWarning = true };
         var processor = new IdentityDeliveryProcessor(store, new Signer(), provider,
             new("sender@example.test", "https://app.example.test", "fixture"), new Clock(),
-            new IdentityDeliveryDiagnostics(new Logger<IdentityDeliveryDiagnostics>(log)));
+            new IdentityDeliveryDiagnostics(new Logger<IdentityDeliveryDiagnostics>(log),
+                services.GetRequiredService<WorkerJobTelemetry>()));
         using var worker = new IdentityEmailWorker(processor, new Logger<IdentityEmailWorker>(log));
         await RunUntilAsync(worker, store.NextPass.Task);
         Assert.Equal(1, provider.Sends); Assert.Equal(1, store.Finishes); Assert.Equal(IdentityDeliveryOutcome.Sent, store.Outcome);
+        metrics.AssertSingle("identity_email", "sent");
         Assert.Equal(1, log.InformationCalls); Assert.Equal(0, log.WarningCalls);
         Assert.NotNull(provider.Message); Assert.Contains("#token=private-token", provider.Message.Text);
         AssertPrivateMessagesAbsent(log);
