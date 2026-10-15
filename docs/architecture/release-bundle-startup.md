@@ -38,11 +38,21 @@ publishing ports directly on the fully internal network failed in the initial
 Docker Desktop invocation. The corrected run restores the original container,
 image, network and volume inventory and downloads/imports no images.
 
-That local run uses Python orchestration instead of executing the CI Bash driver;
-the driver has its own negative/positive protocol fixtures. This is scoped
-configuration evidence using the earlier images, not release certification for
-a new SHA. New exact-commit assembled-release CI, including both startup modes
-and unchanged-payload verification, remains required.
+That initial local run uses Python orchestration. A subsequent execution of the
+actual Bash driver with real Docker/curl/jq reaches sign-in but returns 400:
+the generated retry key has 32 hex characters, while the API requires a
+36-character UUID in hyphenated format. The script now formats the random key
+accordingly; the API contract is unchanged. The healthy protocol fixture now
+enforces that external header contract and fails against the previous script.
+After repair all 270 selected CI guards, including the 20 Demo-driver scenarios,
+pass. The actual Bash driver also passes health/build/mode, SPA/proxy, seeded
+sign-in and authenticated profile checks against the archive-bound `24f56246`
+images, then restores the original Docker inventory. No image is downloaded or
+imported and no original database or host SDK/source build is used.
+
+These are scoped configuration and driver results using the earlier images,
+not release certification for a new SHA. New exact-commit assembled-release CI,
+including both startup modes and unchanged-payload verification, remains required.
 
 After the complete release input/bundle checks and before artifact upload, CI
 runs `scripts/ci/test-release-bundle-startup.sh bundle`. The check enters the

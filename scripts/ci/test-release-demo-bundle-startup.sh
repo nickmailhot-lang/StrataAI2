@@ -91,9 +91,12 @@ jq -e --arg revision "$revision" --arg version "$version" '.revision==$revision 
 get "$web/api/health"
 get "$web/login"
 grep -Fq 'id="root"' "$scratch/response"
+nonce=$(openssl rand -hex 16)
+[[ "$nonce" =~ ^[a-f0-9]{32}$ ]]
+login_key="${nonce:0:8}-${nonce:8:4}-${nonce:12:4}-${nonce:16:4}-${nonce:20:12}"
 status=$(curl --connect-timeout 5 --max-time 15 --silent --show-error \
   -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' \
-  -H "Idempotency-Key: $(openssl rand -hex 16)" \
+  -H "Idempotency-Key: $login_key" \
   -d '{"email":"demo@strataai.test","password":"StrataAI-Demo-2026!"}' \
   -o "$scratch/response" -w '%{http_code}' "$web/auth/login")
 test "$status" = 200

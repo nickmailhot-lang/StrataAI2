@@ -91,11 +91,18 @@ docker() {
   fi
 }
 curl() {
-  local output='' url="\${!#}" status=200
+  local output='' url="\${!#}" status=200 retry_key=''
   while [ "$#" -gt 0 ]; do
     if [ "$1" = -o ]; then shift; output=$1; fi
+    if [ "$1" = -H ]; then
+      shift
+      if [[ "$1" == 'Idempotency-Key: '* ]]; then retry_key="\${1#Idempotency-Key: }"; fi
+    fi
     shift
   done
+  if [[ "$url" == */auth/login ]]; then
+    [[ "$retry_key" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]] || return 64
+  fi
   case "$url" in
     */auth/login) printf '{"user":{"email":"demo@strataai.test"}}' > "$output" ;;
     */login) printf '<div id="root"></div>' > "$output" ;;
