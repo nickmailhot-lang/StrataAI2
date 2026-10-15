@@ -66,7 +66,7 @@ jq -e '(.services | keys == ["api","postgres","web","worker"]) and
   ([.services[] | has("build")] | all(. == false))' "$scratch/model.json" >/dev/null
 jq -e '((.services.api.ports // []) | length == 0) and ((.services.worker.ports // []) | length == 0) and
   (.services.web.ports | length == 1 and .[0].target == 443)' "$scratch/model.json" >/dev/null
-for kind in server wrong; do
+for kind in server wrong renewed; do
   MSYS_NO_PATHCONV=1 openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 1 \
     -subj /CN=localhost -addext subjectAltName=DNS:localhost \
     -keyout "$(host_path "$scratch/$kind.key")" -out "$(host_path "$scratch/$kind.crt")" > "$scratch/certificate.log" 2>&1
@@ -113,6 +113,7 @@ if grep -Eiq '^[[:space:]]*Strict-Transport-Security:' "$scratch/internal-http.l
   echo 'Private HTTP must not emit the HTTPS-only HSTS policy.' >&2; exit 1
 fi
 curl_args=(--noproxy '*' --connect-timeout 5 --max-time 15 --silent --show-error)
+request_ca="$scratch/server.crt"
 for url in "$origin/" "https://127.0.0.1:$port/"; do
   extra=(); if [[ "$url" == *127.0.0.1* ]]; then extra=(--cacert "$(host_path "$scratch/server.crt")"); fi
   code=0
@@ -124,7 +125,7 @@ request() {
   local method=$1 path=$2 expected=$3 body=${4-} status
   local args=(-X "$method")
   if [ -n "$body" ]; then args+=(-H 'Content-Type: application/json' -d "$body"); fi
-  status=$(curl "${curl_args[@]}" --cacert "$(host_path "$scratch/server.crt")" \
+  status=$(curl "${curl_args[@]}" --cacert "$(host_path "$request_ca")" \
     -b "$(host_path "$scratch/cookies")" -c "$(host_path "$scratch/cookies")" \
     -H 'X-StrataAI-Request: 1' "${args[@]}" -D "$(host_path "$scratch/headers")" \
     -o "$(host_path "$scratch/response")" -w '%{http_code}' "$origin$path")
@@ -164,6 +165,64 @@ request GET /me 200
 jq -e --arg user "$user" '.id==$user' "$scratch/response" >/dev/null
 request GET "/boards/$board" 200
 jq -e --slurpfile before "$scratch/before.json" '.==$before[0]' "$scratch/response" >/dev/null
+# Exercise the documented operator certificate replacement without restarting
+# the listener. Fresh, independently verified handshakes must see each change.
+cat "$scratch/server.crt" "$scratch/renewed.crt" > "$scratch/rotation-trust.pem"
+original_fingerprint=$(openssl x509 -in "$(host_path "$scratch/server.crt")" -noout -sha256 -fingerprint)
+renewed_fingerprint=$(openssl x509 -in "$(host_path "$scratch/renewed.crt")" -noout -sha256 -fingerprint)
+test "$original_fingerprint" != "$renewed_fingerprint"
+web_started=$(docker inspect --format '{{.State.StartedAt}}' "$web_container")
+peer_fingerprint() {
+  if ! timeout 15 openssl s_client -connect "127.0.0.1:$port" -servername localhost \
+    -verify_hostname localhost -verify_return_error -CAfile "$(host_path "$scratch/rotation-trust.pem")" \
+    -showcerts < /dev/null > "$scratch/peer.pem" 2> "$scratch/peer.log"; then return 1; fi
+  openssl x509 -in "$(host_path "$scratch/peer.pem")" -noout -sha256 -fingerprint
+}
+wait_for_certificate() {
+  local expected=$1 actual attempt
+  for attempt in $(seq 1 20); do
+    actual=$(peer_fingerprint) || return 1
+    if test "$actual" = "$expected"; then return; fi
+    sleep 0.1
+  done
+  echo 'The HTTPS listener did not serve the expected certificate.' >&2
+  return 1
+}
+check_saved_task() {
+  request GET /me 200
+  jq -e --arg user "$user" '.id==$user' "$scratch/response" >/dev/null
+  request GET "/boards/$board" 200
+  jq -e --slurpfile before "$scratch/before.json" '.==$before[0]' "$scratch/response" >/dev/null
+}
+test "$(peer_fingerprint)" = "$original_fingerprint"
+cp "$scratch/wrong.key" "$scratch/certificates/privkey.pem"
+if "${compose[@]}" exec -T web nginx -t > "$scratch/rotation-refusal.log" 2>&1; then exit 1; fi
+grep -Fq 'key values mismatch' "$scratch/rotation-refusal.log"
+test "$(peer_fingerprint)" = "$original_fingerprint"
+check_saved_task
+cp "$scratch/renewed.crt" "$scratch/certificates/fullchain.pem"
+cp "$scratch/renewed.key" "$scratch/certificates/privkey.pem"
+"${compose[@]}" exec -T web nginx -t > "$scratch/rotation.log" 2>&1
+"${compose[@]}" exec -T web nginx -s reload >> "$scratch/rotation.log" 2>&1
+wait_for_certificate "$renewed_fingerprint"
+code=0
+curl "${curl_args[@]}" --cacert "$(host_path "$scratch/server.crt")" -o "$scratch/refused-response" "$origin/api/health" > "$scratch/refusal.log" 2>&1 || code=$?
+test "$code" = 60
+request_ca="$scratch/renewed.crt"
+check_saved_task
+cp "$scratch/server.crt" "$scratch/certificates/fullchain.pem"
+cp "$scratch/server.key" "$scratch/certificates/privkey.pem"
+"${compose[@]}" exec -T web nginx -t >> "$scratch/rotation.log" 2>&1
+"${compose[@]}" exec -T web nginx -s reload >> "$scratch/rotation.log" 2>&1
+wait_for_certificate "$original_fingerprint"
+code=0
+curl "${curl_args[@]}" --cacert "$(host_path "$scratch/renewed.crt")" -o "$scratch/refused-response" "$origin/api/health" > "$scratch/refusal.log" 2>&1 || code=$?
+test "$code" = 60
+request_ca="$scratch/server.crt"
+check_saved_task
+test "$("${compose[@]}" ps -q web)" = "$web_container"
+test "$(docker inspect --format '{{.State.StartedAt}}' "$web_container")" = "$web_started"
+echo 'HTTPS certificate rotation passed: rejected key preserves serving certificate; renewed and restored certificates verified on fresh connections; original session/task and listener preserved.'
 export STRATAAI_WORKER_ORGANIZATION_IDS="$organization"
 "${compose[@]}" up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 120 worker >/dev/null
 NODE_TLS_REJECT_UNAUTHORIZED=1 NODE_USE_ENV_PROXY=0 NODE_EXTRA_CA_CERTS="$(host_path "$scratch/server.crt")" \

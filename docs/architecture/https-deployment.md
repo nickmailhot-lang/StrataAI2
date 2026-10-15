@@ -114,6 +114,35 @@ including five new Node-runtime/ordering/source-test omission mutations.
 Complete current-image CI, browser acceptance and managed deployment remain
 separate requirements. These checks use one synthetic Card and a few sockets.
 
+## Certificate replacement and restoration evidence (2026-10-15)
+
+The maintained assembled-bundle gate now executes the documented certificate
+replacement procedure on the running listener. A mismatched replacement key
+must fail `nginx -t`; a fresh verified connection must still receive the original
+certificate, and the original session and saved task graph must remain valid.
+A new matching certificate/key pair then passes validation and reload. Fresh
+TLS handshakes must present that exact new SHA-256 certificate fingerprint,
+and the original certificate alone must no longer establish trust. Session and
+complete saved-graph equality checks use only the replacement certificate as
+their trust input.
+
+Restoring the original pair repeats validation/reload and verifies its exact
+served fingerprint. The replacement-only trust input must now fail, while the
+original session and graph still pass with the original certificate. The web
+container ID and start timestamp stay unchanged across both reloads, and all
+three application image IDs remain unchanged. The existing WSS/Worker/replay/
+withdrawal checks execute after restoration; this does not establish continuity
+of a previously open socket through certificate replacement.
+
+The complete expanded gate passes locally in **119.982 seconds**, with all
+**767 captured inputs matching**, original Docker inventory restored and
+**775,054** owned temporary bytes removed. It reuses archive-verified `24f56246`
+images with the declared current Nginx/header mounts; no application rebuild,
+image import/download, original database use or large load occurs. All **29**
+HTTPS client tests and **241** CI coverage guards pass, as do Bash syntax and
+workflow lint. This is supporting retained-image verification, not a completed
+current-image release or public certificate-provider deployment.
+
 ## Remaining deployment acceptance
 
 The actual hostname, trusted public certificate, certificate renewal/expiry
@@ -125,6 +154,7 @@ or completed ARCH-12/MVP acceptance. Large-load testing remains post-MVP.
 ## References
 
 - [Nginx HTTPS server and certificate-chain configuration](https://nginx.org/en/docs/http/configuring_https_servers.html)
+- [Nginx configuration reload and existing worker behavior](https://nginx.org/en/docs/control.html)
 - [Compose replacement and reset semantics](https://docs.docker.com/reference/compose-file/merge/#replace-value)
 - [Node's Undici WebSocket client options](https://github.com/nodejs/undici/blob/main/docs/docs/api/WebSocket.md)
 - [ASP.NET Core SignalR hub protocol](https://github.com/dotnet/aspnetcore/blob/main/src/SignalR/docs/specs/HubProtocol.md)

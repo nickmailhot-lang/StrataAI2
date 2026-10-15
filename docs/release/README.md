@@ -237,6 +237,16 @@ docker compose --env-file .env -f compose.release.yml -f compose.https.yml exec 
 docker compose --env-file .env -f compose.release.yml -f compose.https.yml exec -T web nginx -s reload
 ```
 
+If validation fails, stop before reload and restore the matching prior files.
+Do not treat a successful reload command as proof that the replacement is
+served: verify a fresh TLS connection, its expected certificate fingerprint,
+trust, hostname and expiry, then repeat sign-in/session and saved-task checks.
+Existing connections can still belong to the old listener workers. To restore
+the prior certificate, put its matching chain and key back in the mounted
+directory, run the same validation/reload commands and verify another fresh
+connection. This certificate procedure does not roll back application images
+or database changes.
+
 Keep the matching prior certificate/key available for rollback. Recheck the
 served certificate and expiry after renewal. Symlinks must resolve within the
 mounted directory; a provider's links into an unmounted archive will fail.
