@@ -154,10 +154,15 @@ test('PRD-17: recipient inbox recovers real assignment and read changes across d
     await expect.poll(() => phoneLive.cursors.some(cursor => typeof cursor === 'string' && /^[0-9]+$/.test(cursor)), { timeout: 25_000 }).toBe(true);
     await expect.poll(() => phoneLive.events.filter(type => type === 'NOTIFICATION_CREATED').length, { timeout: 25_000 }).toBe(4);
     const recoveredRead = other.getByRole('button', { name: 'Mark read', exact: true });
-    await expect(recoveredRead).toBeEnabled(); await recoveredRead.focus();
-    await expect(recoveredRead).toBeFocused(); await other.keyboard.press('Enter');
+    let recoveredReadWrites = 0;
+    other.on('request', request => {
+      if (request.method() === 'POST' && new URL(request.url()).pathname === `/organizations/${org}/notifications/read`)
+        recoveredReadWrites++;
+    });
+    await pressObservedRequest(recoveredRead, () => recoveredReadWrites, 1);
     await expect(other.getByText('0 unread on this page.', { exact: true })).toBeVisible();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
+    expect(recoveredReadWrites).toBe(1);
     for (const client of [page, other]) {
       expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     }

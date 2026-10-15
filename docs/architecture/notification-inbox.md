@@ -228,3 +228,41 @@ stopped database is preserved. The controlled compiled-application capture
 supplements current immutable/full CI and strict provider acceptance, which
 remain required. PRD-17 stays open at **15% estimated work remaining**.
 Large-load tests remain deferred until after the operational MVP.
+
+## Final post-reconnect read admission (2026-10-14)
+
+Retained run `38662468956`, full-browser shard 3 at `f6a71b67`, passes 114
+cases and fails the final read action in the desktop/phone inbox scenario.
+The first committed read's lost-response recovery and later bulk read both
+succeed. After actual network outage/reconnect, the last Mark read control
+receives focus at monotonic 574526.908 ms and Enter at 574540.544 ms. Protected
+profile/inbox GETs follow at 574542.095/574565.220 ms, but no fourth read POST
+is sent. The retained screen still has one unread item and Mark read. This
+shows missing final dispatch, not a failed server acknowledgment or refusal.
+
+That final action now observes its exact read POST through the existing bounded
+`pressObservedRequest` helper, stopping admission as soon as its one request
+begins. The case additionally requires exactly one final dispatch. The original
+lost-response two-write key/body equality, bulk read, actual socket outage and
+replay cursors, four private creation events, unread/peer convergence, persisted
+source/read clocks, member revocation, privacy, layout, Axe and 150-second
+deadline remain unchanged. No response or outcome assertion is relaxed.
+
+Browser typing, complete one-case collection and the mandatory integration
+inventory pass. The complete corrected scenario passes **1/1 in 81,333.001 ms**
+with no failures, skips or flaky results against the archive-bound `24f56246`
+web/API/Worker images. Current frontend source is unchanged from that retained
+revision. The fresh restricted PostgreSQL fixture uses all 149 migrations,
+strict API/Worker verified-account policy and the original scoped-Worker helper;
+the existing account fixture verifies only its freshly registered synthetic
+accounts. Worker identity-mail transport is disabled, so managed mail delivery
+is not claimed. No scenario/helper code or assertion is substituted.
+
+All 172 repository browser/configuration inputs match during execution; an
+independent comparison also finds zero differences across the 172 frozen
+inputs. Only the declared isolated Compose/provider configuration differs from
+hosted CI. Original Docker inventory is restored and 1,698,706 bytes of temporary
+fixture copies are removed, without using the original database, building or
+downloading/importing application images, or running load tests. This supports
+the admission repair; current exact-commit complete CI and all original
+acceptance remain required. Estimated PRD-17 work remaining stays **15%**.
