@@ -64,8 +64,9 @@ for (const width of [1280, 390]) for (const action of ['read', 'edit'] as const)
       expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-      await pressAdmittedAction(dialog.getByRole('button', { name: 'Reload labels', exact: true }));
-      await expect(dialog.getByRole('button', { name: action === 'read' ? 'Edit Original label (green)' : 'Edit Concurrent canonical label (blue)', exact: true })).toBeEnabled();
+      const canonicalEdit = dialog.getByRole('button', { name: action === 'read' ? 'Edit Original label (green)' : 'Edit Concurrent canonical label (blue)', exact: true });
+      await openAdmittedReview(dialog.getByRole('button', { name: 'Reload labels', exact: true }), canonicalEdit);
+      await expect(canonicalEdit).toBeEnabled();
       await expect(dialog.getByText(/^Reference:/)).toHaveCount(0);
       await pressAdmittedAction(dialog.getByRole('button', { name: 'Done', exact: true })); await expect(dialog).toHaveCount(0);
       expect(dispatches).toBe(1);

@@ -87,3 +87,36 @@ and diff checks pass. The API fixture permits unverified accounts and disables
 mail delivery; the Worker retains its verified-account policy. This does not
 certify current-main images, full CI or managed providers. PRD-10 stays open
 at **35% estimated work remaining**. Large-load testing remains post-MVP.
+
+### Refusal-reference reload observation (2026-10-15)
+
+[Run 38678781079](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38678781079),
+job `116270766825`, passes 95 cases and fails desktop label-reference recovery.
+Artifact `11958695548` is independently checked against its 5,048,689-byte size,
+SHA-256 `a5b795cbd8dc9500a3095917c441d9ede4a31fd1bb3d2e4d54fdee242dbceb38`
+and embedded candidate metadata. After Reload receives focus/Enter, its trace
+contains Board reads but no later label-directory read. The dialog retains the
+original conflict and reference. This identifies an unobserved reload; it does
+not establish a product cause. The failing file is unchanged from candidate
+`5218d8716088505151ffe6d0bd264771b0a7d158` to the repair's parent.
+
+The read-only Reload step now uses the existing bounded opening helper and
+observes the actual canonical Edit control. The original single refused PATCH,
+real competing edit, canonical contents, reference withdrawal, accessibility,
+viewport checks and 90-second deadlines remain unchanged. Mutation submission
+is unchanged.
+
+Both the unchanged baseline and revised complete desktop/phone read/edit file
+pass **4/4**, in **174,686.175 ms** and **174,978.963 ms**, respectively. Each
+case has one attempt, no skips, flaky/unexpected outcomes or report errors. An
+unchanged local reproduction is not claimed. Browser types pass. The revised
+capture matches all 172 captured browser inputs and three web configuration
+files. It uses archive-verified retained `24f5624` images, fresh PostgreSQL with
+149 migrations and restricted API/Worker roles; current Nginx configuration is
+mounted read-only. API verification is optional and mail disabled; the Worker
+retains its verified-account policy. This is supporting functional evidence,
+not certification of current-main images or managed providers. No images are
+built, downloaded or imported; the original database is unused. Owned resources
+are removed, full Docker inventory restored and 1,708,149 temporary bytes
+removed. PRD-10 remains open at **35% estimated work remaining**. Large-load
+tests remain disabled until after the operational MVP milestone.
