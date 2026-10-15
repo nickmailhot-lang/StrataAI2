@@ -12,16 +12,18 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 The next release milestone is a [deployable, stable operational task-management MVP](docs/architecture/operational-mvp-milestone.md). Core workflow reliability and verified deployment take priority before new governance and AI modules; the complete PRD roadmap remains in force.
 
-**Verified release candidate:** [`24f56246`](https://github.com/nickmailhot-lang/StrataAI2/commit/24f562464f706884e4a27577b61c65ff385b4263)
-passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38603745814).
-[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38603745814/artifacts/11925418731)
+**Latest passing CI release candidate:** [`02bf121d`](https://github.com/nickmailhot-lang/StrataAI2/commit/02bf121dae985412e75902b2c132b2338688a309)
+passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38660360386).
+[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38660360386/artifacts/11947266733)
 and follow the [operator guide](docs/release/README.md). This evidence identifies
 that exact candidate; later main changes require their own CI. Review
 [remaining deployment acceptance](docs/architecture/operational-mvp-milestone.md#current-status)
 before production promotion. Large-load tests remain deferred until after MVP.
-This candidate predates the external PostgreSQL TLS-default repair: configure
-`SSL Mode=VerifyFull` explicitly for a hosted database, as described in
-[database transport configuration](docs/architecture/configuration.md#postgresql-transport).
+This candidate includes the external PostgreSQL TLS default and Production
+HTTPS-origin checks. It predates the source-free Demo bundle additions and
+later release-gate repairs. Use the instructions included in its own bundle;
+see [the evidence and remaining gaps](docs/architecture/operational-mvp-milestone.md#current-status)
+before applying newer documentation to that artifact.
 
 **Demo login:** `demo@strataai.test` / `StrataAI-Demo-2026!`.
 Set `STRATAAI_RUNTIME_MODE=demo`, open `/login`, and sign in without registering.

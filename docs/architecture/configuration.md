@@ -127,8 +127,11 @@ These starts refuse before database setup and do not use Docker or a database.
 The [retained-image refusal gate](../../scripts/ci/test-runtime-startup-refusals.sh)
 now requires 24 cases, including eight origin refusals. Its seven self-test
 scenarios pass, including rejection of disclosed origin values. Exact-image CI
-for this repair remains required; these local checks do not prove deployed TLS
-termination or complete ARCH-12 acceptance. Large-load testing remains deferred.
+at `02bf121d` subsequently passes all 24 startup refusal cases in the completed
+[commands integration job](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38660360386/job/116192307393),
+and that revision passes every required CI and final release gate. This does
+not prove deployed TLS termination or complete ARCH-12 acceptance. Later main
+changes require their own CI; large-load testing remains deferred.
 
 ### PostgreSQL transport
 
@@ -175,8 +178,9 @@ API/Worker startups reject external plaintext through both connection-string
 and structured configuration, without echoing the supplied credential.
 The [retained-image startup gate](../../scripts/ci/test-runtime-startup-refusals.sh)
 included those four cases, bringing its required total at the transport repair
-to 16. The origin repair above extends that total to 24; execution for the new
-immutable candidate remains required.
+to 16. The origin repair above extends that total to 24; all 24 pass against
+the once-built `02bf121d` images in the commands integration job linked above.
+That revision predates the real-certificate fixture described below.
 
 The [real PostgreSQL TLS contract](../../tests/StrataAI.Persistence.Contracts/PostgresTransportPersistenceContract.cs)
 also connects through the actual runtime factory with the SSL mode omitted and

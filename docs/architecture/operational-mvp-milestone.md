@@ -42,7 +42,35 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
-A verified operational release candidate is available at
+The latest completed CI release candidate is
+`02bf121dae985412e75902b2c132b2338688a309`:
+[run 38660360386](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38660360386)
+passes all 16 jobs, including the build-once, security, seven integration,
+required-CI and final release gates. Its
+[tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38660360386/artifacts/11947266733)
+is 518,718,398 bytes; GitHub reports SHA-256
+`7b88eea946264b79056a6f93f86adfcb46144782cc926a7e5b4cfff45275d8fa`.
+The completed release job verifies input identity/checksums, assembles the
+payload, passes source-free migrations/restricted Production startup and
+health/proxy/build identity plus graceful API/Worker restart, then re-verifies
+the unchanged bundle before uploading it. These are inspected hosted CI and
+artifact metadata results; this newer bundle has not been independently
+downloaded and inspected on the local machine.
+
+This candidate includes the external PostgreSQL TLS default and Production
+HTTPS-origin validation. Domain tests pass 1,033/1,033; API tests pass 1,031 with
+the two large-capacity cases deferred. All named capacity stages remain skipped,
+and the repository load-test variable is reverified as `0`. It predates the
+real PostgreSQL certificate contract, source-free Demo payload, database-secret
+rotation rehearsal, later startup checks and browser admission/upgrade-fixture
+repairs. Those changes require their own complete exact-commit CI. Follow the
+instructions inside the selected bundle rather than assuming it contains
+newer release assets. The milestone and architecture/feature tickets remain
+open pending their remaining acceptance requirements.
+
+### Earlier independently inspected candidate
+
+An earlier verified operational release candidate is available at
 `24f562464f706884e4a27577b61c65ff385b4263`:
 [run 38603745814](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38603745814)
 passed every required source, PostgreSQL, build-once, security, integration,
@@ -67,9 +95,10 @@ public origin, durable key rings, Worker Organization scopes, verification/mail
 transport and enabled attachment providers using the configuration and release
 guides. Private storage/scanner and isolated mail fixtures do not prove deployed
 AWS/IAM, antivirus or managed mail. Complete the remaining architecture and
-feature acceptance audits before closing their tickets. Later main changes,
-including the PostgreSQL transport repair, require their own immutable CI;
-do not attribute the candidate's results to a different revision.
+feature acceptance audits before closing their tickets. Later main changes
+require their own immutable CI; do not attribute either candidate's results
+to a different revision. The newer candidate above covers the TLS-default/origin
+repairs in its own scope.
 
 The following entries preserve earlier investigation and supporting local
 evidence in their original revision scope.
