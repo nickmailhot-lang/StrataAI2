@@ -56,3 +56,34 @@ stopped PostgreSQL is preserved. These compiled-runtime/controlled-account
 results do not certify strict managed mail or current immutable/full release
 acceptance. PRD-10 stays open at **35% estimated work remaining**. Large-load
 testing remains disabled until after the operational MVP milestone.
+
+### Match-ANY filter submission admission (2026-10-15)
+
+Retained run `38670117926`, job `116225733787`, passes 102 cases and fails the
+phone Card-label scenario. Browser artifact `11949094788` is independently
+verified against its 8,594,660-byte size and GitHub SHA-256. The trace shows the
+original filter change and its deliberate original-key recovery both succeed.
+After selecting Match ANY, a protected Board read starts just before Enter on
+Apply. No third filter-change POST is sent. The snapshot retains Match ANY in
+the field and explicitly identifies the results as the last applied filters.
+The failing source file is unchanged between that candidate and the repair's
+parent revision; an unchanged local reproduction is not claimed.
+
+The second Apply now uses the existing bounded `pressObservedRequest` helper,
+with an observer counting actual browser apply-request starts. It stops once
+the third request starts, including while its response is pending. Original
+filter acknowledgments, exact four-change assertions, key/source identities,
+persistence, label operations and the 90-second deadline remain unchanged.
+
+The complete Card-label and irreversible List-deletion files pass together at
+desktop/phone: **4/4 in 206,684.21 ms**, no unexpected/flaky/skipped outcomes or
+whole-test retries. They run against archive-verified retained images at
+`24f562464f706884e4a27577b61c65ff385b4263`, with fresh PostgreSQL 17/pgvector,
+all 149 migrations and restricted API/Worker roles. All 172 captured inputs
+match; unchanged image identities and restored full Docker inventory are
+checked, and 1,699,129 owned temporary bytes are removed. No image is built,
+downloaded or imported; the existing local database is unused. Browser types
+and diff checks pass. The API fixture permits unverified accounts and disables
+mail delivery; the Worker retains its verified-account policy. This does not
+certify current-main images, full CI or managed providers. PRD-10 stays open
+at **35% estimated work remaining**. Large-load testing remains post-MVP.

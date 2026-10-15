@@ -135,6 +135,51 @@ and `.dump` payloads with regenerated checksums; both are now refused. Shell/
 workflow lint and 19 local documentation links pass. Current exact-commit
 hosted execution of the new operator restore path is still required.
 
+The earlier operator-backup revision
+`c822186c25882117fb0dcfcdd4ad2819be9a8313` now passes the hosted
+[PostgreSQL job](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38682594588/job/116252397759).
+Its retained build-metadata artifact binds that run to the exact revision. The
+completed job executes the real backup command and passes the complete
+schema/data/ACL comparison, five deliberate corruption/refusal cases, pgvector,
+restricted tenant operations, parent foreign keys and append-only audit checks.
+The populated upgrade runner and all three TLS certificate cases also pass.
+This job predates the operator restore command and its expanded eleven-case
+rehearsal; it does not prove their hosted execution or a complete release.
+
+## Application use after restoration
+
+A separate small local check runs both operator commands from
+`763257e7d46433f9a76155db975a74d05eea430f` with the archive-verified, previously
+retained application images at `24f562464f706884e4a27577b61c65ff385b4263`.
+It creates a fresh isolated PostgreSQL cluster, applies all 149 migrations and
+the restricted API/Worker roles, then creates one synthetic account and one
+Organization/Board/List/Card hierarchy through the real web/API endpoints.
+
+With the API and Worker stopped, the backup command encrypts that source, and
+the restore command authenticates it into a separate empty database in the
+same cluster. Both hosts are recreated with the target database configured;
+their actual runtime settings, changed container IDs and unchanged original
+image identities are checked. The existing session and a fresh sign-in both
+read the exact saved Board snapshot. A new Unicode Card edit increments its
+version and preserves its creation time. Independent database queries show
+the edit and new audit facts only in the target, with the source Card and audit
+count unchanged. All 395 captured script/schema/configuration inputs match.
+The owned containers, volumes, network, credentials and encrypted archive are
+removed, restoring the full original Docker inventory and removing 1,150,931
+temporary bytes. The existing local database is never used; no image is built,
+downloaded or imported.
+
+This fixture enables self-registration and disables verification/mail delivery
+for its synthetic account. Its local HTTP client explicitly carries its own
+Secure session cookie on localhost; the application cookie stays Secure.
+It does not test deployment HTTPS, current-main images, cross-cluster roles,
+off-host recovery keys, attachments, external deliveries or production RPO/RTO.
+Initial private-checker failures (an incorrect route, ordinary Python cookie
+handling on HTTP and creation/snapshot timestamp precision) stop before any
+restore; each fixture is cleaned up. The final invocation passes the full
+restore and application checks above. This is supporting recovery evidence,
+not a substitute for current exact-commit CI or managed deployment acceptance.
+
 ## Deployment recovery remains an operator requirement
 
 The [Docker operator backup command](../release/README.md#encrypted-docker-postgresql-backups)

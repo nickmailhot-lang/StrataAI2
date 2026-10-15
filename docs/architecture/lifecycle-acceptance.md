@@ -431,3 +431,34 @@ file explicitly simulates its metadata/provider responses. Full immutable CI,
 the broader lifecycle/role/reconnect matrix, provider/backup authority and the
 remaining original acceptance criteria still govern closure. PRD-18 remains
 open at **15% estimated work remaining** (planning estimate).
+
+### Irreversible List-deletion request admission (2026-10-15)
+
+Retained run `38669873925`, job `116225070229`, passes 114 cases and fails the
+desktop List-deletion case before its first mutation. Browser artifact
+`11949204742` is independently verified against its 4,881,051-byte size and
+GitHub SHA-256. The trace shows the consent checkbox checked, followed by Enter
+on Confirm while protected archive/account reads start. No browser DELETE is
+sent; the original confirmation remains visible. The failing source file is
+unchanged between that candidate and the repair's parent revision. This is
+hosted trace evidence, without an unchanged local reproduction claim.
+
+Confirm now uses the existing bounded `pressObservedRequest` helper and the
+route observer that records the intended DELETE before awaiting its response.
+Keyboard admission stops when that one request starts. The deliberate lost
+committed response, explicit original-key recovery, exact two requests with
+identical key/body/query, consent, peer removal, retained graph, inaccessible
+children, focus, viewport and original 90-second deadline remain required.
+
+The complete List-deletion and Card-label files pass together at both widths:
+**4/4 in 206,684.21 ms**, zero failures/skips/flaky results and zero whole-test
+retries. Archive-verified retained images at
+`24f562464f706884e4a27577b61c65ff385b4263` run against fresh restricted
+PostgreSQL 17/pgvector with all 149 migrations. All 172 captured inputs match;
+original image identities and full Docker inventory are preserved after
+cleanup, with 1,699,129 owned temporary bytes removed. No image build/import/
+download or existing-database use occurs. Browser types and diff checks pass.
+The ordinary-account API fixture and disabled mail transport do not establish
+strict managed-mail or current-main/full-release acceptance. PRD-07 remains
+open at **17% estimated work remaining**, and PRD-18 at **15%**. Large-load
+testing remains disabled until the operational MVP is complete.

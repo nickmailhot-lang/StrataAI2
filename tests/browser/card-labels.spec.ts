@@ -1,7 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
-import { focusAdmittedControl, openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
+import { focusAdmittedControl, openAdmittedReview, pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
 for (const width of [1280, 390]) {
@@ -133,6 +133,12 @@ for (const width of [1280, 390]) {
       const edits: { url: string; key: string | undefined; body: string | null }[] = [];
       const filterActor = (await (await context.request.get('/me')).json()).id;
       const filterChanges: { url: string; key: string | undefined; source: Record<string, unknown> }[] = [];
+      let filterApplyDispatches = 0;
+      page.on('request', request => {
+        const url = new URL(request.url());
+        if (request.method() === 'POST' && url.pathname === `/boards/${board}/cards/filter-change`
+          && url.searchParams.get('change') === 'apply') filterApplyDispatches++;
+      });
       await page.route(`**/boards/${board}/cards/filter-change?*`, async route => {
         const request = route.request(); expect(request.method()).toBe('POST'); expect(request.postData()).toBeNull();
         expect(request.headers()['x-strataai-expected-actor']).toBe(filterActor);
@@ -171,7 +177,7 @@ for (const width of [1280, 390]) {
         await expect(matchMenu).toBeVisible({ timeout: 500 });
       }).toPass({ timeout: 5_000 });
       await matchMenu.getByRole('option', { name: 'Match ANY', exact: true }).press('Enter');
-      await expect(apply).toBeEnabled(); await apply.press('Enter');
+      await pressObservedRequest(apply, () => filterApplyDispatches, 3);
       await expect(filters.getByRole('link', { name: 'Labeled work — Planning', exact: true })).toBeVisible();
       expect(filterChanges).toHaveLength(3); expect(filterChanges[2].key).not.toBe(filterChanges[0].key);
       expect(filterChanges[2].source.eventId).not.toBe(filterChanges[0].source.eventId);

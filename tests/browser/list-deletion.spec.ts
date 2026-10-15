@@ -1,5 +1,6 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-07/18: irreversible List deletion reviews impact and recovers its committed receipt at ${width}px`, async ({ page, context }) => {
@@ -43,7 +44,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Confirm permanent deletion', exact: true })).toBeDisabled();
       expect(writes).toHaveLength(0);
       await page.getByRole('checkbox', { name: 'I understand this cannot be undone.', exact: true }).focus(); await page.keyboard.press('Space');
-      await page.getByRole('button', { name: 'Confirm permanent deletion', exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressObservedRequest(page.getByRole('button', { name: 'Confirm permanent deletion', exact: true }), () => writes.length, 1);
       await expect(page.getByRole('button', { name: 'Retry this deletion', exact: true })).toBeEnabled();
       await expect(page.getByRole('checkbox', { name: 'I understand this cannot be undone.', exact: true })).toBeDisabled();
       await expect(page.getByRole('button', { name: 'Cancel deletion', exact: true })).toHaveCount(0);
