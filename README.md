@@ -12,16 +12,18 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 The next release milestone is a [deployable, stable operational task-management MVP](docs/architecture/operational-mvp-milestone.md). Core workflow reliability and verified deployment take priority before new governance and AI modules; the complete PRD roadmap remains in force.
 
-**Latest passing CI release candidate:** [`02bf121d`](https://github.com/nickmailhot-lang/StrataAI2/commit/02bf121dae985412e75902b2c132b2338688a309)
-passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38660360386).
-[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38660360386/artifacts/11947266733)
-and follow the [operator guide](docs/release/README.md). This evidence identifies
+**Latest passing CI release candidate:** [`4cb80014`](https://github.com/nickmailhot-lang/StrataAI2/commit/4cb80014a9b9e863cdc68c9718e510886cade78b)
+passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706).
+[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706/artifacts/11958117523)
+and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/4cb80014a9b9e863cdc68c9718e510886cade78b/docs/release/README.md). This evidence identifies
 that exact candidate; later main changes require their own CI. Review
 [remaining deployment acceptance](docs/architecture/operational-mvp-milestone.md#current-status)
 before production promotion. Large-load tests remain deferred until after MVP.
-This candidate includes the external PostgreSQL TLS default and Production
-HTTPS-origin checks. It predates the source-free Demo bundle additions and
-later release-gate repairs. Use the instructions included in its own bundle;
+This candidate includes the PostgreSQL TLS contract, Production HTTPS-origin
+checks, source-free Demo with known sign-in, and runtime database-password
+rotation. It predates later recovery tools, the optional HTTPS listener,
+build-bound operator verification and bounded database readiness. Use the
+instructions included in its own bundle;
 see [the evidence and remaining gaps](docs/architecture/operational-mvp-milestone.md#current-status)
 before applying newer documentation to that artifact.
 

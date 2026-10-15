@@ -44,6 +44,37 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 ## Current status
 
 The latest completed CI release candidate is
+`4cb80014a9b9e863cdc68c9718e510886cade78b`:
+[run 38674444706](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706)
+passes all **16 jobs**, including all seven integration executions, security,
+required-CI and release assembly. Its
+[tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706/artifacts/11958117523)
+is **518,723,401 bytes**; GitHub reports SHA-256
+`c1dde5b5fe76afc5daf779cc3978a16cc66a9607ed8cf914f3090d8bb3b934f6`.
+The small canonical metadata archive is independently read and size/SHA verified,
+binding version `0.1.0-1748` and all three image references to this exact run/SHA.
+The full bundle has not been independently downloaded or executed here.
+
+The inspected hosted release job verifies original image/security identity and
+checksums, assembles the source-free payload, passes migrations/restricted
+Production health/build/proxy and graceful restart plus runtime-password
+rotation, then passes the exact-image source-free Demo gate with no database or
+volumes and the seeded sign-in. Final unchanged-payload verification passes
+before upload. Domain tests pass **1,033**; API tests pass **1,031** with the two
+capacity cases deferred. All **27** named capacity stages are observed and
+skipped; the repository phase setting remains `0`.
+
+This is a newer passing candidate, not current-main or MVP certification. It
+predates the encrypted recovery commands, optional HTTPS listener, build-bound
+operator verification, bounded readiness/outage repair and later browser/upgrade
+fixture changes. Those require their own complete immutable CI. Use the
+[guide included with this candidate](https://github.com/nickmailhot-lang/StrataAI2/blob/4cb80014a9b9e863cdc68c9718e510886cade78b/docs/release/README.md)
+and preserve the remaining deployment/provider acceptance below. The milestone
+and incomplete tickets remain open.
+
+### Previous completed CI candidate
+
+An earlier completed CI release candidate is
 `02bf121dae985412e75902b2c132b2338688a309`:
 [run 38660360386](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38660360386)
 passes all 16 jobs, including the build-once, security, seven integration,
