@@ -34,12 +34,14 @@ if [ "${GITHUB_ACTIONS:-}" = true ]; then
 fi
 compose=(docker compose --project-name "$project" --env-file .env -f compose.release.yml)
 inspection_file=''
+runtime_file=''
 cleanup() {
   local code=$? remaining resource
   trap - EXIT
   if ! "${compose[@]}" down --volumes --remove-orphans >/dev/null 2>&1; then code=1; fi
   rm -f .env
   if [ -n "$inspection_file" ]; then rm -f "$inspection_file"; fi
+  if [ -n "$runtime_file" ]; then rm -f "$runtime_file"; fi
   for resource in container volume network; do
     if [ "$resource" = container ]; then
       if ! remaining=$(docker ps -aq --filter "label=com.docker.compose.project=$project"); then code=1; continue; fi
@@ -77,11 +79,16 @@ chmod +x apply-migrations.sh migration-stream.sh provision-runtime-roles.sh heal
 COMPOSE_FILE=compose.release.yml bash apply-migrations.sh >/dev/null
 COMPOSE_FILE=compose.release.yml bash provision-runtime-roles.sh >/dev/null
 "${compose[@]}" up -d --wait --wait-timeout 180 >/dev/null
+runtime_file=$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/strataai-bundle-runtime.XXXXXX")
 check_runtime() {
+  local endpoint status host container actual expected
   bash health-check.sh >/dev/null
   for endpoint in http://127.0.0.1:8088/build-metadata.json http://127.0.0.1:8080/api/runtime http://127.0.0.1:8081/runtime; do
-    curl --fail --silent --show-error "$endpoint" | jq -e --arg revision "$revision" --arg version "$version" \
-      '.revision == $revision and .version == $version' >/dev/null
+    status=$(curl --silent --show-error --connect-timeout 5 --max-time 15 \
+      --output "$runtime_file" --write-out '%{http_code}' "$endpoint")
+    test "$status" = 200
+    jq -e --arg revision "$revision" --arg version "$version" \
+      '.revision == $revision and .version == $version' "$runtime_file" >/dev/null
   done
   for host in web api worker; do
     container=$("${compose[@]}" ps -q "$host")

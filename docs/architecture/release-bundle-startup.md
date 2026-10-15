@@ -139,6 +139,39 @@ original database is unused. This is scoped operator-driver evidence using
 earlier images, not a new full-release certification. Current exact-commit
 immutable CI and the remaining ARCH-12 acceptance still govern closure.
 
+## Runtime metadata status and request deadlines
+
+The assembled Production check previously used `curl --fail` for web/API/Worker
+build metadata. That accepts HTTP redirects. A real-HTTP fixture returning a
+301 with otherwise matching revision/version is incorrectly accepted by the
+previous check; the healthy 200 fixture passes. The old request also fails the
+new stalled-response deadline guard.
+
+Each metadata request now requires HTTP 200 before JSON identity validation,
+with a five-second connection bound and 15-second total bound. Its response
+uses a private temporary file removed by the existing teardown, including when
+Docker cleanup or resource inspection fails. No redirect is followed and no
+response body is logged. Health checks and the original image/revision/version
+comparisons remain mandatory before and after restart and secret rotation.
+
+Seventeen real-HTTP scenarios cover matching identities, 301/302/307 at each
+of the three endpoints, each endpoint unavailable, wrong revision/version,
+malformed JSON and a stalled response. The stalled fixture requires curl's own
+timeout result; an outer harness kill cannot count as a passing refusal. The
+fixture server also bounds its socket lifetime to prevent an orphaned Windows
+curl from holding the test child's pipes. All 53 startup scenarios and all 348
+selected CI guards pass, with Bash syntax, workflow lint and the mandatory
+integration inventory also passing.
+
+The actual updated Bash driver passes locally with the archive-bound
+`24f56246` application images: all 149 migrations, restricted Production
+startup, strict runtime metadata, health/proxy, original image identities,
+graceful restart and both runtime password rotations. All 157 captured
+driver/Compose/schema inputs match. Docker inventory is restored and
+522,340,182 bytes of temporary payload copies are removed. This supporting
+execution uses earlier tested images; current exact-commit complete CI and all
+remaining release acceptance remain required.
+
 ## Local source-free payload evidence, 2026-10-09
 
 The complete helper passes on Docker Desktop using the three exact exported and

@@ -3,6 +3,8 @@ import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSy
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { createServer } from 'node:http';
 import test from 'node:test';
 
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
@@ -33,6 +35,95 @@ test('startup refuses existing operator settings without rewriting or requiring 
 });
 
 const startupSource = readFileSync(script, 'utf8');
+const runtimeCheck = startupSource.match(/check_runtime\(\) \{[\s\S]*?\n\}/)?.[0];
+assert.ok(runtimeCheck, 'Maintained runtime identity check must be present');
+const runtimePaths = ['/build-metadata.json', '/api/runtime', '/runtime'];
+const runtimeCases = [
+  { name: 'matching exact identities' },
+  ...runtimePaths.flatMap(path => [301, 302, 307].map(status => ({ name: `${path} redirect ${status}`, path, status }))),
+  ...runtimePaths.map(path => ({ name: `${path} unavailable`, path, status: 503 })),
+  { name: 'wrong revision', body: { revision: 'b'.repeat(40), version: '1.0.0' } },
+  { name: 'wrong version', body: { revision: 'a'.repeat(40), version: '2.0.0' } },
+  { name: 'malformed metadata', malformed: true },
+  { name: 'stalled metadata response', stalled: true },
+];
+for (const scenario of runtimeCases) test(`release runtime metadata: ${scenario.name}`, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'strataai-runtime-metadata-'));
+  const server = createServer((request, response) => {
+    if (scenario.stalled) {
+      // Bound the server side too, so a missing client deadline cannot leave
+      // an orphaned curl holding the Bash child's output pipes on Windows.
+      request.socket.setTimeout(22_000, () => request.socket.destroy());
+      return;
+    }
+    response.statusCode = request.url === scenario.path ? scenario.status : 200;
+    response.setHeader('Content-Type', 'application/json');
+    if (response.statusCode >= 300 && response.statusCode < 400) response.setHeader('Location', '/redirect-target');
+    response.end(scenario.malformed ? '{' : JSON.stringify(scenario.body ?? { revision: 'a'.repeat(40), version: '1.0.0' }));
+  });
+  let child;
+  try {
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    const port = server.address().port;
+    // Health refusal behavior has its own real-HTTP suite. Isolate this
+    // identity boundary after a successful preceding health gate.
+    writeFileSync(join(root, 'health-check.sh'), '#!/usr/bin/env bash\nexit 0\n');
+    const driver = join(root, 'runtime-test.sh');
+    writeFileSync(driver, `#!/usr/bin/env bash
+set -euo pipefail
+compose=(docker compose)
+revision=${'a'.repeat(40)}
+version=1.0.0
+runtime_file=runtime-response.json
+declare -A loaded_image_ids=([web]=web-image [api]=api-image [worker]=worker-image)
+docker() {
+  if [ "$1" = compose ] && [ "$2" = ps ]; then printf '%s-container' "$4"; return 0; fi
+  if [ "$1" = inspect ] && [ "$3" = '{{.Image}}' ]; then printf '%s-image' "\${4%-container}"; return 0; fi
+  return 64
+}
+curl() {
+  local value; local args=()
+  for value in "$@"; do
+    value="\${value/127.0.0.1:8088/127.0.0.1:${port}}"
+    value="\${value/127.0.0.1:8080/127.0.0.1:${port}}"
+    value="\${value/127.0.0.1:8081/127.0.0.1:${port}}"
+    args+=("$value")
+  done
+  command curl "\${args[@]}"
+}
+${runtimeCheck}
+check_runtime
+printf verified > runtime.checked
+`);
+    let stdout = '', stderr = '';
+    const result = await new Promise((resolveResult, reject) => {
+      child = spawn(bash, [driver], { cwd: root, env: { ...process.env, BASH_ENV: undefined }, timeout: 25_000 });
+      child.stdout.on('data', chunk => { stdout += chunk; });
+      child.stderr.on('data', chunk => { stderr += chunk; });
+      child.on('error', reject);
+      child.on('close', (code, signal) => resolveResult({ code, signal }));
+    });
+    assert.equal(result.signal, null, 'Runtime request must have its own deadline before the outer fixture timeout');
+    assert.equal(child.killed, false, 'The outer fixture timeout must not substitute for a runtime request deadline');
+    if (scenario.stalled) assert.equal(result.code, 28, 'Stalled metadata must stop at curl\'s own deadline');
+    if (scenario.name === 'matching exact identities') {
+      assert.equal(result.code, 0, stderr);
+      assert.equal(readFileSync(join(root, 'runtime.checked'), 'utf8'), 'verified');
+    } else {
+      assert.notEqual(result.code, 0, 'Runtime metadata refusals must prevent promotion');
+      assert.throws(() => readFileSync(join(root, 'runtime.checked')), { code: 'ENOENT' });
+    }
+    assert.equal(stdout, '');
+  } finally {
+    child?.kill();
+    server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+    assert.equal(dirname(realpathSync(root)), realpathSync(tmpdir()));
+    assert.match(basename(root), /^strataai-runtime-metadata-/);
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 const restartStart = startupSource.indexOf('\napi=$(');
 const restartEnd = startupSource.indexOf('\n# ARCH-12-AC-003:');
 assert.ok(restartStart >= 0 && restartEnd > restartStart, 'Maintained restart sequence must be present');
@@ -219,12 +310,14 @@ for (const scenario of [
   fixture(root => {
     writeFileSync(join(root, '.env'), 'PRIVATE_TEST_SETTINGS=discard\n');
     writeFileSync(join(root, 'inspection.json'), 'PRIVATE_TEST_INSPECTION\n');
+    writeFileSync(join(root, 'runtime.json'), 'PRIVATE_TEST_RUNTIME\n');
     const driver = join(root, 'cleanup-test.sh');
     writeFileSync(driver, `#!/usr/bin/env bash
 set -euo pipefail
 project=strataai-bundle-smoke-0123456789abcdef
 compose=(docker compose)
 inspection_file=inspection.json
+runtime_file=runtime.json
 docker() {
   printf '%s\\n' "$*" >> calls.log
   if [ "$1" = compose ]; then
@@ -249,6 +342,7 @@ exit "$STRATAAI_TEST_UPSTREAM"
     assert.equal(result.stdout, '');
     assert.throws(() => readFileSync(join(root, '.env')), { code: 'ENOENT' });
     assert.throws(() => readFileSync(join(root, 'inspection.json')), { code: 'ENOENT' });
+    assert.throws(() => readFileSync(join(root, 'runtime.json')), { code: 'ENOENT' });
     const calls = readFileSync(join(root, 'calls.log'), 'utf8').trim().split('\n');
     assert.deepEqual(calls, [
       'compose down --volumes --remove-orphans',
