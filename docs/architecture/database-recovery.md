@@ -201,6 +201,43 @@ The backup/restore commands, maintained rehearsal and all production migrations
 remain unchanged through `e5570793`; this is scoped hosted implementation
 evidence, not a complete passing release or scheduled production recovery.
 
+## Source-issued protected activity cursor after restoration — 2026-10-15
+
+The [HTTPS recovery contract](../../scripts/ci/https-database-recovery.inc.sh)
+now carries an actual API-issued encrypted activity continuation across the
+fresh-cluster restore. A small fixture adds 51 already-published synthetic
+history rows to the one-Card Board, crossing the fixed 50-item page boundary.
+It records the first page, original token and nonempty disjoint continuation
+before stopping the source. The saved Secure session and fresh sign-in on the
+restored target must replay that same token and return the exact original
+continuation. Rebinding it to the Card must return `invalid_activity_cursor`.
+This verifies actual use of the retained key ring, rather than only its volume
+name. It does not recover keys from an off-host backup.
+
+The [eight controlled refusal/continuation cases](../../tests/https-recovery-cursor.test.mjs)
+reject missing cursors, incomplete first pages, empty/overlapping continuations,
+changed restored data, accepted rebinding and unrelated error codes. All **107**
+selected cursor, HTTPS realtime and startup/cleanup cases pass, along with
+**247** CI coverage guards, workflow lint and Bash syntax. The new cases are
+mandatory before image builds; the existing assembled HTTPS gate executes the
+actual restored-host check.
+
+The complete final local rehearsal passes in **210.904 seconds**. Source-issued
+cursor recovery, actual target and original Worker/WSS edits, source fingerprint,
+image identity and both projects' cleanup all pass. All **774** frozen inputs
+match; Docker inventory is restored and **798,596** owned temporary bytes are
+removed. It uses the archive-verified `24f56246` application images with current
+read-only edge settings and maintained recovery scripts, without building,
+downloading or importing images or using the original database.
+
+The initial invocation reaches successful cursor recovery but fails the existing
+live-stream check because the synthetic history was left Pending without jobs.
+The fixture now explicitly represents already-published history. The real
+Worker/edit assertions remain unchanged. Synthetic history does not prove 51
+command publications, capacity or performance; no large-load test runs.
+Current immutable-release CI, managed providers, off-host keys/objects and
+scheduled production recovery remain required. ARCH-08 and the MVP stay open.
+
 ## HTTPS application use after fresh-cluster restoration — 2026-10-15
 
 The mandatory assembled HTTPS gate now calls

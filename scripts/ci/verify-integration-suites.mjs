@@ -283,6 +283,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(startupSource.run.includes('node --test tests/release-bundle-startup.test.mjs'));
   assert.ok(startupSource.run.includes('node --test tests/release-demo-bundle-startup.test.mjs'));
   assert.ok(startupSource.run.includes('node --test tests/https-live-board.test.mjs'));
+  assert.ok(startupSource.run.includes('node --test tests/https-recovery-cursor.test.mjs'), 'Protected recovery cursor refusal checks must run before image builds');
   assert.ok(startupSource.run.includes('node --test tests/release-runtime.test.mjs'));
   assert.ok(startupSource.run.includes('node --test tests/release-database-outage.test.mjs'));
   assert.ok(startupSource.run.includes('node --test tests/https-certificate.test.mjs'));

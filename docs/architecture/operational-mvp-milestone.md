@@ -80,6 +80,17 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [source-issued activity continuation check](database-recovery.md#source-issued-protected-activity-cursor-after-restoration--2026-10-15)
+now carries an encrypted cursor across the actual HTTPS fresh-cluster restore.
+Saved and fresh sessions return the exact original continuation; Card rebinding
+is refused. Its 51 synthetic published history rows exercise one page boundary,
+while unchanged checks still require actual Worker/WSS edits. All 107 selected
+contracts and 247 CI guards pass. The complete final local rehearsal passes in
+210.904 seconds with all 774 frozen inputs matching and Docker inventory restored.
+This is retained-image supporting evidence; current immutable CI, deployed
+providers and off-host key/object recovery remain required. No large-load test
+runs, and ARCH-08/MVP remain open.
+
 The [HTTPS application recovery gate](database-recovery.md#https-application-use-after-fresh-cluster-restoration--2026-10-15)
 now requires application use after a fresh-cluster encrypted restore: saved and
 fresh Secure sessions read the exact graph, then the target Worker delivers an

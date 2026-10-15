@@ -1,5 +1,30 @@
 # Sourced by test-release-https-startup.sh after its one-Card HTTPS fixture exists.
 # Runtime commands use only the assembled bundle and its already loaded images.
+capture_recovery_activity_cursor() {
+  local token
+  request GET "/boards/$board/activity" 200
+  jq -e --arg org "$organization" --arg board "$board" '
+    .organizationId==$org and .targetId==$board and (.items|length)==50 and
+    (.nextCursor|type=="string" and length>20 and length<=2048 and test("^[A-Za-z0-9_-]+$"))' "$scratch/response" >/dev/null
+  cp "$scratch/response" "$scratch/activity-first-page.json"
+  token=$(jq -er '.nextCursor' "$scratch/response")
+  activity_path="/boards/$board/activity?after=$token"
+  request GET "$activity_path" 200
+  jq -e --arg org "$organization" --arg board "$board" --slurpfile first "$scratch/activity-first-page.json" '
+    .organizationId==$org and .targetId==$board and .nextCursor==null and
+    (.items|length>0 and length<=50) and
+    ([$first[0].items[].eventId] as $seen |
+      all(.items[]; .organizationId==$org and .boardId==$board and
+        (.eventId as $id | ($seen|index($id))==null)))' "$scratch/response" >/dev/null
+  cp "$scratch/response" "$scratch/activity-continuation.json"
+}
+check_recovery_activity_cursor() {
+  request GET "$activity_path" 200
+  jq -e --slurpfile before "$scratch/activity-continuation.json" '.==$before[0]' "$scratch/response" >/dev/null
+  # Same key material must not permit rebinding a Board cursor to its Card.
+  request GET "/cards/$card/activity?after=${activity_path#*after=}" 400
+  jq -e '.code=="invalid_activity_cursor"' "$scratch/response" >/dev/null
+}
 recovery_source_fingerprint() {
   {
     docker exec "$1" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format plain \
@@ -14,9 +39,25 @@ check_https_database_recovery() {
   local source_scope=${STRATAAI_WORKER_ORGANIZATION_IDS-}
   local source_database target_database source_identity target_identity key_volume source_fingerprint after_fingerprint
   local recovery_binding recovery_port archive_digest host container
+  local activity_path
   source_database=$("${compose[@]}" ps -q postgres)
   key_volume=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/lib/strataai/activity-keys"}}{{.Name}}{{end}}{{end}}' "$("${compose[@]}" ps -q api)")
   test -n "$key_volume"
+  # One extra history page, not a capacity/performance fixture. Synthetic rows
+  # exercise the real protected continuation without changing the task version.
+  docker exec -i "$source_database" psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 > "$scratch/recovery-history.log" 2>&1 <<SQL
+BEGIN;
+WITH stream AS (
+ UPDATE work_event_streams SET last_sequence=last_sequence+51,updated_at=clock_timestamp()
+ WHERE tenant_id='$organization' AND board_id='$board' RETURNING last_sequence)
+INSERT INTO work_events(tenant_id,event_id,board_id,sequence,actor_id,event_type,entity_type,entity_id,entity_version,correlation_id,created_at,ready_at)
+ SELECT '$organization',gen_random_uuid(),'$board',s.last_sequence-51+n,'$user','CARD_UPDATED','Card','$card',1,
+ 'https-recovery-history',timestamptz '2025-01-01 00:00:00+00'+n*interval '1 second',
+ timestamptz '2025-01-01 00:00:00+00'+n*interval '1 second'
+ FROM stream s CROSS JOIN generate_series(1,51) n;
+COMMIT;
+SQL
+  capture_recovery_activity_cursor
   cp "$scratch/cookies" "$scratch/source-cookies"
   "${compose[@]}" stop --timeout 20 api worker >/dev/null
   source_fingerprint=$(recovery_source_fingerprint "$source_database")
@@ -74,11 +115,14 @@ SQL
   "${recovery_compose[@]}" exec -T web wget -q -T 15 -O - http://worker:8081/readyz > "$scratch/recovery-worker-ready.json"
   jq -e '.status=="ready" and .mode=="production"' "$scratch/recovery-worker-ready.json" >/dev/null
   check_saved_task
+  check_recovery_activity_cursor
   # The saved session is checked before creating a separate new session.
   rm -f "$scratch/cookies"
   request POST /auth/login 200 "$credentials"
   grep -Eiq '^Set-Cookie: strataai_session=.*; secure' "$scratch/headers"
   check_saved_task
+  check_recovery_activity_cursor
+  echo 'HTTPS activity cursor recovery passed: source-issued encrypted continuation, exact restored page and Card rebinding refusal under saved and fresh sessions.'
   NODE_TLS_REJECT_UNAUTHORIZED=1 NODE_USE_ENV_PROXY=0 NODE_EXTRA_CA_CERTS="$(host_path "$scratch/server.crt")" \
     node --dns-result-order=ipv4first "$(host_path "$verification_dir/check-https-live-board.mjs")" \
     "$origin" "$(host_path "$scratch/cookies")" "$organization" "$board" "$card" "$user" > "$scratch/recovery-live-result.log"

@@ -87,6 +87,7 @@ jobs:
           node --test tests/release-bundle-startup.test.mjs
           node --test tests/release-demo-bundle-startup.test.mjs
           node --test tests/https-live-board.test.mjs
+          node --test tests/https-recovery-cursor.test.mjs
           node --test tests/health-check.test.mjs
           node --test tests/release-runtime.test.mjs
           node --test tests/release-database-outage.test.mjs

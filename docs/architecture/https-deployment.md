@@ -188,6 +188,13 @@ certificate-provider operation require separate evidence.
 
 ## Remaining deployment acceptance
 
+The [protected activity continuation recovery check](database-recovery.md#source-issued-protected-activity-cursor-after-restoration--2026-10-15)
+also requires a source-issued encrypted cursor to work on the restored HTTPS
+target under saved and fresh sessions, with exact data and Card rebinding refusal.
+The complete small local rehearsal passes using retained images and current
+edge/recovery scripts. This verifies use of the retained key ring; separately
+recovering off-host keys and certifying current immutable images remain required.
+
 The actual hostname, trusted public certificate, certificate renewal/expiry
 monitoring, DNS/firewall routing, external mail/storage/scanner settings,
 durable keys, backup operation and complete current-image CI still require
