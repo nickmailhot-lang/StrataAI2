@@ -4,6 +4,11 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [Collector job-label check](operator-metrics.md#bind-collector-job-labels-to-service-identity--2026-10-15)
+now refuses arbitrary/private or mismatched service text in otherwise valid
+scrapes. This repairs evidence validation; no application data leak is claimed.
+Current immutable-image CI and full MVP acceptance remain required.
+
 The [backlog dependency-failure rehearsal](operator-metrics.md#backlog-database-failure-and-recovery--2026-10-15)
 now verifies the actual compiled Worker host's availability `1 → 0 → 1`, bounded
 readiness refusal and unchanged job rows through database network recovery.

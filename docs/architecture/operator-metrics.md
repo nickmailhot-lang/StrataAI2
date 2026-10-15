@@ -1,5 +1,31 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Bind Collector job labels to service identity — 2026-10-15
+
+The CI scrape verifier previously permitted arbitrary `job` text alongside
+otherwise valid service/build metadata. Two direct probes accept a private host
+marker on API and Worker observations; 24 regression subcases also reproduce
+acceptance of private text, malformed scopes or the other service's identity.
+This is a gap in evidence validation, not evidence that the app exported those
+values or that a deployed Collector leaked data.
+
+The [pinned Collector 0.161.0 implementation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.161.0/exporter/prometheusexporter/utils.go)
+derives this label from its resource namespace and service name. With this
+fixture's fixed resource metadata, a present `job` must therefore be exactly
+`strataai/strataai-api` or `strataai/strataai-worker`, matching the sample's service.
+Omission remains supported. Empty, private, escaped, Unicode, suffixed and
+cross-service values are refused in healthy and unavailable-backlog modes.
+Existing duplicate-label, private-field, build, observation and recovery checks
+remain in force. App instrumentation and operator backend choices are unchanged.
+
+All **17 verifier cases** pass. The complete driver fixtures now include the
+Collector's matching job labels through healthy, unavailable and recovered
+collection. All **11 driver cases** pass with the revised fixtures, including
+refusals and cleanup. Hosted CI remains required before release acceptance.
+No Collector image is available locally, so this
+change does not claim a new live pinned-Collector run. No image is pulled, no
+database is used and no load test runs. ARCH-08 remains open.
+
 ## Backlog database failure and recovery — 2026-10-15
 
 The actual compiled Production Worker host from `be7bf9e4` passes a **76.227-second**

@@ -105,7 +105,7 @@ class OperatorFixtureDriverTests(unittest.TestCase):
                     content = content.replace('set -euo pipefail', 'set -euo pipefail\ntrap \'echo "Driver failure at line $LINENO" >&2\' ERR', 1)
                 (scripts / name).write_text(content, newline="\n")
             fixture = values.OperatorEvidenceTests()
-            (root / "metrics").write_text(fixture.fixture())
+            (root / "metrics").write_text(fixture.pinned_jobs(fixture.fixture()))
             (root / "stub.py").write_text(STUB)
             commands = root / "commands"
             commands.mkdir()

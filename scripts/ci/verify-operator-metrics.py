@@ -76,6 +76,10 @@ def verify(raw, revision, version, *, backlog_available=1):
         service = "strataai-worker" if worker else "strataai-api"
         if labels.get("service_name") != service or labels.get("service_namespace") != "strataai":
             return False
+        # The pinned Collector derives job from these resource attributes; it
+        # cannot be a free-form host, recipient, tenant or alternate service.
+        if "job" in labels and labels["job"] != f"strataai/{service}":
+            return False
         if worker:
             outcomes = {"organization": {"completed", "retried", "lease_lost", "unknown"},
                         "identity_email": {"sent", "cancelled", "retried", "failed", "lease_lost", "unknown"}}

@@ -11,6 +11,38 @@ class OperatorEvidenceTests(unittest.TestCase):
     revision = "a" * 40
     version = "0.1.0-1"
 
+    @staticmethod
+    def pinned_jobs(raw):
+        for service in ['strataai-api', 'strataai-worker']:
+            raw = raw.replace(f'service_name="{service}"', f'job="strataai/{service}",service_name="{service}"')
+        return raw
+
+    def test_optional_collector_job_matches_its_service_in_healthy_and_unavailable_modes(self):
+        raw = self.pinned_jobs(self.fixture())
+        self.assertTrue(metrics.verify(raw, self.revision, self.version))
+        # Omission remains supported; it cannot introduce an arbitrary label.
+        self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))
+        available = next(line for line in raw.splitlines() if line.startswith('strataai_worker_scoped_backlog_available{'))
+        unavailable = raw.replace(available, available[:-1] + '0')
+        self.assertTrue(metrics.verify(unavailable, self.revision, self.version, backlog_available=0))
+
+    def test_collector_job_cannot_carry_private_values_or_override_service_identity(self):
+        for service, family in [('strataai-api', 'strataai_http_server_requests{'),
+                                ('strataai-worker', 'strataai_worker_jobs{')]:
+            raw = self.pinned_jobs(self.fixture())
+            original = next(line for line in raw.splitlines() if line.startswith(family))
+            other = 'strataai-worker' if service == 'strataai-api' else 'strataai-api'
+            for value in ['', service, f'strataai/{other}', 'private-person@example.test', 'private-host.example.test',
+                          f'strataai/{service}/private-suffix', f'STRATAAI/{service}', f'strataai/{service} ',
+                          r'private\\host', r'private\nhost', 'private,inside', 'private/unicode-\u00e9']:
+                bad = original.replace(f'job="strataai/{service}"', f'job="{value}"')
+                changed = raw.replace(original, bad)
+                available = next(line for line in changed.splitlines() if line.startswith('strataai_worker_scoped_backlog_available{'))
+                with self.subTest(service=service, value=value):
+                    self.assertFalse(metrics.verify(changed, self.revision, self.version))
+                    self.assertFalse(metrics.verify(changed.replace(available, available[:-1] + '0'),
+                                                    self.revision, self.version, backlog_available=0))
+
     def fixture(self):
         common = f'service_name="strataai-api",service_namespace="strataai",service_version="{self.version}",strataai_build_revision="{self.revision}"'
         observations = [("strataai_activity_client_events", 'action="organization_creation_disclosure",kind="open"'),
