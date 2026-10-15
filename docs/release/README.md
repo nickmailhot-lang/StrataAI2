@@ -97,6 +97,14 @@ The initially empty API retry-key fields are required: configure a current key
 version and a JSON ring of base64 32-byte secrets before starting the API. See
 [required production configuration](../architecture/configuration.md).
 
+All three application image settings are required, including when starting only
+PostgreSQL for migrations. Missing or empty values stop Compose before it starts
+services. Release Compose never pulls application images automatically: load the
+verified archives first (or explicitly fetch the verified immutable registry
+references), then use those references. This prevents a missing setting from
+silently selecting a local development tag. PostgreSQL and optional support
+services retain their documented provider images.
+
 The included authentication policy defaults disable self-registration and
 require verified email. To permit initial account enrollment, set
 `STRATAAI_AUTH_ALLOW_SELF_REGISTRATION=true` after configuring the intended

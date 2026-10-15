@@ -29,6 +29,10 @@ Keep the prior known-good record and bundle until the candidate is accepted and 
 ## Promote the candidate
 
 1. Require completed successful CI for the exact candidate revision, including required integration/security/release gates. Verify the retained image/security identities and checksums using the release guide. Load those original three images; do not rebuild them on the deployment host.
+   Release Compose requires all three image references and never automatically
+   pulls application images. An explicitly verified registry digest can also be
+   fetched before starting the deployment; omitted or empty references fail
+   configuration instead of selecting a development image.
 2. Review migrations and application compatibility before applying changes. Forward-only or irreversible changes need a phased procedure and verified recovery plan. Do not assume an older image accepts a newer schema or reverse SQL files automatically.
 3. Preserve the same project name and environment configuration. Set the three image references to the verified candidate values. Apply the candidate's migrations and provision restricted roles from its release directory, as documented in the release guide.
 4. Start the candidate and require health/readiness for web, API, Worker and the web-to-API proxy. Check that API and Worker build metadata match the candidate revision. Validate sign-in, a persisted Board/List/Card workflow, authorized collaboration and enabled storage/mail providers through the deployment's configured origins.
@@ -41,6 +45,17 @@ Use the retained previous bundle and its verified image references, the same pri
 Image rollback is permitted only when the previous image is compatible with the database and current provider contracts. When it is not, follow the reviewed phased recovery procedure: a tested forward repair or explicitly planned restoration, including writes and external effects since the backup. Restoring PostgreSQL alone does not restore object storage, key rings or external deliveries. This guide does not supply automatic database reversal or claim a completed backup/restore drill.
 
 ## Current evidence and limits
+
+The release image-selection checks execute Docker Compose configuration with
+each application reference omitted and explicitly empty. Before repair all six
+negative cases accepted a `:local` fallback, while both explicit tag/digest
+cases lacked a no-pull policy. Release Compose now requires every reference
+and uses `pull_policy: never` for web/API/Worker. All 17 configuration tests
+pass, including the four image-selection tests and their per-host subcases;
+the 27 artifact-integrity tests, mandatory integration inventory and workflow
+lint also pass. These are configuration and integrity checks: no container,
+image, volume or database is changed. New exact-commit immutable-image CI is
+still required, and this does not establish production promotion or rollback.
 
 The release health script requires HTTP 200 from all six health/readiness
 endpoints, rejects redirects, discards response bodies and bounds each request.

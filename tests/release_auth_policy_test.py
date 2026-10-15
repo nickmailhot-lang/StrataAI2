@@ -38,7 +38,9 @@ class ReleaseAuthenticationPolicyTests(unittest.TestCase):
         environment = {key: value for key, value in os.environ.items()
                        if not key.startswith(('STRATAAI_', 'POSTGRES_', 'COMPOSE_'))}
         fixture = {'POSTGRES_PASSWORD': 'compose-test-admin', 'STRATAAI_API_DB_PASSWORD': 'compose-test-api',
-                   'STRATAAI_WORKER_DB_PASSWORD': 'compose-test-worker', **settings}
+                   'STRATAAI_WORKER_DB_PASSWORD': 'compose-test-worker',
+                   **{f'STRATAAI_{host.upper()}_IMAGE': f'strataai-{host}:' + 'a' * 40
+                      for host in ('web', 'api', 'worker')}, **settings}
         with tempfile.TemporaryDirectory(prefix='strataai-compose-policy-') as temporary:
             root = Path(temporary).resolve()
             self.assertEqual(root.parent, Path(tempfile.gettempdir()).resolve())
@@ -130,6 +132,65 @@ class ReleaseAuthenticationPolicyTests(unittest.TestCase):
         self.assertTrue(model['api']['ConnectionStrings__IdentityDeliveryPostgres'] is None)
         self.assertTrue(model['worker']['STRATAAI_IDENTITY_EMAIL_API_KEY'] == private['STRATAAI_IDENTITY_EMAIL_API_KEY'])
         self.assertTrue(model['worker']['ConnectionStrings__IdentityDeliveryPostgres'] == private['STRATAAI_IDENTITY_DELIVERY_CONNECTION_STRING'])
+
+
+class ReleaseImageSelectionTests(unittest.TestCase):
+    def render(self, settings):
+        docker = shutil.which('docker')
+        if not docker and os.name == 'nt':
+            docker = str(Path(os.environ['LOCALAPPDATA']) / 'Programs/DockerDesktop/resources/bin/docker.exe')
+        self.assertTrue(docker)
+        environment = {key: value for key, value in os.environ.items()
+                       if not key.startswith(('STRATAAI_', 'POSTGRES_', 'COMPOSE_'))}
+        fixture = {'POSTGRES_PASSWORD': 'image-fixture-admin',
+                   'STRATAAI_API_DB_PASSWORD': 'image-fixture-api',
+                   'STRATAAI_WORKER_DB_PASSWORD': 'image-fixture-worker', **settings}
+        with tempfile.TemporaryDirectory(prefix='strataai-release-images-') as temporary:
+            root = Path(temporary).resolve()
+            self.assertEqual(root.parent, Path(tempfile.gettempdir()).resolve())
+            path = root / 'fixture.env'
+            path.write_text(''.join(f'{key}={value}\n' for key, value in fixture.items()), encoding='utf-8')
+            return subprocess.run([docker, 'compose', '--env-file', str(path), '-f',
+                                   str(Path(__file__).resolve().parents[1] / 'compose.release.yml'),
+                                   'config', '--format', 'json'], env=environment,
+                                  capture_output=True, timeout=30)
+
+    def references(self, digest=False):
+        return {f'STRATAAI_{host.upper()}_IMAGE':
+                f'ghcr.io/example/strataai-{host}' + ('@sha256:' + 'a' * 64 if digest else ':' + 'a' * 40)
+                for host in ('web', 'api', 'worker')}
+
+    def assert_selected(self, references):
+        result = self.render(references)
+        self.assertEqual(result.returncode, 0, 'Explicit retained image references must render')
+        services = json.loads(result.stdout)['services']
+        for host in ('web', 'api', 'worker'):
+            service = services[host]
+            self.assertEqual(service['image'], references[f'STRATAAI_{host.upper()}_IMAGE'])
+            self.assertNotIn('build', service)
+            self.assertEqual(service.get('pull_policy'), 'never', 'Release must use the loaded, verified application images')
+
+    def test_explicit_commit_tags_are_selected_without_build_or_pull(self):
+        self.assert_selected(self.references())
+
+    def test_explicit_digests_are_selected_without_build_or_pull(self):
+        self.assert_selected(self.references(digest=True))
+
+    def test_each_missing_application_image_is_refused(self):
+        for key in self.references():
+            with self.subTest(setting=key):
+                settings = self.references()
+                del settings[key]
+                self.assertNotEqual(self.render(settings).returncode, 0,
+                                    'Missing image settings must not select a local default')
+
+    def test_each_empty_application_image_is_refused(self):
+        for key in self.references():
+            with self.subTest(setting=key):
+                settings = self.references()
+                settings[key] = ''
+                self.assertNotEqual(self.render(settings).returncode, 0,
+                                    'Empty image settings must not select a local default')
 
 
 class ReleaseDemoConfigurationTests(unittest.TestCase):

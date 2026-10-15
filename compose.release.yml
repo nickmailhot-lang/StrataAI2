@@ -17,7 +17,8 @@ services:
       retries: 12
 
   api:
-    image: ${STRATAAI_API_IMAGE:-strataai-api:local}
+    image: ${STRATAAI_API_IMAGE:?Set the retained API image from build-metadata.json}
+    pull_policy: never
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,7 +55,8 @@ services:
       - strataai-activity-keys:/var/lib/strataai/activity-keys
 
   worker:
-    image: ${STRATAAI_WORKER_IMAGE:-strataai-worker:local}
+    image: ${STRATAAI_WORKER_IMAGE:?Set the retained Worker image from build-metadata.json}
+    pull_policy: never
     depends_on:
       postgres:
         condition: service_healthy
@@ -87,7 +89,8 @@ services:
       - "8081:8081"
 
   web:
-    image: ${STRATAAI_WEB_IMAGE:-strataai-web:local}
+    image: ${STRATAAI_WEB_IMAGE:?Set the retained web image from build-metadata.json}
+    pull_policy: never
     depends_on:
       api:
         condition: service_healthy
