@@ -4,30 +4,92 @@ The authoritative requirements are GitHub issue #14. This audit preserves the
 full ticket scope; implementing command controls is not sufficient for closure.
 It includes the source, interaction and measurement coverage added after item ordering.
 
+## Executed release-candidate evidence (2026-10-15)
+
+Candidate `4cb80014a9b9e863cdc68c9718e510886cade78b`,
+[run 38674444706](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706),
+passes all 16 jobs, including build-once images, seven integration executions,
+security, required-CI and release assembly. This audit inspects actual completed
+job logs rather than inferring Checklist coverage from the green run.
+
+All **21 current Checklist case titles across ten files** match individual
+passing log entries. The ten files are unchanged between this candidate and
+the audit's parent revision `5845da8b`. Collection identifies the expected cases;
+the matching completed job lines establish execution. The candidate predates
+later shared deployment/readiness repairs, so it does not certify current-main
+images or the complete MVP milestone. Historical investigations below retain
+their original evidence boundaries; this section and the matrix supersede
+their statements that the original browser cases have never executed.
+
+| Executed scope | Completed exact-image evidence |
+| --- | --- |
+| Reads, empty/full progress, Checklist create/rename and live two-session refresh | [checklist-reads.spec.ts](../../tests/browser/checklist-reads.spec.ts), desktop/phone, two passes |
+| Checklist order and confirmed deletion with exact original-key recovery | [position](../../tests/browser/checklist-position.spec.ts) and [deletion](../../tests/browser/checklist-delete.spec.ts), four passes |
+| Item create/edit/complete/uncomplete/order/delete, completion attribution and live progress | [create](../../tests/browser/checklist-item-create.spec.ts), [edit](../../tests/browser/checklist-item-edit.spec.ts), [position](../../tests/browser/checklist-item-position.spec.ts), [delete](../../tests/browser/checklist-item-delete.spec.ts), eight passes |
+| Concurrent drafts/server conflict, real socket outage/reconnect, committed lost reply and revoked access | [collaboration](../../tests/browser/checklist-collaboration.spec.ts), two passes |
+| Pending rename across Card/List archive, restore and deletion | [parent lifecycle](../../tests/browser/checklist-parent-lifecycle.spec.ts), four passes |
+| Small normal-condition feedback, paged items and latency budgets | [performance](../../tests/browser/checklist-performance.spec.ts), one pass |
+
+The 20 functional cases pass in
+[full shard 2, job 116241955454](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706/job/116241955454).
+That shard reports 96 passed and two conditional skips; none of the 20 Checklist
+cases is skipped. The normal benchmark passes in
+[full shard 4, job 116241955348](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706/job/116241955348).
+The commands job additionally reports canonical creation/reads/progress,
+original receipt recovery, atomic rollback, rank exhaustion and lifecycle
+admission passed. The PostgreSQL job reports forced tenant RLS, composite
+parent integrity, ordering, attribution/timestamps, tombstone progress and
+rollback passed. Those broad contract summaries do not independently establish
+every unnumbered PRD requirement.
+
+The [retained normal-performance artifact](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706/artifacts/11956055514)
+is independently checked in memory: **2,318 bytes**, SHA-256
+`bfb11228db454a1b86886d0201580e77515a17f6b8c3e999e343946a4b7ba094`,
+with embedded metadata and measurements bound to this exact SHA/run. Its
+Checklist fixture has three Lists, 50 Cards, two Checklists, 63 items and 20
+actual mutation samples; it is a small normal-condition benchmark, not a
+large-load test. All original budgets pass:
+
+| Measurement | Result | Budget |
+| --- | ---: | ---: |
+| Usable Board | 571.882 ms | <1,500 ms |
+| Cached detail, browser-painted editable | 117.300 ms | <200 ms |
+| Pending creation feedback | 51.800 ms | <100 ms |
+| Mutation acknowledgment p95, 20 samples | 55.305 ms | <500 ms |
+
+The first and second item-page observations are 107.019 and 100.997 ms, with
+the original 50/13 seek-page assertions. No additional page budget is invented.
+The 20 samples independently reproduce the reported p95. Large capacity,
+Checklist-specific Board-scroll/context proof, full deployed telemetry and
+current-main release acceptance remain outstanding. PRD-13 stays open at
+**33% estimated work remaining**, unchanged planning estimate. All 27 named
+capacity stages remain deferred; no new browser, container or load test is run
+by this evidence audit and no Docker resource is created.
+
 ## Functional requirements
 
 | Requirement | Current implementation | Evidence and remaining verification |
 | --- | --- | --- |
-| CHECK-FR-001/002 | Multiple persisted ordered Checklists, stable scoped identity/title/rank/time/version | Domain/API tests, forced-RLS migration 040 and exact-image Checklist fixture; full new UI browser execution pending |
-| CHECK-FR-003 | Ordered scoped items with completion actor/time | `ChecklistTests.cs`, `ChecklistApiTests.cs`, strict browser response parsers; completion/history UI browser cases pending |
-| CHECK-FR-004 | Checklist create/rename/position/admin-confirmed cascade delete | Application commands and MUI create/root manager; command host/image fixtures and local component tests; full browser suite pending |
-| CHECK-FR-005 | Item create/edit/complete/uncomplete/position/admin-confirmed delete | Application commands and item manager; host/image fixtures and local component tests; full browser suite pending |
-| CHECK-FR-006/007 | Progress uses all active items independent of the current page; empty is 0% | API aggregate and parser tests, 63-item exact-image fixture; UI two-session/empty-progress browser cases pending |
+| CHECK-FR-001/002 | Multiple persisted ordered Checklists, stable scoped identity/title/rank/time/version | Candidate `4cb80014` passes canonical command/storage contracts and desktop/phone reads/position cases above. Current-main complete release acceptance remains required. |
+| CHECK-FR-003 | Ordered scoped items with completion actor/time | Candidate item-edit cases check `completedBy`, `completedAt`, retention through rename and nulling on uncompletion; ordering and command/storage contracts pass. Complete current release/permission coverage remains required. |
+| CHECK-FR-004 | Checklist create/rename/position/admin-confirmed cascade delete | Candidate desktop/phone read/create/rename, positioning and confirmed-deletion/original-receipt cases pass. Current-main full CI remains required. |
+| CHECK-FR-005 | Item create/edit/complete/uncomplete/position/admin-confirmed delete | All eight candidate desktop/phone item command cases pass, including exact committed/lost-response recovery and live peers. Current-main full CI remains required. |
+| CHECK-FR-006/007 | Progress uses all active items independent of the current page; empty is 0% | Candidate two-session/empty-progress cases and 63-item/50+13 seek-page benchmark pass. Supported large-capacity acceptance is explicitly deferred until post-MVP. |
 | CHECK-FR-008 | No item member assignment or due fields | Domain/schema/API shapes and item editors; item completion remains independent of Card due completion |
 
 ## Interaction and scenario coverage
 
 | Scenario | Current evidence | What is still required |
 | --- | --- | --- |
-| TC-01/02 primary/empty | Source/host/image commands; local reader/create/root/item manager tests | Execute all desktop/mobile Checklist browser cases against the exact release images |
+| TC-01/02 primary/empty | Candidate exact-image desktop/phone read/create/rename/empty-progress cases pass | Revalidate against current-main immutable images and remaining full-ticket scope |
 | TC-03/04 input/authorization | Domain validation, host permission/tenant/public-read cases, image RLS and post-wait visibility checks | Confirm current exact-image release gate; preserve disclosure-before-validation fencing |
-| TC-05 permission changes | Host replays revalidate current rights; component checks hide/disable protected data and commands during re-admission; desktop/mobile collaboration cases cover dirty drafts and revoke contributor membership with a real committed/lost-reply item command unresolved, check UI recovery/content removal, denied reads/new writes/original-key replay and exact unchanged owner-visible canonical content | Execute the new real-image cases; browser evidence remains pending |
-| TC-06/07 timeout/idempotency | Original actor/body/key/revision recovery in host/image/component tests | Execute real server-committed/lost-response browser fixtures for every command |
-| TC-08 concurrent clients | Server Card/Checklist/item CAS and local dirty-draft/conflict checks; desktop/mobile collaboration cases now hold an actual submitted contributor request while the owner commits through UI, assert server 409 and retained dirty choices, then explicitly discard/review the canonical item | Execute the new real-image cases; no passing-browser claim from discovery |
-| TC-09 disconnect recovery | Shared Board event delivery/replay infrastructure; content-free Card aggregate events; collaboration cases now close the actual proxied socket, reject reconnects, recover missed completion through HTTP events and observe another change after reconnect without page navigation | Execute the new real-image cases; authored/discovered cases are not passing evidence |
-| TC-10 lifecycle | Host/image Card/List archive/restore/delete retains exact children, fences writes and prior receipts; List copy excludes tombstones; four new Card/List desktop/mobile browser cases hold a committed rename acknowledgment across archive/restore/delete, check read-only retention/replay fencing and restored original receipt, and remove deleted scope | Execute the new real-image cases; shared PRD-18 retention work remains separate unfinished scope |
-| TC-11/12 keyboard/mobile | Accessible MUI names/status/progress, component focus tests; new 1280/390px browser cases authored | Execute full WCAG/keyboard cases; verify Board scroll/context preservation for Checklist interactions |
-| TC-13 large data/performance | Bounded 50+1 seek pages and full 63-row aggregate/copy/cascade fixtures; shared normal Board performance evidence; new normal Checklist benchmark asserts 50/13 item pages with full progress and measures 50-Card Board readiness, cached detail, creation feedback and 20 actual completion mutations; new mandatory image capacity fixture seeds 200 Lists/5000 active Cards/100000 archived Cards and exercises actual API reads/seek pages/completion | Execute both fixtures against exact images and retain evidence; unchanged normal 1500/200/100/500 ms budgets; large client/scroll/context behavior still needs verification |
+| TC-05 permission changes | Candidate desktop/phone collaboration passes dirty-draft withdrawal, unresolved committed item recovery, revoked membership, refused reads/new writes/original-key replay and unchanged owner-visible state | Current-main complete CI and remaining role/visibility matrices |
+| TC-06/07 timeout/idempotency | Candidate exact-image browser cases pass original actor/body/key/revision recovery after real committed/lost responses across Checklist/item commands | Current-main immutable CI and complete retry/expiry/permission acceptance |
+| TC-08 concurrent clients | Candidate desktop/phone collaboration passes a held submitted request, actual competing owner change, server 409, retained dirty choices and explicit discard/current canonical review | Current-main immutable CI and remaining concurrency matrices |
+| TC-09 disconnect recovery | Candidate collaboration passes real proxied socket closure, rejected reconnects, missed completion recovery and a later live change without page navigation | Current-main immutable CI and complete transport/role acceptance |
+| TC-10 lifecycle | Four candidate Card/List desktop/phone cases pass committed pending rename, archive/restore/replay fencing and deleted-scope withdrawal | Current-main immutable CI and shared PRD-18 retention acceptance |
+| TC-11/12 keyboard/mobile | Candidate 1280/390px cases execute keyboard/focus and tagged Axe checks | Checklist-specific Board-scroll/context proof and broader WCAG/current-release acceptance |
+| TC-13 large data/performance | Candidate normal benchmark passes 50/13 item pages/full progress, 50-Card readiness, cached detail, immediate creation feedback and 20 actual completion mutations; retained measurements independently checked above | Full 200-List/5,000-active/100,000-archived capacity acceptance is explicitly post-MVP. Large client behavior, Checklist-specific context and current-main acceptance remain required; normal 1500/200/100/500 ms budgets are unchanged. |
 
 ## Events, telemetry and shared dependencies
 
@@ -49,12 +111,11 @@ configured OTLP export path. Deployed collection, dashboards, render-exception
 coverage and complete telemetry acceptance remain incomplete, as described by
 the shared telemetry documents. Audit remains authoritative for business history.
 
-The ticket also depends on PRD-08/22 and cross-PRD lifecycle/copy behavior. New
-source stages are passing, but exact-image browser runs are live or pending;
-known earlier label/assignee keyboard failures have a repair on main pending
-execution. No full release-green or PRD-13 closure is claimed. Future updates must
-replace pending entries with authoritative executed evidence, not infer success
-from compilation, test discovery or a narrow passing stage.
+The ticket also depends on PRD-08/22 and cross-PRD lifecycle/copy behavior.
+The candidate execution above supersedes the original pending-browser status;
+full current-main release acceptance and the remaining complete PRD requirements
+are still unproven. No PRD-13 closure is claimed. Historical evidence below must
+be read at its captured revision rather than as current release certification.
 
 The Checklist benchmark holds creation before server submission and measures the
 first rendered pending status/disabled submit control from the captured submit
@@ -65,7 +126,8 @@ real HTTP and acknowledgment parsing. Item-page latency is recorded separately
 without inventing a ticket budget. Retained evidence includes only fixed fixture
 sizes, timings, sample arrays, budgets and executed status, never object IDs or
 Checklist text. Seven reporter tests and ten creation-control tests pass locally;
-the benchmark is discovered, not yet executed. Capacity and telemetry remain open.
+the benchmark has now executed successfully at candidate `4cb80014`, as recorded
+above. Capacity, complete telemetry and current-main release acceptance remain open.
 
 `scripts/ci/test-checklist-capacity.sh` is a separate mandatory container stage
 using the already-built release API/PostgreSQL/Nginx topology. It creates an

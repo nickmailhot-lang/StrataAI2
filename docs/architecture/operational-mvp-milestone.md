@@ -43,6 +43,14 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [Checklist acceptance audit](checklist-acceptance.md#executed-release-candidate-evidence-2026-10-15)
+matches all 21 Checklist cases in ten unchanged files to passing job-log entries
+at the completed `4cb80014` candidate below. It independently checks the small
+retained performance artifact and all four original normal-condition budgets.
+This replaces stale unexecuted-browser entries with actual evidence. Large
+capacity, Checklist-specific Board-context proof, deployed telemetry and full
+current-main acceptance remain open; no ticket is closed by the audit.
+
 The latest completed CI release candidate is
 `4cb80014a9b9e863cdc68c9718e510886cade78b`:
 [run 38674444706](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706)
