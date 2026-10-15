@@ -21,6 +21,14 @@
       [
         "artifacts/metrics/operator.json",
         "operator.json"
+      ],
+      [
+        "artifacts/metrics/backlog-unavailable.json",
+        "backlog-unavailable.json"
+      ],
+      [
+        "artifacts/metrics/backlog-recovered.json",
+        "backlog-recovered.json"
       ]
     ]
   },

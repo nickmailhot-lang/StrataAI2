@@ -129,6 +129,7 @@ jobs:
       - name: Verify operator evidence rejects missing and private metric fields
         run: |
           python3 -m unittest discover -s tests -p 'operator_metrics_test.py'
+          python3 -m unittest discover -s tests -p 'operator_metrics_fixture_test.py'
           python3 -m unittest discover -s tests -p 'console_log_evidence_test.py'
 
       - name: Verify Organization latency evidence and sample boundaries
@@ -952,7 +953,7 @@ jobs:
 
       - name: Prepare Retain fixed operator collection evidence
         if: always() && (matrix.suite == 'commands')
-        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/operator-metrics --entry "artifacts/metrics/operator.json" "operator.json"
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/operator-metrics --entry "artifacts/metrics/operator.json" "operator.json" --entry "artifacts/metrics/backlog-unavailable.json" "backlog-unavailable.json" --entry "artifacts/metrics/backlog-recovered.json" "backlog-recovered.json"
 
       - name: Retain fixed operator collection evidence
         if: always() && (matrix.suite == 'commands')

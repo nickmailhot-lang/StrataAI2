@@ -95,6 +95,38 @@ class OperatorEvidenceTests(unittest.TestCase):
             with self.subTest(observation=observation):
                 self.assertFalse(metrics.verify(self.fixture() + '\n' + observation, self.revision, self.version))
 
+    def test_unavailable_backlog_requires_current_zero_and_never_accepts_stale_healthy_availability(self):
+        raw = self.fixture()
+        available = next(line for line in raw.splitlines() if line.startswith('strataai_worker_scoped_backlog_available{'))
+        failed = raw.replace(available, available[:-1] + '0')
+        self.assertTrue(metrics.verify(failed, self.revision, self.version, backlog_available=0))
+        self.assertFalse(metrics.verify(failed, self.revision, self.version))
+        self.assertFalse(metrics.verify(raw, self.revision, self.version, backlog_available=0))
+        # SDK/Collector gauge retention can preserve old counts: availability
+        # zero makes those counts unusable. Missing counts also remain valid.
+        missing = '\n'.join(line for line in failed.splitlines() if not line.startswith('strataai_worker_scoped_backlog{'))
+        self.assertTrue(metrics.verify(missing, self.revision, self.version, backlog_available=0))
+        self.assertFalse(metrics.verify(missing, self.revision, self.version))
+
+    def test_backlog_availability_rejects_duplicate_and_mixed_current_samples(self):
+        raw = self.fixture()
+        available = next(line for line in raw.splitlines() if line.startswith('strataai_worker_scoped_backlog_available{'))
+        for suffix in [available, available[:-1] + '0']:
+            self.assertFalse(metrics.verify(raw + '\n' + suffix, self.revision, self.version))
+            self.assertFalse(metrics.verify(raw + '\n' + suffix, self.revision, self.version, backlog_available=0))
+
+    def test_unavailable_backlog_does_not_weaken_other_observations_or_private_field_refusal(self):
+        raw = self.fixture()
+        available = next(line for line in raw.splitlines() if line.startswith('strataai_worker_scoped_backlog_available{'))
+        failed = raw.replace(available, available[:-1] + '0')
+        for invalid in [failed.replace('strataai_worker_jobs', 'unknown_worker_family'),
+                        failed.replace('method="GET"', 'method="private-method"'),
+                        failed.replace('queue="organization"', 'queue="organization",organization_id="private"'),
+                        failed.replace(self.revision, 'b' * 40)]:
+            self.assertFalse(metrics.verify(invalid, self.revision, self.version, backlog_available=0))
+        for expected in [-1, 2, None, '0', False]:
+            self.assertFalse(metrics.verify(failed, self.revision, self.version, backlog_available=expected))
+
     def test_worker_requires_own_service_identity_and_bounded_queue_outcome(self):
         for original, replacement in [('queue="organization"', 'queue="private-job-type"'),
                                       ('queue="organization",outcome="completed"', 'queue="organization",outcome="sent"'),

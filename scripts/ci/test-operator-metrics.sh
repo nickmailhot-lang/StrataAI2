@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 umask 077
-test "${CI:-}" = true || { echo 'Disposable operator metrics fixture is CI-only.' >&2; exit 1; }
+test "${CI:-}" = true && test "${GITHUB_ACTIONS:-}" = true || { echo 'Disposable operator metrics fixture requires GitHub Actions.' >&2; exit 1; }
 scratch=$(mktemp -d)
 worker_changed=false
+postgres_stopped=false
 backlog_pending=''
 backlog_running=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 restore() {
   local failed=0
+  if $postgres_stopped; then
+    docker compose -f compose.release.yml up -d --wait --wait-timeout 180 postgres >/dev/null || failed=1
+  fi
   if $worker_changed; then
     docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null || failed=1
   fi
@@ -80,13 +84,50 @@ post /me/activity-client-events '{"events":[{"action":"organization_configuratio
 post /me/activity-client-events '{"events":[{"action":"organization_lifecycle_disclosure","kind":"open","count":1},{"action":"organization_lifecycle_read","kind":"reconnect","count":1},{"action":"organization_lifecycle_change","kind":"retry","count":1},{"action":"organization_lifecycle_change","kind":"conflict","count":1},{"action":"organization_lifecycle_change","kind":"failure","count":1,"durationMs":125},{"action":"organization_lifecycle_change","kind":"success","count":1,"durationMs":125}]}' >/dev/null
 # Poll bounded export/batch intervals; raw scrapes never become retained artifacts.
 post /me/activity-client-events '{"events":[{"action":"organization_creation_disclosure","kind":"open","count":1},{"action":"organization_creation","kind":"retry","count":1},{"action":"organization_creation","kind":"success","count":1,"durationMs":125}]}' >/dev/null
-passed=false
-for attempt in $(seq 1 30); do
-  if curl --max-time 3 --fail --silent http://127.0.0.1:9464/metrics > "$scratch/metrics" &&
-    python3 scripts/ci/verify-operator-metrics.py "$scratch/metrics" "$GITHUB_SHA" "$STRATAAI_BUILD_VERSION" "$scratch/evidence.json"; then passed=true; break; fi
-  sleep 2
-done
-test "$passed" = true
+collect() {
+  local target="$1"
+  shift
+  for attempt in $(seq 1 30); do
+    if curl --max-time 3 --fail --silent http://127.0.0.1:9464/metrics > "$scratch/metrics" &&
+      python3 scripts/ci/verify-operator-metrics.py "$scratch/metrics" "$GITHUB_SHA" "$STRATAAI_BUILD_VERSION" "$target" "$@"; then return 0; fi
+    sleep 2
+  done
+  return 1
+}
+worker_probe() {
+  local endpoint="$1" expected="$2" code
+  code=$(curl --max-time 8 --silent --show-error -o "$scratch/worker-state" -w '%{http_code}' "http://127.0.0.1:8081/$endpoint")
+  test "$code" = "$expected"
+  if [[ "$endpoint" = healthz ]]; then
+    jq -e 'keys==["service","status","timestamp"] and .status=="ok" and .service=="strataai-worker" and (.timestamp|type)=="string"' "$scratch/worker-state" >/dev/null
+  elif [[ "$expected" = 503 ]]; then
+    jq -e '.=={"status":"not-ready"}' "$scratch/worker-state" >/dev/null
+  else
+    jq -e '.=={"status":"ready","mode":"production"}' "$scratch/worker-state" >/dev/null
+  fi
+}
+fingerprint() { admin "SELECT md5(string_agg(row_to_json(j)::text,'' ORDER BY id)) FROM background_jobs j WHERE id IN ('$backlog_pending','$backlog_running') HAVING count(*)=2;"; }
+before_jobs=$(fingerprint)
+[[ "$before_jobs" =~ ^[0-9a-f]{32}$ ]]
+worker_probe healthz 200
+worker_probe readyz 200
+collect "$scratch/evidence.json"
+
+# Actual dependency failure, not synthetic zero counts. Only this disposable
+# CI project's database is stopped; its existing volume must survive recovery.
+postgres_stopped=true
+docker compose -f compose.release.yml stop postgres >/dev/null
+worker_probe healthz 200
+worker_probe readyz 503
+collect "$scratch/backlog-unavailable.json" --backlog-unavailable
+docker compose -f compose.release.yml up -d --wait --wait-timeout 180 postgres >/dev/null
+postgres_stopped=false
+collect "$scratch/backlog-recovered.json"
+worker_probe healthz 200
+worker_probe readyz 200
+test "$(fingerprint)" = "$before_jobs"
 mkdir -p artifacts/metrics
 mv "$scratch/evidence.json" artifacts/metrics/operator.json
-echo 'Exact-image authenticated observations reached the pinned OTLP Collector; fixed metric families, metadata and privacy checks passed.'
+mv "$scratch/backlog-unavailable.json" artifacts/metrics/backlog-unavailable.json
+mv "$scratch/backlog-recovered.json" artifacts/metrics/backlog-recovered.json
+echo 'Exact-image operator ingestion, database observation failure/recovery, unchanged backlog rows, health/readiness and private-field checks passed.'

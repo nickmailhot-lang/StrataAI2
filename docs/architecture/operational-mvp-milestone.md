@@ -4,6 +4,11 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [backlog dependency-failure rehearsal](operator-metrics.md#backlog-database-failure-and-recovery--2026-10-15)
+now verifies the actual compiled Worker host's availability `1 → 0 → 1`, bounded
+readiness refusal and unchanged job rows through database network recovery.
+Current-image Collector execution remains pending; large-load tests stay disabled.
+
 The [scoped Worker backlog sampler](operator-metrics.md#scoped-organization-job-backlog--2026-10-15)
 adds read-only pending/running counts with explicit observation availability.
 Focused .NET and real restricted PostgreSQL checks pass; current-image Collector

@@ -33,7 +33,9 @@ def parse_labels(raw):
     return labels
 
 
-def verify(raw, revision, version):
+def verify(raw, revision, version, *, backlog_available=1):
+    if type(backlog_available) is not int or backlog_available not in {0, 1}:
+        return False
     if not re.fullmatch(r"[0-9a-f]{40,64}", revision):
         return False
     if "private-metric-fixture" in raw or re.search(r"[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}", raw, re.I):
@@ -108,9 +110,9 @@ def verify(raw, revision, version):
                    for metric, labels, value in samples)
 
     return all([
-        observed("strataai_worker_scoped_backlog", {"queue": "organization", "state": "pending"}),
-        observed("strataai_worker_scoped_backlog", {"queue": "organization", "state": "running"}),
-        observed("strataai_worker_scoped_backlog_available", {"queue": "organization"}),
+        not backlog_available or observed("strataai_worker_scoped_backlog", {"queue": "organization", "state": "pending"}),
+        not backlog_available or observed("strataai_worker_scoped_backlog", {"queue": "organization", "state": "running"}),
+        [value for name, labels, value in samples if name == "strataai_worker_scoped_backlog_available"] == [backlog_available],
         observed("strataai_worker_jobs", {"queue": "organization", "outcome": "completed"}),
         *[observed(metric, {"method": method, "status_code": code, "outcome": "completed"})
           for method, code in [("GET", "200"), ("POST", "400"), ("POST", "401"), ("POST", "403"), ("PATCH", "409")]
@@ -173,8 +175,12 @@ def verify(raw, revision, version):
 
 
 if __name__ == "__main__":
-    source, revision, version, target = sys.argv[1:]
-    if not verify(Path(source).read_text(), revision, version):
+    arguments = sys.argv[1:]
+    if len(arguments) not in {4, 5} or (len(arguments) == 5 and arguments[-1] != "--backlog-unavailable"):
+        sys.exit(2)
+    source, revision, version, target = arguments[:4]
+    expected_available = 0 if len(arguments) == 5 else 1
+    if not verify(Path(source).read_text(), revision, version, backlog_available=expected_available):
         sys.exit(1)
     Path(target).write_text(json.dumps({"schemaVersion": 1, "revision": revision, "status": "passed",
         "topology": "exact API through Nginx to pinned OTLP Collector", "collectorVersion": "0.161.0",
@@ -186,5 +192,6 @@ if __name__ == "__main__":
                      "configurationClientEvents": True, "configurationClientDuration": True,
                      "httpRequestsAndDuration": True, "httpRejectionOutcomes": True,
                      "workerCommittedJobOutcome": True, "workerBuildIdentity": True,
-                     "workerScopedBacklog": True, "workerBacklogAvailable": True,
+                     "workerScopedBacklog": bool(expected_available), "workerBacklogAvailable": bool(expected_available),
+                     "workerBacklogObservationAvailability": expected_available,
                      "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")

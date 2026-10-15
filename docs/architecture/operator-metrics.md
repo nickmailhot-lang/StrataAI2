@@ -1,5 +1,56 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Backlog database failure and recovery — 2026-10-15
+
+The actual compiled Production Worker host from `be7bf9e4` passes a **76.227-second**
+native rehearsal with fresh restricted PostgreSQL 17.11 and all 149 migrations.
+Its real SDK OTLP wire observations report availability **1 → 0 → 1** across
+database network disconnection and reconnection. Healthy and recovered counts
+are exactly two pending/two running jobs from the configured Organization;
+seven foreign pending jobs remain excluded. All fixture jobs are scheduled or
+leased beyond the check, and complete persisted-row fingerprints stay unchanged.
+This is a small dependency-failure test, not a capacity workload.
+
+Liveness stays HTTP 200; dependency readiness returns HTTP 503 during the outage
+in **2.248 seconds**, then returns 200 after recovery. Export observations have
+increasing SDK timestamps and the exact running host's service/build identity.
+Decoded wire labels exclude fixture IDs, payload markers and credentials. All
+**827 source/persistence inputs** and **42 Worker binary inputs** match; owned
+containers/network are removed, Docker inventory restored and **731,669**
+temporary bytes deleted. No new image is built/downloaded/imported and the
+original database is unused. An earlier private harness attempt stops on a
+missing import and cleans up; it is not counted as completed verification.
+
+This uses current compiled assemblies mounted read-only in retained runtimes
+and an isolated HTTP receiver that captures actual OTLP, not the pinned
+Collector or current immutable release images. It does not certify managed
+deployment, email delivery, complete current-image CI or the MVP release.
+
+The mandatory exact-image metrics fixture now checks healthy collection,
+stops only its disposable Compose PostgreSQL service, requires current
+availability zero, restarts that existing database volume and requires healthy
+collection again. It checks Worker health/readiness and unchanged fixture rows;
+cleanup restores PostgreSQL before restoring the ordinary Worker and deleting
+the two owned rows. Three fixed evidence files retain the healthy, unavailable
+and recovered results with canonical build identity and checksums. The verifier
+rejects missing, duplicate or mixed availability samples; outage mode permits
+missing/retained counts but keeps all other observation, identity and privacy
+requirements. Hosted execution remains required.
+
+The driver requires GitHub Actions as well as `CI=true` before any HTTP/container
+action. Its separate control-flow tests substitute every external HTTP/container
+operation and refuse to start if a substitute is missing. Those tests verify
+failure refusal and cleanup ordering, not real provider or runtime behavior.
+
+All **15 verifier cases** and **11 complete driver control-flow cases** pass,
+including stale/mixed observations, failed stop/restart, wrong readiness,
+changed/missing rows and refusal before actions outside GitHub Actions or with
+a missing substitute. The driver requires exactly two initial fixture rows and
+a valid fingerprint before stopping the database. All **255 CI coverage guards**
+and **37 release-artifact tests** pass; evidence staging finishes with 11 passes
+and one Windows-specific skip. Bash/workflow lint and diff checks pass. These
+checks preserve the existing functional stages and load-test phase gate.
+
 ## Scoped Organization job backlog — 2026-10-15
 
 When metrics export and explicit `STRATAAI_WORKER_ORGANIZATION_IDS` are both
