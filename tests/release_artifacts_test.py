@@ -48,7 +48,25 @@ class ReleaseArtifactTests(unittest.TestCase):
         names=['compose.release.yml','compose.demo.release.yml','compose.metrics.yml','compose.attachments.yml','.env.release.example','.env.demo.example','README.md','promotion-and-rollback.md','health-check.sh','backup-postgres.sh','restore-postgres.sh','apply-migrations.sh','migration-stream.sh','provision-runtime-roles.sh','provision-identity-mail-role.sh','deploy/metrics/collector.yml','db/provision-runtime-roles.sql','db/provision-identity-mail-role.sql','db/migrations/001_initial.sql']
         for name in names:
             p=self.bundle/name; p.parent.mkdir(parents=True,exist_ok=True); p.write_bytes(b'synthetic fixture')
+        for name in ('compose.https.yml','deploy/https/nginx-tls.inc'):
+            p=self.bundle/name; p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b'synthetic HTTPS fixture')
         self.checksums(self.bundle)
+
+    def test_https_assets_required_even_with_matching_checksums(self):
+        self.make_bundle()
+        for name in ('compose.https.yml','deploy/https/nginx-tls.inc'):
+            with self.subTest(name=name):
+                path=self.bundle/name;original=path.read_bytes();path.unlink();self.checksums(self.bundle)
+                with self.assertRaisesRegex(ValueError,'incomplete_bundle'): release.verify_bundle(self.bundle)
+                path.write_bytes(original)
+
+    def test_private_tls_files_cannot_be_release_assets(self):
+        self.make_bundle()
+        for name in ('fullchain.pem','privkey.KEY','identity.p12','identity.PFX'):
+            with self.subTest(name=name):
+                p=self.bundle/'deploy/https'/name;p.write_bytes(b'PRIVATE_TLS_FIXTURE');self.checksums(self.bundle)
+                with self.assertRaisesRegex(ValueError,'private_tls_material'):release.verify_bundle(self.bundle)
+                p.unlink()
 
     def test_matching_inputs_pass(self): self.assertEqual(release.verify_inputs(self.images,self.security),META)
 

@@ -1,0 +1,23 @@
+# Optional Linux deployment with operator-managed certificates; Compose >=2.24.4.
+# Combine with compose.release.yml. Publish only HTTPS, keeping host diagnostics private.
+services:
+  api:
+    ports: !reset []
+  worker:
+    ports: !reset []
+  web:
+    ports: !override
+      - "${STRATAAI_HTTPS_BIND_ADDRESS:-0.0.0.0}:${STRATAAI_HTTPS_PORT:-443}:443"
+    volumes:
+      - type: bind
+        source: ./deploy/https/nginx-tls.inc
+        target: /etc/nginx/strataai-tls.inc
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${STRATAAI_HTTPS_CERTIFICATE_DIRECTORY:?Set existing private certificate directory}
+        target: /run/strataai-tls
+        read_only: true
+        bind:
+          create_host_path: false

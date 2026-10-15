@@ -1,4 +1,5 @@
 # Shared explicitly with locations that add response headers (Nginx inheritance).
+add_header Strict-Transport-Security $strataai_hsts always;
 add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'" always;
 add_header X-Content-Type-Options nosniff always;
 add_header X-Frame-Options DENY always;

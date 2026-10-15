@@ -19,8 +19,10 @@ coverage/
 !.env.release.example
 !.env.demo.example
 secrets/
-*.pfx
-*.key
+*.[pP][fF][xX]
+*.[pP]12
+*.[pP][eE][mM]
+*.[kK][eE][yY]
 *.cms
 *.dump
 .strataai-backup.*/

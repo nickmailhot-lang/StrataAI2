@@ -255,6 +255,8 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   const bundle = jobs['release-bundle'].steps.find(step => step.name === 'Assemble release bundle');
   assert.ok(bundle.run.includes('cp scripts/backup-postgres.sh bundle/backup-postgres.sh'), 'Release must include the tested operator backup command');
   assert.ok(bundle.run.includes('cp scripts/restore-postgres.sh bundle/restore-postgres.sh'), 'Release must include the tested operator restore command');
+  assert.ok(bundle.run.includes('compose.https.yml'), 'Release must include optional HTTPS deployment');
+  assert.ok(bundle.run.includes('cp deploy/https/nginx-tls.inc bundle/deploy/https/'), 'Release must include HTTPS configuration');
   assert.match(bundle.run, /cp image-artifacts\/build-metadata.json bundle\/build-metadata.json/);
   assert.ok(!bundle.run.includes('cat > bundle/build-metadata.json'), 'Release must preserve the original metadata document');
   const releaseJob = jobs['release-bundle'];
@@ -279,6 +281,11 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(startupSource.run.includes('node --test tests/release-bundle-startup.test.mjs'));
   assert.ok(startupSource.run.includes('node --test tests/release-demo-bundle-startup.test.mjs'));
   const demoStartup = releaseSteps.find(step => step.name === 'Verify assembled Demo bundle and seeded account without source or SDKs');
+  const httpsStartups = releaseSteps.filter(step => step.name === 'Verify assembled HTTPS bundle and secure task workflow');
+  assert.equal(httpsStartups.length, 1, 'Exactly one assembled HTTPS gate is required');
+  const httpsStartup = httpsStartups[0];
+  assert.equal(httpsStartup.run, 'bash scripts/ci/test-release-https-startup.sh bundle');
+  assert.equal(httpsStartup['timeout-minutes'], 10);
   assert.equal(demoStartup?.run, 'bash scripts/ci/test-release-demo-bundle-startup.sh bundle');
   assert.equal(demoStartup['timeout-minutes'], 6);
   assert.ok(bundle.run.includes('compose.demo.release.yml'));
@@ -292,7 +299,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(releaseUpload.with.path, 'bundle/');
   assert.equal(releaseUpload.with['include-hidden-files'], true, 'Retain the required environment example');
   assert.equal(releaseUpload.with['if-no-files-found'], 'error');
-  for (const step of [inputVerify, bundle, bundleVerify, startup, demoStartup, afterStartup, releaseUpload]) {
+  for (const step of [inputVerify, bundle, bundleVerify, startup, demoStartup, httpsStartup, afterStartup, releaseUpload]) {
     assert.equal(step.if, undefined, 'Release checks may not be conditional');
     assert.equal(step['continue-on-error'] ?? false, false);
   }
@@ -304,6 +311,8 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(releaseSteps.indexOf(startup) < releaseSteps.indexOf(releaseUpload), 'Smoke the assembled payload before retaining it');
   assert.ok(releaseSteps.indexOf(startup) < releaseSteps.indexOf(demoStartup));
   assert.ok(releaseSteps.indexOf(demoStartup) < releaseSteps.indexOf(afterStartup), 'Both modes must leave the payload unchanged');
+  assert.ok(releaseSteps.indexOf(demoStartup) < releaseSteps.indexOf(httpsStartup));
+  assert.ok(releaseSteps.indexOf(httpsStartup) < releaseSteps.indexOf(afterStartup), 'HTTPS must leave the payload unchanged');
   assert.ok(releaseSteps.indexOf(startup) < releaseSteps.indexOf(afterStartup));
   assert.ok(releaseSteps.indexOf(afterStartup) < releaseSteps.indexOf(releaseUpload), 'Refuse changed payloads or leftover private files before upload');
   assert.ok(releaseSteps.every(step => !/docker (?:build|buildx build)/.test(step.run ?? '')), 'Bundle cannot rebuild application images');

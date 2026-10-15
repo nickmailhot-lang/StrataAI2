@@ -18,3 +18,8 @@ artifacts
 **/*.[dD][uU][mM][pP]
 **/.strataai-backup.*
 **/.strataai-restore.*
+# Operator certificates and private keys never enter application build contexts.
+**/*.[pP][eE][mM]
+**/*.[kK][eE][yY]
+**/*.[pP]12
+**/*.[pP][fF][xX]

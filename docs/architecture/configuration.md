@@ -117,6 +117,12 @@ optional-feature behavior. Demo retains its existing origin policy.
 Enabled identity email still requires an HTTPS general public origin, including
 for local links; this stricter delivery requirement is unchanged.
 
+An optional [HTTPS configuration for the retained web image](https-deployment.md) supplies
+direct Linux TLS termination using operator certificates and private diagnostic
+ports. Follow [the release instructions](../release/README.md#optional-https-on-a-linux-docker-host)
+for supported Compose versions, exact matching release assets, origin settings,
+certificate custody and renewal. It does not provision DNS or certificates.
+
 The [origin tests](../../tests/StrataAI.Api.Tests/ProductionOriginTests.cs)
 reproduce 30 failures among 49 cases against the previous runtime. All 49 pass
 after the repair; together with transport and actual runtime composition tests,

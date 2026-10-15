@@ -10,6 +10,9 @@ The release bundle contains the exact web, API, and Worker images tested by CI.
 
 No Node.js, .NET SDK, or source checkout is required.
 
+For a Linux host terminating HTTPS in the existing web image, see
+[the optional HTTPS configuration](#optional-https-on-a-linux-docker-host).
+
 ## Verify the downloaded bundle
 
 After extracting the artifact ZIP, verify it before loading images:
@@ -176,6 +179,70 @@ promotion. See [discovery configuration verification](../architecture/release-au
 Review the
 explicit general-job scope when adding Organizations that need other Work or
 provider processing. Identity mail delivery uses its separate configuration and role.
+
+## Optional HTTPS on a Linux Docker host
+
+Use `compose.https.yml` with Docker Compose **2.24.4 or later** when this web
+image terminates TLS. Existing approved external ingress remains an alternative.
+Use assets from the same release as its images; older bundles/images lack the
+optional listener. This overlay introduces no image or build. It publishes only
+the web TLS port and removes the base web HTTP and API/Worker host bindings.
+Internal HTTP remains available to container health checks and private services.
+
+Obtain a browser-trusted certificate for the intended hostname through your
+certificate provider. Outside the checkout and extracted bundle, prepare an
+existing private directory containing `fullchain.pem` (leaf certificate first,
+then intermediates) and its matching `privkey.pem`. Restrict directory/key
+access to the operator and the container's Nginx master process. The read-only
+directory bind refuses automatic directory creation. Keep key files out of
+Git, image contexts, release payloads and evidence uploads. The overlay does
+not issue or automatically renew certificates.
+
+Add these non-secret settings to the configured `.env`:
+
+```dotenv
+STRATAAI_HTTPS_CERTIFICATE_DIRECTORY=/srv/strataai-certificates
+STRATAAI_HTTPS_PORT=443
+STRATAAI_HTTPS_BIND_ADDRESS=0.0.0.0
+STRATAAI_PUBLIC_ORIGIN=https://tasks.example.com
+STRATAAI_REALTIME_PUBLIC_ORIGIN=https://tasks.example.com
+```
+
+Replace the directory and hostname with the actual deployment values, including
+the external port in both origins when it is not 443. First start PostgreSQL,
+migrate and provision roles using the preceding instructions. Start the
+application with both files:
+
+```bash
+docker compose --env-file .env -f compose.release.yml -f compose.https.yml config --quiet
+docker compose --env-file .env -f compose.release.yml -f compose.https.yml up -d --no-build --pull never --wait
+docker compose --env-file .env -f compose.release.yml -f compose.https.yml ps
+curl --fail --show-error https://tasks.example.com/api/health
+```
+
+Require healthy container status, successful certificate trust/hostname checks
+and HTTP 200. Do not disable client certificate verification. API and Worker
+readiness remain private; inspect their container health and, when diagnosing,
+query `/readyz` from inside each container. The base `health-check.sh` defaults
+to published diagnostic ports and is unsuitable for this overlay without
+separate approved diagnostic addresses. Verify real sign-in, task persistence
+and authorized live collaboration through the HTTPS origin before traffic.
+The shared response headers add HSTS only to HTTPS responses.
+
+For renewal, update the files within the mounted directory, validate the full
+configuration, then reload the web listener without changing images:
+
+```bash
+docker compose --env-file .env -f compose.release.yml -f compose.https.yml exec -T web nginx -t
+docker compose --env-file .env -f compose.release.yml -f compose.https.yml exec -T web nginx -s reload
+```
+
+Keep the matching prior certificate/key available for rollback. Recheck the
+served certificate and expiry after renewal. Symlinks must resolve within the
+mounted directory; a provider's links into an unmounted archive will fail.
+Certificate issuance, expiry monitoring, DNS/firewall routing and the actual
+deployment's HTTPS origin remain operator requirements. See
+[HTTPS verification and limits](../architecture/https-deployment.md).
 
 ## Optional verification and recovery mail role
 

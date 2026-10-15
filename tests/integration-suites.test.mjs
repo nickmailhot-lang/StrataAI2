@@ -35,6 +35,12 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['HTTPS gate omitted', value => {value.jobs['release-bundle'].steps=value.jobs['release-bundle'].steps.filter(step=>step.name!=='Verify assembled HTTPS bundle and secure task workflow');}],
+  ['HTTPS gate skipped', value => {value.jobs['release-bundle'].steps.find(step=>step.name==='Verify assembled HTTPS bundle and secure task workflow').if='false';}],
+  ['HTTPS gate failure ignored', value => {value.jobs['release-bundle'].steps.find(step=>step.name==='Verify assembled HTTPS bundle and secure task workflow')['continue-on-error']=true;}],
+  ['HTTPS gate replaced', value => {value.jobs['release-bundle'].steps.find(step=>step.name==='Verify assembled HTTPS bundle and secure task workflow').run='true';}],
+  ['HTTPS gate duplicated', value => {const steps=value.jobs['release-bundle'].steps;steps.push({...steps.find(step=>step.name==='Verify assembled HTTPS bundle and secure task workflow')});}],
+  ['HTTPS gate after final verification', value => {const steps=value.jobs['release-bundle'].steps;const index=steps.findIndex(step=>step.name==='Verify assembled HTTPS bundle and secure task workflow');steps.push(...steps.splice(index,1));}],
   ['operator restore omitted from bundle', value => { const entry=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle'); entry.run=entry.run.replace('cp scripts/restore-postgres.sh bundle/restore-postgres.sh',''); }],
   ['operator restore refusal tests omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy'); entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'postgres_restore_test.py'",''); }],
   ['operator backup omitted from bundle', value => { const entry=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle'); entry.run=entry.run.replace('cp scripts/backup-postgres.sh bundle/backup-postgres.sh',''); }],

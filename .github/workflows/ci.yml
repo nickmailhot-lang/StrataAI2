@@ -187,6 +187,7 @@ jobs:
       - name: Validate release and event fixture configuration before image builds
         run: |
           docker compose --env-file .env.release.example -f compose.release.yml config --quiet
+          STRATAAI_HTTPS_CERTIFICATE_DIRECTORY=/tmp/strataai-https docker compose --env-file .env.release.example -f compose.release.yml -f compose.https.yml config --quiet
           STRATAAI_ATTACHMENT_S3_BUCKET=strata-private-ci-fixture STRATAAI_ATTACHMENT_S3_OWNER=123456789012 STRATAAI_ATTACHMENT_S3_REGION=us-east-1 STRATAAI_WORKER_ORGANIZATION_IDS=11111111-1111-1111-1111-111111111111 STRATAAI_ATTACHMENT_SCANNER_DIRECTORY=/tmp/strata-scanner docker compose --env-file .env.release.example -f compose.release.yml -f compose.attachments.yml config --quiet
           STRATAAI_TEST_EVENT_ORGANIZATION_ID=11111111-1111-1111-1111-111111111111 docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.work-event-test.yml config --quiet
           docker compose --env-file .env.release.example -f compose.release.yml -f scripts/ci/compose.auth-test.yml -f scripts/ci/compose.atomic-test.yml -f scripts/ci/compose.owner-continuity-test.yml config --quiet
@@ -1509,10 +1510,12 @@ jobs:
           cp image-artifacts/strataai-api.tar.gz bundle/images/
           cp image-artifacts/strataai-worker.tar.gz bundle/images/
           cp image-artifacts/SHA256SUMS image-artifacts/build-metadata.json image-artifacts/image-provenance.json bundle/images/
-          cp compose.release.yml compose.demo.release.yml compose.metrics.yml compose.attachments.yml bundle/
+          cp compose.release.yml compose.demo.release.yml compose.metrics.yml compose.attachments.yml compose.https.yml bundle/
           cp .env.demo.example bundle/
           mkdir -p bundle/deploy/metrics
           cp deploy/metrics/collector.yml bundle/deploy/metrics/
+          mkdir -p bundle/deploy/https
+          cp deploy/https/nginx-tls.inc bundle/deploy/https/
           cp .env.release.example bundle/
           cp scripts/health-check.sh bundle/health-check.sh
           cp scripts/backup-postgres.sh bundle/backup-postgres.sh
@@ -1555,6 +1558,10 @@ jobs:
       - name: Verify assembled Demo bundle and seeded account without source or SDKs
         timeout-minutes: 6
         run: bash scripts/ci/test-release-demo-bundle-startup.sh bundle
+
+      - name: Verify assembled HTTPS bundle and secure task workflow
+        timeout-minutes: 10
+        run: bash scripts/ci/test-release-https-startup.sh bundle
 
       - name: Verify bundle unchanged after startup smoke
         run: python3 scripts/ci/verify-release-artifacts.py bundle --path bundle --images image-artifacts --security security-artifacts

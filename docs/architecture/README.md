@@ -1,5 +1,8 @@
 # StrataAI2 architecture
 
+[Optional HTTPS deployment](https-deployment.md) describes the existing web
+image's certificate overlay, private diagnostic ports and source-free CI gate.
+
 [Optional identity-mail role provisioning](identity-mail-role-provisioning.md) records restricted grants, reliable password refusal, real PostgreSQL tests and release payload checks.
 
 [Release authentication policy configuration](release-auth-policy-verification.md) records actual Compose forwarding regressions and ten compiled-host refusal checks.
