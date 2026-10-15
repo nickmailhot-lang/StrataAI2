@@ -2,10 +2,12 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
 from unittest.mock import patch
 
@@ -85,6 +87,53 @@ class ReleaseArtifactTests(unittest.TestCase):
 
     def test_complete_bundle_passes(self):
         self.make_bundle(); self.assertEqual(release.verify_bundle(self.bundle),META)
+
+    def test_release_guides_allow_local_navigation_and_exact_revision_references(self):
+        self.make_bundle()
+        (self.bundle/'README.md').write_text(
+            '[Production](#production) [Rollback](promotion-and-rollback.md) '
+            f"[Configuration](https://github.com/{META['repository']}/blob/{META['commitSha']}/docs/architecture/configuration.md#postgresql-transport) "
+            '[Demo](http://localhost:8088/login)\n')
+        self.checksums(self.bundle)
+        self.assertEqual(release.verify_bundle(self.bundle),META)
+
+    def test_current_operator_documents_pass_after_the_actual_assembly_rewrite(self):
+        self.make_bundle()
+        repo=Path(__file__).resolve().parents[1]
+        (self.root/'image-artifacts').mkdir()
+        shutil.copyfile(self.images/'build-metadata.json',self.root/'image-artifacts/build-metadata.json')
+        for name in ('README.md','promotion-and-rollback.md'):
+            shutil.copyfile(repo/'docs/release'/name,self.bundle/name)
+        assembly=(repo/'.github/workflows/ci.yml').read_text().split('      - name: Assemble release bundle\n',1)[1]
+        snippet=re.search(r"(?ms)^          python3 - <<'PY'\n(.*?)^          PY$",assembly).group(1)
+        result=subprocess.run([sys.executable,'-c',textwrap.dedent(snippet)],cwd=self.root,capture_output=True,timeout=15)
+        self.assertEqual(result.returncode,0)
+        self.assertNotIn('](../architecture/',(self.bundle/'README.md').read_text())
+        self.checksums(self.bundle)
+        self.assertEqual(release.verify_bundle(self.bundle,self.images,self.security),META)
+
+    def test_release_guides_reject_unbundled_files_even_with_matching_checksums(self):
+        self.make_bundle()
+        for target in ('../architecture/configuration.md', 'missing-guide.md', '/README.md', '%2e%2e/private-guide.md'):
+            with self.subTest(target=target):
+                (self.bundle/'README.md').write_text(f'[Configuration]({target})\n')
+                self.checksums(self.bundle)
+                with self.assertRaisesRegex(ValueError,'invalid_release_document_link'):
+                    release.verify_bundle(self.bundle)
+
+    def test_release_guides_reject_moving_or_other_revision_source_links(self):
+        self.make_bundle()
+        for route in ('blob/main', 'tree/main', 'blob/'+('f'*40)):
+            with self.subTest(route=route):
+                (self.bundle/'promotion-and-rollback.md').write_text(
+                    f"[Configuration](https://github.com/{META['repository']}/{route}/docs/architecture/configuration.md)\n")
+                self.checksums(self.bundle)
+                with self.assertRaisesRegex(ValueError,'invalid_release_document_link'):
+                    release.verify_bundle(self.bundle)
+
+    def test_empty_operator_guide_is_not_a_complete_bundle(self):
+        self.make_bundle(); (self.bundle/'README.md').write_text(' \n'); self.checksums(self.bundle)
+        with self.assertRaisesRegex(ValueError,'empty_release_document'): release.verify_bundle(self.bundle)
 
     def test_missing_hidden_environment_example_rejected(self):
         self.make_bundle(); (self.bundle/'.env.release.example').unlink(); self.checksums(self.bundle)

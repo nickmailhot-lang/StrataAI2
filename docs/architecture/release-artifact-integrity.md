@@ -25,3 +25,25 @@ All 18 release verifier cases pass on Windows and isolated Linux. New cases reje
 A separate isolated Linux fixture executes the actual updated checksum/input/assembly/final verification commands. Its positive assembly passes; changing the copied API archive and recalculating the outer hashes is refused, and recalculating both inner and outer manifests is also refused against the original inputs. Synthetic archive bytes/proof metadata and historical retained SBOMs remain explicit fixture limitations: this is copy/integrity evidence, not current Docker-loadable candidate or clean-host acceptance. Owned proof containers are removed, preserving existing services and volumes. Current hosted release verification remains required.
 
 Related: [bundle run instructions](../release/README.md), [security evidence identity](security-evidence-identity.md), [integration artifact provenance](artifact-evidence-provenance.md), [documentation index](../README.md).
+
+## Operator guide navigation after extraction
+
+The release workflow already rewrites architecture-document links to GitHub
+URLs pinned to the original build revision. The integrity verifier now checks
+the two copied operator guides as well: each must be nonempty, relative file
+links must resolve inside the extracted payload, and source links into this
+repository must use its exact build SHA rather than a moving branch or another
+revision. Same-document anchors, local guide navigation and external links
+retain their existing behavior. Commands/examples are excluded from navigation
+checks. This validates current inline Markdown file targets and revision pins;
+it does not perform remote availability or heading-anchor checks.
+
+Before repair, eight negative subcases pass verification with recalculated
+checksums: four unbundled/escaping file targets, three moving/wrong-revision
+source links and an empty operator guide. All are now refused. All 32
+release-artifact tests pass, including a positive fixture that copies the real
+current guides and executes the actual workflow's inline rewrite before
+verification against the original synthetic image/security inputs. Synthetic
+archives remain explicit: these tests create no Docker resources, perform no
+download/build and do not certify a new runtime release. Exact-commit hosted CI
+remains required; large-load testing remains disabled until after the MVP.

@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+from urllib.parse import unquote, urlsplit
 
 spec = importlib.util.spec_from_file_location("source_identity", Path(__file__).with_name("summarize-source-tests.py"))
 identity = importlib.util.module_from_spec(spec)
@@ -95,6 +96,38 @@ def verify_inputs(images, security):
     return build
 
 
+def verify_document_links(bundle, build):
+    root = bundle.resolve()
+    for name in ("README.md", "promotion-and-rollback.md"):
+        document = bundle / name
+        text = document.read_text(encoding="utf-8")
+        if not text.strip():
+            raise ValueError("empty_release_document")
+        # Commands/examples are not navigation. Current operator documents use
+        # inline Markdown links; preserve multiline link captions.
+        text = re.sub(r"(?ms)^```[^\n]*\n.*?^```[ \t]*$", "", text)
+        text = re.sub(r"`[^`\n]+`", "", text)
+        for target in re.findall(r"\[[^\]]*\]\(([^)\s]+)\)", text):
+            parsed = urlsplit(target)
+            if parsed.scheme in ("http", "https", "mailto"):
+                path = unquote(parsed.path)
+                own_source = f"/{build['repository']}/"
+                if parsed.hostname == "github.com" and path.startswith(own_source):
+                    suffix = path[len(own_source):]
+                    if suffix.startswith(("blob/", "tree/")) and not suffix.startswith(
+                            (f"blob/{build['commitSha']}/", f"tree/{build['commitSha']}/")):
+                        raise ValueError("invalid_release_document_link")
+                continue
+            if parsed.scheme or parsed.netloc:
+                raise ValueError("invalid_release_document_link")
+            path = unquote(parsed.path)
+            if not path:  # Same-document anchor; no separate payload needed.
+                continue
+            destination = (document.parent / path).resolve()
+            if not destination.is_relative_to(root) or not destination.is_file():
+                raise ValueError("invalid_release_document_link")
+
+
 def verify_bundle(bundle, images=None, security_input=None):
     files = verify_checksums(bundle)
     build = metadata(bundle)
@@ -129,6 +162,7 @@ def verify_bundle(bundle, images=None, security_input=None):
         raise ValueError("unexpected_root_file")
     if any("/" in name and name.split("/", 1)[0] not in {"images", "sbom", "security", "db", "deploy"} for name in files):
         raise ValueError("unexpected_directory")
+    verify_document_links(bundle, build)
     security = bundle / "security"
     verify_checksums(security)
     metadata(security)
