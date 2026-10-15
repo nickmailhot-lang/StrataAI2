@@ -1,5 +1,14 @@
 # Runtime database roles
 
+The [fresh-cluster recovery contract](database-recovery.md#restored-runtime-identity-verification--2026-10-15)
+now recreates the reviewed API/Worker identities before restoring archive ACLs,
+then runs canonical provisioning on the verified target with fresh passwords.
+Actual SCRAM sessions prove password refusal, safe role guards, complete ledger,
+tenant/capability isolation and scoped queue publication/claim/acknowledgment.
+It reproduces and repairs the missing-runtime-role failure in the first
+fresh-cluster rehearsal. This is database recovery evidence; application-host,
+managed-provider and full current immutable-release acceptance remain separate.
+
 Apply migrations with the initialization/migration account, then run
 `scripts/provision-compose-runtime-roles.sh`. Supply distinct API and Worker
 passwords of at least 20 characters. Compose passes these separately from the

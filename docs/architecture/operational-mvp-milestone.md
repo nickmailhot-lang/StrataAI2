@@ -51,6 +51,17 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [restored runtime identity repair](database-recovery.md#restored-runtime-identity-verification--2026-10-15)
+reproduces the fresh-cluster rehearsal's missing runtime-role failure with the
+same preexisting source identities as CI. Reviewed non-login roles now precede
+restore; canonical target provisioning supplies fresh credentials. Actual API/
+Worker SCRAM sessions pass password refusal, role guards, restored ledger,
+tenant/capability isolation and durable queue publication/claim/acknowledgment.
+The complete two-Card recovery rehearsal passes in 76.258 seconds; 159 frozen
+inputs match and owned cleanup restores Docker inventory. Current immutable CI,
+application-host recovery, managed providers and scheduled production drills
+remain outstanding. ARCH-08 stays open; large-load tests remain post-MVP.
+
 The [fresh-cluster encrypted restore rehearsal](database-recovery.md#fresh-cluster-recovery-verification--2026-10-15)
 now requires distinct PostgreSQL cluster identities and proves missing-role
 transaction rollback before reviewed least-privilege role recreation. All 149

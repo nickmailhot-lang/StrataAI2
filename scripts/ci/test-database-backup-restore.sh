@@ -46,6 +46,7 @@ MSYS_NO_PATHCONV=1 docker run --detach --pull never --name "$target_container" \
   --label "strataai.recovery-source=$container" --network none \
   --tmpfs /var/lib/postgresql/data:rw,nosuid,noexec,size=512m \
   --env "POSTGRES_USER=$admin" --env POSTGRES_DB=postgres \
+  --env 'POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=trust' \
   --env "POSTGRES_PASSWORD=$(openssl rand -hex 24)" "$provider_image" > "$scratch/target-startup.log" 2>&1
 target_created=1
 ready=0
@@ -139,6 +140,12 @@ test "$before_missing_role" = "$after_missing_role"
 # reviewed least-privilege identity; never copy cluster superusers/passwords.
 docker exec "$target_container" createuser -U "$admin" --no-superuser --no-createdb --no-createrole --no-login "$reader"
 test "$(query "SELECT NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolcanlogin OR rolbypassrls OR rolreplication) FROM pg_roles WHERE rolname='$reader'")" = t
+# CI's existing runtime identities appear in conditional migration ACLs. Create
+# reviewed non-login identities before restore; activate only after verification.
+docker exec -i "$target_container" psql -X -U "$admin" -d postgres -v ON_ERROR_STOP=1 > "$scratch/runtime-identities.log" 2>&1 <<'SQL'
+CREATE ROLE strataai_api_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT;
+CREATE ROLE strataai_worker_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT;
+SQL
 stage=authenticated-restore
 restore "$scratch/backup.cms" recipient "$archive_digest" > "$scratch/restore.log" 2>&1
 
@@ -185,4 +192,29 @@ docker exec -i "$target_container" psql -X -U "$admin" -d "$target_db" -v ON_ERR
   < scripts/ci/check-tenant-schema.sql > "$scratch/catalog.log" 2>&1
 docker exec -i "$target_container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
   -v "reader=$reader" < scripts/ci/database-backup-verify.sql > "$scratch/verify.log" 2>&1
-echo 'Encrypted PostgreSQL backup/restore passed: distinct fresh cluster, missing-role transaction rollback and least-privilege role recreation, complete migrated schema/data/ACL comparison, twelve deliberate corruption/refusal cases, pgvector, restricted tenant reads/writes, FK and append-only audit protections.'
+stage=restored-runtime-provisioning
+api_password=$(openssl rand -hex 24); worker_password=$(openssl rand -hex 24)
+docker exec -i --env "STRATAAI_API_DB_PASSWORD=$api_password" --env "STRATAAI_WORKER_DB_PASSWORD=$worker_password" \
+  "$target_container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
+  < db/provision-runtime-roles.sql > "$scratch/runtime-provision.log" 2>&1
+ledger_count=$(docker exec "$container" psql -X -U "$admin" -d "$source_db" -At -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM schema_migrations')
+stage=restored-runtime-authentication-and-capabilities
+for role in strataai_api_runtime strataai_worker_runtime; do
+  password=$api_password; if [ "$role" = strataai_worker_runtime ]; then password=$worker_password; fi
+  if docker exec --env PGPASSWORD=deliberately-incorrect-fixture-password "$target_container" \
+    psql -X -h 127.0.0.1 -U "$role" -d "$target_db" --no-password -At -v ON_ERROR_STOP=1 -c 'SELECT 1' > "$scratch/runtime-refusal.log" 2>&1; then
+    echo 'Restored runtime admitted an incorrect password.' >&2; exit 1
+  fi
+  restored_ledger=$(docker exec --env "PGPASSWORD=$password" "$target_container" \
+    psql -X -h 127.0.0.1 -U "$role" -d "$target_db" --no-password -At -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM schema_migrations')
+  test "$restored_ledger" = "$ledger_count"
+  docker exec -i --env "PGPASSWORD=$password" "$target_container" \
+    psql -X -h 127.0.0.1 -U "$role" -d "$target_db" --no-password -v ON_ERROR_STOP=1 \
+    < scripts/ci/database-backup-runtime-verify.sql > "$scratch/runtime-capabilities.log" 2>&1
+done
+unset api_password worker_password password
+test "$(query "SELECT count(*) FROM background_jobs WHERE id='bacc0000-0000-0000-0000-000000000901' AND state='SUCCEEDED' AND attempt_count=1")" = 1
+test "$(query "SELECT count(*) FROM background_jobs WHERE id='bacc0000-0000-0000-0000-000000000902' AND state='PENDING' AND attempt_count=0")" = 1
+test "$(fingerprint "$source_db" "$container")" = "$expected"
+
+echo 'Encrypted PostgreSQL backup/restore passed: distinct fresh cluster, missing-role transaction rollback and least-privilege role recreation, complete migrated schema/data/ACL comparison, twelve deliberate corruption/refusal cases, pgvector, restricted tenant reads/writes, FK and append-only audit protections; restored API/Worker SCRAM login, password refusals, role guards, tenant isolation and durable queue publication/claim/acknowledgment passed.'

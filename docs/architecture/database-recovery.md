@@ -29,6 +29,17 @@ superusers or password hashes. Target readiness requires the final TCP listener,
 not the image's temporary initialization server. Owned target data is temporary
 and its container/volumes are removed on exit.
 
+The reviewed API and Worker identities are also created as restricted non-login
+roles before restoration: CI already has them when migrations conditionally
+grant capabilities, so archive ACLs can reference them. After the restored
+schema/data/ACL and security checks pass, only the target runs the canonical
+role-provisioning SQL with fresh distinct passwords. Actual SCRAM-authenticated
+loopback TCP sessions must reject incorrect passwords and accept each runtime
+login, pass the role guard and read the complete migration ledger. SQL exercises
+API tenant reads/writes and Worker capability separation, then commits two small
+API jobs and acknowledges only the scoped job through a separate Worker session.
+The source fingerprint must remain unchanged after these target operations.
+
 The contract streams a custom-format `pg_dump` directly into OpenSSL CMS
 AES-256-GCM encryption using an ephemeral recipient certificate. Backup creation
 does not write a plaintext dump. Wrong-recipient and modified-ciphertext cases
@@ -224,6 +235,40 @@ restore; each fixture is cleaned up. The final invocation passes the full
 restore and application checks above. This is supporting recovery evidence,
 not a substitute for current exact-commit CI or managed deployment acceptance.
 
+## Restored runtime identity verification — 2026-10-15
+
+A representative source cluster containing the API/Worker identities reproduces
+a failure in the first fresh-cluster rehearsal: migrations grant conditional
+capabilities, but the target initially recreated only the fixture reader. The
+correctly authenticated archive therefore fails during restore. The reproduced
+failure exits 1; cleanup restores Docker inventory. The earlier 70.571-second
+capture below did not include those preexisting source runtime roles.
+
+The repair creates reviewed API/Worker identities as restricted non-login roles
+before archive ACLs are restored. It then activates them on the target through
+the unchanged canonical provisioning SQL with fresh credentials. It changes no
+preexisting source role/password and copies no global password hashes.
+
+The final two-Card, 149-migration rehearsal passes in **76.258 seconds**, including
+initialization/cleanup. Both actual SCRAM logins accept their credentials and
+refuse incorrect passwords, pass the runtime role guard and read the complete
+ledger. The API refuses missing-context/foreign-tenant disclosure and writes,
+allows its own tenant write, and cannot acquire Worker scan recovery. The Worker
+cannot directly read Cards/private attachment metadata, sees only its tenant's
+queue, claims the committed API job, refuses another process's acknowledgment,
+and commits its own acknowledgment. The second tenant's job remains Pending at
+attempt zero; the source fingerprint remains unchanged.
+
+The complete schema/data/ACL, twelve archive/refusal/corruption and original
+tenant/security checks also pass. All **159** frozen inputs match; both owned
+containers and 756,394 temporary host bytes are removed, restoring the original
+Docker inventory. The [SQL contract](../../scripts/ci/database-backup-runtime-verify.sql)
+uses real restricted sessions, not administrator `SET ROLE`. It does not execute
+the application connection factory/HTTP hosts, all runtime capabilities, managed
+providers or coordinated object/key recovery. Current immutable CI and scheduled
+production recovery/RPO/RTO remain required. No large-load test runs; ARCH-08 and
+the MVP remain open.
+
 ## Fresh-cluster recovery verification — 2026-10-15
 
 The updated mandatory contract passes against two owned PostgreSQL clusters with
@@ -270,7 +315,7 @@ Before routing production traffic, configure and record:
 - Recovery of PostgreSQL, object-storage versions, durable key rings and the
   external configuration/provider dependencies as a coordinated set. A logical
   PostgreSQL dump omits cluster-global roles. The current fresh-cluster rehearsal
-  recreates one reviewed fixture identity; production recovery must separately
+  recreates reviewed fixture/API/Worker identities; production recovery must separately
   restore/reprovision the reviewed owners, grants and restricted API/Worker
   identities before applying archive ACLs, with fresh protected login credentials.
 - A restore into an isolated empty destination, schema/image compatibility and

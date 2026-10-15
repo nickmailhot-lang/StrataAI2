@@ -490,8 +490,10 @@ storage and durable key rings. Follow the
 and [promotion/rollback procedure](promotion-and-rollback.md) before production
 recovery. The full CI rehearsal exercises this exact backup command with a small
 source database and a fresh isolated target cluster. It checks distinct cluster
-identities, missing-role rollback and reviewed fixture-role recreation; it does
-not certify production RPO/RTO, runtime-role recovery or providers.
+identities, missing-role rollback and reviewed fixture-role recreation. It
+also verifies canonical target API/Worker provisioning, real SCRAM logins and
+scoped database operations. It does not certify deployed application recovery,
+production RPO/RTO or providers.
 
 ## Restore into an isolated empty Docker database
 
@@ -531,9 +533,11 @@ identities referenced by the trusted archive's ACLs. Keep application hosts stop
 and the target isolated. A database dump does not create cluster-global roles;
 missing roles make this transactional restore fail. Preserve least privilege and
 use fresh protected login credentials rather than copying global superusers or
-password hashes. The CI fixture recreates one non-login test role; production
-API/Worker identities and post-restore provisioning require their own review and
-verification before traffic or background deliveries resume.
+password hashes. The CI fixture recreates restricted non-login identities before
+restore, provisions API/Worker credentials only after the schema/data/ACL checks,
+and verifies their actual authenticated sessions. Production ownership, roles,
+credentials and post-restore application checks require their own review before
+traffic or background deliveries resume.
 
 For an encrypted private key, supply `STRATAAI_RESTORE_KEY_PASSPHRASE` through
 your secret provider. Its value is supplied only to the OpenSSL process through
