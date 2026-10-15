@@ -35,6 +35,8 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['certificate lifetime command omitted from bundle', value => { const step=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle');step.run=step.run.replace('cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh',''); }],
+  ['certificate lifetime tests omitted', value => { const step=value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage');step.run=step.run.replace('node --test tests/https-certificate.test.mjs',''); }],
   ['database outage refusal source tests omitted', value => { const step=value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage');step.run=step.run.replace('node --test tests/release-database-outage.test.mjs',''); }],
   ['deployment identity command omitted from bundle', value => { const step=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle');step.run=step.run.replace('cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh',''); }],
   ['deployment identity source tests omitted', value => { const step=value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage');step.run=step.run.replace('node --test tests/release-runtime.test.mjs',''); }],

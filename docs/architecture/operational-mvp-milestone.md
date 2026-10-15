@@ -4,6 +4,14 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [operator certificate lifetime check](https-deployment.md#operator-certificate-lifetime-check--2026-10-15)
+adds a read-only command for monitoring the served endpoint's trust, identity
+and usable lifetime. Its 25 TLS/input tests, 246 CI coverage guards and 37
+artifact tests pass; a scoped native Nginx fixture passes three outcomes and
+restores the original Docker inventory. Scheduling, tested alerts, renewal,
+public deployment and full current-image release CI remain acceptance work.
+No large load test runs; those remain deferred until after the MVP.
+
 - Sign-in, account recovery, sessions, Organization membership and invitations.
 - Boards, Lists and Cards, ordering, dates, labels, assignments, checklists, comments, archive and recovery.
 - Authorized collaboration, activity, search and notifications, including reconnect and access withdrawal.

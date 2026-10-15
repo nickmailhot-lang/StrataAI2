@@ -114,6 +114,11 @@ if grep -Eiq '^[[:space:]]*Strict-Transport-Security:' "$scratch/internal-http.l
 fi
 curl_args=(--noproxy '*' --connect-timeout 5 --max-time 15 --silent --show-error)
 request_ca="$scratch/server.crt"
+STRATAAI_TLS_TIMEOUT_SECONDS=5 bash verify-https-certificate.sh localhost "$port" 3600 "$(host_path "$scratch/server.crt")" >/dev/null
+if STRATAAI_TLS_TIMEOUT_SECONDS=5 bash verify-https-certificate.sh localhost "$port" 172800 "$(host_path "$scratch/server.crt")" > "$scratch/expiry-refusal.log" 2>&1; then
+  echo 'Certificate check accepted a lifetime beyond this one-day fixture.' >&2; exit 1
+fi
+grep -Fxq 'HTTPS certificate verification failed.' "$scratch/expiry-refusal.log"
 for url in "$origin/" "https://127.0.0.1:$port/"; do
   extra=(); if [[ "$url" == *127.0.0.1* ]]; then extra=(--cacert "$(host_path "$scratch/server.crt")"); fi
   code=0

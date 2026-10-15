@@ -88,6 +88,7 @@ jobs:
           node --test tests/health-check.test.mjs
           node --test tests/release-runtime.test.mjs
           node --test tests/release-database-outage.test.mjs
+          node --test tests/https-certificate.test.mjs
 
       - name: Verify complete browser shard coverage
         run: |
@@ -1522,6 +1523,7 @@ jobs:
           cp .env.release.example bundle/
           cp scripts/health-check.sh bundle/health-check.sh
           cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh
+          cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh
           cp scripts/backup-postgres.sh bundle/backup-postgres.sh
           cp scripts/restore-postgres.sh bundle/restore-postgres.sh
           cp scripts/apply-compose-migrations.sh bundle/apply-migrations.sh

@@ -265,6 +265,29 @@ Certificate issuance, expiry monitoring, DNS/firewall routing and the actual
 deployment's HTTPS origin remain operator requirements. See
 [HTTPS verification and limits](../architecture/https-deployment.md).
 
+The bundle includes a read-only certificate check for operator monitoring:
+
+```bash
+# Example policy: require at least fourteen days of remaining validity.
+bash verify-https-certificate.sh tasks.example.com 443 1209600
+# For a private CA, supply its trusted PEM file explicitly:
+bash verify-https-certificate.sh tasks.example.com 443 1209600 /secure/company-ca.pem
+```
+
+Run this from a host with Bash, OpenSSL 3 and GNU coreutils (`timeout` included).
+It opens a fresh TLS connection, verifies hostname/IP identity and current
+trust, and checks the captured certificate and usable trust path at the chosen
+future horizon. DNS names use SNI. The required horizon is 1–31,536,000 seconds;
+choose it to match your renewal policy. Each OpenSSL invocation has a ten-second
+deadline by default; `STRATAAI_TLS_TIMEOUT_SECONDS` accepts an explicit integer
+from 1 to 60. Captured peer output is limited to 64 KiB, private scratch files
+are removed, and failures return nonzero with a generic message.
+
+Connect the exit status to your monitoring and alerts, and test delivery of
+those alerts. This command installs no schedule, renews no certificate and
+does not check revocation or every load-balancer node. It does not replace
+application readiness or the [Production runtime identity check](#start-and-migrate).
+
 ## Optional verification and recovery mail role
 
 The included `.env.release.example` lists the complete optional mail setup,

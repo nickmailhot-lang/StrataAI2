@@ -143,6 +143,41 @@ HTTPS client tests and **241** CI coverage guards pass, as do Bash syntax and
 workflow lint. This is supporting retained-image verification, not a completed
 current-image release or public certificate-provider deployment.
 
+## Operator certificate lifetime check — 2026-10-15
+
+The release bundle now includes `verify-https-certificate.sh`; see the
+[operator command and dependencies](../release/README.md#optional-https-on-a-linux-docker-host).
+It verifies a fresh peer's current trust and DNS/IP identity, then checks the
+captured leaf and usable chain at an explicit future horizon. DNS checks send
+SNI. Requiring only the leaf expiry would miss an issuer that expires sooner.
+OpenSSL verification errors terminate the connection check. Each OpenSSL
+invocation has a configurable 1–60 second deadline, with a one-second forced-kill
+grace; peer output is limited to 64 KiB. Output contains only the result, and
+private captured certificate files are removed on completion.
+
+All **25** real TLS/input tests pass: DNS, IPv4 and IPv6 success, valid issuer,
+wrong identity, untrusted/expired peers, insufficient leaf/issuer lifetime,
+oversized output, a stalled handshake, malformed inputs and invalid deadlines.
+The DNS fixture listens on both address families; the stalled-handshake case
+retains its one-second deadline. All **246** immutable CI coverage guards and
+**37** release-artifact tests pass, along with Bash syntax and workflow lint.
+The command is required in the checksummed payload and the source test gate.
+The assembled-bundle HTTPS gate must also accept a valid lifetime and refuse
+a horizon beyond its one-day certificate.
+
+A certificate-only native Nginx fixture passes three checks: trusted certificate
+with sufficient lifetime, refused excessive horizon and refused untrusted
+certificate. It reuses the archive-verified `24f56246` web image with current
+read-only Nginx/header/TLS mounts; no API, Worker or database starts. Listener
+identity, start time and image remain unchanged. All four captured inputs match,
+original Docker inventory is restored and **23,630** owned temporary bytes are
+removed. This is supporting TLS evidence, not current application acceptance.
+
+The command installs no monitor, alert, renewal or scheduler. Operators must
+choose a renewal margin, schedule it, route failures to tested alerts and
+verify the actual public endpoint. Revocation, every load-balancer node and
+certificate-provider operation require separate evidence.
+
 ## Remaining deployment acceptance
 
 The actual hostname, trusted public certificate, certificate renewal/expiry
@@ -158,3 +193,6 @@ or completed ARCH-12/MVP acceptance. Large-load testing remains post-MVP.
 - [Compose replacement and reset semantics](https://docs.docker.com/reference/compose-file/merge/#replace-value)
 - [Node's Undici WebSocket client options](https://github.com/nodejs/undici/blob/main/docs/docs/api/WebSocket.md)
 - [ASP.NET Core SignalR hub protocol](https://github.com/dotnet/aspnetcore/blob/main/src/SignalR/docs/specs/HubProtocol.md)
+- [OpenSSL TLS client verification and SNI](https://docs.openssl.org/3.6/man1/openssl-s_client/)
+- [OpenSSL certificate lifetime checks](https://docs.openssl.org/3.6/man1/openssl-x509/)
+- [OpenSSL verification time and identity options](https://docs.openssl.org/3.6/man1/openssl-verification-options/)
