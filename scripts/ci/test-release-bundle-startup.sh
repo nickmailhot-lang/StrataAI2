@@ -83,7 +83,7 @@ runtime_file=$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/strataai-bundle-runtime.X
 check_runtime() {
   local endpoint status host container actual expected
   bash health-check.sh >/dev/null
-  for endpoint in http://127.0.0.1:8088/build-metadata.json http://127.0.0.1:8080/api/runtime http://127.0.0.1:8081/runtime; do
+  for endpoint in "${STRATAAI_WEB_URL:-http://127.0.0.1:8088}/build-metadata.json" "${STRATAAI_API_URL:-http://127.0.0.1:8080}/api/runtime" "${STRATAAI_WORKER_URL:-http://127.0.0.1:8081}/runtime"; do
     status=$(curl --silent --show-error --connect-timeout 5 --max-time 15 \
       --output "$runtime_file" --write-out '%{http_code}' "$endpoint")
     test "$status" = 200
@@ -97,8 +97,63 @@ check_runtime() {
     test "$actual" = "$expected"
   done
 }
+check_database_outage() {
+  local database volume ledger host container status endpoint expected
+  local volume_format='{{range .Mounts}}{{if eq .Destination "/var/lib/postgresql/data"}}{{.Name}}{{end}}{{end}}'
+  local ledger_sql="SELECT md5(string_agg(version, ',' ORDER BY version)) FROM schema_migrations"
+  local -A hosts starts
+  database=$("${compose[@]}" ps -q postgres)
+  volume=$(docker inspect --format "$volume_format" "$database")
+  test -n "$volume"
+  ledger=$("${compose[@]}" exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 -c "$ledger_sql")
+  [[ "$ledger" =~ ^[a-f0-9]{32}$ ]]
+  for host in api worker web; do
+    hosts[$host]=$("${compose[@]}" ps -q "$host")
+    starts[$host]=$(docker inspect --format '{{.State.StartedAt}}' "${hosts[$host]}")
+  done
+  "${compose[@]}" stop --timeout 20 postgres >/dev/null
+  test "$(docker inspect --format '{{.State.Running}}' "$database")" = false
+  test "$(docker inspect --format '{{.State.ExitCode}}' "$database")" = 0
+  for host in api worker; do
+    endpoint="${STRATAAI_API_URL:-http://127.0.0.1:8080}"; expected=strataai-api
+    if [ "$host" = worker ]; then endpoint="${STRATAAI_WORKER_URL:-http://127.0.0.1:8081}"; expected=strataai-worker; fi
+    status=$(curl --disable --noproxy '*' --globoff --proto '=http,https' --silent --show-error --connect-timeout 5 --max-time 15 \
+      -o "$runtime_file" -w '%{http_code}' "$endpoint/healthz")
+    test "$status" = 200
+    if [ "$host" = api ]; then
+      jq -e --arg service "$expected" 'keys==["service","status"] and .service==$service and .status=="ok"' "$runtime_file" >/dev/null
+    else
+      jq -e --arg service "$expected" 'keys==["service","status","timestamp"] and .service==$service and .status=="ok" and (.timestamp|type=="string")' "$runtime_file" >/dev/null
+    fi
+    status=$(curl --disable --noproxy '*' --globoff --proto '=http,https' --silent --show-error --connect-timeout 5 --max-time 15 \
+      -o "$runtime_file" -w '%{http_code}' "$endpoint/readyz")
+    test "$status" = 503
+    if [ "$host" = api ]; then
+      jq -e 'keys==["code","correlationId","message","status"] and .status=="not-ready" and .code=="runtime_not_ready"
+        and .message=="The service is not ready. Try again later." and (.correlationId | type=="string" and length>0)' "$runtime_file" >/dev/null
+    else jq -e '.=={"status":"not-ready"}' "$runtime_file" >/dev/null; fi
+  done
+  if bash verify-release-runtime.sh build-metadata.json > "$runtime_file" 2>&1; then
+    echo 'Deployment verification accepted an unavailable database.' >&2; return 1
+  fi
+  grep -Fxq 'Release runtime verification failed; retain the prior known-good release.' "$runtime_file"
+  "${compose[@]}" up -d --no-deps --no-recreate --no-build --pull never --wait --wait-timeout 120 postgres >/dev/null
+  test "$("${compose[@]}" ps -q postgres)" = "$database"
+  test "$(docker inspect --format "$volume_format" "$database")" = "$volume"
+  test "$("${compose[@]}" exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 -c "$ledger_sql")" = "$ledger"
+  "${compose[@]}" up -d --no-deps --no-recreate --no-build --pull never --wait --wait-timeout 120 api worker web >/dev/null
+  for host in api worker web; do
+    container=$("${compose[@]}" ps -q "$host")
+    test "$container" = "${hosts[$host]}"
+    test "$(docker inspect --format '{{.State.StartedAt}}' "$container")" = "${starts[$host]}"
+  done
+  check_runtime
+  bash verify-release-runtime.sh build-metadata.json >/dev/null
+  echo 'Database outage passed: live hosts refuse readiness privately; same database/volume/ledger and application processes recover without rebuild.'
+}
 check_runtime
 bash verify-release-runtime.sh build-metadata.json >/dev/null
+check_database_outage
 api=$("${compose[@]}" ps -q api)
 worker=$("${compose[@]}" ps -q worker)
 "${compose[@]}" stop --timeout 20 api worker >/dev/null

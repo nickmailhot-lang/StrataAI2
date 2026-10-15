@@ -283,6 +283,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(startupSource.run.includes('node --test tests/release-demo-bundle-startup.test.mjs'));
   assert.ok(startupSource.run.includes('node --test tests/https-live-board.test.mjs'));
   assert.ok(startupSource.run.includes('node --test tests/release-runtime.test.mjs'));
+  assert.ok(startupSource.run.includes('node --test tests/release-database-outage.test.mjs'));
   const demoStartup = releaseSteps.find(step => step.name === 'Verify assembled Demo bundle and seeded account without source or SDKs');
   const httpsStartups = releaseSteps.filter(step => step.name === 'Verify assembled HTTPS bundle and secure task workflow');
   assert.equal(httpsStartups.length, 1, 'Exactly one assembled HTTPS gate is required');

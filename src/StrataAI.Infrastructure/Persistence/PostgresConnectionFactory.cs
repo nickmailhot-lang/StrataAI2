@@ -10,6 +10,7 @@ namespace StrataAI.Infrastructure.Persistence;
 public sealed class PostgresConnectionFactory : IAsyncDisposable
 {
     private readonly NpgsqlDataSource _dataSource;
+    private readonly NpgsqlDataSource _readinessDataSource;
     private readonly AsyncLocal<TenantDbSession?> _commandSession = new();
     private readonly AsyncLocal<RoutingDbSession?> _identityCommandSession = new();
     private readonly AsyncLocal<Guid?> _identityCommandSubject = new();
@@ -23,12 +24,30 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
                 nameof(connectionString));
         }
 
-        _dataSource = NpgsqlDataSource.Create(PostgresTransportConfiguration.Normalize(connectionString));
+        var normalized = PostgresTransportConfiguration.Normalize(connectionString);
+        _dataSource = NpgsqlDataSource.Create(normalized);
+        // Connection startup can outlive a cancellation token during a stalled
+        // PostgreSQL handshake. Bound the probe's own transport and commands,
+        // without changing normal application pool/command settings.
+        var readiness = new NpgsqlConnectionStringBuilder(normalized)
+        {
+            Timeout = 2,
+            CommandTimeout = 2,
+            MinPoolSize = 0,
+            MaxPoolSize = 1,
+        };
+        _readinessDataSource = NpgsqlDataSource.Create(readiness.ConnectionString);
     }
 
     public async ValueTask<NpgsqlConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)
+        => await OpenVerifiedConnectionAsync(_dataSource, cancellationToken);
+
+    internal async ValueTask<NpgsqlConnection> OpenReadinessConnectionAsync(CancellationToken cancellationToken = default)
+        => await OpenVerifiedConnectionAsync(_readinessDataSource, cancellationToken);
+
+    private static async ValueTask<NpgsqlConnection> OpenVerifiedConnectionAsync(NpgsqlDataSource source, CancellationToken cancellationToken)
     {
-        var connection = await _dataSource.OpenConnectionAsync(cancellationToken);
+        var connection = await source.OpenConnectionAsync(cancellationToken);
         try
         {
             await using var command = new NpgsqlCommand("SELECT public.runtime_database_role_is_safe();", connection);
@@ -109,7 +128,11 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
         }
     }
 
-    public ValueTask DisposeAsync() => _dataSource.DisposeAsync();
+    public async ValueTask DisposeAsync()
+    {
+        try { await _readinessDataSource.DisposeAsync(); }
+        finally { await _dataSource.DisposeAsync(); }
+    }
 
     internal bool HasCommandScope(Guid organizationId) => _commandSession.Value?.OrganizationId == organizationId;
     internal bool HasIdentityCommandScope => _identityCommandSession.Value is not null;

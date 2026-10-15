@@ -69,6 +69,12 @@ instructions inside the selected bundle rather than assuming it contains
 newer release assets. The milestone and architecture/feature tickets remain
 open pending their remaining acceptance requirements.
 
+The [database-outage follow-up](release-bundle-startup.md#database-outage-and-bounded-readiness-2026-10-15)
+finds a readiness timeout against retained `24f56246` images. Current main adds
+a bounded production readiness connection path and mandatory database stop/recover
+verification. Focused Linux and compiled-library host checks pass; these repairs
+still require their own complete current-image CI before MVP acceptance.
+
 ### Earlier independently inspected candidate
 
 An earlier verified operational release candidate is available at

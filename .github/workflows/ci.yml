@@ -87,6 +87,7 @@ jobs:
           node --test tests/https-live-board.test.mjs
           node --test tests/health-check.test.mjs
           node --test tests/release-runtime.test.mjs
+          node --test tests/release-database-outage.test.mjs
 
       - name: Verify complete browser shard coverage
         run: |

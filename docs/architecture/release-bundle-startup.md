@@ -327,3 +327,51 @@ zero owned resources and confirm removal of three loaded images, ZIP/tar copies
 and temporary credentials/inspection. Current full immutable CI and actual
 release assembly/post-startup integrity remain required. ARCH-11 and the MVP
 milestone stay open; large-load tests remain disabled.
+
+## Database outage and bounded readiness (2026-10-15)
+
+The source-free Production gate now stops only its disposable PostgreSQL
+container and verifies API/Worker liveness remains HTTP 200 while readiness
+returns HTTP 503. API refusal is restricted to its fixed status/code/message
+and correlation reference; Worker refusal contains only `status`. Database
+configuration, provider diagnostics and tenant content cannot satisfy those
+response-shape checks. The operator's build-bound deployment check must refuse
+the outage, using that same already tested command rather than a substitute.
+
+The gate restarts the same PostgreSQL container without recreation and requires
+the same named volume and migration-ledger fingerprint. The same API, Worker and
+web containers must recover with unchanged start timestamps, followed by full
+health/proxy/build checks and successful operator verification. The existing
+graceful application restart and secret-rotation checks still run afterward.
+This checks reconnection and schema persistence; it is not a backup restore or
+proof of all task/provider effects during an outage.
+
+The unchanged retained `24f56246` API times out at the original 15-second
+readiness request limit after database shutdown. An initial cancellation-only
+repair also fails the new stalled-handshake regression's six-second outer
+deadline. Production readiness now uses its own data source with two-second
+connection/command limits and a linked two-second cancellation budget. Its
+pool settings are minimum zero/maximum one when pooling is enabled. Normal
+application pool/command settings and the TLS/credential configuration remain
+unchanged. Both paths share the same role and complete schema checks, and both
+data sources are disposed. Caller cancellation remains cancellation; a probe
+deadline returns not ready.
+
+All three focused Linux runtime regressions pass in **4.455 seconds**, including
+stalled PostgreSQL handshake, caller cancellation and pre-cancellation. Both
+listener admission and result waits are bounded. The warning-as-error build
+passes with zero warnings/errors. All **22** outage-gate refusal cases,
+**53** existing startup cases and **244** CI coverage guards pass, including
+unexpected healthy/failed liveness, private readiness fields, wrong operator
+failure, container/process/volume/ledger replacement and restart/wait failures.
+
+The maintained real stop/recover contract passes in **34.668 seconds** with
+all **163 captured inputs matching**. Cleanup restores the original Docker
+inventory and removes **2,111,069** temporary bytes; no original database,
+application image build/import/download or large load is used. This supporting
+run mounts the current compiled Infrastructure library read-only into verified
+retained `24f56246` API/Worker images, with declared current Nginx/header mounts.
+The library uses compatible `0.1.0-1736` assembly versions; an initial mixed-version
+host fixture failed before startup. It does not certify new immutable images or
+the complete release gate. Full current-image CI, deployment acceptance and
+the broader ARCH-08/11 requirements remain open.

@@ -25,6 +25,9 @@ later release-gate repairs. Use the instructions included in its own bundle;
 see [the evidence and remaining gaps](docs/architecture/operational-mvp-milestone.md#current-status)
 before applying newer documentation to that artifact.
 
+Current main also adds [bounded database readiness and outage recovery checks](docs/architecture/release-bundle-startup.md#database-outage-and-bounded-readiness-2026-10-15).
+Those repairs require their own full current-image CI before MVP acceptance.
+
 **Demo login:** `demo@strataai.test` / `StrataAI-Demo-2026!`.
 Set `STRATAAI_RUNTIME_MODE=demo`, open `/login`, and sign in without registering.
 See [Demo sign-in](#demo-sign-in) for account access and reset behavior.
