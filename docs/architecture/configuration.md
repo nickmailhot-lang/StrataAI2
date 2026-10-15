@@ -141,6 +141,11 @@ changes require their own CI; large-load testing remains deferred.
 
 ### PostgreSQL transport
 
+All production database connections require PostgreSQL 17 or newer, including
+managed deployments and readiness probes. Older reported server versions use
+the existing sanitized schema-incompatibility refusal. See the
+[version admission and verification scope](schema-upgrades.md#minimum-server-version-admission--2026-10-15).
+
 API, general Worker and identity-mail database connections default to
 `SSL Mode=VerifyFull`: encryption, certificate trust and server-name validation
 are required. Install the hosted database's CA in the runtime trust store or

@@ -30,8 +30,9 @@ and rollback of failed DDL/ledger changes. Exact release images test refusal
 and recovery with an incomplete baseline.
 
 After migration, the catalog guard classifies every non-extension application
-table in `public`. Explicitly listed global identity/ledger tables retain their
-separate subject/service authorization contracts. All other tables require a
+table in `public`. Explicitly classified global identity/ledger, actor-private
+and recipient tables retain their separate identity/service contracts described
+below. All remaining Organization-owned tables require a
 non-null UUID `tenant_id`, or the root Organization's non-null UUID `id`, enabled
 and forced RLS, and an explicit policy. The existing shared append-only
 `audit_events` table also stores global identity events: its UUID Organization key
@@ -43,11 +44,50 @@ This guard checks catalog structure, not the correctness of policy predicates.
 Cross-tenant query/write, missing-context and restricted-role fixtures remain
 required to prove actual isolation behavior.
 
+Actor-private global tables separately require a non-null UUID actor, forced
+RLS and explicit subject read/write policy. Recipient streams and authority
+revisions require their normalized recipient key, forced RLS and the specific
+recipient-only read policy. These are reviewed identity scopes, not exemptions
+for tenant-owned tables; the catalog guard checks their distinct contracts too.
+
 The required PostgreSQL job runs deliberate catalog failures for nullable or
 missing isolation keys, disabled or unforced RLS and absent policies. Each failure
 must originate from the guard, roll back its disposable DDL and leave the valid
-migrated catalog intact. Local shell syntax/diff checks pass; first Linux execution
-of this new catalog guard is still required before treating it as release evidence.
+migrated catalog intact. [Hosted PostgreSQL job 116432558103](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38732211465/job/116432558103)
+at `ff1249f4` passes the catalog/refusal/rollback runner, RLS/pgvector, restricted
+routing context/reset and append-only audit checks. Its catalog scripts and
+migrations are unchanged through the server-version repair below. This resolves
+the old first-Linux-execution note; it does not certify current immutable images.
+
+## Minimum server version admission — 2026-10-15
+
+ARCH-04-FR-001 requires PostgreSQL 17 or newer, including an externally configured
+database. Compose selected 17 but the runtime factory previously admitted older
+servers when role/schema checks succeeded. Both normal and readiness connections
+now require the driver's reported major version to be at least 17 before running
+the application role/schema queries. This uses handshake metadata without an
+additional query. A refused connection is disposed and uses the existing
+sanitized schema-incompatibility error/readiness path, without version details
+or a Demo fallback. Existing transport, role and 149-entry ledger checks remain.
+
+The [eight wire-handshake cases](../../tests/StrataAI.Api.Tests/PostgresServerVersionTests.cs)
+use actual Npgsql against a bounded loopback protocol peer for both connection
+paths. Before the repair all four advertised-15/16 refusal cases fail because
+connections are admitted; the four advertised-17/18 cases pass. Afterward all
+eight pass, with no application guard queries on refused servers and both
+role/schema queries retained on accepted ones. The peer explicitly uses basic
+built-in type loading and synthetic SQL answers; it does not certify actual
+PostgreSQL 15/16/18 engines or change production type-loading defaults.
+
+The complete solution builds with zero warnings/errors, and 14 existing HTTP
+error-sanitization/diagnostic cases pass. The maintained bounded attachment/
+Worker persistence invocation passes against actual **PostgreSQL 17.11** with
+all **149 migrations**, normal type loading and restricted API/Worker logins in
+**21.3 seconds**. All **820** frozen source/binary inputs match; owned cleanup
+restores Docker inventory and removes **724,100** temporary bytes. No image is
+built/downloaded/imported, original database used or large-load test run.
+This is supporting current-assembly evidence in the retained Linux runtime;
+current exact-SHA immutable CI and full ARCH-04 acceptance/DoD remain required.
 
 ## Runtime migration readiness
 

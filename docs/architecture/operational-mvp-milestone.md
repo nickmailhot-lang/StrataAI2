@@ -80,6 +80,15 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [minimum PostgreSQL version guard](schema-upgrades.md#minimum-server-version-admission--2026-10-15)
+now refuses advertised pre-17 servers on both runtime and readiness connections.
+Four older-server cases fail before repair; all eight wire cases and 14 existing
+HTTP safety cases pass afterward. Real PostgreSQL 17.11 passes the bounded
+persistence/Worker contracts with 149 migrations, 820 matching frozen inputs and
+owned cleanup restoring Docker inventory. The solution builds cleanly. Actual
+older/newer engine compatibility and current immutable CI remain distinct from
+the controlled handshake cases; ARCH-04 and MVP stay open. No large-load test runs.
+
 The [independent encrypted key-volume recovery rehearsal](database-recovery.md#independent-encrypted-key-volume-recovery--2026-10-15)
 now replaces the shared key volume with authenticated encrypted export and a
 validated import into a distinct empty volume before API startup. Original

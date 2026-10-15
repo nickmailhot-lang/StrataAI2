@@ -50,6 +50,9 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
         var connection = await source.OpenConnectionAsync(cancellationToken);
         try
         {
+            // ARCH-04-FR-001 applies to managed databases as well as Compose.
+            // Reuse sanitized schema incompatibility handling for an old server.
+            if (connection.PostgreSqlVersion.Major < 17) throw new RuntimeDatabaseSchemaException();
             await using var command = new NpgsqlCommand("SELECT public.runtime_database_role_is_safe();", connection);
             try
             {
