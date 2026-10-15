@@ -5,6 +5,59 @@ source, Node.js or the .NET SDK. Checksums and a nonempty archive alone do not
 prove that its Compose, migrations, role provisioning and runtime instructions
 work together. ARCH-11-FR-052 also requires API/Worker shutdown and restart proof.
 
+## Independent 5845da8b bundle rehearsal — 2026-10-15
+
+The original [release artifact 12002794848](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901/artifacts/12002794848)
+for `5845da8be8c5a4b476e0743c0b3a31fc01d6e46f`, version **0.1.0-1770**,
+passes an independent source-free rehearsal. Its **518,743,026-byte** ZIP matches
+published SHA-256
+`c017f164865a9b87ac00354d0aa136a0bdd4e3564a89341b336a55692fe1de95`.
+The candidate's pinned verifier admits all **189** files, nested image/security
+checksums, canonical build metadata, image provenance and SBOM inventories.
+The three original image archives are loaded and their actual image IDs and
+OCI identities verified. No application source is built or mounted.
+
+| Rehearsal | Verified behavior | Result and duration |
+| --- | --- | --- |
+| Production | Migrations/restricted roles, private diagnostic ports, health/proxy/build/mode, database outage and unchanged-process/volume recovery, graceful restart and runtime-password rotation | Pass, 212.331 seconds |
+| Demo | Exactly three retained images, no database/volumes, health/build identity, SPA/proxy, documented seeded login and authenticated profile | Pass, 27.646 seconds |
+| HTTPS | Only TLS published, missing/mismatched key refusal, trust/name/HSTS/Secure cookies, certificate renewal/restoration, persisted task and web restart, database/key recovery, protected Worker/WSS delivery and logout | Pass, 215.548 seconds |
+
+The HTTPS recovery uses a distinct PostgreSQL cluster and independently
+recovered encrypted data-protection keys. The original saved session and fresh
+Secure sign-in both recover the exact task graph. Source-issued activity
+continuation, exact restored page and Card rebinding refusal pass. The restored
+Worker delivers an edit through the protected Board stream; anonymous/origin
+refusals, content-free frames, persisted-cursor recovery and logout withdrawal
+remain required and pass. The original source deployment and all image identities
+remain unchanged.
+
+Current verification drivers are frozen at parent `8940226b`; their private
+orchestration uses the diagnostic port overlay and external read-only runtime
+and certificate-lifetime probes. The runtime probe has no source difference
+from the candidate's original command. The later certificate probe and recovery
+verification tools are outside the payload. This exercises original application
+images and operator commands with newer checks; it does not claim the original
+CI contained every later gate. All original payload bytes are checked unchanged
+after every stage and the pinned verifier is rerun at the end. Frozen source
+input hashes have zero mismatches.
+
+The complete check takes **499.581 seconds**, including download, integrity
+verification and cleanup. All owned containers/volumes/networks and the three
+newly imported images are removed. The original Docker inventory is restored,
+and **1,045,044,568 temporary bytes**, including downloaded/extracted archives
+and private fixture files, are removed. The original database and running local
+Demo are preserved. No large-load or capacity test runs.
+
+This is evidence for this exact candidate, supplementing its all-16-jobs-green
+hosted run. It predates later main changes, including workload-identity and atomic
+certificate-file replacement repairs. Passing certificate rotation in this
+invocation does not waive that known repair. Current-main immutable CI, managed
+storage/mail configuration, operational alerts, scheduled/coordinated recovery
+and complete [MVP acceptance](operational-mvp-milestone.md#release-acceptance)
+remain required. ARCH-10/11 and the milestone stay open. Follow the
+[candidate's pinned operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/5845da8be8c5a4b476e0743c0b3a31fc01d6e46f/docs/release/README.md).
+
 ## Private diagnostic ports during verification — 2026-10-15
 
 Independent verification of the original `e5570793` release exposes a collision

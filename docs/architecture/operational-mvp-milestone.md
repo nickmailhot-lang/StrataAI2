@@ -163,14 +163,19 @@ unchanged-payload and upload steps all succeed. Its
 is **518,743,026 bytes**, with GitHub-reported SHA-256
 `c017f164865a9b87ac00354d0aa136a0bdd4e3564a89341b336a55692fe1de95`.
 
-This is hosted evidence for that exact candidate. Its full archive has not been
-downloaded or executed independently here. It includes bounded PostgreSQL
+This is hosted evidence for that exact candidate. Its full archive and all 189
+payload files are now independently verified and its Production/Demo/HTTPS
+rehearsals pass; see the [independent execution](release-bundle-startup.md#independent-5845da8b-bundle-rehearsal--2026-10-15).
+It includes bounded PostgreSQL
 readiness, the assembled database-outage/recovery gate, build-bound Production
 API/Worker verification and HTTPS certificate rotation/restoration. It predates
-the workload-identity dependency repair, fresh-cluster application recovery,
+the workload-identity dependency repair, atomic certificate-file replacement,
 certificate lifetime monitoring and later observability changes; follow its
 [pinned operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/5845da8be8c5a4b476e0743c0b3a31fc01d6e46f/docs/release/README.md).
-Current-main CI, managed-provider configuration, tested operational alerts,
+The independent rehearsal also passes fresh-cluster database/key recovery using
+the original payload and newer external verification tools. This does not waive
+the known certificate replacement repair or certify current main. Current-main
+CI, managed-provider configuration, tested operational alerts,
 scheduled recovery and complete MVP acceptance remain required. New main work
 and deferred capacity acceptance are not certified by this earlier green run.
 

@@ -26,17 +26,21 @@ rehearsal, populated schema-149 upgrades and the optional HTTPS listener with
 Secure sign-in and persisted task checks. It also includes build-bound Production
 API/Worker verification, bounded database readiness and outage/recovery checks,
 and served-certificate rotation/restoration. It predates the workload-identity
-dependency repair, fresh-cluster application recovery, certificate lifetime
+dependency repair, atomic certificate-file replacement, certificate lifetime
 monitoring and later observability changes. Use the
 instructions included in its own bundle;
 see [the evidence and remaining gaps](docs/architecture/operational-mvp-milestone.md#current-status)
 before applying newer documentation to that artifact.
 
-An [independent check of the earlier `e5570793` bundle](docs/architecture/release-bundle-startup.md#independent-original-bundle-check-and-refusal)
-starts successfully but fails the newer database-outage deadline. The latest
-completed candidate includes that readiness repair and passes its hosted outage
-gate. Its full archive has not been downloaded or executed independently here;
-complete the remaining deployment acceptance before MVP production promotion.
+An [independent check of this original `5845da8b` bundle](docs/architecture/release-bundle-startup.md#independent-5845da8b-bundle-rehearsal--2026-10-15)
+passes Production, seeded Demo and HTTPS, including database-outage recovery,
+encrypted database/key restoration into a fresh cluster, original-session
+recovery and protected collaboration. All 189 original files remain unchanged;
+the temporary files and imported images are removed. This uses newer external
+verification tools and does not certify later main changes or managed providers.
+The [earlier `e5570793` check](docs/architecture/release-bundle-startup.md#independent-original-bundle-check-and-refusal)
+retains its failed outage result. Complete the remaining deployment acceptance
+before MVP production promotion.
 
 Current main also adds [bounded database readiness and outage recovery checks](docs/architecture/release-bundle-startup.md#database-outage-and-bounded-readiness-2026-10-15).
 Those checks pass for the pinned candidate above; later main changes require
