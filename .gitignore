@@ -17,6 +17,7 @@ coverage/
 .env.*
 !.env.example
 !.env.release.example
+!.env.demo.example
 secrets/
 *.pfx
 *.key

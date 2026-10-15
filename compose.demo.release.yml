@@ -1,0 +1,34 @@
+name: strataai-demo
+services:
+  api:
+    image: ${STRATAAI_API_IMAGE:?Set the retained API image from build-metadata.json}
+    pull_policy: never
+    environment:
+      STRATAAI_RUNTIME_MODE: demo
+      ASPNETCORE_ENVIRONMENT: Development
+      STRATAAI_REALTIME_PUBLIC_ORIGIN: ${STRATAAI_DEMO_PUBLIC_ORIGIN:-http://localhost:8088}
+      STRATAAI_IDENTITY_EMAIL_ENABLED: "false"
+      STRATAAI_ATTACHMENT_STORAGE_ENABLED: "false"
+    networks: [demo-private]
+  worker:
+    image: ${STRATAAI_WORKER_IMAGE:?Set the retained Worker image from build-metadata.json}
+    pull_policy: never
+    environment:
+      STRATAAI_RUNTIME_MODE: demo
+      ASPNETCORE_ENVIRONMENT: Development
+      STRATAAI_IDENTITY_EMAIL_ENABLED: "false"
+      STRATAAI_ATTACHMENT_STORAGE_ENABLED: "false"
+    networks: [demo-private]
+  web:
+    image: ${STRATAAI_WEB_IMAGE:?Set the retained web image from build-metadata.json}
+    pull_policy: never
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${STRATAAI_DEMO_WEB_PORT:-8088}:80"
+    networks: [demo-private, demo-edge]
+networks:
+  demo-private:
+    internal: true
+  demo-edge: {}

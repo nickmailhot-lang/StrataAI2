@@ -5,6 +5,45 @@ source, Node.js or the .NET SDK. Checksums and a nonempty archive alone do not
 prove that its Compose, migrations, role provisioning and runtime instructions
 work together. ARCH-11-FR-052 also requires API/Worker shutdown and restart proof.
 
+## Source-free Demo release path
+
+ARCH-10-AC-001 also requires Demo to start from the image archives on a clean
+Docker host. The source-build `compose.demo.yml` was absent from the release
+payload, whose existing startup gate exercises Production. The bundle now
+includes the image-only `compose.demo.release.yml` and redacted
+`.env.demo.example`, with a [Demo quickstart](../release/README.md#demo-from-tested-images)
+and the known seeded account. Demo starts web, API and Worker without a database,
+application source or a host-side build.
+
+The additional mandatory
+[Demo payload gate](../../scripts/ci/test-release-demo-bundle-startup.sh)
+starts exactly those retained images, checks health/readiness, build identity,
+SPA/proxy delivery and actual seeded login plus authenticated profile access.
+It rejects existing operator settings/source trees and fails when startup,
+identity, health, authentication or cleanup cannot be verified. Both Production
+and Demo checks run before the final unchanged-payload verification and upload.
+The release integrity verifier requires both new Demo assets and still rejects
+real `.env.demo` settings from uploaded artifacts.
+
+All 20 Demo driver self-test scenarios pass, covering successful startup and
+negative paths for redirects, wrong images/mode/account, failed login, unexpected
+volumes, cleanup failure, inventory failure and leftovers. Actual local Compose
+checks verify image-only settings and missing-image refusals. A live local
+source-free run passes with the already-loaded, archive-verified `24f56246`
+images: three services, no database or volumes, health/build identity, SPA/proxy,
+seeded login and authenticated profile access. The application containers have
+no installed .NET SDK. The new configuration places API/Worker on an internal
+network and gives only web a separate entry network with a loopback port;
+publishing ports directly on the fully internal network failed in the initial
+Docker Desktop invocation. The corrected run restores the original container,
+image, network and volume inventory and downloads/imports no images.
+
+That local run uses Python orchestration instead of executing the CI Bash driver;
+the driver has its own negative/positive protocol fixtures. This is scoped
+configuration evidence using the earlier images, not release certification for
+a new SHA. New exact-commit assembled-release CI, including both startup modes
+and unchanged-payload verification, remains required.
+
 After the complete release input/bundle checks and before artifact upload, CI
 runs `scripts/ci/test-release-bundle-startup.sh bundle`. The check enters the
 assembled folder and refuses application source folders, `.git` or an existing

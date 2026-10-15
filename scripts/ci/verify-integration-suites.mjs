@@ -266,6 +266,12 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   const startup = releaseSteps.find(step => step.name === 'Verify assembled bundle startup without source or SDKs');
   const startupSource = jobs['web-quality'].steps.find(step => step.name === 'Verify mandatory immutable integration coverage');
   assert.ok(startupSource.run.includes('node --test tests/release-bundle-startup.test.mjs'));
+  assert.ok(startupSource.run.includes('node --test tests/release-demo-bundle-startup.test.mjs'));
+  const demoStartup = releaseSteps.find(step => step.name === 'Verify assembled Demo bundle and seeded account without source or SDKs');
+  assert.equal(demoStartup?.run, 'bash scripts/ci/test-release-demo-bundle-startup.sh bundle');
+  assert.equal(demoStartup['timeout-minutes'], 6);
+  assert.ok(bundle.run.includes('compose.demo.release.yml'));
+  assert.ok(bundle.run.includes('cp .env.demo.example bundle/'));
   assert.equal(startupSource.if, undefined);
   assert.equal(startupSource['continue-on-error'] ?? false, false);
   const afterStartup = releaseSteps.find(step => step.name === 'Verify bundle unchanged after startup smoke');
@@ -275,7 +281,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(releaseUpload.with.path, 'bundle/');
   assert.equal(releaseUpload.with['include-hidden-files'], true, 'Retain the required environment example');
   assert.equal(releaseUpload.with['if-no-files-found'], 'error');
-  for (const step of [inputVerify, bundle, bundleVerify, startup, afterStartup, releaseUpload]) {
+  for (const step of [inputVerify, bundle, bundleVerify, startup, demoStartup, afterStartup, releaseUpload]) {
     assert.equal(step.if, undefined, 'Release checks may not be conditional');
     assert.equal(step['continue-on-error'] ?? false, false);
   }
@@ -285,6 +291,8 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(releaseSteps.indexOf(bundleVerify) < releaseSteps.indexOf(releaseUpload));
   assert.ok(releaseSteps.indexOf(bundleVerify) < releaseSteps.indexOf(startup));
   assert.ok(releaseSteps.indexOf(startup) < releaseSteps.indexOf(releaseUpload), 'Smoke the assembled payload before retaining it');
+  assert.ok(releaseSteps.indexOf(startup) < releaseSteps.indexOf(demoStartup));
+  assert.ok(releaseSteps.indexOf(demoStartup) < releaseSteps.indexOf(afterStartup), 'Both modes must leave the payload unchanged');
   assert.ok(releaseSteps.indexOf(startup) < releaseSteps.indexOf(afterStartup));
   assert.ok(releaseSteps.indexOf(afterStartup) < releaseSteps.indexOf(releaseUpload), 'Refuse changed payloads or leftover private files before upload');
   assert.ok(releaseSteps.every(step => !/docker (?:build|buildx build)/.test(step.run ?? '')), 'Bundle cannot rebuild application images');

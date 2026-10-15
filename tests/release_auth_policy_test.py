@@ -132,5 +132,48 @@ class ReleaseAuthenticationPolicyTests(unittest.TestCase):
         self.assertTrue(model['worker']['ConnectionStrings__IdentityDeliveryPostgres'] == private['STRATAAI_IDENTITY_DELIVERY_CONNECTION_STRING'])
 
 
+class ReleaseDemoConfigurationTests(unittest.TestCase):
+    def render(self, missing=None):
+        docker=shutil.which('docker')
+        if not docker and os.name=='nt':
+            docker=str(Path(os.environ['LOCALAPPDATA'])/'Programs/DockerDesktop/resources/bin/docker.exe')
+        self.assertTrue(docker)
+        settings={f'STRATAAI_{host.upper()}_IMAGE':f'strataai-{host}:'+('a'*40) for host in ('web','api','worker')}
+        if missing: settings.pop(missing)
+        environment={key:value for key,value in os.environ.items() if not key.startswith(('STRATAAI_','POSTGRES_','COMPOSE_'))}
+        with tempfile.TemporaryDirectory(prefix='strataai-demo-config-') as folder:
+            root=Path(folder).resolve(); self.assertEqual(root.parent,Path(tempfile.gettempdir()).resolve())
+            path=root/'demo.env'; path.write_text(''.join(f'{key}={value}\n' for key,value in settings.items()))
+            result=subprocess.run([docker,'compose','--project-name','strataai-demo-config','--env-file',str(path),'-f',
+                str(Path(__file__).resolve().parents[1]/'compose.demo.release.yml'),'config','--format','json'],
+                env=environment,capture_output=True,timeout=30)
+        if missing:
+            self.assertNotEqual(result.returncode,0,'A missing retained image must not select a local build/default tag')
+            return None
+        self.assertEqual(result.returncode,0,'Demo Compose rejected the image-only fixture')
+        return json.loads(result.stdout)
+
+    def test_demo_has_image_only_entry_private_runtime_and_no_database_or_volumes(self):
+        model=self.render(); self.assertEqual(set(model['services']),{'api','web','worker'})
+        self.assertFalse(model.get('volumes')); self.assertTrue(model['networks']['demo-private']['internal'])
+        for host,service in model['services'].items():
+            self.assertNotIn('build',service); self.assertEqual(service['pull_policy'],'never')
+            self.assertEqual(service['image'],f'strataai-{host}:'+('a'*40)); self.assertFalse(service.get('volumes'))
+            if host=='web':
+                self.assertTrue(all(port['host_ip']=='127.0.0.1' for port in service['ports']))
+                self.assertEqual(set(service['networks']),{'demo-private','demo-edge'})
+            else:
+                self.assertFalse(service.get('ports')); self.assertEqual(set(service['networks']),{'demo-private'})
+        for host in ('api','worker'):
+            values=model['services'][host]['environment']; self.assertEqual(values['STRATAAI_RUNTIME_MODE'],'demo')
+            self.assertEqual(values['STRATAAI_IDENTITY_EMAIL_ENABLED'],'false')
+            self.assertEqual(values['STRATAAI_ATTACHMENT_STORAGE_ENABLED'],'false')
+            self.assertFalse(any(key.startswith(('ConnectionStrings','STRATAAI_DATABASE_','STRATAAI_IDENTITY_TOKEN_','STRATAAI_ATTACHMENT_S3_')) for key in values))
+
+    def test_each_missing_image_reference_is_refused(self):
+        for host in ('WEB','API','WORKER'):
+            with self.subTest(host=host): self.render(f'STRATAAI_{host}_IMAGE')
+
+
 if __name__ == '__main__':
     unittest.main()

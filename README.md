@@ -188,6 +188,9 @@ The canonical work hierarchy is `Organization → Board → List → Card`. User
 
 ## Demo sign-in
 
+For the prebuilt Docker bundle, follow [Demo from tested images](docs/release/README.md#demo-from-tested-images).
+It runs the retained web/API/Worker images directly and documents the same account below.
+
 From the repository root, start the Demo stack:
 
 ```sh

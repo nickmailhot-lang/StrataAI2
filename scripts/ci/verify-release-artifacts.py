@@ -113,13 +113,13 @@ def verify_bundle(bundle, images=None, security_input=None):
             for name in ("build-metadata.json", "image-provenance.json", "SHA256SUMS"):
                 if (original / name).read_bytes() != (copied / name).read_bytes():
                     raise ValueError("changed_original_evidence")
-    required = {"compose.release.yml", "compose.metrics.yml", "compose.attachments.yml", ".env.release.example", "README.md", "promotion-and-rollback.md",
+    required = {"compose.release.yml", "compose.demo.release.yml", "compose.metrics.yml", "compose.attachments.yml", ".env.release.example", ".env.demo.example", "README.md", "promotion-and-rollback.md",
                 "health-check.sh", "apply-migrations.sh", "migration-stream.sh", "provision-runtime-roles.sh", "provision-identity-mail-role.sh",
                 "deploy/metrics/collector.yml", "db/provision-runtime-roles.sql", "db/provision-identity-mail-role.sql"}
     required.update(f"images/strataai-{host}.tar.gz" for host in HOSTS)
     if not required <= set(files) or not any(name.startswith("db/migrations/") and name.endswith(".sql") for name in files):
         raise ValueError("incomplete_bundle")
-    if any(any(part.startswith(".") for part in PurePosixPath(name).parts) and name != ".env.release.example" for name in files):
+    if any(any(part.startswith(".") for part in PurePosixPath(name).parts) and name not in {".env.release.example", ".env.demo.example"} for name in files):
         raise ValueError("unexpected_hidden_file")
     for host in HOSTS:
         if not files[f"images/strataai-{host}.tar.gz"].stat().st_size:

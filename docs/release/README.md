@@ -44,6 +44,47 @@ gunzip -c images/strataai-api.tar.gz | docker load
 gunzip -c images/strataai-worker.tar.gz | docker load
 ```
 
+## Demo from tested images
+
+After loading the three images above, copy the Demo settings:
+
+```bash
+cp .env.demo.example .env.demo
+```
+
+Open `build-metadata.json` and copy its `images.web`, `images.api` and
+`images.worker` values into the corresponding image variables in `.env.demo`.
+Then start the image-only Demo stack:
+
+```bash
+docker compose --project-name strataai-demo --env-file .env.demo -f compose.demo.release.yml up -d --no-build --pull never --wait
+```
+
+Open [Demo sign-in](http://localhost:8088/login):
+
+| Email | Password |
+| --- | --- |
+| `demo@strataai.test` | `StrataAI-Demo-2026!` |
+
+Demo needs only the three retained images. Its API and separate Worker use
+process-local Demo state, with no database or provider configuration. The web
+port binds to this machine's loopback interface; API and Worker remain on the
+private internal network. The optional port/origin settings are in
+`.env.demo.example`. Restarting the Demo API resets its in-memory data and
+restores the known account. See [Demo runtime behavior](../architecture/runtime-modes.md#demo-sign-in).
+
+Stop this Demo project with:
+
+```bash
+docker compose --project-name strataai-demo --env-file .env.demo -f compose.demo.release.yml down
+```
+
+The same tested images support [Production configuration](#production-configuration)
+below. The repository's development `compose.demo.yml` builds from source;
+this bundle's `compose.demo.release.yml` uses the already-loaded images.
+
+## Production configuration
+
 Copy `.env.release.example` to `.env`, replace the placeholder values, and ensure
 the three image variables point at the image tags recorded in `build-metadata.json`.
 Choose a unique, stable `COMPOSE_PROJECT_NAME` for this environment before its
