@@ -1,5 +1,59 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Server duration histogram resolution — 2026-10-15
+
+The custom HTTP and authentication timers record seconds, but their unconfigured
+SDK aggregation cannot distinguish the **400 ms / 750 ms** service-objective
+thresholds. Both new actual-SDK regressions fail before repair: six measurements
+at 0.2, 0.4, 0.401, 0.75, 0.751 and 6 seconds cannot be counted at the requested
+thresholds. The other ten operator cases pass. This is an aggregation defect,
+not a measured API latency or availability breach.
+
+The API's optional exporter now uses explicit
+[OpenTelemetry histogram views](https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/docs/metrics/customizing-the-sdk/README.md#configuring-the-aggregation-of-a-histogram)
+for `strataai.http.server.duration` and `strataai.authentication.duration`.
+Boundaries in seconds are **0, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25,
+0.4, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 30**, followed by the overflow bucket.
+The six-measurement regressions now require exactly two observations at or below
+400 ms, four at or below 750 ms, all six retained and an overflow boundary. Actual
+OTLP transport remains enabled in those cases. Worker and other client/server
+instruments, names, units, labels, resource identity and export cadence retain
+their existing behavior. Authentication's narrower timer is not end-to-end
+request latency; these metrics must not be summed together.
+
+The mandatory Collector evidence gate now requires both threshold buckets for
+all nine existing fixed HTTP/auth fixture outcomes. Bucket values may be zero:
+the gate verifies resolution, not compliance with the latency objective. A
+direct old/new probe shows the previous verifier accepted complete counts with
+all threshold buckets missing; the revised verifier refuses them. All **31**
+verifier cases pass, including individual missing/coarse boundaries, valid empty
+buckets and malformed/private/nonfinite HTTP `le` labels or `le` on non-buckets.
+All **11** full driver control-flow cases pass in **209.892 seconds**, including
+the new evidence flag through healthy/outage/recovery and cleanup paths. The
+initial local harness invocation lacked `jq`; correcting its tool path resolves
+that prerequisite failure without changing the driver or assertions.
+
+All **82 focused Linux .NET cases** pass: auth 38, HTTP 20, operator/SDK 12 and
+rate-limit diagnostics 12. The complete Release solution builds with zero
+warnings/errors; all **942 source / 415 binary inputs** match and owned test
+containers are removed. An actual current compiled Production API also exports
+both histogram families with 0.4/0.75-second wire boundaries, sorted finite
+bounds and bucket totals equal to their counts. Its registration/wrong-password/
+CSRF/correct-login responses remain **201/401/403/200**, with all eight required
+auth count/duration observations and fixed private-safe resource/metric labels.
+The host phase completes in **14.587 seconds** using fresh restricted PostgreSQL
+17.11 and 149 migrations. All **832 source/persistence + 29 API binary inputs**
+match. Cleanup restores Docker inventory and removes **739,722 temporary bytes**;
+no image is built/pulled/imported and the original database/local Demo is unused.
+
+This compiled-code receiver verifies actual SDK wire bytes, not the pinned live
+Collector or current immutable release. Current-image CI, calibrated dashboards,
+tested alert delivery and full ARCH-08 acceptance remain required. During
+upgrade, do not aggregate old and new histogram schemas: select the intended
+build/revision until all contributing API replicas use the same boundaries.
+No service-objective, p95 or production-capacity result is claimed. No large-load
+test runs; those remain deferred until after MVP.
+
 ## Authentication endpoint outcomes — 2026-10-15
 
 `StrataAI.Authentication` adds `strataai.authentication.requests` and

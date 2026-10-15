@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [server duration histogram repair](operator-metrics.md#server-duration-histogram-resolution--2026-10-15)
+adds exact 400/750 ms bucket resolution to the existing seconds-based HTTP/auth
+timers. Both new SDK regressions fail before repair; all 82 focused .NET cases,
+31 Collector verifier cases and 11 driver cases pass afterward. Actual compiled
+Production API wire output confirms both boundaries; owned cleanup restores
+Docker inventory. Current-image CI, dashboards/alert delivery and full release
+acceptance remain required. This is measurement correctness, not a latency or
+capacity benchmark; large-load tests remain disabled until after MVP.
+
 The [authentication endpoint observations](operator-metrics.md#authentication-endpoint-outcomes--2026-10-15)
 now expose bounded sign-in refusal/success counts and durations without private
 request/account fields. Focused .NET and actual compiled Production API checks

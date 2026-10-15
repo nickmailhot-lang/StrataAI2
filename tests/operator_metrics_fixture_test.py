@@ -163,6 +163,7 @@ class OperatorFixtureDriverTests(unittest.TestCase):
                     self.assertEqual(record["revision"], fixture.revision)
                     self.assertEqual(record["status"], "passed")
                     self.assertEqual(record["verified"]["workerBacklogObservationAvailability"], available)
+                    self.assertTrue(record["verified"]["serverLatencyBuckets"])
                 self.assertLess(journal.index("scrape-down-0"), journal.index("start-postgres"))
                 self.assertGreater(journal.index("scrape-recovered-1"), journal.index("start-postgres"))
 

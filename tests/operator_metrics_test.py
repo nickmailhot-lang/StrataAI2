@@ -142,6 +142,10 @@ class OperatorEvidenceTests(unittest.TestCase):
         for operation, code in [("register", "201"), ("login", "200"), ("login", "401"), ("login", "403")]:
             for metric in ["strataai_authentication_requests", "strataai_authentication_duration_count"]:
                 observations.append((metric, f'operation="{operation}",status_code="{code}",outcome="completed"'))
+        for name, labels in list(observations):
+            if name in {"strataai_http_server_duration_count", "strataai_authentication_duration_count"}:
+                for bound in ['0.4', '0.75']:
+                    observations.append((name.removesuffix('_count')+'_bucket', labels+f',le="{bound}"'))
         worker_common = common.replace('service_name="strataai-api"', 'service_name="strataai-worker"')
         return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations) + \
             f'\nstrataai_worker_jobs{{queue="organization",outcome="completed",{worker_common}}} 1' + \
@@ -246,6 +250,30 @@ class OperatorEvidenceTests(unittest.TestCase):
         for name in ['strataai_authentication_requests', 'strataai_authentication_duration_count', 'strataai_authentication_duration_sum']:
             extra = line.replace('strataai_authentication_requests', name).replace('operation=', 'le="private-value",operation=')
             self.assertFalse(metrics.verify(self.fixture()+'\n'+extra, self.revision, self.version))
+
+    def test_each_server_threshold_boundary_is_required_even_with_complete_counts(self):
+        raw = self.fixture()
+        buckets = [line for line in raw.splitlines() if line.startswith(('strataai_http_server_duration_bucket{', 'strataai_authentication_duration_bucket{'))]
+        self.assertEqual(len(buckets), 18)
+        for line in buckets:
+            with self.subTest(line=line):
+                self.assertFalse(metrics.verify(raw.replace(line, ''), self.revision, self.version))
+                self.assertFalse(metrics.verify(raw.replace(line, line.replace('le="0.', 'le="5.')), self.revision, self.version))
+
+    def test_zero_threshold_buckets_are_not_a_latency_failure(self):
+        raw = '\n'.join(line[:-1]+'0' if '_duration_bucket{' in line else line for line in self.fixture().splitlines())
+        self.assertTrue(metrics.verify(raw, self.revision, self.version))
+
+    def test_http_bounds_cannot_carry_private_or_nonfinite_values_or_label_non_buckets(self):
+        raw = self.fixture()
+        line = next(line for line in raw.splitlines() if line.startswith('strataai_http_server_requests{'))
+        for suffix in ['requests', 'duration_count', 'duration_sum']:
+            extra = line.replace('strataai_http_server_requests', 'strataai_http_server_'+suffix).replace('method=', 'le="private-value",method=')
+            self.assertFalse(metrics.verify(raw+'\n'+extra, self.revision, self.version))
+        bucket = line.replace('strataai_http_server_requests', 'strataai_http_server_duration_bucket')
+        for bound in ['', 'private-value', 'NaN', '-Inf', '1e309']:
+            extra = bucket.replace('method=', f'le="{bound}",method=')
+            self.assertFalse(metrics.verify(raw+'\n'+extra, self.revision, self.version))
 
     def test_complete_fixed_scope(self):
         self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))

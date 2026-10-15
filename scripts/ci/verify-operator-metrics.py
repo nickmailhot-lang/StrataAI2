@@ -148,8 +148,15 @@ def verify(raw, revision, version, *, backlog_available=1):
                 if match[1].endswith("_available") and float(match[3]) not in {0, 1}:
                     return False
         if match[1].startswith("strataai_http_server_"):
-            http_labels = {"method", "status_code", "outcome", "le", "job", "instance",
+            http_labels = {"method", "status_code", "outcome", "job", "instance",
                            "service_name", "service_namespace", "service_version", "strataai_build_revision"}
+            if match[1].endswith("_bucket"):
+                http_labels.add("le")
+                try:
+                    if labels.get("le") != "+Inf" and not math.isfinite(float(labels.get("le", ""))):
+                        return False
+                except ValueError:
+                    return False
             if set(labels) - http_labels or labels.get("method") not in {
                     "GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "CONNECT", "TRACE", "OTHER"}:
                 return False
@@ -176,7 +183,20 @@ def verify(raw, revision, version, *, backlog_available=1):
                    and all(labels.get(key) == val for key, val in expected.items())
                    for metric, labels, value in samples)
 
+    def boundary(name, expected, bound):
+        # An empty cumulative bucket is valid: the fixture may be slower than
+        # its objective. Require exported resolution, never a passing latency.
+        return any(metric == name and labels.get("le") == bound
+                   and all(labels.get(key) == val for key, val in expected.items())
+                   for metric, labels, _ in samples)
+
     return all([
+        *[boundary("strataai_authentication_duration_bucket", {"operation": operation, "status_code": status, "outcome": "completed"}, bound)
+          for operation, status in [("register", "201"), ("login", "200"), ("login", "401"), ("login", "403")]
+          for bound in ["0.4", "0.75"]],
+        *[boundary("strataai_http_server_duration_bucket", {"method": method, "status_code": code, "outcome": "completed"}, bound)
+          for method, code in [("GET", "200"), ("POST", "400"), ("POST", "401"), ("POST", "403"), ("PATCH", "409")]
+          for bound in ["0.4", "0.75"]],
         *[observed(metric, {"operation": operation, "status_code": status, "outcome": "completed"})
           for operation, status in [("register", "201"), ("login", "200"), ("login", "401"), ("login", "403")]
           for metric in ["strataai_authentication_requests", "strataai_authentication_duration_count"]],
@@ -262,7 +282,7 @@ if __name__ == "__main__":
                      "configurationClientEvents": True, "configurationClientDuration": True,
                      "httpRequestsAndDuration": True, "httpRejectionOutcomes": True,
                      "workerCommittedJobOutcome": True, "workerBuildIdentity": True,
-                     "authenticationEndpointOutcomes": True, "authenticationDuration": True,
+                     "authenticationEndpointOutcomes": True, "authenticationDuration": True, "serverLatencyBuckets": True,
                      "workerScopedBacklog": bool(expected_available), "workerBacklogAvailable": bool(expected_available),
                      "workerBacklogObservationAvailability": expected_available,
                      "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")

@@ -49,9 +49,23 @@ public static class OperatorMetricsRegistration
             });
         var meters = worker ? new[] { "StrataAI.WorkerJobs" }
             : new[] { "StrataAI.BoardSharing", "StrataAI.ChecklistClient", "StrataAI.ActivityClient", "StrataAI.Organizations", "StrataAI.HttpServer", "StrataAI.Authentication" };
-        services.AddOpenTelemetry().WithMetrics(metrics => metrics.SetResourceBuilder(resource)
-            .AddMeter(meters)
-            .AddOtlpExporter(ExporterName, configure: (Action<OtlpExporterOptions>?)null));
+        services.AddOpenTelemetry().WithMetrics(metrics =>
+        {
+            metrics.SetResourceBuilder(resource).AddMeter(meters);
+            if (!worker)
+            {
+                // These custom instruments measure seconds. SDK generic
+                // defaults do not resolve the 400/750 ms service objectives.
+                metrics.AddView("strataai.http.server.duration", ServerDurationBuckets());
+                metrics.AddView("strataai.authentication.duration", ServerDurationBuckets());
+            }
+            metrics.AddOtlpExporter(ExporterName, configure: (Action<OtlpExporterOptions>?)null);
+        });
         return true;
     }
+
+    private static ExplicitBucketHistogramConfiguration ServerDurationBuckets() => new()
+    {
+        Boundaries = [0, .005, .01, .025, .05, .075, .1, .25, .4, .5, .75, 1, 2.5, 5, 7.5, 10, 30],
+    };
 }

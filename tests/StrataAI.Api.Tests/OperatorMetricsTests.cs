@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using StrataAI.Application.BackgroundJobs;
@@ -15,6 +16,54 @@ namespace StrataAI.Api.Tests;
 
 public sealed class OperatorMetricsTests
 {
+    [Theory]
+    [InlineData("StrataAI.HttpServer", "strataai.http.server.duration")]
+    [InlineData("StrataAI.Authentication", "strataai.authentication.duration")]
+    public void Server_latency_buckets_distinguish_400_and_750_millisecond_thresholds(string meter, string name)
+    {
+        using var transport = new MetricsTransport();
+        using var snapshot = new HistogramSnapshot();
+        var services = new ServiceCollection(); services.AddLogging(); services.AddMetrics();
+        Assert.True(services.AddStrataAiOperatorMetrics(Configuration("http://collector/v1/metrics"), typeof(Program).Assembly));
+        services.PostConfigure<OtlpExporterOptions>(OperatorMetricsRegistration.ExporterName,
+            options => options.HttpClientFactory = () => new HttpClient(transport, disposeHandler: false));
+        services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddReader(new BaseExportingMetricReader(snapshot)));
+        using var provider = services.BuildServiceProvider();
+        var sdk = provider.GetRequiredService<MeterProvider>();
+        var histogram = provider.GetRequiredService<IMeterFactory>().Create(meter).CreateHistogram<double>(name, "s");
+        foreach (var seconds in new[] { .2, .4, .401, .75, .751, 6 }) histogram.Record(seconds);
+        Assert.True(sdk.ForceFlush(5000));
+        var buckets = snapshot.Buckets[name];
+        // Exact boundaries let operators count accepted durations directly;
+        // measurements just above either objective must fall outside its bucket.
+        Assert.Equal(2, buckets.Where(bucket => bucket.Bound <= .4).Sum(bucket => bucket.Count));
+        Assert.Equal(4, buckets.Where(bucket => bucket.Bound <= .75).Sum(bucket => bucket.Count));
+        Assert.Contains(buckets, bucket => bucket.Bound == .4);
+        Assert.Contains(buckets, bucket => bucket.Bound == .75);
+        Assert.Equal(6, buckets.Sum(bucket => bucket.Count));
+        Assert.True(double.IsPositiveInfinity(buckets[^1].Bound));
+        Assert.Contains(name, Assert.Single(transport.Batches).WireText);
+    }
+
+    private sealed class HistogramSnapshot : BaseExporter<Metric>
+    {
+        public Dictionary<string, List<(double Bound, long Count)>> Buckets { get; } = [];
+        public override ExportResult Export(in Batch<Metric> batch)
+        {
+            foreach (var metric in batch)
+            {
+                if (metric.MetricType != MetricType.Histogram) continue;
+                foreach (ref readonly var point in metric.GetMetricPoints())
+                {
+                    var buckets = new List<(double Bound, long Count)>();
+                    foreach (var bucket in point.GetHistogramBuckets()) buckets.Add((bucket.ExplicitBound, bucket.BucketCount));
+                    Buckets[metric.Name] = buckets;
+                }
+            }
+            return ExportResult.Success;
+        }
+    }
+
     [Fact]
     public void Worker_export_is_disabled_without_explicit_configuration()
     {
