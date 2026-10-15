@@ -29,6 +29,10 @@
       [
         "artifacts/metrics/backlog-recovered.json",
         "backlog-recovered.json"
+      ],
+      [
+        "artifacts/metrics/alert-delivery.json",
+        "alert-delivery.json"
       ]
     ]
   },

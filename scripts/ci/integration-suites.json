@@ -260,6 +260,9 @@
   "Verify exact-image operator metric ingestion and private-field exclusion": [
     "commands"
   ],
+  "Verify operator warning firing and resolved delivery": [
+    "commands"
+  ],
   "Retain fixed operator collection evidence": [
     "commands"
   ],

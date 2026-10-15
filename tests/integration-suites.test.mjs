@@ -31,10 +31,14 @@ test('large fixtures cannot be hard-enabled in the normal workflow', () => {
 });
 
 test('every mandatory check has an owner and every group uses retained images', () => {
-  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 127 });
+  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 128 });
 });
 
 const mutations = [
+  ['alert delivery unit boundary omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify operator evidence rejects missing and private metric fields');entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'operator_alert_delivery_test.py'",''); }],
+  ['live alert delivery bypassed', value => { step(value, 'Verify operator warning firing and resolved delivery').run='true'; }],
+  ['live alert delivery errors ignored', value => { step(value, 'Verify operator warning firing and resolved delivery')['continue-on-error']=true; }],
+  ['live alert delivery evidence omitted', value => { const entry=step(value, 'Prepare Retain fixed operator collection evidence');entry.run=entry.run.replace('--entry "artifacts/metrics/alert-delivery.json" "alert-delivery.json"',''); }],
   ['operator alert rule verification omitted', value => { value.jobs['web-quality'].steps.find(step => step.name === 'Verify operator alert rules with pinned Prometheus').run = 'true'; }],
   ['operator alert rule verification skipped', value => { value.jobs['web-quality'].steps.find(step => step.name === 'Verify operator alert rules with pinned Prometheus').if = 'false'; }],
   ['operator alert rule errors ignored', value => { value.jobs['web-quality'].steps.find(step => step.name === 'Verify operator alert rules with pinned Prometheus')['continue-on-error'] = true; }],

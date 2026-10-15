@@ -130,6 +130,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -p 'operator_metrics_test.py'
           python3 -m unittest discover -s tests -p 'operator_metrics_fixture_test.py'
+          python3 -m unittest discover -s tests -p 'operator_alert_delivery_test.py'
           python3 -m unittest discover -s tests -p 'console_log_evidence_test.py'
 
       - name: Verify Organization latency evidence and sample boundaries
@@ -956,9 +957,14 @@ jobs:
         if: (matrix.suite == 'commands')
         run: scripts/ci/test-operator-metrics.sh
 
+      - name: Verify operator warning firing and resolved delivery
+        if: (matrix.suite == 'commands')
+        timeout-minutes: 12
+        run: python3 scripts/ci/test-operator-alert-delivery.py --revision "${GITHUB_SHA}" --output artifacts/metrics/alert-delivery.json
+
       - name: Prepare Retain fixed operator collection evidence
         if: always() && (matrix.suite == 'commands')
-        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/operator-metrics --entry "artifacts/metrics/operator.json" "operator.json" --entry "artifacts/metrics/backlog-unavailable.json" "backlog-unavailable.json" --entry "artifacts/metrics/backlog-recovered.json" "backlog-recovered.json"
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/operator-metrics --entry "artifacts/metrics/operator.json" "operator.json" --entry "artifacts/metrics/backlog-unavailable.json" "backlog-unavailable.json" --entry "artifacts/metrics/backlog-recovered.json" "backlog-recovered.json" --entry "artifacts/metrics/alert-delivery.json" "alert-delivery.json"
 
       - name: Retain fixed operator collection evidence
         if: always() && (matrix.suite == 'commands')

@@ -255,6 +255,13 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(consoleUnit?.if, undefined);
   assert.equal(consoleUnit?.['continue-on-error'] ?? false, false);
   assert.ok(consoleUnit?.run.includes("python3 -m unittest discover -s tests -p 'console_log_evidence_test.py'"), 'Console record refusal tests must run before image builds');
+  assert.ok(consoleUnit?.run.includes("python3 -m unittest discover -s tests -p 'operator_alert_delivery_test.py'"), 'Alert delivery privacy and integrity tests must run before image builds');
+  const alertDelivery = jobs['container-integration'].steps.find(step => step.name === 'Verify operator warning firing and resolved delivery');
+  assert.equal(alertDelivery?.run, 'python3 scripts/ci/test-operator-alert-delivery.py --revision "${GITHUB_SHA}" --output artifacts/metrics/alert-delivery.json');
+  assert.equal(alertDelivery['continue-on-error'] ?? false, false);
+  assert.equal(alertDelivery['timeout-minutes'], 12);
+  const operatorEvidence = jobs['container-integration'].steps.find(step => step.name === 'Prepare Retain fixed operator collection evidence');
+  assert.ok(operatorEvidence?.run.includes('--entry "artifacts/metrics/alert-delivery.json" "alert-delivery.json"'), 'Live alert delivery evidence must retain canonical identity and checksums');
   const consoleRuntime = jobs['container-integration'].steps.find(step => step.name === 'Verify structured API and Worker console records');
   assert.ok(consoleRuntime?.run.includes('python3 scripts/ci/verify-console-logs.py'), 'Retained images must expose the structured console contract');
   const sourceProvenance = jobs['web-quality'].steps.find(step => step.name === 'Verify source test report completeness and privacy');

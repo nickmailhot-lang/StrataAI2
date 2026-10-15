@@ -71,8 +71,8 @@ workflows are unavailable.
    including backend/Collector loss. Record the result without message contents
    or private recipient information in CI artifacts.
 
-Do not mark deployed alerting complete from a unit-test success. No notification
-is sent by this package's verification. Quiet or idle traffic deliberately does
+Do not mark deployed alerting complete from a fixture success. The transport
+test below sends only to its isolated local receiver. Quiet or idle traffic deliberately does
 not establish API error/latency compliance; health probes and coverage warnings
 remain necessary. Authentication refusals are not counted as API 5xx errors.
 Triage via current private readiness/logs/metrics and preserved build identity;
@@ -86,7 +86,8 @@ is pinned by SHA-256 in
 the backend example and [rule scenarios](../../tests/operator-alerts.test.yml)
 using the [official rule-test engine](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/).
 The archive/binary live only in an owned temporary directory and are removed
-after validation. No Prometheus service/image or application dependency is added.
+after validation. The rule verifier adds no deployment service, image or
+application dependency.
 
 The local native verifier passes all three commands and **152 alert assertions
 across nine synthetic scenarios**: healthy traffic, missing job, scrape outage
@@ -115,3 +116,67 @@ the checksum. The external network download and real notification route still
 need hosted/deployed execution. All **259 CI mutation guards**, **37 release
 artifact tests**, Bash syntax and workflow lint pass, including omission/skip/
 ignored-error refusal and missing alert-asset refusal despite valid checksums.
+
+## Live warning transport contract
+
+[The transport verifier](../../scripts/ci/test-operator-alert-delivery.py) runs
+the original eight rules in pinned Prometheus 3.15.0 and Alertmanager 0.34.1.
+It admits a healthy synthetic scrape, interrupts that same target, observes the
+Collector warning pending and firing after its unchanged two-minute hold, then
+requires a resolved webhook with the same warning fingerprint after recovery.
+The rule evaluation interval remains one minute. Admission allows two evaluation
+cycles; the local native trace repeats an earlier healthy query timestamp during
+startup. Neither the
+rule expression nor its hold is shortened to accommodate the fixture.
+
+The API/web images from the selected revision supply existing process runtimes;
+their OCI revision and actual image identity are checked. The application does
+not start. Official tool archives are pinned by exact length and SHA-256; only
+the required regular binary member is extracted. Containers run on an owned
+internal network without published ports, with read-only roots, dropped
+capabilities and bounded temporary storage. No PostgreSQL, live Collector,
+provider or human notification endpoint is used. No image is built or pulled.
+
+Webhook validation requires the pinned protocol shape, one fixed warning and
+only its expected labels/annotations. The
+[Alertmanager 0.34.1 template contract](https://github.com/prometheus/alertmanager/blob/v0.34.1/template/template.go)
+includes `routeLabels` and `notification_reason`; the fixture admits only the
+first firing and all-resolved reasons. CI retains a small result containing tool
+versions, rule hash, verification flags and cleanup size. Message bodies,
+receiver addresses, fingerprints and private source labels are not retained.
+Every exit removes only this invocation's labelled containers/network and
+checked temporary directory; failure creates no passing result.
+
+The commands integration suite must run this contract against its retained
+images and include `alert-delivery.json` in canonical operator evidence. Source
+checks exercise protocol/privacy/download boundaries and refuse omitted,
+bypassed or ignored-error workflow stages. This proves controlled local warning
+transport, not managed deployment routing, durable monitoring storage, measured
+service objectives or real Collector loss. Those acceptance items and current
+exact-image CI remain required before closing ARCH-08/11 or the MVP milestone.
+This contract generates no application traffic; large-load testing remains
+deferred until after MVP.
+
+### Native transport evidence — 2026-10-15
+
+The complete fixture passes in **404.087 seconds**, including healthy admission,
+the original hold, firing delivery, recovery and the matching resolved delivery.
+It uses cached `24f562464f706884e4a27577b61c65ff385b4263` API/web images only
+as tool runtimes and the current rule file with SHA-256
+`298175aa21f3c30ac2c2d86534248e62026e93f0d3415b674e4527113d06270d`.
+This does not certify that older application's behavior or current main images.
+Both frozen driver/rule hashes match. The original Docker inventory is restored
+and **345,222,286 temporary bytes** are removed; the original database and running
+Demo remain untouched.
+
+Initial 90-second pending and 100-second recovery deadlines refuse the delayed
+evaluation sequence. Query timing identifies the earlier evaluation timestamp;
+the final fixture admits both transitions across two slots while preserving the
+one-minute evaluation interval and 120-second hold. Metrics use explicit LF
+newlines and Nginx temporary files use writable tmpfs under the read-only root.
+No passing evidence is emitted by failed attempts, and their owned fixtures are
+removed. All **10 protocol/integrity boundary cases**, **263 CI guard tests**,
+**37 release artifact tests** and **11 evidence artifact cases** pass, with one
+additional evidence case skipped on this platform. Workflow lint and all local
+documentation links/anchors pass. Hosted exact-image execution and the intended
+deployment's real notification route remain pending.

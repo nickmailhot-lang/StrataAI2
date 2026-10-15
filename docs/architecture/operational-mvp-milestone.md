@@ -4,13 +4,25 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [live warning transport contract](operator-alerts.md#live-warning-transport-contract)
+now passes healthy scrape → outage → original two-minute hold → firing webhook
+→ recovery → matching resolved webhook in 404.087 seconds. Pinned tools run on
+an isolated internal network in cached image runtimes; no application, database,
+external recipient or application traffic is involved. Both source hashes match,
+345,222,286 temporary bytes are removed and Docker inventory is restored. CI
+requires this contract and sanitized evidence. Current-image CI, real Collector
+loss and deployment notification routing remain acceptance work; no issue or MVP
+milestone is closed from this controlled proof. Large-load tests remain deferred
+until after MVP.
+
 The [operator alert package](operator-alerts.md) adds eight aggregate warning
 rules, a private backend example and pinned rule/configuration tests. All 152
 synthetic alert assertions pass across nine firing/quiet/recovery/privacy cases.
 The rule assets are required in future release bundles; this does not establish
 deployed notification routing, measured service objectives or current-image CI.
-Owned verifier files are removed and Docker inventory restored. No application
-load or notification is generated; large-load testing remains after MVP.
+Owned verifier files are removed and Docker inventory restored. These rule
+scenarios generate no application load or notification; large-load testing
+remains after MVP.
 
 The [server duration histogram repair](operator-metrics.md#server-duration-histogram-resolution--2026-10-15)
 adds exact 400/750 ms bucket resolution to the existing seconds-based HTTP/auth
