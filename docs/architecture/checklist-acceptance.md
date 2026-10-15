@@ -12,7 +12,7 @@ passes all 16 jobs, including build-once images, seven integration executions,
 security, required-CI and release assembly. This audit inspects actual completed
 job logs rather than inferring Checklist coverage from the green run.
 
-All **21 current Checklist case titles across ten files** match individual
+All **21 original Checklist case titles across ten files** match individual
 passing log entries. The ten files are unchanged between this candidate and
 the audit's parent revision `5845da8b`. Collection identifies the expected cases;
 the matching completed job lines establish execution. The candidate predates
@@ -60,11 +60,51 @@ large-load test. All original budgets pass:
 The first and second item-page observations are 107.019 and 100.997 ms, with
 the original 50/13 seek-page assertions. No additional page budget is invented.
 The 20 samples independently reproduce the reported p95. Large capacity,
-Checklist-specific Board-scroll/context proof, full deployed telemetry and
-current-main release acceptance remain outstanding. PRD-13 stays open at
+full deployed telemetry and current-main release acceptance remain outstanding.
+The Checklist-specific Board-context gap identified by this audit is addressed
+in the separate scoped verification below. PRD-13 stays open at
 **33% estimated work remaining**, unchanged planning estimate. All 27 named
 capacity stages remain deferred; no new browser, container or load test is run
 by this evidence audit and no Docker resource is created.
+
+## Checklist-specific Board context verification (2026-10-15)
+
+The earlier shared Kanban scroll case closes Card details without a Checklist
+operation. It does not establish the Checklist-specific context requirement.
+The new [context scenarios](../../tests/browser/checklist-board-context.spec.ts)
+use six Lists and 12 Cards at desktop 1280px and phone 390px. Each starts with
+nonzero horizontal Board and vertical List offsets, opens the selected Card by
+keyboard, edits/completes one existing item through its actual MUI controls,
+and closes details by keyboard. It requires the original Card link to regain
+focus, both exact offsets to survive, the Board URL to return and only one
+document navigation. Exactly one item PATCH and zero Card-move POSTs are allowed.
+
+The canonical read verifies the edited text, item identity/completion actor and
+time, Card/Checklist/item versions 4/3/2, and one retained item. The final complete
+List/Card graph must equal the original except for that Card's expected version
+and update time; order, identity and other content cannot change. Tagged Axe and
+viewport-overflow checks pass. No product behavior, existing assertion or
+deadline is relaxed; read-only opening uses the existing bounded helper and the
+save has one activation. The original 21 candidate cases remain unchanged.
+
+The complete new file passes **2/2 in 93,642.659 ms**, one attempt per case,
+zero skipped/flaky/unexpected outcomes or report errors. Browser types and all
+244 CI coverage guards pass. Collection assigns all **400** cases exactly once
+across the four full shards (103/98/99/100), including these two; collection is
+not execution proof. The ordinary native capture uses archive-verified retained
+`24f5624` images, fresh PostgreSQL/pgvector with 149 migrations, restricted
+API/Worker roles and an actually verified disposable account for the scoped
+Worker. Current Nginx configuration is mounted read-only. API verification is
+optional and mail disabled; the Worker retains its verified-account policy.
+
+All 173 captured browser inputs and three web configuration hashes match.
+Original image IDs are checked and the existing database is unused. Owned
+cleanup restores full Docker inventory and removes **1,716,497 temporary bytes**.
+No images are built, downloaded or imported, and no large-load test runs.
+These cases supply supporting functional context proof, not current-main
+immutable-image or complete WCAG/provider/release certification. That CI,
+post-MVP capacity and full deployed telemetry remain required. PRD-13 remains
+open at **33% estimated work remaining**, unchanged planning estimate.
 
 ## Functional requirements
 
@@ -88,8 +128,8 @@ by this evidence audit and no Docker resource is created.
 | TC-08 concurrent clients | Candidate desktop/phone collaboration passes a held submitted request, actual competing owner change, server 409, retained dirty choices and explicit discard/current canonical review | Current-main immutable CI and remaining concurrency matrices |
 | TC-09 disconnect recovery | Candidate collaboration passes real proxied socket closure, rejected reconnects, missed completion recovery and a later live change without page navigation | Current-main immutable CI and complete transport/role acceptance |
 | TC-10 lifecycle | Four candidate Card/List desktop/phone cases pass committed pending rename, archive/restore/replay fencing and deleted-scope withdrawal | Current-main immutable CI and shared PRD-18 retention acceptance |
-| TC-11/12 keyboard/mobile | Candidate 1280/390px cases execute keyboard/focus and tagged Axe checks | Checklist-specific Board-scroll/context proof and broader WCAG/current-release acceptance |
-| TC-13 large data/performance | Candidate normal benchmark passes 50/13 item pages/full progress, 50-Card readiness, cached detail, immediate creation feedback and 20 actual completion mutations; retained measurements independently checked above | Full 200-List/5,000-active/100,000-archived capacity acceptance is explicitly post-MVP. Large client behavior, Checklist-specific context and current-main acceptance remain required; normal 1500/200/100/500 ms budgets are unchanged. |
+| TC-11/12 keyboard/mobile | Candidate 1280/390px cases execute keyboard/focus and tagged Axe checks; the separate retained-image context cases below pass actual item editing, unchanged Board scroll, restored Card focus and one-document navigation | New context cases still require current-main immutable CI; broader WCAG/current-release acceptance remains required |
+| TC-13 large data/performance | Candidate normal benchmark passes 50/13 item pages/full progress, 50-Card readiness, cached detail, immediate creation feedback and 20 actual completion mutations; retained measurements independently checked above | Full 200-List/5,000-active/100,000-archived capacity acceptance is explicitly post-MVP. Large client behavior and current-main acceptance remain required; small context proof below is not large-board evidence. Normal 1500/200/100/500 ms budgets are unchanged. |
 
 ## Events, telemetry and shared dependencies
 

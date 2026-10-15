@@ -48,8 +48,12 @@ matches all 21 Checklist cases in ten unchanged files to passing job-log entries
 at the completed `4cb80014` candidate below. It independently checks the small
 retained performance artifact and all four original normal-condition budgets.
 This replaces stale unexecuted-browser entries with actual evidence. Large
-capacity, Checklist-specific Board-context proof, deployed telemetry and full
-current-main acceptance remain open; no ticket is closed by the audit.
+capacity, deployed telemetry and full current-main acceptance remain open; no
+ticket is closed by the audit. Separate
+[Checklist context cases](checklist-acceptance.md#checklist-specific-board-context-verification-2026-10-15)
+now pass desktop/phone item editing with exact scroll restoration, Card focus,
+canonical persistence and one document navigation against retained images.
+Their current-main immutable CI remains required.
 
 The latest completed CI release candidate is
 `4cb80014a9b9e863cdc68c9718e510886cade78b`:
