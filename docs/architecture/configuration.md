@@ -178,6 +178,27 @@ included those four cases, bringing its required total at the transport repair
 to 16. The origin repair above extends that total to 24; execution for the new
 immutable candidate remains required.
 
+The [real PostgreSQL TLS contract](../../tests/StrataAI.Persistence.Contracts/PostgresTransportPersistenceContract.cs)
+also connects through the actual runtime factory with the SSL mode omitted and
+the restricted API login. It requires the live session to report TLS 1.2/1.3,
+then requires certificate-authentication refusals for a mismatched hostname and
+an unrelated trust root. An unavailable server, login/SQL failure or timeout
+cannot count as an intended certificate refusal. Its
+[isolated service setup](../../scripts/ci/test-postgres-tls.sh) is mandatory in
+the PostgreSQL CI job, after existing schema/RLS/persistence checks and before
+the build-once gate. Fresh one-day certificates and private keys remain only in
+the temporary runner/service fixture; they are not release assets.
+
+All three cases pass locally using the complete setup script, compiled Debug
+contract and an isolated pgvector/PostgreSQL 17 container with all 149 migrations
+and restricted roles. The owned container is removed and the original container,
+volume and network inventories match afterward. Initial local fixture attempts
+failed during initialization and Windows certificate-path handling; those are
+not passing runs. Readiness now waits for the final TCP listener, and native
+Windows tools receive native certificate paths. This adds actual encrypted
+success and certificate-refusal evidence, not managed-database acceptance or a
+full current release result. New Linux CI execution remains required.
+
 The refusal runner's Docker stand-in exercises all 16 intended failures and
 refuses successful startup, unrelated crashes, timeouts and disclosed policy
 or transport values (six fixture scenarios). CI at `70bb1f68` exposed its stale

@@ -12,6 +12,13 @@ using StrataAI.Infrastructure.Persistence;
 using StrataAI.Infrastructure.BackgroundJobs;
 using StrataAI.Infrastructure.WorkManagement;
 
+if (args.SequenceEqual(["--postgres-transport-only"], StringComparer.Ordinal))
+{
+    using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+    await PostgresTransportPersistenceContract.RunAsync(deadline.Token);
+    return;
+}
+
 // Mandatory CI executable against real PostgreSQL and the restricted API login.
 // It exercises persistence, Application file publication and Worker delivery.
 // Actor admission and object/scanner fixtures are synthetic: this is not HTTP

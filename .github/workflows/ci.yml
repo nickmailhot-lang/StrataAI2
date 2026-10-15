@@ -414,6 +414,11 @@ jobs:
           STRATAAI_CONTRACT_WORKER_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password;SSL Mode=Disable
         run: dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --configuration Release --no-build -- --retention-holds-only
 
+      - name: Verify trusted PostgreSQL TLS and certificate refusals through the runtime factory
+        env:
+          STRATAAI_CONTRACT_API_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password;SSL Mode=Disable
+        run: bash scripts/ci/test-postgres-tls.sh '${{ job.services.postgres.id }}'
+
   source-quality-gate:
     name: source-quality-gate
     if: always()
