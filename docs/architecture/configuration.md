@@ -197,7 +197,11 @@ failed during initialization and Windows certificate-path handling; those are
 not passing runs. Readiness now waits for the final TCP listener, and native
 Windows tools receive native certificate paths. This adds actual encrypted
 success and certificate-refusal evidence, not managed-database acceptance or a
-full current release result. New Linux CI execution remains required.
+full current release result. Linux CI at `d3f5a8a3` subsequently passed all three
+cases in the completed
+[PostgreSQL integration job](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38661605252/job/116183987086).
+The complete current source, retained-image and final release gates remain
+required; this scoped result does not establish their success.
 
 The refusal runner's Docker stand-in exercises all 16 intended failures and
 refuses successful startup, unrelated crashes, timeouts and disclosed policy

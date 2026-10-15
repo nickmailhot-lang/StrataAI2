@@ -223,6 +223,8 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Testing, security, performance, and acceptance
 
+- [API error envelope, correlation and content-negotiation verification (PRD-21)](architecture/api-error-contract-verification.md)
+- [Invitation, comment and Card-cover verification and remaining release scope](architecture/invitation-comment-cover-verification.md)
 - [Source test result artifacts and private-content exclusion (ARCH-11)](architecture/source-test-results.md)
 - [Security archive integrity and evidence identity (ARCH-11)](architecture/security-evidence-identity.md)
 - [Capacity and diagnostic artifact provenance and layouts (ARCH-11)](architecture/artifact-evidence-provenance.md)
