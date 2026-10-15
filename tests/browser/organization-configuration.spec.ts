@@ -25,7 +25,16 @@ for (const width of [1280, 390]) {
         ['Corporation or registration identifier', `ui-${organizationId}`], ['Civic address', 'Reviewed civic address'],
         ['Management company', 'Reviewed manager'], ['Insurance renewal date', '2027-03-15'], ['Lot count', '24'],
         ['Fiscal year end month', '12'], ['Fiscal year end day', '31'], ['AGM cycle (months)', '12'], ['Depreciation report cycle (months)', '36'],
-      ]) await page.getByLabel(new RegExp('^' + label.replace(/[()]/g, '\\$&'))).fill(value);
+      ]) {
+        const input = page.getByLabel(new RegExp('^' + label.replace(/[()]/g, '\\$&')));
+        // A protected foreground read can retire an edit between focus and input.
+        // Observe the unsent draft value before proceeding to the next field.
+        await expect(async () => {
+          await expect(input).toBeEnabled({ timeout: 500 });
+          await input.fill(value, { timeout: 500 });
+          await expect(input).toHaveValue(value, { timeout: 500 });
+        }).toPass({ timeout: 5_000 });
+      }
       await page.getByRole('button', { name: 'Add emergency contact' }).click();
       await page.getByLabel('Emergency contact 1 name').fill('Reviewed contact');
       await page.getByLabel('Emergency contact 1 phone').fill('Reviewed telephone');
@@ -50,7 +59,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByText('Change acknowledged. Current configuration revision 1.', { exact: true })).toBeVisible();
       await expect(review).toBeFocused();
       const current = await context.request.get(`/organizations/${organizationId}/configuration`); expect(current.status()).toBe(200);
-      expect((await current.json()).revision.configuration).toMatchObject({ legalName: 'Reviewed legal name', lotCount: 24, fiscalYearEndMonth: 12, fiscalYearEndDay: 31,
+      expect((await current.json()).revision.configuration).toMatchObject({ legalName: 'Reviewed legal name', jurisdiction: 'CA-BC', lotCount: 24, fiscalYearEndMonth: 12, fiscalYearEndDay: 31,
         agmCycleMonths: 12, depreciationReportCycleMonths: 36, insuranceRenewalDate: '2027-03-15', intakeBoardId: boardId, intakeListId: listId,
         emergencyContacts: [{ name: 'Reviewed contact', phone: 'Reviewed telephone' }], defaultCategories: ['Maintenance'], defaultPriorities: ['Urgent'],
         jurisdictionPolicies: [{ key: 'review_cycle', value: '12', source: 'Administrator supplied', notes: 'Review annually' }] });

@@ -1216,3 +1216,43 @@ is claimed from the failed CI run. Estimated PRD-27 remaining stays **24%**.
 The 796e0fe9 exact-image foundation job reproduced configuration sign-out failures at both widths: the outer access boundary could retire the configuration page before its own session-loss callback navigated to sign-in. SurfaceAdmission now performs a fresh bounded `/me` check after definitive live denial or an unauthorized surface read and redirects only after an actual HTTP 401. Checks are coalesced and retired with their scope. Current membership/Portal denial and transport uncertainty retain their own denial/recovery semantics. Anonymous independently authorized Public Board viewing is preserved when there was no protected admission to retire.
 
 New boundary tests cover removal of the child before session confirmation, genuine session loss, authenticated membership denial and independent Public Board admission. All 38 focused surface/hold/directory/live cases passed, along with typecheck/lint/build. The unchanged organization-configuration-distinct-accounts browser cases passed at both 1280px and 390px against real production API/Worker/PostgreSQL in the eight-case native browser run; no assertion or timeout was relaxed. Exact corrected-head immutable-image CI remains pending.
+
+### Observe scalar draft values before review (2026-10-15)
+
+[Run 38680871875](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680871875),
+job `116279084513`, passes 114 cases and fails the phone configuration scenario
+while opening review. Artifact `11960086989` is checked against its 5,697,625-byte
+size, SHA-256 `1949381accd689a3c421a17e051388269c0377c99e9b666e8a0cc93077518438`
+and embedded candidate metadata. The failing source file is unchanged from
+candidate `b45e83d5609c576077e6a7d5bfe0cd7ef05c0a87` to the repair's parent.
+The trace issues the Jurisdiction fill but its final snapshot has an empty
+Jurisdiction and the validation message **Enter jurisdiction.** No review
+dialog should open with that missing required value. This establishes an
+unobserved draft value, not the precise cause of its loss or a dialog defect.
+
+The complete unchanged desktop/phone baseline passes **2/2 in 91,700.411 ms**;
+an unchanged local reproduction is not claimed. The scalar-entry loop now
+checks enabled input, fills and observes the intended value within a bounded
+five-second read/draft admission window. Only unsent draft entry can repeat.
+The canonical saved-configuration assertion additionally requires jurisdiction
+`CA-BC`. Product behavior, explicit human review, the single approval, full
+configuration contents, restored focus, reload/history assertions and original
+30-second scenario deadline are unchanged.
+
+The revised complete file passes **2/2 in 92,856.972 ms**, one attempt per case,
+zero skips/flaky/unexpected outcomes or report errors. Browser types and diff
+checks pass. Both captures use archive-verified retained `24f5624` images,
+fresh PostgreSQL/pgvector with 149 migrations and restricted API/Worker roles,
+plus current read-only Nginx configuration. The disposable Organization scopes
+the actual Worker delivery. API verification is optional and mail disabled;
+the Worker retains its verified-account policy. Each capture matches all 172
+browser inputs and three web configuration hashes; original image identities
+are checked and the existing database is unused. Owned cleanup restores full
+Docker inventory and removes **1,708,838 temporary bytes** from the revised
+capture. The verified diagnostic ZIP is removed after compact evidence retention,
+reclaiming another **5,697,625 bytes**. No images are built/downloaded/imported.
+
+This is retained-image functional evidence, not current-main immutable CI or
+managed-provider certification. Existing controls are preserved without new
+governance expansion. PRD-27 remains open at **24% estimated work remaining**;
+large-load tests remain disabled until after the operational MVP milestone.
