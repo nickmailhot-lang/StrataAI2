@@ -12,10 +12,10 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 The next release milestone is a [deployable, stable operational task-management MVP](docs/architecture/operational-mvp-milestone.md). Core workflow reliability and verified deployment take priority before new governance and AI modules; the complete PRD roadmap remains in force.
 
-**Latest passing CI release candidate:** [`e83a928a`](https://github.com/nickmailhot-lang/StrataAI2/commit/e83a928a0b29c37482003ba6e61529eda561c512)
-passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38697542648).
-[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38697542648/artifacts/11988264222)
-and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/e83a928a0b29c37482003ba6e61529eda561c512/docs/release/README.md). This evidence identifies
+**Latest passing CI release candidate:** [`5845da8b`](https://github.com/nickmailhot-lang/StrataAI2/commit/5845da8be8c5a4b476e0743c0b3a31fc01d6e46f)
+passed [all 16 CI and release jobs](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901).
+[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901/artifacts/12002794848)
+and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/5845da8be8c5a4b476e0743c0b3a31fc01d6e46f/docs/release/README.md). This evidence identifies
 that exact candidate; later main changes require their own CI. Review
 [remaining deployment acceptance](docs/architecture/operational-mvp-milestone.md#current-status)
 before production promotion. Large-load tests remain deferred until after MVP.
@@ -23,20 +23,24 @@ This candidate includes the PostgreSQL TLS contract, Production HTTPS-origin
 checks, source-free Demo with known sign-in, and runtime database-password
 rotation. It includes encrypted backup/restore operator commands, their isolated
 rehearsal, populated schema-149 upgrades and the optional HTTPS listener with
-Secure sign-in and persisted task checks. It predates later build-bound operator
-and certificate checks, bounded readiness, workload-identity dependency repair
-and fresh-cluster application recovery. Use the
+Secure sign-in and persisted task checks. It also includes build-bound Production
+API/Worker verification, bounded database readiness and outage/recovery checks,
+and served-certificate rotation/restoration. It predates the workload-identity
+dependency repair, fresh-cluster application recovery, certificate lifetime
+monitoring and later observability changes. Use the
 instructions included in its own bundle;
 see [the evidence and remaining gaps](docs/architecture/operational-mvp-milestone.md#current-status)
 before applying newer documentation to that artifact.
 
 An [independent check of the earlier `e5570793` bundle](docs/architecture/release-bundle-startup.md#independent-original-bundle-check-and-refusal)
 starts successfully but fails the newer database-outage deadline. The latest
-completed candidate also predates that readiness repair; require a newer tested
-candidate before MVP production promotion.
+completed candidate includes that readiness repair and passes its hosted outage
+gate. Its full archive has not been downloaded or executed independently here;
+complete the remaining deployment acceptance before MVP production promotion.
 
 Current main also adds [bounded database readiness and outage recovery checks](docs/architecture/release-bundle-startup.md#database-outage-and-bounded-readiness-2026-10-15).
-Those repairs require their own full current-image CI before MVP acceptance.
+Those checks pass for the pinned candidate above; later main changes require
+their own full current-image CI before MVP acceptance.
 
 **Demo login:** `demo@strataai.test` / `StrataAI-Demo-2026!`.
 Set `STRATAAI_RUNTIME_MODE=demo`, open `/login`, and sign in without registering.

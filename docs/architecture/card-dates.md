@@ -816,3 +816,31 @@ Browser typing and discovery of all 398 scenarios across 145 intact files pass.
 Full current immutable-image CI and all remaining acceptance still govern
 closure. Estimated PRD-12 work remaining stays **24%**; the issue remains open
 and large-load testing stays deferred until after the operational MVP.
+
+## Phone policy clear submits the previous value — 2026-10-15
+
+The older `b5b8452e` main run's
+[browser shard one](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38734509063/job/116564909640)
+reports **102 passes and one failure** in the phone timezone-policy scenario.
+After the peer sets UTC, the test clears the original editor and verifies its
+empty, enabled, focused state. The following Save activation issues a successful
+PATCH with `{timezone:"UTC",version:3}`, rather than the intended explicit null.
+The later empty-value assertion fails. The same browser file remains on current
+main; the earlier successful focused/hosted executions do not erase this failure.
+
+Diagnostic artifact **12003868434**, **16,315,618 bytes**, has SHA-256
+`30a924aa5b6c805751cbbf21a09e11eef1cee3f55d415472918073b8be236511`.
+An independent in-memory audit verifies its advertised size/SHA, all **32**
+payload checksums, exact file set and byte-identical canonical build metadata
+for `b5b8452e1baae0ab5e837553cbfc63d87dbcbdaa`, version `0.1.0-1783`, run
+`38734509063`. The trace includes the original Honolulu write and lost-response
+recovery, the peer's UTC write, and the final UTC write. Duplicate network
+observations from the route-fetch transport do not establish extra user commands.
+
+This evidence establishes the incorrect final request body; it does not yet
+identify the exact intervening invalidation or justify preserving an unadmitted
+draft, repeating a submitted command, or relaxing the null/version assertions.
+Further investigation and a validated repair remain required. No browser,
+container, image download or load test runs in this audit; the diagnostic ZIPs
+are neither written nor extracted. PRD-12 remains open at **24% estimated work
+remaining**, with current immutable CI and all original acceptance still required.

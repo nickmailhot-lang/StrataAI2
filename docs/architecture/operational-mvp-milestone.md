@@ -154,24 +154,58 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ### Latest completed CI release — 2026-10-15
 
-The latest successful-main query identifies `e83a928a0b29c37482003ba6e61529eda561c512`:
-[run 38697542648](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38697542648)
+The latest successful-main query identifies `5845da8be8c5a4b476e0743c0b3a31fc01d6e46f`:
+[run 38713394901](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901)
 has all **16 jobs completed successfully**, including `required-ci` and the
 final release job. The original-input, assembled Production/Demo/HTTPS,
 unchanged-payload and upload steps all succeed. Its
-[Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38697542648/artifacts/11988264222)
-is **518,734,948 bytes**, with GitHub-reported SHA-256
-`554723e8819605efc9d885381b4ab205b52755f0bd4e922d352390636e4a4a69`.
+[Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901/artifacts/12002794848)
+is **518,743,026 bytes**, with GitHub-reported SHA-256
+`c017f164865a9b87ac00354d0aa136a0bdd4e3564a89341b336a55692fe1de95`.
 
 This is hosted evidence for that exact candidate. Its full archive has not been
-downloaded or executed independently here. It predates the workload-identity
-dependency repair and later deployment/observability changes; follow its
-[pinned operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/e83a928a0b29c37482003ba6e61529eda561c512/docs/release/README.md).
+downloaded or executed independently here. It includes bounded PostgreSQL
+readiness, the assembled database-outage/recovery gate, build-bound Production
+API/Worker verification and HTTPS certificate rotation/restoration. It predates
+the workload-identity dependency repair, fresh-cluster application recovery,
+certificate lifetime monitoring and later observability changes; follow its
+[pinned operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/5845da8be8c5a4b476e0743c0b3a31fc01d6e46f/docs/release/README.md).
 Current-main CI, managed-provider configuration, tested operational alerts,
 scheduled recovery and complete MVP acceptance remain required. New main work
 and deferred capacity acceptance are not certified by this earlier green run.
 
 The earlier `e5570793` evidence below describes a different candidate.
+
+### Current CI queue and workflow follow-up — 2026-10-15
+
+The queue audit finds one older main run still executing and 21 queued main
+runs. These are a point-in-time observation, not a runner-capacity diagnosis.
+Main revisions retain independent concurrency groups; healthy work is not
+cancelled to advance newer revisions. Current `d9327cb4` has no complete passing
+release result. The repository's `STRATAAI_POST_MVP_LOAD_TESTS` variable is
+freshly verified as `0`; no local workload or image download runs in this audit.
+
+The older `b5b8452e` run's
+[browser shard one](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38734509063/job/116564909640)
+reports **102 passes and one failure**. The phone timezone-policy case clears
+the input and activates Save, then expects an empty value but observes `UTC`.
+That browser file is unchanged on current main. The retained trace confirms the
+final PATCH sends `{timezone:"UTC",version:3}` and receives HTTP 200, rather than
+the intended explicit null. The request follows the keyboard clear's successful
+empty-value assertion. The audit independently verifies artifact 12003868434's
+size/SHA, all 32 payload checksums and canonical metadata for version
+`0.1.0-1783`. It reads the archives in memory without writing/extracting them or
+running the app. This identifies an incorrect submitted value, but does not yet
+establish the exact intervening invalidation or an appropriate product/test
+repair. Do not retry a mutation already observed. See the
+[timezone investigation](card-dates.md#phone-policy-clear-submits-the-previous-value--2026-10-15).
+
+The same older run's configuration timestamp failures use the stale raw-ISO
+assertions already repaired by `2d958740`; the
+[recorded focused correction](organization-configuration.md#realtime-timestamp-assertions-2026-10-15)
+still requires current immutable-image CI. Neither older failures nor the newer
+successful pinned release establish current-main acceptance. All PRD/ARCH issues
+retain their own completion requirements.
 
 The [independent original-bundle rehearsal](release-bundle-startup.md#independent-original-bundle-check-and-refusal)
 now verifies the full `e5570793` ZIP, nested provenance and actual loaded image
