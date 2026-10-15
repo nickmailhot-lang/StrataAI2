@@ -10,6 +10,17 @@ implementations and scoped executed contracts; they are not full-ticket proof.
 The opening matrix describes current scope; dated evidence below is historical
 and must not be treated as proof that the current head has passed required-ci.
 
+The [workload-identity dependency repair](attachment-object-storage.md#workload-identity-runtime-dependency--2026-10-15)
+adds the missing SDK STS runtime module without changing existing resolved package
+versions. Both real-SDK credential cases fail before repair and pass afterward,
+including loopback token exchange, temporary S3 signing/cache and credential
+refusal. Four existing S3 transport cases also pass. API and Worker publish
+outputs contain the module; owned outputs/containers are removed. This is a
+deployment prerequisite, not full managed-provider or immutable-image acceptance.
+The [operator guide](../release/README.md#optional-private-file-attachments-on-linux)
+now explains explicit role/token/scanner configuration. Estimated PRD-14 work
+remaining stays **32%**; current full CI and all original acceptance still apply.
+
 The [PRD-05 HTTP permission matrix](prd-05-acceptance.md#executed-http-permission-matrix)
 also executes raw upload admission across all three Board visibilities and six
 access states. Its 18 passing API-host cases verify authorized Pending publication,

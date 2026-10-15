@@ -288,6 +288,90 @@ those alerts. This command installs no schedule, renews no certificate and
 does not check revocation or every load-balancer node. It does not replace
 application readiness or the [Production runtime identity check](#start-and-migrate).
 
+## Optional private file attachments on Linux
+
+File upload is disabled by default. Enable it only after provisioning the private
+AWS S3 bucket, expected 12-digit account owner, supported region, least-privilege
+runtime access and a private ClamAV Unix socket with maintained definitions.
+The application does not create buckets, IAM roles, tokens or scanner services.
+See [the storage and scanner contracts](../architecture/attachment-object-storage.md).
+
+Use a release containing the workload-identity dependency described in that
+contract; earlier bundles such as `bb3cd4fc` lack the STS assembly needed for
+web identity. Keep the same deployment project, durable keys and database.
+Complete the normal migration/role procedure before starting enabled hosts.
+Add these settings to the private operator environment file:
+
+```dotenv
+STRATAAI_ATTACHMENT_S3_BUCKET=your-private-bucket
+STRATAAI_ATTACHMENT_S3_OWNER=123456789012
+STRATAAI_ATTACHMENT_S3_REGION=us-east-1
+STRATAAI_WORKER_ORGANIZATION_IDS=replace-with-explicit-organization-uuids
+STRATAAI_ATTACHMENT_SCANNER_DIRECTORY=/srv/strataai-scanner
+STRATAAI_API_ATTACHMENT_ROLE_ARN=arn:aws:iam::123456789012:role/strataai-api
+STRATAAI_WORKER_ATTACHMENT_ROLE_ARN=arn:aws:iam::123456789012:role/strataai-worker
+STRATAAI_API_ATTACHMENT_TOKEN_DIRECTORY=/srv/strataai-identity/api
+STRATAAI_WORKER_ATTACHMENT_TOKEN_DIRECTORY=/srv/strataai-identity/worker
+```
+
+These are example identifiers and paths. The scanner directory must contain
+`clamd.sock`. Each identity directory must contain a readable `token` supplied
+and rotated by your trusted workload-identity issuer. Keep the directories
+private; mount the directories read-only so replacement tokens remain visible.
+The SDK obtains temporary role credentials. Avoid injecting static AWS keys
+alongside web identity, because they take precedence in the SDK credential chain.
+
+Compose's environment file supplies interpolation values; it does not
+automatically forward arbitrary AWS variables or mount host token files. Save
+the following operator-owned overlay outside the bundle, for example as
+`/srv/strataai-config/attachment-identity.yml`:
+
+```yaml
+services:
+  api:
+    environment:
+      AWS_ROLE_ARN: ${STRATAAI_API_ATTACHMENT_ROLE_ARN:?Set API attachment role}
+      AWS_WEB_IDENTITY_TOKEN_FILE: /run/strataai-identity/token
+      AWS_REGION: ${STRATAAI_ATTACHMENT_S3_REGION:?Set attachment region}
+    volumes:
+      - type: bind
+        source: ${STRATAAI_API_ATTACHMENT_TOKEN_DIRECTORY:?Set existing API token directory}
+        target: /run/strataai-identity
+        read_only: true
+        bind:
+          create_host_path: false
+  worker:
+    environment:
+      AWS_ROLE_ARN: ${STRATAAI_WORKER_ATTACHMENT_ROLE_ARN:?Set Worker attachment role}
+      AWS_WEB_IDENTITY_TOKEN_FILE: /run/strataai-identity/token
+      AWS_REGION: ${STRATAAI_ATTACHMENT_S3_REGION:?Set attachment region}
+    volumes:
+      - type: bind
+        source: ${STRATAAI_WORKER_ATTACHMENT_TOKEN_DIRECTORY:?Set existing Worker token directory}
+        target: /run/strataai-identity
+        read_only: true
+        bind:
+          create_host_path: false
+```
+
+Validate without printing resolved secrets, then recreate the application hosts:
+
+```bash
+docker compose --env-file /srv/strataai-config/runtime.env -f compose.release.yml -f compose.attachments.yml -f /srv/strataai-config/attachment-identity.yml config --quiet
+docker compose --env-file /srv/strataai-config/runtime.env -f compose.release.yml -f compose.attachments.yml -f /srv/strataai-config/attachment-identity.yml up -d --no-build --pull never --wait api worker web
+```
+
+For the HTTPS deployment, include `-f compose.https.yml` in both commands and
+retain its certificate settings. Both hosts must be ready: the API checks the
+database and private bucket; the Worker also checks the scanner. Use the
+[runtime identity check](#start-and-migrate), then verify a small real upload
+through Pending, Clean/Rejected scanning, controlled download, image preview
+and cover where applicable. Confirm quarantine refusal, permission withdrawal,
+provider outages and recovery in the intended deployment. Do not set
+`STRATAAI_ATTACHMENT_TEST_LOCAL_ROOT` or `IntegrationTest` to bypass Production
+providers. Role trust, bucket policy, token rotation, scanner definitions and
+managed-provider lifecycle/backup acceptance still require operator evidence.
+
 ## Optional verification and recovery mail role
 
 The included `.env.release.example` lists the complete optional mail setup,

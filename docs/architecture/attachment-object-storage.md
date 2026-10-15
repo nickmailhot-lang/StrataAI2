@@ -10,7 +10,8 @@ local/tests, with no production fallback. The decision implements ARCH-07-FR-001
 FR-010/FR-012 and PRD-14-FR-004, subject to the remaining integration below.
 
 The Infrastructure adapter uses official `AWSSDK.S3` 4.0.104.1 (and its locked
-`AWSSDK.Core` dependency). Credentials must come from runtime workload identity or
+`AWSSDK.Core` dependency), plus `AWSSDK.SecurityToken` 4.0.101.1 for the SDK's
+late-bound web-identity/assume-role credential provider. Credentials must come from runtime workload identity or
 runtime secrets when the client is registered; no credentials enter settings,
 images, metadata or logs. Regional HTTPS AWS endpoints are required. Custom
 endpoints, HTTP, access-point ARN buckets and ambiguous dotted bucket names are
@@ -28,6 +29,63 @@ policy, least-privilege prefix access and abort-incomplete-multipart lifecycle
 rules. Administrative bucket settings are a trusted operator boundary: a
 configuration check is not a defense against an administrator making the bucket
 public while an operation is already running.
+
+## Workload identity runtime dependency — 2026-10-15
+
+The managed-runtime dependency audit finds no `AWSSDK.SecurityToken` assembly in
+the original API/Worker dependency graph. AWS requires this module for .NET web
+identity. Both original regression cases fail in **0.389 seconds** while the real
+SDK attempts to load that assembly, before the fixture STS server receives a
+request. Infrastructure now references centrally pinned **4.0.101.1**; six
+dependent lock files include it. This version requires the already locked
+**AWSSDK.Core 4.0.102.8**. All existing resolved package versions remain unchanged.
+
+Both final workload-identity cases pass in **0.822 seconds**. The actual SDK
+constructs credentials from environment/file inputs, sends the expected token,
+role and session to an owned loopback STS fixture, unmarshals temporary credentials,
+reuses their cache and signs a regional S3 HEAD request with its session token,
+SigV4 access key and expected bucket owner. The OIDC token is absent from S3
+headers. A separate attempted S3 operation receives AccessDenied during credential
+resolution and sends no S3 request. The initial negative fixture expected a bare service exception; the SDK
+wraps it, so the final assertion requires the client wrapper and inner 403/code.
+The missing-module baseline fails before reaching that refusal contract.
+
+The four existing actual-SDK S3 transport cases pass in **0.734 seconds**, retaining
+private policy checks, signing, conditional multipart completion and embedded
+error refusal. These are six selected cases across two final invocations, not
+the full source suite. Each matches **782 frozen source inputs** and compiled
+binaries, removes its Linux container and restores original Docker inventory.
+Tests use read-only mounts and disabled external networking. Only fixture STS
+loopback and the substituted final S3 transport are used; no cloud account is
+contacted. Environment changes are serialized and restored; token files are
+removed.
+
+The full solution builds with zero warnings/errors; locked restore and the runtime
+direct/transitive advisory audit pass with no findings. Separate framework-dependent
+API and Worker publishes both contain the exact package STS DLL and dependency
+manifest entry, preserving the existing Core DLL. All **553 captured publish
+inputs** match, and **846,317,975** owned temporary publish bytes are removed.
+No image build/download/import or original database is used. Publish composition
+and compiled SDK tests do not certify newly built Linux release images.
+
+Follow the [Linux attachment deployment procedure](../release/README.md#optional-private-file-attachments-on-linux)
+to supply role/token bindings explicitly; Compose does not forward arbitrary host
+AWS variables automatically. Its exact YAML example passes native Compose
+rendering with and without HTTPS, preserving separate role/token mounts,
+read-only/noncreating binds and HTTPS-only published application access. Missing
+API role and Worker token-directory controls fail for their intended input errors.
+All four outcomes pass without creating containers, images or volumes; the owned
+1,006-byte overlay is removed. This does not prove a real token issuer, IAM trust,
+bucket policy, scanner definitions, deployed refresh/outage behavior or full
+enabled-provider release acceptance. PRD-14 remains open at **32% estimated work
+remaining**; large-load testing remains deferred until after the operational MVP.
+
+References: [AWS web-identity runtime requirements](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts-minimum-sdk.html),
+[SDK credential precedence](https://docs.aws.amazon.com/sdk-for-net/v4/developer-guide/creds-assign.html),
+[test-only service endpoint configuration](https://docs.aws.amazon.com/sdkref/latest/guide/feature-ss-endpoints.html),
+[regressions](../../tests/StrataAI.Domain.Tests/AttachmentWorkloadIdentityTests.cs).
+
+## Provider I/O contract
 
 Keys derive only from server-owned Organization/attachment UUIDs. Multipart
 upload uses one 5 MiB buffer, reads at most one byte beyond the server's positive

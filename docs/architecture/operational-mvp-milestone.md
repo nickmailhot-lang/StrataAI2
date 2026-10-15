@@ -51,6 +51,16 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [attachment workload-identity repair](attachment-object-storage.md#workload-identity-runtime-dependency--2026-10-15)
+adds the SDK STS module missing from the original runtime graph. Real SDK
+credential exchange/signing and refusal tests pass after reproducing the missing
+assembly; four existing transport cases also pass. API and Worker publish outputs
+include the module with existing dependency versions unchanged. Owned fixtures
+and publish outputs are removed. The release guide now supplies explicit
+role/token/scanner setup. Current immutable images, real IAM/bucket/scanner and
+complete enabled-provider acceptance remain required; PRD-14 stays open at 32%
+estimated work remaining. No large load test is run.
+
 The [auth rate-limit diagnostic follow-up](api-error-contract-verification.md#rate-limit-diagnostic-creation-and-writing-failures--2026-10-15)
 preserves 429 and its retry hint when optional logger creation or writing fails.
 Eight regressions fail before the repair, including two actual HTTP 500s; all

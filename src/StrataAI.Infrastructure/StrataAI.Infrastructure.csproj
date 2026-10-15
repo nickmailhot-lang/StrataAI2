@@ -11,6 +11,8 @@
   <ItemGroup>
     <PackageReference Include="Npgsql" />
     <PackageReference Include="AWSSDK.S3" />
+    <!-- The default AWS credential chain loads STS dynamically for web identity. -->
+    <PackageReference Include="AWSSDK.SecurityToken" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
