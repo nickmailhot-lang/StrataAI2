@@ -1,5 +1,5 @@
 import { expect, test } from './releaseTest';
-import { focusAdmittedControl, pressAdmittedAction } from './keyboardAdmission';
+import { focusAdmittedControl, openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
@@ -38,7 +38,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const reviewedActor = (await (await context.request.get('/me')).json()).id;
       const creation = trackInvitationAdmission(page, org, reviewedActor, undefined, `/app/${org}/invite`);
       await page.goto(`/app/${org}/members`);
-      await pressAdmittedAction(page.getByRole('link', { name: 'Create Organization invitation' }));
+      await openAdmittedReview(page.getByRole('link', { name: 'Create Organization invitation' }),
+        page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true }));
       await expect(page.getByText('Current invitation permissions checked. Review the request before submitting.', { exact: true })).toBeVisible();
       await expect.poll(creation.ready, { timeout: 30_000 }).toBe(true);
       await page.getByLabel(/^Invitation email/).fill(email);

@@ -265,3 +265,44 @@ all 50 history cases pass afterward. Original issuance keys, confirmation,
 cancellation, role/authority guards and deadlines remain. Current complete
 immutable CI and the remaining AC/DoD still govern closure; PRD-60 remains open
 at **18% estimated work remaining**.
+
+## Organization invitation navigation verification (2026-10-15)
+
+Retained run `38671941737`, job `116238370391`, passes 114 cases and fails the
+phone Organization-invitation administration case before composition. Artifact
+`11952103368` is independently verified against its 2,167,343-byte size and
+GitHub SHA-256. Its trace shows enabled focus and Enter on Create Organization
+invitation while protected account/surface/member reads overlap. The snapshot
+stays on Members, with no invitation-screen read. The source file is unchanged
+between that candidate and parent `e5570793`.
+
+The unchanged complete desktop/phone file passes locally **2/2 in 66,902.698 ms**;
+an unchanged local reproduction or product root cause is not claimed. Initial
+navigation now uses the existing bounded read-only opening helper to observe
+the actual invitation-permissions message. The independent visibility and
+actor/Organization/head/read admission assertions remain. Only read-only
+navigation may repeat; every invitation mutation and recovery action remains
+unchanged, with the original 120-second deadline and no whole-test retries.
+
+The complete changed file passes **2/2 in 67,631.167 ms**, with one attempt per
+case, no failures/skips/flaky results or report errors. Original committed/lost
+response and reload recovery, exact original key/body, three POSTs, canonical
+invitation history, actual member-added frame/protected refresh, profile timezone
+changes/expiry captions and separately accepted Portal grant with unchanged
+internal membership all remain required.
+
+Both invocations use archive-verified retained images at
+`24f562464f706884e4a27577b61c65ff385b4263`, fresh restricted PostgreSQL 17/pgvector
+with all 149 migrations, optional API verification and disabled mail transport.
+The Worker retains its verified-account policy. Current Nginx, shared headers
+and the default listener are mounted read-only; explicit source guards allow
+only those three configuration changes and the corresponding Dockerfile COPY
+relative to the retained web source. This does not certify current-main images
+or managed providers. All 172 captured browser inputs and three configuration
+hashes match. Each cleanup restores the full original Docker inventory; the
+final invocation removes 1,707,745 owned temporary bytes. No image build/import/
+download or existing-database use occurs. Browser types and diff checks pass.
+
+PRD-03 remains open at **8% estimated work remaining**, and PRD-60 at **18%**.
+Full current immutable CI and the remaining acceptance criteria still govern
+closure. Large-load testing remains deferred until after the operational MVP.

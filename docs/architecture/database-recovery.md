@@ -132,8 +132,8 @@ format/query/restore failures and nonempty-target refusal. The eight backup
 tests, nine comparison tests, 35 release-artifact tests and 230 CI coverage
 guards pass. Two new release-artifact regressions first accept private `.cms`
 and `.dump` payloads with regenerated checksums; both are now refused. Shell/
-workflow lint and 19 local documentation links pass. Current exact-commit
-hosted execution of the new operator restore path is still required.
+workflow lint and 19 local documentation links pass. Hosted execution of this
+restore implementation is recorded in the subsequent follow-up below.
 
 The earlier operator-backup revision
 `c822186c25882117fb0dcfcdd4ad2819be9a8313` now passes the hosted
@@ -145,6 +145,18 @@ restricted tenant operations, parent foreign keys and append-only audit checks.
 The populated upgrade runner and all three TLS certificate cases also pass.
 This job predates the operator restore command and its expanded eleven-case
 rehearsal; it does not prove their hosted execution or a complete release.
+
+The operator-restore revision
+`ebfbfe1b89f9ced4bbb942aba2ea4ab9bf81bcea` subsequently passes its hosted
+[PostgreSQL job](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38685376116/job/116266313872).
+The retained metadata artifact binds that job's run to the exact revision.
+Both actual operator commands execute, with all eleven refusal/corruption cases,
+full migrated schema/data/ACL comparison, pgvector, restricted tenant reads and
+writes, cross-tenant parent constraints and append-only audit protections.
+Populated upgrades and all three database TLS certificate cases also pass.
+The backup/restore commands, maintained rehearsal and all production migrations
+remain unchanged through `e5570793`; this is scoped hosted implementation
+evidence, not a complete passing release or scheduled production recovery.
 
 ## Application use after restoration
 
