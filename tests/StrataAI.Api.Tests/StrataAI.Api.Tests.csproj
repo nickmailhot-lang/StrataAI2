@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <ProjectReference Include="../../src/StrataAI.Api/StrataAI.Api.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Exercise the actual loop without importing the separate host entry point. -->
+    <Compile Include="../../src/StrataAI.Worker/OrganizationJobWorker.cs" Link="Worker/OrganizationJobWorker.cs" />
+  </ItemGroup>
 </Project>

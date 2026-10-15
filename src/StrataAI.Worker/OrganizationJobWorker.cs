@@ -1,5 +1,7 @@
 using StrataAI.Application.BackgroundJobs;
 using System.Diagnostics;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace StrataAI.Worker;
 
@@ -27,7 +29,7 @@ internal sealed class OrganizationJobWorker(
                     {
                         var outcome = await processor.ProcessOneAsync(organizationId, _workerId, stoppingToken);
                         if (outcome == JobProcessingResult.Empty) break;
-                        logger.LogInformation("Job pass {Outcome} for Organization {OrganizationId}, Worker {WorkerId}.", outcome, organizationId, _workerId);
+                        LogPass(outcome, organizationId);
                         if (Stopwatch.GetElapsedTime(started) >= TimeSpan.FromMilliseconds(250)) break;
                     }
                 }
@@ -36,12 +38,26 @@ internal sealed class OrganizationJobWorker(
                 {
                     // No exception message: SQL/provider diagnostics can include
                     // secrets. The committed lease is recovered after expiry.
-                    logger.LogWarning("Job pass failed for Organization {OrganizationId}, Worker {WorkerId}.", organizationId, _workerId);
+                    LogFailure(organizationId);
                 }
             }
             try { await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken); }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
         }
+    }
+
+    // A logging provider failure must not turn a decided pass into another
+    // failure, or stop the loop before the next Organization is considered.
+    private void LogPass(JobProcessingResult outcome, Guid organizationId)
+    {
+        try { logger.LogInformation("Job pass {Outcome} for Organization {OrganizationId}, Worker {WorkerId}.", outcome, organizationId, _workerId); }
+        catch (Exception) { /* Logging cannot recover its own failed provider. */ }
+    }
+
+    private void LogFailure(Guid organizationId)
+    {
+        try { logger.LogWarning("Job pass failed for Organization {OrganizationId}, Worker {WorkerId}.", organizationId, _workerId); }
+        catch (Exception) { /* Preserve the loop; retain the existing lease recovery. */ }
     }
 }
 

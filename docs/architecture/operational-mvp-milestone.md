@@ -62,6 +62,13 @@ in a scoped Linux runtime. It changes no retry, storage or handler behavior.
 Full current immutable CI and broader durable queue/provider acceptance remain
 required; large-load testing stays deferred.
 
+The [outer Worker-loop follow-up](background-jobs.md#logging-failure-during-the-organization-loop-2026-10-15)
+also isolates pass/warning logger failures so they cannot stop later scoped
+Organizations after completed work or a claim error. Three actual loop lifecycle
+cases fail before/pass after the repair, retaining exact execution counts,
+fairness, safe errors and shutdown behavior. Current full immutable CI and
+deployed logging acceptance remain pending.
+
 The latest completed CI release candidate is
 `4cb80014a9b9e863cdc68c9718e510886cade78b`:
 [run 38674444706](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706)

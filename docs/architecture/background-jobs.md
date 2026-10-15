@@ -101,6 +101,44 @@ warnings/errors. Current complete immutable CI, durable queue/provider
 acceptance and the remaining ARCH-07/08 scope still govern closure. No existing
 database or large-load test is used by this scoped verification.
 
+### Logging failure during the Organization loop (2026-10-15)
+
+The processor boundary alone does not protect the outer Worker loop. Its pass
+log could throw after a completed job, enter the error handler, then encounter
+another exception from the warning logger. A warning-provider failure after a
+claim error could also escape. Either path faults the background service before
+the next Organization is considered.
+
+The loop now isolates its pass and warning logging calls independently. Message
+templates and safe diagnostic fields are unchanged. A logger error does not
+generate another warning through the same broken provider. The 32-job/250 ms
+fairness bounds, one-second polling interval, actual processor/lease semantics
+and cancellation/shutdown behavior remain intact. This handles thrown logging
+failures; it does not claim to bound a provider that blocks indefinitely.
+
+Three lifecycle cases compile the actual `OrganizationJobWorker.cs` into the
+API test project through an explicit source link, avoiding the separate host
+entry point and adding no package or runtime-host dependency. They start and
+stop the real `BackgroundService` with two scoped Organizations and recording
+store/handler adapters. After successful work, a handler failure or a claim
+failure, a throwing logger must not prevent the second Organization's job from
+completing. Exact execution/acknowledgment/failure counts, stable failure codes,
+no false failure warning, safe formatted messages and successful shutdown are
+asserted. The second scope's drain signal occurs after its pass log, so an early
+completion signal cannot conceal a later logger failure.
+
+All **three cases fail before repair**, with the actual loop faulted before the
+second scope drains. After repair, **3/3 pass in 0.281 seconds**, zero errors,
+skips or unexecuted cases, in Linux .NET 10.0.13. Current compiled test output is
+mounted read-only into the retained runtime image with no network. All four
+captured sources and compiled-output hashes match; owned containers are removed
+and full Docker inventory restored. The full solution builds with zero
+warnings/errors. These are actual loop lifecycle/control-flow tests with store
+doubles, not full Worker-image, PostgreSQL durability or deployed logging
+acceptance. Current immutable CI and remaining ARCH-07/08 requirements remain
+necessary. No image build/download/import, existing database use or large-load
+test occurs.
+
 The production Worker registers `WORK_EVENT_READY` under `work-event-delivery`.
 Its handler locks and checks the current unexpired queue lease before marking a
 content-free Work event ready. Replay preserves the original readiness timestamp.
