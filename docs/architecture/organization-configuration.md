@@ -1270,3 +1270,47 @@ are component/transport/build checks; native browser and current immutable CI
 remain pending. See [AUTH-FR-010 evidence and limits](prd-02-acceptance.md#configuration-history-and-activity-date-preferences-2026-10-15).
 No governance feature is added. PRD-27 remains open at **24% estimated work
 remaining**, unchanged planning estimate. Large-load tests remain post-MVP.
+
+### Realtime timestamp assertions (2026-10-15)
+
+Exact-image run `38732211465` at `ff1249f4` fails the desktop and phone
+distinct-account scenarios because they still seek the raw `updatedAt` string
+inside a localized `<time>` display. The same-account scenario retains the
+same stale assertion. Current product code already uses the viewer's account
+locale/timezone and preserves the original instant in `datetime`.
+
+All four unchanged scenarios reproduce that exact assertion failure locally.
+The shared assertion now selects the original event's own row, requires exactly
+one visible `<time>` with the exact source instant in `datetime`, reads the
+signed-in viewer's current preferences and independently computes the expected
+display through browser `Intl.DateTimeFormat`. The formatter implementation is
+not imported by this assertion. Original event/actor attribution, content-free
+frames, draft preservation, keyboard review, private-field exclusions,
+independent/shared logout, accessibility checks and test deadlines remain intact.
+No application behavior or configuration value is changed. The additional
+`/me` read belongs only to test orchestration.
+
+The complete corrected desktop/phone files pass **4/4** in **189.472 seconds**
+against a fresh restricted PostgreSQL/Worker fixture, with no retries, flakes or
+skips. The **175 browser inputs**, **367 frontend inputs** and **four served
+asset hashes** match their captured values. Owned cleanup removes **3,334,075**
+temporary file bytes and restores the original Docker inventory. The unchanged
+baseline fails **4/4**, with matching captured inputs and successful fixture
+cleanup; its retained browser diagnostics occupy **15,596,741 bytes** because
+local policy rejects their deletion. The corrected run retains only its small
+report/audit. No new images are built, downloaded or imported, and no large-load
+test runs.
+
+The matching Demo CI file also passes **2/2** desktop/phone cases in **65.627
+seconds**, with no retries, flakes or skips, no PostgreSQL service, matching
+captured inputs/assets and original Docker inventory restored. Its owned
+temporary files total **3,327,083 bytes** and are removed. This follows the CI
+selection: the same-account file retains its verified-PostgreSQL Production
+fixture. An initial local Demo invocation also included that Production-only
+file and fails its missing-PostgreSQL account setup; that private audit remains
+separate from the clean Demo result.
+
+These checks use freshly built current frontend assets mounted read-only into
+the retained web runtime, with archive-verified `24f56246` backend images. They
+are supporting browser evidence, not current immutable-image CI or full release
+certification. PRD-27 remains open at **24% estimated work remaining**, unchanged.

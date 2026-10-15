@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker } from './scopedBoardWorker';
+import { expectConfigurationActivityTime } from './configurationActivityTime';
 
 // PRD-27 TC-06/09/11/12: real separate Worker, current sessions, source-only
 // publication and keyboard review recovery through the release edge.
@@ -82,7 +83,7 @@ for (const width of [1280, 390]) {
       await expect(activity.getByText('Recorded actor: Configuration realtime owner; Organization owner.', { exact: true })).toHaveCount(2);
       await expect(activity.getByText('Recorded actor: Configuration realtime administrator; Organization administrator.', { exact: true })).toHaveCount(1);
       await expect(activity.getByText(`Original event reference: ${source.eventId}`, { exact: true })).toBeVisible();
-      await expect(activity.locator('time').filter({ hasText: source.updatedAt })).toBeVisible();
+      await expectConfigurationActivityTime(activity, context.request, source);
       await expect(activity.getByText('Changed private legal name', { exact: true })).toHaveCount(0);
       await expect(activity.getByText('Preserved keyboard proposal', { exact: true })).toHaveCount(0);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);

@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [configuration realtime timestamp assertions](organization-configuration.md#realtime-timestamp-assertions-2026-10-15)
+now check the original event's machine instant and the viewer's localized
+display. Four unchanged cases reproduce the stale raw-timestamp assumption;
+the corrected four Production and two matching Demo executions pass with
+unchanged privacy, attribution, keyboard and logout checks. These use current
+frontend assets with retained backend images; full current immutable CI remains
+required. PRD-27 stays open at 24% estimated work remaining. No governance
+feature is added and large-load testing stays deferred.
+
 The [Worker queue-loop failure counter](operator-metrics.md#worker-queue-loop-failures--2026-10-15)
 adds fixed observations for escaping Organization/identity-email queue errors,
 separate from decided retries and normal shutdown. All 51 focused .NET cases,
