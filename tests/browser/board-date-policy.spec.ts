@@ -61,10 +61,14 @@ for (const width of [1280, 390]) {
       await expect(canvasCard).toHaveAccessibleDescription('Due today');
       await retry.press('Enter'); await expect(input).toHaveValue('Pacific/Honolulu');
       await expect(page.getByRole('button', { name: 'Save timezone policy' })).toBeFocused();
-      const focusRing = await page.getByRole('button', { name: 'Save timezone policy' }).evaluate(element => {
-        const style = getComputedStyle(element); return { style: style.outlineStyle, width: parseFloat(style.outlineWidth) };
-      });
-      expect(focusRing.style).toBe('solid'); expect(focusRing.width).toBeGreaterThanOrEqual(2);
+      // A protected live refresh can replace the focused action between locator
+      // resolution and evaluation. Observe focus and its ring on the same
+      // connected current node; never refocus it or replay the command.
+      await expect.poll(() => page.getByRole('button', { name: 'Save timezone policy' }).evaluate(element => {
+        const style = getComputedStyle(element);
+        return { connected: element.isConnected, focused: element.ownerDocument.activeElement === element,
+          style: style.outlineStyle, widthAtLeastTwo: parseFloat(style.outlineWidth) >= 2 };
+      }), { timeout: 5_000 }).toEqual({ connected: true, focused: true, style: 'solid', widthAtLeastTwo: true });
       expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
       expect(JSON.parse(attempts[0].body!)).toEqual({ timezone: 'Pacific/Honolulu', version: 1 });
       expect(attempts[0].key).toMatch(/^[0-9a-f-]{36}$/);

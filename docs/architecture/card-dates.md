@@ -755,3 +755,38 @@ activation each. Browser typing and discovery of all four Reminder cases pass;
 the corrected browser scenarios still require execution. These source checks
 do not close PRD-12. Estimated work remaining stays **24%**; full immutable CI,
 all original acceptance and the post-MVP capacity requirements remain open.
+
+## Same-node timezone focus observation (2026-10-15)
+
+Retained [run 38678781079](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38678781079),
+job 116270766872 at `5218d871`, passes 102 browser cases and fails the phone
+timezone-policy focus-ring assertion: expected `solid`, received an empty
+string. The size/SHA-verified diagnostic artifact 11954739292 binds its metadata
+and embedded test source to the unchanged local baseline. Focus succeeds at
+monotonic 1236465.703–1236468.587 ms. The style observation follows at
+1236468.905–1236486.664 ms; a protected profile read begins at 1236476.836 ms,
+and the 1236485.057 ms snapshot shows checking state with the Save action
+removed. The live refresh overlaps the one-shot style read; this is not evidence
+of a missing global MUI outline rule or every possible focus defect.
+
+The style check now observes the current node's connection, active focus,
+`solid` outline and at least two-pixel width together in a read-only poll.
+It never refocuses the control or repeats a command. The original focus check,
+exact two initial/recovery attempts, identical key/body, explicit-null clear,
+Board/Card versions, unchanged dates, live policy/personal-timezone delivery,
+due-state changes, Axe scans and 120-second scenario deadlines remain intact.
+
+The complete unchanged local file passes **2/2 in 119,000.054 ms**, so unchanged
+local reproduction is not claimed. The complete revised desktop/phone file
+passes **2/2 in 115,883.879 ms**, with no skips, retries, flaky results or report
+errors. All 172 browser inputs and three web configuration hashes match;
+owned cleanup restores the original Docker inventory and removes 1,708,035
+temporary bytes. This uses archive-verified `24f56246` images with fresh
+PostgreSQL/149 migrations/restricted roles, declared current Nginx/header mounts
+and optional API verification/mail fixtures. No application rebuild, image
+import/download, original database use or large load occurs.
+
+Browser typing and discovery of all 398 scenarios across 145 intact files pass.
+Full current immutable-image CI and all remaining acceptance still govern
+closure. Estimated PRD-12 work remaining stays **24%**; the issue remains open
+and large-load testing stays deferred until after the operational MVP.
