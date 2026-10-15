@@ -13,3 +13,8 @@ artifacts
 .env.*
 !.env.example
 !.env.release.example
+# Recovery archives and private working directories are host-only material.
+**/*.[cC][mM][sS]
+**/*.[dD][uU][mM][pP]
+**/.strataai-backup.*
+**/.strataai-restore.*
