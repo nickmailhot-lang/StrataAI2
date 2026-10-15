@@ -1,5 +1,52 @@
 # Actual scanner engine runtime verification
 
+## Attachment readiness outages and recovery — 2026-10-15
+
+The new **six-case** readiness acceptance class passes in **12.809 seconds**
+without product changes. Three HTTP cases withdraw readiness for unavailable
+database, unsafe bucket privacy and a private provider permission failure, then
+recover with the same checker, HTTP host and unchanged runtime identity. Exact
+provider-read counts prove database short-circuiting and current privacy checks.
+Repeated `/readyz` failures are 503 with exactly the four safe status/code/message/
+correlation fields; account/provider details remain absent. `/healthz` stays 200
+and makes no provider calls.
+
+A deliberately cancellation-ignoring bucket operation still produces the bounded
+503 before the independent four-second watchdog. Its actual dependency token is
+cancelled by the existing two-second budget. Releasing the late result cannot
+send the next provider request; the same checker later recovers. A separate
+caller-cancellation case propagates cancellation rather than inventing an unready
+result and also recovers after the held operation is released.
+
+The Worker-style checker uses the actual ClamAV adapter and a small Unix socket
+protocol fixture at one owned path. It passes PONG, then refuses the missing
+socket, malformed reply and stalled reply, and accepts a replacement PONG server
+at the same path. The outer two-second budget dominates the scanner's configured
+30 seconds; all five probes retain current bucket checks. This is readiness
+protocol evidence, not an actual engine/signature or durable job execution test.
+
+The HTTP host deliberately uses controlled Demo composition with the actual
+Production dependency checker injected; database readiness and the SDK S3 client
+are controlled. There is no real PostgreSQL/AWS bucket, IAM identity, malware
+engine, upload, verdict publication or image rebuild in this capture. Production
+registration and role/lifecycle behavior still require their own evidence.
+
+The complete solution builds with zero warnings/errors after correcting the new
+fixture's cancellation-token cleanup calls. An initial zero-case run used the
+previous assembly after the first build failed; it is discarded. The final
+runner explicitly requires six executed cases with zero errors/failures/skips/
+unexecuted cases. Captured source/binary hashes match and owned cleanup restores
+original Docker inventory; Unix socket files and the test container are removed.
+Current compiled assemblies execute with network disabled and read-only source/
+test mounts in the retained Linux runtime. This is not current immutable-image
+CI or deployed-provider acceptance. Large-load testing remains deferred until
+after the operational MVP. PRD-14 stays open at **32% estimated work remaining**.
+
+See [the acceptance tests](../../tests/StrataAI.Api.Tests/AttachmentReadinessRecoveryTests.cs)
+and [operator configuration](../release/README.md#optional-private-file-attachments-on-linux).
+
+## Actual engine verification scope
+
 PRD-14's scanning/quarantine boundary needs separate evidence for its protocol,
 engine and publication workflow. The existing enabled-provider browser fixture
 uses an explicit reply simulator; it does not establish actual engine behavior.

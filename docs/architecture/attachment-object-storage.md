@@ -87,6 +87,13 @@ References: [AWS web-identity runtime requirements](https://docs.aws.amazon.com/
 
 ## Provider I/O contract
 
+The [readiness outage and recovery record](attachment-scanner-runtime.md#attachment-readiness-outages-and-recovery--2026-10-15)
+now executes database, bucket privacy/permission and scanner failures through
+the real dependency checker. It verifies same-instance recovery and sanitized
+HTTP readiness without changing production logic. The record distinguishes
+controlled providers and Unix protocol fixtures from managed deployment and
+durable file/job acceptance.
+
 Keys derive only from server-owned Organization/attachment UUIDs. Multipart
 upload uses one 5 MiB buffer, reads at most one byte beyond the server's positive
 limit (maximum 1 GiB), measures actual bytes and SHA-256 and accepts non-seeking

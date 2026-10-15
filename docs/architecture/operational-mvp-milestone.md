@@ -51,6 +51,14 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [attachment readiness recovery acceptance](attachment-scanner-runtime.md#attachment-readiness-outages-and-recovery--2026-10-15)
+passes six controlled HTTP/dependency/Unix-socket cases without changing product
+logic. Sanitized readiness failure, independent liveness, provider deadlines,
+caller cancellation and same-host/checker/socket-path recovery are verified.
+The solution builds cleanly, frozen inputs match and owned cleanup restores
+Docker inventory. Current immutable CI, real providers and durable upload/job
+recovery remain required; PRD-14 stays open at 32% estimated work remaining.
+
 The [attachment workload-identity repair](attachment-object-storage.md#workload-identity-runtime-dependency--2026-10-15)
 adds the SDK STS module missing from the original runtime graph. Real SDK
 credential exchange/signing and refusal tests pass after reproducing the missing

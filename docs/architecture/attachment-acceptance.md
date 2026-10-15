@@ -10,6 +10,18 @@ implementations and scoped executed contracts; they are not full-ticket proof.
 The opening matrix describes current scope; dated evidence below is historical
 and must not be treated as proof that the current head has passed required-ci.
 
+The [six readiness outage/recovery cases](attachment-scanner-runtime.md#attachment-readiness-outages-and-recovery--2026-10-15)
+pass without production changes. Actual HTTP readiness withdraws on database,
+bucket privacy/permission failures and a stalled provider, preserves safe 503/
+correlation and independent liveness, then recovers on the same host/checker.
+Real Unix socket probes refuse missing/malformed/stalled scanner replies and
+recover on the same path; caller cancellation and late work are fenced. The
+database/S3 clients and scanner protocol server remain controlled, with Demo
+HTTP hosting and the actual Production dependency checker. This does not prove
+deployed providers, file/Worker recovery or the full enabled-image pipeline.
+Current immutable CI and complete AC/DoD remain required; estimated work
+remaining stays **32%** and large-load tests remain post-MVP.
+
 The [workload-identity dependency repair](attachment-object-storage.md#workload-identity-runtime-dependency--2026-10-15)
 adds the missing SDK STS runtime module without changing existing resolved package
 versions. Both real-SDK credential cases fail before repair and pass afterward,
