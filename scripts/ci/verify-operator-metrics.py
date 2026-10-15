@@ -52,7 +52,31 @@ def verify(raw, revision, version, *, backlog_available=1):
     names.update({"strataai_worker_scoped_backlog", "strataai_worker_scoped_backlog_available"})
     names.update({"strataai_worker_identity_backlog", "strataai_worker_identity_backlog_available"})
     names.update("strataai_http_server_duration" + suffix for suffix in ["_bucket", "_count", "_sum"])
+    targets = set()
     for line in raw.splitlines():
+        line = line.strip()
+        if line.startswith("target_info"):
+            # Collector 0.161 removes service.name/namespace from this family,
+            # replacing them with job. Other resource attributes remain here.
+            target = re.fullmatch(r'target_info\{([^}]*)\} ([0-9.eE+\-]+)', line)
+            if not target:
+                return False
+            labels = parse_labels(target[1])
+            if labels is None or set(labels) - {"job", "instance", "service_version", "strataai_build_revision"}:
+                return False
+            if labels.get("job") not in {"strataai/strataai-api", "strataai/strataai-worker"} or labels.get("instance", "") != "":
+                return False
+            if labels.get("service_version") != version or labels.get("strataai_build_revision") != revision:
+                return False
+            try:
+                if float(target[2]) != 1:
+                    return False
+            except ValueError:
+                return False
+            if labels["job"] in targets:
+                return False
+            targets.add(labels["job"])
+            continue
         if not line.startswith("strataai_"):
             continue
         match = re.fullmatch(r'(\w+)\{([^}]*)\} ([0-9.eE+\-]+)', line)

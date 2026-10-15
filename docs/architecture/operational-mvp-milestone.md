@@ -4,6 +4,11 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [Collector target-metadata check](operator-metrics.md#collector-target-metadata-validation--2026-10-15)
+closes an evidence-validation gap outside the app metric prefix. Private or
+inconsistent target records now fail the gate; no application data leak is
+claimed. Current-image CI and complete release acceptance remain required.
+
 The [identity-email backlog monitor](operator-metrics.md#identity-email-backlog--2026-10-15)
 adds read-only global mail counts using the existing restricted mail role.
 Current compiled-host failure/recovery and small PostgreSQL/Worker cases pass;

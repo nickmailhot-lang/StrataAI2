@@ -1,5 +1,31 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Collector target metadata validation — 2026-10-15
+
+The verifier previously ignored `target_info` because it is outside the
+`strataai_` metric prefix. A direct probe and **47 failing regression subcases**
+show that private resource fields, wrong builds, malformed records and duplicate
+metadata could accompany an otherwise accepted scrape. This is a validation gap;
+no application data leak or deployed Collector incident is established.
+
+The [pinned Collector implementation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.161.0/exporter/prometheusexporter/collector.go)
+emits target metadata separately from application measurements, representing
+service identity with `job` and retaining the other resource attributes. The
+existing app resource contains only fixed service/namespace/version/revision
+fields. Present target records must therefore identify the API or Worker, match
+the expected version/revision, contain no private/unknown fields or nonempty
+instance, and have value one. Duplicate service records, malformed families and
+whitespace-hidden invalid samples are refused. Omission remains supported;
+Collector plumbing metrics and application observation requirements are preserved.
+
+All **25 verifier tests** and **11 complete driver cases** pass. Driver fixtures
+include API and Worker target metadata through healthy collection, database
+observation failure, recovery and negative/cleanup paths. Workflow lint and diff
+checks pass. No app/runtime code, permissions or backend selection changes.
+The pinned Collector image is absent locally and is not pulled; these checks
+do not claim new live Collector execution. No container, database or load test
+is used. Current immutable-image CI and full ARCH-08 acceptance remain required.
+
 ## Identity-email backlog — 2026-10-15
 
 With identity email and OTLP metrics both enabled, the separate Worker now

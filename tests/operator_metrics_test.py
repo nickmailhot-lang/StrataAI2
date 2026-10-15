@@ -17,6 +17,46 @@ class OperatorEvidenceTests(unittest.TestCase):
             raw = raw.replace(f'service_name="{service}"', f'job="strataai/{service}",service_name="{service}"')
         return raw
 
+    def target_info(self, service='strataai-api'):
+        return f'target_info{{job="strataai/{service}",service_version="{self.version}",strataai_build_revision="{self.revision}"}} 1'
+
+    def test_optional_target_metadata_matches_pinned_resource_identity_in_both_modes(self):
+        raw = self.pinned_jobs(self.fixture()) + '\n' + self.target_info() + '\n' + self.target_info('strataai-worker')
+        self.assertTrue(metrics.verify(raw, self.revision, self.version))
+        available = next(line for line in raw.splitlines() if line.startswith('strataai_worker_scoped_backlog_available{'))
+        self.assertTrue(metrics.verify(raw.replace(available, available[:-1] + '0'), self.revision, self.version, backlog_available=0))
+
+    def test_target_metadata_cannot_hide_private_fields_values_or_wrong_builds(self):
+        for service in ['strataai-api', 'strataai-worker']:
+            line = self.target_info(service)
+            invalid = [line.replace('job=', f'{label},job=') for label in [
+                'recipient_email="private@example.test"', 'tenant_id="opaque"', 'host_name="private-host"',
+                'process_command_line="private-command"', 'token="opaque"', 'telemetry_sdk_language="unexpected"',
+                '"private_field"="opaque"']]
+            invalid.extend([line.replace(f'strataai/{service}', value) for value in ['', 'private@example.test', service, 'strataai/other']])
+            invalid.extend([line.replace(self.revision, 'b' * 40), line.replace(self.version, 'wrong-version'),
+                            line.replace('} 1', '} 0'), line.replace('} 1', '} -1'), line.replace('} 1', '} NaN'),
+                            line.replace('} 1', '} 1e309'), line.replace('job=', 'job="private",job='),
+                            line.replace('job=', '"job"="private",job='),
+                            line.replace('target_info{', 'target_info_private{'), 'target_info invalid'])
+            for extra in invalid:
+                with self.subTest(service=service, extra=extra):
+                    self.assertFalse(metrics.verify(self.fixture() + '\n' + extra, self.revision, self.version))
+
+    def test_target_metadata_requires_one_complete_record_per_reported_service(self):
+        line = self.target_info()
+        for field in [f'job="strataai/strataai-api",', f'service_version="{self.version}",', f',strataai_build_revision="{self.revision}"']:
+            with self.subTest(field=field):
+                self.assertFalse(metrics.verify(self.fixture() + '\n' + line.replace(field, ''), self.revision, self.version))
+        self.assertFalse(metrics.verify(self.fixture() + '\n' + line + '\n' + line, self.revision, self.version))
+
+    def test_target_metadata_accepts_prometheus_layout_but_not_whitespace_hidden_private_samples(self):
+        line = self.target_info()
+        for extra in [line.replace(',', ', '), line.replace('} 1', ',} 1'), line.replace('job=', '"job"='), '  '+line+'\t']:
+            self.assertTrue(metrics.verify(self.fixture() + '\n' + extra, self.revision, self.version))
+        self.assertFalse(metrics.verify(self.fixture() + '\n  ' + line.replace('job=', 'private="hidden",job='), self.revision, self.version))
+        self.assertFalse(metrics.verify(self.fixture() + '\n  strataai_unknown{private="hidden"} 1', self.revision, self.version))
+
     def test_optional_collector_job_matches_its_service_in_healthy_and_unavailable_modes(self):
         raw = self.pinned_jobs(self.fixture())
         self.assertTrue(metrics.verify(raw, self.revision, self.version))
