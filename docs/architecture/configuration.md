@@ -144,6 +144,14 @@ The [retained-image startup gate](../../scripts/ci/test-runtime-startup-refusals
 includes those four cases, bringing its required total to 16; execution for the
 new immutable candidate remains required.
 
+The refusal runner's Docker stand-in exercises all 16 intended failures and
+refuses successful startup, unrelated crashes, timeouts and disclosed policy
+or transport values (six fixture scenarios). CI at `70bb1f68` exposed its stale
+12-case fixture expectation before compiling .NET; the fixture now recognizes
+the new transport cases, and its credential-disclosure probe must fail at the
+first TLS case. The complete updated fixture passes locally. Both runners
+resolve and check their uniquely named temporary directories before cleanup.
+
 The Release solution builds with zero warnings/errors. The 242 CI/shard/startup
 guards, workflow lint and 11 actual Compose-rendering checks pass. A complete
 Windows Domain run reports 1,017 passed and 16 failed; the pre-existing Debug

@@ -3,7 +3,10 @@ set -euo pipefail
 
 # ARCH-09 / ARCH-12: the image refusal runner must not accept successful startup,
 # an unrelated crash or a timed-out startup as proof of the intended refusal.
-sandbox="$(mktemp -d)"
+temp_root="$(cd "${TMPDIR:-/tmp}" && pwd -P)"
+sandbox="$(mktemp -d "$temp_root/strataai-startup-refusal-fixture.XXXXXXXX")"
+sandbox="$(cd "$sandbox" && pwd -P)"
+[[ "$sandbox" == "$temp_root"/strataai-startup-refusal-fixture.* ]] || exit 1
 trap 'rm -rf "$sandbox"' EXIT
 script="$(cd "$(dirname "$0")" && pwd)/test-runtime-startup-refusals.sh"
 mkdir "$sandbox/bin"
@@ -21,6 +24,9 @@ case "$FIXTURE_SCENARIO" in
   disclosed-value) echo 'STRATAAI_RUNTIME_MODE is required invalid-policy-value'; exit 139 ;;
 esac
 case " $* " in
+  *external.invalid*)
+    echo 'PostgreSQL SSL Mode=Disable requires the private local Compose service, a loopback endpoint or a Unix socket.'
+    if [ "$FIXTURE_SCENARIO" = disclosed-transport-value ]; then echo 'invalid-transport-secret'; fi ;;
   *STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL=*) echo 'STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL must be true or false when supplied.' ;;
   *STRATAAI_AUTH_SESSION_HOURS=*) echo 'STRATAAI_AUTH_SESSION_HOURS must be an integer between 1 and 720 when supplied.' ;;
   *STRATAAI_AUTH_MIN_PASSWORD_LENGTH=*) echo 'STRATAAI_AUTH_MIN_PASSWORD_LENGTH must be an integer between 8 and 128 when supplied.' ;;
@@ -32,7 +38,7 @@ exit 139
 STUB
 chmod +x "$sandbox/bin/docker"
 export PATH="$sandbox/bin:$PATH" FIXTURE_LOG="$sandbox/result"
-for scenario in intended-refusals successful-startup unrelated-crash timeout disclosed-value; do
+for scenario in intended-refusals successful-startup unrelated-crash timeout disclosed-value disclosed-transport-value; do
   export FIXTURE_SCENARIO="$scenario"
   : > "$FIXTURE_LOG"
   status=0
@@ -40,10 +46,13 @@ for scenario in intended-refusals successful-startup unrelated-crash timeout dis
   grep -q '^stopped$' "$FIXTURE_LOG"
   if [ "$scenario" = intended-refusals ]; then
     test "$status" = 0
-    test "$(grep -c '^run$' "$FIXTURE_LOG")" = 12
+    test "$(grep -c '^run$' "$FIXTURE_LOG")" = 16
+  elif [ "$scenario" = disclosed-transport-value ]; then
+    test "$status" != 0
+    test "$(grep -c '^run$' "$FIXTURE_LOG")" = 4
   else
     test "$status" != 0
     test "$(grep -c '^run$' "$FIXTURE_LOG")" = 1
   fi
 done
-echo 'Runtime startup refusal runner rejects success, unrelated crashes, timeouts and disclosed input (5 fixture scenarios).'
+echo 'Runtime startup refusal runner rejects success, unrelated crashes, timeouts and disclosed policy/transport input (6 fixture scenarios).'

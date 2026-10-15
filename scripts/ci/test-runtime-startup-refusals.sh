@@ -6,7 +6,10 @@ set -euo pipefail
 # transport and invalid API policy.
 api_image="${1:?Pass the exact retained API image}"
 worker_image="${2:?Pass the exact retained Worker image}"
-scratch="$(mktemp -d)"
+temp_root="$(cd "${TMPDIR:-/tmp}" && pwd -P)"
+scratch="$(mktemp -d "$temp_root/strataai-startup-refusal.XXXXXXXX")"
+scratch="$(cd "$scratch" && pwd -P)"
+[[ "$scratch" == "$temp_root"/strataai-startup-refusal.* ]] || exit 1
 name=''
 sequence=0
 cleanup() {
