@@ -758,6 +758,25 @@ all original acceptance and the post-MVP capacity requirements remain open.
 
 ## Same-node timezone focus observation (2026-10-15)
 
+### Hosted confirmation of the revised observation
+
+[Browser shard 1](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38699631753/job/116386364425)
+now passes all **103** cases at exact revision
+`20483fe88aa6e60416b18d273a72c0631b7f3d4d`, including the desktop timezone-policy
+case in **27.3 seconds** and the phone case in **26.2 seconds**. The retained
+419-byte metadata archive is independently size/SHA verified and binds version
+**0.1.0-1763**, all three image references and run `38699631753` to that revision.
+No image/browser diagnostic archive is downloaded or loaded for this check.
+
+The older `c5b3a530` run's shard 1 fails the pre-repair one-shot phone outline
+assertion again (expected `solid`, received empty). This is the older test body,
+not a failure of the revised same-node observation. The revised file remains
+unchanged through current main. The successful hosted shard corroborates its
+scoped local evidence below; it does not establish the older failure's detailed
+cause without a new trace, a completed full workflow or current-main release
+certification. PRD-12 stays open at **24% estimated work remaining**. Original
+AC/DoD and deferred post-MVP capacity acceptance remain outstanding.
+
 Retained [run 38678781079](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38678781079),
 job 116270766872 at `5218d871`, passes 102 browser cases and fails the phone
 timezone-policy focus-ring assertion: expected `solid`, received an empty
