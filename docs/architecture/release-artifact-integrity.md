@@ -1,8 +1,8 @@
 # Release bundle integrity and tested SBOMs — ARCH-11-FR-075/077/078/080/083
 
 The [latest completed candidate record](operational-mvp-milestone.md#current-status)
-now identifies `bb3cd4fc` / run `38680420583`, all 16 jobs successful and the
-retained 518,727,662-byte runnable bundle. Its small metadata and security
+now identifies `e5570793` / run `38690507857`, all 16 jobs successful and the
+retained 518,744,746-byte runnable bundle. Its small metadata and security
 archives are independently size/SHA verified; the maintained verifier validates
 all six security payload hashes, four SBOM inventories and the three-image
 provenance record. Hosted release logs confirm original-input checks and final

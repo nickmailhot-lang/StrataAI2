@@ -12,19 +12,20 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 The next release milestone is a [deployable, stable operational task-management MVP](docs/architecture/operational-mvp-milestone.md). Core workflow reliability and verified deployment take priority before new governance and AI modules; the complete PRD roadmap remains in force.
 
-**Latest passing CI release candidate:** [`bb3cd4fc`](https://github.com/nickmailhot-lang/StrataAI2/commit/bb3cd4fc19a4edb3df035bc255a21973c772c54e)
-passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680420583).
-[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680420583/artifacts/11968632503)
-and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/bb3cd4fc19a4edb3df035bc255a21973c772c54e/docs/release/README.md). This evidence identifies
+**Latest passing CI release candidate:** [`e5570793`](https://github.com/nickmailhot-lang/StrataAI2/commit/e55707935d1e217fdbf59d4a586e35332ccd774b)
+passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38690507857).
+[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38690507857/artifacts/11976500930)
+and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/e55707935d1e217fdbf59d4a586e35332ccd774b/docs/release/README.md). This evidence identifies
 that exact candidate; later main changes require their own CI. Review
 [remaining deployment acceptance](docs/architecture/operational-mvp-milestone.md#current-status)
 before production promotion. Large-load tests remain deferred until after MVP.
 This candidate includes the PostgreSQL TLS contract, Production HTTPS-origin
 checks, source-free Demo with known sign-in, and runtime database-password
-rotation. Its pipeline also passes the isolated encrypted PostgreSQL restore
-rehearsal and populated schema-149 upgrade checks. It predates later recovery
-operator tools, the optional HTTPS listener,
-build-bound operator verification and bounded database readiness. Use the
+rotation. It includes encrypted backup/restore operator commands, their isolated
+rehearsal, populated schema-149 upgrades and the optional HTTPS listener with
+Secure sign-in and persisted task checks. It predates later build-bound operator
+and certificate checks, bounded readiness, workload-identity dependency repair
+and fresh-cluster application recovery. Use the
 instructions included in its own bundle;
 see [the evidence and remaining gaps](docs/architecture/operational-mvp-milestone.md#current-status)
 before applying newer documentation to that artifact.

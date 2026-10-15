@@ -176,12 +176,49 @@ the guard; the three Organization-loop cases still pass. Current complete
 immutable CI and deployed-provider acceptance remain outstanding.
 
 The latest completed CI release candidate is
+`e55707935d1e217fdbf59d4a586e35332ccd774b`:
+[run 38690507857](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38690507857)
+is completed/success with all **16 jobs** successful. A fresh successful-main
+query confirms it is the newest fully passing candidate. Its
+[tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38690507857/artifacts/11976500930)
+is **518,744,746 bytes**; GitHub reports SHA-256
+`b7fca26cb74cd864e42ffd190d5fc906d7d13aeb20e68eb10d5e3761da8d9c7e`.
+
+The **421-byte** metadata and **95,674-byte** security ZIPs are independently
+size/SHA verified, binding version **0.1.0-1758**, this exact SHA/run and three
+image references. The maintained verifier checks six security payload hashes,
+four nonempty SBOM inventories and the three-image provenance record. Full image
+and bundle ZIPs have not been downloaded/loaded locally for this candidate;
+this verifies records, not independent tarball correspondence.
+
+Release logs confirm original-input verification, source-free migrations,
+restricted Production startup, exact image identity, health/proxy, graceful
+restart and runtime-password rotation. Source-free Demo passes without database/
+volumes, including SPA and seeded sign-in. The assembled HTTPS gate passes
+TLS-only publication, missing/mismatched-key refusal, certificate trust/name
+checks, HSTS, Secure sign-in, persisted task graph and web restart. Final
+unchanged-payload verification succeeds before upload. All **27** capacity
+stages are skipped across seven integration jobs (**189** occurrences).
+
+The PostgreSQL job passes populated schema-149 upgrades, all 149 individual
+API/Worker ledger-readiness refusal/recovery checks, the operator commands'
+older eleven-case same-cluster encrypted recovery and three TLS cases. This
+candidate predates later runtime/certificate probes, bounded readiness,
+browser/diagnostic repairs, the workload-identity dependency fix and fresh-cluster
+application recovery. Use
+[its pinned operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/e55707935d1e217fdbf59d4a586e35332ccd774b/docs/release/README.md).
+Current-main CI, deployed providers, scheduled/coordinated recovery and full MVP
+acceptance remain required. The milestone and incomplete tickets stay open;
+large-load testing remains deferred.
+
+### Previous completed CI candidate — bb3cd4fc
+
+The previous completed CI release candidate is
 `bb3cd4fc19a4edb3df035bc255a21973c772c54e`:
 [run 38680420583](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680420583)
 is completed/success with all **16 jobs** successful, including build-once,
 security, all seven integration executions, required-CI and release assembly.
-The latest-successful-main workflow query independently identifies this run as
-the newest passing CI candidate. Its
+The earlier successful-main audit identified this as the then-current candidate. Its
 [tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680420583/artifacts/11968632503)
 is **518,727,662 bytes**; GitHub reports SHA-256
 `289d8ae2767354f821ac81e73d9f2feef95f88a35860075988eb52e504b5bead`.
