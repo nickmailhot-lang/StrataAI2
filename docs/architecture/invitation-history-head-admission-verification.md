@@ -48,3 +48,47 @@ Mounted compiled-host evidence does not certify retained release images,
 managed mail or a complete release. Exact-current CI and the remaining original
 acceptance criteria remain required. PRD-05 and PRD-60 stay open, with estimated
 work remaining **14%** and **18%** respectively, unchanged planning estimates.
+
+## Account-outage fixture window (2026-10-15)
+
+[Run 38680871875](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680871875),
+job `116279084573`, passes 94 cases and fails both phone account-uncertainty
+cases. Artifact `11959790247` is independently checked against its 3,518,410-byte
+size, SHA-256 `ebbd963042446e0c68e5e69f5dab1c4eeec7db44c538f2fad3079d14ce4a9bd2`
+and embedded candidate metadata. The failing file is unchanged from candidate
+`b45e83d5609c576077e6a7d5bfe0cd7ef05c0a87` to the repair's parent.
+
+The Organization trace contains a failed account read followed by a successful
+account read and an actual revocation. The Board trace contains a failed
+account read, no revocation, and a history-read error. These do not establish
+a product authorization bug: the fixture automatically restored access after
+one failed request, which could be a competing background read. The complete
+unchanged local file passes **4/4 in 118,166.311 ms**; an unchanged reproduction
+is not claimed.
+
+The browser fixture now keeps the account unavailable throughout each intended
+outage and explicitly restores it before Refresh invitations or Check revocation.
+This matches the existing Organization/Board component scenarios. Original
+pre-submission refusal and post-submission uncertainty messages, private-data
+withdrawal, zero then exactly one DELETE, canonical unchanged/committed records,
+one document navigation, accessibility, viewport checks and 90-second deadlines
+remain intact. Product behavior and mutation activation are unchanged.
+
+The complete revised desktop/phone file passes **4/4 in 118,759.569 ms**, one
+attempt per case, zero skipped/flaky/unexpected outcomes or report errors.
+All **51 invitation-history component checks**, browser types and **244 CI
+coverage guards** pass. The browser capture uses archive-verified retained
+`24f5624` images, fresh PostgreSQL/pgvector with 149 migrations and restricted
+roles, plus current read-only Nginx configuration. API verification is optional
+and mail disabled; the Worker retains its verified-account policy. All 172
+browser input hashes and three web configuration hashes match. Original images
+and database are preserved, full Docker inventory restored and **1,708,388
+temporary bytes** removed. No images are built, downloaded or imported. Both
+small diagnostic ZIPs for this follow-up and the label-reference investigation
+are removed after compact evidence retention, reclaiming **8,567,099 bytes**.
+
+These retained-image functional checks do not certify current-main images,
+managed providers or full release acceptance. PRD-03, PRD-05 and PRD-60 remain
+open at **8%**, **14%** and **18% estimated work remaining**, respectively,
+unchanged planning estimates. Large-load testing remains disabled until after
+the operational MVP milestone.

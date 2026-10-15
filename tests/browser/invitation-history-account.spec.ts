@@ -29,7 +29,9 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
     let failProfile = false, writes = 0, documents = 0;
     await page.route(url => url.pathname === '/me', async route => {
       if (!failProfile) { await route.continue(); return; }
-      failProfile = false; await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+      // Background account reads must not consume the outage before the action.
+      // Recovery below explicitly restores the account before its protected read.
+      await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
     });
     await page.route(url => url.pathname === `${root}/${id}`, async route => {
       if (route.request().method() !== 'DELETE') { await route.continue(); return; }
@@ -49,6 +51,7 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
     await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByRole('heading', { name: email })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Check revocation' })).toHaveCount(0); expect(writes).toBe(0);
     const unchanged = await context.request.get(root); expect(unchanged.status()).toBe(200); expect(await unchanged.json()).toEqual(before);
+    failProfile = false;
     await page.getByRole('button', { name: 'Refresh invitations' }).click(); await expect(review).toBeVisible(); expect(writes).toBe(0);
     await review.click(); await page.getByRole('button', { name: 'Confirm revocation' }).click();
     await expect(page.getByText('Revocation could not be confirmed. Check the current invitation state before another action.')).toBeVisible();
@@ -57,6 +60,7 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
     if (board) await expect(page.getByRole('heading', { name: 'Private account history Board' })).toHaveCount(0);
     const committed = await context.request.get(root); expect(committed.status()).toBe(200); const after = await committed.json();
     expect(after.items.find((row: { id: string; revokedAt: string | null }) => row.id === id).revokedAt).not.toBeNull();
+    failProfile = false;
     await page.getByRole('button', { name: 'Check revocation' }).click();
     await expect(page.getByText('Invitation revocation confirmed.')).toBeVisible(); await expect(page.getByText('Revoked', { exact: true })).toBeVisible();
     expect(writes).toBe(1); expect(documents).toBe(1);
