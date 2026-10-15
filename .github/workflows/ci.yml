@@ -139,6 +139,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'recovery_dump_test.py'
           python3 -m unittest discover -s tests -p 'postgres_backup_test.py'
           python3 -m unittest discover -s tests -p 'postgres_restore_test.py'
+          python3 -m unittest discover -s tests -p 'key_recovery_archive_test.py'
           python3 -m unittest discover -s tests -p 'release_auth_policy_test.py'
           python3 -m unittest discover -s tests -p 'image_labels_test.py'
 

@@ -80,6 +80,16 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [independent encrypted key-volume recovery rehearsal](database-recovery.md#independent-encrypted-key-volume-recovery--2026-10-15)
+now replaces the shared key volume with authenticated encrypted export and a
+validated import into a distinct empty volume before API startup. Original
+protected cursors, saved/fresh sessions, actual Worker/WSS edits and unchanged
+source checks pass. Five archive test methods and 355 selected contract/CI
+checks pass. The complete final local rehearsal takes 233.965 seconds; all 776
+frozen inputs match and owned cleanup restores Docker inventory. This is local
+retained-image evidence, not deployed off-host key/object custody or current
+immutable CI. ARCH-08/MVP remain open; large-load tests remain post-MVP.
+
 The [source-issued activity continuation check](database-recovery.md#source-issued-protected-activity-cursor-after-restoration--2026-10-15)
 now carries an encrypted cursor across the actual HTTPS fresh-cluster restore.
 Saved and fresh sessions return the exact original continuation; Card rebinding

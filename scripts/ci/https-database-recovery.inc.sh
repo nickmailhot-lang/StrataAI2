@@ -39,9 +39,10 @@ check_https_database_recovery() {
   local source_scope=${STRATAAI_WORKER_ORGANIZATION_IDS-}
   local source_database target_database source_identity target_identity key_volume source_fingerprint after_fingerprint
   local recovery_binding recovery_port archive_digest host container
-  local activity_path
+  local activity_path source_api target_api target_key_volume key_digest actual_key_digest key_fingerprint recovered_key_fingerprint
   source_database=$("${compose[@]}" ps -q postgres)
-  key_volume=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/lib/strataai/activity-keys"}}{{.Name}}{{end}}{{end}}' "$("${compose[@]}" ps -q api)")
+  source_api=$("${compose[@]}" ps -q api)
+  key_volume=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/lib/strataai/activity-keys"}}{{.Name}}{{end}}{{end}}' "$source_api")
   test -n "$key_volume"
   # One extra history page, not a capacity/performance fixture. Synthetic rows
   # exercise the real protected continuation without changing the task version.
@@ -68,11 +69,26 @@ SQL
   STRATAAI_BACKUP_DB_USER="$POSTGRES_USER" bash backup-postgres.sh "$source_database" "$POSTGRES_DB" \
     "$scratch/recovery.crt" "$scratch/recovery.cms" > "$scratch/recovery-backup.log" 2>&1
   archive_digest=$(sha256sum < "$scratch/recovery.cms"); archive_digest=${archive_digest%% *}
-  # Keep the source's owned durable key ring. This models database loss with the
-  # key-ring dependency retained, not recovery of an off-host key backup.
-  jq -n --arg name "$key_volume" '{volumes:{"strataai-activity-keys":{external:true,name:$name}}}' > "$scratch/recovery-overlay.json"
+  # Export only the stopped fixture's keys. Plaintext is never a release asset;
+  # authenticate a private encrypted snapshot before validating/importing it.
+  docker cp "$source_api:/var/lib/strataai/activity-keys/." - 2> "$scratch/key-export.log" \
+    | openssl cms -encrypt -binary -stream -aes-256-gcm -outform DER \
+        -recip "$(host_path "$scratch/recovery.crt")" -out "$(host_path "$scratch/keys.cms")" 2> "$scratch/key-encrypt.log"
+  key_digest=$(sha256sum < "$scratch/keys.cms"); key_digest=${key_digest%% *}
+  cp "$scratch/keys.cms" "$scratch/key-snapshot.cms"
+  actual_key_digest=$(sha256sum < "$scratch/key-snapshot.cms"); actual_key_digest=${actual_key_digest%% *}
+  test "$actual_key_digest" = "$key_digest"
+  if openssl cms -decrypt -binary -inform DER -in "$(host_path "$scratch/key-snapshot.cms")" \
+      -recip "$(host_path "$scratch/recovery.crt")" -inkey "$(host_path "$scratch/wrong.key")" \
+      -out "$(host_path "$scratch/refused-keys.tar")" > "$scratch/key-refusal.log" 2>&1; then return 1; fi
+  rm -f "$scratch/refused-keys.tar"
+  openssl cms -decrypt -binary -inform DER -in "$(host_path "$scratch/key-snapshot.cms")" \
+    -recip "$(host_path "$scratch/recovery.crt")" -inkey "$(host_path "$scratch/recovery.key")" \
+    -out "$(host_path "$scratch/restored-keys.tar")" > "$scratch/key-decrypt.log" 2>&1
+  key_fingerprint=$(python3 "$(host_path "$verification_dir/verify-key-recovery-archive.py")" \
+    "$(host_path "$scratch/restored-keys.tar")" "$(host_path "$scratch/canonical-keys.tar")")
   recovery_compose=(docker compose --project-name "$project-recovery" --env-file "$scratch/fixture.env" \
-    -f compose.release.yml -f compose.https.yml -f "$scratch/recovery-overlay.json")
+    -f compose.release.yml -f compose.https.yml)
   export STRATAAI_HTTPS_PORT=0
   STRATAAI_API_DB_PASSWORD=$(openssl rand -hex 24); STRATAAI_WORKER_DB_PASSWORD=$(openssl rand -hex 24)
   export STRATAAI_API_DB_PASSWORD STRATAAI_WORKER_DB_PASSWORD
@@ -95,6 +111,20 @@ SQL
     bash restore-postgres.sh "$target_database" "$POSTGRES_DB" "$scratch/recovery.crt" "$scratch/recovery.key" \
       "$scratch/recovery.cms" "$archive_digest" > "$scratch/recovery-restore.log" 2>&1
   COMPOSE_PROJECT_NAME="$project-recovery" COMPOSE_FILE=compose.release.yml bash provision-runtime-roles.sh > "$scratch/recovery-provision.log" 2>&1
+  "${recovery_compose[@]}" create --no-recreate --no-build --pull never api >/dev/null
+  test "$("${recovery_compose[@]}" ps -q postgres)" = "$target_database"
+  target_api=$("${recovery_compose[@]}" ps --all -q api)
+  test "$(docker inspect --format '{{.State.Status}}' "$target_api")" = created
+  target_key_volume=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/lib/strataai/activity-keys"}}{{.Name}}{{end}}{{end}}' "$target_api")
+  test -n "$target_key_volume" && test "$target_key_volume" != "$key_volume"
+  docker cp "$target_api:/var/lib/strataai/activity-keys/." - > "$scratch/empty-keys.tar" 2> "$scratch/key-target.log"
+  python3 "$(host_path "$verification_dir/verify-key-recovery-archive.py")" --empty "$(host_path "$scratch/empty-keys.tar")" >/dev/null
+  docker cp - "$target_api:/var/lib/strataai/activity-keys/" < "$scratch/canonical-keys.tar" > "$scratch/key-import.log" 2>&1
+  docker cp "$target_api:/var/lib/strataai/activity-keys/." - > "$scratch/target-keys.tar" 2> "$scratch/key-target.log"
+  recovered_key_fingerprint=$(python3 "$(host_path "$verification_dir/verify-key-recovery-archive.py")" \
+    "$(host_path "$scratch/target-keys.tar")" "$(host_path "$scratch/target-canonical-keys.tar")")
+  test "$recovered_key_fingerprint" = "$key_fingerprint"
+  rm -f "$scratch/restored-keys.tar" "$scratch/canonical-keys.tar" "$scratch/empty-keys.tar" "$scratch/target-keys.tar" "$scratch/target-canonical-keys.tar"
   "${recovery_compose[@]}" up -d --no-build --pull never --wait --wait-timeout 180 >/dev/null
   recovery_binding=$("${recovery_compose[@]}" port web 443); recovery_port=${recovery_binding##*:}
   [[ "$recovery_port" =~ ^[0-9]+$ ]]
@@ -102,7 +132,7 @@ SQL
   export STRATAAI_HTTPS_PORT="$recovery_port" STRATAAI_PUBLIC_ORIGIN="$origin" STRATAAI_REALTIME_PUBLIC_ORIGIN="$origin"
   "${recovery_compose[@]}" up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 120 api worker web >/dev/null
   test "$("${recovery_compose[@]}" port web 443)" = "$recovery_binding"
-  test "$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/lib/strataai/activity-keys"}}{{.Name}}{{end}}{{end}}' "$("${recovery_compose[@]}" ps -q api)")" = "$key_volume"
+  test "$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/lib/strataai/activity-keys"}}{{.Name}}{{end}}{{end}}' "$("${recovery_compose[@]}" ps -q api)")" = "$target_key_volume"
   for host in api worker web; do
     container=$("${recovery_compose[@]}" ps -q "$host")
     test "$(docker inspect --format '{{.Image}}' "$container")" = "${image_ids[$host]}"
@@ -130,7 +160,7 @@ SQL
   after_fingerprint=$(recovery_source_fingerprint "$source_database")
   test "$after_fingerprint" = "$source_fingerprint"
   "${recovery_compose[@]}" down --volumes --remove-orphans >/dev/null
-  # The external key ring remains owned by the source project until final cleanup.
+  # Target owns its recovered keys; the source volume is independent and intact.
   origin=$source_origin
   export STRATAAI_HTTPS_PORT="$source_port" STRATAAI_PUBLIC_ORIGIN="$origin" STRATAAI_REALTIME_PUBLIC_ORIGIN="$origin"
   export STRATAAI_API_DB_PASSWORD="$source_api_password" STRATAAI_WORKER_DB_PASSWORD="$source_worker_password"
@@ -138,5 +168,5 @@ SQL
   cp "$scratch/source-cookies" "$scratch/cookies"
   "${compose[@]}" up -d --no-deps --no-recreate --no-build --pull never --wait --wait-timeout 120 api worker >/dev/null
   check_saved_task
-  echo 'HTTPS database recovery passed: distinct restored cluster, retained durable key ring, saved session and fresh Secure sign-in, exact task graph, target Worker/WSS edit and logout, unchanged source and original images.'
+  echo 'HTTPS database recovery passed: distinct restored cluster and independently recovered encrypted key ring, saved session and fresh Secure sign-in, exact task graph, target Worker/WSS edit and logout, unchanged source and original images.'
 }

@@ -201,6 +201,48 @@ The backup/restore commands, maintained rehearsal and all production migrations
 remain unchanged through `e5570793`; this is scoped hosted implementation
 evidence, not a complete passing release or scheduled production recovery.
 
+## Independent encrypted key-volume recovery — 2026-10-15
+
+The [HTTPS rehearsal](../../scripts/ci/https-database-recovery.inc.sh) now
+restores the activity key ring into a different volume instead of sharing the
+source volume. With source API/Worker stopped, its key archive streams directly
+into CMS AES-256-GCM. A private snapshot must match the recorded ciphertext
+digest; the wrong private key must fail. Complete authenticated decryption
+precedes archive validation and any target import.
+
+The [bounded archive validator](../../scripts/ci/verify-key-recovery-archive.py)
+never extracts input paths. It accepts only this fixture's flat UTF-8 key XML,
+checks filename/key identity and version, refuses links, traversal, duplicates,
+DTD/entities, malformed encodings and oversized input, and repacks canonical
+root-owned `0600` files. This small fixture allows at most 16 keys and a 2 MiB
+archive; it is not a general operator backup tool or a production policy for
+revocation records, encrypted-key providers or key-ring retention.
+
+The target API container remains unstarted while its independent volume is
+checked empty, receives the canonical archive and is exported for a complete
+filename/content fingerprint comparison. Private plaintext archives are removed
+before startup. The existing source-issued activity cursor must then return the
+exact continuation under both saved and fresh Secure sessions, while Card
+rebinding remains refused. Target cleanup removes its own recovered key volume;
+the source resumes with its separate original volume and unchanged database.
+
+All **five archive subprocess test methods** pass, including two encoding
+regressions that failed before hardening. All **355** selected startup, realtime,
+cursor and CI-coverage checks pass; archive refusals are mandatory before image
+builds. The complete final local rehearsal passes in **233.965 seconds** with
+all **776** frozen inputs matching, Docker inventory restored and **805,061**
+owned temporary bytes removed. It uses retained archive-verified `24f56246`
+application images, current edge settings and maintained scripts, without
+building/downloading/importing images or using the original database.
+
+The initial invocation stops at an unsupported Compose creation option and
+cleans both projects; the corrected command preserves the existing target
+database container. Earlier retained-volume captures below keep their historical
+scope. This new local encrypted-media round trip does not establish off-host
+custody, production key/object recovery, provider compatibility, scheduled
+drills/RPO/RTO or current immutable-release CI. ARCH-08/MVP remain open, and
+large-load testing remains deferred.
+
 ## Source-issued protected activity cursor after restoration — 2026-10-15
 
 The [HTTPS recovery contract](../../scripts/ci/https-database-recovery.inc.sh)

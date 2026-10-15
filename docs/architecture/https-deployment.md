@@ -191,9 +191,11 @@ certificate-provider operation require separate evidence.
 The [protected activity continuation recovery check](database-recovery.md#source-issued-protected-activity-cursor-after-restoration--2026-10-15)
 also requires a source-issued encrypted cursor to work on the restored HTTPS
 target under saved and fresh sessions, with exact data and Card rebinding refusal.
-The complete small local rehearsal passes using retained images and current
-edge/recovery scripts. This verifies use of the retained key ring; separately
-recovering off-host keys and certifying current immutable images remain required.
+The [independent key-volume rehearsal](database-recovery.md#independent-encrypted-key-volume-recovery--2026-10-15)
+also passes after authenticated encrypted export and validated import into a
+distinct empty key volume before target startup. It uses retained images and
+current edge/recovery scripts. Deployed off-host key custody, object recovery
+and current immutable-image certification remain required.
 
 The actual hostname, trusted public certificate, certificate renewal/expiry
 monitoring, DNS/firewall routing, external mail/storage/scanner settings,

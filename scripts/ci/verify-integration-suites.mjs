@@ -249,6 +249,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'image_labels_test.py'"));
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'postgres_backup_test.py'"), 'Operator backup refusal paths must run before image builds');
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'postgres_restore_test.py'"), 'Operator restore refusal paths must run before image builds');
+  assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'key_recovery_archive_test.py'"), 'Key recovery archive refusals must run before image builds');
   assert.match(archive.run, /cp build-inputs\/build-metadata.json image-artifacts\/build-metadata.json/);
   assert.match(archive.run, /cp build-inputs\/image-provenance.json image-artifacts\/image-provenance.json/);
   assert.match(archive.run, /sha256sum .*build-metadata.json image-provenance.json > SHA256SUMS/);

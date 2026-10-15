@@ -35,6 +35,7 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['key recovery archive refusals omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy');entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'key_recovery_archive_test.py'",''); }],
   ['protected recovery cursor checks omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage');entry.run=entry.run.replace('node --test tests/https-recovery-cursor.test.mjs',''); }],
   ['certificate lifetime command omitted from bundle', value => { const step=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle');step.run=step.run.replace('cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh',''); }],
   ['certificate lifetime tests omitted', value => { const step=value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage');step.run=step.run.replace('node --test tests/https-certificate.test.mjs',''); }],
