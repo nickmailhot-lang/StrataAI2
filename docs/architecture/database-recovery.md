@@ -55,7 +55,7 @@ replacement, conditional deferral, ignored failure and duplicate invocation.
 
 ## Executed local evidence
 
-The complete maintained contract passes against a fresh, network-disabled
+The initial CI-only contract at `bb3cd4fc` passes against a fresh, network-disabled
 PostgreSQL 17/pgvector container with all 149 migrations and the two-Card
 fixture. The final invocation takes 54.434 seconds, all 155 captured inputs
 match, the full Docker inventory is restored and 723,656 bytes of owned
@@ -74,9 +74,36 @@ explicit status propagation fixes it. All nine recovery comparison tests and
 documentation links. Exact-commit hosted CI for this new gate remains required.
 These results do not establish deployed backup operation or managed recovery.
 
+The subsequent operator-command follow-up uses the actual
+`scripts/backup-postgres.sh` in the complete maintained rehearsal. It passes in
+48.043 seconds with all 156 captured inputs matching, full Docker inventory
+restored and 726,137 bytes of owned temporary files removed. All 149 migrations,
+two-Card fixture, five corruption/refusal probes and restored security checks
+remain. The existing local database is unused; no application image is built,
+imported or downloaded.
+
+All eight operator-command tests pass, covering exact encrypted-stream recovery,
+literal Unicode/space-containing names, invalid identity/certificate/connection
+URI refusals, a recipient certificate replaced during encryption, failed or
+partial dumps/encryption, existing output and file/directory publication races.
+The command encrypts with a validated private-directory certificate snapshot.
+All 33 release-artifact tests and 228 CI coverage guards pass, including omission
+of the operator command or its pre-build refusal tests. Shell/workflow lint and
+18 local documentation links pass. The command is required in new release
+payloads; older bundles do not gain it. New exact-commit hosted CI remains
+required, and this evidence does not establish a deployed backup schedule.
+
 ## Deployment recovery remains an operator requirement
 
-This CI contract is not a deployed backup scheduler or production backup tool.
+The [Docker operator backup command](../release/README.md#encrypted-docker-postgresql-backups)
+is included in the release payload and exercised by this CI contract. It streams
+the full custom dump directly into CMS AES-256-GCM, checks the recipient
+certificate before database access, never replaces an existing archive and
+cleans owned temporary files on failure. It requires the deployment's explicit
+database login and operator-selected running container/database. Its local
+authentication and Docker scope do not implement managed database backups.
+
+Neither this command nor the CI contract is a deployed backup scheduler.
 Before routing production traffic, configure and record:
 
 - An encrypted backup destination, access restrictions, retention and separately

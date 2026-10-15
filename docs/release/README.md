@@ -252,6 +252,50 @@ image rebuild or database-volume deletion is part of this procedure. This
 does not rotate the PostgreSQL administrator password, provider credentials
 or application signing/encryption keys.
 
+## Encrypted Docker PostgreSQL backups
+
+The bundle includes `backup-postgres.sh` for an already-running Docker
+PostgreSQL service. This optional command needs OpenSSL with CMS AES-GCM support
+and GNU coreutils (`ln -T`). Use a Bash/GNU environment such as Linux or Windows
+Git Bash. No Node.js or .NET SDK is required.
+
+Use your approved recipient certificate and keep its recovery private key in
+separate protected custody. Independently verify the certificate fingerprint;
+the command checks parsing/expiry, not your trust decision. Choose an existing
+protected output directory outside the release bundle. Replace the container,
+database and database-user values with this deployment's actual values:
+
+```bash
+postgres_container=$(docker compose --env-file .env -f compose.release.yml ps -q postgres)
+export STRATAAI_BACKUP_DB_USER=strataai
+backup_archive="/secure/backups/strataai-$(date -u +%Y%m%dT%H%M%SZ).cms"
+bash backup-postgres.sh "$postgres_container" strataai /secure/backup-recipient.crt "$backup_archive"
+sha256sum "$backup_archive"
+```
+
+The database login must be able to dump the entire database, including forced
+RLS tables, using its configured local container authentication. The command
+does not start a service, migrate schema, supply a password or fall back to a
+different database. It accepts explicit database/user names, not connection
+URIs. Failed noninteractive authentication or a blocked dump fails the backup.
+
+The custom-format dump streams directly into authenticated encryption. No
+plaintext dump is written. A failed dump/encryption leaves no published archive.
+Publication is atomic and refuses an existing file/directory, including one
+created while the dump runs. Temporary encrypted output and private diagnostics
+are removed. Record the successful archive's protected location, SHA-256,
+creation time, recipient identity and restore-test result; copy it to the
+approved off-host encrypted destination under your backup policy.
+
+Schedule this command and restore drills in the deployment's operating system
+or managed backup system. This command does not configure a scheduler, storage
+retention or freshness monitoring. A database dump omits global roles, object
+storage and durable key rings. Follow the
+[recovery requirements and authenticated restore sequence](../architecture/database-recovery.md)
+and [promotion/rollback procedure](promotion-and-rollback.md) before production
+recovery. The full CI rehearsal exercises this exact backup command against its
+small disposable database; it does not certify production RPO/RTO or providers.
+
 ## Stop
 
 ```bash

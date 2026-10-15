@@ -48,9 +48,8 @@ docker exec "$container" psql -X -U "$admin" -d "$source_db" -v ON_ERROR_STOP=1 
 # No plaintext dump is written during backup. Preserve ACLs and schema objects;
 # the recovery target is this same disposable cluster, whose roles still exist.
 stage=encrypted-backup
-docker exec "$container" pg_dump -U "$admin" -d "$source_db" --format custom --lock-wait-timeout=30s \
-  2> "$scratch/dump.log" | openssl cms -encrypt -binary -stream -aes-256-gcm -outform DER \
-  -recip "$(host_path "$scratch/recipient.crt")" -out "$(host_path "$scratch/backup.cms")" 2> "$scratch/encrypt.log"
+STRATAAI_BACKUP_DB_USER="$admin" bash scripts/backup-postgres.sh "$container" "$source_db" \
+  "$scratch/recipient.crt" "$scratch/backup.cms" > "$scratch/backup.log" 2>&1
 test -s "$scratch/backup.cms"
 python3 - "$(host_path "$scratch/backup.cms")" "$(host_path "$scratch/tampered.cms")" <<'PY'
 import pathlib, sys
