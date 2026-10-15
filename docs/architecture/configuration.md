@@ -53,6 +53,12 @@ current compiled hosts in cached runtime images; exact current CI remains requir
 
 ## Runtime and provider configuration
 
+[API and Worker console logs](structured-logging.md) use one JSON record per
+line with embedded service/build identity and bounded support identifiers.
+Update plain-text log consumers when adopting this format; arbitrary scope data
+and exception details are excluded. Logging configuration does not override
+the embedded identifiers.
+
 Optional [API and Worker metrics](operator-metrics.md) use the explicitly
 configured `STRATAAI_METRICS_OTLP_ENDPOINT` and secret
 `STRATAAI_METRICS_OTLP_HEADERS`. Release Compose forwards both to both services;

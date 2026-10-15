@@ -247,6 +247,12 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(keyboardAdmission?.if, undefined);
   assert.equal(keyboardAdmission?.['continue-on-error'] ?? false, false);
   assert.ok(keyboardAdmission?.run.includes('node --experimental-strip-types --test tests/browser/keyboardAdmission.test.mjs'), 'Request admission retirement checks must run before image builds');
+  const consoleUnit = jobs['web-quality'].steps.find(step => step.name === 'Verify operator evidence rejects missing and private metric fields');
+  assert.equal(consoleUnit?.if, undefined);
+  assert.equal(consoleUnit?.['continue-on-error'] ?? false, false);
+  assert.ok(consoleUnit?.run.includes("python3 -m unittest discover -s tests -p 'console_log_evidence_test.py'"), 'Console record refusal tests must run before image builds');
+  const consoleRuntime = jobs['container-integration'].steps.find(step => step.name === 'Verify structured API and Worker console records');
+  assert.ok(consoleRuntime?.run.includes('python3 scripts/ci/verify-console-logs.py'), 'Retained images must expose the structured console contract');
   const sourceProvenance = jobs['web-quality'].steps.find(step => step.name === 'Verify source test report completeness and privacy');
   assert.equal(sourceProvenance.if, undefined);
   assert.equal(sourceProvenance['continue-on-error'] ?? false, false);

@@ -83,7 +83,7 @@ Open [docs/README.md](docs/README.md), choose **Browse by subject**, and select 
 | Understand or change a feature | [Subject index](docs/README.md#browse-by-subject) → behavior guide → related permissions, storage, and recovery contracts → acceptance record |
 | Implement the next ticket | [Dependency audit](docs/ticket-dependencies.md) → [linked ticket map](docs/ticket-dependency-map.md) → relevant feature contracts → [API host testing](docs/architecture/api-host-testing.md) → [local checks](#local-source-checks) |
 | Assess readiness | Feature acceptance record → evidence for its recorded revision → [CI runs](https://github.com/nickmailhot-lang/StrataAI2/actions/workflows/ci.yml) → [current GitHub requirements](https://github.com/nickmailhot-lang/StrataAI2/issues) |
-| Deploy or operate | [Release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [database roles](docs/architecture/runtime-database-roles.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [operator metrics](docs/architecture/operator-metrics.md) |
+| Deploy or operate | [Release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [database roles](docs/architecture/runtime-database-roles.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [console logs](docs/architecture/structured-logging.md) → [operator metrics](docs/architecture/operator-metrics.md) |
 
 | Documentation topic | Browse the complete section |
 | --- | --- |
@@ -118,7 +118,7 @@ Useful routes through the docs include:
 - **Safe writes and recovery:** [command transactions](docs/architecture/work-command-transactions.md) → [command scopes](docs/architecture/work-command-scopes.md) → [command retries](docs/architecture/work-command-retries.md) → [current actor sessions](docs/architecture/command-actor-sessions.md).
 - **Files and backgrounds:** [object storage](docs/architecture/attachment-object-storage.md) → [attachment acceptance](docs/architecture/attachment-acceptance.md) → [Board background images](docs/board-background-images.md) → [cover lifecycle](docs/architecture/attachment-covers-lifecycle.md).
 - **Search and filters:** [Board filtering and private search interaction sources](docs/board-filtering.md) → [Organization access integrity](docs/architecture/organization-access-integrity.md) → [work synchronization](docs/architecture/work-synchronization.md). The filtering guide covers global search, Board criteria, private interaction acknowledgments, and remaining acceptance work.
-- **Operating a release:** [release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [operator metrics](docs/architecture/operator-metrics.md).
+- **Operating a release:** [release guide](docs/release/README.md) → [configuration](docs/architecture/configuration.md) → [schema upgrades](docs/architecture/schema-upgrades.md) → [console logs](docs/architecture/structured-logging.md) → [operator metrics](docs/architecture/operator-metrics.md).
 - **Checking build evidence:** [build identity](docs/architecture/build-identity.md) → [CI evidence retention](docs/architecture/ci-run-retention.md) → [browser recovery checks](docs/architecture/browser-recovery-ci.md) → [Kanban release evidence](docs/kanban-release-evidence.md). Match the application revision to the retained results before relying on a release claim.
 
 ### Find a workflow quickly

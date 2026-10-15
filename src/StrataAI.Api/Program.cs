@@ -13,6 +13,7 @@ using StrataAI.Infrastructure.Runtime;
 using StrataAI.Infrastructure.WorkManagement;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.AddStrataAiConsoleLogging(typeof(Program).Assembly);
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = ApiErrorContract.Customize);
 builder.Services.AddSingleton<IProblemDetailsWriter, ApiErrorFallbackWriter>();
 builder.Services.AddMetrics();
@@ -22,10 +23,6 @@ builder.Services.AddSingleton<BoardSharingTelemetry>();
 builder.Services.AddSingleton<OrganizationTelemetry>();
 builder.Services.AddSingleton<ChecklistClientTelemetry>();
 builder.Services.AddSingleton<ActivityClientTelemetry>();
-// Transport connection tokens appear in request query strings. Retain warnings
-// without logging request-start URLs at the default Information level.
-builder.Logging.AddFilter("Microsoft.AspNetCore.Hosting.Diagnostics", LogLevel.Warning);
-
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter<StrataAI.Domain.Records.RetentionRecordClass>(System.Text.Json.JsonNamingPolicy.CamelCase, false));

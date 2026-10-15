@@ -1,4 +1,7 @@
 {
+  "Verify structured API and Worker console records": ["commands"],
+  "Prepare Retain fixed console verification evidence": ["commands"],
+  "Retain fixed console verification evidence": ["commands"],
   "Verify installed configuration identities, relationships and restricted capabilities": [
     "commands",
     "browser-foundation",

@@ -1,4 +1,9 @@
 {
+  "Retain fixed console verification evidence": {
+    "artifact": "console-records-${{ github.sha }}",
+    "output": "artifacts/retained/console",
+    "entries": [["artifacts/console/records.json", "records.json"]]
+  },
   "Retain fixed Organization latency evidence": {
     "artifact": "organization-latency-${{ github.sha }}",
     "output": "artifacts/retained/organization-latency",

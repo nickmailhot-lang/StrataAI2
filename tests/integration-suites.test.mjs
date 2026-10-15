@@ -31,10 +31,14 @@ test('large fixtures cannot be hard-enabled in the normal workflow', () => {
 });
 
 test('every mandatory check has an owner and every group uses retained images', () => {
-  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 124 });
+  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 127 });
 });
 
 const mutations = [
+  ['console record refusals omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify operator evidence rejects missing and private metric fields');entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'console_log_evidence_test.py'",''); }],
+  ['console record refusals skipped', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify operator evidence rejects missing and private metric fields').if='false'; }],
+  ['console record errors ignored', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify operator evidence rejects missing and private metric fields')['continue-on-error']=true; }],
+  ['console runtime verifier omitted', value => { value.jobs['container-integration'].steps.find(step=>step.name==='Verify structured API and Worker console records').run='true'; }],
   ['request retirement unit checks omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify browser readiness excludes previous-screen responses');entry.run=entry.run.replace('node --experimental-strip-types --test tests/browser/keyboardAdmission.test.mjs',''); }],
   ['request retirement unit checks skipped', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify browser readiness excludes previous-screen responses').if='false'; }],
   ['request retirement unit errors ignored', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify browser readiness excludes previous-screen responses')['continue-on-error']=true; }],

@@ -127,7 +127,9 @@ jobs:
         run: node --test tests/browser-performance.test.mjs
 
       - name: Verify operator evidence rejects missing and private metric fields
-        run: python3 -m unittest discover -s tests -p 'operator_metrics_test.py'
+        run: |
+          python3 -m unittest discover -s tests -p 'operator_metrics_test.py'
+          python3 -m unittest discover -s tests -p 'console_log_evidence_test.py'
 
       - name: Verify Organization latency evidence and sample boundaries
         run: python3 -m unittest discover -s tests -p 'organization_latency_test.py'
@@ -667,6 +669,33 @@ jobs:
 
       - name: Apply release-database migrations
         run: scripts/apply-compose-migrations.sh
+
+      - name: Verify structured API and Worker console records
+        if: (matrix.suite == 'commands')
+        run: |
+          set -euo pipefail
+          scratch=$(mktemp -d)
+          trap 'rm -rf "$scratch"' EXIT
+          for host in api worker; do
+            container=$(docker compose -f compose.release.yml -f compose.metrics.yml ps -q "$host")
+            [[ "$container" =~ ^[0-9a-f]{12,64}$ ]]
+            docker logs "$container" > "$scratch/$host.log" 2>&1
+          done
+          mkdir -p artifacts/console
+          python3 scripts/ci/verify-console-logs.py "$scratch/api.log" "$scratch/worker.log" "$GITHUB_SHA" "$STRATAAI_BUILD_VERSION" artifacts/console/records.json
+
+      - name: Prepare Retain fixed console verification evidence
+        if: always() && (matrix.suite == 'commands')
+        run: python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/console --entry "artifacts/console/records.json" "records.json"
+
+      - name: Retain fixed console verification evidence
+        if: always() && (matrix.suite == 'commands')
+        uses: actions/upload-artifact@v7
+        with:
+          name: console-records-${{ github.sha }}
+          path: artifacts/retained/console
+          retention-days: 90
+          if-no-files-found: ignore
 
       - name: Provision least-privilege runtime database roles
         run: scripts/provision-compose-runtime-roles.sh
