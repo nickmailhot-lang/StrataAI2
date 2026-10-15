@@ -152,7 +152,8 @@ def verify_bundle(bundle, images=None, security_input=None):
                     raise ValueError("changed_original_evidence")
     required = {"compose.release.yml", "compose.demo.release.yml", "compose.metrics.yml", "compose.attachments.yml", "compose.https.yml", "deploy/https/nginx-tls.inc", ".env.release.example", ".env.demo.example", "README.md", "promotion-and-rollback.md",
                 "health-check.sh", "verify-release-runtime.sh", "verify-https-certificate.sh", "backup-postgres.sh", "restore-postgres.sh", "apply-migrations.sh", "migration-stream.sh", "provision-runtime-roles.sh", "provision-identity-mail-role.sh",
-                "deploy/metrics/collector.yml", "db/provision-runtime-roles.sql", "db/provision-identity-mail-role.sql"}
+                "deploy/metrics/collector.yml", "deploy/metrics/alerts.yml", "deploy/metrics/prometheus.example.yml",
+                "db/provision-runtime-roles.sql", "db/provision-identity-mail-role.sql"}
     required.update(f"images/strataai-{host}.tar.gz" for host in HOSTS)
     if not required <= set(files) or not any(name.startswith("db/migrations/") and name.endswith(".sql") for name in files):
         raise ValueError("incomplete_bundle")

@@ -35,6 +35,10 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['operator alert rule verification omitted', value => { value.jobs['web-quality'].steps.find(step => step.name === 'Verify operator alert rules with pinned Prometheus').run = 'true'; }],
+  ['operator alert rule verification skipped', value => { value.jobs['web-quality'].steps.find(step => step.name === 'Verify operator alert rules with pinned Prometheus').if = 'false'; }],
+  ['operator alert rule errors ignored', value => { value.jobs['web-quality'].steps.find(step => step.name === 'Verify operator alert rules with pinned Prometheus')['continue-on-error'] = true; }],
+  ['release alert assets omitted', value => { const entry = value.jobs['release-bundle'].steps.find(step => step.name === 'Assemble release bundle'); entry.run = entry.run.replace('cp deploy/metrics/collector.yml deploy/metrics/alerts.yml deploy/metrics/prometheus.example.yml bundle/deploy/metrics/', 'true'); }],
   ['console record refusals omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify operator evidence rejects missing and private metric fields');entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'console_log_evidence_test.py'",''); }],
   ['console record refusals skipped', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify operator evidence rejects missing and private metric fields').if='false'; }],
   ['console record errors ignored', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify operator evidence rejects missing and private metric fields')['continue-on-error']=true; }],

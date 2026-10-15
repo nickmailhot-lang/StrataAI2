@@ -4,6 +4,14 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [operator alert package](operator-alerts.md) adds eight aggregate warning
+rules, a private backend example and pinned rule/configuration tests. All 152
+synthetic alert assertions pass across nine firing/quiet/recovery/privacy cases.
+The rule assets are required in future release bundles; this does not establish
+deployed notification routing, measured service objectives or current-image CI.
+Owned verifier files are removed and Docker inventory restored. No application
+load or notification is generated; large-load testing remains after MVP.
+
 The [server duration histogram repair](operator-metrics.md#server-duration-histogram-resolution--2026-10-15)
 adds exact 400/750 ms bucket resolution to the existing seconds-based HTTP/auth
 timers. Both new SDK regressions fail before repair; all 82 focused .NET cases,

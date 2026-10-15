@@ -1,5 +1,9 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+The optional [operator alert package](operator-alerts.md) supplies tested warning
+rules and a private backend example for these measurements. Deployment routing,
+live evaluation and firing/resolved notification tests remain operator work.
+
 ## Server duration histogram resolution — 2026-10-15
 
 The custom HTTP and authentication timers record seconds, but their unconfigured

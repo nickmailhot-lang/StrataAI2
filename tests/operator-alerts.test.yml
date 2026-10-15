@@ -1,0 +1,669 @@
+rule_files:
+  - ../deploy/metrics/alerts.yml
+evaluation_interval: 1m
+tests:
+  - name: healthy and fixed aggregate alert labels
+    interval: 1m
+    input_series:
+      - series: up{job="strataai-collector",instance="private-host"}
+        values: 1x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="200",outcome="completed"}
+        values: 0+10x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="500",outcome="completed"}
+        values: "0x40"
+      - series: strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test"}
+        values: 0+10x40
+      - series: strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",le="0.75"}
+        values: 0+10x40
+      - series: strataai_worker_loop_failures{service_namespace="strataai",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="organization"}
+        values: "0x40"
+      - series: strataai_worker_jobs{service_namespace="strataai",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="identity_email",outcome="failed"}
+        values: "0x40"
+      - series: strataai_worker_scoped_backlog_available{service_namespace="strataai",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="organization"}
+        values: 1x40
+      - series: strataai_worker_identity_backlog_available{service_namespace="strataai",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="identity_email"}
+        values: 1x40
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+  - name: missing scrape configuration is not healthy
+    interval: 1m
+    input_series: []
+    alert_rule_test:
+      - eval_time: 0m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: metrics
+            exp_annotations:
+              summary: StrataAI metrics scrape coverage is unavailable
+      - eval_time: 3m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: metrics
+            exp_annotations:
+              summary: StrataAI metrics scrape coverage is unavailable
+      - eval_time: 6m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: metrics
+            exp_annotations:
+              summary: StrataAI API latency histogram coverage is unavailable
+      - eval_time: 6m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+  - name: scrape outage delay and recovery
+    interval: 1m
+    input_series:
+      - series: up{job="strataai-collector",instance="private-host"}
+        values: 1x2 0x4 1x30
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="200",outcome="completed"}
+        values: 0+10x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="500",outcome="completed"}
+        values: "0x40"
+      - series: strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test"}
+        values: 0+10x40
+      - series: strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",le="0.75"}
+        values: 0+10x40
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: metrics
+            exp_annotations:
+              summary: StrataAI metrics scrape coverage is unavailable
+      - eval_time: 6m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+  - name: API sustained error and latency delay and recovery
+    interval: 1m
+    input_series:
+      - series: up{job="strataai-collector",instance="private-host"}
+        values: 1x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="200",outcome="completed"}
+        values: 0+8x15 130+10x24
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="500",outcome="completed"}
+        values: 0+2x15 30x24
+      - series: strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test"}
+        values: 0+10x40
+      - series: strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",le="0.75"}
+        values: 0+8x15 130+10x24
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiApiErrors
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: api
+            exp_annotations:
+              summary: StrataAI API error observations exceed the baseline threshold
+      - eval_time: 10m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiApiErrors
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: api
+            exp_annotations:
+              summary: StrataAI API error observations exceed the baseline threshold
+      - eval_time: 14m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiApiLatency
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: api
+            exp_annotations:
+              summary: StrataAI API duration observations exceed the Standard baseline
+      - eval_time: 14m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+      - eval_time: 24m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 24m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 24m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 24m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 24m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 24m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 24m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 24m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+  - name: Worker failures unknown backlog and recovery strip private labels
+    interval: 1m
+    input_series:
+      - series: up{job="strataai-collector",instance="private-host"}
+        values: 1x40
+      - series: strataai_worker_loop_failures{service_namespace="strataai",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="organization"}
+        values: 0 1x30
+      - series: strataai_worker_jobs{service_namespace="strataai",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="identity_email",outcome="failed"}
+        values: 0 1x30
+      - series: strataai_worker_scoped_backlog_available{service_namespace="strataai",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="organization"}
+        values: 0x5 1x30
+      - series: strataai_worker_identity_backlog_available{service_namespace="strataai",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="identity_email"}
+        values: 0x5 1x30
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="200",outcome="completed"}
+        values: 0+10x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="500",outcome="completed"}
+        values: "0x40"
+      - series: strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test"}
+        values: 0+10x40
+      - series: strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",le="0.75"}
+        values: 0+10x40
+    alert_rule_test:
+      - eval_time: 0m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 0m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: worker
+            exp_annotations:
+              summary: StrataAI Worker queue loop failures were observed
+      - eval_time: 3m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: worker
+            exp_annotations:
+              summary: StrataAI identity email delivery failures were observed
+      - eval_time: 3m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: worker
+            exp_annotations:
+              summary: StrataAI configured Organization backlog observations are unavailable
+      - eval_time: 3m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: worker
+            exp_annotations:
+              summary: StrataAI identity email backlog observations are unavailable
+      - eval_time: 10m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+  - name: quiet traffic is not a high-volume latency or error claim
+    interval: 1m
+    input_series:
+      - series: up{job="strataai-collector",instance="private-host"}
+        values: 1x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="200",outcome="completed"}
+        values: "0x40"
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="500",outcome="completed"}
+        values: 0+1x40
+      - series: strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test"}
+        values: 0+1x40
+      - series: strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",le="0.75"}
+        values: "0x40"
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+  - name: foreign namespace cannot trigger StrataAI alerts
+    interval: 1m
+    input_series:
+      - series: up{job="strataai-collector",instance="private-host"}
+        values: 1x40
+      - series: strataai_http_server_requests{service_namespace="other",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="200",outcome="completed"}
+        values: 0+8x40
+      - series: strataai_http_server_requests{service_namespace="other",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="500",outcome="completed"}
+        values: 0+2x40
+      - series: strataai_http_server_duration_count{service_namespace="other",service_name="strataai-api",instance="private-host",private_marker="private@example.test"}
+        values: 0+10x40
+      - series: strataai_http_server_duration_bucket{service_namespace="other",service_name="strataai-api",instance="private-host",private_marker="private@example.test",le="0.75"}
+        values: 0+8x40
+      - series: strataai_worker_loop_failures{service_namespace="other",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="organization"}
+        values: 0+1x40
+      - series: strataai_worker_scoped_backlog_available{service_namespace="other",service_name="strataai-worker",instance="private-host",private_marker="private@example.test",queue="organization"}
+        values: "0x40"
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="200",outcome="completed"}
+        values: 0+10x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="500",outcome="completed"}
+        values: "0x40"
+      - series: strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test"}
+        values: 0+10x40
+      - series: strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",le="0.75"}
+        values: 0+10x40
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 15m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+  - name: counter reset preserves sustained error admission
+    interval: 1m
+    input_series:
+      - series: up{job="strataai-collector",instance="private-host"}
+        values: 1x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="200",outcome="completed"}
+        values: 0+8x8 0+8x30
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="500",outcome="completed"}
+        values: 0+2x8 0+2x30
+      - series: strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test"}
+        values: 0+10x8 0+10x30
+      - series: strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",le="0.75"}
+        values: 0+10x8 0+10x30
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiApiErrors
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: api
+            exp_annotations:
+              summary: StrataAI API error observations exceed the baseline threshold
+      - eval_time: 14m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 14m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+  - name: coarse legacy histogram cannot claim latency coverage
+    interval: 1m
+    input_series:
+      - series: up{job="strataai-collector",instance="private-host"}
+        values: 1x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="200",outcome="completed"}
+        values: 0+10x40
+      - series: strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",status_code="500",outcome="completed"}
+        values: "0x40"
+      - series: strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test"}
+        values: 0+10x40
+      - series: strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",instance="private-host",private_marker="private@example.test",le="5"}
+        values: 0+10x40
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiCollectorUnavailable
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiApiErrors
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiApiHistogramUnavailable
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              component: metrics
+            exp_annotations:
+              summary: StrataAI API latency histogram coverage is unavailable
+      - eval_time: 6m
+        alertname: StrataAiApiLatency
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiWorkerLoopFailures
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiEmailDeliveryFailures
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiOrganizationBacklogUnknown
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: StrataAiIdentityBacklogUnknown
+        exp_alerts: []

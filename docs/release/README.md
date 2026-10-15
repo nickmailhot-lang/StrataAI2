@@ -580,3 +580,14 @@ pinned private OTLP receiver. Scrapes are available only on host loopback at
 configure a managed history/dashboard/alerting backend separately. For an external
 receiver instead, use the full `STRATAAI_METRICS_OTLP_ENDPOINT` and optional secret
 headers with the base Compose file. Collector outage does not block core readiness.
+
+The release also includes `deploy/metrics/alerts.yml` and
+`deploy/metrics/prometheus.example.yml`. The latter targets that same host's
+loopback scrape and loads the rules; change the private target if the backend
+runs elsewhere. Use them with an existing protected Prometheus-compatible
+backend. Review [the alert meanings, activation checks and verification
+limits](../architecture/operator-alerts.md) before enabling. API error/latency,
+monitoring coverage, Worker/mail failures and unavailable backlog observations
+have tested warning rules, but notification destinations, durable history,
+threshold calibration and live firing/resolved delivery remain deployment work.
+These files do not start a backend or add another required application image.

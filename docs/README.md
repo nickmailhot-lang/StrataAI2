@@ -65,6 +65,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Initial exact-commit build metadata and release versions (ARCH-11)](architecture/initial-build-metadata.md)
 - [Structured API/Worker console logs and support context](architecture/structured-logging.md)
 - [API and Worker operator metrics export (ARCH-08, partial)](architecture/operator-metrics.md)
+- [Operational MVP alert baselines and deployment checks](architecture/operator-alerts.md)
 - [Runtime database roles](architecture/runtime-database-roles.md)
 - [Runtime modes and seeded Demo sign-in credentials](architecture/runtime-modes.md)
 - [Schema upgrades and compatibility](architecture/schema-upgrades.md)

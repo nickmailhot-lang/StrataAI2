@@ -248,6 +248,10 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(keyboardAdmission?.['continue-on-error'] ?? false, false);
   assert.ok(keyboardAdmission?.run.includes('node --experimental-strip-types --test tests/browser/keyboardAdmission.test.mjs'), 'Request admission retirement checks must run before image builds');
   const consoleUnit = jobs['web-quality'].steps.find(step => step.name === 'Verify operator evidence rejects missing and private metric fields');
+  const alertRules = jobs['web-quality'].steps.find(step => step.name === 'Verify operator alert rules with pinned Prometheus');
+  assert.equal(alertRules?.run, 'bash scripts/ci/test-operator-alerts.sh', 'Operator alert rule validation is mandatory');
+  assert.equal(alertRules.if, undefined);
+  assert.equal(alertRules['continue-on-error'] ?? false, false);
   assert.equal(consoleUnit?.if, undefined);
   assert.equal(consoleUnit?.['continue-on-error'] ?? false, false);
   assert.ok(consoleUnit?.run.includes("python3 -m unittest discover -s tests -p 'console_log_evidence_test.py'"), 'Console record refusal tests must run before image builds');
@@ -267,6 +271,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(bundle.run.includes('cp scripts/backup-postgres.sh bundle/backup-postgres.sh'), 'Release must include the tested operator backup command');
   assert.ok(bundle.run.includes('cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh'), 'Release must include the tested deployment identity command');
   assert.ok(bundle.run.includes('cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh'), 'Release must include the tested certificate lifetime command');
+  assert.ok(bundle.run.includes('cp deploy/metrics/collector.yml deploy/metrics/alerts.yml deploy/metrics/prometheus.example.yml bundle/deploy/metrics/'), 'Release must include the tested alert rules and backend example');
   assert.ok(bundle.run.includes('cp scripts/restore-postgres.sh bundle/restore-postgres.sh'), 'Release must include the tested operator restore command');
   assert.ok(bundle.run.includes('compose.https.yml'), 'Release must include optional HTTPS deployment');
   assert.ok(bundle.run.includes('cp deploy/https/nginx-tls.inc bundle/deploy/https/'), 'Release must include HTTPS configuration');

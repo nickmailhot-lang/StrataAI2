@@ -135,6 +135,9 @@ jobs:
       - name: Verify Organization latency evidence and sample boundaries
         run: python3 -m unittest discover -s tests -p 'organization_latency_test.py'
 
+      - name: Verify operator alert rules with pinned Prometheus
+        run: bash scripts/ci/test-operator-alerts.sh
+
       - name: Verify source test report completeness and privacy
         run: |
           python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
@@ -1554,7 +1557,7 @@ jobs:
           cp compose.release.yml compose.demo.release.yml compose.metrics.yml compose.attachments.yml compose.https.yml bundle/
           cp .env.demo.example bundle/
           mkdir -p bundle/deploy/metrics
-          cp deploy/metrics/collector.yml bundle/deploy/metrics/
+          cp deploy/metrics/collector.yml deploy/metrics/alerts.yml deploy/metrics/prometheus.example.yml bundle/deploy/metrics/
           mkdir -p bundle/deploy/https
           cp deploy/https/nginx-tls.inc bundle/deploy/https/
           cp .env.release.example bundle/

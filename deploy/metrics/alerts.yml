@@ -1,0 +1,76 @@
+# Optional Prometheus-compatible rules; enable only for one reviewed environment.
+# API replicas must use the same histogram schema. See the release alerting guide.
+groups:
+  - name: strataai-operational-mvp
+    interval: 1m
+    rules:
+      - alert: StrataAiCollectorUnavailable
+        expr: (min(up{job="strataai-collector"}) or vector(0)) == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: metrics
+        annotations:
+          summary: StrataAI metrics scrape coverage is unavailable
+      - alert: StrataAiApiErrors
+        expr: |
+          (sum(increase(strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api",status_code=~"5..|0",outcome=~"completed|faulted"}[5m]))
+          / sum(increase(strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api"}[5m])) > 0.05)
+          and (sum(increase(strataai_http_server_requests{service_namespace="strataai",service_name="strataai-api"}[5m])) >= 20)
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: StrataAI API error observations exceed the baseline threshold
+      - alert: StrataAiApiHistogramUnavailable
+        expr: sum(absent(strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",le="0.75"}))
+        for: 5m
+        labels:
+          severity: warning
+          component: metrics
+        annotations:
+          summary: StrataAI API latency histogram coverage is unavailable
+      - alert: StrataAiApiLatency
+        expr: |
+          (sum(increase(strataai_http_server_duration_bucket{service_namespace="strataai",service_name="strataai-api",le="0.75"}[5m]))
+          / sum(increase(strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api"}[5m])) < 0.95)
+          and (sum(increase(strataai_http_server_duration_count{service_namespace="strataai",service_name="strataai-api"}[5m])) >= 20)
+        for: 10m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: StrataAI API duration observations exceed the Standard baseline
+      - alert: StrataAiWorkerLoopFailures
+        expr: sum(increase(strataai_worker_loop_failures{service_namespace="strataai",service_name="strataai-worker"}[5m])) > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: worker
+        annotations:
+          summary: StrataAI Worker queue loop failures were observed
+      - alert: StrataAiEmailDeliveryFailures
+        expr: sum(increase(strataai_worker_jobs{service_namespace="strataai",service_name="strataai-worker",queue="identity_email",outcome="failed"}[5m])) > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: worker
+        annotations:
+          summary: StrataAI identity email delivery failures were observed
+      - alert: StrataAiOrganizationBacklogUnknown
+        expr: min(strataai_worker_scoped_backlog_available{service_namespace="strataai",service_name="strataai-worker",queue="organization"}) == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: worker
+        annotations:
+          summary: StrataAI configured Organization backlog observations are unavailable
+      - alert: StrataAiIdentityBacklogUnknown
+        expr: min(strataai_worker_identity_backlog_available{service_namespace="strataai",service_name="strataai-worker",queue="identity_email"}) == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: worker
+        annotations:
+          summary: StrataAI identity email backlog observations are unavailable
