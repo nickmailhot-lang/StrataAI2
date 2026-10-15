@@ -9,6 +9,20 @@ internal sealed class WorkerJobTelemetry(IMeterFactory factory)
 {
     public const string MeterName = "StrataAI.WorkerJobs";
     private Counter<long>? attempts;
+    private Counter<long>? loopFailures;
+
+    public void RecordOrganizationLoopFailure() => RecordLoopFailure("organization");
+    public void RecordIdentityEmailLoopFailure() => RecordLoopFailure("identity_email");
+
+    private void RecordLoopFailure(string queue)
+    {
+        try
+        {
+            loopFailures ??= factory.Create(MeterName).CreateCounter<long>("strataai.worker.loop.failures", "{failure}");
+            loopFailures.Add(1, new KeyValuePair<string, object?>("queue", queue));
+        }
+        catch { /* Optional diagnostics cannot stop the next queue pass. */ }
+    }
 
     public void Record(JobProcessingResult outcome)
     {

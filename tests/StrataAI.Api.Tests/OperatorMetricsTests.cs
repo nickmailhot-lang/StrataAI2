@@ -6,7 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
+using StrataAI.Application.BackgroundJobs;
 using StrataAI.Infrastructure.Runtime;
+using StrataAI.Worker;
 using Xunit;
 
 namespace StrataAI.Api.Tests;
@@ -31,15 +33,17 @@ public sealed class OperatorMetricsTests
             options => options.HttpClientFactory = () => new HttpClient(transport, disposeHandler: false));
         using var provider = services.BuildServiceProvider(); var sdk = provider.GetRequiredService<MeterProvider>();
         var factory = provider.GetRequiredService<IMeterFactory>();
-        factory.Create("StrataAI.WorkerJobs").CreateCounter<long>("strataai.worker.jobs").Add(1,
-            new KeyValuePair<string, object?>("queue", "organization"), new KeyValuePair<string, object?>("outcome", "completed"));
+        var telemetry = new WorkerJobTelemetry(factory);
+        telemetry.Record(JobProcessingResult.Completed);
+        telemetry.RecordOrganizationLoopFailure(); telemetry.RecordIdentityEmailLoopFailure();
         factory.Create("StrataAI.HttpServer").CreateCounter<long>("private-api-observation").Add(1);
         Assert.True(sdk.ForceFlush(5000)); var sample = Assert.Single(transport.Batches);
         Assert.Contains("strataai.worker.jobs", sample.WireText); Assert.Contains("strataai-worker", sample.WireText);
+        Assert.Contains("strataai.worker.loop.failures", sample.WireText); Assert.Contains("identity_email", sample.WireText);
         Assert.Contains("strataai.build.revision", sample.WireText);
         Assert.DoesNotContain("strataai-api", sample.WireText); Assert.DoesNotContain("private", sample.WireText);
         transport.Fail = true;
-        factory.Create("StrataAI.WorkerJobs").CreateCounter<long>("strataai.worker.jobs").Add(1);
+        telemetry.Record(JobProcessingResult.Completed); telemetry.RecordOrganizationLoopFailure();
         Assert.Null(Record.Exception(() => sdk.ForceFlush(5000)));
     }
 

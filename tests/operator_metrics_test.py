@@ -91,6 +91,30 @@ class OperatorEvidenceTests(unittest.TestCase):
     def test_complete_fixed_scope(self):
         self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))
 
+    def loop_failure(self):
+        return self.fixture().splitlines()[-1].replace('strataai_worker_jobs', 'strataai_worker_loop_failures').replace(',outcome="completed"', '')
+
+    def test_worker_loop_failure_is_optional_and_has_only_fixed_queue_identity(self):
+        self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))
+        for queue in ['organization', 'identity_email']:
+            with self.subTest(queue=queue):
+                line = self.loop_failure().replace('queue="organization"', f'queue="{queue}"')
+                self.assertTrue(metrics.verify(self.fixture() + '\n' + line, self.revision, self.version))
+
+    def test_worker_loop_failure_rejects_private_fields_wrong_build_and_invalid_values(self):
+        line = self.loop_failure()
+        invalid = [line.replace('queue="organization"', label) for label in [
+            'queue="private-queue"', '', 'queue="organization",outcome="failed"',
+            'queue="organization",exception="private-provider-message"',
+            'queue="organization",organization_id="opaque"',
+            'queue="organization",queue="identity_email"']]
+        invalid.extend([line.replace('service_name="strataai-worker"', 'service_name="strataai-api"'),
+                        line.replace(self.revision, 'b' * 40), line.replace(self.version, 'wrong-version'),
+                        line[:-1] + '-1', line[:-1] + 'NaN', line[:-1] + '1e309'])
+        for observation in invalid:
+            with self.subTest(observation=observation):
+                self.assertFalse(metrics.verify(self.fixture() + '\n' + observation, self.revision, self.version))
+
     def test_duplicate_or_unparsed_labels_cannot_hide_private_values(self):
         original = 'queue="organization"'
         for replacement in ['queue="hidden-scope",queue="organization"',

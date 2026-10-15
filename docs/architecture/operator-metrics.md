@@ -1,5 +1,50 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Worker queue-loop failures — 2026-10-15
+
+`strataai.worker.loop.failures` counts exceptions that escape an Organization
+job pass or identity-email pass into its hosted service loop. Its only instrument
+label is `queue`, fixed to `organization` or `identity_email`; it shares the
+Worker's existing meter, optional OTLP configuration and embedded service/build
+identity. Exception text/type, job and tenant identifiers, recipient addresses,
+tokens and provider details never enter this counter. No extra database query
+or provider call is introduced.
+
+A failed claim, failed completion acknowledgment or unexpected cancellation
+while the service is still running increments the counter once. Normal service
+shutdown and empty polls do not. A handler/provider failure which the processor
+successfully acknowledges as a retry remains a `strataai.worker.jobs` outcome,
+without also becoming a loop failure. The counter is recorded before optional
+warning logs; instrument creation, listener and logging failures cannot stop
+the next pass. Existing leases, retry policy, queue fairness and shutdown behavior
+are unchanged. A failed acknowledgment can follow a completed external effect;
+this observation does not establish whether the effect happened or arrange
+another execution.
+
+The Collector verifier accepts this optional family only with the fixed queue,
+Worker service/build identity and nonnegative finite values. It refuses an
+`outcome`, exception/private field, unknown queue, duplicate label or wrong build.
+Healthy ingestion still requires the existing committed Organization outcome;
+failure samples are optional because that fixture need not encounter a failure.
+An absent counter does not prove service health or successful export.
+
+Before implementation, all **12** escaping-failure cases lack the observation,
+while six quiet/handled-path cases pass. The changed real hosted service loops
+pass all **18** cases, including throwing metric and log listeners, continued
+polling, no extra handler/send/acknowledgment, normal cancellable shutdown and
+handled retry separation. Together with outcome, logging, Organization fairness
+and OTLP transport regressions, **51 Linux .NET cases pass**. The actual Worker
+export registration sends both failure queues through the real SDK to a
+controlled HTTP transport, and survives receiver failure. The complete solution
+build has zero warnings/errors; all **10** Collector verifier tests pass.
+
+These tests exercise current compiled code in a retained runtime with controlled
+stores/providers, not a managed provider, production database or current-image
+Collector deployment. All **932 source/415 binary** hashes match, owned containers
+are removed and the original Docker inventory is restored. No new image build,
+download/import or large-load test runs. Backlog/lease-age metrics, discovery-loop
+coverage, deployed alerts and full exact-image CI remain acceptance work.
+
 ## Complete Collector label validation — 2026-10-15
 
 The mandatory Collector verifier now consumes every label token and rejects

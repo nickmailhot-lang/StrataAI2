@@ -50,7 +50,8 @@ public sealed class WorkerJobTelemetryTests
     {
         using var factory = new BrokenFactory(); var telemetry = new WorkerJobTelemetry(factory);
         telemetry.Record(JobProcessingResult.Completed); telemetry.Record(IdentityDeliveryPass.Sent);
-        Assert.Equal(2, factory.Calls);
+        telemetry.RecordOrganizationLoopFailure(); telemetry.RecordIdentityEmailLoopFailure();
+        Assert.Equal(4, factory.Calls);
     }
 
     internal static ServiceProvider Services() => new ServiceCollection().AddMetrics().AddSingleton<WorkerJobTelemetry>().BuildServiceProvider();
@@ -70,7 +71,8 @@ public sealed class WorkerJobTelemetryTests
         {
             listener.InstrumentPublished = (instrument, observer) =>
             {
-                if (ReferenceEquals(instrument.Meter, meter)) observer.EnableMeasurementEvents(instrument);
+                if (ReferenceEquals(instrument.Meter, meter) && instrument.Name == "strataai.worker.jobs")
+                    observer.EnableMeasurementEvents(instrument);
             };
             listener.SetMeasurementEventCallback<long>((instrument, count, tags, _) =>
             {

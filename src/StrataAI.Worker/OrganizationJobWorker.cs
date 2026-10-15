@@ -8,7 +8,8 @@ namespace StrataAI.Worker;
 internal sealed class OrganizationJobWorker(
     BackgroundJobProcessor processor,
     OrganizationJobScope scope,
-    ILogger<OrganizationJobWorker> logger) : BackgroundService
+    ILogger<OrganizationJobWorker> logger,
+    WorkerJobTelemetry? telemetry = null) : BackgroundService
 {
     private readonly Guid _workerId = Guid.NewGuid();
 
@@ -36,6 +37,7 @@ internal sealed class OrganizationJobWorker(
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
                 catch (Exception)
                 {
+                    telemetry?.RecordOrganizationLoopFailure();
                     // No exception message: SQL/provider diagnostics can include
                     // secrets. The committed lease is recovered after expiry.
                     LogFailure(organizationId);

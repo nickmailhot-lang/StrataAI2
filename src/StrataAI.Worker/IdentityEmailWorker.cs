@@ -4,7 +4,8 @@ using StrataAI.Application.Identity;
 
 namespace StrataAI.Worker;
 
-internal sealed class IdentityEmailWorker(IdentityDeliveryProcessor processor,ILogger<IdentityEmailWorker> logger) : BackgroundService
+internal sealed class IdentityEmailWorker(IdentityDeliveryProcessor processor,ILogger<IdentityEmailWorker> logger,
+    WorkerJobTelemetry? telemetry=null) : BackgroundService
 {
     private readonly Guid _workerId=Guid.NewGuid();
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -13,7 +14,11 @@ internal sealed class IdentityEmailWorker(IdentityDeliveryProcessor processor,IL
         {
             try { await processor.ProcessOneAsync(_workerId,stoppingToken); }
             catch (OperationCanceledException) when(stoppingToken.IsCancellationRequested) { return; }
-            catch(Exception) { WorkerLog.Warning(logger, "Identity delivery pass failed. Worker {WorkerId}.",_workerId); }
+            catch(Exception)
+            {
+                telemetry?.RecordIdentityEmailLoopFailure();
+                WorkerLog.Warning(logger, "Identity delivery pass failed. Worker {WorkerId}.",_workerId);
+            }
             try { await Task.Delay(TimeSpan.FromSeconds(1),stoppingToken); }
             catch(OperationCanceledException) when(stoppingToken.IsCancellationRequested) { return; }
         }

@@ -46,6 +46,7 @@ def verify(raw, revision, version):
                  for suffix in ["_bucket", "_count", "_sum"])
     names.add("strataai_http_server_requests")
     names.add("strataai_worker_jobs")
+    names.add("strataai_worker_loop_failures")
     names.update("strataai_http_server_duration" + suffix for suffix in ["_bucket", "_count", "_sum"])
     for line in raw.splitlines():
         if not line.startswith("strataai_"):
@@ -57,19 +58,24 @@ def verify(raw, revision, version):
         if labels is None:
             return False
         permitted = allowed | {"method", "status_code"} if match[1].startswith("strataai_http_server_") else allowed
-        if match[1] == "strataai_worker_jobs":
-            permitted = {"queue", "outcome", "job", "instance", "service_name", "service_namespace", "service_version", "strataai_build_revision"}
+        worker = match[1] in {"strataai_worker_jobs", "strataai_worker_loop_failures"}
+        if worker:
+            permitted = {"queue", "job", "instance", "service_name", "service_namespace", "service_version", "strataai_build_revision"}
+            if match[1] == "strataai_worker_jobs":
+                permitted.add("outcome")
         if set(labels) - permitted or labels.get("instance", "") != "":
             return False
         if labels.get("strataai_build_revision") != revision or labels.get("service_version") != version:
             return False
-        service = "strataai-worker" if match[1] == "strataai_worker_jobs" else "strataai-api"
+        service = "strataai-worker" if worker else "strataai-api"
         if labels.get("service_name") != service or labels.get("service_namespace") != "strataai":
             return False
-        if match[1] == "strataai_worker_jobs":
+        if worker:
             outcomes = {"organization": {"completed", "retried", "lease_lost", "unknown"},
                         "identity_email": {"sent", "cancelled", "retried", "failed", "lease_lost", "unknown"}}
-            if labels.get("outcome") not in outcomes.get(labels.get("queue"), set()):
+            if labels.get("queue") not in outcomes:
+                return False
+            if match[1] == "strataai_worker_jobs" and labels.get("outcome") not in outcomes[labels["queue"]]:
                 return False
             if not math.isfinite(float(match[3])) or float(match[3]) < 0:
                 return False

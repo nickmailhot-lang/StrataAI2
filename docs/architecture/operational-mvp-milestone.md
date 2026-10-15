@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [Worker queue-loop failure counter](operator-metrics.md#worker-queue-loop-failures--2026-10-15)
+adds fixed observations for escaping Organization/identity-email queue errors,
+separate from decided retries and normal shutdown. All 51 focused .NET cases,
+ten Collector verifier tests and 255 CI coverage guards pass; source/binary
+inputs match and the original Docker inventory is restored. These are current
+compiled-code checks with controlled stores/providers. Full current-image CI,
+backlog metrics, managed deployment and tested alerts remain acceptance work;
+large-load testing remains disabled until after this milestone.
+
 The [separate Worker's job-outcome measurements](operator-metrics.md#worker-job-outcomes--2026-10-15)
 count decided Organization and identity-mail attempt outcomes with fixed labels
 and independent service/build identity. All 53 focused .NET cases, five Collector
