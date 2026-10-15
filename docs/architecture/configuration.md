@@ -80,6 +80,11 @@ Both email and metrics must be enabled; no additional credentials, grants or
 readiness dependency are introduced. Use its separate availability/freshness
 signals and do not sum replicas' global counts.
 
+The API also exports [authentication endpoint outcomes and durations](operator-metrics.md#authentication-endpoint-outcomes--2026-10-15)
+through the same optional endpoint. Fixed operation/status/outcome labels exclude
+account/request contents; they describe matched endpoint attempts rather than
+unique users, account existence or delivery success.
+
 Build revision/version are embedded in the image at build time and cannot be
 set by runtime environment variables. The web's `/build-metadata.json`, API's
 `/api/runtime` and Worker's `/runtime` report the identifiers of their actual

@@ -1,5 +1,62 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Authentication endpoint outcomes — 2026-10-15
+
+`StrataAI.Authentication` adds `strataai.authentication.requests` and
+`strataai.authentication.duration` (seconds) to the API's optional OTLP export.
+Only matched POST authentication route templates are observed: register, login,
+password forgot/reset, verification resend/consume and logout. Labels are fixed
+`operation`, bounded `status_code` and `outcome=completed|cancelled|faulted`.
+There are no email/account/Organization identifiers, IPs, tokens, cookies, raw
+paths/queries, correlation/retry keys, request bodies or exception details.
+
+These count HTTP endpoint attempts, including retries and receipt replays, not
+unique users, accepted credentials, mail delivery or authoritative audit events.
+Login 401 and 403 observations distinguish response categories without inferring
+account existence or a private reason. Recovery acceptance does not prove that
+an account exists or an email was sent. Routing occurs before this timer; generic
+framework method/media rejection endpoints and pre-routing failures remain in
+overall HTTP observations. Authentication middleware wraps CSRF, session/rate
+checks and endpoint execution without changing their behavior. Do not sum these
+counts with overall HTTP counts or treat this narrower duration as end-to-end
+API latency. Incomplete/cancelled execution uses status zero and preserves the
+original exception; instrument/listener failures cannot replace the result or
+invoke authentication again.
+
+All **80 focused Linux .NET cases** pass: 38 auth cases, 20 overall HTTP cases,
+ten actual SDK transport/configuration cases and 12 rate-limit diagnostic cases.
+They cover all seven routes, canonical case/trailing slash, actual registration/
+denied/correct sign-in, JSON CSRF refusals, generic media rejection, bounded
+labels/statuses, cancellation and throwing diagnostic providers. All **942
+source/415 binary inputs** match. The first development fixture used text/plain
+where a matched JSON endpoint was intended; corrected JSON cases and a separate
+generic-media case now preserve that distinction rather than relaxing checks.
+
+The actual current compiled Production API also passes a fresh restricted
+PostgreSQL 17.11/149-migration rehearsal in **12.795s**. Real responses are
+registration **201**, wrong-password login **401**, missing-CSRF login **403**,
+then correct login **200**. Actual SDK wire output contains all eight required
+count/duration observations, the running API's service/build identity and only
+fixed auth labels; fixture credentials and email are absent. All **832 source/
+persistence inputs** and **29 API binary inputs** match. Owned fixtures restore
+Docker inventory and remove **738,564** temporary bytes; no image is built,
+pulled or imported and the original database/local Demo is unused. Earlier
+incomplete fixture setup attempts are cleaned and excluded from completed proof.
+
+The mandatory exact-image Collector fixture now makes one wrong-password and
+one missing-CSRF request against its fresh account before normal login. Both
+metric families require register 201 and login 200/401/403. All **28 verifier
+cases** and **255 CI coverage guards** pass; fixed operation/status/outcome,
+API resource identity, finite values and private-field rejection are enforced.
+Histogram bounds must be numeric (or `+Inf`) and cannot be attached to non-bucket
+auth metrics. All **11 driver cases** pass, including assertions that exactly
+one login 401 and one login 403 are requested before the Worker scope changes.
+The current compiled-code receiver is an isolated HTTP fixture, not the pinned
+Collector or immutable release images. Current-image collection, deployed
+dashboards/alerts and remaining PRD-02/ARCH-08 acceptance remain unfinished.
+PRD-02 stays open at **16% estimated work remaining**, unchanged planning estimate.
+Large-load testing stays deferred until after the operational MVP.
+
 ## Collector target metadata validation — 2026-10-15
 
 The verifier previously ignored `target_info` because it is outside the

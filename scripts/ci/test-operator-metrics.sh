@@ -30,6 +30,9 @@ get() { curl --max-time 30 --fail --silent --show-error -b "$scratch/cookies" "$
 patch() { curl --max-time 30 --fail --silent --show-error -b "$scratch/cookies" -X PATCH -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $(uuid)" -d "$2" "$base$1"; }
 credentials=$(jq -nc --arg email "metrics-$(uuid)@example.test" '{email:$email,password:"private-metric-fixture-password",displayName:"private-metric-fixture"}')
 curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$credentials" "$base/auth/register" >/dev/null
+bad_credentials=$(jq -c '.password="private-wrong-password"' <<< "$credentials")
+test "$(curl --max-time 30 --silent --show-error -o /dev/null -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$bad_credentials" "$base/auth/login")" = 401
+test "$(curl --max-time 30 --silent --show-error -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' -d "$credentials" "$base/auth/login")" = 403
 curl --fail --silent --show-error -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$credentials" "$base/auth/login" >/dev/null
 org=$(post /organizations '{"name":"private-metric-fixture"}' | jq -r '.organization.id')
 [[ "$org" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]

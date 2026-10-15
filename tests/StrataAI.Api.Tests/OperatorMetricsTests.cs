@@ -103,6 +103,7 @@ public sealed class OperatorMetricsTests
             new KeyValuePair<string, object?>("action", "card_read"), new KeyValuePair<string, object?>("kind", "success"));
         var organizations = factory.Create("StrataAI.Organizations");
         var http = factory.Create("StrataAI.HttpServer");
+        new StrataAI.Api.Auth.AuthenticationTelemetry(factory).Record("login", 401, "completed", .125);
         http.CreateCounter<long>("strataai.http.server.requests").Add(1,
             new KeyValuePair<string, object?>("method", "POST"), new KeyValuePair<string, object?>("status_code", 401),
             new KeyValuePair<string, object?>("outcome", "completed"));
@@ -127,6 +128,8 @@ public sealed class OperatorMetricsTests
         Assert.Contains("strataai.organization.duration", sample.WireText);
         Assert.Contains("strataai.http.server.requests", sample.WireText);
         Assert.Contains("strataai.http.server.duration", sample.WireText);
+        Assert.Contains("strataai.authentication.requests", sample.WireText);
+        Assert.Contains("strataai.authentication.duration", sample.WireText);
         Assert.Contains("disclosure", sample.WireText); Assert.Contains("item_update", sample.WireText);
         Assert.Contains("service.name", sample.WireText); Assert.Contains("strataai-api", sample.WireText);
         Assert.Contains("strataai.build.revision", sample.WireText);

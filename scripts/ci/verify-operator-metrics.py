@@ -47,6 +47,8 @@ def verify(raw, revision, version, *, backlog_available=1):
     names.update(prefix + suffix for prefix in ["strataai_checklist_client_duration", "strataai_activity_client_duration", "strataai_board_sharing_duration", "strataai_organization_duration"]
                  for suffix in ["_bucket", "_count", "_sum"])
     names.add("strataai_http_server_requests")
+    names.add("strataai_authentication_requests")
+    names.update("strataai_authentication_duration" + suffix for suffix in ["_bucket", "_count", "_sum"])
     names.add("strataai_worker_jobs")
     names.add("strataai_worker_loop_failures")
     names.update({"strataai_worker_scoped_backlog", "strataai_worker_scoped_backlog_available"})
@@ -86,6 +88,8 @@ def verify(raw, revision, version, *, backlog_available=1):
         if labels is None:
             return False
         permitted = allowed | {"method", "status_code"} if match[1].startswith("strataai_http_server_") else allowed
+        if match[1].startswith("strataai_authentication_"):
+            permitted = allowed | {"status_code"}
         worker = match[1] in {"strataai_worker_jobs", "strataai_worker_loop_failures",
                               "strataai_worker_scoped_backlog", "strataai_worker_scoped_backlog_available",
                               "strataai_worker_identity_backlog", "strataai_worker_identity_backlog_available"}
@@ -106,6 +110,26 @@ def verify(raw, revision, version, *, backlog_available=1):
         # cannot be a free-form host, recipient, tenant or alternate service.
         if "job" in labels and labels["job"] != f"strataai/{service}":
             return False
+        if match[1].startswith("strataai_authentication_"):
+            auth_labels = {"operation", "status_code", "outcome", "job", "instance",
+                           "service_name", "service_namespace", "service_version", "strataai_build_revision"}
+            if match[1].endswith("_bucket"):
+                auth_labels.add("le")
+                try:
+                    if labels.get("le") != "+Inf" and not math.isfinite(float(labels.get("le", ""))):
+                        return False
+                except ValueError:
+                    return False
+            if set(labels) - auth_labels or labels.get("operation") not in {
+                    "register", "login", "password_forgot", "password_reset", "verification_resend", "verify_email", "logout"}:
+                return False
+            if not re.fullmatch(r"0|[1-5][0-9]{2}", labels.get("status_code", "")) or labels.get("outcome") not in {"completed", "cancelled", "faulted"}:
+                return False
+            try:
+                if not math.isfinite(float(match[3])) or float(match[3]) < 0:
+                    return False
+            except ValueError:
+                return False
         if worker:
             outcomes = {"organization": {"completed", "retried", "lease_lost", "unknown"},
                         "identity_email": {"sent", "cancelled", "retried", "failed", "lease_lost", "unknown"}}
@@ -153,6 +177,9 @@ def verify(raw, revision, version, *, backlog_available=1):
                    for metric, labels, value in samples)
 
     return all([
+        *[observed(metric, {"operation": operation, "status_code": status, "outcome": "completed"})
+          for operation, status in [("register", "201"), ("login", "200"), ("login", "401"), ("login", "403")]
+          for metric in ["strataai_authentication_requests", "strataai_authentication_duration_count"]],
         not backlog_available or observed("strataai_worker_scoped_backlog", {"queue": "organization", "state": "pending"}),
         not backlog_available or observed("strataai_worker_scoped_backlog", {"queue": "organization", "state": "running"}),
         [value for name, labels, value in samples if name == "strataai_worker_scoped_backlog_available"] == [backlog_available],
@@ -235,6 +262,7 @@ if __name__ == "__main__":
                      "configurationClientEvents": True, "configurationClientDuration": True,
                      "httpRequestsAndDuration": True, "httpRejectionOutcomes": True,
                      "workerCommittedJobOutcome": True, "workerBuildIdentity": True,
+                     "authenticationEndpointOutcomes": True, "authenticationDuration": True,
                      "workerScopedBacklog": bool(expected_available), "workerBacklogAvailable": bool(expected_available),
                      "workerBacklogObservationAvailability": expected_available,
                      "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")

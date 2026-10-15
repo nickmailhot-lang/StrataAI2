@@ -79,6 +79,7 @@ if written and ':8088/' in url:
  if url.endswith(('/me/checklist-client-events','/me/activity-client-events')):
   status=401 if '-b' not in args else 400 if any('private-metric-fixture' in a for a in args) else 403
  elif url.endswith('/configuration'):status=409 if '-X' in args else 404
+ elif url.endswith('/auth/login'):status=401 if 'X-StrataAI-Request: 1' in args else 403
  else:status=401
 if written:log('status-'+url.rsplit('/',1)[-1]+'-'+str(status))
 if '-o' in args or '--output' in args:
@@ -138,6 +139,10 @@ class OperatorFixtureDriverTests(unittest.TestCase):
                 self.assertFalse((root / 'artifacts').exists())
                 return
             self.assertIn("scope-worker", journal, result.stderr[-2000:])
+            self.assertEqual(journal.count('status-login-401'), 1)
+            self.assertEqual(journal.count('status-login-403'), 1)
+            self.assertLess(journal.index('status-login-401'), journal.index('status-login-403'))
+            self.assertLess(journal.index('status-login-403'), journal.index('scope-worker'))
             if fault == 'missing-before':
                 self.assertNotEqual(result.returncode, 0)
                 self.assertNotIn('stop-postgres', journal)

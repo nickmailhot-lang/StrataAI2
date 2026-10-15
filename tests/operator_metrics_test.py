@@ -139,6 +139,9 @@ class OperatorEvidenceTests(unittest.TestCase):
         for method, code in [("GET", "200"), ("POST", "400"), ("POST", "401"), ("POST", "403"), ("PATCH", "409")]:
             for metric in ["strataai_http_server_requests", "strataai_http_server_duration_count"]:
                 observations.append((metric, f'method="{method}",status_code="{code}",outcome="completed"'))
+        for operation, code in [("register", "201"), ("login", "200"), ("login", "401"), ("login", "403")]:
+            for metric in ["strataai_authentication_requests", "strataai_authentication_duration_count"]:
+                observations.append((metric, f'operation="{operation}",status_code="{code}",outcome="completed"'))
         worker_common = common.replace('service_name="strataai-api"', 'service_name="strataai-worker"')
         return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations) + \
             f'\nstrataai_worker_jobs{{queue="organization",outcome="completed",{worker_common}}} 1' + \
@@ -215,6 +218,34 @@ class OperatorEvidenceTests(unittest.TestCase):
                             original + ',action="private-route"']:
             with self.subTest(replacement=replacement):
                 self.assertFalse(metrics.verify(self.fixture().replace(original, replacement), self.revision, self.version))
+
+    def test_authentication_observations_require_fixed_operation_status_and_private_field_exclusion(self):
+        raw = self.fixture()
+        original = next(line for line in raw.splitlines() if line.startswith('strataai_authentication_requests{'))
+        for changed in [original.replace('operation="register"', 'operation="private-path"'),
+                        original.replace('operation="register"', 'operation="register",email="private@example.test"'),
+                        original.replace('operation="register"', 'operation="register",method="POST"'),
+                        original.replace('status_code="201"', 'status_code="999"'),
+                        original.replace('outcome="completed"', 'outcome="private-reason"'),
+                        original.replace('service_name="strataai-api"', 'service_name="strataai-worker"'),
+                        original[:-1]+'-1', original[:-1]+'NaN', original[:-1]+'1e309', original[:-1]+'e']:
+            with self.subTest(changed=changed):
+                self.assertFalse(metrics.verify(raw+'\n'+changed, self.revision, self.version))
+
+    def test_authentication_histogram_bounds_are_numeric_and_cannot_be_private_labels(self):
+        line = next(line for line in self.fixture().splitlines() if line.startswith('strataai_authentication_requests{'))
+        bucket = line.replace('strataai_authentication_requests', 'strataai_authentication_duration_bucket')
+        for boundary in ['0', '0.5', '+Inf']:
+            self.assertTrue(metrics.verify(self.fixture()+'\n'+bucket.replace('operation=', f'le="{boundary}",operation='), self.revision, self.version))
+        for boundary in ['private@example.test', '', 'NaN', '1e309']:
+            self.assertFalse(metrics.verify(self.fixture()+'\n'+bucket.replace('operation=', f'le="{boundary}",operation='), self.revision, self.version))
+        self.assertFalse(metrics.verify(self.fixture()+'\n'+bucket, self.revision, self.version))
+
+    def test_authentication_nonbucket_metrics_cannot_hide_data_in_a_bucket_label(self):
+        line = next(line for line in self.fixture().splitlines() if line.startswith('strataai_authentication_requests{'))
+        for name in ['strataai_authentication_requests', 'strataai_authentication_duration_count', 'strataai_authentication_duration_sum']:
+            extra = line.replace('strataai_authentication_requests', name).replace('operation=', 'le="private-value",operation=')
+            self.assertFalse(metrics.verify(self.fixture()+'\n'+extra, self.revision, self.version))
 
     def test_complete_fixed_scope(self):
         self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))

@@ -4,6 +4,12 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [authentication endpoint observations](operator-metrics.md#authentication-endpoint-outcomes--2026-10-15)
+now expose bounded sign-in refusal/success counts and durations without private
+request/account fields. Focused .NET and actual compiled Production API checks
+pass; current-image Collector ingestion and deployed alerts remain required.
+PRD-02 stays open at 16% estimated work remaining; no load test runs.
+
 The [Collector target-metadata check](operator-metrics.md#collector-target-metadata-validation--2026-10-15)
 closes an evidence-validation gap outside the app metric prefix. Private or
 inconsistent target records now fail the gate; no application data leak is
