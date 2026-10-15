@@ -52,6 +52,44 @@ Required exact-image CI covers one-connection reads/acceptance, audit failure ro
 
 Invitation mail delivery, create/revoke idempotency, invitation domain-event publication and broader onboarding lifecycle/ownership/telemetry requirements remain outstanding. This increment does not close PRD-60 or the architecture tickets.
 
+## Explicit database wait gates (2026-10-15)
+
+The required invitation fixture now holds its expiry and account row locks in
+interactive PostgreSQL transactions. It observes the holder's backend after its
+`SELECT ... FOR UPDATE` completes, then requires the actual API backend to be
+blocked by that specific holder through `pg_blocking_pids`. After that observation,
+it expires the invitation in the holding transaction, or commits session
+revocation through a separate connection, before explicitly releasing the lock.
+An unrelated API lock cannot satisfy the observation. A 60-second idle transaction
+limit bounds an abandoned holder; exit cleanup closes its input and removes the
+owned scratch files.
+
+This replaces two fixed ten-second sleeps that competed with the fixture's
+unchanged ten-second API database command timeout. Hosted run
+[38677909216](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38677909216),
+job 116258431823, failed the final `401` assertion. Its retained database log
+shows cancellation while locking the account row, but does not establish the
+HTTP status or a product authorization defect. The complete unchanged local
+baseline returned the required `401` and passed; there is no unchanged local
+reproduction claim.
+
+The revised fixture retains the single-connection API, request limits, exact
+expiry `400` and session `401`, privacy exclusions, canonical rollback snapshots,
+concurrent/restart acceptance recovery, membership activation history and the
+bounded 101-invitation pagination case. It is functional verification; large
+load testing remains disabled until after the operational MVP.
+
+The complete revised script passed locally in 101.764 seconds against the
+archive-verified `24f5624` API image and fresh PostgreSQL with all 149 migrations
+and restricted runtime roles. All 388 captured inputs matched after execution;
+owned cleanup restored the original Docker inventory and removed 2,577,091
+temporary bytes. No original database, application rebuild, image import or
+download was used. The frozen Windows runner replaces only the two Linux UUID
+file reads with a standard UUID generator and prints the final HTTP status
+before its unchanged assertion. This retained-image check does not certify
+current-main images or a complete release. All 241 CI coverage guards, Bash
+syntax and workflow lint also pass; full current-candidate CI remains required.
+
 ## Fresh discovery after refresh
 
 Starting a discovery refresh or next-page read clears the previously displayed

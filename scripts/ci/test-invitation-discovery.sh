@@ -2,9 +2,38 @@
 set -euo pipefail
 test "${CI:-}" = true || { echo 'Disposable invitation fixtures may run only in CI.' >&2; exit 1; }
 BASE_URL="${1:-http://localhost:8080}"
-scratch="$(mktemp -d)"; pids=()
+scratch="$(mktemp -d)"; pids=(); gate_fd=''
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
+start_gate() {
+  local label="$1" lock_sql="$2" read_fd
+  # Keep the transaction open until the exact blocked API request is observed.
+  # A fixed sleep competes with the API's unchanged 10-second command timeout.
+  coproc INVITATION_GATE { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' > "$scratch/$label"; }
+  gate=$INVITATION_GATE_PID; pids+=("$gate"); gate_fd=${INVITATION_GATE[1]}
+  read_fd=${INVITATION_GATE[0]}; exec {read_fd}<&-
+  printf "SET application_name='%s';\nSET idle_in_transaction_session_timeout='60s';\nBEGIN;\n%s\n" "$label" "$lock_sql" >& "$gate_fd"
+  for attempt in $(seq 1 100); do
+    gate_backend="$(admin "SELECT pid FROM pg_stat_activity WHERE application_name='$label' AND state='idle in transaction' AND query LIKE 'SELECT id FROM % FOR UPDATE;';")"
+    if [[ "$gate_backend" =~ ^[0-9]+$ ]]; then break; fi
+    sleep 0.1
+  done
+  [[ "$gate_backend" =~ ^[0-9]+$ ]]
+}
+wait_for_gate_block() {
+  for attempt in $(seq 1 100); do
+    if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND $gate_backend=ANY(pg_blocking_pids(pid));")" = 1; then return; fi
+    sleep 0.1
+  done
+  echo 'API request did not wait on the owned invitation gate.' >&2
+  return 1
+}
+release_gate() {
+  printf '%s\nCOMMIT;\n\\q\n' "${1:-}" >& "$gate_fd"
+  exec {gate_fd}>&-; gate_fd=''
+  wait "$gate"
+}
 cleanup() {
+  if test -n "$gate_fd"; then exec {gate_fd}>&-; gate_fd=''; fi
   for pid in "${pids[@]}"; do kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; done
   admin 'GRANT INSERT ON audit_events TO strataai_api_runtime; DROP TRIGGER IF EXISTS ci_member_added_publication_failure ON audit_events; DROP FUNCTION IF EXISTS public.ci_member_added_publication_failure();' >/dev/null
   docker compose -f compose.release.yml -f scripts/ci/compose.auth-test.yml up -d --wait --wait-timeout 180 api >/dev/null
@@ -104,16 +133,12 @@ expiry_id="$(cat /proc/sys/kernel/random/uuid)"
 admin "INSERT INTO invitations(id,tenant_id,invited_email,email_normalized,token_hash,target_surface,target_role,created_by_user_id,created_at,expires_at)
  SELECT '$expiry_id',tenant_id,invited_email,email_normalized,encode(sha256('$expiry_id'::bytea),'hex'),
  target_surface,target_role,created_by_user_id,clock_timestamp(),clock_timestamp()+interval '1 hour' FROM invitations WHERE id='$id';" >/dev/null
-admin "BEGIN; SELECT id FROM invitations WHERE id='$expiry_id' FOR UPDATE; SELECT pg_sleep(10) /* invitation-expiry-gate */;
- UPDATE invitations SET expires_at=clock_timestamp()-interval '1 second' WHERE id='$expiry_id'; COMMIT;" > "$scratch/expiry-gate" &
-gate=$!; pids+=($gate)
-for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE query LIKE '%invitation-expiry-gate%' AND wait_event='PgSleep';")" = 1; then break; fi; sleep 0.1; done
-test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE query LIKE '%invitation-expiry-gate%' AND wait_event='PgSleep';")" = 1
+start_gate invitation-expiry-gate "SELECT id FROM invitations WHERE id='$expiry_id' FOR UPDATE;"
 post recipient "/me/invitations/$expiry_id/accept" '{}' > "$scratch/expiry-status" &
 pending=$!; pids+=($pending)
-for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%FROM invitations%FOR SHARE%';")" -ge 1; then break; fi; sleep 0.1; done
-test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%FROM invitations%FOR SHARE%';")" -ge 1
-wait "$gate"; wait "$pending"; pids=()
+wait_for_gate_block
+release_gate "UPDATE invitations SET expires_at=clock_timestamp()-interval '1 second' WHERE id='$expiry_id';"
+wait "$pending"; pids=()
 test "$(cat "$scratch/expiry-status")" = 400
 test "$(admin "SELECT count(*) FROM invitations WHERE id='$expiry_id' AND accepted_at IS NULL AND accepted_by_user_id IS NULL;")" = 1
 test "$(admin "SELECT count(*) FROM audit_events WHERE event_type='INVITATION_ACCEPTED' AND entity_id='$expiry_id';")" = 0
@@ -242,16 +267,13 @@ done
 unset link_token link_hash
 printf 'STRATAAI_E2E_INVITATION_LINK_FIXTURES=%s\n' "$link_fixtures" >> "$GITHUB_ENV"
 # Observe a real account-lock wait, then revoke the original session before disclosure.
-admin "BEGIN; SELECT id FROM users WHERE id='$user' FOR UPDATE; SELECT pg_sleep(10) /* invitation-read-gate */; COMMIT;" > "$scratch/gate" &
-gate=$!; pids+=($gate)
-for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE query LIKE '%invitation-read-gate%' AND wait_event='PgSleep';")" = 1; then break; fi; sleep 0.1; done
-test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE query LIKE '%invitation-read-gate%' AND wait_event='PgSleep';")" = 1
+start_gate invitation-read-gate "SELECT id FROM users WHERE id='$user' FOR UPDATE;"
 curl --max-time 60 --silent --show-error -b "$scratch/recipient.cookies" -o "$scratch/denied" -w '%{http_code}' "$BASE_URL/me/invitations" > "$scratch/wait-status" &
 pending=$!; pids+=($pending)
-for attempt in $(seq 1 100); do if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock';")" -ge 1; then break; fi; sleep 0.1; done
-test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock';")" -ge 1
+wait_for_gate_block
 admin "UPDATE sessions SET revoked_at=clock_timestamp() WHERE user_id='$user';" >/dev/null
-wait "$gate"; wait "$pending"; pids=()
+release_gate
+wait "$pending"; pids=()
 test "$(cat "$scratch/wait-status")" = 401
 scripts/ci/assert-file-excludes.sh 'Release invitation council|targetRole|organizationId' "$scratch/denied"
 echo 'Release verified-email invitation discovery: one-connection paging, atomic acceptance, duplicates, immutable attribution, restart, invitation expiry wait and post-wait revocation passed.'
