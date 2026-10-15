@@ -179,6 +179,47 @@ class OperatorEvidenceTests(unittest.TestCase):
     def test_complete_fixed_scope(self):
         self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))
 
+    def identity_observation(self, available=1):
+        line = next(line for line in self.fixture().splitlines() if line.startswith('strataai_worker_scoped_backlog_available{'))
+        line = line.replace('strataai_worker_scoped_backlog_available', 'strataai_worker_identity_backlog_available').replace('queue="organization"', 'queue="identity_email"')
+        return '\n'.join([line[:-1] + str(available)] + [
+            line.replace('strataai_worker_identity_backlog_available', 'strataai_worker_identity_backlog').replace('queue="identity_email"', f'queue="identity_email",state="{state}"')[:-1] + str(count)
+            for state, count in [('pending', 0), ('running', 2)]])
+
+    def test_identity_backlog_is_optional_and_requires_complete_healthy_observation(self):
+        self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))
+        extra = self.identity_observation()
+        self.assertTrue(metrics.verify(self.pinned_jobs(self.fixture() + '\n' + extra), self.revision, self.version))
+        for selected in extra.splitlines():
+            missing = '\n'.join(line for line in extra.splitlines() if line != selected)
+            self.assertFalse(metrics.verify(self.fixture() + '\n' + missing, self.revision, self.version))
+
+    def test_identity_backlog_unavailable_accepts_no_or_retained_counts_but_not_duplicates(self):
+        extra = self.identity_observation(0)
+        for observation in [extra, extra.splitlines()[0]]:
+            self.assertTrue(metrics.verify(self.fixture() + '\n' + observation, self.revision, self.version))
+        for duplicate in extra.splitlines():
+            self.assertFalse(metrics.verify(self.fixture() + '\n' + extra + '\n' + duplicate, self.revision, self.version))
+
+    def test_identity_and_organization_observation_failures_are_independent(self):
+        raw = self.fixture() + '\n' + self.identity_observation(0)
+        scoped = next(line for line in raw.splitlines() if line.startswith('strataai_worker_scoped_backlog_available{'))
+        raw = self.pinned_jobs(raw.replace(scoped, scoped[:-1] + '0'))
+        self.assertTrue(metrics.verify(raw, self.revision, self.version, backlog_available=0))
+        self.assertFalse(metrics.verify(raw, self.revision, self.version))
+
+    def test_identity_backlog_rejects_private_fields_queue_state_and_counts(self):
+        extra = self.identity_observation()
+        for changed in [extra.replace('identity_email', 'organization'), extra.replace('state="pending"', 'state="private-purpose"'),
+                        extra.replace('queue="identity_email"', 'queue="identity_email",recipient_email="private@example.test"'),
+                        extra.replace('queue="identity_email"', 'queue="identity_email",purpose="RESET_PASSWORD"'),
+                        extra.replace('state="running"', 'state="running",job_id="opaque"'),
+                        extra.replace('} 2', '} -1'), extra.replace('} 2', '} 0.5'), extra.replace('} 2', '} NaN'),
+                        extra.replace('} 2', '} 1e309'), extra.replace('available{', 'available{state="pending",'),
+                        extra.replace(self.revision, 'b' * 40), extra.replace('service_name="strataai-worker"', 'service_name="strataai-api"')]:
+            with self.subTest(changed=changed):
+                self.assertFalse(metrics.verify(self.fixture() + '\n' + changed, self.revision, self.version))
+
     def loop_failure(self):
         return next(line for line in self.fixture().splitlines() if line.startswith('strataai_worker_jobs{')).replace('strataai_worker_jobs', 'strataai_worker_loop_failures').replace(',outcome="completed"', '')
 

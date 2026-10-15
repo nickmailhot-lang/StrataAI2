@@ -1,5 +1,60 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Identity-email backlog — 2026-10-15
+
+With identity email and OTLP metrics both enabled, the separate Worker now
+samples the global identity-mail queue independently of Organization job scope.
+`strataai.worker.identity.backlog` exposes only `queue=identity_email` and
+`state=pending|running`; `strataai.worker.identity.backlog.available` exposes
+that fixed queue and availability zero/one. Pending includes future schedules;
+running includes active/expired leases. Sent, failed and cancelled rows are
+excluded. These are persisted-state counts, not immediately runnable messages,
+delivery success, invitation-mail counts or unique recipients. Do not sum global
+counts from multiple Worker replicas.
+
+The reader uses the existing restricted `IdentityDeliveryPostgres` connection,
+global service RLS and a read-only transaction, with a dedicated single-connection
+pool and two-second connection/command limits. No role grant is added. It reads
+counts rather than recipients, tokens, sender/provider fields or subjects, and
+never claims, sends, acknowledges or retries mail. The hosted sampler has a
+five-second cancellation deadline and waits 30 seconds after each pass. Exporter
+callbacks only read memory. Missing/failed/invalid observations report availability
+zero and discard the in-process counts; healthy empty queues publish actual zeros.
+Require availability one and fresh samples, because downstream gauges can retain
+older data. Disabled mail or metrics does not run this sampler; it is not a new
+core readiness dependency.
+
+The real restricted PostgreSQL 17.11/149-migration contract passes in **1.878s**:
+two subjects, scheduled pending work, active/expired leases, terminal exclusion,
+service RLS, unchanged job rows and return to baseline. Mail credentials cannot
+read Organizations/password hashes; ordinary API/Worker credentials cannot read
+the identity queue. The normal persistence CI run supplies its existing narrow
+mail fixture role and now executes this contract. No production permissions are
+broadened.
+
+All **75 focused Linux .NET cases** pass, including 11 identity sampler/budget/
+lifecycle cases, existing Worker regressions and real SDK export to a controlled
+receiver. All **940 source/415 binary inputs** match. The actual compiled current
+Worker host also passes a **76.195s** native rehearsal: actual SDK observations
+show availability **1 → 0 → 1** across database network failure/recovery, with
+exactly two pending/two running mail jobs after recovery. Both mail and Organization
+job fingerprints remain unchanged. Liveness stays 200; readiness refuses with
+503 in **2.250s**, then recovers to 200. All **831 source/persistence inputs** and
+**42 Worker binary inputs** match. Fixtures restore Docker inventory and remove
+724,100 standalone-store plus 735,831 host-rehearsal temporary bytes; no new image
+is built, pulled or imported and the original database is unused.
+
+These are mounted current compiled-code checks in retained runtimes with a
+controlled OTLP HTTP receiver. The host uses non-runnable fixture jobs; it does
+not establish provider delivery, a pinned-Collector deployment or immutable-image
+release acceptance. All **21 Collector verifier cases** and **255 CI coverage
+guards** pass. Identity observations are optional when mail is disabled; when
+present, healthy observations require both state counts and exactly one valid
+availability sample. Private fields, wrong queues/services, partial/duplicate
+samples and invalid values are rejected. Actual current-image collection,
+discovery-wide Organization backlog, lease age, deployed dashboards/alerts and
+the rest of ARCH-08 remain open. Large-load testing stays post-MVP.
+
 ## Bind Collector job labels to service identity — 2026-10-15
 
 The CI scrape verifier previously permitted arbitrary `job` text alongside

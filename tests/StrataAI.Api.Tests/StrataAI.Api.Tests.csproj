@@ -16,6 +16,7 @@
     <Compile Include="../../src/StrataAI.Worker/WorkerLog.cs" Link="Worker/WorkerLog.cs" />
     <Compile Include="../../src/StrataAI.Worker/WorkerJobTelemetry.cs" Link="Worker/WorkerJobTelemetry.cs" />
     <Compile Include="../../src/StrataAI.Worker/OrganizationBacklogWorker.cs" Link="Worker/OrganizationBacklogWorker.cs" />
+    <Compile Include="../../src/StrataAI.Worker/IdentityEmailBacklogWorker.cs" Link="Worker/IdentityEmailBacklogWorker.cs" />
     <Compile Include="../../src/StrataAI.Worker/WorkerHeartbeat.cs" Link="Worker/WorkerHeartbeat.cs" />
     <Compile Include="../../src/StrataAI.Worker/IdentityEmailWorker.cs" Link="Worker/IdentityEmailWorker.cs" />
     <Compile Include="../../src/StrataAI.Worker/InvitationIssuerAuthorityWorker.cs" Link="Worker/InvitationIssuerAuthorityWorker.cs" />

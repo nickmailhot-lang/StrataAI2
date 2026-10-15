@@ -37,6 +37,14 @@ var organization = Guid.NewGuid(); var foreignOrganization = Guid.NewGuid(); var
 var board = Guid.NewGuid(); var foreignBoard = Guid.NewGuid(); var list = Guid.NewGuid(); var foreignList = Guid.NewGuid();
 var card = Guid.NewGuid(); var foreignCard = Guid.NewGuid();
 await using var admin = new NpgsqlConnection(adminConnection); await admin.OpenAsync(ct);
+if (args.SequenceEqual(["--identity-backlog-only"], StringComparer.Ordinal))
+{
+    await IdentityBacklogContract.RunAsync(admin,
+        Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_IDENTITY_CONNECTION")
+            ?? throw new InvalidOperationException("Contract restricted identity connection is required."),
+        apiConnection, workerConnection, ct);
+    return;
+}
 if (args.SequenceEqual(["--organization-backlog-only"], StringComparer.Ordinal))
 {
     await OrganizationBacklogContract.RunAsync(admin, workerConnection, ct);
@@ -423,6 +431,10 @@ try
     await UserMentionHandleStoreContract.RunAsync(admin,apiConnection,ct);
     await ListBoardTransferPersistenceContract.RunAsync(admin,apiConnection,ct);
     await OrganizationBacklogContract.RunAsync(admin,workerConnection,ct);
+    await IdentityBacklogContract.RunAsync(admin,
+        Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_IDENTITY_CONNECTION")
+            ?? throw new InvalidOperationException("Contract restricted identity connection is required."),
+        apiConnection,workerConnection,ct);
     await WorkEventBatchPersistenceContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await ListPublicationBatchContract.RunAsync(admin,apiConnection,ct);
     await ListMovementApplicationContract.RunAsync(admin,apiConnection,workerConnection,ct);

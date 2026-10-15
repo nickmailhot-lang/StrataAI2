@@ -68,6 +68,11 @@ if (builder.Services.AddIdentityDeliveryTokens(builder.Configuration,runtime))
     builder.Services.AddSingleton<IdentityDeliveryProcessor>();
     builder.Services.AddSingleton<IIdentityDeliveryDiagnostics,IdentityDeliveryDiagnostics>();
     builder.Services.AddHostedService<IdentityEmailWorker>();
+    if (operatorMetricsEnabled)
+    {
+        builder.Services.AddSingleton<IIdentityDeliveryBacklogReader>(_ => new PostgresIdentityDeliveryBacklogReader(identityDb));
+        builder.Services.AddHostedService<IdentityEmailBacklogWorker>();
+    }
 }
 
 if (runtime.Mode == RuntimeMode.Production)

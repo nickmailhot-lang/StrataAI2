@@ -37,6 +37,9 @@ public sealed class OperatorMetricsTests
         using var backlog = new OrganizationBacklogWorker(new OrganizationBacklogTests.Reader((_, _) =>
             Task.FromResult(new OrganizationJobBacklog(2, 1))), new([Guid.NewGuid()]), factory);
         await backlog.SampleAsync(TestContext.Current.CancellationToken);
+        using var identityBacklog = new IdentityEmailBacklogWorker(new IdentityEmailBacklogTests.Reader(_ =>
+            Task.FromResult(new StrataAI.Application.Identity.IdentityDeliveryBacklog(3, 2))), factory);
+        await identityBacklog.SampleAsync(TestContext.Current.CancellationToken);
         telemetry.Record(JobProcessingResult.Completed);
         telemetry.RecordOrganizationLoopFailure(); telemetry.RecordIdentityEmailLoopFailure();
         factory.Create("StrataAI.HttpServer").CreateCounter<long>("private-api-observation").Add(1);
@@ -45,6 +48,8 @@ public sealed class OperatorMetricsTests
         Assert.Contains("strataai.worker.loop.failures", sample.WireText); Assert.Contains("identity_email", sample.WireText);
         Assert.Contains("strataai.worker.scoped.backlog", sample.WireText);
         Assert.Contains("strataai.worker.scoped.backlog.available", sample.WireText);
+        Assert.Contains("strataai.worker.identity.backlog", sample.WireText);
+        Assert.Contains("strataai.worker.identity.backlog.available", sample.WireText);
         Assert.Contains("pending", sample.WireText); Assert.Contains("running", sample.WireText);
         Assert.Contains("strataai.build.revision", sample.WireText);
         Assert.DoesNotContain("strataai-api", sample.WireText); Assert.DoesNotContain("private", sample.WireText);

@@ -410,6 +410,7 @@ jobs:
 
       - name: Execute real C# upload persistence under the restricted API login
         env:
+          STRATAAI_CONTRACT_IDENTITY_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_identity_mail_ci;Password=identity-ci-password;SSL Mode=Disable
           STRATAAI_CONTRACT_ADMIN_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=postgres;Password=postgres;SSL Mode=Disable
           STRATAAI_CONTRACT_API_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password;SSL Mode=Disable
           STRATAAI_CONTRACT_WORKER_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password;SSL Mode=Disable
@@ -426,6 +427,7 @@ jobs:
 
       - name: Retention hold owning PostgreSQL adapter and rollback contract
         env:
+          STRATAAI_CONTRACT_IDENTITY_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_identity_mail_ci;Password=identity-ci-password;SSL Mode=Disable
           STRATAAI_CONTRACT_ADMIN_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=postgres;Password=postgres;SSL Mode=Disable
           STRATAAI_CONTRACT_API_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password;SSL Mode=Disable
           STRATAAI_CONTRACT_WORKER_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password;SSL Mode=Disable

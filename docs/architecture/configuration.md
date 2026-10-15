@@ -74,6 +74,12 @@ Require fresh samples and availability one; failed observations are unknown,
 and overlapping scopes must not be summed. This does not include the global
 identity-email queue or Organizations served only by discovery workers.
 
+When identity email is enabled, its existing restricted `IdentityDeliveryPostgres`
+connection also supplies [global identity-email backlog observations](operator-metrics.md#identity-email-backlog--2026-10-15).
+Both email and metrics must be enabled; no additional credentials, grants or
+readiness dependency are introduced. Use its separate availability/freshness
+signals and do not sum replicas' global counts.
+
 Build revision/version are embedded in the image at build time and cannot be
 set by runtime environment variables. The web's `/build-metadata.json`, API's
 `/api/runtime` and Worker's `/runtime` report the identifiers of their actual

@@ -50,6 +50,7 @@ def verify(raw, revision, version, *, backlog_available=1):
     names.add("strataai_worker_jobs")
     names.add("strataai_worker_loop_failures")
     names.update({"strataai_worker_scoped_backlog", "strataai_worker_scoped_backlog_available"})
+    names.update({"strataai_worker_identity_backlog", "strataai_worker_identity_backlog_available"})
     names.update("strataai_http_server_duration" + suffix for suffix in ["_bucket", "_count", "_sum"])
     for line in raw.splitlines():
         if not line.startswith("strataai_"):
@@ -62,12 +63,13 @@ def verify(raw, revision, version, *, backlog_available=1):
             return False
         permitted = allowed | {"method", "status_code"} if match[1].startswith("strataai_http_server_") else allowed
         worker = match[1] in {"strataai_worker_jobs", "strataai_worker_loop_failures",
-                              "strataai_worker_scoped_backlog", "strataai_worker_scoped_backlog_available"}
+                              "strataai_worker_scoped_backlog", "strataai_worker_scoped_backlog_available",
+                              "strataai_worker_identity_backlog", "strataai_worker_identity_backlog_available"}
         if worker:
             permitted = {"queue", "job", "instance", "service_name", "service_namespace", "service_version", "strataai_build_revision"}
             if match[1] == "strataai_worker_jobs":
                 permitted.add("outcome")
-            if match[1] == "strataai_worker_scoped_backlog":
+            if match[1] in {"strataai_worker_scoped_backlog", "strataai_worker_identity_backlog"}:
                 permitted.add("state")
         if set(labels) - permitted or labels.get("instance", "") != "":
             return False
@@ -89,10 +91,11 @@ def verify(raw, revision, version, *, backlog_available=1):
                 return False
             if not math.isfinite(float(match[3])) or float(match[3]) < 0:
                 return False
-            if match[1].startswith("strataai_worker_scoped_backlog"):
-                if labels.get("queue") != "organization" or not float(match[3]).is_integer():
+            if match[1].startswith(("strataai_worker_scoped_backlog", "strataai_worker_identity_backlog")):
+                expected_queue = "identity_email" if match[1].startswith("strataai_worker_identity_") else "organization"
+                if labels.get("queue") != expected_queue or not float(match[3]).is_integer():
                     return False
-                if match[1] == "strataai_worker_scoped_backlog" and labels.get("state") not in {"pending", "running"}:
+                if match[1] in {"strataai_worker_scoped_backlog", "strataai_worker_identity_backlog"} and labels.get("state") not in {"pending", "running"}:
                     return False
                 if match[1].endswith("_available") and float(match[3]) not in {0, 1}:
                     return False
@@ -107,6 +110,18 @@ def verify(raw, revision, version, *, backlog_available=1):
             if not math.isfinite(float(match[3])) or float(match[3]) < 0:
                 return False
         samples.append((match[1], labels, float(match[3])))
+
+    # Identity mail is disabled in some fixtures. When present, it must report
+    # one complete valid observation, never an unexplained partial snapshot.
+    identity = [(name, labels, value) for name, labels, value in samples if name.startswith("strataai_worker_identity_backlog")]
+    if identity:
+        availability = [value for name, _, value in identity if name.endswith("_available")]
+        if len(availability) != 1:
+            return False
+        for state in ["pending", "running"]:
+            counts = [value for name, labels, value in identity if name == "strataai_worker_identity_backlog" and labels.get("state") == state]
+            if len(counts) > 1 or (availability[0] == 1 and len(counts) != 1):
+                return False
 
     def observed(name, expected):
         return any(metric == name and (value == 1 if name.startswith(("strataai_checklist_client_", "strataai_activity_client_")) else value >= 1)

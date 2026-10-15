@@ -4,6 +4,12 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [identity-email backlog monitor](operator-metrics.md#identity-email-backlog--2026-10-15)
+adds read-only global mail counts using the existing restricted mail role.
+Current compiled-host failure/recovery and small PostgreSQL/Worker cases pass;
+current immutable-image collection and deployed alerts remain required. Mail
+delivery and core readiness behavior are preserved; no large-load test runs.
+
 The [Collector job-label check](operator-metrics.md#bind-collector-job-labels-to-service-identity--2026-10-15)
 now refuses arbitrary/private or mismatched service text in otherwise valid
 scrapes. This repairs evidence validation; no application data leak is claimed.
