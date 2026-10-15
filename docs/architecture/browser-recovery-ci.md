@@ -1,5 +1,55 @@
 # Browser recovery CI investigation
 
+## Stop waiting on retired command launchers — 2026-10-15
+
+Hosted run [38714524264](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38714524264),
+commit `ccfc2e243108c2a895fd65ac8f014dffab75d13c`, reports 101 passes and two
+failures in browser shard one. The diagnostic archive's advertised size and
+SHA-256, canonical build metadata and all 36 payload checksums are independently
+verified before inspecting its traces. In the phone Reminder recovery case,
+the retry POST succeeds, the page displays **Due reminder saved.**, and the
+Retry launcher disappears. The request observer advances while the keyboard
+helper is still waiting for that retired launcher. The two observed POSTs
+include the original lost-acknowledgment attempt and its receipt replay.
+
+The helper now checks its existing request observer between admission waits
+and stops waiting when the observation advances. It still requires the exact
+expected count, rejects excess requests and rechecks before sending Enter.
+Its five-second admission limit and the product cases' 120-second deadlines
+remain unchanged. Five isolated helper cases use real Playwright expectations:
+the old helper fails the two retired-control regressions; the repaired helper
+passes all five, including rejection of excess requests and unexpected initial
+observations. This protocol fixture is unit evidence, not native UI evidence.
+
+The desktop comment failure follows a successful comments GET but ends with
+the protected review unavailable. That trace does not identify the precise
+cause. Its explicit refresh keypress remains; the existing bounded read-only
+review helper now observes the literal comment before continuing. No write is
+placed inside that opening loop. Original exact receipt/body/count, literal/XSS,
+author/version, peer update, edit/redaction and lifecycle checks remain.
+
+A fresh bounded local invocation passes all **four selected desktop/phone
+cases**, without retries, skips, flakes or report errors, in **230,144.16 ms**:
+the complete comment author workflow and Reminder original-receipt recovery.
+The separate due-delivery Reminder pair is outside this invocation. Current
+frontend assets run through Nginx with the retained, archive-verified `24f56246`
+API/Worker images and fresh PostgreSQL 17/pgvector with 149 migrations and
+restricted roles. The fixture disables mail transport and makes API account
+verification optional while retaining the Worker's verified-account policy.
+Four served asset hashes and all 174 captured inputs match; owned containers,
+volumes and networks are removed, the original Docker inventory is restored,
+and 3,332,627 temporary bytes are removed. The original database is not used.
+An initial setup attempt stopped before browser execution because the private
+asset verifier used Windows separators in URLs; its cleanup also passed.
+
+The five helper tests are mandatory in web-quality CI, with omission, skip and
+ignored-error mutation guards. All **251 CI guards**, browser TypeScript and
+workflow lint pass; collection verifies 400 cases in 146 intact files across
+four shards. Collection is not execution. This local hybrid evidence does not
+certify a current immutable-image release or close either PRD. Estimated work
+remaining stays PRD-12 **24%** and PRD-15 **34%**. Large-load tests remain deferred
+until after the operational MVP.
+
 Run 37061592501's exact-image browser job completed with five failures. The real
 notification-center desktop/phone recovery scenario passed. Failed cases were
 archived List return focus at 390px, Card deletion review at both widths, label

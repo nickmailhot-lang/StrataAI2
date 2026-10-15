@@ -35,6 +35,9 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['request retirement unit checks omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify browser readiness excludes previous-screen responses');entry.run=entry.run.replace('node --experimental-strip-types --test tests/browser/keyboardAdmission.test.mjs',''); }],
+  ['request retirement unit checks skipped', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify browser readiness excludes previous-screen responses').if='false'; }],
+  ['request retirement unit errors ignored', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify browser readiness excludes previous-screen responses')['continue-on-error']=true; }],
   ['key recovery archive refusals omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy');entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'key_recovery_archive_test.py'",''); }],
   ['protected recovery cursor checks omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage');entry.run=entry.run.replace('node --test tests/https-recovery-cursor.test.mjs',''); }],
   ['certificate lifetime command omitted from bundle', value => { const step=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle');step.run=step.run.replace('cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh',''); }],

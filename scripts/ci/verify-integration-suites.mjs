@@ -243,6 +243,10 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(provenance['continue-on-error'] ?? false, false);
   assert.ok(build.steps.indexOf(provenance) > build.steps.findIndex(step => step.name === 'Build Worker image'));
   assert.ok(build.steps.indexOf(provenance) < build.steps.indexOf(archive));
+  const keyboardAdmission = jobs['web-quality'].steps.find(step => step.name === 'Verify browser readiness excludes previous-screen responses');
+  assert.equal(keyboardAdmission?.if, undefined);
+  assert.equal(keyboardAdmission?.['continue-on-error'] ?? false, false);
+  assert.ok(keyboardAdmission?.run.includes('node --experimental-strip-types --test tests/browser/keyboardAdmission.test.mjs'), 'Request admission retirement checks must run before image builds');
   const sourceProvenance = jobs['web-quality'].steps.find(step => step.name === 'Verify source test report completeness and privacy');
   assert.equal(sourceProvenance.if, undefined);
   assert.equal(sourceProvenance['continue-on-error'] ?? false, false);

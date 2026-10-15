@@ -1,5 +1,12 @@
 # Card dates foundation — PRD-12
 
+The [retired Reminder launcher repair](browser-recovery-ci.md#stop-waiting-on-retired-command-launchers--2026-10-15)
+records a hosted successful receipt replay followed by a test helper waiting on
+its removed Retry control. Five helper cases and four selected native
+comment/Reminder recovery cases pass with exact request counts and original
+deadlines retained. This is bounded local evidence; current immutable CI and
+remaining acceptance are still required. Estimated work remaining: **24%**.
+
 `PATCH /cards/{id}/dates` accepts `startAt`, `dueAt`, `dueTimezone`,
 `dueHasTime`, `dueComplete` and the current Card `version`. A UUID retry key uses
 the existing command receipt store. The response contains `{ card, changed }`.

@@ -71,7 +71,9 @@ for (const width of [1280, 390]) {
       await expect(page.locator('section[aria-label="Card comments"]').getByText(`You · ${displayed}`, { exact: true })).toBeVisible();
       const comment = stored[0].id;
       await expect(review).toBeEnabled(); await review.press('Enter');
-      await expect(page.getByText('Literal <script>🙂', { exact: true })).toBeVisible();
+      // Keep the explicit refresh keypress; a protected foreground read can
+      // still retire its result. Reopen only this read until content is admitted.
+      await openAdmittedReview(review, page.getByText('Literal <script>🙂', { exact: true }));
       await expect(page.locator('section[aria-label="Card comments"]').getByText(`You · ${displayed}`, { exact: true })).toBeVisible();
       expect(await page.locator('section[aria-label="Card comments"] script').count()).toBe(0);
       const beforePreference = await (await peer.request.get('/me')).json();

@@ -4,6 +4,13 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [comment/Reminder recovery follow-up](browser-recovery-ci.md#stop-waiting-on-retired-command-launchers--2026-10-15)
+repairs test observation after a successful receipt replay retires its launcher
+and admits the refreshed read-only comment review. Five helper cases, 251 CI
+guards and four bounded native desktop/phone workflow cases pass. The fixture
+is removed and the original Docker inventory restored; no load test runs.
+Current immutable-image CI and the release acceptance below remain required.
+
 The [operator certificate lifetime check](https-deployment.md#operator-certificate-lifetime-check--2026-10-15)
 adds a read-only command for monitoring the served endpoint's trust, identity
 and usable lifetime. Its 25 TLS/input tests, 246 CI coverage guards and 37

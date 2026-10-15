@@ -1,5 +1,13 @@
 # PRD-15 acceptance map — open
 
+The [comment refresh and retired-launcher follow-up](browser-recovery-ci.md#stop-waiting-on-retired-command-launchers--2026-10-15)
+records two hosted shard failures, a bounded read-only comment review change,
+five helper regressions and four passing desktop/phone comment/Reminder recovery
+cases. Exact receipt/body/count, author, literal/XSS and lifecycle checks remain.
+This local hybrid evidence does not certify current immutable CI or full PRD
+acceptance. Estimated work remaining stays **34%**; large-load testing remains
+deferred until after the MVP.
+
 Current status (2026-10-09): open, **34% estimated work remaining** (planning estimate). Earlier estimates below record their evidence scope.
 
 Scope is the complete issue #16 specification. This map does not close the

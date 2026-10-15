@@ -1,13 +1,16 @@
-import type { Locator } from '@playwright/test';
-import { expect } from './releaseTest';
+import { expect, type Locator } from '@playwright/test';
 
 // Focusing a page/control can start a protected foreground read. Establish
 // current enabled focus before the one activation keypress; retry only focus.
-export async function focusAdmittedControl(button: Locator) {
+export async function focusAdmittedControl(button: Locator, stopWaiting: () => boolean = () => false) {
   await expect(async () => {
+    if (stopWaiting()) return;
     await expect(button).toBeEnabled({ timeout: 500 });
+    if (stopWaiting()) return;
     await button.focus({ timeout: 500 });
+    if (stopWaiting()) return;
     await expect(button).toBeFocused({ timeout: 500 });
+    if (stopWaiting()) return;
     await expect(button).toBeEnabled({ timeout: 500 });
   }).toPass({ timeout: 5_000 });
 }
@@ -25,7 +28,7 @@ export async function pressObservedRequest(button: Locator, requestCount: () => 
   expect(requestCount()).toBe(expectedCount - 1);
   await expect(async () => {
     if (requestCount() === expectedCount - 1) {
-      await focusAdmittedControl(button);
+      await focusAdmittedControl(button, () => requestCount() !== expectedCount - 1);
       // The observer can advance while admission waits; recheck before Enter.
       if (requestCount() === expectedCount - 1) await button.press('Enter', { timeout: 500 });
     }
