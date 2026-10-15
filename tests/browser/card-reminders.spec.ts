@@ -3,7 +3,7 @@ import { expectPersistedNotificationDelivery, retainPrivateNotification, type Pr
 import { expect, test } from './releaseTest';
 import AxeBuilder from '@axe-core/playwright';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
 import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
 for (const width of [1280, 390]) {
@@ -54,7 +54,8 @@ for (const width of [1280, 390]) {
       // The peer recovers its own private choice through Board invalidation,
       // with no reload and no shared-stream Reminder identity/type disclosure.
       await expect(peerRegion.getByText('Your due reminder is scheduled.', { exact: true })).toBeVisible();
-      await expect(retry).toBeEnabled(); await retry.press('Enter'); await expect(region.getByText('Due reminder saved.', { exact: true })).toBeVisible();
+      await pressObservedRequest(retry, () => attempts.length, 2);
+      await expect(region.getByText('Due reminder saved.', { exact: true })).toBeVisible();
       await expect(region.getByRole('button', { name: 'Due reminder', exact: true })).toBeFocused();
       expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
       expect(JSON.parse(attempts[0].body!)).toEqual({ intervalCode: '1_HOUR', enabled: true, cardVersion: 2, version: 0 });

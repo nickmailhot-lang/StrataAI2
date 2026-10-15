@@ -732,3 +732,26 @@ These fresh restricted-role PostgreSQL, compiled API/Worker and current-asset
 checks support the test repair; full current immutable-image CI and remaining
 acceptance stay required. Estimated PRD-12 work remaining stays **24%**. The MVP
 milestone remains pending and large-load tests remain disabled.
+
+## Original Reminder recovery request admission (2026-10-14)
+
+Retained run `38662468956`, full-browser shard 1 at `f6a71b67`, passes 102
+cases and fails phone personal Reminder recovery. The original Reminder POST
+starts at monotonic 4142216.326 ms, commits with HTTP 200 through the intercepted
+fetch, and has its acknowledgment deliberately dropped. The later retry Enter
+runs at 4143253.761–4143292.204 ms, overlapping a protected Board GET beginning
+at 4143269.663 ms. No second Reminder POST follows; the retained context still
+offers the original **Retry reminder change** and its unconfirmed notice.
+This establishes missing recovery-request admission, rather than a failed
+receipt or a server refusal. It does not prove every possible client race.
+
+Only that explicit retry now uses the existing bounded `pressObservedRequest`
+helper and the original route's request counter, targeting exactly the second
+POST. Admission stops once that request starts. The original actor/key/body,
+Card/Reminder versions, exactly two attempts, acknowledged success/focus, live
+peer scheduling/cancellation, canonical state, Axe and 120-second scenario
+deadline remain unchanged. The first mutation and cancellation still have one
+activation each. Browser typing and discovery of all four Reminder cases pass;
+the corrected browser scenarios still require execution. These source checks
+do not close PRD-12. Estimated work remaining stays **24%**; full immutable CI,
+all original acceptance and the post-MVP capacity requirements remain open.
