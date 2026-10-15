@@ -91,6 +91,32 @@ class OperatorEvidenceTests(unittest.TestCase):
     def test_complete_fixed_scope(self):
         self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))
 
+    def test_duplicate_or_unparsed_labels_cannot_hide_private_values(self):
+        original = 'queue="organization"'
+        for replacement in ['queue="hidden-scope",queue="organization"',
+                            'queue="organization",queue="organization"',
+                            'queue="organization",unparsed-private-token',
+                            'queue="organization" unparsed="hidden"',
+                            'queue="organization",',
+                            r'queue="organization",job="invalid\q"',
+                            'queue="organization","private-scope"="hidden"']:
+            with self.subTest(replacement=replacement):
+                self.assertFalse(metrics.verify(self.fixture().replace(original, replacement), self.revision, self.version))
+
+    def test_valid_label_whitespace_trailing_comma_and_quoted_names_preserve_fixed_scope(self):
+        for fixture in [self.fixture().replace(',', ', '),
+                        self.fixture().replace('} 1', ',} 1'),
+                        self.fixture().replace('queue="organization"', '"queue"="organization"')]:
+            with self.subTest(fixture=fixture[-150:]):
+                self.assertTrue(metrics.verify(fixture, self.revision, self.version))
+
+    def test_quoted_alias_cannot_duplicate_a_key_and_escaped_values_remain_intact(self):
+        self.assertFalse(metrics.verify(self.fixture().replace('queue="organization"',
+            '"queue"="hidden-scope",queue="organization"'), self.revision, self.version))
+        escaped = r'path\\part\"quote\nnext'
+        self.assertEqual({"job": escaped}, metrics.parse_labels('job="' + escaped + '"'))
+        self.assertEqual({"job": "comma,inside"}, metrics.parse_labels('job="comma,inside",'))
+
     def test_missing_observation_or_wrong_build_cannot_pass(self):
         rows = self.fixture().splitlines()
         for index in range(len(rows)):

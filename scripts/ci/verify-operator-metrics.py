@@ -6,6 +6,33 @@ import sys
 from pathlib import Path
 
 
+_STRING = r'"(?:\\[\\"n]|[^"\\\r\n])*"'
+_LABEL = re.compile(r'[ \t]*([a-zA-Z_][a-zA-Z0-9_]*|' + _STRING + r')[ \t]*=[ \t]*(' + _STRING + r')[ \t]*')
+
+
+def parse_labels(raw):
+    """Consume every label; never discard malformed text or overwrite a key."""
+    labels = {}
+    position = 0
+    while raw[position:].strip():
+        match = _LABEL.match(raw, position)
+        if not match:
+            return None
+        name, value = match.groups()
+        if name.startswith('"'):
+            name = name[1:-1]
+        if name in labels:
+            return None
+        labels[name] = value[1:-1]
+        position = match.end()
+        if position == len(raw):
+            break
+        if raw[position] != ',':
+            return None
+        position += 1  # One final comma is valid in Prometheus text format.
+    return labels
+
+
 def verify(raw, revision, version):
     if not re.fullmatch(r"[0-9a-f]{40,64}", revision):
         return False
@@ -26,7 +53,9 @@ def verify(raw, revision, version):
         match = re.fullmatch(r'(\w+)\{([^}]*)\} ([0-9.eE+\-]+)', line)
         if not match or match[1] not in names:
             return False
-        labels = dict(re.findall(r'(\w+)="((?:\\.|[^"\\])*)"', match[2]))
+        labels = parse_labels(match[2])
+        if labels is None:
+            return False
         permitted = allowed | {"method", "status_code"} if match[1].startswith("strataai_http_server_") else allowed
         if match[1] == "strataai_worker_jobs":
             permitted = {"queue", "outcome", "job", "instance", "service_name", "service_namespace", "service_version", "strataai_build_revision"}

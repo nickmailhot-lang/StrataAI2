@@ -1,5 +1,26 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Complete Collector label validation — 2026-10-15
+
+The mandatory Collector verifier now consumes every label token and rejects
+duplicate names before applying its existing family, label, value and build
+checks. The former regex extraction silently overwrote duplicate labels or
+discarded malformed text, which could hide an earlier unknown queue value or
+unparsed field. Six initial negative subcases reproduce false acceptance; a
+seventh failing subcase is a valid quoted fixed label that the old parser rejects.
+All eight test methods now pass, including original observation omissions,
+wrong builds, unknown/private fields, HTTP/Worker outcomes and the new cases.
+
+Whitespace, quoted fixed label names, valid string escapes and one final comma
+follow the [Prometheus text format](https://prometheus.io/docs/instrumenting/exposition_formats/).
+Duplicate quoted/unquoted names are compared as the same key. Unknown names and
+values still fail the existing semantic checks; accepting valid syntax does not
+broaden exported fields. This remains a verifier for the selected pinned
+Collector families, not a general Prometheus ingestion service. No application
+runtime behavior, source test deadline, phase gate or retained-evidence field is
+changed. Exact current-image CI remains required; no ticket is closed by this
+parser repair.
+
 ## Worker job outcomes — 2026-10-15
 
 The separate Worker now exports `StrataAI.WorkerJobs` through the same explicitly
