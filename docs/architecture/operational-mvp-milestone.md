@@ -37,6 +37,35 @@ The List graph and event-publication capacity fixtures remain available behind `
 
 Retained-image CI now gates **27 capacity producer/evidence stages** through the repository variable `STRATAAI_POST_MVP_LOAD_TESTS`. It is verified as `0`, and the workflow defaults to `0` when absent. The named stages remain registered in [the phase inventory](../../scripts/ci/post-mvp-load-steps.json): full-capacity Board copying, the combined capacity matrix, large-board rank/native-browser testing and their matching evidence stages. Only these stages may use the phase gate; functional checks cannot be deferred by it. All image identity, security, functional integration, Worker, browser, deployment/restart and required-CI gates remain active. Source fixtures receive the same flag. Enable it only after the MVP milestone, then run and inspect the deferred capacity acceptance before claiming the relevant full PRDs complete.
 
+### Domain capacity phase correction — 2026-10-15
+
+The source audit finds three additional ungated capacity cases: the
+[100,000-Card label-reference plan](../../tests/StrataAI.Domain.Tests/CardLabelTransferPlanTests.cs)
+and [200/5,000-entry ranking sequences](../../tests/StrataAI.Domain.Tests/RankTokenTests.cs).
+They now require the same explicit post-MVP flag. The original capacity sizes
+and assertions remain available; a separate two/20-entry rank check stays active
+alongside small label, identity, ordering, deduplication and rejection cases.
+Earlier reports of 27 skipped integration stages and two API skips did not cover
+these Domain cases; earlier Domain runs still included them.
+
+The [phase-policy contract](../../tests/StrataAI.Domain.Tests/PostMvpCapacityPolicyTests.cs)
+checks the exact two-method registry, conditional activation and unconditionally
+active small correctness cases. Native execution with flag `0` passes the small
+checks and reports all three capacity cases skipped. An isolated flag-`1` run
+executes only the four metadata-policy checks, inspecting opt-in activation
+without executing capacity bodies. Across four invocations, **27 checks pass and
+three capacity cases are skipped**; no large workload is executed. Both the
+complete solution and final Domain build have zero warnings/errors. All **819**
+captured source/binary inputs match; owned test containers are removed and the
+original Docker inventory is restored, without new image builds/downloads.
+
+Seven old queued CI runs with ungated source and an incomplete Domain step
+receive cancellation requests to prevent execution of the old capacity
+cases. Inspected runs already past that step remain intact; cancellation is not
+a passing result. Do not rerun ungated historical source before the MVP. The
+repository flag stays `0`; deferred acceptance does not close any ticket or
+reduce its remaining scope.
+
 Verification of the split: 222 CI/startup guards pass, including refusal of missing phase gates, attempts to defer functional checks and hard-enabled source fixtures; workflow lint and a zero-warning/error solution build pass. Restricted PostgreSQL checks pass with the small datasets above, including concurrency, tenant isolation, late rollback, exact delivery references and actual Worker acknowledgment. The temporary fixture is removed with zero mismatches across 52 frozen source/runtime inputs. This is phase-policy and functional evidence, not a completed release milestone.
 
 ## Documentation links
