@@ -97,6 +97,39 @@ Set the issuer flag to `false` to suspend only account-source routing. Invalid
 values and enabled Demo issuer discovery reject startup. No configured
 Organization IDs are required. See [issuer account authority](invitation-recipient-authority.md#canonical-issuer-account-deactivation).
 
+### Production public origins
+
+Both `STRATAAI_PUBLIC_ORIGIN` and `STRATAAI_REALTIME_PUBLIC_ORIGIN`, when
+configured in Production, must be absolute HTTPS origins without credentials,
+paths beyond `/`, query strings or fragments. The shared runtime validates
+each independently for API and Worker, before creating database dependencies.
+A valid realtime override does not excuse an insecure general public origin;
+disabling identity mail does not disable this validation. Errors name only the
+setting, never the supplied URL or its potentially private values.
+
+HTTP is permitted only for local loopback origins such as
+`http://localhost:8088`, `http://127.0.0.1:8088` and `http://[::1]:8088`.
+Private LAN addresses, wildcard bind addresses and external hosts require HTTPS.
+This exception supports the local Compose/browser workflow; it is not a public
+deployment TLS termination configuration. Configure the public HTTPS origin
+when deploying behind your TLS proxy. Omitted/empty origins retain existing
+optional-feature behavior. Demo retains its existing origin policy.
+Enabled identity email still requires an HTTPS general public origin, including
+for local links; this stricter delivery requirement is unchanged.
+
+The [origin tests](../../tests/StrataAI.Api.Tests/ProductionOriginTests.cs)
+reproduce 30 failures among 49 cases against the previous runtime. All 49 pass
+after the repair; together with transport and actual runtime composition tests,
+87 focused Debug tests pass. The Debug solution builds with zero warnings/errors.
+Eight actual compiled Debug API/Worker startups reject both unsafe origin
+settings, with and without a secure alternative setting, without echoing input.
+These starts refuse before database setup and do not use Docker or a database.
+The [retained-image refusal gate](../../scripts/ci/test-runtime-startup-refusals.sh)
+now requires 24 cases, including eight origin refusals. Its seven self-test
+scenarios pass, including rejection of disclosed origin values. Exact-image CI
+for this repair remains required; these local checks do not prove deployed TLS
+termination or complete ARCH-12 acceptance. Large-load testing remains deferred.
+
 ### PostgreSQL transport
 
 API, general Worker and identity-mail database connections default to
@@ -141,8 +174,9 @@ The original client sent a subsequent byte instead. Four compiled Release
 API/Worker startups reject external plaintext through both connection-string
 and structured configuration, without echoing the supplied credential.
 The [retained-image startup gate](../../scripts/ci/test-runtime-startup-refusals.sh)
-includes those four cases, bringing its required total to 16; execution for the
-new immutable candidate remains required.
+included those four cases, bringing its required total at the transport repair
+to 16. The origin repair above extends that total to 24; execution for the new
+immutable candidate remains required.
 
 The refusal runner's Docker stand-in exercises all 16 intended failures and
 refuses successful startup, unrelated crashes, timeouts and disclosed policy

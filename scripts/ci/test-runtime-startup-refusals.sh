@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ARCH-05-AC-002 / ARCH-12 / PRD-02: actual retained host images must reject
 # missing/unknown mode, missing Production persistence, unsafe external database
-# transport and invalid API policy.
+# transport, unsafe public origins and invalid API policy.
 api_image="${1:?Pass the exact retained API image}"
 worker_image="${2:?Pass the exact retained Worker image}"
 temp_root="$(cd "${TMPDIR:-/tmp}" && pwd -P)"
@@ -28,6 +28,7 @@ expect_refusal() {
     -e Logging__LogLevel__Default=Warning \
     -e ConnectionStrings__Postgres= -e STRATAAI_DATABASE_HOST= \
     -e STRATAAI_DATABASE_NAME= -e STRATAAI_DATABASE_USERNAME= -e STRATAAI_DATABASE_PASSWORD= \
+    -e STRATAAI_PUBLIC_ORIGIN= -e STRATAAI_REALTIME_PUBLIC_ORIGIN= \
     -e STRATAAI_IDENTITY_EMAIL_ENABLED=false -e STRATAAI_ATTACHMENT_STORAGE_ENABLED=false \
     "$@" "$image" > "$scratch/refusal" 2>&1 || status=$?
   # A hang or unrelated crash does not prove the intended startup boundary.
@@ -37,7 +38,7 @@ expect_refusal() {
   if ! grep -Fq "$expected" "$scratch/refusal"; then
     echo "Startup refusal case $sequence did not produce its expected configuration error." >&2; exit 1
   fi
-  if grep -Eq 'invalid-policy-value|invalid-transport-secret' "$scratch/refusal"; then
+  if grep -Eq 'invalid-policy-value|invalid-transport-secret|invalid-origin-secret' "$scratch/refusal"; then
     echo 'Startup failure echoed a supplied configuration value.' >&2; exit 1
   fi
   docker stop "$name" >/dev/null 2>&1 || true
@@ -53,6 +54,14 @@ for image in "$api_image" "$worker_image"; do
     -e STRATAAI_DATABASE_HOST=external.invalid -e STRATAAI_DATABASE_NAME=fixture \
     -e STRATAAI_DATABASE_USERNAME=fixture -e STRATAAI_DATABASE_PASSWORD=invalid-transport-secret \
     -e STRATAAI_DATABASE_SSL_MODE=Disable
+  for key in STRATAAI_PUBLIC_ORIGIN STRATAAI_REALTIME_PUBLIC_ORIGIN; do
+    other=STRATAAI_PUBLIC_ORIGIN
+    if [ "$key" = STRATAAI_PUBLIC_ORIGIN ]; then other=STRATAAI_REALTIME_PUBLIC_ORIGIN; fi
+    expect_refusal "$image" production "$key must be an HTTPS origin" \
+      -e "$key=http://invalid-origin-secret.invalid"
+    expect_refusal "$image" production "$key must be an HTTPS origin" \
+      -e "$key=http://invalid-origin-secret.invalid" -e "$other=https://safe.invalid"
+  done
 done
 for mode in demo production; do
   for policy in 'STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL=invalid-policy-value' \
@@ -63,5 +72,5 @@ for mode in demo production; do
       -e "$policy"
   done
 done
-test "$sequence" = 16
-echo 'Both retained hosts reject missing/unknown mode, missing Production persistence and external plaintext; API policy refuses across both modes (16 startup cases).'
+test "$sequence" = 24
+echo 'Both retained hosts reject missing/unknown mode, missing Production persistence, external plaintext and unsafe public origins; API policy refuses across both modes (24 startup cases).'

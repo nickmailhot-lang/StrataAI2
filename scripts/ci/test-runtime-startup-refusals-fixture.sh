@@ -24,6 +24,12 @@ case "$FIXTURE_SCENARIO" in
   disclosed-value) echo 'STRATAAI_RUNTIME_MODE is required invalid-policy-value'; exit 139 ;;
 esac
 case " $* " in
+  *STRATAAI_REALTIME_PUBLIC_ORIGIN=http://invalid-origin-secret.invalid*)
+    echo 'STRATAAI_REALTIME_PUBLIC_ORIGIN must be an HTTPS origin without credentials, path, query or fragment; HTTP is allowed only for local loopback origins.'
+    if [ "$FIXTURE_SCENARIO" = disclosed-origin-value ]; then echo 'invalid-origin-secret'; fi ;;
+  *STRATAAI_PUBLIC_ORIGIN=http://invalid-origin-secret.invalid*)
+    echo 'STRATAAI_PUBLIC_ORIGIN must be an HTTPS origin without credentials, path, query or fragment; HTTP is allowed only for local loopback origins.'
+    if [ "$FIXTURE_SCENARIO" = disclosed-origin-value ]; then echo 'invalid-origin-secret'; fi ;;
   *external.invalid*)
     echo 'PostgreSQL SSL Mode=Disable requires the private local Compose service, a loopback endpoint or a Unix socket.'
     if [ "$FIXTURE_SCENARIO" = disclosed-transport-value ]; then echo 'invalid-transport-secret'; fi ;;
@@ -38,7 +44,7 @@ exit 139
 STUB
 chmod +x "$sandbox/bin/docker"
 export PATH="$sandbox/bin:$PATH" FIXTURE_LOG="$sandbox/result"
-for scenario in intended-refusals successful-startup unrelated-crash timeout disclosed-value disclosed-transport-value; do
+for scenario in intended-refusals successful-startup unrelated-crash timeout disclosed-value disclosed-transport-value disclosed-origin-value; do
   export FIXTURE_SCENARIO="$scenario"
   : > "$FIXTURE_LOG"
   status=0
@@ -46,13 +52,16 @@ for scenario in intended-refusals successful-startup unrelated-crash timeout dis
   grep -q '^stopped$' "$FIXTURE_LOG"
   if [ "$scenario" = intended-refusals ]; then
     test "$status" = 0
-    test "$(grep -c '^run$' "$FIXTURE_LOG")" = 16
+    test "$(grep -c '^run$' "$FIXTURE_LOG")" = 24
   elif [ "$scenario" = disclosed-transport-value ]; then
     test "$status" != 0
     test "$(grep -c '^run$' "$FIXTURE_LOG")" = 4
+  elif [ "$scenario" = disclosed-origin-value ]; then
+    test "$status" != 0
+    test "$(grep -c '^run$' "$FIXTURE_LOG")" = 6
   else
     test "$status" != 0
     test "$(grep -c '^run$' "$FIXTURE_LOG")" = 1
   fi
 done
-echo 'Runtime startup refusal runner rejects success, unrelated crashes, timeouts and disclosed policy/transport input (6 fixture scenarios).'
+echo 'Runtime startup refusal runner rejects success, unrelated crashes, timeouts and disclosed policy/transport/origin input (7 fixture scenarios).'

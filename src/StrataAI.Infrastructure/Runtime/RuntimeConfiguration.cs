@@ -28,6 +28,9 @@ public static class RuntimeConfiguration
             return descriptor;
         }
 
+        ValidateProductionOrigin(configuration, "STRATAAI_PUBLIC_ORIGIN");
+        ValidateProductionOrigin(configuration, "STRATAAI_REALTIME_PUBLIC_ORIGIN");
+
         var connectionString = configuration.GetConnectionString("Postgres");
         if (string.IsNullOrWhiteSpace(connectionString))
         {
@@ -54,6 +57,19 @@ public static class RuntimeConfiguration
         services.AddSingleton<IRuntimeDependencyStatus, ProductionRuntimeDependencyStatus>();
 
         return descriptor;
+    }
+
+    private static void ValidateProductionOrigin(IConfiguration configuration, string key)
+    {
+        var value = configuration[key];
+        if (string.IsNullOrWhiteSpace(value)) return;
+        // Validate both independently: a realtime override must not hide unsafe
+        // general configuration when identity mail happens to be disabled.
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var origin) ||
+            origin.Host.Length == 0 || origin.UserInfo.Length != 0 || origin.AbsolutePath != "/" ||
+            origin.Query.Length != 0 || origin.Fragment.Length != 0 ||
+            !(origin.Scheme == Uri.UriSchemeHttps || origin.Scheme == Uri.UriSchemeHttp && origin.IsLoopback))
+            throw new InvalidOperationException($"{key} must be an HTTPS origin without credentials, path, query or fragment; HTTP is allowed only for local loopback origins.");
     }
 
     private static RuntimeMode ParseMode(string? value)
