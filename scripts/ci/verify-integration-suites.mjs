@@ -248,11 +248,13 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(sourceProvenance['continue-on-error'] ?? false, false);
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'image_labels_test.py'"));
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'postgres_backup_test.py'"), 'Operator backup refusal paths must run before image builds');
+  assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'postgres_restore_test.py'"), 'Operator restore refusal paths must run before image builds');
   assert.match(archive.run, /cp build-inputs\/build-metadata.json image-artifacts\/build-metadata.json/);
   assert.match(archive.run, /cp build-inputs\/image-provenance.json image-artifacts\/image-provenance.json/);
   assert.match(archive.run, /sha256sum .*build-metadata.json image-provenance.json > SHA256SUMS/);
   const bundle = jobs['release-bundle'].steps.find(step => step.name === 'Assemble release bundle');
   assert.ok(bundle.run.includes('cp scripts/backup-postgres.sh bundle/backup-postgres.sh'), 'Release must include the tested operator backup command');
+  assert.ok(bundle.run.includes('cp scripts/restore-postgres.sh bundle/restore-postgres.sh'), 'Release must include the tested operator restore command');
   assert.match(bundle.run, /cp image-artifacts\/build-metadata.json bundle\/build-metadata.json/);
   assert.ok(!bundle.run.includes('cat > bundle/build-metadata.json'), 'Release must preserve the original metadata document');
   const releaseJob = jobs['release-bundle'];

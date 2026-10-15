@@ -296,6 +296,53 @@ and [promotion/rollback procedure](promotion-and-rollback.md) before production
 recovery. The full CI rehearsal exercises this exact backup command against its
 small disposable database; it does not certify production RPO/RTO or providers.
 
+## Restore into an isolated empty Docker database
+
+Use the archive SHA-256 from your separately protected backup record. Recipient
+encryption alone does not identify the backup creator; do not derive the
+expected digest from an untrusted archive and treat that as provenance.
+Recover the matching certificate/private key from their protected custody.
+Expired historical certificates can still decrypt their original backups.
+
+Create a new empty database from `template0` on the selected PostgreSQL service;
+do not connect the application or Workers to it yet. Replace the database/user
+names and paths below with this recovery's actual values. `createdb` refuses an
+already-existing name, and the restore command never drops/cleans a database.
+
+```bash
+postgres_container=$(docker compose --env-file .env -f compose.release.yml ps -q postgres)
+docker exec "$postgres_container" createdb --username=strataai --template=template0 strataai_restore
+export STRATAAI_RESTORE_DB_USER=strataai
+export STRATAAI_RESTORE_TMPDIR=/secure/restore-work
+archive_sha256=replace-with-the-64-hex-digit-trusted-backup-digest
+bash restore-postgres.sh "$postgres_container" strataai_restore /secure/backup-recipient.crt /secure/backup-recipient.key /secure/backups/backup.cms "$archive_sha256"
+```
+
+The temporary directory must already exist with access limited to the recovery
+operator, on protected storage with space for an encrypted archive snapshot and
+its decrypted custom dump. The command hashes/decrypts the same private snapshot,
+authenticates the entire file before any Docker/SQL operation, validates the
+archive format, and refuses targets containing application relations, routines,
+types, custom schemas or extensions beyond the default `plpgsql`. Restoration
+uses `pg_restore --single-transaction --exit-on-error`; no `--clean` or automatic
+database creation is used. Temporary ciphertext, key copy, plaintext and private
+diagnostics are removed on success or failure. The command does not delete the
+operator's original archive or keys.
+
+For an encrypted private key, supply `STRATAAI_RESTORE_KEY_PASSPHRASE` through
+your secret provider. Its value is supplied only to the OpenSSL process through
+the environment, never in command arguments or Docker calls. An absent/incorrect
+passphrase fails without an interactive prompt. No Node.js/.NET SDK is needed;
+the command uses the same Bash/OpenSSL/GNU host tools as backup.
+
+Keep the restored target isolated until application/tenant/permission checks,
+global-role provisioning, compatible image selection and coordinated
+object-storage/key-ring recovery pass. A successful database restore is not a
+traffic promotion or a complete disaster-recovery result. Record the restore
+time, archive/digest/key identity, checks and outcome. Recovery `.cms`/`.dump`
+files are not release assets; bundle integrity rejects them even with matching
+checksums, and recovery archives/temporary folders are ignored by Git.
+
 ## Stop
 
 ```bash

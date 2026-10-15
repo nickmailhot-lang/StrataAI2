@@ -131,6 +131,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
           python3 -m unittest discover -s tests -p 'recovery_dump_test.py'
           python3 -m unittest discover -s tests -p 'postgres_backup_test.py'
+          python3 -m unittest discover -s tests -p 'postgres_restore_test.py'
           python3 -m unittest discover -s tests -p 'release_auth_policy_test.py'
           python3 -m unittest discover -s tests -p 'image_labels_test.py'
 
@@ -1515,6 +1516,7 @@ jobs:
           cp .env.release.example bundle/
           cp scripts/health-check.sh bundle/health-check.sh
           cp scripts/backup-postgres.sh bundle/backup-postgres.sh
+          cp scripts/restore-postgres.sh bundle/restore-postgres.sh
           cp scripts/apply-compose-migrations.sh bundle/apply-migrations.sh
           cp scripts/migration-stream.sh bundle/migration-stream.sh
           cp scripts/provision-compose-runtime-roles.sh bundle/provision-runtime-roles.sh

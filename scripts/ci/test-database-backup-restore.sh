@@ -58,35 +58,10 @@ assert len(data) > 2048
 data[len(data) // 2] ^= 1
 pathlib.Path(sys.argv[2]).write_bytes(data)
 PY
-decrypt() {
-  openssl cms -decrypt -binary -inform DER -in "$(host_path "$1")" \
-    -recip "$(host_path "$scratch/$2.crt")" -inkey "$(host_path "$scratch/$2.key")" \
-    -out "$(host_path "$scratch/restored.dump")" 2> "$scratch/decrypt.log"
+restore() {
+  STRATAAI_RESTORE_DB_USER="$admin" STRATAAI_RESTORE_TMPDIR="$scratch" \
+    bash scripts/restore-postgres.sh "$container" "$target_db" "$scratch/$2.crt" "$scratch/$2.key" "$1" "$3"
 }
-stage=authentication-refusals
-for refusal in wrong-key tampered; do
-  archive="$scratch/backup.cms"; recipient=wrong-recipient
-  if [ "$refusal" = tampered ]; then archive="$scratch/tampered.cms"; recipient=recipient; fi
-  if decrypt "$archive" "$recipient"; then echo 'Encrypted recovery admitted an invalid archive/key.' >&2; exit 1; fi
-  # Decryption may emit plaintext before GCM authentication fails. Never pipe
-  # that output into pg_restore; discard it before any database operation.
-  rm -f "$scratch/restored.dump"
-done
-test "$(docker exec "$container" psql -X -U "$admin" -d "$target_db" -At -v ON_ERROR_STOP=1 \
-  -c "SELECT count(*) FROM pg_class WHERE relnamespace='public'::regnamespace")" = 0
-stage=authenticated-restore
-decrypt "$scratch/backup.cms" recipient
-docker exec -i "$container" pg_restore -U "$admin" -d "$target_db" --single-transaction --exit-on-error \
-  < "$scratch/restored.dump" > "$scratch/restore.log" 2>&1
-rm -f "$scratch/restored.dump"
-
-# Compare the complete schema, ACLs and data. PostgreSQL flattens nested AND
-# check expressions when restoring DDL. Replace only inline CHECK definitions
-# with their pretty catalog form (including table/type identity and name), which
-# preserves their semantics without comparing redundant parentheses. Session
-# restrict keys are random, so exclude those two pg_dump client guard lines.
-# COPY row order is physical, not relational; compare sorted complete rows.
-stage=complete-dump-comparison
 fingerprint() {
   {
     docker exec "$container" pg_dump -U "$admin" -d "$1" --format plain \
@@ -95,6 +70,48 @@ fingerprint() {
       -c "SELECT jsonb_build_array(conrelid::regclass::text,contypid::regtype::text,conname,pg_get_constraintdef(oid,true)) FROM pg_constraint WHERE contype='c' AND connamespace='public'::regnamespace ORDER BY 1" || return 1
   } | sha256sum
 }
+query() { docker exec "$container" psql -X -U "$admin" -d "$target_db" -At -v ON_ERROR_STOP=1 -c "$1"; }
+stage=authentication-refusals
+for refusal in wrong-key tampered wrong-digest; do
+  archive="$scratch/backup.cms"; recipient=wrong-recipient
+  if [ "$refusal" = tampered ]; then archive="$scratch/tampered.cms"; recipient=recipient; fi
+  archive_digest=$(sha256sum < "$archive"); archive_digest=${archive_digest%% *}
+  if [ "$refusal" = wrong-digest ]; then recipient=recipient; archive_digest=$(printf '%064d' 0); fi
+  if restore "$archive" "$recipient" "$archive_digest" > "$scratch/refusal.log" 2>&1; then
+    echo 'Encrypted recovery admitted an invalid archive/key/digest.' >&2; exit 1
+  fi
+done
+test "$(docker exec "$container" psql -X -U "$admin" -d "$target_db" -At -v ON_ERROR_STOP=1 \
+  -c "SELECT count(*) FROM pg_class WHERE relnamespace='public'::regnamespace")" = 0
+stage=authenticated-restore
+archive_digest=$(sha256sum < "$scratch/backup.cms"); archive_digest=${archive_digest%% *}
+stage=nonempty-object-refusals
+for kind in schema function type extension; do
+  case "$kind" in
+    schema) creation='CREATE SCHEMA restore_guard_fixture'; removal='DROP SCHEMA restore_guard_fixture' ;;
+    function) creation="CREATE FUNCTION public.restore_guard_fixture() RETURNS integer LANGUAGE sql AS 'SELECT 1'"; removal='DROP FUNCTION public.restore_guard_fixture()' ;;
+    type) creation="CREATE TYPE public.restore_guard_fixture AS ENUM ('fixture')"; removal='DROP TYPE public.restore_guard_fixture' ;;
+    extension) creation='CREATE EXTENSION vector'; removal='DROP EXTENSION vector' ;;
+  esac
+  query "$creation" > "$scratch/nonempty-object.log" 2>&1
+  before_refusal=$(fingerprint "$target_db")
+  if restore "$scratch/backup.cms" recipient "$archive_digest" > "$scratch/nonempty-restore.log" 2>&1; then
+    echo 'Recovery accepted an existing target object.' >&2; exit 1
+  fi
+  after_refusal=$(fingerprint "$target_db")
+  test "$before_refusal" = "$after_refusal"
+  query "$removal" > "$scratch/nonempty-object.log" 2>&1
+done
+stage=authenticated-restore
+restore "$scratch/backup.cms" recipient "$archive_digest" > "$scratch/restore.log" 2>&1
+
+# Compare the complete schema, ACLs and data. PostgreSQL flattens nested AND
+# check expressions when restoring DDL. Replace only inline CHECK definitions
+# with their pretty catalog form (including table/type identity and name), which
+# preserves their semantics without comparing redundant parentheses. Session
+# restrict keys are random, so exclude those two pg_dump client guard lines.
+# COPY row order is physical, not relational; compare sorted complete rows.
+stage=complete-dump-comparison
 expected=$(fingerprint "$source_db")
 compare_fingerprint() {
   local actual
@@ -102,10 +119,14 @@ compare_fingerprint() {
   test "$actual" "$1" "$expected"
 }
 compare_fingerprint =
+stage=nonempty-target-refusal
+if restore "$scratch/backup.cms" recipient "$archive_digest" > "$scratch/nonempty.log" 2>&1; then
+  echo 'Encrypted recovery accepted a nonempty target.' >&2; exit 1
+fi
+compare_fingerprint =
 # Prove the comparison actually detects lost data, ACL changes and a missing
 # CHECK; restore each deliberate defect before the final security assertions.
 stage=comparison-data-refusal
-query() { docker exec "$container" psql -X -U "$admin" -d "$target_db" -At -v ON_ERROR_STOP=1 -c "$1"; }
 query "UPDATE schema_migrations SET applied_at=applied_at+interval '1 second' WHERE version='001_foundation'" > /dev/null
 compare_fingerprint !=
 query "UPDATE schema_migrations SET applied_at=applied_at-interval '1 second' WHERE version='001_foundation'" > /dev/null
@@ -127,4 +148,4 @@ docker exec -i "$container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP
   < scripts/ci/check-tenant-schema.sql > "$scratch/catalog.log" 2>&1
 docker exec -i "$container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
   -v "reader=$reader" < scripts/ci/database-backup-verify.sql > "$scratch/verify.log" 2>&1
-echo 'Encrypted PostgreSQL backup/restore passed: complete migrated schema/data/ACL comparison, five deliberate corruption/refusal cases, pgvector, restricted tenant reads/writes, FK and append-only audit protections.'
+echo 'Encrypted PostgreSQL backup/restore passed: complete migrated schema/data/ACL comparison, eleven deliberate corruption/refusal cases, pgvector, restricted tenant reads/writes, FK and append-only audit protections.'

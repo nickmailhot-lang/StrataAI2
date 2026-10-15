@@ -93,6 +93,48 @@ of the operator command or its pre-build refusal tests. Shell/workflow lint and
 payloads; older bundles do not gain it. New exact-commit hosted CI remains
 required, and this evidence does not establish a deployed backup schedule.
 
+## Operator restore path
+
+The [restore command](../release/README.md#restore-into-an-isolated-empty-docker-database)
+is required in new release payloads alongside backup. It requires an explicit
+running container, empty target/database user, recipient certificate/private
+key, protected temporary directory and expected SHA-256 from the trusted backup
+record. Archive, certificate and key are snapshotted privately; the exact archive
+snapshot is checked before full GCM authentication. No Docker/SQL command runs
+before authentication succeeds. The private-key passphrase is environment-only
+for OpenSSL and is removed from the environment before Docker calls.
+
+The format check precedes target inspection. Existing relations, routines,
+types, custom schemas or nondefault extensions refuse restoration. The actual
+restore is one transaction with error termination, without cleaning, dropping
+or creating the database. Operators must keep the target isolated throughout
+recovery and later validate the complete application/provider state. Private
+temporary material is removed on failure and success. Encrypted recovery
+archives/plain dumps are excluded from release assets, regardless of checksums.
+
+The maintained real PostgreSQL rehearsal now invokes both operator commands.
+It adds trusted-digest refusal and unchanged-target checks for existing schema,
+function, type, pgvector extension and populated database. Together with the
+original wrong-key/tamper and data/ACL/CHECK probes, eleven deliberate refusal/
+corruption cases must pass. This expands functional recovery proof, without
+claiming managed-provider or deployed disaster-recovery acceptance.
+
+The complete rehearsal passes locally in 61.595 seconds, with all 157 captured
+inputs matching, full Docker inventory restored and 731,599 owned temporary
+bytes removed. All 149 migrations and the original two-Card security fixture
+remain; the existing local database is unused and no application image is
+built/imported/downloaded. This is a small functional recovery check.
+
+All ten restore-command tests pass with real OpenSSL and synthetic Docker
+transport, including expired historical certificates, encrypted private keys,
+passphrase isolation, full-authentication ordering, archive replacement,
+format/query/restore failures and nonempty-target refusal. The eight backup
+tests, nine comparison tests, 35 release-artifact tests and 230 CI coverage
+guards pass. Two new release-artifact regressions first accept private `.cms`
+and `.dump` payloads with regenerated checksums; both are now refused. Shell/
+workflow lint and 19 local documentation links pass. Current exact-commit
+hosted execution of the new operator restore path is still required.
+
 ## Deployment recovery remains an operator requirement
 
 The [Docker operator backup command](../release/README.md#encrypted-docker-postgresql-backups)

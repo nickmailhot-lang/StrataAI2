@@ -35,6 +35,8 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['operator restore omitted from bundle', value => { const entry=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle'); entry.run=entry.run.replace('cp scripts/restore-postgres.sh bundle/restore-postgres.sh',''); }],
+  ['operator restore refusal tests omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy'); entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'postgres_restore_test.py'",''); }],
   ['operator backup omitted from bundle', value => { const entry=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle'); entry.run=entry.run.replace('cp scripts/backup-postgres.sh bundle/backup-postgres.sh',''); }],
   ['operator backup refusal tests omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy'); entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'postgres_backup_test.py'",''); }],
   ...[

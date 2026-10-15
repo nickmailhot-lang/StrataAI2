@@ -21,6 +21,10 @@ coverage/
 secrets/
 *.pfx
 *.key
+*.cms
+*.dump
+.strataai-backup.*/
+.strataai-restore.*/
 
 # IDE / OS
 .vs/
