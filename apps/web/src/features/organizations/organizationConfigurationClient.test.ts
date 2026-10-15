@@ -23,10 +23,26 @@ function sequence(...values: unknown[]) {
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 describe('PRD-27 private account-bound configuration transport', () => {
+  it('uses final admitted account preferences for configuration history', async () => {
+    const preferences = { locale: 'en-CA', timezone: 'America/Vancouver' };
+    const source = { organizationId, items: [revision()], nextBeforeVersion: null };
+    const fetch = sequence(profile, source, { ...profile, ...preferences });
+    expect(await readOrganizationConfigurationHistory(organizationId, actorId, new AbortController().signal))
+      .toMatchObject({ ...source, preferences });
+    expect(fetch.mock.calls.map(call => call[0])).toEqual(['/me', `/organizations/${organizationId}/configuration/history`, '/me']);
+  });
+  it('uses final admitted account preferences for configuration Activity without extra reads', async () => {
+    const preferences = { locale: 'fr-CA', timezone: 'America/Vancouver' };
+    const current = { organizationId, version: 1, revision: revision() };
+    const fetch = sequence(profile, current, { organizationId, items: [], nextCursor: null }, current, { ...profile, ...preferences });
+    expect(await readOrganizationConfigurationActivity(organizationId, actorId, new AbortController().signal))
+      .toMatchObject({ items: [], nextCursor: null, preferences });
+    expect(fetch).toHaveBeenCalledTimes(5);
+  });
   it('fences Activity sources with current private admission and the original viewer before and after IO', async () => {
     const current = { organizationId, version: 1, revision: revision() };
     const fetch = sequence(profile, current, { organizationId, items: [], nextCursor: null }, current, profile);
-    expect(await readOrganizationConfigurationActivity(organizationId, actorId, new AbortController().signal)).toEqual({ items: [], nextCursor: null });
+    expect(await readOrganizationConfigurationActivity(organizationId, actorId, new AbortController().signal)).toEqual({ items: [], nextCursor: null, preferences: { locale: profile.locale, timezone: profile.timezone } });
     expect(fetch.mock.calls.map(call => call[0])).toEqual(['/me', `/organizations/${organizationId}/configuration`,
       `/organizations/${organizationId}/configuration/activity`, `/organizations/${organizationId}/configuration`, '/me']);
     expect(new Headers(fetch.mock.calls[2][1].headers).get('X-StrataAI-Expected-Actor')).toBe(actorId);

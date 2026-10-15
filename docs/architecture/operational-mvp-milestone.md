@@ -43,6 +43,13 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [configuration date-display follow-up](prd-02-acceptance.md#configuration-history-and-activity-date-preferences-2026-10-15)
+repairs two existing administrator timestamp consumers to use final admitted
+account preferences without changing source instants or adding requests. Four
+regressions fail before/pass after; 109 selected component/transport/dependency
+cases and frontend build checks pass. Native browser and complete current-image
+CI remain pending; this adds no governance functionality.
+
 The [Checklist acceptance audit](checklist-acceptance.md#executed-release-candidate-evidence-2026-10-15)
 matches all 21 Checklist cases in ten unchanged files to passing job-log entries
 at the completed `4cb80014` candidate below. It independently checks the small

@@ -10,14 +10,25 @@ const item = (version = 2) => ({ eventId: `33333333-3333-4333-8333-${String(vers
   version, correlationId: 'Source', createdAt: '2026-10-10T13:00:00.0000001Z' });
 afterEach(() => reader.mockReset());
 describe('PRD-27 private configuration Activity controls', () => {
+  it('uses the freshly admitted locale/timezone while retaining the original source instant', async () => {
+    reader.mockResolvedValueOnce({ items: [item()], nextCursor: null, preferences: { locale: 'en-CA', timezone: 'America/Vancouver' } })
+      .mockResolvedValueOnce({ items: [item()], nextCursor: null, preferences: { locale: 'fr-CA', timezone: 'UTC' } });
+    render(<OrganizationConfigurationActivityPanel organizationId={org} actorId={actor} disabled={false} onDenied={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Load configuration Activity' }));
+    expect(await screen.findByText('Oct 10, 2026, 06:00 PDT')).toHaveAttribute('datetime', item().createdAt);
+    fireEvent.click(screen.getByRole('button', { name: 'Load configuration Activity' }));
+    expect(await screen.findByText('10 oct. 2026, 13 h 00 UTC')).toHaveAttribute('datetime', item().createdAt);
+    expect(screen.queryByText('Oct 10, 2026, 06:00 PDT')).not.toBeInTheDocument();
+  });
   it('pages immutable source references and restores heading focus after an initiated read', async () => {
-    reader.mockResolvedValueOnce({ items: [item()], nextCursor: 'opaque_cursor' }).mockResolvedValueOnce({ items: [item(1)], nextCursor: null });
+    reader.mockResolvedValueOnce({ items: [item()], nextCursor: 'opaque_cursor', preferences: { locale: 'en-CA', timezone: 'UTC' } })
+      .mockResolvedValueOnce({ items: [item(1)], nextCursor: null, preferences: { locale: 'en-CA', timezone: 'UTC' } });
     render(<OrganizationConfigurationActivityPanel organizationId={org} actorId={actor} disabled={false} onDenied={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Load configuration Activity' }));
     await screen.findByText('Configuration changed at revision 2');
     expect(screen.getByText('Recorded actor: Captured administrative name; Organization administrator.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Configuration Activity' })).toHaveFocus();
-    expect(screen.getByText(item().createdAt)).toHaveAttribute('datetime', item().createdAt);
+    expect(screen.getByText('Oct 10, 2026, 13:00 UTC')).toHaveAttribute('datetime', item().createdAt);
     fireEvent.click(screen.getByRole('button', { name: 'Older configuration Activity' }));
     await screen.findByText('Configuration changed at revision 1');
     expect(screen.queryByText('Configuration changed at revision 2')).not.toBeInTheDocument();

@@ -16,11 +16,17 @@ function version(value: number, changing = false) {
     throw new WorkInputError('The reviewed configuration revision is unavailable.');
   return value;
 }
-async function actor(signal: AbortSignal, expected?: string): Promise<string> {
+async function account(signal: AbortSignal, expected?: string) {
   const profile = await workRequest<unknown>('/me', { signal });
   if (!isNotificationProfile(profile) || expected && profile.id.toLowerCase() !== expected)
     throw new WorkRequestError(401, null);
-  return profile.id.toLowerCase();
+  return profile;
+}
+async function actor(signal: AbortSignal, expected?: string): Promise<string> {
+  return (await account(signal, expected)).id.toLowerCase();
+}
+function preferences(profile: { locale: string; timezone: string }) {
+  return { locale: profile.locale, timezone: profile.timezone };
 }
 async function request(path: string, actorId: string, signal: AbortSignal, options: RequestInit = {}): Promise<unknown> {
   signal.throwIfAborted(); const headers = new Headers(options.headers);
@@ -56,11 +62,12 @@ export function readOrganizationConfigurationHistory(organizationId: string, act
     await actor(bounded, expected);
     const result = parseConfigurationHistory(await request(`${path(id)}/history${beforeVersion === undefined ? '' : `?beforeVersion=${beforeVersion}`}`,
       expected, bounded), id, beforeVersion);
-    await actor(bounded, expected); bounded.throwIfAborted(); return result;
+    const current = await account(bounded, expected); bounded.throwIfAborted();
+    return { ...result, preferences: preferences(current) };
   }, signal);
 }
 
-async function admittedIntake<T>(organizationId: string, actorId: string, signal: AbortSignal,
+async function admittedConfigurationRead<T>(organizationId: string, actorId: string, signal: AbortSignal,
   read: (organization: string, actor: string, bounded: AbortSignal) => Promise<T>) {
   const id = identifier(organizationId); const expected = identifier(actorId);
   return boundedWorkRead(async bounded => {
@@ -70,15 +77,20 @@ async function admittedIntake<T>(organizationId: string, actorId: string, signal
     // Board membership alone must not keep a withdrawn administrator's private
     // configuration picker open. Recheck configuration authority at the end.
     parseConfigurationView(await request(path(id), expected, bounded), id);
-    await actor(bounded, expected); bounded.throwIfAborted(); return result;
+    const current = await account(bounded, expected); bounded.throwIfAborted();
+    return { value: result, preferences: preferences(current) };
   }, signal);
+}
+async function admittedIntake<T>(organizationId: string, actorId: string, signal: AbortSignal,
+  read: (organization: string, actor: string, bounded: AbortSignal) => Promise<T>) {
+  return (await admittedConfigurationRead(organizationId, actorId, signal, read)).value;
 }
 export function readOrganizationConfigurationActivity(organizationId: string, actorId: string, signal: AbortSignal, cursor?: string, beforeVersion?: number) {
   if (cursor !== undefined && (!/^[A-Za-z0-9_-]{1,4096}$/.test(cursor) || /^\d+$/.test(cursor)))
     throw new WorkInputError('Reload configuration Activity to obtain a current continuation.');
-  return admittedIntake(organizationId, actorId, signal, async (id, expected, bounded) =>
+  return admittedConfigurationRead(organizationId, actorId, signal, async (id, expected, bounded) =>
     parseConfigurationActivity(await request(`${path(id)}/activity${cursor === undefined ? '' : `?cursor=${encodeURIComponent(cursor)}`}`,
-      expected, bounded), id, beforeVersion));
+      expected, bounded), id, beforeVersion)).then(({ value, preferences }) => ({ ...value, preferences }));
 }
 function intakeOption(value: unknown): IntakeOption {
   const row = value as Record<string, unknown> | null;

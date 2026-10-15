@@ -1256,3 +1256,17 @@ This is retained-image functional evidence, not current-main immutable CI or
 managed-provider certification. Existing controls are preserved without new
 governance expansion. PRD-27 remains open at **24% estimated work remaining**;
 large-load tests remain disabled until after the operational MVP milestone.
+
+### Viewer date preferences for retained changes (2026-10-15)
+
+Configuration history and Activity now display timestamps in the admitted
+viewer's account locale/timezone. The final existing account check supplies
+preferences; the original source instant remains in `datetime`, and retained
+records, authority checks, request counts and unsent configuration drafts are
+unchanged. Organization policy timezone does not replace viewing preference.
+Four regressions fail before repair; all 109 selected consumer/dependency cases,
+web/browser types, focused lint and production web build pass afterward. These
+are component/transport/build checks; native browser and current immutable CI
+remain pending. See [AUTH-FR-010 evidence and limits](prd-02-acceptance.md#configuration-history-and-activity-date-preferences-2026-10-15).
+No governance feature is added. PRD-27 remains open at **24% estimated work
+remaining**, unchanged planning estimate. Large-load tests remain post-MVP.

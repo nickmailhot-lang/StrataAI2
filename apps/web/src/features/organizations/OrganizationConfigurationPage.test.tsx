@@ -24,10 +24,10 @@ function record(version: number, legalName = 'Recorded legal name'): Configurati
     createdAt: '2026-10-10T13:00:00.0000001Z', updatedAt: '2026-10-10T13:00:00.0000002Z' };
 }
 function fixture(initial: ConfigurationRevision | null = record(1)) {
-  const state = { current: initial, denied: false, sessionGone: false, writes: [] as RequestInit[], lost: false, conflicted: false, boardUnavailable: false, listPages: false };
+  const state = { current: initial, profile: { ...profile }, denied: false, sessionGone: false, writes: [] as RequestInit[], lost: false, conflicted: false, boardUnavailable: false, listPages: false };
   const receipts = new Map<string, ConfigurationRevision>();
   vi.stubGlobal('fetch', vi.fn(async (url: string, options: RequestInit = {}) => {
-    if (url === '/me') return state.sessionGone ? reply({}, 401) : reply(profile);
+    if (url === '/me') return state.sessionGone ? reply({}, 401) : reply(state.profile);
     if (state.denied) return reply({ code: 'organization_not_found', detail: 'Private diagnostic' }, 404);
     if (url === path && options.method === 'PATCH') {
       state.writes.push(options);
@@ -73,6 +73,19 @@ async function review() {
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); sessionStorage.clear(); live.watch.mockClear(); configurationLive.watch.mockClear(); });
 describe('PRD-27 configuration form, human review and recovery', () => {
+  it('displays history in current account preferences without changing its instant or the unsent draft', async () => {
+    const state = fixture(); const source = structuredClone(state.current);
+    state.profile.timezone = 'America/Vancouver'; mount();
+    const input = await screen.findByLabelText(/^Legal name/);
+    const history = screen.getByRole('button', { name: 'View configuration history' });
+    await waitFor(() => expect(history).toBeEnabled());
+    fireEvent.change(input, { target: { value: 'Unsent legal draft' } }); fireEvent.click(history);
+    expect(await screen.findByText('Oct 10, 2026, 06:00 PDT')).toHaveAttribute('datetime', record(1).updatedAt);
+    state.profile.locale = 'fr-CA'; state.profile.timezone = 'UTC';
+    await waitFor(() => expect(history).toBeEnabled()); fireEvent.click(history);
+    expect(await screen.findByText('10 oct. 2026, 13 h 00 UTC')).toHaveAttribute('datetime', record(1).updatedAt);
+    expect(input).toHaveValue('Unsent legal draft'); expect(state.current).toEqual(source); expect(state.writes).toHaveLength(0);
+  });
   it('withdraws private configuration after logout while the real watcher has no confirmed transport', async () => {
     const actual = await vi.importActual<typeof import('./organizationConfigurationLive')>('./organizationConfigurationLive');
     const connection = { start: vi.fn().mockResolvedValue(undefined), stop: vi.fn().mockResolvedValue(undefined),

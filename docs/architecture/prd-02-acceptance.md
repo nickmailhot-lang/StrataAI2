@@ -6,6 +6,38 @@ below record their historical evidence scope.
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
+## Configuration history and Activity date preferences (2026-10-15)
+
+The consumer audit finds two existing administrator views rendering raw source
+timestamps: Organization configuration history and configuration Activity.
+AUTH-FR-010 also applies to those displayed instants. Both now use the shared
+account locale/timezone formatter while preserving the exact original instant
+in the `time` element's `datetime` attribute. Source records and timestamps are
+not rewritten, and Organization configuration timezone is not substituted for
+the viewer's account preference.
+
+Each read obtains display preferences from its existing final validated `/me`
+response. History retains its three-request sequence; Activity retains initial
+and final private configuration admission plus initial/final account checks,
+five requests total. No network call, weaker actor fence or browser-local date
+fallback is introduced. Intake callers keep their original result shape. New
+client/component cases require final-account preferences, Vancouver display,
+French/UTC display after an explicit reread, unchanged source instants, preserved
+unsent configuration draft and zero configuration mutations. Existing denial,
+deadline, account replacement, source parsing and recovery checks remain.
+
+The unchanged baseline fails all **four new regressions** and passes the other
+62 selected cases. After repair, all **66** selected transport/page/Activity
+cases and **43** related intake/recovery/telemetry/formatter cases pass, **109
+across seven files**. Web/browser types, focused lint, diff and the production
+web build pass; the existing bundle-size advisory remains. These are source/DOM
+component and build results, not native browser/current immutable release or
+managed-provider certification. Other remaining date consumers and complete
+PRD acceptance still need their own proof. This repairs existing viewing
+behavior without adding governance functionality. PRD-02 remains open at **16%
+estimated work remaining**, unchanged planning estimate; large-load testing
+remains deferred until after the operational MVP milestone.
+
 ## Account display source-calendar validation
 
 The shared formatter rejects impossible calendar fields before offset conversion

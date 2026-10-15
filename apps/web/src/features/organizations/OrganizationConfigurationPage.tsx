@@ -12,6 +12,7 @@ import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchOrganizationConfiguration } from './organizationConfigurationLive';
 import { OrganizationConfigurationActivityPanel } from './OrganizationConfigurationActivityPanel';
 import { organizationTypeLabel } from './organizationTypes';
+import { formatUserDateTime } from '../auth/userDateTime';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { completeConfigurationChange, forgetConfigurationChanges, forgetForeignConfigurationChanges,
   restoreConfigurationChange, retainConfigurationChange } from './organizationConfigurationRecovery';
@@ -41,7 +42,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
   const [draft, setDraft] = useState<ConfigurationDraft>();
   const [review, setReview] = useState<ConfigurationChangeIntent>();
   const [original, setOriginal] = useState<ConfigurationChangeIntent>();
-  const [history, setHistory] = useState<ConfigurationHistory>();
+  const [history, setHistory] = useState<ConfigurationHistory & { preferences: { locale: string; timezone: string } }>();
   const [boards, setBoards] = useState<IntakeOption[]>([]); const [boardCursor, setBoardCursor] = useState<string | null>(null);
   const [selectedBoard, setSelectedBoard] = useState<IntakeOption>(); const [lists, setLists] = useState<IntakeOption[]>([]);
   const [listCursor, setListCursor] = useState<string | null>(null);
@@ -306,7 +307,7 @@ function ConfigurationPage({ organizationId }: { organizationId: string }) {
             <Typography variant="h6" component="h4">Revision {row.version}</Typography>
             <Typography>Recorded Organization: {row.organizationName}; {organizationTypeLabel(row.organizationType)}; parent revision {row.organizationVersion}.</Typography>
             <Typography>Actor reference: {row.actorId}</Typography>
-            <Typography>Recorded at: <time dateTime={row.updatedAt}>{row.updatedAt}</time></Typography>
+            <Typography>Recorded at: <time dateTime={row.updatedAt}>{formatUserDateTime(row.updatedAt, history.preferences) ?? 'Date display unavailable.'}</time></Typography>
             {publicCorrelationReference(row.correlationId) && <Typography>Support reference: {publicCorrelationReference(row.correlationId)}</Typography>}
             <ConfigurationValues configuration={row.configuration} boards={boardOptions} lists={lists} />
           </Box>)}

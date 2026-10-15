@@ -4,11 +4,12 @@ import { WorkRequestError } from '../../api/workManagement';
 import { readOrganizationConfigurationActivity } from './organizationConfigurationClient';
 import { configurationActingCapacityLabel, type ConfigurationActivityPage } from './organizationConfigurationActivity';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
+import { formatUserDateTime } from '../auth/userDateTime';
 
 export function OrganizationConfigurationActivityPanel({ organizationId, actorId, disabled, onDenied }: {
   organizationId: string; actorId: string; disabled: boolean; onDenied: (reason: unknown) => void;
 }) {
-  const [page, setPage] = useState<ConfigurationActivityPage>(); const [busy, setBusy] = useState(false);
+  const [page, setPage] = useState<ConfigurationActivityPage & { preferences: { locale: string; timezone: string } }>(); const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string>(); const [attempt, setAttempt] = useState<{ cursor?: string; beforeVersion?: number }>({});
   const operation = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null); const focus = useRef(false);
@@ -58,7 +59,7 @@ export function OrganizationConfigurationActivityPanel({ organizationId, actorId
           <Typography>Recorded actor: {item.actorLabel}; {configurationActingCapacityLabel(item.actingCapacity)}.</Typography>
           <Typography>Original actor reference: {item.actorId}</Typography>
           <Typography>Original event reference: {item.eventId}</Typography>
-          <Typography>Recorded at: <time dateTime={item.createdAt}>{item.createdAt}</time></Typography>
+          <Typography>Recorded at: <time dateTime={item.createdAt}>{formatUserDateTime(item.createdAt, page.preferences) ?? 'Date display unavailable.'}</time></Typography>
         </Box>)}
         {page.nextCursor && <Button disabled={disabled || busy} onClick={() => void read(page.nextCursor!, page.items.at(-1)!.version)}>Older configuration Activity</Button>}
       </>}
