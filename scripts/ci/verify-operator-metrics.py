@@ -1,5 +1,6 @@
 """Validate real Collector output; retain only fixed verification metadata."""
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -16,6 +17,8 @@ def verify(raw, revision, version):
     names = {"strataai_checklist_client_events", "strataai_activity_client_events", "strataai_board_sharing_requests", "strataai_organization_requests"}
     names.update(prefix + suffix for prefix in ["strataai_checklist_client_duration", "strataai_activity_client_duration", "strataai_board_sharing_duration", "strataai_organization_duration"]
                  for suffix in ["_bucket", "_count", "_sum"])
+    names.add("strataai_http_server_requests")
+    names.update("strataai_http_server_duration" + suffix for suffix in ["_bucket", "_count", "_sum"])
     for line in raw.splitlines():
         if not line.startswith("strataai_"):
             continue
@@ -23,12 +26,23 @@ def verify(raw, revision, version):
         if not match or match[1] not in names:
             return False
         labels = dict(re.findall(r'(\w+)="((?:\\.|[^"\\])*)"', match[2]))
-        if set(labels) - allowed or labels.get("instance", "") != "":
+        permitted = allowed | {"method", "status_code"} if match[1].startswith("strataai_http_server_") else allowed
+        if set(labels) - permitted or labels.get("instance", "") != "":
             return False
         if labels.get("strataai_build_revision") != revision or labels.get("service_version") != version:
             return False
         if labels.get("service_name") != "strataai-api" or labels.get("service_namespace") != "strataai":
             return False
+        if match[1].startswith("strataai_http_server_"):
+            http_labels = {"method", "status_code", "outcome", "le", "job", "instance",
+                           "service_name", "service_namespace", "service_version", "strataai_build_revision"}
+            if set(labels) - http_labels or labels.get("method") not in {
+                    "GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "CONNECT", "TRACE", "OTHER"}:
+                return False
+            if not re.fullmatch(r"0|[1-5][0-9]{2}", labels.get("status_code", "")) or labels.get("outcome") not in {"completed", "cancelled", "faulted"}:
+                return False
+            if not math.isfinite(float(match[3])) or float(match[3]) < 0:
+                return False
         samples.append((match[1], labels, float(match[3])))
 
     def observed(name, expected):
@@ -37,6 +51,9 @@ def verify(raw, revision, version):
                    for metric, labels, value in samples)
 
     return all([
+        *[observed(metric, {"method": method, "status_code": code, "outcome": "completed"})
+          for method, code in [("GET", "200"), ("POST", "400"), ("POST", "401"), ("POST", "403"), ("PATCH", "409")]
+          for metric in ["strataai_http_server_requests", "strataai_http_server_duration_count"]],
         *[observed("strataai_activity_client_events", {"action": action, "kind": kind})
           for action, kind in [("organization_configuration_disclosure", "open"), ("organization_configuration_read", "reconnect"),
                                ("organization_configuration_change", "retry"), ("organization_configuration_change", "failure"),
@@ -106,4 +123,5 @@ if __name__ == "__main__":
                      "commentServerOperations": True, "organizationServerOperations": True, "organizationClientEvents": True,
                      "configurationLifecycleServerOperations": True, "configurationConflictAndDenial": True,
                      "configurationClientEvents": True, "configurationClientDuration": True,
+                     "httpRequestsAndDuration": True, "httpRejectionOutcomes": True,
                      "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")

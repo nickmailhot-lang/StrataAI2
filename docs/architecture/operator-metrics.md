@@ -1,5 +1,58 @@
 # API operator metrics export (ARCH-08, partial)
 
+## Overall HTTP outcomes — 2026-10-15
+
+ARCH-08-FR-006 now has API-wide request counts and elapsed duration through
+the explicit `StrataAI.HttpServer` meter. The existing optional OTLP exporter
+selects it alongside the feature meters; no new endpoint, provider or application
+image is introduced. Native measurements remain available without an exporter.
+
+| Instrument | Unit | Meaning |
+| --- | --- | --- |
+| `strataai.http.server.requests` | request | One observation when the downstream API pipeline returns or throws |
+| `strataai.http.server.duration` | seconds | Elapsed pipeline time for that same observation |
+
+Both carry only `method`, `status_code` and `outcome`. Methods use the nine
+standard fixed tokens or `OTHER`; status is 100–599 or zero; outcome is
+`completed`, `cancelled` or `faulted`. Completed means the pipeline returned,
+including handled 4xx/5xx responses. An escaping exception has status zero
+instead of the default 200; only an escaping cancellation with the request's
+abort token already cancelled is classified as cancelled. Original exceptions
+are rethrown. An instrument-creation or listener failure cannot replace a
+response/exception or cause another application invocation.
+
+The middleware wraps error conversion, status pages, database admission, CSRF,
+authentication, rate limiting and authorization. It includes health checks and
+unmatched routes. Durations for long-lived streams cover their pipeline lifetime,
+not individual messages. No path, route template, query, header, body, exception,
+actor/tenant/object ID or correlation value is recorded. Status 401/403 counts
+describe HTTP rejection outcomes; they are not unique failed-login or confirmed
+security-incident counts. Operators can group numeric statuses to measure API
+error rates without adding protected or unbounded labels.
+
+The existing mandatory exact-image Collector contract now requires request and
+duration samples for GET/200, POST/400, POST/401, POST/403 and PATCH/409, produced
+by its actual HTTP operations. It retains all previous feature/privacy checks,
+rejects unknown HTTP methods/statuses/outcomes/private labels, and adds only
+fixed verification booleans to retained evidence. Current-image execution of
+this extended ingestion contract remains pending CI.
+
+Local Release solution build passes with zero warnings/errors. Linux execution
+passes **20 HTTP telemetry cases**, **eight exporter cases** (including real OTLP
+serialization and collector-transport failure) and **14 existing diagnostic
+middleware cases**. The real TestServer pipeline covers health, missing routes,
+authentication and CSRF refusal. Other cases cover ten response statuses,
+escaping faults/cancellation, unbounded methods and instrument/listener faults.
+All 930 captured source and 49 binary hashes match during execution; test
+containers are removed and the original Docker inventory restored, without
+image builds/downloads/imports or load tests. Four Collector verifier tests,
+including per-observation omission and bounded-label refusals, also pass.
+
+This closes the API-wide aggregate-instrumentation gap, not the full ARCH-08
+metrics or release requirements. Worker/backlog/provider/database/backup
+instruments, dashboards, operational alerts, production objectives and tracing
+remain outstanding. Large-load testing stays deferred until after the MVP.
+
 The native `StrataAI.BoardSharing`, `StrataAI.ChecklistClient`,
 `StrataAI.ActivityClient` and `StrataAI.Organizations` meters
 can now export through OpenTelemetry .NET 1.19.1 using OTLP HTTP/protobuf.

@@ -57,6 +57,13 @@ public sealed class OperatorMetricsTests
         activity.CreateHistogram<double>("strataai.activity.client.duration", "s").Record(.125,
             new KeyValuePair<string, object?>("action", "card_read"), new KeyValuePair<string, object?>("kind", "success"));
         var organizations = factory.Create("StrataAI.Organizations");
+        var http = factory.Create("StrataAI.HttpServer");
+        http.CreateCounter<long>("strataai.http.server.requests").Add(1,
+            new KeyValuePair<string, object?>("method", "POST"), new KeyValuePair<string, object?>("status_code", 401),
+            new KeyValuePair<string, object?>("outcome", "completed"));
+        http.CreateHistogram<double>("strataai.http.server.duration", "s").Record(.125,
+            new KeyValuePair<string, object?>("method", "POST"), new KeyValuePair<string, object?>("status_code", 401),
+            new KeyValuePair<string, object?>("outcome", "completed"));
         organizations.CreateCounter<long>("strataai.organization.requests").Add(1,
             new KeyValuePair<string, object?>("operation", "create"), new KeyValuePair<string, object?>("outcome", "success"));
         organizations.CreateHistogram<double>("strataai.organization.duration", "s").Record(.125,
@@ -73,6 +80,8 @@ public sealed class OperatorMetricsTests
         Assert.Contains("strataai.activity.client.duration", sample.WireText);
         Assert.Contains("strataai.organization.requests", sample.WireText);
         Assert.Contains("strataai.organization.duration", sample.WireText);
+        Assert.Contains("strataai.http.server.requests", sample.WireText);
+        Assert.Contains("strataai.http.server.duration", sample.WireText);
         Assert.Contains("disclosure", sample.WireText); Assert.Contains("item_update", sample.WireText);
         Assert.Contains("service.name", sample.WireText); Assert.Contains("strataai-api", sample.WireText);
         Assert.Contains("strataai.build.revision", sample.WireText);

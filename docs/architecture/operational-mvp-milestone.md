@@ -4,6 +4,13 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [overall API HTTP measurements](operator-metrics.md#overall-http-outcomes--2026-10-15)
+add bounded request counts, response outcomes and elapsed time across normal
+requests, health, unmatched routes and refusals. All 42 focused .NET checks and
+four Collector verifier tests pass; the existing mandatory exact-image ingestion
+contract now requires these measurements. Actual current-image ingestion,
+dashboards/alerts and complete release acceptance remain pending.
+
 The [comment/Reminder recovery follow-up](browser-recovery-ci.md#stop-waiting-on-retired-command-launchers--2026-10-15)
 repairs test observation after a successful receipt replay retires its launcher
 and admits the refreshed read-only comment review. Five helper cases, 251 CI

@@ -17,6 +17,7 @@ builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = 
 builder.Services.AddSingleton<IProblemDetailsWriter, ApiErrorFallbackWriter>();
 builder.Services.AddMetrics();
 builder.Services.AddStrataAiOperatorMetrics(builder.Configuration, typeof(Program).Assembly);
+builder.Services.AddSingleton<HttpServerTelemetry>();
 builder.Services.AddSingleton<BoardSharingTelemetry>();
 builder.Services.AddSingleton<OrganizationTelemetry>();
 builder.Services.AddSingleton<ChecklistClientTelemetry>();
@@ -93,6 +94,7 @@ var app = builder.Build();
 app.Services.InitializeAttachmentRuntime(attachmentsEnabled);
 
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<HttpServerTelemetryMiddleware>();
 app.UseMiddleware<UnexpectedApiErrorMiddleware>();
 app.UseStatusCodePages(ApiErrorContract.WriteEmptyError);
 app.UseMiddleware<BoardSharingTelemetryMiddleware>();

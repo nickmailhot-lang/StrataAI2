@@ -64,7 +64,19 @@ class OperatorEvidenceTests(unittest.TestCase):
             observations.append(("strataai_activity_client_events", f'action="{action}",kind="{kind}"'))
             if kind in ("success", "failure"):
                 observations.append(("strataai_activity_client_duration_count", f'action="{action}",kind="{kind}"'))
+        for method, code in [("GET", "200"), ("POST", "400"), ("POST", "401"), ("POST", "403"), ("PATCH", "409")]:
+            for metric in ["strataai_http_server_requests", "strataai_http_server_duration_count"]:
+                observations.append((metric, f'method="{method}",status_code="{code}",outcome="completed"'))
         return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations)
+
+    def test_http_metrics_refuse_unbounded_labels_methods_statuses_and_outcomes(self):
+        original = 'method="GET",status_code="200",outcome="completed"'
+        for replacement in ['method="private-custom-method",status_code="200",outcome="completed"',
+                            'method="GET",status_code="999",outcome="completed"',
+                            'method="GET",status_code="200",outcome="private-failure"',
+                            original + ',action="private-route"']:
+            with self.subTest(replacement=replacement):
+                self.assertFalse(metrics.verify(self.fixture().replace(original, replacement), self.revision, self.version))
 
     def test_complete_fixed_scope(self):
         self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))
