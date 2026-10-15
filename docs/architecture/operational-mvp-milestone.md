@@ -51,6 +51,17 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [List rename opening](../list-rename-persistence.md#observe-the-rename-editor-before-composing--2026-10-15)
+and [live member-removal recovery admission](organization-member-administration.md#observe-original-removal-request-admission--2026-10-15)
+follow-ups address two retained CI interaction failures without changing product
+logic or original outcome assertions. The unchanged baseline passes, so no local
+reproduction is claimed. Complete revised desktop/phone files pass 4/4 using a
+current built frontend over verified retained backend images and fresh restricted
+PostgreSQL. Inputs match and owned cleanup restores Docker inventory. All 49
+existing component cases and 246 CI guards pass; all 400 browser cases remain
+collected. Full current immutable release and managed-provider evidence remain
+required. PRD-07 and PRD-03 stay open at 17% and 8% estimated work remaining.
+
 The [API middleware diagnostics isolation](api-error-contract-verification.md#api-owned-middleware-diagnostics-isolation--2026-10-15)
 preserves correlation scope, original downstream failures and intended
 500/503/403 responses when optional log providers throw. Ten regressions fail

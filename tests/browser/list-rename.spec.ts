@@ -1,6 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
+import { openAdmittedReview } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-07: list rename recovers a lost acknowledgment and preserves a live draft at ${width}px`, async ({ page, context }) => {
@@ -29,7 +30,8 @@ for (const width of [1280, 390]) {
       for (const client of [page, other])
         await expect(client.getByText('Live updates connected.', { exact: true })).toBeVisible();
       await expect.poll(reads).toBeGreaterThanOrEqual(2); await expect.poll(otherReads).toBeGreaterThanOrEqual(2);
-      await other.getByRole('button', { name: 'Rename Planning list', exact: true }).click();
+      await openAdmittedReview(other.getByRole('button', { name: 'Rename Planning list', exact: true }),
+        other.getByRole('textbox', { name: 'New list name' }));
       await other.getByRole('textbox', { name: 'New list name' }).fill('Preserved draft');
       const requests: { key: string | undefined; body: string | null }[] = [];
       await page.route(`**/lists/${list.id}`, async route => {
@@ -38,7 +40,8 @@ for (const width of [1280, 390]) {
         const response = await route.fetch(); expect(response.status()).toBe(200);
         if (requests.length === 1) await route.abort('failed'); else await route.fulfill({ response });
       });
-      await page.getByRole('button', { name: 'Rename Planning list', exact: true }).focus(); await page.keyboard.press('Enter');
+      await openAdmittedReview(page.getByRole('button', { name: 'Rename Planning list', exact: true }),
+        page.getByRole('textbox', { name: 'New list name' }));
       await page.getByRole('textbox', { name: 'New list name' }).fill('Renamed');
       await page.getByRole('button', { name: 'Save list name', exact: true }).click();
       await expect(page.getByRole('button', { name: 'Retry this rename', exact: true })).toBeEnabled();

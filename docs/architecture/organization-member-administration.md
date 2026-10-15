@@ -150,3 +150,38 @@ is separately recorded in [field diagnostics](failure-field-diagnostics.md);
 passing it locally does not prove it repaired. Current full immutable-image CI
 and the remaining AC/DoD still govern closure. Estimated PRD-03 work remaining
 stays **8%**; the issue remains open.
+
+## Observe original-removal request admission — 2026-10-15
+
+Hosted run `38685376116`, job `116305340041`, also fails the phone original
+removal recovery after rejoin. Its verified diagnostic artifact and unchanged
+baseline are recorded with the [List rename follow-up](../list-rename-persistence.md#observe-the-rename-editor-before-composing--2026-10-15).
+The trace records the original routed DELETE, its upstream 204 and the deliberately
+lost reply. It records no second DELETE after the final retry keypress; the
+acknowledgment assertion then fails. The scenario source is unchanged from
+the hosted candidate to `dec7e2d1`. All four unchanged desktop/phone List/member
+cases pass locally, so no unchanged local reproduction or product defect is
+claimed.
+
+Only the explicit original-removal recovery activation now uses the existing
+`pressObservedRequest` helper. Its five-second keyboard admission may repeat
+while the route observer still counts only the first DELETE. It rechecks after
+focus and stops activation as soon as the second DELETE starts, including while
+its response is pending. This changes a single physical-key attempt into
+observed request admission; it is not a retry after a sent request fails.
+There is no automatic product retry or change to confirmation, authorization,
+receipt or membership rules.
+
+The original acknowledged notice, exact two matching DELETE paths/keys, rejoined
+version-three membership equality, actual Worker/SignalR event identities and
+counts, private-content withdrawal, later departure, Cancel focus, accessibility,
+viewport and 240-second scenario deadline remain. The complete revised
+List/member desktop/phone files pass **4/4 in 228,599.683 ms**, one attempt each
+and zero failures, skips, flaky outcomes or report errors. The
+[shared execution record](../list-rename-persistence.md#observe-the-rename-editor-before-composing--2026-10-15)
+identifies the current frontend over verified retained backend images, fresh
+restricted PostgreSQL/149 migrations, exact frozen inputs and owned cleanup.
+This is supporting functional evidence, not current immutable release or
+managed-mail acceptance. PRD-03 stays open at **8% estimated work remaining**;
+strict managed-mail, current immutable CI and the remaining AC/DoD still govern
+closure. Large-load testing remains deferred until after the operational MVP.
