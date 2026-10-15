@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using StrataAI.Application.Identity;
 
 namespace StrataAI.Worker;
@@ -11,7 +13,7 @@ internal sealed class IdentityEmailWorker(IdentityDeliveryProcessor processor,IL
         {
             try { await processor.ProcessOneAsync(_workerId,stoppingToken); }
             catch (OperationCanceledException) when(stoppingToken.IsCancellationRequested) { return; }
-            catch(Exception) { logger.LogWarning("Identity delivery pass failed. Worker {WorkerId}.",_workerId); }
+            catch(Exception) { WorkerLog.Warning(logger, "Identity delivery pass failed. Worker {WorkerId}.",_workerId); }
             try { await Task.Delay(TimeSpan.FromSeconds(1),stoppingToken); }
             catch(OperationCanceledException) when(stoppingToken.IsCancellationRequested) { return; }
         }
@@ -21,6 +23,6 @@ internal sealed class IdentityEmailWorker(IdentityDeliveryProcessor processor,IL
 internal sealed class IdentityDeliveryDiagnostics(ILogger<IdentityDeliveryDiagnostics> logger) : IIdentityDeliveryDiagnostics
 {
     public void Record(IdentityDeliveryJob job,IdentityDeliveryPass outcome) =>
-        logger.LogInformation("Identity job {JobId} {Purpose} {Outcome}, Subject {UserId}, Worker {WorkerId}, Attempt {Attempt}, CorrelationId {CorrelationId}.",
+        WorkerLog.Information(logger, "Identity job {JobId} {Purpose} {Outcome}, Subject {UserId}, Worker {WorkerId}, Attempt {Attempt}, CorrelationId {CorrelationId}.",
             job.Id,job.Purpose,outcome,job.UserId,job.WorkerId,job.AttemptCount,job.CorrelationId);
 }

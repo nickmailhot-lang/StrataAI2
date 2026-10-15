@@ -31,7 +31,7 @@ internal sealed class OrganizationDeletionDiscoveryWorker(IOrganizationDeletionS
                         }
                     }
                     catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
-                    catch (Exception) { logger.LogWarning("Discovered deletion pass failed for Organization {OrganizationId}; other scopes continue.", organization); }
+                    catch (Exception) { WorkerLog.Warning(logger, "Discovered deletion pass failed for Organization {OrganizationId}; other scopes continue.", organization); }
                 }
                 // Seek through the whole eligible set, then wrap so newly
                 // queued lower UUIDs and delayed/crashed claims are revisited.
@@ -40,7 +40,7 @@ internal sealed class OrganizationDeletionDiscoveryWorker(IOrganizationDeletionS
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
             catch (Exception)
             {
-                logger.LogWarning("Organization deletion discovery pass failed; queued work remains recoverable.");
+                WorkerLog.Warning(logger, "Organization deletion discovery pass failed; queued work remains recoverable.");
             }
             try { await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken); }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }

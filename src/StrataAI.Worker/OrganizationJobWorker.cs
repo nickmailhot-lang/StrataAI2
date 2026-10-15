@@ -50,13 +50,13 @@ internal sealed class OrganizationJobWorker(
     // failure, or stop the loop before the next Organization is considered.
     private void LogPass(JobProcessingResult outcome, Guid organizationId)
     {
-        try { logger.LogInformation("Job pass {Outcome} for Organization {OrganizationId}, Worker {WorkerId}.", outcome, organizationId, _workerId); }
+        try { WorkerLog.Information(logger, "Job pass {Outcome} for Organization {OrganizationId}, Worker {WorkerId}.", outcome, organizationId, _workerId); }
         catch (Exception) { /* Logging cannot recover its own failed provider. */ }
     }
 
     private void LogFailure(Guid organizationId)
     {
-        try { logger.LogWarning("Job pass failed for Organization {OrganizationId}, Worker {WorkerId}.", organizationId, _workerId); }
+        try { WorkerLog.Warning(logger, "Job pass failed for Organization {OrganizationId}, Worker {WorkerId}.", organizationId, _workerId); }
         catch (Exception) { /* Preserve the loop; retain the existing lease recovery. */ }
     }
 }
@@ -66,6 +66,6 @@ internal sealed record OrganizationJobScope(IReadOnlyList<Guid> OrganizationIds)
 internal sealed class BackgroundJobDiagnostics(ILogger<BackgroundJobDiagnostics> logger) : IBackgroundJobDiagnostics
 {
     public void Record(ClaimedBackgroundJob job, JobProcessingResult outcome) =>
-        logger.LogInformation("Job {JobId} {JobType} pass {Outcome}, Organization {OrganizationId}, Actor {ActorId}, Service {ServiceIdentity}, Worker {WorkerId}, Attempt {AttemptCount}, CorrelationId {CorrelationId}.",
+        WorkerLog.Information(logger, "Job {JobId} {JobType} pass {Outcome}, Organization {OrganizationId}, Actor {ActorId}, Service {ServiceIdentity}, Worker {WorkerId}, Attempt {AttemptCount}, CorrelationId {CorrelationId}.",
             job.Id, job.JobType, outcome, job.OrganizationId, job.ActorId, job.ServiceIdentity, job.WorkerId, job.AttemptCount, job.CorrelationId);
 }

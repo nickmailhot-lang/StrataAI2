@@ -36,7 +36,7 @@ internal sealed class OrganizationMetadataDiscoveryWorker(IOrganizationMetadataS
                         }
                     }
                     catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
-                    catch (Exception) { logger.LogWarning("Discovered metadata pass failed for Organization {OrganizationId}; other scopes continue.", organization); }
+                    catch (Exception) { WorkerLog.Warning(logger, "Discovered metadata pass failed for Organization {OrganizationId}; other scopes continue.", organization); }
                 }
                 // Seek through the whole eligible set, then wrap so newly
                 // queued lower UUIDs and delayed/crashed claims are revisited.
@@ -45,7 +45,7 @@ internal sealed class OrganizationMetadataDiscoveryWorker(IOrganizationMetadataS
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
             catch (Exception)
             {
-                logger.LogWarning("Organization metadata discovery pass failed; queued work remains recoverable.");
+                WorkerLog.Warning(logger, "Organization metadata discovery pass failed; queued work remains recoverable.");
             }
             try { await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken); }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }

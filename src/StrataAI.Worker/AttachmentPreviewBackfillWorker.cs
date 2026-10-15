@@ -20,7 +20,7 @@ internal sealed class AttachmentPreviewBackfillWorker(
             {
                 var result = await store.EnqueuePageAsync(organizationId, 32, stoppingToken);
                 if (result.Enqueued > 0)
-                    logger.LogInformation("Preview maintenance enqueued {Count} jobs for Organization {OrganizationId}.",
+                    WorkerLog.Information(logger, "Preview maintenance enqueued {Count} jobs for Organization {OrganizationId}.",
                         result.Enqueued, organizationId);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
@@ -28,7 +28,7 @@ internal sealed class AttachmentPreviewBackfillWorker(
             {
                 // Provider/SQL diagnostics must not disclose private metadata.
                 // An aborted transaction retains the prior cursor for retry.
-                logger.LogWarning("Preview maintenance unavailable for Organization {OrganizationId}.", organizationId);
+                WorkerLog.Warning(logger, "Preview maintenance unavailable for Organization {OrganizationId}.", organizationId);
             }
             try { await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken); }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }

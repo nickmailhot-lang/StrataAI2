@@ -232,28 +232,3 @@ app.MapGet("/runtime", (RuntimeDescriptor descriptor) => Results.Ok(new
 }));
 
 await app.RunAsync();
-
-internal sealed class WorkerHeartbeat(
-    ILogger<WorkerHeartbeat> logger,
-    IClock clock,
-    RuntimeDescriptor runtime) : BackgroundService
-{
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        using var scope = logger.BeginScope(new Dictionary<string, object?>
-        {
-            ["Component"] = "StrataAI.Worker",
-            ["BuildRevision"] = runtime.BuildRevision,
-            ["RuntimeMode"] = runtime.Mode.ToString(),
-        });
-
-        logger.LogInformation(
-            "StrataAI Worker started at {Timestamp}.",
-            clock.UtcNow);
-
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-        }
-    }
-}

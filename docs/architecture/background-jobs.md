@@ -139,6 +139,51 @@ acceptance. Current immutable CI and remaining ARCH-07/08 requirements remain
 necessary. No image build/download/import, existing database use or large-load
 test occurs.
 
+### Shared Worker-owned logging boundary (2026-10-15)
+
+The remaining Worker services had the same escape path: warnings from identity
+delivery, issuer/recipient authority, metadata/configuration/lifecycle/deletion
+discovery, attachment maintenance and retry cleanup could themselves throw.
+Startup scope creation, its information message and scope disposal could also
+fault the heartbeat service. The Organization-only repair did not establish
+resilience for those services.
+
+All Worker-owned information/warning calls and the startup scope now go through
+`WorkerLog`. The helper isolates provider exceptions without recursive logging;
+its scope wrapper also isolates disposal and disposes the underlying scope at
+most once. Original templates, argument order, diagnostic fields and service
+control flow are preserved. The heartbeat moves into its own source file while
+retaining its original global type/log category and runtime fields. Framework
+bootstrap logging is outside this helper; indefinitely blocking providers are
+not bounded by this exception guard. Functional startup validation, queue state,
+lease ownership, delivery idempotency, routing, fairness and polling intervals
+are unchanged.
+
+Six new actual-service lifecycle cases fail with the unguarded forwarding
+baseline, before adding the helper's exception boundaries. The repaired cases
+pass **6/6 in 3.307 seconds**: one identity message is sent/acknowledged through
+the real identity processor with local store/provider doubles and its next pass
+still runs; issuer claim failure or refused delivery still reaches its next
+pass; heartbeat scope creation, startup message and disposal failures do not
+prevent startup/shutdown. Private recipient, token, provider/queue exception
+and logger exception text must be absent from formatted diagnostics. No external
+mail is sent. The existing Organization-loop class is rerun against the same
+compiled test output and passes **3/3 in 0.293 seconds**, retaining exact counts,
+next-scope progress and shutdown assertions. These are nine scoped executions
+across two invocations, not a complete Worker suite or image certification.
+
+The API test project explicitly links the actual helper/services without the
+Worker host entry point; no package, runtime dependency or deployable service
+is added. Full solution build passes with zero warnings/errors. Nineteen source
+hashes and compiled-output hashes match for the six-case capture. Native xUnit
+runs on Linux .NET 10.0.13 with current tests mounted read-only into the retained
+runtime image, network disabled. Owned containers are removed and full Docker
+inventory restored for both invocations. A source comparison also confirms the
+12 modified existing Worker files contain only logging forwarding, required
+imports and heartbeat extraction. Current immutable-image CI, actual durable
+provider operation and broader ARCH-07/08 acceptance remain required. No image
+build/download/import, existing database use or large-load test occurs.
+
 The production Worker registers `WORK_EVENT_READY` under `work-event-delivery`.
 Its handler locks and checks the current unexpired queue lease before marking a
 content-free Work event ready. Replay preserves the original readiness timestamp.

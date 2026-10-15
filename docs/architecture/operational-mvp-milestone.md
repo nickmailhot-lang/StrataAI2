@@ -68,6 +68,11 @@ Organizations after completed work or a claim error. Three actual loop lifecycle
 cases fail before/pass after the repair, retaining exact execution counts,
 fairness, safe errors and shutdown behavior. Current full immutable CI and
 deployed logging acceptance remain pending.
+The [shared Worker-owned logging boundary](background-jobs.md#shared-worker-owned-logging-boundary-2026-10-15)
+extends this protection to identity delivery, invitation/discovery/maintenance
+loops and startup scope disposal. Six new lifecycle cases fail before/pass after
+the guard; the three Organization-loop cases still pass. Current complete
+immutable CI and deployed-provider acceptance remain outstanding.
 
 The latest completed CI release candidate is
 `4cb80014a9b9e863cdc68c9718e510886cade78b`:
