@@ -151,6 +151,47 @@ HTTPS client tests and **241** CI coverage guards pass, as do Bash syntax and
 workflow lint. This is supporting retained-image verification, not a completed
 current-image release or public certificate-provider deployment.
 
+## Certificate file identity regression — 2026-10-15
+
+The `20483fe8` candidate's final release job failed while waiting for the
+restored certificate fingerprint. Its preceding `required-ci` success does
+not make that candidate a completed release. The published deployment link
+remains pinned to the completed `e5570793` bundle.
+
+A targeted native reproduction overwrites the certificate/key in place and
+deliberately gives renewal and restoration the same timestamp. The running
+container confirms unchanged certificate file identity and timestamp after
+restoration, but fresh verified connections keep receiving the renewed leaf
+until the existing fingerprint check fails. This matches [Nginx's documented
+SSL object inheritance rule](https://nginx.org/en/docs/ngx_core_module.html#ssl_object_cache_inheritable).
+It demonstrates a failure mechanism; the hosted logs did not capture file
+identity/timestamps, so they do not establish it as the unique hosted cause.
+The reproduction took **140.634 seconds**: **777 captured inputs matched**,
+the original Docker inventory was restored and **805,758** owned temporary
+bytes were removed. It used retained `24f56246` application images and the
+current edge configuration, without accessing the original database.
+
+The maintained gate and operator procedure now stage a matching pair as new
+sibling files and rename them over the mounted destinations before validation
+and reload. The gate deliberately assigns the same timestamp to both rounds
+and checks that **each file's identity changes inside the running container**.
+The whole directory remains mounted read-only. The pair of renames is not
+transactional; certificate maintenance must be serialized and both files
+published before validation/reload. Fingerprint, trust, hostname, saved session,
+saved graph, listener identity and image checks retain their original deadlines
+and refusal conditions. No extra reload, client-verification bypass or longer
+polling budget is introduced.
+
+The changed maintained gate passes in **225.903 seconds**, including certificate
+renewal/restoration, independent encrypted database/key-volume recovery, saved
+sessions and source-issued activity cursors, and the Worker-delivered WSS Card
+checks. All **777 captured inputs match**, the original Docker inventory is
+restored and **806,197** owned temporary bytes are removed. All **317** selected
+HTTPS client/recovery and CI coverage tests pass, along with Bash syntax,
+workflow lint and diff checks. These are retained-image checks with current
+edge mounts, not full current-image CI or a public deployment. No application
+image was built, downloaded or imported, and no large-load test ran.
+
 ## Operator certificate lifetime check — 2026-10-15
 
 The release bundle now includes `verify-https-certificate.sh`; see the

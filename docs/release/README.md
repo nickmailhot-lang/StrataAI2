@@ -240,8 +240,15 @@ separate approved diagnostic addresses. Verify real sign-in, task persistence
 and authorized live collaboration through the HTTPS origin before traffic.
 The shared response headers add HSTS only to HTTPS responses.
 
-For renewal, update the files within the mounted directory, validate the full
-configuration, then reload the web listener without changing images:
+For renewal, stage the complete matching certificate/key pair as **new sibling
+files in the mounted directory**, with the same private permissions and ownership
+as the existing pair. Rename each staged file over its destination, then validate
+the full configuration and reload the web listener without changing images.
+Do not overwrite existing files in place: Nginx can inherit cached SSL objects
+when file identity and modification time remain unchanged, including rapid
+renewal and rollback. See the [Nginx SSL object cache contract](https://nginx.org/en/docs/ngx_core_module.html#ssl_object_cache_inheritable).
+Publish both files before validation; the two renames are not a transaction, so
+serialize certificate maintenance and do not reload between them.
 
 ```bash
 docker compose --env-file .env -f compose.release.yml -f compose.https.yml exec -T web nginx -t
@@ -253,10 +260,10 @@ Do not treat a successful reload command as proof that the replacement is
 served: verify a fresh TLS connection, its expected certificate fingerprint,
 trust, hostname and expiry, then repeat sign-in/session and saved-task checks.
 Existing connections can still belong to the old listener workers. To restore
-the prior certificate, put its matching chain and key back in the mounted
-directory, run the same validation/reload commands and verify another fresh
-connection. This certificate procedure does not roll back application images
-or database changes.
+the prior certificate, stage its matching chain and key as new sibling files and
+rename them over the mounted destinations, run the same validation/reload
+commands and verify another fresh connection. This certificate procedure does
+not roll back application images or database changes.
 
 Keep the matching prior certificate/key available for rollback. Recheck the
 served certificate and expiry after renewal. Symlinks must resolve within the

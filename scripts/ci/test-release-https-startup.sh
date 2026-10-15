@@ -211,14 +211,31 @@ check_saved_task() {
   request GET "/boards/$board" 200
   jq -e --slurpfile before "$scratch/before.json" '.==$before[0]' "$scratch/response" >/dev/null
 }
+certificate_file_index() {
+  MSYS_NO_PATHCONV=1 docker exec "$web_container" stat -c '%i' "$1"
+}
+replace_certificate_pair() {
+  local certificate=$1 key=$2 previous_certificate previous_key
+  previous_certificate=$(certificate_file_index /run/strataai-tls/fullchain.pem)
+  previous_key=$(certificate_file_index /run/strataai-tls/privkey.pem)
+  cp "$certificate" "$scratch/certificates/fullchain.pem.next"
+  cp "$key" "$scratch/certificates/privkey.pem.next"
+  # Deliberately retain the same timestamp for renewal and rollback. Nginx's
+  # inherited SSL cache must observe new file identities even in one second.
+  touch -r "$scratch/server.crt" "$scratch/certificates/fullchain.pem.next" "$scratch/certificates/privkey.pem.next"
+  mv -f "$scratch/certificates/fullchain.pem.next" "$scratch/certificates/fullchain.pem"
+  mv -f "$scratch/certificates/privkey.pem.next" "$scratch/certificates/privkey.pem"
+  test "$(certificate_file_index /run/strataai-tls/fullchain.pem)" != "$previous_certificate"
+  test "$(certificate_file_index /run/strataai-tls/privkey.pem)" != "$previous_key"
+}
+
 test "$(peer_fingerprint)" = "$original_fingerprint"
 cp "$scratch/wrong.key" "$scratch/certificates/privkey.pem"
 if "${compose[@]}" exec -T web nginx -t > "$scratch/rotation-refusal.log" 2>&1; then exit 1; fi
 grep -Fq 'key values mismatch' "$scratch/rotation-refusal.log"
 test "$(peer_fingerprint)" = "$original_fingerprint"
 check_saved_task
-cp "$scratch/renewed.crt" "$scratch/certificates/fullchain.pem"
-cp "$scratch/renewed.key" "$scratch/certificates/privkey.pem"
+replace_certificate_pair "$scratch/renewed.crt" "$scratch/renewed.key"
 "${compose[@]}" exec -T web nginx -t > "$scratch/rotation.log" 2>&1
 "${compose[@]}" exec -T web nginx -s reload >> "$scratch/rotation.log" 2>&1
 wait_for_certificate "$renewed_fingerprint"
@@ -227,8 +244,7 @@ curl "${curl_args[@]}" --cacert "$(host_path "$scratch/server.crt")" -o "$scratc
 test "$code" = 60
 request_ca="$scratch/renewed.crt"
 check_saved_task
-cp "$scratch/server.crt" "$scratch/certificates/fullchain.pem"
-cp "$scratch/server.key" "$scratch/certificates/privkey.pem"
+replace_certificate_pair "$scratch/server.crt" "$scratch/server.key"
 "${compose[@]}" exec -T web nginx -t >> "$scratch/rotation.log" 2>&1
 "${compose[@]}" exec -T web nginx -s reload >> "$scratch/rotation.log" 2>&1
 wait_for_certificate "$original_fingerprint"
