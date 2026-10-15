@@ -10,6 +10,16 @@ implementations and scoped executed contracts; they are not full-ticket proof.
 The opening matrix describes current scope; dated evidence below is historical
 and must not be treated as proof that the current head has passed required-ci.
 
+The [durable provider recovery contracts](attachment-scanner-runtime.md#durable-provider-outage-recovery--2026-10-15)
+pass both temporary object-read and scanner outages through the actual restricted
+PostgreSQL queue and processor. Fresh adapters retry the original job, retain
+quarantine during failure and publish the integrity-bound Clean verdict once.
+The bounded attachment persistence invocation passes in 17.954 seconds against
+149 migrations; frozen inputs match and owned cleanup restores Docker inventory.
+Providers/actor admission remain synthetic; deployed engine/provider recovery,
+HTTP authorization and current immutable release evidence are separate gaps.
+Estimated work remaining stays **32%**; no large-load test is run.
+
 The [six readiness outage/recovery cases](attachment-scanner-runtime.md#attachment-readiness-outages-and-recovery--2026-10-15)
 pass without production changes. Actual HTTP readiness withdraws on database,
 bucket privacy/permission failures and a stalled provider, preserves safe 503/

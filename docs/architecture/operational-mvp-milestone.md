@@ -51,6 +51,15 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [durable attachment provider recovery checks](attachment-scanner-runtime.md#durable-provider-outage-recovery--2026-10-15)
+pass two temporary-provider outage/recovery cases through actual restricted
+PostgreSQL and the background processor. Quarantine remains closed during failure;
+a fresh processor completes the same job with unchanged source identity and one
+verdict publication. The bounded attachment contracts pass against 149 migrations
+in 17.954 seconds, and owned cleanup restores Docker inventory. Providers/actor
+admission are synthetic; deployed provider/engine recovery and current immutable
+CI remain required. PRD-14 stays open at 32% estimated work remaining.
+
 The [attachment readiness recovery acceptance](attachment-scanner-runtime.md#attachment-readiness-outages-and-recovery--2026-10-15)
 passes six controlled HTTP/dependency/Unix-socket cases without changing product
 logic. Sanitized readiness failure, independent liveness, provider deadlines,

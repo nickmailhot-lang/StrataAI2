@@ -224,6 +224,8 @@ internal static class AttachmentWorkerContract
             }
             Require(await queue.CompleteAsync(organization,lifecycleJob.Id,lifecycleJob.LeaseId,workerId,ct),"Lifecycle scan could not be acknowledged.");
         }
+        await AttachmentProviderRecoveryContract.RunAsync(admin,workerConnection,organization,original.CardId,
+            ()=>PublishPending(),bytes,digest,ct);
         var retryFile=await PublishPending(); scanner.Verdict=AttachmentScannerVerdict.Unavailable;
         for(var number=1;number<=5;number++)
         {

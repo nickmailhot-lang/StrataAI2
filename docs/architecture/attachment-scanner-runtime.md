@@ -1,5 +1,42 @@
 # Actual scanner engine runtime verification
 
+## Durable provider outage recovery — 2026-10-15
+
+Two new bounded contracts compose the actual background processor, restricted
+PostgreSQL queue and scan-delivery adapters. One private object read throws;
+the other scanner consumes the source and reports unavailable. Each persists
+one safe retry code, leaves the file Pending with unchanged digest/size/revision,
+and publishes no verdict audit/event or Card revision. The first processor's
+connection factory is disposed before recovery.
+
+A fresh processor and connection factory recover the same durable job on attempt
+two after only the fixture's retry clock is advanced. The original canonical
+metadata, source identity and bytes are preserved. The file becomes Clean with
+one revision, the Card advances once, and exactly one audit and ready event are
+committed. A further processor poll is empty and performs no provider I/O.
+The storage fixture refuses writes/deletes and checks the exact source reference.
+
+The complete bounded attachment persistence invocation passes in **17.954
+seconds**, including both new cases and existing upload, lease, preview, cover,
+recovery and lifecycle contracts. All **149 migrations** are applied to an owned
+temporary PostgreSQL instance, with actual restricted API/Worker logins. The
+solution builds with zero warnings/errors. All **819** captured source/binary
+inputs match; cleanup removes both owned containers, their internal network and
+724,100 temporary bytes, restoring the original Docker inventory. An initial
+fixture used an unsupported unencrypted hostname and was correctly refused;
+the passing capture uses the supported private `postgres` alias without changing
+transport policy.
+
+Only object/scanner responses and actor admission are synthetic. This proves
+durable database-backed retry composition, not deployed object storage/IAM,
+actual engine outage recovery, HTTP authorization or current immutable images.
+Current assemblies run read-only in the retained Linux runtime; no images are
+built, downloaded or imported. Large-load tests remain deferred until after the
+operational MVP. PRD-14 remains open at **32% estimated work remaining**.
+
+See [the recovery contract](../../tests/StrataAI.Persistence.Contracts/AttachmentProviderRecoveryContract.cs)
+and [the existing mandatory CI invocation](../../.github/workflows/ci.yml).
+
 ## Attachment readiness outages and recovery — 2026-10-15
 
 The new **six-case** readiness acceptance class passes in **12.809 seconds**
