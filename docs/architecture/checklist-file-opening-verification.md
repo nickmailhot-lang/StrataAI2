@@ -39,3 +39,25 @@ the retained immutable CI images. Current complete build-once CI and the full
 [checklist](checklist-acceptance.md) and [attachment](attachment-acceptance.md)
 acceptance requirements remain necessary for closure. Estimated work remaining
 stays **33% for PRD-13** and **32% for PRD-14**; both issues remain open.
+
+## Deletion peer item opening (2026-10-14)
+
+Retained immutable run `38657678147`, full-browser shard 2 at `497d6384`,
+passes 95 cases and fails the desktop checklist-deletion scenario before any
+deletion is attempted. The peer's checklist GET succeeds at monotonic
+133345.786 ms. Its item-opening Enter runs from 133501.639 to 133592.120 ms;
+another checklist GET succeeds at 133697.294 ms, but no item GET follows.
+The retained context still offers **Show items in Old preparation**. The
+five-second assertion for **Incomplete: Retained history** then fails. This
+establishes an unobserved read-only opening; it does not establish a failed
+deletion or prove the cause of every client admission race.
+
+Only that peer item opening now uses the existing bounded
+`pressObservedRequest` helper with an observer on its exact item GET. Keyboard
+admission stops once the request begins; the original item-content assertion
+still has to pass. Deletion consent, both single mutation activations, exact
+original body/key/count, committed receipt recovery, two-client live removal,
+404, accessibility and the 90-second scenario deadline remain unchanged.
+The corrected complete browser file still requires execution against the
+retained images. This source change alone does not close PRD-13; estimated
+work remaining stays **33%**.

@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-13: confirmed checklist deletion, exact retry and two-session live removal at ${width}px`, async ({ page, context, browser }) => {
@@ -21,9 +22,14 @@ for (const width of [1280, 390]) {
     try {
       expect((await peerContext.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
       const peer = await peerContext.newPage(); await peer.goto(route);
+      let itemReads = 0;
+      const itemsPath = `/cards/${card}/checklists/${checklist.id}/items`;
+      peer.on('request', request => {
+        if (request.method() === 'GET' && new URL(request.url()).pathname === itemsPath) itemReads++;
+      });
       const show = peer.getByRole('button', { name: 'Show checklists', exact: true }); await expect(show).toBeEnabled(); await show.press('Enter');
       await expect(peer.getByRole('heading', { name: 'Old preparation', exact: true })).toBeVisible();
-      await peer.getByRole('button', { name: 'Show items in Old preparation', exact: true }).press('Enter');
+      await pressObservedRequest(peer.getByRole('button', { name: 'Show items in Old preparation', exact: true }), () => itemReads, 1);
       await expect(peer.getByText('Incomplete: Retained history', { exact: true })).toBeVisible();
       const manage = page.getByRole('button', { name: 'Manage checklists', exact: true }); await expect(manage).toBeEnabled(); await manage.press('Enter');
       await page.getByRole('button', { name: 'Delete Old preparation', exact: true }).press('Enter');
