@@ -110,6 +110,44 @@ public sealed class BackgroundJobProcessorTests
         Assert.Throws<ArgumentException>(() => new BackgroundJobProcessor(new Store(null), new Clock(), [new Handler(), new Handler()]));
     }
 
+    [Theory]
+    [InlineData("completed", JobProcessingResult.Completed, 1, 1, 0, null)]
+    [InlineData("handler-failed", JobProcessingResult.Retried, 1, 0, 1, "job_handler_failed")]
+    [InlineData("completion-lost", JobProcessingResult.LeaseLost, 1, 1, 0, null)]
+    [InlineData("failure-lost", JobProcessingResult.LeaseLost, 1, 0, 1, "job_handler_failed")]
+    [InlineData("expired", JobProcessingResult.LeaseLost, 0, 0, 0, null)]
+    [InlineData("missing", JobProcessingResult.Retried, 0, 0, 1, "job_handler_missing")]
+    [InlineData("service-denied", JobProcessingResult.Retried, 0, 0, 1, "job_service_denied")]
+    public async Task ARCH_08_OptionalDiagnosticsCannotReplaceTheAuthoritativeLeaseOutcome(
+        string scenario, JobProcessingResult expected, int executions, int completions, int failures, string? errorCode)
+    {
+        var job = Job();
+        if (scenario == "expired") job = job with { LeaseExpiresAt = Now.AddSeconds(4) };
+        if (scenario == "missing") job = job with { JobType = "UNREGISTERED_JOB" };
+        if (scenario == "service-denied") job = job with { ServiceIdentity = "unregistered-service" };
+        var store = new Store(job) { AcceptAcknowledgement = scenario is not ("completion-lost" or "failure-lost") };
+        var handler = new Handler { Execute = scenario is "handler-failed" or "failure-lost"
+            ? _ => Task.FromException(new InvalidOperationException("private-provider-error")) : _ => Task.CompletedTask };
+        var diagnostics = new ThrowingDiagnostics();
+        var processor = new BackgroundJobProcessor(store, new Clock(), [handler], diagnostics);
+
+        Assert.Equal(expected, await processor.ProcessOneAsync(job.OrganizationId, job.WorkerId, TestContext.Current.CancellationToken));
+        Assert.Equal(executions, handler.Calls); Assert.Equal(completions, store.Completions); Assert.Equal(failures, store.Failures);
+        Assert.Equal(errorCode, store.ErrorCode);
+        Assert.Equal(1, diagnostics.Calls); Assert.Same(job, diagnostics.Job); Assert.Equal(expected, diagnostics.Outcome);
+    }
+
+    [Fact]
+    public async Task ARCH_08_DiagnosticsCannotTurnCommittedCompletionIntoCancellation()
+    {
+        var job = Job(); var store = new Store(job); var handler = new Handler();
+        var diagnostics = new ThrowingDiagnostics { Failure = new OperationCanceledException("private-diagnostic-cancellation") };
+        var processor = new BackgroundJobProcessor(store, new Clock(), [handler], diagnostics);
+        Assert.Equal(JobProcessingResult.Completed, await processor.ProcessOneAsync(job.OrganizationId, job.WorkerId, TestContext.Current.CancellationToken));
+        Assert.Equal(1, handler.Calls); Assert.Equal(1, store.Completions); Assert.Equal(0, store.Failures);
+        Assert.Equal(1, diagnostics.Calls); Assert.Null(store.ErrorCode);
+    }
+
     private static BackgroundJobProcessor Processor(Store store, Handler handler) => new(store, new Clock(), [handler]);
     private sealed class Clock : IClock { public DateTimeOffset UtcNow => Now; }
     private sealed class Handler : IBackgroundJobHandler
@@ -125,6 +163,7 @@ public sealed class BackgroundJobProcessorTests
     private sealed class Store(ClaimedBackgroundJob? job) : IBackgroundJobStore
     {
         public int Completions { get; private set; }
+        public int Failures { get; private set; }
         public string? ErrorCode { get; private set; }
         public bool AcceptAcknowledgement { get; init; } = true;
         public (Guid, Guid, Guid, Guid)? Acknowledged { get; private set; }
@@ -132,6 +171,15 @@ public sealed class BackgroundJobProcessorTests
         public Task<bool> CompleteAsync(Guid organizationId, Guid jobId, Guid leaseId, Guid workerId, CancellationToken cancellationToken = default)
         { Completions++; Acknowledged = (organizationId, jobId, leaseId, workerId); return Task.FromResult(AcceptAcknowledgement); }
         public Task<bool> FailAsync(Guid organizationId, Guid jobId, Guid leaseId, Guid workerId, string errorCode, CancellationToken cancellationToken = default)
-        { ErrorCode = errorCode; return Task.FromResult(AcceptAcknowledgement); }
+        { Failures++; ErrorCode = errorCode; return Task.FromResult(AcceptAcknowledgement); }
+    }
+    private sealed class ThrowingDiagnostics : IBackgroundJobDiagnostics
+    {
+        public int Calls { get; private set; }
+        public ClaimedBackgroundJob? Job { get; private set; }
+        public JobProcessingResult? Outcome { get; private set; }
+        public Exception Failure { get; init; } = new InvalidOperationException("private-diagnostic-error");
+        public void Record(ClaimedBackgroundJob job, JobProcessingResult outcome)
+        { Calls++; Job = job; Outcome = outcome; throw Failure; }
     }
 }

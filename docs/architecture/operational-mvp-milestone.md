@@ -55,6 +55,13 @@ now pass desktop/phone item editing with exact scroll restoration, Card focus,
 canonical persistence and one document navigation against retained images.
 Their current-main immutable CI remains required.
 
+The [Worker diagnostics isolation follow-up](background-jobs.md#optional-outcome-diagnostics-isolation-2026-10-15)
+preserves an already decided job outcome when optional outcome logging fails.
+Eight regressions fail before the repair; all 21 processor cases pass afterward
+in a scoped Linux runtime. It changes no retry, storage or handler behavior.
+Full current immutable CI and broader durable queue/provider acceptance remain
+required; large-load testing stays deferred.
+
 The latest completed CI release candidate is
 `4cb80014a9b9e863cdc68c9718e510886cade78b`:
 [run 38674444706](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706)

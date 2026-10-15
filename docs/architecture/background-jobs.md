@@ -67,6 +67,40 @@ provider idempotency; cancellation cannot undo an already completed external sen
 Worker outcome logs include job/Organization/actor/service/worker IDs, type,
 attempt and correlation ID, without metadata, token, message or exception bodies.
 
+## Optional outcome diagnostics isolation (2026-10-15)
+
+`BackgroundJobProcessor.Report` previously allowed the optional diagnostics
+callback to throw after the store had already decided completion, retry or
+lease loss. A successful acknowledgment could therefore appear to the caller
+as an exception. Diagnostics are not the authoritative queue state and must
+not replace that decision or imply another execution is needed.
+
+Only the optional observer invocation is now isolated. Its exception, including
+an observer-generated cancellation exception, cannot change the already chosen
+result. No observer exception body is persisted or recursively logged. Handler
+execution, caller cancellation, store errors, lease checks, finite attempts,
+safe failure codes and actual acknowledgment semantics remain unchanged.
+
+Eight regressions fail on the prior processor: successful completion, handler
+failure, rejected completion acknowledgment, rejected failure acknowledgment,
+expired lease, missing handler, wrong service, and observer cancellation after
+completion. Recording store/handler doubles assert the exact expected execution,
+completion and failure-call counts plus safe error code, claimed job and outcome.
+They establish this control-flow boundary, not independent PostgreSQL durability.
+All 13 existing processor cases continue to pass, including genuine shutdown,
+provider timeout, scope refusal and rejected acknowledgment.
+
+The unchanged baseline has **21 total / 8 failed / 13 passed**. The repaired
+complete class passes **21/21 in 0.395 seconds**, zero errors, skips or unexecuted
+cases, using the native xUnit runner in Linux .NET 10.0.13. The current compiled
+test output is mounted read-only into the retained API runtime image with no
+network; no application image is rebuilt, downloaded or imported. Captured
+source and compiled-output hashes match, owned test containers are removed and
+the full Docker inventory is restored. The full solution builds with zero
+warnings/errors. Current complete immutable CI, durable queue/provider
+acceptance and the remaining ARCH-07/08 scope still govern closure. No existing
+database or large-load test is used by this scoped verification.
+
 The production Worker registers `WORK_EVENT_READY` under `work-event-delivery`.
 Its handler locks and checks the current unexpired queue lease before marking a
 content-free Work event ready. Replay preserves the original readiness timestamp.

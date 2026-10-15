@@ -79,7 +79,10 @@ public sealed class BackgroundJobProcessor
 
     private JobProcessingResult Report(ClaimedBackgroundJob job, JobProcessingResult outcome)
     {
-        _diagnostics?.Record(job, outcome);
+        // The lease outcome is already decided, and may already be committed.
+        // Optional diagnostics cannot replace it or request another execution.
+        try { _diagnostics?.Record(job, outcome); }
+        catch (Exception) { /* Never persist or recursively log observer errors. */ }
         return outcome;
     }
 }
