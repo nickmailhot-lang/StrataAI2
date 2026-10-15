@@ -201,6 +201,52 @@ The backup/restore commands, maintained rehearsal and all production migrations
 remain unchanged through `e5570793`; this is scoped hosted implementation
 evidence, not a complete passing release or scheduled production recovery.
 
+## HTTPS application use after fresh-cluster restoration — 2026-10-15
+
+The mandatory assembled HTTPS gate now calls
+[the application recovery contract](../../scripts/ci/https-database-recovery.inc.sh)
+before its original live-Board checks. It stops the source API/Worker, encrypts
+the actual single-account/Organization/Board/List/Card database through the
+bundled backup command, and authenticates the archive into a fresh cluster in
+a separate owned Compose project. Cluster identifiers must differ; PostgreSQL
+and application image identities must match their originals. Restricted
+non-login identities precede restored ACLs, and canonical target provisioning
+activates fresh API/Worker credentials.
+
+The target reuses only the source fixture's owned durable activity key ring.
+This verifies database recovery with that dependency retained, not restoration
+of an off-host key backup. HTTPS uses the existing fixture certificate through
+a new private localhost listener. The API and Worker must report the exact
+Production build identity; Worker readiness must also be Production/ready.
+The original Secure session and an independent fresh sign-in must read the exact
+saved graph. The actual target Worker then delivers an authorized edit through
+WSS, with persisted cursor recovery, anonymous/origin refusal, content-free
+frames and logout withdrawal, using the existing live-Board contract.
+
+The stopped source's complete normalized dump, ACLs and separately catalogued
+CHECK definitions must remain unchanged. The target is removed before the source
+hosts restart; its external key ring remains owned by the source project. The
+original source session must still read the original graph. Final cleanup checks
+both projects' owned containers/volumes/networks, including error paths, then
+removes private archive/key/plaintext work. Seventeen new cleanup subprocess
+cases cover both project lifecycles and preserve earlier failures; all **70**
+startup/cleanup cases pass.
+
+The first complete local invocation passes in 207.801 seconds with the retained,
+archive-verified `24f562464f706884e4a27577b61c65ff385b4263` application images and
+current Nginx/header configuration mounted read-only. The final invocation passes
+in **206.115 seconds**, including explicit Worker identity/readiness and complete
+source CHECK fingerprint probes. All **771** frozen inputs match; both owned
+projects are removed, 795,880 temporary host bytes are deleted and the original
+Docker inventory is restored. All **246** CI coverage guards also pass.
+This uses no application source build or new image download/import. The fixture
+enables self-registration and disables verification/mail for its synthetic user;
+it exercises actual HTTPS/Secure cookies, not the earlier localhost HTTP cookie
+override. It does not prove current-main immutable images, every restored
+capability, managed mail/storage/scanner, off-host key/object recovery, public
+deployment or production RPO/RTO. ARCH-08 and the MVP remain open; large-load
+testing remains deferred.
+
 ## Application use after restoration
 
 A separate small local check runs both operator commands from

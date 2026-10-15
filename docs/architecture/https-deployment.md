@@ -16,6 +16,14 @@ security-header include, including locations that define their own headers.
 
 ## Required release gate
 
+The [fresh-cluster application recovery phase](database-recovery.md#https-application-use-after-fresh-cluster-restoration--2026-10-15)
+now restores the gate's one-Card fixture into a separate PostgreSQL cluster and
+starts the retained API/Worker with fresh restricted credentials and the retained
+fixture key ring. Saved-session and new Secure sign-in reads, Worker-delivered
+HTTPS/WSS edits and unchanged source state are required before release upload.
+Both projects are cleaned up even on failure. Local retained-image support does
+not replace current immutable-image CI or deployed provider/key recovery.
+
 [The maintained HTTPS contract](../../scripts/ci/test-release-https-startup.sh)
 runs against the assembled source-free payload after the normal Production and
 Demo startup gates and before final unchanged-payload verification/upload.

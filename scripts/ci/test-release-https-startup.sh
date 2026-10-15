@@ -18,9 +18,21 @@ scratch=$(cd "$scratch" && pwd -P)
 project="strataai-https-smoke-$(openssl rand -hex 8)"
 compose=(docker compose --project-name "$project" --env-file "$scratch/fixture.env" -f compose.release.yml -f compose.https.yml)
 started=false
+recovery_started=false
 cleanup() {
   local code=$? resource remaining
   trap - EXIT
+  if [ "$recovery_started" = true ]; then
+    "${recovery_compose[@]}" down --volumes --remove-orphans >/dev/null 2>&1 || code=1
+    for resource in container volume network; do
+      if [ "$resource" = container ]; then
+        remaining=$(docker ps -aq --filter "label=com.docker.compose.project=$project-recovery") || { code=1; continue; }
+      else
+        remaining=$(docker "$resource" ls -q --filter "label=com.docker.compose.project=$project-recovery") || { code=1; continue; }
+      fi
+      test -z "$remaining" || code=1
+    done
+  fi
   if [ "$started" = true ]; then
     "${compose[@]}" down --volumes --remove-orphans >/dev/null 2>&1 || code=1
     for resource in container volume network; do
@@ -228,6 +240,8 @@ check_saved_task
 test "$("${compose[@]}" ps -q web)" = "$web_container"
 test "$(docker inspect --format '{{.State.StartedAt}}' "$web_container")" = "$web_started"
 echo 'HTTPS certificate rotation passed: rejected key preserves serving certificate; renewed and restored certificates verified on fresh connections; original session/task and listener preserved.'
+source "$verification_dir/https-database-recovery.inc.sh"
+check_https_database_recovery
 export STRATAAI_WORKER_ORGANIZATION_IDS="$organization"
 "${compose[@]}" up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 120 worker >/dev/null
 NODE_TLS_REJECT_UNAUTHORIZED=1 NODE_USE_ENV_PROXY=0 NODE_EXTRA_CA_CERTS="$(host_path "$scratch/server.crt")" \

@@ -1,0 +1,98 @@
+# Sourced by test-release-https-startup.sh after its one-Card HTTPS fixture exists.
+# Runtime commands use only the assembled bundle and its already loaded images.
+recovery_source_fingerprint() {
+  {
+    docker exec "$1" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format plain \
+      | python3 "$(host_path "$verification_dir/normalize-recovery-dump.py")" || return 1
+    docker exec "$1" psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 \
+      -c "SELECT jsonb_build_array(conrelid::regclass::text,contypid::regtype::text,conname,pg_get_constraintdef(oid,true)) FROM pg_constraint WHERE contype='c' AND connamespace='public'::regnamespace ORDER BY 1" || return 1
+  } | sha256sum
+}
+check_https_database_recovery() {
+  local source_origin=$origin source_port=$STRATAAI_HTTPS_PORT
+  local source_api_password=$STRATAAI_API_DB_PASSWORD source_worker_password=$STRATAAI_WORKER_DB_PASSWORD
+  local source_scope=${STRATAAI_WORKER_ORGANIZATION_IDS-}
+  local source_database target_database source_identity target_identity key_volume source_fingerprint after_fingerprint
+  local recovery_binding recovery_port archive_digest host container
+  source_database=$("${compose[@]}" ps -q postgres)
+  key_volume=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/lib/strataai/activity-keys"}}{{.Name}}{{end}}{{end}}' "$("${compose[@]}" ps -q api)")
+  test -n "$key_volume"
+  cp "$scratch/cookies" "$scratch/source-cookies"
+  "${compose[@]}" stop --timeout 20 api worker >/dev/null
+  source_fingerprint=$(recovery_source_fingerprint "$source_database")
+  source_identity=$(docker exec "$source_database" psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 -c 'SELECT system_identifier FROM pg_control_system()')
+  MSYS_NO_PATHCONV=1 openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 1 \
+    -subj /CN=strataai-https-recovery -keyout "$(host_path "$scratch/recovery.key")" \
+    -out "$(host_path "$scratch/recovery.crt")" > "$scratch/recovery-certificate.log" 2>&1
+  STRATAAI_BACKUP_DB_USER="$POSTGRES_USER" bash backup-postgres.sh "$source_database" "$POSTGRES_DB" \
+    "$scratch/recovery.crt" "$scratch/recovery.cms" > "$scratch/recovery-backup.log" 2>&1
+  archive_digest=$(sha256sum < "$scratch/recovery.cms"); archive_digest=${archive_digest%% *}
+  # Keep the source's owned durable key ring. This models database loss with the
+  # key-ring dependency retained, not recovery of an off-host key backup.
+  jq -n --arg name "$key_volume" '{volumes:{"strataai-activity-keys":{external:true,name:$name}}}' > "$scratch/recovery-overlay.json"
+  recovery_compose=(docker compose --project-name "$project-recovery" --env-file "$scratch/fixture.env" \
+    -f compose.release.yml -f compose.https.yml -f "$scratch/recovery-overlay.json")
+  export STRATAAI_HTTPS_PORT=0
+  STRATAAI_API_DB_PASSWORD=$(openssl rand -hex 24); STRATAAI_WORKER_DB_PASSWORD=$(openssl rand -hex 24)
+  export STRATAAI_API_DB_PASSWORD STRATAAI_WORKER_DB_PASSWORD
+  if [ "${GITHUB_ACTIONS:-}" = true ]; then
+    for secret in "$STRATAAI_API_DB_PASSWORD" "$STRATAAI_WORKER_DB_PASSWORD"; do echo "::add-mask::$secret"; done
+  fi
+  export STRATAAI_WORKER_ORGANIZATION_IDS="$organization"
+  recovery_started=true
+  "${recovery_compose[@]}" up -d --no-build --pull never --wait --wait-timeout 120 postgres >/dev/null
+  target_database=$("${recovery_compose[@]}" ps -q postgres)
+  test "$target_database" != "$source_database"
+  test "$(docker inspect --format '{{.Image}}' "$target_database")" = "$(docker inspect --format '{{.Image}}' "$source_database")"
+  target_identity=$(docker exec "$target_database" psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 -c 'SELECT system_identifier FROM pg_control_system()')
+  [[ "$source_identity" =~ ^[0-9]+$ && "$target_identity" =~ ^[0-9]+$ && "$source_identity" != "$target_identity" ]]
+  "${recovery_compose[@]}" exec -T postgres psql -X -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 > "$scratch/recovery-roles.log" 2>&1 <<'SQL'
+CREATE ROLE strataai_api_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT;
+CREATE ROLE strataai_worker_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT;
+SQL
+  STRATAAI_RESTORE_DB_USER="$POSTGRES_USER" STRATAAI_RESTORE_TMPDIR="$scratch" \
+    bash restore-postgres.sh "$target_database" "$POSTGRES_DB" "$scratch/recovery.crt" "$scratch/recovery.key" \
+      "$scratch/recovery.cms" "$archive_digest" > "$scratch/recovery-restore.log" 2>&1
+  COMPOSE_PROJECT_NAME="$project-recovery" COMPOSE_FILE=compose.release.yml bash provision-runtime-roles.sh > "$scratch/recovery-provision.log" 2>&1
+  "${recovery_compose[@]}" up -d --no-build --pull never --wait --wait-timeout 180 >/dev/null
+  recovery_binding=$("${recovery_compose[@]}" port web 443); recovery_port=${recovery_binding##*:}
+  [[ "$recovery_port" =~ ^[0-9]+$ ]]
+  origin="https://localhost:$recovery_port"
+  export STRATAAI_HTTPS_PORT="$recovery_port" STRATAAI_PUBLIC_ORIGIN="$origin" STRATAAI_REALTIME_PUBLIC_ORIGIN="$origin"
+  "${recovery_compose[@]}" up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 120 api worker web >/dev/null
+  test "$("${recovery_compose[@]}" port web 443)" = "$recovery_binding"
+  test "$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/lib/strataai/activity-keys"}}{{.Name}}{{end}}{{end}}' "$("${recovery_compose[@]}" ps -q api)")" = "$key_volume"
+  for host in api worker web; do
+    container=$("${recovery_compose[@]}" ps -q "$host")
+    test "$(docker inspect --format '{{.Image}}' "$container")" = "${image_ids[$host]}"
+    test "$(docker inspect --format '{{.State.Health.Status}}' "$container")" = healthy
+  done
+  request GET /api/runtime 200
+  jq -e --arg revision "$revision" --arg version "$version" '.mode=="production" and .revision==$revision and .version==$version' "$scratch/response" >/dev/null
+  "${recovery_compose[@]}" exec -T web wget -q -T 15 -O - http://worker:8081/runtime > "$scratch/recovery-worker-runtime.json"
+  jq -e --arg revision "$revision" --arg version "$version" '.mode=="production" and .revision==$revision and .version==$version' "$scratch/recovery-worker-runtime.json" >/dev/null
+  "${recovery_compose[@]}" exec -T web wget -q -T 15 -O - http://worker:8081/readyz > "$scratch/recovery-worker-ready.json"
+  jq -e '.status=="ready" and .mode=="production"' "$scratch/recovery-worker-ready.json" >/dev/null
+  check_saved_task
+  # The saved session is checked before creating a separate new session.
+  rm -f "$scratch/cookies"
+  request POST /auth/login 200 "$credentials"
+  grep -Eiq '^Set-Cookie: strataai_session=.*; secure' "$scratch/headers"
+  check_saved_task
+  NODE_TLS_REJECT_UNAUTHORIZED=1 NODE_USE_ENV_PROXY=0 NODE_EXTRA_CA_CERTS="$(host_path "$scratch/server.crt")" \
+    node --dns-result-order=ipv4first "$(host_path "$verification_dir/check-https-live-board.mjs")" \
+    "$origin" "$(host_path "$scratch/cookies")" "$organization" "$board" "$card" "$user" > "$scratch/recovery-live-result.log"
+  grep -Fxq 'HTTPS WSS Board passed: Worker-delivered edit, persisted cursor recovery, anonymous/origin refusal, content-free frames and logout withdrawal.' "$scratch/recovery-live-result.log"
+  after_fingerprint=$(recovery_source_fingerprint "$source_database")
+  test "$after_fingerprint" = "$source_fingerprint"
+  "${recovery_compose[@]}" down --volumes --remove-orphans >/dev/null
+  # The external key ring remains owned by the source project until final cleanup.
+  origin=$source_origin
+  export STRATAAI_HTTPS_PORT="$source_port" STRATAAI_PUBLIC_ORIGIN="$origin" STRATAAI_REALTIME_PUBLIC_ORIGIN="$origin"
+  export STRATAAI_API_DB_PASSWORD="$source_api_password" STRATAAI_WORKER_DB_PASSWORD="$source_worker_password"
+  export STRATAAI_WORKER_ORGANIZATION_IDS="$source_scope"
+  cp "$scratch/source-cookies" "$scratch/cookies"
+  "${compose[@]}" up -d --no-deps --no-recreate --no-build --pull never --wait --wait-timeout 120 api worker >/dev/null
+  check_saved_task
+  echo 'HTTPS database recovery passed: distinct restored cluster, retained durable key ring, saved session and fresh Secure sign-in, exact task graph, target Worker/WSS edit and logout, unchanged source and original images.'
+}

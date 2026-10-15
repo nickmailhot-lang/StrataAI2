@@ -51,6 +51,17 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [HTTPS application recovery gate](database-recovery.md#https-application-use-after-fresh-cluster-restoration--2026-10-15)
+now requires application use after a fresh-cluster encrypted restore: saved and
+fresh Secure sessions read the exact graph, then the target Worker delivers an
+HTTPS/WSS edit while the stopped source remains unchanged. It retains the owned
+fixture key ring and removes both projects. The final complete local invocation
+passes in 206.115 seconds, all 771 frozen inputs match and Docker inventory is
+restored. All 70 startup/cleanup cases and 246 CI guards pass. Local retained-image
+support is separate from current immutable CI, managed
+providers and off-host key/object recovery. ARCH-08 and the MVP remain open;
+large-load testing remains deferred.
+
 The [restored runtime identity repair](database-recovery.md#restored-runtime-identity-verification--2026-10-15)
 reproduces the fresh-cluster rehearsal's missing runtime-role failure with the
 same preexisting source identities as CI. Reviewed non-login roles now precede

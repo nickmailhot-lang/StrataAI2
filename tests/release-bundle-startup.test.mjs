@@ -8,6 +8,67 @@ import { createServer } from 'node:http';
 import test from 'node:test';
 
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
+const httpsCleanup = readFileSync(resolve('scripts/ci/test-release-https-startup.sh'), 'utf8')
+  .match(/cleanup\(\) \{[\s\S]*?\n\}/)?.[0];
+assert.ok(httpsCleanup, 'Maintained HTTPS cleanup must be present');
+for (const scenario of [
+  { name: 'both projects clean', status: 0 },
+  { name: 'source only before recovery starts', started: false, status: 0 },
+  { name: 'original failure preserved', upstream: 7, status: 7 },
+  ...['source', 'target'].flatMap(role => [
+    { name: `${role} shutdown failure`, fail: `${role}-down`, status: 1 },
+    ...['container', 'volume', 'network'].flatMap(kind => [
+      { name: `${role} ${kind} inventory failure`, fail: `${role}-${kind}`, status: 1 },
+      { name: `${role} ${kind} remains`, leftover: `${role}-${kind}`, status: 1 },
+    ]),
+  ]),
+]) test(`HTTPS recovery cleanup: ${scenario.name}`, () => {
+  const root = mkdtempSync(join(tmpdir(), 'strataai-https-cleanup-'));
+  try {
+    mkdirSync(join(root, 'scratch'));
+    writeFileSync(join(root, 'scratch', 'owned-plaintext-fixture'), 'fixture');
+    const driver = join(root, 'driver.sh');
+    writeFileSync(driver, `set -euo pipefail
+project=strataai-https-smoke-owned
+compose=(docker compose --project-name "$project")
+recovery_compose=(docker compose --project-name "$project-recovery")
+started=true
+recovery_started=${scenario.started === false ? 'false' : 'true'}
+scratch="$PWD/scratch"
+docker() {
+  printf '%s\\n' "$*" >> "$PWD/calls.log"
+  local role=source kind=$1
+  if [[ "$*" == *"$project-recovery"* ]]; then role=target; fi
+  if [ "$kind" = compose ]; then kind=down; fi
+  if [ "$kind" = ps ]; then kind=container; fi
+  if [ "$STRATAAI_TEST_FAIL" = "$role-$kind" ]; then return 9; fi
+  if [ "$STRATAAI_TEST_LEFTOVER" = "$role-$kind" ]; then printf '%s\\n' owned-resource; fi
+  return 0
+}
+${httpsCleanup}
+trap cleanup EXIT
+exit "$STRATAAI_TEST_UPSTREAM"
+`);
+    const result = spawnSync(bash, [driver], { cwd: root, encoding: 'utf8', env: { ...process.env, BASH_ENV: undefined,
+      STRATAAI_TEST_UPSTREAM: String(scenario.upstream ?? 0), STRATAAI_TEST_FAIL: scenario.fail ?? '',
+      STRATAAI_TEST_LEFTOVER: scenario.leftover ?? '' } });
+    assert.equal(result.status, scenario.status, result.stderr);
+    assert.equal(result.stdout, '');
+    assert.throws(() => readFileSync(join(root, 'scratch', 'owned-plaintext-fixture')), { code: 'ENOENT' });
+    const expected = [];
+    for (const name of [...(scenario.started === false ? [] : ['strataai-https-smoke-owned-recovery']), 'strataai-https-smoke-owned']) {
+      expected.push(`compose --project-name ${name} down --volumes --remove-orphans`,
+        `ps -aq --filter label=com.docker.compose.project=${name}`,
+        `volume ls -q --filter label=com.docker.compose.project=${name}`,
+        `network ls -q --filter label=com.docker.compose.project=${name}`);
+    }
+    assert.deepEqual(readFileSync(join(root, 'calls.log'), 'utf8').trim().split('\n'), expected);
+  } finally {
+    assert.equal(dirname(realpathSync(root)), realpathSync(tmpdir()));
+    assert.match(basename(root), /^strataai-https-cleanup-/);
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 const script = resolve('scripts/ci/test-release-bundle-startup.sh');
 function fixture(check) {
   const root = mkdtempSync(join(tmpdir(), 'strataai-startup-refusal-'));
