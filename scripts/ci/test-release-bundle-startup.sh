@@ -35,6 +35,7 @@ fi
 compose=(docker compose --project-name "$project" --env-file .env -f compose.release.yml)
 inspection_file=''
 runtime_file=''
+port_override=''
 cleanup() {
   local code=$? remaining resource
   trap - EXIT
@@ -42,6 +43,7 @@ cleanup() {
   rm -f .env
   if [ -n "$inspection_file" ]; then rm -f "$inspection_file"; fi
   if [ -n "$runtime_file" ]; then rm -f "$runtime_file"; fi
+  if [ -n "$port_override" ]; then rm -f "$port_override"; fi
   for resource in container volume network; do
     if [ "$resource" = container ]; then
       if ! remaining=$(docker ps -aq --filter "label=com.docker.compose.project=$project"); then code=1; continue; fi
@@ -58,6 +60,28 @@ set -o noclobber
 : > .env
 set +o noclobber
 trap cleanup EXIT
+# Keep the downloaded operator payload unchanged and avoid other local stacks.
+# This owned CI-only overlay publishes only loopback ephemeral diagnostics.
+port_override=$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/strataai-bundle-ports.XXXXXXXX.yml")
+cat > "$port_override" <<'YAML'
+services:
+  api:
+    ports: !override
+      - target: 8080
+        published: "0"
+        host_ip: 127.0.0.1
+  worker:
+    ports: !override
+      - target: 8081
+        published: "0"
+        host_ip: 127.0.0.1
+  web:
+    ports: !override
+      - target: 80
+        published: "0"
+        host_ip: 127.0.0.1
+YAML
+compose+=(-f "$port_override")
 write_environment() {
   printf '%s\n' "POSTGRES_DB=$POSTGRES_DB" "POSTGRES_USER=$POSTGRES_USER" "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" \
     "STRATAAI_API_DB_PASSWORD=$STRATAAI_API_DB_PASSWORD" "STRATAAI_WORKER_DB_PASSWORD=$STRATAAI_WORKER_DB_PASSWORD" \
@@ -80,8 +104,21 @@ COMPOSE_FILE=compose.release.yml bash apply-migrations.sh >/dev/null
 COMPOSE_FILE=compose.release.yml bash provision-runtime-roles.sh >/dev/null
 "${compose[@]}" up -d --wait --wait-timeout 180 >/dev/null
 runtime_file=$(mktemp "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/strataai-bundle-runtime.XXXXXX")
+update_runtime_addresses() {
+  local host target binding port
+  for host in api worker web; do
+    case "$host" in api) target=8080 ;; worker) target=8081 ;; web) target=80 ;; esac
+    binding=$("${compose[@]}" port "$host" "$target") || return 1
+    [[ "$binding" =~ ^127\.0\.0\.1:[1-9][0-9]{0,4}$ ]] || return 1
+    port=${binding##*:}
+    test "$port" -le 65535 || return 1
+    printf -v "STRATAAI_${host^^}_URL" 'http://%s' "$binding"
+    export "STRATAAI_${host^^}_URL"
+  done
+}
 check_runtime() {
   local endpoint status host container actual expected
+  update_runtime_addresses
   bash health-check.sh >/dev/null
   for endpoint in "${STRATAAI_WEB_URL:-http://127.0.0.1:8088}/build-metadata.json" "${STRATAAI_API_URL:-http://127.0.0.1:8080}/api/runtime" "${STRATAAI_WORKER_URL:-http://127.0.0.1:8081}/runtime"; do
     status=$(curl --silent --show-error --connect-timeout 5 --max-time 15 \

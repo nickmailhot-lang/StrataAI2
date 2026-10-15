@@ -155,8 +155,10 @@ current-image release or public certificate-provider deployment.
 
 The `20483fe8` candidate's final release job failed while waiting for the
 restored certificate fingerprint. Its preceding `required-ci` success does
-not make that candidate a completed release. The published deployment link
-remains pinned to the completed `e5570793` bundle.
+not make that candidate a completed release. At that point the deployment
+reference stayed on the completed `e5570793` bundle. See the
+[MVP release status](operational-mvp-milestone.md#current-status) for the latest
+completed candidate and its separate acceptance limits.
 
 A targeted native reproduction overwrites the certificate/key in place and
 deliberately gives renewal and restoration the same timestamp. The running

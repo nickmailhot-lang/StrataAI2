@@ -110,6 +110,36 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+### Latest completed CI release — 2026-10-15
+
+The latest successful-main query identifies `e83a928a0b29c37482003ba6e61529eda561c512`:
+[run 38697542648](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38697542648)
+has all **16 jobs completed successfully**, including `required-ci` and the
+final release job. The original-input, assembled Production/Demo/HTTPS,
+unchanged-payload and upload steps all succeed. Its
+[Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38697542648/artifacts/11988264222)
+is **518,734,948 bytes**, with GitHub-reported SHA-256
+`554723e8819605efc9d885381b4ab205b52755f0bd4e922d352390636e4a4a69`.
+
+This is hosted evidence for that exact candidate. Its full archive has not been
+downloaded or executed independently here. It predates the workload-identity
+dependency repair and later deployment/observability changes; follow its
+[pinned operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/e83a928a0b29c37482003ba6e61529eda561c512/docs/release/README.md).
+Current-main CI, managed-provider configuration, tested operational alerts,
+scheduled recovery and complete MVP acceptance remain required. New main work
+and deferred capacity acceptance are not certified by this earlier green run.
+
+The earlier `e5570793` evidence below describes a different candidate.
+
+The [independent original-bundle rehearsal](release-bundle-startup.md#independent-original-bundle-check-and-refusal)
+now verifies the full `e5570793` ZIP, nested provenance and actual loaded image
+identity, then starts its Production hosts with private ephemeral diagnostics.
+Initial health, proxy and build/mode checks pass; the newer database-outage gate
+refuses the candidate when an API probe times out at 15 seconds. The deadline
+is preserved. Original Docker inventory is restored, new images are removed
+and **1,045,025,366** temporary file bytes are deleted. This closes an evidence
+gap by exposing a candidate limit; it does not complete MVP acceptance.
+
 The [minimum PostgreSQL version guard](schema-upgrades.md#minimum-server-version-admission--2026-10-15)
 now refuses advertised pre-17 servers on both runtime and readiness connections.
 Four older-server cases fail before repair; all eight wire cases and 14 existing
@@ -264,11 +294,10 @@ loops and startup scope disposal. Six new lifecycle cases fail before/pass after
 the guard; the three Organization-loop cases still pass. Current complete
 immutable CI and deployed-provider acceptance remain outstanding.
 
-The latest completed CI release candidate is
+An earlier completed CI release candidate is
 `e55707935d1e217fdbf59d4a586e35332ccd774b`:
 [run 38690507857](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38690507857)
-is completed/success with all **16 jobs** successful. A fresh successful-main
-query confirms it is the newest fully passing candidate. Its
+is completed/success with all **16 jobs** successful. Its
 [tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38690507857/artifacts/11976500930)
 is **518,744,746 bytes**; GitHub reports SHA-256
 `b7fca26cb74cd864e42ffd190d5fc906d7d13aeb20e68eb10d5e3761da8d9c7e`.
@@ -276,9 +305,11 @@ is **518,744,746 bytes**; GitHub reports SHA-256
 The **421-byte** metadata and **95,674-byte** security ZIPs are independently
 size/SHA verified, binding version **0.1.0-1758**, this exact SHA/run and three
 image references. The maintained verifier checks six security payload hashes,
-four nonempty SBOM inventories and the three-image provenance record. Full image
-and bundle ZIPs have not been downloaded/loaded locally for this candidate;
-this verifies records, not independent tarball correspondence.
+four nonempty SBOM inventories and the three-image provenance record. A later
+independent download now verifies the full bundle and actual loaded images;
+the [resulting outage refusal](release-bundle-startup.md#independent-original-bundle-check-and-refusal)
+is retained separately from this candidate's earlier hosted success. The
+duplicate standalone image ZIP is not downloaded.
 
 Release logs confirm original-input verification, source-free migrations,
 restricted Production startup, exact image identity, health/proxy, graceful

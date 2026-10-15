@@ -12,10 +12,10 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 The next release milestone is a [deployable, stable operational task-management MVP](docs/architecture/operational-mvp-milestone.md). Core workflow reliability and verified deployment take priority before new governance and AI modules; the complete PRD roadmap remains in force.
 
-**Latest passing CI release candidate:** [`e5570793`](https://github.com/nickmailhot-lang/StrataAI2/commit/e55707935d1e217fdbf59d4a586e35332ccd774b)
-passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38690507857).
-[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38690507857/artifacts/11976500930)
-and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/e55707935d1e217fdbf59d4a586e35332ccd774b/docs/release/README.md). This evidence identifies
+**Latest passing CI release candidate:** [`e83a928a`](https://github.com/nickmailhot-lang/StrataAI2/commit/e83a928a0b29c37482003ba6e61529eda561c512)
+passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38697542648).
+[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38697542648/artifacts/11988264222)
+and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/e83a928a0b29c37482003ba6e61529eda561c512/docs/release/README.md). This evidence identifies
 that exact candidate; later main changes require their own CI. Review
 [remaining deployment acceptance](docs/architecture/operational-mvp-milestone.md#current-status)
 before production promotion. Large-load tests remain deferred until after MVP.
@@ -29,6 +29,11 @@ and fresh-cluster application recovery. Use the
 instructions included in its own bundle;
 see [the evidence and remaining gaps](docs/architecture/operational-mvp-milestone.md#current-status)
 before applying newer documentation to that artifact.
+
+An [independent check of the earlier `e5570793` bundle](docs/architecture/release-bundle-startup.md#independent-original-bundle-check-and-refusal)
+starts successfully but fails the newer database-outage deadline. The latest
+completed candidate also predates that readiness repair; require a newer tested
+candidate before MVP production promotion.
 
 Current main also adds [bounded database readiness and outage recovery checks](docs/architecture/release-bundle-startup.md#database-outage-and-bounded-readiness-2026-10-15).
 Those repairs require their own full current-image CI before MVP acceptance.

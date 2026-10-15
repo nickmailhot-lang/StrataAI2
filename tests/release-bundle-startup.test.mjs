@@ -98,6 +98,33 @@ test('startup refuses existing operator settings without rewriting or requiring 
 const startupSource = readFileSync(script, 'utf8');
 const runtimeCheck = startupSource.match(/check_runtime\(\) \{[\s\S]*?\n\}/)?.[0];
 assert.ok(runtimeCheck, 'Maintained runtime identity check must be present');
+const runtimeAddresses = startupSource.match(/update_runtime_addresses\(\) \{[\s\S]*?\n\}/)?.[0];
+assert.ok(runtimeAddresses, 'Maintained address discovery must be present');
+for (const binding of ['127.0.0.1:49152', '0.0.0.0:49152', '127.0.0.2:49152', '127.0.0.1:0',
+  '127.0.0.1:65536', '127.0.0.1:00080', '127.0.0.1:49152\n127.0.0.1:49153', '', 'private.invalid:49152']) {
+  test(`release diagnostic address admission: ${JSON.stringify(binding)}`, () => fixture(root => {
+    const driver = join(root, 'address-test.sh');
+    writeFileSync(driver, `set -euo pipefail
+compose=(docker compose)
+docker() { printf '%s' "$STRATAAI_TEST_BINDING"; }
+${runtimeAddresses}
+update_runtime_addresses
+test "$STRATAAI_API_URL" = 'http://127.0.0.1:49152'
+test "$STRATAAI_WORKER_URL" = 'http://127.0.0.1:49152'
+test "$STRATAAI_WEB_URL" = 'http://127.0.0.1:49152'
+STRATAAI_TEST_BINDING=127.0.0.1:49153
+update_runtime_addresses
+test "$STRATAAI_API_URL" = 'http://127.0.0.1:49153'
+test "$STRATAAI_WORKER_URL" = 'http://127.0.0.1:49153'
+test "$STRATAAI_WEB_URL" = 'http://127.0.0.1:49153'
+`);
+    const result = spawnSync(bash, [driver], { cwd: root, encoding: 'utf8',
+      env: { ...process.env, BASH_ENV: undefined, STRATAAI_TEST_BINDING: binding,
+        STRATAAI_API_URL: 'http://unrelated.invalid', STRATAAI_WORKER_URL: 'http://unrelated.invalid', STRATAAI_WEB_URL: 'http://unrelated.invalid' } });
+    assert.equal(result.status, binding === '127.0.0.1:49152' ? 0 : 1, result.stderr);
+    assert.equal(result.stdout, '');
+  }));
+}
 const runtimePaths = ['/build-metadata.json', '/api/runtime', '/runtime'];
 const runtimeCases = [
   { name: 'matching exact identities' },
@@ -138,6 +165,10 @@ version=1.0.0
 runtime_file=runtime-response.json
 declare -A loaded_image_ids=([web]=web-image [api]=api-image [worker]=worker-image)
 docker() {
+  if [ "$1" = compose ] && [ "$2" = port ]; then
+    case "$3" in api) printf '127.0.0.1:8080' ;; worker) printf '127.0.0.1:8081' ;; web) printf '127.0.0.1:8088' ;; *) return 64 ;; esac
+    return 0
+  fi
   if [ "$1" = compose ] && [ "$2" = ps ]; then printf '%s-container' "$4"; return 0; fi
   if [ "$1" = inspect ] && [ "$3" = '{{.Image}}' ]; then printf '%s-image' "\${4%-container}"; return 0; fi
   return 64
@@ -152,6 +183,7 @@ curl() {
   done
   command curl "\${args[@]}"
 }
+${runtimeAddresses}
 ${runtimeCheck}
 check_runtime
 printf verified > runtime.checked
@@ -372,6 +404,7 @@ for (const scenario of [
     writeFileSync(join(root, '.env'), 'PRIVATE_TEST_SETTINGS=discard\n');
     writeFileSync(join(root, 'inspection.json'), 'PRIVATE_TEST_INSPECTION\n');
     writeFileSync(join(root, 'runtime.json'), 'PRIVATE_TEST_RUNTIME\n');
+    writeFileSync(join(root, 'ports.yml'), 'PRIVATE_TEST_PORT_OVERRIDE\n');
     const driver = join(root, 'cleanup-test.sh');
     writeFileSync(driver, `#!/usr/bin/env bash
 set -euo pipefail
@@ -379,6 +412,7 @@ project=strataai-bundle-smoke-0123456789abcdef
 compose=(docker compose)
 inspection_file=inspection.json
 runtime_file=runtime.json
+port_override=ports.yml
 docker() {
   printf '%s\\n' "$*" >> calls.log
   if [ "$1" = compose ]; then
@@ -400,6 +434,7 @@ exit "$STRATAAI_TEST_UPSTREAM"
       STRATAAI_TEST_QUERY_FAILURE: scenario.queryFailure ?? '', STRATAAI_TEST_LEFTOVER: scenario.leftover ?? '',
       STRATAAI_TEST_UPSTREAM: String(scenario.upstream ?? 0) } });
     assert.equal(result.status, scenario.status, result.stderr);
+    assert.throws(() => readFileSync(join(root, 'ports.yml')), { code: 'ENOENT' });
     assert.equal(result.stdout, '');
     assert.throws(() => readFileSync(join(root, '.env')), { code: 'ENOENT' });
     assert.throws(() => readFileSync(join(root, 'inspection.json')), { code: 'ENOENT' });

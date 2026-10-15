@@ -5,6 +5,73 @@ source, Node.js or the .NET SDK. Checksums and a nonempty archive alone do not
 prove that its Compose, migrations, role provisioning and runtime instructions
 work together. ARCH-11-FR-052 also requires API/Worker shutdown and restart proof.
 
+## Private diagnostic ports during verification — 2026-10-15
+
+Independent verification of the original `e5570793` release exposes a collision
+with the running local Demo API's port 8080. A successful host socket preflight
+does not establish that Docker's port allocator can publish that port. The
+failed invocation removes its owned project, newly imported images and
+**1,045,017,209** temporary bytes; the original Docker inventory is restored.
+The existing Demo stays running.
+
+The maintained Production startup gate now creates an owned, temporary Compose
+overlay outside the release payload. It replaces only diagnostic publications
+with loopback ports allocated by Docker. The API/Worker/web internal ports,
+images, environment, health, migrations, roles and durable storage still come
+from the original bundle. The operator payload retains its published port
+configuration and its original bytes.
+
+Before each runtime check, the gate discovers its own project's three bindings
+and exports the corresponding health/build verification URLs. Each binding must
+be a single canonical `127.0.0.1` address with a port from 1–65,535. This also
+refreshes addresses after password rotation recreates the API/Worker. Existing
+readiness, exact identity, graceful shutdown, same-container restart, database
+outage/recovery, wrong-password refusal and unchanged-payload assertions retain
+their original deadlines. Cleanup removes the port overlay alongside owned
+settings and runtime captures.
+
+All **356** selected startup, database-outage and CI coverage cases pass,
+including nine address-admission cases and overlay removal on successful and
+failed cleanup paths. Bash syntax, workflow lint and diff checks pass.
+
+### Independent original-bundle check and refusal
+
+The original `e5570793` bundle ZIP is independently downloaded and its exact
+**518,744,746-byte** size and published SHA-256 verified. The candidate's pinned
+verifier admits all **188** extracted files, nested checksums, build identity,
+image/security provenance and four SBOM inventories. The three original image
+archives are loaded and their actual image identities checked against those
+records. Application source is neither built nor mounted.
+
+With the new port overlay, the original Production hosts start and pass health,
+proxy, embedded build/service identity and Production-mode checks alongside the
+existing local Demo. The complete newer gate **does not pass**: after stopping
+the owned PostgreSQL service, a request in the first API liveness/readiness pair
+times out after **15 seconds**, with no response bytes. The stage exits **28**
+after **161.272 seconds**. The captured log does not distinguish which of the
+two URLs timed out. Demo and HTTPS stages are not executed after that refusal.
+This is a measured historical-candidate limitation, not a passing recovery drill
+or evidence that current main failed.
+
+The bundle predates the `cb39f549` bounded-readiness repair. Current main's
+[database readiness probe](../../src/StrataAI.Infrastructure/Runtime/ProductionRuntimeDependencyStatus.cs)
+uses a two-second cancellation budget; current-image outage acceptance remains
+required. Three current compiled-code cases pass for an unresponsive Npgsql
+handshake, caller cancellation and an already-cancelled probe, with owned cleanup
+restoring Docker inventory. These controlled peers are separate evidence from
+the failed original-image outage rehearsal. The newer `e83a928a` completed CI candidate has no application-source
+changes from `e5570793`, but has not been independently executed here. Its
+hosted green result does not certify the later outage requirement.
+
+For this historical check, the newer read-only runtime and certificate probes
+are supplied as external verification tools, with path-only driver adaptations;
+they are not inserted into the original payload. All refusal deadlines remain
+unchanged. The failed fixture removes all newly imported images and owned
+containers, volumes and networks, restores the original Docker inventory, and
+removes **1,045,025,366** temporary file bytes. The original database and existing
+Demo are preserved. No large-load or capacity test runs. See the
+[MVP status](operational-mvp-milestone.md#current-status) before promotion.
+
 ## Source-free Demo release path
 
 ARCH-10-AC-001 also requires Demo to start from the image archives on a clean
