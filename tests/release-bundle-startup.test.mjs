@@ -34,7 +34,7 @@ test('startup refuses existing operator settings without rewriting or requiring 
 
 const startupSource = readFileSync(script, 'utf8');
 const restartStart = startupSource.indexOf('\napi=$(');
-const restartEnd = startupSource.lastIndexOf('\necho ');
+const restartEnd = startupSource.indexOf('\n# ARCH-12-AC-003:');
 assert.ok(restartStart >= 0 && restartEnd > restartStart, 'Maintained restart sequence must be present');
 const restartSequence = startupSource.slice(restartStart + 1, restartEnd);
 for (const scenario of [
@@ -92,6 +92,107 @@ ${restartSequence}
     } else assert.throws(() => readFileSync(join(root, 'runtime.checked')), { code: 'ENOENT' });
   });
 });
+
+const rotationEnd = startupSource.lastIndexOf('\necho ');
+assert.ok(rotationEnd > restartEnd, 'Maintained password-rotation sequence must be present');
+const rotationSequence = startupSource.slice(restartEnd + 1, rotationEnd);
+for (const scenario of ['healthy', 'environment-write-failure', 'postgres-start-failure',
+  'postgres-not-replaced', 'volume-changed', 'provision-failure', 'api-new-password-failure',
+  'worker-new-password-failure', 'api-old-password-accepted', 'worker-old-password-accepted',
+  'old-password-network-failure', 'ledger-changed', 'host-start-failure',
+  'api-not-replaced', 'worker-not-replaced', 'runtime-failure']) {
+  test(`release secret rotation: ${scenario}`, () => fixture(root => {
+    writeFileSync(join(root, 'provision-runtime-roles.sh'), `#!/usr/bin/env bash
+set -euo pipefail
+test -f postgres.recreated
+test -f environment.written
+test "$STRATAAI_TEST_ROTATION" != provision-failure
+printf provisioned > roles.provisioned
+`);
+    const driver = join(root, 'rotation-test.sh');
+    writeFileSync(driver, `#!/usr/bin/env bash
+set -euo pipefail
+compose=(docker compose)
+api=api-original; worker=worker-original
+POSTGRES_USER=fixture_admin; POSTGRES_DB=fixture_db
+STRATAAI_API_DB_PASSWORD=old-api-fixture
+STRATAAI_WORKER_DB_PASSWORD=old-worker-fixture
+openssl() {
+  test "$*" = 'rand -hex 24'
+  if [ -f random.first ]; then printf '%048d' 2; else printf '%048d' 1; touch random.first; fi
+}
+write_environment() {
+  test "$STRATAAI_TEST_ROTATION" != environment-write-failure
+  test "$STRATAAI_API_DB_PASSWORD" = 000000000000000000000000000000000000000000000001
+  test "$STRATAAI_WORKER_DB_PASSWORD" = 000000000000000000000000000000000000000000000002
+  touch environment.written
+}
+docker() {
+  if [ "$1" = inspect ]; then
+    if [ "$STRATAAI_TEST_ROTATION" = volume-changed ] && [ -f postgres.recreated ]; then printf other-volume; else printf original-volume; fi
+    return 0
+  fi
+  test "$1" = compose
+  shift
+  case "$1" in
+    ps)
+      case "$3" in
+        postgres) if [ -f postgres.recreated ] && [ "$STRATAAI_TEST_ROTATION" != postgres-not-replaced ]; then printf postgres-new; else printf postgres-original; fi ;;
+        api|worker) if [ -f hosts.recreated ] && [ "$STRATAAI_TEST_ROTATION" != "$3-not-replaced" ]; then printf '%s-new' "$3"; else printf '%s-original' "$3"; fi ;;
+        *) return 64 ;;
+      esac ;;
+    stop) test "$*" = 'stop --timeout 20 api worker' ;;
+    up)
+      case "$*" in
+        'up -d --no-deps --force-recreate --wait --wait-timeout 120 postgres')
+          test "$STRATAAI_TEST_ROTATION" != postgres-start-failure
+          touch postgres.recreated ;;
+        'up -d --no-deps --force-recreate --wait --wait-timeout 120 api worker')
+          test -f roles.provisioned
+          test "$STRATAAI_TEST_ROTATION" != host-start-failure
+          touch hosts.recreated ;;
+        *) return 64 ;;
+      esac ;;
+    exec)
+      if [[ "$*" == *PGPASSWORD=* ]]; then
+        [[ "$*" == *'postgres psql -h postgres -U '* ]] || return 64
+      fi
+      if [[ "$*" == *'PGPASSWORD=old-'* ]]; then
+        if [[ "$*" == *PGPASSWORD=old-api-fixture* ]]; then role=api; else role=worker; fi
+        if [ "$STRATAAI_TEST_ROTATION" = "$role-old-password-accepted" ]; then printf 1; return 0; fi
+        if [ "$STRATAAI_TEST_ROTATION" = old-password-network-failure ]; then printf 'connection refused' >&2; return 2; fi
+        printf 'password authentication failed' >&2; return 2
+      fi
+      if [[ "$*" == *PGPASSWORD=* ]]; then
+        test -f roles.provisioned
+        if [[ "$*" == *strataai_api_runtime* ]]; then role=api; else role=worker; fi
+        test "$STRATAAI_TEST_ROTATION" != "$role-new-password-failure" || return 17
+        if [ "$STRATAAI_TEST_ROTATION" = ledger-changed ]; then printf '%032d' 2; return 0; fi
+      fi
+      printf '%032d' 1 ;;
+    *) return 64 ;;
+  esac
+}
+check_runtime() {
+  test -f hosts.recreated
+  test "$STRATAAI_TEST_ROTATION" != runtime-failure
+  printf verified > rotation.checked
+}
+${rotationSequence}
+`);
+    const result = spawnSync(bash, [driver], { cwd: root, encoding: 'utf8', timeout: 10_000,
+      env: { ...process.env, BASH_ENV: undefined, GITHUB_ACTIONS: '', STRATAAI_TEST_ROTATION: scenario } });
+    if (scenario === 'healthy') {
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(readFileSync(join(root, 'rotation.checked'), 'utf8'), 'verified');
+    } else {
+      assert.notEqual(result.status, 0);
+      assert.throws(() => readFileSync(join(root, 'rotation.checked')), { code: 'ENOENT' });
+    }
+    assert.equal(result.stdout, '');
+    assert.ok(!result.stderr.includes('old-api-fixture') && !result.stderr.includes('old-worker-fixture'));
+  }));
+}
 
 test('startup refuses application checkouts before secret creation or Docker/SDK commands', () => {
   for (const source of ['.git', 'src', 'apps']) fixture((root, run) => {

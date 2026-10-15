@@ -92,6 +92,53 @@ Combined workflow/metadata/CLI tests pass **181/181**; release validation remain
 **21/21**. The required integration matrix
 remains four groups, seven executions and 112 registered checks.
 
+## Runtime database secret rotation
+
+ARCH-12-AC-003 now has a small rehearsal in the existing mandatory assembled
+Production gate. After startup and same-container graceful restart, it replaces
+the two disposable runtime-role passwords. The supplied operator provisioner
+reads those settings from PostgreSQL's environment, so the gate refreshes that
+container while requiring the same named database volume, then provisions the
+roles from the payload's SQL. Both new credentials must read the unchanged
+migration-ledger fingerprint over the Compose `postgres` network address used
+by the application hosts. A first real probe through PostgreSQL's loopback
+address failed the gate because that image's local trust rule accepted the
+previous password; loopback authentication is not rotation evidence. The
+protocol fixture now requires the application network address. Each old
+password must produce an explicit
+password-authentication refusal; a network/transport failure is not accepted
+as proof of rotation.
+
+The gate then recreates API and Worker with the new settings. Both must have
+new container IDs while all three application image IDs and runtime revisions
+remain the original verified values. The complete health/readiness/proxy check
+must pass again. This uses no source build, extra image, application account,
+provider delivery or capacity dataset. Existing scoped teardown and final
+unchanged-payload verification still govern release upload.
+
+Sixteen additional protocol scenarios exercise successful rotation and failures
+in environment writing, PostgreSQL replacement/startup, volume identity, role
+provisioning, either new password, either old password, network refusal, ledger
+preservation, host replacement/startup and final readiness. All 36 startup
+tests and all 331 selected CI guards pass. The
+[operator procedure](../release/README.md#rotate-local-runtime-database-passwords)
+documents the interruption and preserved images/project/volumes. Managed
+database, administrator, provider and signing/encryption-key rotations remain
+separate acceptance work.
+
+The actual unmodified Bash driver passes locally with the original retained
+`24f56246` image archives: all 149 migrations, restricted Production startup,
+health/proxy/build and image identity, graceful same-container restart, then
+both role-password rotations and new API/Worker containers with the same
+application image IDs. The network-address probe proves both new logins and
+both old-password refusals, while the named volume and ledger fingerprint
+remain unchanged. All 157 captured driver/Compose/schema inputs match during
+execution. Cleanup restores the original container/image/network/volume
+inventory and removes 522,340,183 bytes of temporary payload copies; the
+original database is unused. This is scoped operator-driver evidence using
+earlier images, not a new full-release certification. Current exact-commit
+immutable CI and the remaining ARCH-12 acceptance still govern closure.
+
 ## Local source-free payload evidence, 2026-10-09
 
 The complete helper passes on Docker Desktop using the three exact exported and

@@ -220,6 +220,38 @@ data volume before provisioning changed secrets. Plan that restart as part of
 promotion; changing the environment alone does not rotate an existing database
 administrator password.
 
+## Rotate local runtime database passwords
+
+This procedure rotates the API and Worker roles in the release's local
+PostgreSQL service. Schedule an interruption and keep the same project name,
+named volumes and three verified application image references. For a managed
+database, follow its credential-rotation procedure instead.
+
+Stop the application hosts, then edit the private `.env` to supply two new,
+distinct runtime passwords of at least 20 characters:
+
+```bash
+docker compose --env-file .env -f compose.release.yml stop --timeout 20 api worker
+```
+
+Refresh PostgreSQL's environment with its existing data volume, provision the
+roles, and recreate the application hosts with the new settings:
+
+```bash
+docker compose --env-file .env -f compose.release.yml up -d --no-deps --force-recreate --wait postgres
+COMPOSE_FILE=compose.release.yml ./provision-runtime-roles.sh
+docker compose --env-file .env -f compose.release.yml up -d --no-deps --force-recreate --wait api worker
+./health-check.sh
+```
+
+Require successful role provisioning and all health/readiness checks before
+restoring traffic. Confirm the runtime revision/image identities and that the
+previous passwords are rejected. Store credentials only in deployment secret
+management; never include them in a release record or diagnostic output. No
+image rebuild or database-volume deletion is part of this procedure. This
+does not rotate the PostgreSQL administrator password, provider credentials
+or application signing/encryption keys.
+
 ## Stop
 
 ```bash

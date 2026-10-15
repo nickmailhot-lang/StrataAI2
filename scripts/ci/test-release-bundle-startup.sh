@@ -18,8 +18,9 @@ project="strataai-bundle-smoke-$(openssl rand -hex 8)"
 export COMPOSE_PROJECT_NAME="$project"
 export POSTGRES_DB=strataai_release_smoke POSTGRES_USER=strataai_release_admin
 export POSTGRES_PASSWORD=$(openssl rand -hex 24)
-export STRATAAI_API_DB_PASSWORD=$(openssl rand -hex 24)
-export STRATAAI_WORKER_DB_PASSWORD=$(openssl rand -hex 24)
+STRATAAI_API_DB_PASSWORD=$(openssl rand -hex 24)
+STRATAAI_WORKER_DB_PASSWORD=$(openssl rand -hex 24)
+export STRATAAI_API_DB_PASSWORD STRATAAI_WORKER_DB_PASSWORD
 export STRATAAI_AUTH_RETRY_CURRENT_KEY=release-smoke-v1
 key=$(openssl rand -base64 32)
 export STRATAAI_AUTH_RETRY_KEYS="{\"release-smoke-v1\":\"$key\"}"
@@ -55,12 +56,13 @@ set -o noclobber
 : > .env
 set +o noclobber
 trap cleanup EXIT
-{
+write_environment() {
   printf '%s\n' "POSTGRES_DB=$POSTGRES_DB" "POSTGRES_USER=$POSTGRES_USER" "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" \
     "STRATAAI_API_DB_PASSWORD=$STRATAAI_API_DB_PASSWORD" "STRATAAI_WORKER_DB_PASSWORD=$STRATAAI_WORKER_DB_PASSWORD" \
     "STRATAAI_AUTH_RETRY_CURRENT_KEY=$STRATAAI_AUTH_RETRY_CURRENT_KEY" "STRATAAI_AUTH_RETRY_KEYS='$STRATAAI_AUTH_RETRY_KEYS'" \
     "STRATAAI_WEB_IMAGE=$STRATAAI_WEB_IMAGE" "STRATAAI_API_IMAGE=$STRATAAI_API_IMAGE" "STRATAAI_WORKER_IMAGE=$STRATAAI_WORKER_IMAGE"
 } > .env
+write_environment
 declare -A loaded_image_ids
 for host in web api worker; do
   gunzip -c "images/strataai-$host.tar.gz" | docker load >/dev/null
@@ -102,4 +104,51 @@ done
 test "$("${compose[@]}" ps -q api)" = "$api"
 test "$("${compose[@]}" ps -q worker)" = "$worker"
 check_runtime
-echo 'Assembled bundle migrations, restricted Production startup, exact image identity, health/proxy and graceful API/Worker restart passed.'
+# ARCH-12-AC-003: rotate only this gate's disposable runtime-role secrets.
+postgres_before=$("${compose[@]}" ps -q postgres)
+volume_format='{{range .Mounts}}{{if eq .Destination "/var/lib/postgresql/data"}}{{.Name}}{{end}}{{end}}'
+volume_before=$(docker inspect --format "$volume_format" "$postgres_before")
+test -n "$volume_before"
+ledger_sql="SELECT md5(string_agg(version, ',' ORDER BY version)) FROM schema_migrations"
+ledger_before=$("${compose[@]}" exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 -c "$ledger_sql")
+[[ "$ledger_before" =~ ^[a-f0-9]{32}$ ]]
+old_api_password=$STRATAAI_API_DB_PASSWORD
+old_worker_password=$STRATAAI_WORKER_DB_PASSWORD
+STRATAAI_API_DB_PASSWORD=$(openssl rand -hex 24)
+STRATAAI_WORKER_DB_PASSWORD=$(openssl rand -hex 24)
+export STRATAAI_API_DB_PASSWORD STRATAAI_WORKER_DB_PASSWORD
+test "$STRATAAI_API_DB_PASSWORD" != "$old_api_password"
+test "$STRATAAI_WORKER_DB_PASSWORD" != "$old_worker_password"
+test "$STRATAAI_API_DB_PASSWORD" != "$STRATAAI_WORKER_DB_PASSWORD"
+if [ "${GITHUB_ACTIONS:-}" = true ]; then
+  for secret in "$STRATAAI_API_DB_PASSWORD" "$STRATAAI_WORKER_DB_PASSWORD"; do echo "::add-mask::$secret"; done
+fi
+write_environment
+"${compose[@]}" stop --timeout 20 api worker >/dev/null
+# The supplied provisioner reads secrets from the PostgreSQL container's
+# environment, so refresh it while keeping its existing named data volume.
+"${compose[@]}" up -d --no-deps --force-recreate --wait --wait-timeout 120 postgres >/dev/null
+postgres_after=$("${compose[@]}" ps -q postgres)
+test "$postgres_after" != "$postgres_before"
+volume_after=$(docker inspect --format "$volume_format" "$postgres_after")
+test "$volume_after" = "$volume_before"
+COMPOSE_FILE=compose.release.yml bash provision-runtime-roles.sh >/dev/null
+for host in api worker; do
+  password=$STRATAAI_API_DB_PASSWORD; old_password=$old_api_password
+  if [ "$host" = worker ]; then password=$STRATAAI_WORKER_DB_PASSWORD; old_password=$old_worker_password; fi
+  ledger_after=$("${compose[@]}" exec -T -e "PGPASSWORD=$password" postgres psql \
+    -h postgres -U "strataai_${host}_runtime" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 -c "$ledger_sql")
+  test "$ledger_after" = "$ledger_before"
+  if refusal=$("${compose[@]}" exec -T -e "PGPASSWORD=$old_password" postgres psql \
+    -h postgres -U "strataai_${host}_runtime" -d "$POSTGRES_DB" -At -v ON_ERROR_STOP=1 -c 'SELECT 1' 2>&1); then
+    echo 'Rotated runtime role still accepts its previous password.' >&2; exit 1
+  fi
+  [[ "$refusal" == *'password authentication failed'* ]]
+done
+unset password old_password old_api_password old_worker_password refusal
+"${compose[@]}" up -d --no-deps --force-recreate --wait --wait-timeout 120 api worker >/dev/null
+test "$("${compose[@]}" ps -q api)" != "$api"
+test "$("${compose[@]}" ps -q worker)" != "$worker"
+check_runtime
+
+echo 'Assembled bundle migrations, restricted Production startup, exact image identity, health/proxy, graceful restart and runtime password rotation passed.'
