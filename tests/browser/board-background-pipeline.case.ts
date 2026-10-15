@@ -123,7 +123,12 @@ for (const width of [1280, 390]) {
       else await route.fulfill({ response: result });
     });
     const coverReview = page.getByRole('button', { name: 'Review Card cover', exact: true });
-    await pressAdmittedAction(coverReview);
+    let coverReviewReads = 0;
+    page.on('request', request => {
+      if (request.method() === 'GET' && new URL(request.url()).pathname === coverPath) coverReviewReads++;
+    });
+    const openCoverReview = () => pressObservedRequest(coverReview, () => coverReviewReads, coverReviewReads + 1);
+    await openCoverReview();
     await pressAdmittedAction(page.getByRole('button', { name: 'Use Private original.png as cover', exact: true }));
     const coverConfirm = page.getByRole('button', { name: 'Confirm Card cover', exact: true });
     await expect(coverConfirm).toBeDisabled();
@@ -186,7 +191,7 @@ for (const width of [1280, 390]) {
       const priorSyncResponse = await context.request.get(`/boards/${board}/sync`); expect(priorSyncResponse.status()).toBe(200);
       const priorSync = await priorSyncResponse.json(); expect(priorSync).toMatchObject({ hasMore: false, pending: false, resetRequired: false });
       expect(priorSync.cursor).toMatch(/^[0-9]{1,19}$/);
-      await pressAdmittedAction(coverReview);
+      await openCoverReview();
       await pressAdmittedAction(page.getByRole('button', { name: 'Remove Card cover', exact: true }));
       await expect(coverConsent).toHaveCount(0);
       await pressAdmittedAction(page.getByRole('button', { name: 'Confirm cover removal', exact: true }));

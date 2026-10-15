@@ -1,5 +1,27 @@
 # Stored Board image ownership
 
+## Card-cover reopening in the real image pipeline
+
+The phone case in the `d3f5a8a3`
+[foundation job](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38661605252/job/116192856617)
+fails before cover removal: the review launcher remains focused, the old
+"Card cover updated." notice remains, and no removal control exists. The retained
+owner trace records the second Enter at 68,559.248 ms and a protected Board GET
+at 68,560.038 ms, with no subsequent cover-view or candidate GET. The earlier
+selection and original-receipt recovery had already succeeded. Desktop passes;
+the complete two-case invocation and foundation job remain failed.
+
+The [pipeline fixture](../tests/browser/board-background-pipeline.case.ts) now
+observes the actual cover-view GET when opening either read-only review, using
+the existing five-second request-admission helper. It can repeat keyboard
+admission only before that read starts. Mutations remain single activations;
+original key/body/count, canonical versions, public consent, live peer removal,
+PNG privacy/ownership, copy and accessibility assertions and the 150-second case
+deadline remain unchanged. No application code or provider reply is changed.
+Browser types and collection of both viewport cases pass. Actual native/retained
+image execution of the corrected file remains required; this is not a claim
+that the failed CI run became green.
+
 ## Background review opening during foreground admission
 
 The `b41ba022` browser-notifications job in [run 38446698546](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38446698546) times out at the phone image-candidate selection. Its retained context shows the review launcher available but no candidate after its activation. The native client scenario now uses the existing five-second read-only admission helper to observe the actual candidate after opening. Candidate selection, consent and mutation remain single activations; exact original request body/key/count, pending-command disabled controls, rendering, focus, accessibility and unchanged backing storage assertions remain intact. The original 120-second scenario deadlines and release pacing are unchanged.
