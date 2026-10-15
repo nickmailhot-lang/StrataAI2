@@ -109,6 +109,48 @@ the guard; the three Organization-loop cases still pass. Current complete
 immutable CI and deployed-provider acceptance remain outstanding.
 
 The latest completed CI release candidate is
+`bb3cd4fc19a4edb3df035bc255a21973c772c54e`:
+[run 38680420583](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680420583)
+is completed/success with all **16 jobs** successful, including build-once,
+security, all seven integration executions, required-CI and release assembly.
+The latest-successful-main workflow query independently identifies this run as
+the newest passing CI candidate. Its
+[tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680420583/artifacts/11968632503)
+is **518,727,662 bytes**; GitHub reports SHA-256
+`289d8ae2767354f821ac81e73d9f2feef95f88a35860075988eb52e504b5bead`.
+
+The small canonical metadata archive is independently size/SHA verified,
+binding version **0.1.0-1752**, all three image references and this exact run/SHA.
+The **95,630-byte** security archive is independently size/SHA verified, with
+all six checksummed entries, four nonempty container SBOM inventories and the
+three-image provenance record checked by the maintained verifier. This verifies
+those records, not independently loaded image/archive correspondence. The full
+bundle and image ZIPs have not been downloaded or executed locally for this run.
+
+Inspected release logs confirm original image/security identity checks before
+assembly, source-free migrations/restricted Production startup, exact runtime
+identity, health/proxy, graceful restart and database-password rotation. The
+source-free Demo gate passes exact three-image identity, no database/volumes,
+SPA and seeded sign-in. Final unchanged-payload verification passes before
+upload. Domain tests pass **1,033**; API tests pass **1,031**, with two explicit
+capacity skips. All **27** capacity phases are observed and skipped; the repository
+flag remains `0`.
+
+The [encrypted PostgreSQL rehearsal](database-recovery.md#hosted-exact-commit-recovery-evidence--2026-10-15)
+passes complete migrated schema/data/ACL comparison, five deliberate
+corruption/refusal cases, pgvector, restricted tenant reads/writes, foreign keys
+and append-only protections. Populated schema-149 upgrade checks also pass.
+This candidate predates the operator backup/restore commands, optional HTTPS
+listener, operator runtime/certificate checks, bounded readiness/outage repair
+and later browser/diagnostics changes. Use
+[this candidate's guide](https://github.com/nickmailhot-lang/StrataAI2/blob/bb3cd4fc19a4edb3df035bc255a21973c772c54e/docs/release/README.md).
+Current-main immutable CI, actual deployment/providers, scheduled recovery and
+the remaining MVP acceptance are still required. The milestone and incomplete
+tickets remain open; large load testing remains deferred.
+
+### Previous completed CI candidate — 4cb80014
+
+The previous completed CI release candidate is
 `4cb80014a9b9e863cdc68c9718e510886cade78b`:
 [run 38674444706](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706)
 passes all **16 jobs**, including all seven integration executions, security,
@@ -129,7 +171,7 @@ before upload. Domain tests pass **1,033**; API tests pass **1,031** with the tw
 capacity cases deferred. All **27** named capacity stages are observed and
 skipped; the repository phase setting remains `0`.
 
-This is a newer passing candidate, not current-main or MVP certification. It
+This is historical passing-candidate evidence, not current-main or MVP certification. It
 predates the encrypted recovery commands, optional HTTPS listener, build-bound
 operator verification, bounded readiness/outage repair and later browser/upgrade
 fixture changes. Those require their own complete immutable CI. Use the

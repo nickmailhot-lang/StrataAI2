@@ -1,5 +1,15 @@
 # Release bundle integrity and tested SBOMs — ARCH-11-FR-075/077/078/080/083
 
+The [latest completed candidate record](operational-mvp-milestone.md#current-status)
+now identifies `bb3cd4fc` / run `38680420583`, all 16 jobs successful and the
+retained 518,727,662-byte runnable bundle. Its small metadata and security
+archives are independently size/SHA verified; the maintained verifier validates
+all six security payload hashes, four SBOM inventories and the three-image
+provenance record. Hosted release logs confirm original-input checks and final
+unchanged-bundle verification. Full image/bundle ZIPs have not been independently
+downloaded or loaded locally for this candidate; this does not certify current
+main or deployment acceptance. Follow that candidate's pinned operator guide.
+
 The release job now downloads both the exact image artifact and its tested security evidence from the current workflow run. Before assembly, the [release verifier](../../scripts/ci/verify-release-artifacts.py) checks complete checksum coverage, payload hashes, canonical repository/SHA/run/version identity, identical original image/security metadata bytes, nonempty image archives, and the three CycloneDX container inventories tagged with that same source SHA. The metrics receiver inventory is also required. These are integrity and identity checks; they do not replace image loading, runtime tests, vulnerability scans, or complete CycloneDX schema validation.
 
 The security job binds its retained metadata/SBOM files with `SHA256SUMS` before its always-run evidence upload. A partial evidence artifact after scan failure remains diagnostic; the stable gate prevents it from reaching release assembly. Neither security nor release rebuilds application images.

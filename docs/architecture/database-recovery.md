@@ -53,6 +53,26 @@ the temporary role. None is uploaded. The CI job log records the result; failure
 blocks the source gate and image builds. Coverage guards reject omission,
 replacement, conditional deferral, ignored failure and duplicate invocation.
 
+## Hosted exact-commit recovery evidence — 2026-10-15
+
+The initial CI-only rehearsal executes and succeeds in
+[PostgreSQL job 116251534368](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680420583/job/116251534368)
+for exact commit `bb3cd4fc19a4edb3df035bc255a21973c772c54e`.
+Its actual completion log confirms complete migrated schema/data/ACL comparison,
+five deliberate corruption/refusal probes, pgvector, restricted tenant reads/
+writes, foreign keys and append-only audit protections. The entire run then
+finishes successfully across all 16 jobs, including the original-image security,
+integration and source-free release gates. The
+[candidate record](operational-mvp-milestone.md#current-status) links its retained
+bundle and identifies the independent metadata/security audit and its limits.
+
+This resolves pending hosted execution of the initial rehearsal. The candidate
+does not contain the later operator backup or restore commands; their later
+local results below require their own complete exact-commit CI. It does not prove
+scheduled deployment backups, alert delivery, object/key-ring recovery or actual
+production RPO/RTO. All 27 large-capacity phases remain skipped; no new load test
+is run for this audit.
+
 ## Executed local evidence
 
 The initial CI-only contract at `bb3cd4fc` passes against a fresh, network-disabled
@@ -71,7 +91,7 @@ fixes the test without changing production permissions or RLS. Separately, a
 late-failing dump regression first reproduces command-substitution error loss;
 explicit status propagation fixes it. All nine recovery comparison tests and
 226 CI coverage guards pass, as do shell syntax, workflow lint and 317 local
-documentation links. Exact-commit hosted CI for this new gate remains required.
+documentation links. Hosted execution of this initial gate is now recorded above.
 These results do not establish deployed backup operation or managed recovery.
 
 The subsequent operator-command follow-up uses the actual

@@ -12,16 +12,18 @@ Development follows the [PRD and architecture backlog](https://github.com/nickma
 
 The next release milestone is a [deployable, stable operational task-management MVP](docs/architecture/operational-mvp-milestone.md). Core workflow reliability and verified deployment take priority before new governance and AI modules; the complete PRD roadmap remains in force.
 
-**Latest passing CI release candidate:** [`4cb80014`](https://github.com/nickmailhot-lang/StrataAI2/commit/4cb80014a9b9e863cdc68c9718e510886cade78b)
-passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706).
-[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38674444706/artifacts/11958117523)
-and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/4cb80014a9b9e863cdc68c9718e510886cade78b/docs/release/README.md). This evidence identifies
+**Latest passing CI release candidate:** [`bb3cd4fc`](https://github.com/nickmailhot-lang/StrataAI2/commit/bb3cd4fc19a4edb3df035bc255a21973c772c54e)
+passed [all required CI and release gates](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680420583).
+[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38680420583/artifacts/11968632503)
+and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/bb3cd4fc19a4edb3df035bc255a21973c772c54e/docs/release/README.md). This evidence identifies
 that exact candidate; later main changes require their own CI. Review
 [remaining deployment acceptance](docs/architecture/operational-mvp-milestone.md#current-status)
 before production promotion. Large-load tests remain deferred until after MVP.
 This candidate includes the PostgreSQL TLS contract, Production HTTPS-origin
 checks, source-free Demo with known sign-in, and runtime database-password
-rotation. It predates later recovery tools, the optional HTTPS listener,
+rotation. Its pipeline also passes the isolated encrypted PostgreSQL restore
+rehearsal and populated schema-149 upgrade checks. It predates later recovery
+operator tools, the optional HTTPS listener,
 build-bound operator verification and bounded database readiness. Use the
 instructions included in its own bundle;
 see [the evidence and remaining gaps](docs/architecture/operational-mvp-milestone.md#current-status)
