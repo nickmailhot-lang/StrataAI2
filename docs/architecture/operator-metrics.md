@@ -609,7 +609,8 @@ recovery, conflict/failure, and no open before admission, with private wire-fiel
 assertions. The native desktop/phone settings telemetry cases use a real committed
 PATCH whose response is lost, explicit identical-key/body recovery, actual
 production browser reports accepted by the authenticated endpoint, one stored
-revision, keyboard operation and WCAG 2.2 AA. Native execution remains pending.
+revision, keyboard operation and WCAG 2.2 AA. Both cases pass in the immutable
+`5845da8b` hosted run; see [executed creation/settings evidence](prd-03-acceptance.md#hosted-organization-creationsettings-telemetry--2026-10-15).
 Broader Organization member/departure/deletion/invitation telemetry,
 per-tenant adoption policy, successful transport reconnect measures and dashboards
 remain separate unfinished requirements.
@@ -618,8 +619,9 @@ Local settings validation passed 38 focused component/queue cases, four API
 category/authentication/atomic-private-batch cases, API/API-test Release builds
 with zero warnings/errors, three Collector verifier tests, web/browser
 typechecks and zero-warning lint. Both native cases collect successfully.
-The two native scenarios are implemented; current-image runtime evidence remains
-pending and this does not close PRD-03 or ARCH-08.
+The two native scenarios have hosted exact-image proof for that candidate;
+full current-main CI remains required. PRD-03 stays open at **8% estimated work
+remaining**, and ARCH-08 remains open.
 
 ## Organization creation client observations
 
@@ -646,10 +648,15 @@ creation categories and a duration; its client observations are synthetic
 ingestion evidence. Separate desktop/phone browser cases lose a real committed
 creation response, recover the identical key/body, require one stored
 Organization/version, actual production reports with 204 responses, keyboard
-operation and WCAG 2.2 AA. Native runtime verification remains pending.
+operation and WCAG 2.2 AA. Both cases pass in the immutable `5845da8b` hosted
+run; the [shared evidence record](prd-03-acceptance.md#hosted-organization-creationsettings-telemetry--2026-10-15)
+binds exact build metadata and 12 unchanged feature/test/dependency files.
 
 Local validation passed 23 focused creation/queue component cases, six API
 category/authentication/privacy cases, three Collector verifier cases, web and
 browser typechecks and zero-warning lint. API and API-test Release builds passed
 with zero warnings/errors. Both native browser cases collect successfully. This
-does not establish current-image execution or complete PRD-03 acceptance.
+does not replace the separately recorded hosted execution or complete PRD-03
+acceptance. Current-main CI and remaining requirements still govern closure;
+PRD-03 stays open at **8% estimated work remaining**. No load test runs in the
+hosted-evidence audit, and large-load testing remains deferred until after MVP.

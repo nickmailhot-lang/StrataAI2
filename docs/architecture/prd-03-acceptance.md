@@ -4,6 +4,48 @@
 This source review maps the ten functional requirements to implemented behavior
 and remaining work. It does not certify current release acceptance.
 
+## Hosted Organization creation/settings telemetry — 2026-10-15
+
+The exact-image browser
+[shard-three job 116443145563](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901/job/116443145563)
+passes all **115** cases at `5845da8be8c5a4b476e0743c0b3a31fc01d6e46f`,
+including all four creation/settings telemetry cases below. This corrects the
+operator-metrics guide's stale statements that native execution was pending.
+
+| Existing native case | Desktop | Phone |
+| --- | --- | --- |
+| Organization creation telemetry with committed lost response and explicit original recovery | Pass, 6.5 seconds | Pass, 6.0 seconds |
+| Organization settings telemetry with committed lost response and explicit original recovery | Pass, 6.4 seconds | Pass, 6.8 seconds |
+
+The unchanged test assertions require two identical original key/body attempts,
+one stored Organization/revision, canonical current content, one document
+navigation, keyboard operation and WCAG 2.2 AA. Actual browser-produced reports
+reach the authenticated API and receive HTTP 204. Disclosure/use/exception/failure/retry/
+success counts and permitted wire fields are checked; account/Organization IDs,
+email, password, names, descriptions, request key and header name must be absent.
+These are untrusted client observations, not authoritative audit facts or a
+native-browser-to-Collector ingestion claim. Synthetic Collector ingestion is a
+separate fixture.
+
+Canonical metadata artifact **11962843394** is independently size/SHA verified:
+**420 bytes**, SHA-256
+`f4f0e17de95ba2c8f6a62aa8361b42d41d62724eca49afcb4e65be448a7a9613`.
+Its repository, revision, run `38713394901` and version **0.1.0-1770** match the
+hosted jobs and independently verified release bundle. Both original test files,
+shared release-rate fixture, creation/settings components, telemetry queue,
+HTTP/Work clients, validated profile, metadata watcher and server telemetry
+parser/endpoint dependencies are byte-identical across the candidate and
+`07b5f075`: **12 source files** with zero differences. This supports relevance of
+the feature proof; later host/logging/observability changes still need their own
+current-image CI. No local browser or Docker invocation, archive extraction or
+load test is used for this evidence audit.
+
+The full historical workflow and downloadable release pass, but these selected
+cases do not certify every requirement or current main. Remaining lifecycle,
+permission/retention, deferred capacity and full current-release acceptance
+remain required. PRD-03 stays open at **8% estimated work remaining** (unchanged
+planning estimate).
+
 ## Hosted exact-image Organization command execution
 
 The `cef54e18818bb78e98ec39342095e2bd7a13bf9b` command group succeeds in
