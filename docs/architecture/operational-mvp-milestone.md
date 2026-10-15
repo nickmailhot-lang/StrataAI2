@@ -195,9 +195,11 @@ the intended explicit null. The request follows the keyboard clear's successful
 empty-value assertion. The audit independently verifies artifact 12003868434's
 size/SHA, all 32 payload checksums and canonical metadata for version
 `0.1.0-1783`. It reads the archives in memory without writing/extracting them or
-running the app. This identifies an incorrect submitted value, but does not yet
-establish the exact intervening invalidation or an appropriate product/test
-repair. Do not retry a mutation already observed. See the
+running the app. Further snapshots establish that the Locator waits across editor
+replacement and activates the reloaded UTC action. The browser case now binds
+Enter to the original action and stops admission after its request is observed.
+Both complete desktop/phone cases pass with retained backend images and the
+current frontend; full current-image CI remains required. See the
 [timezone investigation](card-dates.md#phone-policy-clear-submits-the-previous-value--2026-10-15).
 
 The same older run's configuration timestamp failures use the stale raw-ISO

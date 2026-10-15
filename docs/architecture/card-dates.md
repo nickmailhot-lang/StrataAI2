@@ -844,3 +844,41 @@ Further investigation and a validated repair remain required. No browser,
 container, image download or load test runs in this audit; the diagnostic ZIPs
 are neither written nor extracted. PRD-12 remains open at **24% estimated work
 remaining**, with current immutable CI and all original acceptance still required.
+
+### Bind the clear to the admitted action
+
+Further inspection of the same verified trace narrows the failure: the empty
+input assertion completes at monotonic **1253860.168 ms**. Save's keypress starts
+at **1253861.603 ms**, but its before snapshot already shows **Checking Board
+timezone settings…** with the editor absent. Fresh profile/Board reads follow.
+The action snapshot at **1253943.362 ms** shows a replacement editor containing
+UTC. The Locator has waited for the replacement Save action and then submitted
+its reloaded value. This proves the editor replacement overlaps this keypress;
+the exact upstream invalidation trigger remains unidentified.
+
+The browser case now captures this editor's Save element before the keyboard
+clear. Enter targets only that element, so a detached action cannot silently
+resolve to its replacement. The keyboard edit may be re-admitted only before
+the first observed clear PATCH; after observation, admission stops. Element
+handles are disposed after each admission attempt. The five-second admission
+limit and 120-second scenario deadline remain unchanged. Exact one-request,
+explicit-null/version-3 body, final Board version 4/Card version 2, unchanged
+stored date, live peer/viewer timezone delivery, due-state updates, keyboard
+focus and Axe assertions remain intact. Product draft invalidation and fresh
+authorization reads are unchanged.
+
+Both complete revised desktop/phone workflows pass **2/2 in 117,719.558 ms**,
+with no retries, skips, flakes or report errors. The current built frontend and
+Nginx/header mounts run with archive-verified retained `24f56246` API/Worker
+images, fresh PostgreSQL 17/pgvector, 149 migrations and restricted roles.
+API email verification is optional in this isolated fixture; mail transport is
+disabled and the Worker retains its verified-account policy. Four served assets
+match the fresh build; all 175 captured browser inputs and frontend/configuration
+hashes match. Cleanup restores the original Docker inventory and removes
+**3,335,642 temporary bytes**. No images are imported/downloaded and the original
+database is not used. This is focused hybrid evidence, not current immutable
+release certification. Browser TypeScript, the 127-step mandatory integration
+registry and collection of all 400 cases in 146 intact files also pass;
+collection is not execution. PRD-12 remains open at **24% estimated work
+remaining**. Full current-image CI and all original acceptance remain required;
+large-load tests remain disabled until after MVP.

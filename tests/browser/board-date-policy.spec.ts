@@ -84,16 +84,25 @@ for (const width of [1280, 390]) {
         if (request.method() === 'PATCH' && new URL(request.url()).pathname === `/boards/${board}/date-policy`)
           clearBodies.push(request.postData() ?? '');
       });
-      // A late policy invalidation can retire the input during selection.
-      // Re-admit this keyboard edit only; the save below remains one action.
+      // A late policy invalidation can retire the editor after the empty-value
+      // assertion. Bind Enter to this editor's action; a Locator would wait for
+      // its replacement and could submit the reloaded UTC value instead.
+      // Re-admit only while no clear request has started.
       await expect(async () => {
-        await expect(input).toBeEnabled({ timeout: 500 }); await input.focus({ timeout: 500 });
-        await expect(input).toBeFocused({ timeout: 500 });
-        await input.press('ControlOrMeta+A', { timeout: 500 }); await input.press('Backspace', { timeout: 500 });
-        await expect(input).toBeEnabled({ timeout: 500 }); await expect(input).toBeFocused({ timeout: 500 });
-        await expect(input).toHaveValue('', { timeout: 500 });
+        if (clearBodies.length === 0) {
+          const save = await page.getByRole('button', { name: 'Save timezone policy' }).elementHandle({ timeout: 500 });
+          expect(save).not.toBeNull();
+          try {
+            await expect(input).toBeEnabled({ timeout: 500 }); await input.focus({ timeout: 500 });
+            await expect(input).toBeFocused({ timeout: 500 });
+            await input.press('ControlOrMeta+A', { timeout: 500 }); await input.press('Backspace', { timeout: 500 });
+            await expect(input).toBeEnabled({ timeout: 500 }); await expect(input).toBeFocused({ timeout: 500 });
+            await expect(input).toHaveValue('', { timeout: 500 });
+            if (clearBodies.length === 0) await save!.press('Enter', { timeout: 500 });
+          } finally { await save?.dispose(); }
+        }
+        await expect.poll(() => clearBodies.length, { timeout: 500 }).toBe(1);
       }).toPass({ timeout: 5_000 });
-      await page.getByRole('button', { name: 'Save timezone policy' }).press('Enter');
       await expect(input).toHaveValue(''); await expect(peerInput).toHaveValue('');
       expect(clearBodies).toHaveLength(1); expect(JSON.parse(clearBodies[0])).toEqual({ timezone: null, version: 3 });
       await expect(dates).not.toContainText('Board timezone policy.'); await expect(dates).toContainText('Viewing timezone: UTC.');
