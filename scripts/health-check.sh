@@ -11,7 +11,7 @@ case "$REQUEST_TIMEOUT" in
 esac
 
 check() {
-  status=$(curl --fail --silent --show-error --connect-timeout 5 \
+  status=$(curl --disable --globoff --proto '=http,https' --noproxy '*' --fail --silent --show-error --connect-timeout 5 \
     --max-time "$REQUEST_TIMEOUT" --output /dev/null --write-out '%{http_code}' "$1")
   if [ "$status" != 200 ]; then
     echo "$2 check did not return HTTP 200." >&2

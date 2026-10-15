@@ -254,6 +254,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.match(archive.run, /sha256sum .*build-metadata.json image-provenance.json > SHA256SUMS/);
   const bundle = jobs['release-bundle'].steps.find(step => step.name === 'Assemble release bundle');
   assert.ok(bundle.run.includes('cp scripts/backup-postgres.sh bundle/backup-postgres.sh'), 'Release must include the tested operator backup command');
+  assert.ok(bundle.run.includes('cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh'), 'Release must include the tested deployment identity command');
   assert.ok(bundle.run.includes('cp scripts/restore-postgres.sh bundle/restore-postgres.sh'), 'Release must include the tested operator restore command');
   assert.ok(bundle.run.includes('compose.https.yml'), 'Release must include optional HTTPS deployment');
   assert.ok(bundle.run.includes('cp deploy/https/nginx-tls.inc bundle/deploy/https/'), 'Release must include HTTPS configuration');
@@ -281,6 +282,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(startupSource.run.includes('node --test tests/release-bundle-startup.test.mjs'));
   assert.ok(startupSource.run.includes('node --test tests/release-demo-bundle-startup.test.mjs'));
   assert.ok(startupSource.run.includes('node --test tests/https-live-board.test.mjs'));
+  assert.ok(startupSource.run.includes('node --test tests/release-runtime.test.mjs'));
   const demoStartup = releaseSteps.find(step => step.name === 'Verify assembled Demo bundle and seeded account without source or SDKs');
   const httpsStartups = releaseSteps.filter(step => step.name === 'Verify assembled HTTPS bundle and secure task workflow');
   assert.equal(httpsStartups.length, 1, 'Exactly one assembled HTTPS gate is required');

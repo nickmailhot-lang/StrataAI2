@@ -98,6 +98,7 @@ check_runtime() {
   done
 }
 check_runtime
+bash verify-release-runtime.sh build-metadata.json >/dev/null
 api=$("${compose[@]}" ps -q api)
 worker=$("${compose[@]}" ps -q worker)
 "${compose[@]}" stop --timeout 20 api worker >/dev/null

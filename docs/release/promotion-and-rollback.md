@@ -40,7 +40,7 @@ Keep the prior known-good record and bundle until the candidate is accepted and 
    configuration instead of selecting a development image.
 2. Review migrations and application compatibility before applying changes. Forward-only or irreversible changes need a phased procedure and verified recovery plan. Do not assume an older image accepts a newer schema or reverse SQL files automatically.
 3. Preserve the same project name and environment configuration. Set the three image references to the verified candidate values. Apply the candidate's migrations and provision restricted roles from its release directory, as documented in the release guide.
-4. Start the candidate and require health/readiness for web, API, Worker and the web-to-API proxy. Check that API and Worker build metadata match the candidate revision. Validate sign-in, a persisted Board/List/Card workflow, authorized collaboration and enabled storage/mail providers through the deployment's configured origins.
+4. Start the candidate and run `bash verify-release-runtime.sh build-metadata.json` from its verified bundle. It requires health/readiness for web, API, Worker and the web-to-API proxy, then matches all three served build identities to that bundle. Configure `STRATAAI_WEB_URL`, `STRATAAI_API_URL` and `STRATAAI_WORKER_URL` for this same deployment when the loopback diagnostic defaults do not apply. The HTTPS-only overlay keeps API/Worker private; use approved private diagnostic addresses rather than opening their ports. Validate sign-in, a persisted Board/List/Card workflow, authorized collaboration and enabled storage/mail providers through the deployment's configured origins.
 5. If any required check fails, mark promotion failed and keep the prior known-good record available. Route traffic only when required checks pass. Record the candidate as known-good only after its measured exit criteria are satisfied.
 
 ## Roll back a failed promotion
@@ -50,6 +50,51 @@ Use the retained previous bundle and its verified image references, the same pri
 Image rollback is permitted only when the previous image is compatible with the database and current provider contracts. When it is not, follow the reviewed phased recovery procedure: a tested forward repair or explicitly planned restoration, including writes and external effects since the backup. Restoring PostgreSQL alone does not restore object storage, key rings or external deliveries. This guide does not supply automatic database reversal or claim a completed backup/restore drill.
 
 ## Current evidence and limits
+
+### Build-bound operator verification (2026-10-15)
+
+The bundled `verify-release-runtime.sh` supplies the health and served-build
+check used before accepting a Production release. It requires the selected,
+already verified `build-metadata.json`; invalid or ambiguous expected metadata
+fails before HTTP. Six health/readiness/proxy responses and all three build
+responses must be HTTP 200 without redirects. Every served revision/version
+must equal the selected bundle. Responses and diagnostic configuration remain
+private; the command prints neither response bodies nor configured URLs.
+
+Metadata reads store at most 4,097 bytes and reject bodies above 4,096 bytes,
+including chunked responses with no declared size. A failed/truncated transfer,
+multiple JSON documents, missing identity or mismatch fails. Each metadata
+transfer has at most 15 seconds (or the smaller configured health timeout).
+The original six health requests retain their configured 1–300 second limits.
+Both commands ignore personal curl configuration, restrict protocols to HTTP(S)
+and connect directly; they cannot inherit a local redirect or insecure-TLS rule.
+Normal TLS trust/hostname validation remains enabled.
+
+This is a read-only check. It does not deploy images, apply migrations, replace
+the known-good inventory, query GitHub for green CI or validate image archives.
+Those earlier promotion steps remain required. A nonzero exit fails this
+promotion step; preserve the prior known-good references and follow the
+reviewed compatibility/rollback procedure. Older bundles may lack this command:
+use the guide and tools included with the selected release.
+
+All 31 new real-HTTP verification cases, 18 existing health cases, 53 startup
+checks, 243 CI coverage guards and 37 release-artifact tests pass. They include wrong identities
+at each host, malformed/multiple/oversized/chunked/truncated/stalled metadata,
+redirects despite local curl configuration, unavailable health, invalid expected
+metadata and cleanup without changing a prior-reference fixture. Artifact tests
+refuse a missing command even after checksums are regenerated.
+
+A separate real retained-image run passes the correct release, refuses a
+different selected revision while hosts are healthy, refuses a stopped Worker,
+then passes after restarting that same Worker container. All application
+container/image identities and a private known-good reference record remain
+unchanged. All 158 captured runtime inputs match; owned cleanup restores the
+original Docker inventory and removes 29,958 temporary bytes. This uses verified
+`24f56246` images, current declared Nginx/header mounts, fresh PostgreSQL with
+149 migrations and restricted roles; it does not certify new candidate images
+or a two-version application rollback. No application build/import/download,
+original database use or large-load testing occurs. Full current immutable CI,
+managed-provider operation and broader ARCH-12 acceptance remain required.
 
 The release image-selection checks execute Docker Compose configuration with
 each application reference omitted and explicitly empty. Before repair all six

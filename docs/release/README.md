@@ -6,7 +6,7 @@ The release bundle contains the exact web, API, and Worker images tested by CI.
 
 - Docker Engine or Docker Desktop
 - Docker Compose v2
-- Bash with `curl` and `sha256sum` (for the supplied runtime scripts and checksum verification)
+- Bash with `curl`, `jq`, and standard core utilities including `sha256sum` (for the supplied runtime scripts and verification)
 
 No Node.js, .NET SDK, or source checkout is required.
 
@@ -125,16 +125,24 @@ docker compose --env-file .env -f compose.release.yml up -d --wait postgres
 COMPOSE_FILE=compose.release.yml ./apply-migrations.sh
 COMPOSE_FILE=compose.release.yml ./provision-runtime-roles.sh
 docker compose --env-file .env -f compose.release.yml up -d --wait
-./health-check.sh
+bash verify-release-runtime.sh build-metadata.json
 ```
 
-The health script requires HTTP 200 from all six web/API/Worker health and
+Release verification first requires HTTP 200 from all six web/API/Worker health and
 readiness checks; redirects and unavailable endpoints fail promotion. Requests
 use a five-second connection limit and a 30-second total limit each. Set
 `STRATAAI_HEALTH_TIMEOUT_SECONDS` to an integer from 1 to 300 to adjust the
 per-request total limit. Response bodies are discarded. Configure the documented
 service URLs to their actual deployment addresses; a login or redirect page is
 not readiness evidence.
+
+It then checks the web, API and Worker build revision/version against this
+bundle's already verified metadata. Metadata transfers are limited to 15 seconds
+(or the smaller health timeout) and 4,096 response bytes. Mismatches, redirects,
+malformed or incomplete responses fail. Both commands connect directly and
+ignore personal curl configuration; TLS verification stays enabled. The plain
+`health-check.sh` remains a health diagnostic and does not prove build identity.
+See [promotion verification and limits](promotion-and-rollback.md#build-bound-operator-verification-2026-10-15).
 
 Start PostgreSQL first, then migrate and provision restricted roles before starting
 the application hosts. Their readiness requires the current schema and those roles.
@@ -318,7 +326,7 @@ roles, and recreate the application hosts with the new settings:
 docker compose --env-file .env -f compose.release.yml up -d --no-deps --force-recreate --wait postgres
 COMPOSE_FILE=compose.release.yml ./provision-runtime-roles.sh
 docker compose --env-file .env -f compose.release.yml up -d --no-deps --force-recreate --wait api worker
-./health-check.sh
+bash verify-release-runtime.sh build-metadata.json
 ```
 
 Require successful role provisioning and all health/readiness checks before

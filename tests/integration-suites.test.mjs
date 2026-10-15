@@ -35,6 +35,8 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['deployment identity command omitted from bundle', value => { const step=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle');step.run=step.run.replace('cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh',''); }],
+  ['deployment identity source tests omitted', value => { const step=value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage');step.run=step.run.replace('node --test tests/release-runtime.test.mjs',''); }],
   ['HTTPS transport runtime omitted', value => {value.jobs['release-bundle'].steps=value.jobs['release-bundle'].steps.filter(step=>step.name!=='Prepare Node 24 for HTTPS transport contract');}],
   ['HTTPS transport runtime skipped', value => {value.jobs['release-bundle'].steps.find(step=>step.name==='Prepare Node 24 for HTTPS transport contract').if='false';}],
   ['HTTPS transport runtime version changed', value => {value.jobs['release-bundle'].steps.find(step=>step.name==='Prepare Node 24 for HTTPS transport contract').with['node-version']='20';}],
