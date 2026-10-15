@@ -2,6 +2,11 @@
 
 Use this with the [release guide](README.md), [configuration reference](../architecture/configuration.md), [schema compatibility rules](../architecture/schema-upgrades.md) and [operational MVP milestone](../architecture/operational-mvp-milestone.md). This is an operator procedure; its presence does not establish successful production promotion or rollback.
 
+The [encrypted database recovery contract](../architecture/database-recovery.md)
+adds a small isolated CI restore rehearsal. Scheduled deployment backups,
+coordinated object-storage/key-ring recovery and measured production RPO/RTO
+remain required; the CI fixture does not establish those operating controls.
+
 ## Preserve the deployment identity
 
 Before the first deployment, choose a unique `COMPOSE_PROJECT_NAME` for each environment, such as `strataai-production` or `strataai-staging`. The example config supplies a stable production name. For an existing installation, use its existing project name, not a new example value. Keep that name in the operator's environment file across all release directories and commands. An explicit Compose project option must match it.

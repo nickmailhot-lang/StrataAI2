@@ -36,6 +36,13 @@ test('every mandatory check has an owner and every group uses retained images', 
 
 const mutations = [
   ...[
+    ['omitted', value => { value.jobs['postgres-integration'].steps = value.jobs['postgres-integration'].steps.filter(entry => entry.name !== 'Verify encrypted PostgreSQL backup and isolated restore protections'); }],
+    ['replaced by success', value => { value.jobs['postgres-integration'].steps.find(entry => entry.name === 'Verify encrypted PostgreSQL backup and isolated restore protections').run = 'true'; }],
+    ['skipped', value => { value.jobs['postgres-integration'].steps.find(entry => entry.name === 'Verify encrypted PostgreSQL backup and isolated restore protections').if = 'false'; }],
+    ['failure ignored', value => { value.jobs['postgres-integration'].steps.find(entry => entry.name === 'Verify encrypted PostgreSQL backup and isolated restore protections')['continue-on-error'] = true; }],
+    ['duplicated', value => { value.jobs['postgres-integration'].steps.push({ ...value.jobs['postgres-integration'].steps.find(entry => entry.name === 'Verify encrypted PostgreSQL backup and isolated restore protections') }); }],
+  ].map(([name, mutate]) => [`Encrypted recovery ${name}`, mutate]),
+  ...[
     ['omitted', value => { value.jobs['postgres-integration'].steps = value.jobs['postgres-integration'].steps.filter(entry => entry.name !== 'Verify List movement parent commits and tenant isolation'); }],
     ['replaced by success', value => { value.jobs['postgres-integration'].steps.find(entry => entry.name === 'Verify List movement parent commits and tenant isolation').run = 'true'; }],
     ['skipped', value => { value.jobs['postgres-integration'].steps.find(entry => entry.name === 'Verify List movement parent commits and tenant isolation').if = 'false'; }],

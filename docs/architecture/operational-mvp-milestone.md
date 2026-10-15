@@ -39,6 +39,7 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 - [Required production configuration](configuration.md)
 - [Release integrity](release-artifact-integrity.md)
 - [Source-free startup and restart evidence](release-bundle-startup.md)
+- [Encrypted database recovery contract and remaining deployment requirements](database-recovery.md)
 
 ## Current status
 

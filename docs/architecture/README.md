@@ -54,6 +54,9 @@ ordinary desktop/mobile verification while preserving protected-page purging.
 
 The [operational MVP milestone](operational-mvp-milestone.md) prioritizes core
 workflow reliability and verified deployment before new governance and AI work.
+The [encrypted database recovery contract](database-recovery.md) distinguishes
+the small CI restore rehearsal from scheduled production backups and coordinated
+object-storage/key-ring recovery.
 The [API contract acceptance map](prd-21-acceptance.md) and
 [error-envelope verification](api-error-contract-verification.md) distinguish
 implemented contracts from the remaining complete release evidence.

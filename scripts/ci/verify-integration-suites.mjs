@@ -78,6 +78,13 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(deferred.length, postMvpLoadSteps.size, 'Every deferred capacity stage must remain registered');
   const jobs = workflow.jobs;
   const postgresSteps = jobs['postgres-integration'].steps;
+  const backupSteps = postgresSteps.filter(step => step.name === 'Verify encrypted PostgreSQL backup and isolated restore protections');
+  assert.equal(backupSteps.length, 1, 'Encrypted recovery must run exactly once');
+  const backupRestore = backupSteps[0];
+  assert.equal(backupRestore.run, "bash scripts/ci/test-database-backup-restore.sh '${{ job.services.postgres.id }}'",
+    'Encrypted recovery must run intact against the isolated PostgreSQL service');
+  assert.equal(backupRestore.if, undefined, 'Encrypted recovery cannot be skipped or deferred');
+  assert.equal(backupRestore['continue-on-error'] ?? false, false, 'Encrypted recovery failure must block images');
   const listParentIntegrity = postgresSteps.find(step => step.name === 'Verify List movement parent commits and tenant isolation');
   assert.equal(listParentIntegrity?.run, "python3 -m unittest discover -s tests -p 'list_move_parent_integrity_test.py'",
     'List parent commit and isolation verification must run intact');

@@ -129,6 +129,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'source_test_reports_test.py'
           python3 -m unittest discover -s tests -p 'evidence_artifacts_test.py'
           python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
+          python3 -m unittest discover -s tests -p 'recovery_dump_test.py'
           python3 -m unittest discover -s tests -p 'release_auth_policy_test.py'
           python3 -m unittest discover -s tests -p 'image_labels_test.py'
 
@@ -414,6 +415,9 @@ jobs:
           STRATAAI_CONTRACT_API_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_api_runtime;Password=ci-api-runtime-password;SSL Mode=Disable
           STRATAAI_CONTRACT_WORKER_CONNECTION: Host=127.0.0.1;Port=5432;Database=strataai_ci;Username=strataai_worker_runtime;Password=ci-worker-runtime-password;SSL Mode=Disable
         run: dotnet run --project tests/StrataAI.Persistence.Contracts/StrataAI.Persistence.Contracts.csproj --configuration Release --no-build -- --retention-holds-only
+
+      - name: Verify encrypted PostgreSQL backup and isolated restore protections
+        run: bash scripts/ci/test-database-backup-restore.sh '${{ job.services.postgres.id }}'
 
       - name: Verify trusted PostgreSQL TLS and certificate refusals through the runtime factory
         env:
