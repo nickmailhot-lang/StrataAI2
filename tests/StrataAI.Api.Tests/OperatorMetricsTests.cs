@@ -24,7 +24,7 @@ public sealed class OperatorMetricsTests
     }
 
     [Fact]
-    public void Worker_export_has_its_own_service_identity_and_excludes_API_meters()
+    public async Task Worker_export_has_its_own_service_identity_and_excludes_API_meters()
     {
         using var transport = new MetricsTransport();
         var services = new ServiceCollection(); services.AddLogging(); services.AddMetrics();
@@ -34,12 +34,18 @@ public sealed class OperatorMetricsTests
         using var provider = services.BuildServiceProvider(); var sdk = provider.GetRequiredService<MeterProvider>();
         var factory = provider.GetRequiredService<IMeterFactory>();
         var telemetry = new WorkerJobTelemetry(factory);
+        using var backlog = new OrganizationBacklogWorker(new OrganizationBacklogTests.Reader((_, _) =>
+            Task.FromResult(new OrganizationJobBacklog(2, 1))), new([Guid.NewGuid()]), factory);
+        await backlog.SampleAsync(TestContext.Current.CancellationToken);
         telemetry.Record(JobProcessingResult.Completed);
         telemetry.RecordOrganizationLoopFailure(); telemetry.RecordIdentityEmailLoopFailure();
         factory.Create("StrataAI.HttpServer").CreateCounter<long>("private-api-observation").Add(1);
         Assert.True(sdk.ForceFlush(5000)); var sample = Assert.Single(transport.Batches);
         Assert.Contains("strataai.worker.jobs", sample.WireText); Assert.Contains("strataai-worker", sample.WireText);
         Assert.Contains("strataai.worker.loop.failures", sample.WireText); Assert.Contains("identity_email", sample.WireText);
+        Assert.Contains("strataai.worker.scoped.backlog", sample.WireText);
+        Assert.Contains("strataai.worker.scoped.backlog.available", sample.WireText);
+        Assert.Contains("pending", sample.WireText); Assert.Contains("running", sample.WireText);
         Assert.Contains("strataai.build.revision", sample.WireText);
         Assert.DoesNotContain("strataai-api", sample.WireText); Assert.DoesNotContain("private", sample.WireText);
         transport.Fail = true;

@@ -4,6 +4,12 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [scoped Worker backlog sampler](operator-metrics.md#scoped-organization-job-backlog--2026-10-15)
+adds read-only pending/running counts with explicit observation availability.
+Focused .NET and real restricted PostgreSQL checks pass; current-image Collector
+execution, wider queue coverage and deployed alerts remain required. No large
+load test runs, and this does not complete ARCH-08 or the MVP milestone.
+
 The [configuration realtime timestamp assertions](organization-configuration.md#realtime-timestamp-assertions-2026-10-15)
 now check the original event's machine instant and the viewer's localized
 display. Four unchanged cases reproduce the stale raw-timestamp assumption;

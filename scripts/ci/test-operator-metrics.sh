@@ -3,7 +3,22 @@ set -euo pipefail
 umask 077
 test "${CI:-}" = true || { echo 'Disposable operator metrics fixture is CI-only.' >&2; exit 1; }
 scratch=$(mktemp -d)
-trap 'rm -rf "$scratch"' EXIT
+worker_changed=false
+backlog_pending=''
+backlog_running=''
+admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
+restore() {
+  local failed=0
+  if $worker_changed; then
+    docker compose -f compose.release.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null || failed=1
+  fi
+  if [[ -n "$backlog_pending" && -n "$backlog_running" ]]; then
+    admin "DELETE FROM background_jobs WHERE id IN ('$backlog_pending','$backlog_running');" >/dev/null || failed=1
+  fi
+  rm -rf "$scratch"
+  return "$failed"
+}
+trap restore EXIT
 base=http://localhost:8088
 uuid() { cat /proc/sys/kernel/random/uuid; }
 post() { curl --max-time 30 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $(uuid)" -d "$2" "$base$1"; }
@@ -13,6 +28,17 @@ credentials=$(jq -nc --arg email "metrics-$(uuid)@example.test" '{email:$email,p
 curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$credentials" "$base/auth/register" >/dev/null
 curl --fail --silent --show-error -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$credentials" "$base/auth/login" >/dev/null
 org=$(post /organizations '{"name":"private-metric-fixture"}' | jq -r '.organization.id')
+[[ "$org" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$ ]]
+# Two tiny, non-claimable fixture rows exercise nonzero pending/running gauges.
+# Neither is runnable during this bounded check; no business command is retried.
+backlog_pending=$(uuid)
+backlog_running=$(uuid)
+admin "INSERT INTO background_jobs(id,tenant_id,job_type,idempotency_key,actor_id,service_identity,correlation_id,state,available_at,lease_id,worker_id,lease_expires_at)
+VALUES ('$backlog_pending','$org','BACKLOG_FIXTURE','$backlog_pending',gen_random_uuid(),'fixture','backlog-fixture','PENDING',now()+interval '1 day',NULL,NULL,NULL),
+('$backlog_running','$org','BACKLOG_FIXTURE','$backlog_running',gen_random_uuid(),'fixture','backlog-fixture','RUNNING',now(),gen_random_uuid(),gen_random_uuid(),now()+interval '1 day');" >/dev/null
+export STRATAAI_TEST_BACKLOG_ORGANIZATION_ID="$org"
+worker_changed=true
+docker compose -f compose.release.yml -f scripts/ci/compose.backlog-test.yml up -d --force-recreate --wait --wait-timeout 180 worker >/dev/null
 test "$(curl --max-time 30 --silent --show-error -o /dev/null -w '%{http_code}' "$base/organizations/$org")" = 401
 board=$(post /boards "$(jq -nc --arg org "$org" '{organizationId:$org,name:"private-metric-fixture",visibility:"PRIVATE"}')" | jq -r '.id')
 list=$(post "/boards/$board/lists" '{"name":"private-metric-fixture"}' | jq -r '.id')

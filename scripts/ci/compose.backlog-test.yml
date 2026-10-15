@@ -1,0 +1,5 @@
+# CI-only scope for the already-built Worker; no new image or privilege.
+services:
+  worker:
+    environment:
+      STRATAAI_WORKER_ORGANIZATION_IDS: ${STRATAAI_TEST_BACKLOG_ORGANIZATION_ID:?Set isolated backlog Organization}

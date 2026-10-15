@@ -35,7 +35,7 @@ if (args.Contains("--verify-attachment-scanner-runtime", StringComparer.Ordinal)
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddStrataAiConsoleLogging(typeof(Program).Assembly, worker: true);
 builder.Services.AddMetrics();
-builder.Services.AddStrataAiWorkerMetrics(builder.Configuration, typeof(Program).Assembly);
+var operatorMetricsEnabled = builder.Services.AddStrataAiWorkerMetrics(builder.Configuration, typeof(Program).Assembly);
 builder.Services.AddSingleton<WorkerJobTelemetry>();
 
 builder.Services.AddSingleton<IClock, SystemClock>();
@@ -186,6 +186,7 @@ if (!string.IsNullOrWhiteSpace(jobScope))
     builder.Services.AddSingleton<BackgroundJobProcessor>();
     builder.Services.TryAddSingleton<IBackgroundJobDiagnostics, BackgroundJobDiagnostics>();
     builder.Services.AddHostedService<OrganizationJobWorker>();
+    if (operatorMetricsEnabled) builder.Services.AddHostedService<OrganizationBacklogWorker>();
     if (attachmentsEnabled) builder.Services.AddHostedService<AttachmentPreviewBackfillWorker>();
     if (attachmentsEnabled) builder.Services.AddHostedService<AttachmentScanRecoveryWorker>();
 }

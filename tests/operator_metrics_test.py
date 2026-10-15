@@ -69,7 +69,31 @@ class OperatorEvidenceTests(unittest.TestCase):
                 observations.append((metric, f'method="{method}",status_code="{code}",outcome="completed"'))
         worker_common = common.replace('service_name="strataai-api"', 'service_name="strataai-worker"')
         return "\n".join(f'{name}{{{labels},{common}}} 1' for name, labels in observations) + \
-            f'\nstrataai_worker_jobs{{queue="organization",outcome="completed",{worker_common}}} 1'
+            f'\nstrataai_worker_jobs{{queue="organization",outcome="completed",{worker_common}}} 1' + \
+            ''.join(f'\nstrataai_worker_scoped_backlog{{queue="organization",state="{state}",{worker_common}}} 1' for state in ['pending', 'running']) + \
+            f'\nstrataai_worker_scoped_backlog_available{{queue="organization",{worker_common}}} 1'
+
+    def test_scoped_backlog_requires_both_nonzero_states_and_available_snapshot(self):
+        for name, state in [('strataai_worker_scoped_backlog', 'pending'), ('strataai_worker_scoped_backlog', 'running'),
+                            ('strataai_worker_scoped_backlog_available', None)]:
+            with self.subTest(name=name, state=state):
+                lines = self.fixture().splitlines()
+                selected = next(line for line in lines if line.startswith(name + '{') and (state is None or f'state="{state}"' in line))
+                self.assertFalse(metrics.verify('\n'.join(line for line in lines if line != selected), self.revision, self.version))
+                self.assertFalse(metrics.verify(self.fixture().replace(selected, selected[:-1] + '0'), self.revision, self.version))
+
+    def test_scoped_backlog_refuses_private_scope_invalid_state_and_invalid_counts(self):
+        line = next(line for line in self.fixture().splitlines() if line.startswith('strataai_worker_scoped_backlog{'))
+        invalid = [line.replace('state="pending"', label) for label in [
+            'state="private-job-type"', 'state="pending",organization_id="opaque"',
+            'state="pending",state="running"', 'outcome="completed"', 'state="pending",queue="identity_email"']]
+        invalid.extend(line[:-1] + value for value in ['-1', '0.5', 'NaN', '1e309'])
+        available = next(line for line in self.fixture().splitlines() if line.startswith('strataai_worker_scoped_backlog_available{'))
+        invalid.append(available[:-1] + '2')
+        invalid.append(available.replace('queue="organization"', 'queue="organization",state="pending"'))
+        for observation in invalid:
+            with self.subTest(observation=observation):
+                self.assertFalse(metrics.verify(self.fixture() + '\n' + observation, self.revision, self.version))
 
     def test_worker_requires_own_service_identity_and_bounded_queue_outcome(self):
         for original, replacement in [('queue="organization"', 'queue="private-job-type"'),
@@ -92,7 +116,7 @@ class OperatorEvidenceTests(unittest.TestCase):
         self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))
 
     def loop_failure(self):
-        return self.fixture().splitlines()[-1].replace('strataai_worker_jobs', 'strataai_worker_loop_failures').replace(',outcome="completed"', '')
+        return next(line for line in self.fixture().splitlines() if line.startswith('strataai_worker_jobs{')).replace('strataai_worker_jobs', 'strataai_worker_loop_failures').replace(',outcome="completed"', '')
 
     def test_worker_loop_failure_is_optional_and_has_only_fixed_queue_identity(self):
         self.assertTrue(metrics.verify(self.fixture(), self.revision, self.version))

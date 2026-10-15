@@ -47,6 +47,7 @@ def verify(raw, revision, version):
     names.add("strataai_http_server_requests")
     names.add("strataai_worker_jobs")
     names.add("strataai_worker_loop_failures")
+    names.update({"strataai_worker_scoped_backlog", "strataai_worker_scoped_backlog_available"})
     names.update("strataai_http_server_duration" + suffix for suffix in ["_bucket", "_count", "_sum"])
     for line in raw.splitlines():
         if not line.startswith("strataai_"):
@@ -58,11 +59,14 @@ def verify(raw, revision, version):
         if labels is None:
             return False
         permitted = allowed | {"method", "status_code"} if match[1].startswith("strataai_http_server_") else allowed
-        worker = match[1] in {"strataai_worker_jobs", "strataai_worker_loop_failures"}
+        worker = match[1] in {"strataai_worker_jobs", "strataai_worker_loop_failures",
+                              "strataai_worker_scoped_backlog", "strataai_worker_scoped_backlog_available"}
         if worker:
             permitted = {"queue", "job", "instance", "service_name", "service_namespace", "service_version", "strataai_build_revision"}
             if match[1] == "strataai_worker_jobs":
                 permitted.add("outcome")
+            if match[1] == "strataai_worker_scoped_backlog":
+                permitted.add("state")
         if set(labels) - permitted or labels.get("instance", "") != "":
             return False
         if labels.get("strataai_build_revision") != revision or labels.get("service_version") != version:
@@ -79,6 +83,13 @@ def verify(raw, revision, version):
                 return False
             if not math.isfinite(float(match[3])) or float(match[3]) < 0:
                 return False
+            if match[1].startswith("strataai_worker_scoped_backlog"):
+                if labels.get("queue") != "organization" or not float(match[3]).is_integer():
+                    return False
+                if match[1] == "strataai_worker_scoped_backlog" and labels.get("state") not in {"pending", "running"}:
+                    return False
+                if match[1].endswith("_available") and float(match[3]) not in {0, 1}:
+                    return False
         if match[1].startswith("strataai_http_server_"):
             http_labels = {"method", "status_code", "outcome", "le", "job", "instance",
                            "service_name", "service_namespace", "service_version", "strataai_build_revision"}
@@ -97,6 +108,9 @@ def verify(raw, revision, version):
                    for metric, labels, value in samples)
 
     return all([
+        observed("strataai_worker_scoped_backlog", {"queue": "organization", "state": "pending"}),
+        observed("strataai_worker_scoped_backlog", {"queue": "organization", "state": "running"}),
+        observed("strataai_worker_scoped_backlog_available", {"queue": "organization"}),
         observed("strataai_worker_jobs", {"queue": "organization", "outcome": "completed"}),
         *[observed(metric, {"method": method, "status_code": code, "outcome": "completed"})
           for method, code in [("GET", "200"), ("POST", "400"), ("POST", "401"), ("POST", "403"), ("PATCH", "409")]
@@ -172,4 +186,5 @@ if __name__ == "__main__":
                      "configurationClientEvents": True, "configurationClientDuration": True,
                      "httpRequestsAndDuration": True, "httpRejectionOutcomes": True,
                      "workerCommittedJobOutcome": True, "workerBuildIdentity": True,
+                     "workerScopedBacklog": True, "workerBacklogAvailable": True,
                      "fixedBuildMetadata": True, "privateFieldsExcluded": True}}) + "\n")

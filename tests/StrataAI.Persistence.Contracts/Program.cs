@@ -37,6 +37,11 @@ var organization = Guid.NewGuid(); var foreignOrganization = Guid.NewGuid(); var
 var board = Guid.NewGuid(); var foreignBoard = Guid.NewGuid(); var list = Guid.NewGuid(); var foreignList = Guid.NewGuid();
 var card = Guid.NewGuid(); var foreignCard = Guid.NewGuid();
 await using var admin = new NpgsqlConnection(adminConnection); await admin.OpenAsync(ct);
+if (args.SequenceEqual(["--organization-backlog-only"], StringComparer.Ordinal))
+{
+    await OrganizationBacklogContract.RunAsync(admin, workerConnection, ct);
+    return;
+}
 if (args.Contains("--work-event-batch-only", StringComparer.Ordinal))
 {
     await RuntimeSchemaReadinessContract.RunAsync(admin,apiConnection,workerConnection,ct);
@@ -417,6 +422,7 @@ try
     await CardMassMentionQuotaContract.RunAsync(admin,provider,organization,card,user,foreignOrganization,foreignCard,foreignUser,ct);
     await UserMentionHandleStoreContract.RunAsync(admin,apiConnection,ct);
     await ListBoardTransferPersistenceContract.RunAsync(admin,apiConnection,ct);
+    await OrganizationBacklogContract.RunAsync(admin,workerConnection,ct);
     await WorkEventBatchPersistenceContract.RunAsync(admin,apiConnection,workerConnection,ct);
     await ListPublicationBatchContract.RunAsync(admin,apiConnection,ct);
     await ListMovementApplicationContract.RunAsync(admin,apiConnection,workerConnection,ct);

@@ -68,6 +68,12 @@ labels and queue-only escaping-failure counters remain separate from API
 HTTP/feature observations; neither collector
 availability nor export failure is a core readiness dependency.
 
+With metrics export and explicit `STRATAAI_WORKER_ORGANIZATION_IDS`, the Worker
+also reports [scoped Organization backlog and observation availability](operator-metrics.md#scoped-organization-job-backlog--2026-10-15).
+Require fresh samples and availability one; failed observations are unknown,
+and overlapping scopes must not be summed. This does not include the global
+identity-email queue or Organizations served only by discovery workers.
+
 Build revision/version are embedded in the image at build time and cannot be
 set by runtime environment variables. The web's `/build-metadata.json`, API's
 `/api/runtime` and Worker's `/runtime` report the identifiers of their actual

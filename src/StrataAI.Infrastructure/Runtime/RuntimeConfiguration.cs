@@ -54,6 +54,7 @@ public static class RuntimeConfiguration
         services.AddSingleton(new PostgresConnectionFactory(connectionString));
         services.AddSingleton<PostgresBackgroundJobStore>();
         services.AddSingleton<IBackgroundJobStore>(provider => provider.GetRequiredService<PostgresBackgroundJobStore>());
+        services.AddSingleton<IOrganizationJobBacklogReader>(_ => new PostgresOrganizationJobBacklogReader(connectionString));
         services.AddSingleton<IRuntimeDependencyStatus, ProductionRuntimeDependencyStatus>();
 
         return descriptor;

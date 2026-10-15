@@ -1,5 +1,56 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Scoped Organization job backlog — 2026-10-15
+
+When metrics export and explicit `STRATAAI_WORKER_ORGANIZATION_IDS` are both
+configured, the separate Worker samples its configured Organizations at startup
+and 30 seconds after each pass. `strataai.worker.scoped.backlog` has only
+`queue=organization` and `state=pending|running` instrument labels. It aggregates
+persisted states across that scope: pending includes future schedules; running
+includes active and expired leases, including leases held by other Workers.
+Succeeded/failed rows are excluded. This is not the number immediately eligible
+for dispatch, a global queue census, unique-job throughput or an email backlog.
+Do not sum overlapping Worker scopes/replicas to infer a global count.
+
+The sampler uses normal restricted-role/schema/transport checks, a separate
+single-connection pool, two-second connection/command timeouts, read-only
+transactions and transaction-local tenant RLS. It never claims, retries or
+dispatches a job, changes a lease or reads payloads. A whole sweep has a
+five-second cancellation deadline; only a complete valid aggregate is published.
+Exporter callbacks read memory and perform no database I/O. Without an exporter
+or explicit scope, this hosted sampler does not run; Demo has no database sampler.
+
+`strataai.worker.scoped.backlog.available{queue=organization}` is zero before
+the first successful sweep and after a failed/invalid/partial sweep. Such a sweep
+discards the in-process counts; a healthy empty queue publishes two genuine
+zero counts and availability one. Consumers must require current availability
+one **and fresh samples** before using backlog values: SDKs/Collectors can retain
+previous gauge values after a producer stops observing or disappears. Export
+and database observation failures cannot stop authoritative job processing or
+become a new readiness dependency. IDs, routes, tokens and exception text never
+enter these instruments.
+
+All **64 focused Linux .NET cases** pass, including 13 sampler/read-budget cases,
+existing job outcomes/loop failures/fairness/logging and real SDK OTLP transport
+to a controlled receiver. All **936 source and 415 binary inputs** match. The
+restricted PostgreSQL **17.11**, 149-migration contract independently verifies
+scheduled work, active/expired leases, terminal exclusion, two tenants, an empty
+result, forced RLS and unchanged persisted rows; it passes in **1.636 seconds**.
+All **827** captured source/binary inputs match. Owned fixtures are removed,
+Docker inventory restored and **724,100** temporary bytes deleted, without new
+images or large-load testing. The solution builds with zero warnings/errors;
+all 12 Collector verifier cases pass.
+
+The mandatory exact-image Collector fixture now scopes the existing Worker to
+its fresh Organization and seeds two non-runnable rows, requiring nonzero
+pending/running gauges and availability one alongside prior observations. It
+restores the ordinary Worker and removes only those fixture rows on exit. The
+persistence contract runs in the normal PostgreSQL suite. These CI changes still
+require current-image execution; compiled-code and store checks do not certify
+that deployment. Identity-email/discovery-wide backlog, lease age, managed
+Collector ingestion, dashboards, tested alerts and full ARCH-08 acceptance remain
+open. Large-load testing remains deferred until after the operational MVP.
+
 ## Worker queue-loop failures — 2026-10-15
 
 `strataai.worker.loop.failures` counts exceptions that escape an Organization
