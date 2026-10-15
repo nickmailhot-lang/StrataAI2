@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# ARCH-08-FR-009: small recovery contract, only against the supplied CI service.
+# ARCH-08-FR-009: small recovery contract from the supplied CI service to a
+# freshly initialized, network-isolated cluster using its exact provider image.
 # Never discover a container or select an existing deployment database.
 container="${1:?Pass the isolated PostgreSQL CI service container ID}"
 admin="${PGUSER:-postgres}"
@@ -13,18 +14,21 @@ suffix=$(openssl rand -hex 8)
 source_db="strataai_backup_source_$suffix"
 target_db="strataai_backup_target_$suffix"
 reader="strataai_backup_reader_$suffix"
+target_container="strataai-recovery-target-$suffix"
 source_created=0; target_created=0; reader_created=0; stage=initialization
 cleanup() {
   local code=$?
   trap - EXIT
   if [ "$code" != 0 ]; then echo "Encrypted database recovery contract failed during $stage." >&2; fi
-  if [ "$target_created" = 1 ]; then docker exec "$container" dropdb -U "$admin" "$target_db" > /dev/null 2>&1 || code=1; fi
+  if [ "$target_created" = 1 ]; then docker rm --force --volumes "$target_container" > /dev/null 2>&1 || code=1; fi
   if [ "$source_created" = 1 ]; then docker exec "$container" dropdb -U "$admin" "$source_db" > /dev/null 2>&1 || code=1; fi
   if [ "$reader_created" = 1 ]; then docker exec "$container" dropuser -U "$admin" "$reader" > /dev/null 2>&1 || code=1; fi
   rm -rf "$scratch" || code=1
   exit "$code"
 }
 trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 # Translate host-side paths only for native Windows OpenSSL/Python. Docker SQL
 # and file streams remain stdin, so Git Bash cannot rewrite container paths.
 host_path() { if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else printf '%s\n' "$1"; fi; }
@@ -35,8 +39,27 @@ for name in recipient wrong-recipient; do
 done
 docker exec "$container" createdb -U "$admin" --template template0 "$source_db"
 source_created=1
-docker exec "$container" createdb -U "$admin" --template template0 "$target_db"
+stage=fresh-target-cluster
+provider_image=$(docker inspect --format '{{.Image}}' "$container")
+[[ "$provider_image" =~ ^sha256:[a-f0-9]{64}$ ]]
+MSYS_NO_PATHCONV=1 docker run --detach --pull never --name "$target_container" \
+  --label "strataai.recovery-source=$container" --network none \
+  --tmpfs /var/lib/postgresql/data:rw,nosuid,noexec,size=512m \
+  --env "POSTGRES_USER=$admin" --env POSTGRES_DB=postgres \
+  --env "POSTGRES_PASSWORD=$(openssl rand -hex 24)" "$provider_image" > "$scratch/target-startup.log" 2>&1
 target_created=1
+ready=0
+for attempt in {1..30}; do
+  # The image's temporary initialization server accepts Unix sockets before it
+  # restarts. Require the final TCP listener before using the new cluster.
+  if docker exec "$target_container" pg_isready -h 127.0.0.1 -U "$admin" -d postgres > "$scratch/target-ready.log" 2>&1; then ready=1; break; fi
+  sleep 1
+done
+test "$ready" = 1
+source_identity=$(docker exec "$container" psql -X -U "$admin" -d postgres -At -v ON_ERROR_STOP=1 -c 'SELECT system_identifier FROM pg_control_system()')
+target_identity=$(docker exec "$target_container" psql -X -U "$admin" -d postgres -At -v ON_ERROR_STOP=1 -c 'SELECT system_identifier FROM pg_control_system()')
+[[ "$source_identity" =~ ^[0-9]+$ && "$target_identity" =~ ^[0-9]+$ && "$source_identity" != "$target_identity" ]]
+docker exec "$target_container" createdb -U "$admin" --template template0 "$target_db"
 docker exec "$container" createuser -U "$admin" --no-superuser --no-createdb --no-createrole --no-login "$reader"
 reader_created=1
 stage=migrations-and-seed
@@ -46,7 +69,7 @@ docker exec "$container" psql -X -U "$admin" -d "$source_db" -v ON_ERROR_STOP=1 
   -c "GRANT USAGE ON SCHEMA public TO $reader; GRANT SELECT ON organizations,boards,cards,board_lists TO $reader; GRANT INSERT ON board_lists TO $reader; GRANT SELECT,INSERT,UPDATE ON list_routes TO $reader" > /dev/null
 
 # No plaintext dump is written during backup. Preserve ACLs and schema objects;
-# the recovery target is this same disposable cluster, whose roles still exist.
+# the target has a different cluster identity and does not inherit source roles.
 stage=encrypted-backup
 STRATAAI_BACKUP_DB_USER="$admin" bash scripts/backup-postgres.sh "$container" "$source_db" \
   "$scratch/recipient.crt" "$scratch/backup.cms" > "$scratch/backup.log" 2>&1
@@ -60,17 +83,18 @@ pathlib.Path(sys.argv[2]).write_bytes(data)
 PY
 restore() {
   STRATAAI_RESTORE_DB_USER="$admin" STRATAAI_RESTORE_TMPDIR="$scratch" \
-    bash scripts/restore-postgres.sh "$container" "$target_db" "$scratch/$2.crt" "$scratch/$2.key" "$1" "$3"
+    bash scripts/restore-postgres.sh "$target_container" "$target_db" "$scratch/$2.crt" "$scratch/$2.key" "$1" "$3"
 }
 fingerprint() {
+  local fingerprint_container=${2:-$target_container}
   {
-    docker exec "$container" pg_dump -U "$admin" -d "$1" --format plain \
+    docker exec "$fingerprint_container" pg_dump -U "$admin" -d "$1" --format plain \
       2> "$scratch/compare.log" | PYTHONIOENCODING=utf-8 python3 scripts/ci/normalize-recovery-dump.py || return 1
-    docker exec "$container" psql -X -U "$admin" -d "$1" -At -v ON_ERROR_STOP=1 \
+    docker exec "$fingerprint_container" psql -X -U "$admin" -d "$1" -At -v ON_ERROR_STOP=1 \
       -c "SELECT jsonb_build_array(conrelid::regclass::text,contypid::regtype::text,conname,pg_get_constraintdef(oid,true)) FROM pg_constraint WHERE contype='c' AND connamespace='public'::regnamespace ORDER BY 1" || return 1
   } | sha256sum
 }
-query() { docker exec "$container" psql -X -U "$admin" -d "$target_db" -At -v ON_ERROR_STOP=1 -c "$1"; }
+query() { docker exec "$target_container" psql -X -U "$admin" -d "$target_db" -At -v ON_ERROR_STOP=1 -c "$1"; }
 stage=authentication-refusals
 for refusal in wrong-key tampered wrong-digest; do
   archive="$scratch/backup.cms"; recipient=wrong-recipient
@@ -81,7 +105,7 @@ for refusal in wrong-key tampered wrong-digest; do
     echo 'Encrypted recovery admitted an invalid archive/key/digest.' >&2; exit 1
   fi
 done
-test "$(docker exec "$container" psql -X -U "$admin" -d "$target_db" -At -v ON_ERROR_STOP=1 \
+test "$(docker exec "$target_container" psql -X -U "$admin" -d "$target_db" -At -v ON_ERROR_STOP=1 \
   -c "SELECT count(*) FROM pg_class WHERE relnamespace='public'::regnamespace")" = 0
 stage=authenticated-restore
 archive_digest=$(sha256sum < "$scratch/backup.cms"); archive_digest=${archive_digest%% *}
@@ -102,6 +126,19 @@ for kind in schema function type extension; do
   test "$before_refusal" = "$after_refusal"
   query "$removal" > "$scratch/nonempty-object.log" 2>&1
 done
+stage=missing-cluster-role-refusal
+test "$(query "SELECT count(*) FROM pg_roles WHERE rolname='$reader'")" = 0
+before_missing_role=$(fingerprint "$target_db")
+if restore "$scratch/backup.cms" recipient "$archive_digest" > "$scratch/missing-role.log" 2>&1; then
+  echo 'Recovery unexpectedly restored ACLs without the required cluster role.' >&2; exit 1
+fi
+test "$(query "SELECT count(*) FROM pg_class WHERE relnamespace='public'::regnamespace")" = 0
+after_missing_role=$(fingerprint "$target_db")
+test "$before_missing_role" = "$after_missing_role"
+# A logical dump omits cluster-global roles. Recreate only this fixture's
+# reviewed least-privilege identity; never copy cluster superusers/passwords.
+docker exec "$target_container" createuser -U "$admin" --no-superuser --no-createdb --no-createrole --no-login "$reader"
+test "$(query "SELECT NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolcanlogin OR rolbypassrls OR rolreplication) FROM pg_roles WHERE rolname='$reader'")" = t
 stage=authenticated-restore
 restore "$scratch/backup.cms" recipient "$archive_digest" > "$scratch/restore.log" 2>&1
 
@@ -112,7 +149,7 @@ restore "$scratch/backup.cms" recipient "$archive_digest" > "$scratch/restore.lo
 # restrict keys are random, so exclude those two pg_dump client guard lines.
 # COPY row order is physical, not relational; compare sorted complete rows.
 stage=complete-dump-comparison
-expected=$(fingerprint "$source_db")
+expected=$(fingerprint "$source_db" "$container")
 compare_fingerprint() {
   local actual
   actual=$(fingerprint "$target_db") || return 1
@@ -144,8 +181,8 @@ compare_fingerprint !=
 query "ALTER TABLE cards ADD CONSTRAINT cards_title_check $check_definition" > /dev/null
 compare_fingerprint =
 stage=restored-security-contracts
-docker exec -i "$container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
+docker exec -i "$target_container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
   < scripts/ci/check-tenant-schema.sql > "$scratch/catalog.log" 2>&1
-docker exec -i "$container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
+docker exec -i "$target_container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
   -v "reader=$reader" < scripts/ci/database-backup-verify.sql > "$scratch/verify.log" 2>&1
-echo 'Encrypted PostgreSQL backup/restore passed: complete migrated schema/data/ACL comparison, eleven deliberate corruption/refusal cases, pgvector, restricted tenant reads/writes, FK and append-only audit protections.'
+echo 'Encrypted PostgreSQL backup/restore passed: distinct fresh cluster, missing-role transaction rollback and least-privilege role recreation, complete migrated schema/data/ACL comparison, twelve deliberate corruption/refusal cases, pgvector, restricted tenant reads/writes, FK and append-only audit protections.'

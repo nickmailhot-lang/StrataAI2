@@ -11,11 +11,23 @@ Use this with [schema compatibility](schema-upgrades.md),
 
 The PostgreSQL source-quality job executes
 [the recovery contract](../../scripts/ci/test-database-backup-restore.sh)
-against its explicitly supplied disposable PostgreSQL service. It creates two
-randomly named databases from `template0`, applies every production migration,
+from its explicitly supplied disposable PostgreSQL service into a freshly
+initialized, network-isolated PostgreSQL container. The target uses the source's
+exact cached provider image ID (`--pull never`) and must have a different
+`pg_control_system()` system identifier. It creates randomly named source and
+target databases from `template0` in their respective clusters, applies every production migration,
 and seeds two Organizations with one Board/List/Card each and append-only audit
 records. It never selects an existing deployment database. This is a small
 functional recovery check; large-load testing remains post-MVP.
+
+The target does not inherit source roles. An authenticated restore without the
+required fixture role must fail, leaving the complete empty-target fingerprint
+unchanged. Only then does the contract recreate the reviewed non-login role,
+explicitly verify that it lacks superuser, database/role creation, login,
+replication and RLS-bypass powers, and restore again. It never copies global
+superusers or password hashes. Target readiness requires the final TCP listener,
+not the image's temporary initialization server. Owned target data is temporary
+and its container/volumes are removed on exit.
 
 The contract streams a custom-format `pg_dump` directly into OpenSSL CMS
 AES-256-GCM encryption using an ephemeral recipient certificate. Backup creation
@@ -212,6 +224,31 @@ restore; each fixture is cleaned up. The final invocation passes the full
 restore and application checks above. This is supporting recovery evidence,
 not a substitute for current exact-commit CI or managed deployment acceptance.
 
+## Fresh-cluster recovery verification — 2026-10-15
+
+The updated mandatory contract passes against two owned PostgreSQL clusters with
+distinct system identifiers and the same cached provider image. Its two-Card,
+two-Organization source includes all **149 migrations**. The target initially
+lacks the fixture role: restoration must fail and its complete empty fingerprint
+must remain unchanged. Recreating only the reviewed least-privilege non-login
+identity permits the actual encrypted operator restore to succeed.
+
+Complete schema/data/ACL comparison, all **twelve** deliberate refusal/corruption
+checks, pgvector, restricted tenant reads/writes, cross-tenant FK refusal and
+append-only audit protections pass. The final owned rehearsal completes in
+**70.571 seconds**, including initialization and cleanup; nine comparison/parser
+subprocess tests also pass. All **157** captured source inputs match. Both owned
+containers and temporary databases/roles/files are removed, including 734,290
+temporary host bytes, and the original Docker inventory is restored. No original
+database is used, no application image is rebuilt and no load test runs.
+
+This replaces the same-cluster assumption for the current mandatory rehearsal;
+earlier candidate/local records above retain their original scope. It does not
+prove full production API/Worker role provisioning after cross-cluster restore,
+deployed application startup, managed-provider restore, coordinated object/key
+recovery or scheduled production RPO/RTO. Current immutable CI remains required.
+ARCH-08 and the operational MVP remain open.
+
 ## Deployment recovery remains an operator requirement
 
 The [Docker operator backup command](../release/README.md#encrypted-docker-postgresql-backups)
@@ -232,9 +269,10 @@ Before routing production traffic, configure and record:
   source changes do not establish backup freshness or an operating schedule.
 - Recovery of PostgreSQL, object-storage versions, durable key rings and the
   external configuration/provider dependencies as a coordinated set. A logical
-  PostgreSQL dump omits cluster-global roles; this rehearsal restores in one
-  isolated cluster where its roles still exist. Cross-cluster recovery must
-  restore/reprovision the reviewed ownership, grants and restricted logins.
+  PostgreSQL dump omits cluster-global roles. The current fresh-cluster rehearsal
+  recreates one reviewed fixture identity; production recovery must separately
+  restore/reprovision the reviewed owners, grants and restricted API/Worker
+  identities before applying archive ACLs, with fresh protected login credentials.
 - A restore into an isolated empty destination, schema/image compatibility and
   actual application/provider checks before allowing traffic or background
   deliveries. Recovering live data may repeat external effects; do not simply

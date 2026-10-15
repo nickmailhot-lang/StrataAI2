@@ -51,6 +51,16 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [fresh-cluster encrypted restore rehearsal](database-recovery.md#fresh-cluster-recovery-verification--2026-10-15)
+now requires distinct PostgreSQL cluster identities and proves missing-role
+transaction rollback before reviewed least-privilege role recreation. All 149
+migrations and the existing two-Card fixture survive complete schema/data/ACL,
+twelve refusal/corruption and restored tenant/security checks. Nine comparison
+tests pass; 157 captured inputs match, and owned cleanup restores Docker inventory.
+The final complete fixture takes 70.571 seconds. Full production runtime-role
+recovery, deployed application/provider acceptance, scheduled drills and current
+immutable CI remain required. No large-load test runs; ARCH-08 stays open.
+
 The [durable attachment provider recovery checks](attachment-scanner-runtime.md#durable-provider-outage-recovery--2026-10-15)
 pass two temporary-provider outage/recovery cases through actual restricted
 PostgreSQL and the background processor. Quarantine remains closed during failure;

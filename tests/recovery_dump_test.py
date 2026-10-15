@@ -30,6 +30,7 @@ class RecoveryDumpTests(unittest.TestCase):
                 driver = f'''set -euo pipefail
 expected=expected
 target_db=fixture
+target_container=fixture
 fingerprint() {{ printf '%s' {value}; return {status}; }}
 {function}
 compare_fingerprint '{operator}'
@@ -45,7 +46,7 @@ compare_fingerprint '{operator}'
         for dump_status, catalog_status in ((0, 0), (13, 0), (0, 14)):
             with self.subTest(dump_status=dump_status, catalog_status=catalog_status), tempfile.TemporaryDirectory(prefix='strataai-backup-fingerprint-') as folder:
                 driver = f'''set -euo pipefail
-container=fixture
+target_container=fixture
 admin=fixture
 scratch={shlex.quote(Path(folder).as_posix())}
 python3() {{ {shlex.quote(Path(sys.executable).as_posix())} "$@"; }}

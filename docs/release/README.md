@@ -488,8 +488,10 @@ retention or freshness monitoring. A database dump omits global roles, object
 storage and durable key rings. Follow the
 [recovery requirements and authenticated restore sequence](../architecture/database-recovery.md)
 and [promotion/rollback procedure](promotion-and-rollback.md) before production
-recovery. The full CI rehearsal exercises this exact backup command against its
-small disposable database; it does not certify production RPO/RTO or providers.
+recovery. The full CI rehearsal exercises this exact backup command with a small
+source database and a fresh isolated target cluster. It checks distinct cluster
+identities, missing-role rollback and reviewed fixture-role recreation; it does
+not certify production RPO/RTO, runtime-role recovery or providers.
 
 ## Restore into an isolated empty Docker database
 
@@ -523,6 +525,15 @@ uses `pg_restore --single-transaction --exit-on-error`; no `--clean` or automati
 database creation is used. Temporary ciphertext, key copy, plaintext and private
 diagnostics are removed on success or failure. The command does not delete the
 operator's original archive or keys.
+
+For recovery into a new cluster, first recreate the reviewed owners and restricted
+identities referenced by the trusted archive's ACLs. Keep application hosts stopped
+and the target isolated. A database dump does not create cluster-global roles;
+missing roles make this transactional restore fail. Preserve least privilege and
+use fresh protected login credentials rather than copying global superusers or
+password hashes. The CI fixture recreates one non-login test role; production
+API/Worker identities and post-restore provisioning require their own review and
+verification before traffic or background deliveries resume.
 
 For an encrypted private key, supply `STRATAAI_RESTORE_KEY_PASSPHRASE` through
 your secret provider. Its value is supplied only to the OpenSSL process through
