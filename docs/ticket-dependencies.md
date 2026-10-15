@@ -1,8 +1,20 @@
 # Canonical ticket dependency audit
 
-Snapshot: 2026-10-12. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
+Snapshot: 2026-10-15. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
 
-The complete paginated issue snapshot was refreshed on 2026-10-12 and processed with `scripts/analyze-ticket-dependencies.mjs`; it resolves 92 canonical tickets into seven dependency groups, including three cycles. Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
+The complete issue snapshot was refreshed on 2026-10-15 and processed with `scripts/analyze-ticket-dependencies.mjs`; it resolves 92 canonical tickets into seven dependency groups, including three cycles. Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
+
+The [definition map](ticket-dependency-map.md) now counts both PRD criteria such
+as `AC-AUTH-02-01` and architecture criteria such as `ARCH-11-AC-001`. The earlier
+parser omitted all **63 architecture AC identifiers**, including ARCH-11's 20;
+it did not establish that those tickets lacked acceptance criteria. Two actual
+CLI regressions fail before repair, and all five CLI cases pass afterward,
+including deduplication, dependency order, closed canonical/duplicate handling
+and refusal of incomplete inventories. The check now runs in mandatory CI
+metadata validation. All 92 requirement-body hashes still match the earlier
+tracked snapshot; corrected counts and refreshed issue timestamps do not prove
+implementation or justify closure. Existing PRD estimates and the full roadmap
+remain unchanged, with operational MVP work preceding new governance/AI work.
 
 ## Dependency groups
 

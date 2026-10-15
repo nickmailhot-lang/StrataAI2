@@ -46,6 +46,8 @@ jobs:
           node-version: '24'
       - name: Verify metadata refusal and version contracts
         run: node --test tests/build-metadata.test.mjs
+      - name: Verify complete PRD and architecture dependency analysis
+        run: node --test tests/ticket-dependencies.test.mjs
       - name: Calculate verified exact-commit metadata
         id: identity
         run: node scripts/ci/build-metadata.mjs

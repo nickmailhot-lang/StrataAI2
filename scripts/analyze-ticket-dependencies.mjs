@@ -19,7 +19,7 @@ const tickets = issues.filter(issue => !duplicates.includes(issue)).map(issue =>
   });
   return { ...issue, id, dependencies: [...new Set(expanded.match(/\b(?:PRD|ARCH)-\d{2}\b/g) ?? [])].sort(),
     requirements: [...new Set(issue.body.match(/\b[A-Z][A-Z0-9_-]*-FR-\d{3}\b/g) ?? [])],
-    acceptance: [...new Set(issue.body.match(/\bAC-[A-Z0-9-]+-\d{2}\b/g) ?? [])],
+    acceptance: [...new Set(issue.body.match(/\b(?:AC-[A-Z0-9-]+-\d{2}|ARCH-\d{2}-AC-\d{3})\b/g) ?? [])],
     digest: createHash('sha256').update(issue.body).digest('hex') };
 }).sort((a, b) => a.id.localeCompare(b.id));
 const byId = new Map(tickets.map(ticket => [ticket.id, ticket]));
