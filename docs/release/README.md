@@ -139,7 +139,10 @@ not readiness evidence.
 It then checks the web, API and Worker build revision/version against this
 bundle's already verified metadata. Metadata transfers are limited to 15 seconds
 (or the smaller health timeout) and 4,096 response bytes. Mismatches, redirects,
-malformed or incomplete responses fail. Both commands connect directly and
+malformed or incomplete responses fail. The API and Worker must report their
+respective `strataai-api` / `strataai-worker` service identities and `production`
+mode; healthy Demo or mixed-mode hosts cannot satisfy Production acceptance.
+Both commands connect directly and
 ignore personal curl configuration; TLS verification stays enabled. The plain
 `health-check.sh` remains a health diagnostic and does not prove build identity.
 See [promotion verification and limits](promotion-and-rollback.md#build-bound-operator-verification-2026-10-15).

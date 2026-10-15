@@ -106,6 +106,15 @@ a bounded production readiness connection path and mandatory database stop/recov
 verification. Focused Linux and compiled-library host checks pass; these repairs
 still require their own complete current-image CI before MVP acceptance.
 
+The [Production runtime admission follow-up](../release/promotion-and-rollback.md#production-runtime-admission-2026-10-15)
+prevents healthy Demo/mixed-mode API and Worker hosts with the expected revision
+from satisfying the operator's Production release check. Fourteen HTTP cases
+fail before/pass after the repair. A real retained-image check confirms the
+old command accepts all three wrong-mode combinations, the revised one refuses
+them, and restored Production passes. Runtime inputs match and owned cleanup
+restores Docker inventory. Full current immutable CI and deployment/provider
+acceptance remain required; large-load tests remain post-MVP.
+
 ### Earlier independently inspected candidate
 
 An earlier verified operational release candidate is available at

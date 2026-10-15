@@ -25,7 +25,9 @@ async function fixture(scenario = {}) {
     if (selected && scenario.stall) return;
     response.statusCode = selected ? (scenario.status ?? 200) : 200;
     if (response.statusCode === 302) response.setHeader('Location', '/redirect-target');
-    let body = JSON.stringify(paths.includes(request.url) ? { ...identity, privateBody } : { privateBody });
+    const runtime = request.url === paths[1] ? { service: 'strataai-api', mode: 'production' }
+      : request.url === paths[2] ? { service: 'strataai-worker', mode: 'production' } : {};
+    let body = JSON.stringify(paths.includes(request.url) ? { ...identity, ...runtime, privateBody } : { privateBody });
     if (selected && scenario.body !== undefined) body = scenario.body;
     if (selected && scenario.large) {
       body = ' '.repeat(5000) + JSON.stringify(identity);
@@ -65,6 +67,18 @@ test('healthy web/API/Worker must all match the selected bundle', async () => {
   const r = await fixture(); assert.equal(r.code, 0, r.output); assert.match(r.output, /build identity verified/);
   assert.deepEqual(r.requests.slice(-3), paths); assert.equal(r.requests.length, 9);
 });
+for (const [path, service] of [[paths[1], 'strataai-api'], [paths[2], 'strataai-worker']]) {
+  for (const mode of ['demo', null, undefined, 'unknown', 'Production'])
+    test(`${path}: runtime mode ${String(mode)} refuses Production acceptance`, async () => {
+      const r = await fixture({ path, body: JSON.stringify({ ...identity, service, mode }) });
+      assert.notEqual(r.code, 0); assert.doesNotMatch(r.output, /build identity verified/);
+    });
+  for (const actualService of [undefined, service === 'strataai-api' ? 'strataai-worker' : 'strataai-api'])
+    test(`${path}: wrong or missing service ${String(actualService)} refuses acceptance`, async () => {
+      const r = await fixture({ path, body: JSON.stringify({ ...identity, service: actualService, mode: 'production' }) });
+      assert.notEqual(r.code, 0); assert.doesNotMatch(r.output, /build identity verified/);
+    });
+}
 for (const status of [302, 503]) test(`unhealthy API (${status}) refuses before identity reads`, async () => {
   const r = await fixture({ path: '/api/api/health', status }); assert.notEqual(r.code, 0);
   assert.deepEqual(r.requests, ['/api/api/health']); assert.doesNotMatch(r.output, /build identity verified/);

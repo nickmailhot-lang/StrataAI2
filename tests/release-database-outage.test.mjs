@@ -29,7 +29,8 @@ for (const scenario of scenarios) test(`database outage gate: ${scenario}`, { ti
       if (scenario === `${host}-private-readiness`) body.database = 'PRIVATE_DATABASE_DETAILS';
     }
     if (request.url.endsWith('/healthz') && stopped() && scenario === `${host}-liveness`) response.statusCode = 500;
-    if (/build-metadata\.json$|\/runtime$/.test(request.url)) body = { revision: 'a'.repeat(40), version: '1.0.0' };
+    if (/build-metadata\.json$|\/runtime$/.test(request.url)) body = { revision: 'a'.repeat(40), version: '1.0.0',
+      ...(/\/runtime$/.test(request.url) ? { service: `strataai-${host}`, mode: 'production' } : {}) };
     response.end(JSON.stringify(body));
   });
   try {

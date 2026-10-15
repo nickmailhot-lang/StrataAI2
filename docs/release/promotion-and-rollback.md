@@ -51,6 +51,50 @@ Image rollback is permitted only when the previous image is compatible with the 
 
 ## Current evidence and limits
 
+### Production runtime admission (2026-10-15)
+
+Matching image revisions alone cannot establish Production configuration: the
+same retained images intentionally support Demo mode. The former operator
+command accepts all **14 new negative HTTP cases** for Demo/missing/null/unknown
+or incorrectly cased runtime mode and missing/wrong service identity. Each
+response is healthy and carries the expected build revision/version, so these
+failures establish the missing deployment check rather than a build mismatch.
+
+`verify-release-runtime.sh` now requires API `service: strataai-api` and Worker
+`service: strataai-worker`, each with exactly `mode: production`. Web metadata
+retains its build-only contract. The command remains a read-only Production
+acceptance check: no new mode switch, deployment, migration, release-record
+rewrite or rollback is performed. Existing status, build identity, byte limits,
+deadlines, TLS validation, private diagnostics and cleanup rules remain intact.
+The database-outage HTTP fixture now includes the real application runtime
+service/mode fields rather than an incomplete synthetic response.
+
+All **382 HTTP/startup/outage/CI coverage checks** pass, including the **45**
+operator-runtime cases and the 14 before/after negative regressions. Bash syntax,
+diff checks and the 20 local documentation links pass. Full immutable-image CI
+and the remaining ARCH-12 requirements still govern acceptance; large-load tests
+remain disabled until after the operational MVP milestone.
+
+The separate real retained-image check executes **11 operator outcomes**. It
+passes Production, rejects the wrong selected revision and a stopped Worker,
+then passes that restarted Worker. With the same verified image revisions and
+healthy responses, the old command accepts each misconfiguration: Demo API
+with Production Worker, Production API with Demo Worker, and both Demo. The
+revised command rejects all three and passes after restoring both to Production.
+Each phase checks actual runtime mode/service/build and unchanged container
+identities during verification; deliberate mode changes recreate only owned
+fixture hosts. Original image IDs and the private known-good record are preserved.
+
+All 158 captured runtime inputs match. Fresh PostgreSQL/pgvector uses all 149
+migrations and restricted roles; current Nginx configuration is mounted read-only
+over archive-verified `24f5624` images. API verification is optional and mail
+disabled for the Production fixture; the Worker retains its verified-account
+policy. Full Docker inventory is restored, owned credentials/resources removed
+and **32,629 temporary bytes** reclaimed. No images are built, downloaded or
+imported, and the existing database is unused. All **37 release-artifact checks**
+also pass. This supporting fixture does not certify current-main images, actual
+deployed providers or two-version application rollback. ARCH-12 remains open.
+
 ### Build-bound operator verification (2026-10-15)
 
 The bundled `verify-release-runtime.sh` supplies the health and served-build
@@ -58,7 +102,10 @@ check used before accepting a Production release. It requires the selected,
 already verified `build-metadata.json`; invalid or ambiguous expected metadata
 fails before HTTP. Six health/readiness/proxy responses and all three build
 responses must be HTTP 200 without redirects. Every served revision/version
-must equal the selected bundle. Responses and diagnostic configuration remain
+must equal the selected bundle. API and Worker must additionally report their
+respective `strataai-api` / `strataai-worker` service identities and `production`
+mode. Healthy Demo or mixed-mode hosts cannot satisfy this Production check.
+Responses and diagnostic configuration remain
 private; the command prints neither response bodies nor configured URLs.
 
 Metadata reads store at most 4,097 bytes and reject bodies above 4,096 bytes,

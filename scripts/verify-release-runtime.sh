@@ -34,11 +34,12 @@ verify() {
     2> "$scratch/status" | head -c 4097 > "$scratch/response"; then fail; fi
   test "$(cat "$scratch/status")" = 200 || fail
   test "$(wc -c < "$scratch/response")" -le 4096 || fail
-  jq -se --arg revision "$revision" --arg version "$version" \
-    'length==1 and (.[0] | type=="object" and .revision==$revision and .version==$version)' \
+  jq -se --arg revision "$revision" --arg version "$version" --arg service "${2:-}" \
+    'length==1 and (.[0] | type=="object" and .revision==$revision and .version==$version
+      and (if $service=="" then true else .service==$service and .mode=="production" end))' \
     "$scratch/response" >/dev/null 2>&1 || fail
 }
 verify "${STRATAAI_WEB_URL:-http://127.0.0.1:8088}/build-metadata.json"
-verify "${STRATAAI_API_URL:-http://127.0.0.1:8080}/api/runtime"
-verify "${STRATAAI_WORKER_URL:-http://127.0.0.1:8081}/runtime"
+verify "${STRATAAI_API_URL:-http://127.0.0.1:8080}/api/runtime" strataai-api
+verify "${STRATAAI_WORKER_URL:-http://127.0.0.1:8081}/runtime" strataai-worker
 echo 'Selected release health, readiness, proxy and web/API/Worker build identity verified.'
