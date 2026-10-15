@@ -3,6 +3,7 @@ set -euo pipefail
 trap 'echo "HTTPS bundle contract failed at line $LINENO." >&2' ERR
 # Small source-free HTTPS contract; use only the supplied bundle and loaded images.
 test "$#" = 1
+verification_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 cd "$1"
 for source in .git src apps; do test ! -e "$source"; done
 test -f compose.https.yml
@@ -163,4 +164,15 @@ request GET /me 200
 jq -e --arg user "$user" '.id==$user' "$scratch/response" >/dev/null
 request GET "/boards/$board" 200
 jq -e --slurpfile before "$scratch/before.json" '.==$before[0]' "$scratch/response" >/dev/null
+export STRATAAI_WORKER_ORGANIZATION_IDS="$organization"
+"${compose[@]}" up -d --no-deps --no-build --pull never --force-recreate --wait --wait-timeout 120 worker >/dev/null
+NODE_TLS_REJECT_UNAUTHORIZED=1 NODE_USE_ENV_PROXY=0 NODE_EXTRA_CA_CERTS="$(host_path "$scratch/server.crt")" \
+  node --dns-result-order=ipv4first "$(host_path "$verification_dir/check-https-live-board.mjs")" \
+  "$origin" "$(host_path "$scratch/cookies")" "$organization" "$board" "$card" "$user" > "$scratch/live-result.log"
+grep -Fxq 'HTTPS WSS Board passed: Worker-delivered edit, persisted cursor recovery, anonymous/origin refusal, content-free frames and logout withdrawal.' "$scratch/live-result.log"
+cat "$scratch/live-result.log"
+for host in api worker web; do
+  container=$("${compose[@]}" ps -q "$host")
+  test "$(docker inspect --format '{{.Image}}' "$container")" = "${image_ids[$host]}"
+done
 echo 'Assembled HTTPS bundle passed: only TLS published, missing/mismatched key refusal, certificate trust/name verification, HSTS, Secure sign-in, persisted task graph and web restart; original images unchanged.'

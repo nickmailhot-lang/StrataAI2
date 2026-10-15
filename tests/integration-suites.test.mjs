@@ -35,6 +35,11 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['HTTPS transport runtime omitted', value => {value.jobs['release-bundle'].steps=value.jobs['release-bundle'].steps.filter(step=>step.name!=='Prepare Node 24 for HTTPS transport contract');}],
+  ['HTTPS transport runtime skipped', value => {value.jobs['release-bundle'].steps.find(step=>step.name==='Prepare Node 24 for HTTPS transport contract').if='false';}],
+  ['HTTPS transport runtime version changed', value => {value.jobs['release-bundle'].steps.find(step=>step.name==='Prepare Node 24 for HTTPS transport contract').with['node-version']='20';}],
+  ['HTTPS transport runtime moved after its consumer', value => {const steps=value.jobs['release-bundle'].steps;const index=steps.findIndex(step=>step.name==='Prepare Node 24 for HTTPS transport contract');steps.push(...steps.splice(index,1));}],
+  ['HTTPS transport privacy tests omitted', value => {const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify mandatory immutable integration coverage');entry.run=entry.run.replace('node --test tests/https-live-board.test.mjs','');}],
   ['HTTPS gate omitted', value => {value.jobs['release-bundle'].steps=value.jobs['release-bundle'].steps.filter(step=>step.name!=='Verify assembled HTTPS bundle and secure task workflow');}],
   ['HTTPS gate skipped', value => {value.jobs['release-bundle'].steps.find(step=>step.name==='Verify assembled HTTPS bundle and secure task workflow').if='false';}],
   ['HTTPS gate failure ignored', value => {value.jobs['release-bundle'].steps.find(step=>step.name==='Verify assembled HTTPS bundle and secure task workflow')['continue-on-error']=true;}],

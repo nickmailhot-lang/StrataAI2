@@ -84,6 +84,7 @@ jobs:
           node --test tests/integration-suites.test.mjs
           node --test tests/release-bundle-startup.test.mjs
           node --test tests/release-demo-bundle-startup.test.mjs
+          node --test tests/https-live-board.test.mjs
           node --test tests/health-check.test.mjs
 
       - name: Verify complete browser shard coverage
@@ -1558,6 +1559,11 @@ jobs:
       - name: Verify assembled Demo bundle and seeded account without source or SDKs
         timeout-minutes: 6
         run: bash scripts/ci/test-release-demo-bundle-startup.sh bundle
+
+      - name: Prepare Node 24 for HTTPS transport contract
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
 
       - name: Verify assembled HTTPS bundle and secure task workflow
         timeout-minutes: 10
