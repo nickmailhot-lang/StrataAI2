@@ -21,9 +21,8 @@ public static class SecurityRateLimits
                     ? Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds))
                     : 60;
                 rejected.HttpContext.Response.Headers["Retry-After"] = seconds.ToString(CultureInfo.InvariantCulture);
-                rejected.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
-                    .CreateLogger("SecurityRateLimits")
-                    .LogWarning("RATE_LIMIT_TRIGGERED CorrelationId={CorrelationId}", rejected.HttpContext.TraceIdentifier);
+                ApiDiagnostics.Warning(rejected.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>(),
+                    "SecurityRateLimits", "RATE_LIMIT_TRIGGERED CorrelationId={CorrelationId}", rejected.HttpContext.TraceIdentifier);
                 await Results.Problem(
                     statusCode: StatusCodes.Status429TooManyRequests,
                     title: "Too many requests. Please wait and retry.",

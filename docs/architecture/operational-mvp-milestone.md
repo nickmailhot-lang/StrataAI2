@@ -51,6 +51,14 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+The [auth rate-limit diagnostic follow-up](api-error-contract-verification.md#rate-limit-diagnostic-creation-and-writing-failures--2026-10-15)
+preserves 429 and its retry hint when optional logger creation or writing fails.
+Eight regressions fail before the repair, including two actual HTTP 500s; all
+17 selected new/existing cases pass afterward. Quotas, authorization and response
+contracts remain unchanged. The solution builds cleanly, frozen inputs match
+and owned cleanup restores Docker inventory. Current immutable CI and deployed
+acceptance remain required; PRD-02 stays open at 16% estimated work remaining.
+
 The [List rename opening](../list-rename-persistence.md#observe-the-rename-editor-before-composing--2026-10-15)
 and [live member-removal recovery admission](organization-member-administration.md#observe-original-removal-request-admission--2026-10-15)
 follow-ups address two retained CI interaction failures without changing product

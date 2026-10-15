@@ -10,6 +10,13 @@ internal static class ApiDiagnostics
         catch (Exception) { }
     }
 
+    public static void Warning(ILoggerFactory factory, string category, string message, params object?[] values)
+    {
+        // Creating a category logger can invoke an optional provider too.
+        try { factory.CreateLogger(category).LogWarning(message, values); }
+        catch (Exception) { }
+    }
+
     public static void Error(ILogger logger, EventId id, string message, params object?[] values)
     {
         try { logger.LogError(id, message, values); }

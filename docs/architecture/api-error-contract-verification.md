@@ -112,6 +112,43 @@ deployed logging and the remaining PRD/architecture acceptance remain required.
 See [the guard](../../src/StrataAI.Api/ApiDiagnostics.cs) and
 [regressions](../../tests/StrataAI.Api.Tests/ApiMiddlewareLoggingTests.cs).
 
+## Rate-limit diagnostic creation and writing failures — 2026-10-15
+
+The rate-limit rejection callback now guards both category logger creation and
+its warning write. Previously either optional provider failure escaped into
+the unexpected-error middleware and replaced the intended 429 with a 500.
+The API-local guard preserves `rate_limit_exceeded`, the safe public message,
+correlation reference and `Retry-After`. The category, warning level, structured
+template and correlation field remain unchanged; provider failures are not
+logged recursively. Limit configuration, partition keys, windows, lease handling
+and response generation are unchanged.
+
+The new regression class runs **12** cases. The unchanged baseline fails **eight**
+and passes four in **10.115 seconds**; both throwing-provider HTTP cases reproduce
+500 instead of 429. After repair all **12 pass in 9.968 seconds**. Nine callback
+cases cover healthy/throwing logger creation/writing, absent retry metadata,
+fractional rounding and the one-second floor. Three actual HTTP-host cases use
+the supported minimum configured auth quota of ten: ten sequential failed logins
+are admitted, the next two are both rejected with the original safe 429 contract,
+and an unrelated health request still succeeds. Sink/category call counts and
+structured private-content exclusion are asserted. This is a small functional
+fixture, not throughput, capacity or load testing; production defaults are unchanged.
+
+The existing five middleware HTTP cases also pass in **10.649 seconds**, retaining
+unexpected-error, role/schema and CSRF responses with throwing providers:
+**17 selected cases** across two final invocations, not the full source suite.
+The full solution builds with zero warnings/errors. Each invocation matches all
+**923 captured source inputs** and compiled binary hashes, and restores original
+Docker inventory after removing its test container. Current compiled assemblies
+run with read-only source/test mounts and network disabled in the retained Linux
+.NET runtime; the actual HTTP host uses controlled Demo persistence. No original
+database, managed provider, image build/download/import or large load is used.
+
+As with the preceding guard, blocking providers and framework-internal calls
+remain outside this exception boundary. Complete current immutable CI and
+deployed logging remain required. See [the callback](../../src/StrataAI.Api/Auth/SecurityRateLimits.cs)
+and [callback/HTTP regressions](../../tests/StrataAI.Api.Tests/RateLimitLoggingTests.cs).
+
 ## Full hosted source verification for the reliability checkpoint
 
 [CI run 38287805799](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38287805799)

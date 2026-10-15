@@ -6,6 +6,24 @@ below record their historical evidence scope.
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
+## Auth rate-limit response under diagnostic failure (2026-10-15)
+
+The [rate-limit diagnostic guard](api-error-contract-verification.md#rate-limit-diagnostic-creation-and-writing-failures--2026-10-15)
+preserves the existing 429/refusal contract when logger creation or writing
+throws. Both real HTTP baseline cases return 500 before the repair; after it,
+all 12 new callback/HTTP cases and five existing middleware HTTP cases pass.
+The small isolated auth fixture admits ten sequential failed logins, refuses
+the next two, retains the retry hint and safe correlated code/message, and
+keeps unrelated health available. No identity or submitted/provider/logging
+details enter the response. Production quotas and authorization are unchanged.
+
+The solution builds cleanly, frozen source/binary inputs match and Docker
+inventory is restored after owned cleanup. This uses current compiled-source
+HTTP hosting with controlled Demo persistence, not current immutable release or
+managed-provider certification. Current full CI and remaining PRD acceptance
+remain required. Estimated PRD-02 work remaining stays **16%**, a planning
+estimate; large load testing remains deferred until after the operational MVP.
+
 ## Configuration history and Activity date preferences (2026-10-15)
 
 The consumer audit finds two existing administrator views rendering raw source
