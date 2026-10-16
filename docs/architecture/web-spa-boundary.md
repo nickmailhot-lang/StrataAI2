@@ -19,6 +19,15 @@ change. This local proxy result does not certify all current release routing.
 
 ## Query and cache decision
 
+The [browser-origin transport repair](browser-security.md#browser-origin-interpretation-and-redirect-fencing--2026-10-15)
+checks the parsed origin before sending and enforces browser same-origin mode
+after caller options. Seven regressions fail before repair; all 348 selected
+API/auth/route tests pass afterward. Both compiled sign-in redirect cases
+reproduce an outbound synthetic POST before repair and prevent it afterward,
+independently of CSP. Current immutable/full CI and the remaining architecture
+requirements still govern closure; no new framework, global state or service
+is introduced.
+
 Surface admission retains an already admitted feature tree while a transient
 access read is unavailable, but hides its entire surface from display and the
 accessibility tree. Fresh successful admission reveals that same tree, preserving

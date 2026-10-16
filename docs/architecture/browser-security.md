@@ -46,6 +46,53 @@ and authentication/invitation coverage for SEC-FR-010. PRD-24 remains incomplete
 future upload/mention/public-share limits, file security, public response review
 and broader threat/authorization coverage remain required.
 
+## Browser origin interpretation and redirect fencing — 2026-10-15
+
+The shared [API transport](../../apps/web/src/api/apiFetch.ts) now validates the
+browser's parsed URL origin as well as the leading slash. The previous check
+accepts slash/backslash and slash/control-character/slash strings that resolve
+to an external authority. Four regressions require refusal with the existing
+fixed message before fetch is called. Invalid URL parsing also fails closed.
+
+Every request additionally enforces `mode: 'same-origin'` after caller options,
+so callers cannot select `cors`/`no-cors` to weaken the boundary. This also fences
+cross-origin redirects and resolution against a changed document base. Normal
+paths/query strings, credentials, bodies, cancellation, expected-account headers,
+the mutation CSRF header and Problem normalization retain their contracts.
+The [browser request-mode contract](https://developer.mozilla.org/en-US/docs/Web/API/Request/mode)
+documents rejection of another origin in this mode.
+
+All **seven new regressions fail before repair**; the other five original
+transport cases pass. After repair all **348 selected tests in 22 API, auth and
+route files** pass, including all 12 transport cases. Web TypeScript, targeted
+lint and the production Vite build pass. The existing bundle-size warning
+remains; no size threshold is relaxed.
+
+An independent actual Chromium fixture serves the compiled production sign-in
+screen from one local HTTP origin and redirects its POST with 307 and 308 to a
+second local origin. **Before repair, each case forwards one synthetic sign-in
+POST to that second origin. After repair, both cases keep exactly one original
+POST and zero second-origin POSTs**, with the existing explicit retry message.
+The fixture deliberately omits release CSP and permits CORS to isolate the
+transport's own protection. This does not reproduce an exploited deployed
+configuration: the release CSP provides an additional same-origin boundary.
+No real account, external destination or backend authorization is involved.
+
+Both native executions retain all **362 captured frontend source/output files**
+unchanged, and close their owned browser contexts and both local HTTP servers.
+The locally built metadata identifies parent `0ad6b3d7`, version `0.1.0-1736`;
+this is compiled-screen transport evidence rather than a current immutable-image
+release or full application acceptance. No application backend, database or
+container starts; no image is built, pulled or imported. No external email is
+sent, and the original database/local Demo are
+unused. These are tiny functional fixtures, not deferred large-load tests.
+
+Mandatory web unit CI includes these regressions. Current exact-commit/full CI,
+wider authorization/privacy review and the remaining requirements still govern
+closure. **PRD-24 remains open at 35% estimated work remaining** (planning
+estimate covering the full security ticket, not a failed-test percentage).
+ARCH-02 and the operational MVP remain open.
+
 # Release response headers
 
 The web image supplies CSP on HTML, proxied API responses and edge errors, plus

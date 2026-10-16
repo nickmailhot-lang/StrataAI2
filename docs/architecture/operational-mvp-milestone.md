@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [browser-origin transport repair](browser-security.md#browser-origin-interpretation-and-redirect-fencing--2026-10-15)
+rejects paths that the browser resolves to another origin and enforces
+same-origin fetch mode despite caller options. Seven new regressions fail before
+repair; all 348 selected API/auth/route tests pass afterward. Actual compiled
+sign-in 307/308 redirect cases forward synthetic bodies before repair and block
+both second-origin POSTs afterward, in an isolated fixture without release CSP.
+All 362 captured frontend inputs/output files match and owned browsers/servers
+close. Typecheck, targeted lint and build pass. Current immutable/full CI and
+full security/architecture acceptance remain required; no large-load test runs.
+
 The [durable provider-conflict contract](identity-email.md#durable-conflict-recovery--2026-10-15)
 now passes with actual PostgreSQL and a separate Worker: duplicate neutral
 recovery requests publish one intent, HTTP 409 leaves it pending with normal
