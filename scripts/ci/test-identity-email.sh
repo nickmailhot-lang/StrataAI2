@@ -8,6 +8,11 @@ gate_pid=''
 request_pid=''
 recovery_pids=()
 cleanup() {
+  if [ "${mail_conflict_owned:-0}" = 1 ]; then
+    if curl --max-time 5 --fail --silent "$fixture/health" | jq -e --arg instance "$STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE" '.ready==true and .instance==$instance' >/dev/null; then
+      curl --max-time 5 --silent -H 'Content-Type: application/json' -d '{"conflict":false}' "$fixture/control" >/dev/null 2>&1 || true
+    fi
+  fi
   if [ "${core_mail_outage_owned:-0}" = 1 ]; then
     curl --max-time 5 --silent -H 'Content-Type: application/json' -d '{"outage":false}' "$fixture/control" >/dev/null 2>&1 || true
   fi
@@ -690,6 +695,7 @@ core_mail_process_identity() {
   done
 }
 source scripts/ci/core-mail-outage.inc.sh
+source scripts/ci/identity-mail-conflict.inc.sh
 "${compose[@]}" up -d --wait --wait-timeout 180 api worker >/dev/null; signup_closed=false
 echo 'Exact-image Board invitation mail: both roles, public signed issuance, sibling publication rollback, actual scoped Worker/provider delivery, verified proof review/discovery and explicit grants passed.'
 echo 'Exact-image invitation mail: atomic invitation/job/snapshot/audit/receipt rollback, keyed single publication, reference-only metadata, separate scoped Worker delivery, provider lost-acknowledgment idempotency, SENT completion recovery and no stored bearer passed.'

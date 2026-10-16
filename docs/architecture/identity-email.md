@@ -164,6 +164,57 @@ remaining acceptance still govern closure. PRD-02 remains at **16%** and PRD-60
 at **18% estimated work remaining**; ARCH-07/08 and MVP stay open. No large-load
 test runs.
 
+### Durable conflict recovery — 2026-10-15
+
+The normal exact-image identity stage now runs a
+[durable conflict contract](../../scripts/ci/identity-mail-conflict.inc.sh)
+after the core outage scenario and before restoring the profile. It admits the
+expected Production API revision, this fixture's provider instance and the
+actually verified owner before changing controls. Duplicate keyed public
+password-recovery requests must return the same neutral 202 acknowledgment and
+publish exactly one new reset-delivery intent.
+
+The isolated provider holds HTTP 409 responses until the separate Worker has
+actually decided to retry. PostgreSQL must show `PENDING`, a future retry time,
+the fixed unavailable code, no receipt and cleared worker/lease fields. The
+provider records the original key without a delivery effect; readiness and the
+owner's session remain available. On recovery, existing lost-ack behavior first
+accepts one effect with 503 and then returns its receipt on the next attempt.
+The contract requires terminal `SENT`, at least three claims, the matching
+provider receipt, cleared error/lease fields and exactly one intent/effect.
+The provider refuses any changed payload for a previously conflicted key, and
+the contract requires zero such mismatches. API/Worker identities and start
+times remain unchanged. No retry timestamp, expiry, lease, attempt limit or
+production backoff is edited to make this pass.
+
+The complete native setup/scenario/cleanup passes in **153.164 seconds** against
+fresh PostgreSQL **17.11**, all **149 migrations**, canonical restricted runtime
+roles and strict verified-email policy. Owner registration, Worker-delivered
+verification, proof consumption and login use actual HTTP interfaces. The reset
+job finishes on its **third claim**. All **718 captured source/database/fixture
+inputs and 71 API/Worker binary files** match after execution. Both runtime
+metadata records identify `74b74d687467872265cbe1025ff18b12b2de1984`,
+version `0.1.0-1736`. Cached images provide runtimes with locally compiled outputs
+mounted read-only; this is not a current immutable-release certification.
+
+Owned API/Worker/PostgreSQL containers, network, provider thread/socket and an
+empty temporary directory are removed, restoring the original Docker inventory.
+No image is built/pulled/imported, no external email is sent and the original
+database/local Demo are unused. All **seven provider-fixture cases**, **nine
+admission/caller cases** (including six conflict-target refusal subcases) and
+**277 CI guards** pass; shell syntax and workflow lint pass. The first local
+admission invocation lacks the pinned `jq` path and stops at an early guard;
+the correctly configured final invocation passes all nine cases. The controls
+remain source-only CI tools rather than production provider controls.
+
+This durable runtime contract covers **password recovery**. Verification and
+invitation conflict recovery retain their composed adapter/processor tests
+above; they are not claimed as executed durable conflict cases here. Current
+exact-image/full CI, managed-provider delivery and complete acceptance remain
+required. PRD-02 stays open at **16% estimated work remaining**, PRD-60 at **18%**;
+ARCH-07/08 and MVP stay open. These few functional requests and bounded retry
+observations do not run deferred large-load testing.
+
 ### Provider response admission — 2026-10-15
 
 The previous adapter uses the default buffered `HttpClient.SendAsync` overload.

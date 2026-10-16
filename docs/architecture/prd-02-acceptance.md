@@ -1,5 +1,14 @@
 # Authentication acceptance map — PRD-02
 
+The [durable password-recovery conflict contract](identity-email.md#durable-conflict-recovery--2026-10-15)
+passes on fresh PostgreSQL/149 migrations with strict real verification and the
+separate Worker. An observed provider 409 leaves one intent pending with normal
+backoff; recovery reaches the matching `SENT` receipt on claim three, preserving
+session/readiness and process identity. Owned cleanup and frozen-input checks
+pass. CI now requires this phase; current immutable/full CI and the rest of
+PRD-02 remain outstanding, at **16% estimated work remaining**. No large-load
+test runs.
+
 The [provider conflict recovery record](identity-email.md#provider-conflict-recovery--2026-10-15)
 documents a reproduced permanent-failure bug for HTTP 409 in-flight delivery.
 Six new cases fail before repair; all 68 focused adapter/identity/invitation

@@ -10,6 +10,8 @@ lock = threading.Lock()
 reject_next = False
 outage = False
 outage_attempts = {}
+conflict = False
+conflict_attempts = {}
 instance = os.environ.get("STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE", uuid.uuid4().hex)
 
 
@@ -35,10 +37,15 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/messages":
             with lock:
                 return self.respond(200, list(messages.values()))
+        if self.path == "/conflicts":
+            with lock:
+                return self.respond(200, {"active": conflict, "attempts": [
+                    {"key": key, "attempts": entry["attempts"], "mismatches": entry["mismatches"]}
+                    for key, entry in conflict_attempts.items()]})
         self.respond(404, {})
 
     def do_POST(self):
-        global reject_next, outage
+        global reject_next, outage, conflict
         # JsonContent streams HTTP/1.1 requests using chunked transfer. Decode
         # that framing as well as fixed-length requests, with the same bound.
         try:
@@ -73,12 +80,14 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, EOFError):
             return self.respond(400, {})
         if self.path == "/control":
-            if set(data) - {"reject_next", "outage"} or any(type(value) is not bool for value in data.values()):
+            if set(data) - {"reject_next", "outage", "conflict"} or any(type(value) is not bool for value in data.values()):
                 return self.respond(400, {})
             with lock:
                 reject_next = bool(data.get("reject_next"))
                 if "outage" in data:
                     outage = data["outage"]
+                if "conflict" in data:
+                    conflict = data["conflict"]
                 return self.respond(200, {"outage": outage})
         if self.path != "/emails":
             return self.respond(404, {})
@@ -88,6 +97,13 @@ class Handler(BaseHTTPRequestHandler):
         if not key or not all(recipient.endswith("@example.test") for recipient in data.get("to", [])):
             return self.respond(400, {})
         with lock:
+            if key in conflict_attempts and conflict_attempts[key]["payload"] != data:
+                conflict_attempts[key]["mismatches"] += 1
+                return self.respond(409, {"name": "invalid_idempotent_request"})
+            if conflict:
+                entry = conflict_attempts.setdefault(key, {"payload": data, "attempts": 0, "mismatches": 0})
+                entry["attempts"] += 1
+                return self.respond(409, {"name": "concurrent_idempotent_requests"})
             if outage:
                 outage_attempts[key] = outage_attempts.get(key, 0) + 1
                 return self.respond(503, {"message": "controlled fixture outage"})

@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [durable provider-conflict contract](identity-email.md#durable-conflict-recovery--2026-10-15)
+now passes with actual PostgreSQL and a separate Worker: duplicate neutral
+recovery requests publish one intent, HTTP 409 leaves it pending with normal
+future backoff, and lost-ack recovery reaches `SENT` on the third claim with one
+effect/receipt and cleared lease/error. API/Worker identities remain unchanged.
+The full 153.164-second setup/cleanup preserves all 718 source/71 binary inputs
+and restores Docker inventory. Seven fixture cases, nine admission/caller cases
+and 277 CI guards pass. CI requires the phase before profile restoration.
+Current immutable/full CI and wider provider acceptance remain required;
+large-load tests remain deferred until after MVP.
+
 The [provider conflict repair](identity-email.md#provider-conflict-recovery--2026-10-15)
 preserves queued verification, reset and invitation delivery when an earlier
 same-key provider request is still in progress. Six regressions fail before

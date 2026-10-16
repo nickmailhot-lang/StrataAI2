@@ -61,7 +61,7 @@ class IdentityProviderFixtureTests(unittest.TestCase):
 
     def test_invalid_controls_preserve_the_current_outage(self):
         self.request('/control', {'outage': True})
-        for data in [{'outage': 'false'}, {'outage': None}, {'unknown': False}, {'reject_next': 1}]:
+        for data in [{'outage': 'false'}, {'outage': None}, {'unknown': False}, {'reject_next': 1}, {'conflict': 'false'}]:
             with self.subTest(data=data):
                 self.assertEqual(self.request('/control', data)[0], 400)
                 self.assertTrue(self.request('/outage')[1]['active'])
@@ -72,6 +72,30 @@ class IdentityProviderFixtureTests(unittest.TestCase):
         self.assertEqual(self.request('/messages')[1], [])
         self.assertEqual(self.send()[0], 503)
         self.assertEqual(self.send()[0], 200)
+
+    def test_conflict_has_no_effect_and_recovers_with_original_key_and_payload(self):
+        self.request('/control', {'conflict': True})
+        self.assertEqual(self.send(), (409, {'name': 'concurrent_idempotent_requests'}))
+        self.assertEqual(self.send()[0], 409)
+        self.assertEqual(self.request('/messages')[1], [])
+        state = self.request('/conflicts')[1]
+        self.assertEqual(state, {'active': True, 'attempts': [
+            {'key': 'strataai-identity/reset/fixture', 'attempts': 2, 'mismatches': 0}]})
+        self.assertNotIn('payload', json.dumps(state))
+        self.request('/control', {'conflict': False})
+        self.assertEqual(self.send()[0], 503)
+        self.assertEqual(self.send()[0], 200)
+        self.assertEqual(len(self.request('/messages')[1]), 1)
+
+    def test_conflict_does_not_bypass_authentication_or_accept_changed_payload(self):
+        self.request('/control', {'conflict': True})
+        self.assertEqual(self.send(authorized=False)[0], 401)
+        self.assertEqual(self.request('/conflicts')[1]['attempts'], [])
+        self.assertEqual(self.send()[0], 409)
+        self.request('/control', {'conflict': False})
+        self.assertEqual(self.request('/emails', {'to': ['recipient@example.test'], 'text': 'changed'})[0], 409)
+        self.assertEqual(self.request('/conflicts')[1]['attempts'][0]['mismatches'], 1)
+        self.assertEqual(self.request('/messages')[1], [])
 
 
 if __name__ == '__main__':
