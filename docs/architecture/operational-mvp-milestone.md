@@ -4,6 +4,18 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [completed invitation receipt repair](invitation-recipient-events.md#completed-invitation-acknowledgment-recovery-2026-10-16)
+withdraws stale navigation while preserving generic explicit original-ID recovery
+after a completed acceptance. Seven reproduced component failures become passes;
+all 106 related cases, web/browser types, lint and 289 CI guards pass. The former
+hosted Internal/account-before scenario and the complete 18-case desktop/phone
+Internal/Portal/Board account file pass on fresh restricted PostgreSQL with the
+real Worker. Original history, receipt, privacy, keyboard and Axe assertions
+remain; captured inputs match and owned cleanup restores Docker inventory.
+Current immutable-image/full CI and managed-provider acceptance remain pending.
+No automatic acceptance replay or stale link retention is introduced. PRD-60 and
+the milestone stay open, and large-load tests remain deferred.
+
 The [Board-background opening follow-up](../board-background-images.md#board-background-review-read-admission-2026-10-16)
 observes the actual read-only candidate before continuing after a retained phone
 opening that starts no review read. All original image consent, receipt, copy,

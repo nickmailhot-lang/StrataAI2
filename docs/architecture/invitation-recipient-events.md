@@ -12,6 +12,65 @@ implement account-bound recipient replay and protected SignalR transport. The
 invitations page consumes it for actual invitation transitions; broader authority
 invalidation and native acceptance evidence remain incomplete.
 
+## Completed invitation acknowledgment recovery (2026-10-16)
+
+Retained [full-shard job 117009045494](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38858889512/job/117009045494)
+at `2ada97db` passes 99 cases and fails the Internal/account-before desktop
+case after successful acceptance: its source update withdraws the Open
+organization link and discovery finds no pending invitations. Withdrawal is
+required, but completed acceptance also loses its explicit recovery identity.
+The user cannot confirm that original receipt from the page afterward.
+
+Seven controlled regressions fail before repair: change/reset/reconnect/outage
+and manual refresh after a completed Portal acknowledgment, plus Internal and
+Board destination recovery. The page now retires the navigation link while
+transferring its completed invitation into the existing generic recovery panel.
+No old name, role or destination is displayed during readmission. The original
+account must pass fresh protected discovery before retry becomes available;
+only an explicit same-ID acceptance requests its original receipt again.
+Automatic reads never POST. Starting another acceptance retires the previous
+completed navigation normally; account replacement clears recovery and returns
+to sign-in. Receipt refusal removes recovery rather than restoring a stale link.
+
+All 106 cases in the four related page/live/clock/telemetry files pass, including
+the seven regressions and three new replacement/outage/revoked-receipt controls.
+Web/browser types, zero-warning lint and 289 CI integration guards pass.
+The native account-before branch now passively observes original SignalR
+`INVITATION_ACCEPTED` frames newer than this invitation's creation, excluding
+earlier Board enrollment. It requires actual link withdrawal and fresh
+readmission, exactly one original acceptance before explicit recovery, exactly
+two matching browser acceptance requests afterward, the existing direct original
+receipt-equality check, matching acknowledgments and the final
+destination link. Component cases deliberately schedule invalidation after a
+displayed acknowledgment; native cases observe actual server delivery order.
+Wrong-account refusal, replacement/unavailable checks,
+history identity, accessibility and the original 120-second deadline remain.
+No server frame is intercepted, fabricated or replayed by this observer.
+
+The formerly failing Internal/account-before desktop case passes locally in
+32,745.685 ms against fresh restricted PostgreSQL 17.11/pgvector and a separate
+Worker. Its 1,286 captured source inputs, 71 binaries and four served production
+assets match, API/Worker processes stay unchanged, and owned cleanup restores
+Docker inventory and removes the 3,323-byte temporary folder. This uses current
+compiled assemblies in cached runtimes (metadata `e88c6514`), optional account
+verification and a controlled mail provider; it does not certify current
+immutable images or strict managed delivery.
+
+The final complete account file passes **18/18 in 530,888.465 ms**, one attempt
+per case, zero failures/flaky results/skips/report errors. All Internal, Portal
+and Board surfaces pass before-command replacement, post-command replacement
+and unavailable-account recovery at both desktop and phone widths. Original
+history identity/receipt equality, scope-withdrawal, keyboard and tagged Axe
+assertions remain required. No case or deadline is removed. All 1,286 captured
+source inputs, 71 binary files and four served assets match; API and Worker
+processes remain unchanged. Independent checks confirm all 18 single-attempt
+passes, matching final inputs and zero owned containers/networks. Cleanup
+restores Docker inventory and removes the owned 3,320-byte temporary folder.
+Current immutable-image/full CI and managed-provider acceptance remain separate.
+PRD-60 remains open at **18% estimated work remaining**, unchanged
+planning estimate; full current CI and remaining acceptance still govern closure.
+No original database, image build/pull/import/download or large-load test is used.
+
 ## Executed edge transport repair
 
 Release CI run `37674465017` failed all four Demo recipient lifecycle browser

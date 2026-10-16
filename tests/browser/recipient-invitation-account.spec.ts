@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { focusAdmittedControl } from './keyboardAdmission';
 
 for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'BOARD']) for (const fault of ['before', 'replacement', 'unavailable']) {
   test(`PRD-60-TC-06/07/11/12: recipient ${surface} acceptance rechecks account ${fault} at ${width}px`, async ({ page, context, browser }) => {
@@ -32,6 +33,25 @@ for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'B
       expect(issued.status()).toBe(201); const id = (await issued.json()).id;
       const path = `/me/invitations/${id}/accept`; const writes: string[] = [];
       let acknowledgment: unknown; let profileUnavailable = false;
+      let acceptedEventAt = -Infinity;
+      // Observe original server frames without intercepting or replaying them.
+      // Creation time excludes the earlier Board-enrollment acceptance.
+      page.on('websocket', socket => {
+        if (new URL(socket.url()).pathname !== '/invitations/live') return;
+        socket.on('framereceived', frame => {
+          if (typeof frame.payload !== 'string') return;
+          for (const part of frame.payload.split('\u001e').filter(Boolean)) {
+            try {
+              const value = JSON.parse(part);
+              if (value.type !== 2 || !Array.isArray(value.item?.events)) continue;
+              for (const event of value.item.events) if (event.eventType === 'INVITATION_ACCEPTED' && typeof event.createdAt === 'string') {
+                const time = Date.parse(event.createdAt);
+                if (Number.isFinite(time)) acceptedEventAt = Math.max(acceptedEventAt, time);
+              }
+            } catch { /* Handshake and non-source frames are not acceptance. */ }
+          }
+        });
+      });
       await page.route(url => url.pathname === '/me', async route => {
         if (!profileUnavailable) { await route.continue(); return; }
         profileUnavailable = false;
@@ -72,8 +92,15 @@ for (const width of [1280, 390]) for (const surface of ['INTERNAL', 'PORTAL', 'B
         if (fault === 'before') {
           await expect(accept).toBeVisible(); expect(writes).toHaveLength(0);
           await accept.focus(); await accept.press('Enter');
-          await expect(page.getByRole('link', { name: surface === 'PORTAL' ? 'Open Owner Portal' : board ? 'Open Board' : 'Open organization', exact: true })).toBeVisible();
+          await expect.poll(() => acceptedEventAt).toBeGreaterThanOrEqual(Date.parse(row.createdAt));
+          await expect(page.getByRole('status')).toHaveText('Invitations changed. Checking current invitations.');
+          await expect(page.getByRole('progressbar', { name: 'Loading invitation request' })).toHaveCount(0);
           expect(writes).toHaveLength(1);
+          await expect(page.getByRole('link', { name: /^Open / })).toHaveCount(0);
+          const recovery = page.getByRole('button', { name: 'Retry invitation acceptance' });
+          await focusAdmittedControl(recovery); await recovery.press('Enter');
+          await expect(page.getByRole('link', { name: surface === 'PORTAL' ? 'Open Owner Portal' : board ? 'Open Board' : 'Open organization', exact: true })).toBeVisible();
+          expect(writes).toHaveLength(2); expect(writes[1]).toBe(writes[0]);
         } else {
           await expect(page.getByText('No pending invitations on this page.', { exact: true })).toBeVisible();
           expect(writes).toHaveLength(1);

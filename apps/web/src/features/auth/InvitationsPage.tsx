@@ -64,8 +64,17 @@ export function InvitationsPage() {
   function setError(message?: string, reference: string | null = null) {
     setFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
   }
-  const [accepted, setAccepted] = useState<Invitation>();
+  const [accepted, setAcceptedState] = useState<Invitation>();
   const [uncertain, setUncertain] = useState<Invitation>();
+  const acceptedReceipt = useRef<Invitation | undefined>(undefined);
+  function setAccepted(value: Invitation | undefined) { acceptedReceipt.current = value; setAcceptedState(value); }
+  function withdrawAcceptedForRead() {
+    const completed = acceptedReceipt.current;
+    // A source update withdraws navigation, not the explicit recovery identity
+    // of an already submitted acceptance. Never replay it automatically.
+    if (completed) setUncertain(previous => previous ?? completed);
+    setAccepted(undefined);
+  }
   const current = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(true);
   const reviewedActor = useRef<string | undefined>(undefined);
@@ -110,7 +119,7 @@ export function InvitationsPage() {
     const deadline = setTimeout(() => controller.abort(), Math.max(0, remaining));
     if (remaining <= 0) controller.abort();
     const started = epoch.current;
-    setBusy(true); setError(undefined); setPage(undefined); setAccepted(undefined); setAccountReady(false);
+    setBusy(true); setError(undefined); setPage(undefined); withdrawAcceptedForRead(); setAccountReady(false);
     try {
       controller.signal.throwIfAborted();
       const actor = captured?.actor ?? await verifyAccount(controller, reviewedActor.current);
@@ -192,7 +201,7 @@ export function InvitationsPage() {
     if (document.activeElement?.closest('[data-invitation-disclosure]')) refreshButton.current?.focus();
     epoch.current++; refreshQueued.current = true;
     setError(undefined);
-    setPage(undefined); setAccepted(undefined); setAccountReady(false);
+    setPage(undefined); withdrawAcceptedForRead(); setAccountReady(false);
     setReloadVersion(value => value + 1);
   }
   useEffect(() => {
