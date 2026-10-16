@@ -51,6 +51,54 @@ present and whose `updated_at` is absent. Purge/deletion permissions and all
 publication paths still need their owning-history audit; a trigger name or this
 one refusal rule cannot establish complete attachment acceptance.
 
+## Organization immutable facts and mutable owners — 2026-10-15
+
+Three physical-column candidates have now been traced through their current
+writers, source clocks, readers and installed mutation guards:
+
+| Relation | Owning write and creation fact | Mutable counterpart |
+| --- | --- | --- |
+| `organization_board_events` | [Migration 073](../../db/migrations/073_organization_board_journal.sql) backfills canonical Work-event IDs and appends new entries through the source trigger. The composite tenant/event FK and [reader join](../../src/StrataAI.Infrastructure/WorkManagement/PostgresOrganizationBoardEventReader.cs) preserve the Work event's `created_at`; its publication readiness remains on that source. The history guard rejects every UPDATE/DELETE. | `organization_board_event_streams` owns the sequence counter and its separate creation/update clocks. A routing tuple does not become mutable when its source's readiness changes. |
+| `organization_deletion_requests` | [The publisher](../../src/StrataAI.Infrastructure/Organizations/PostgresOrganizationDeletionJobPublisher.cs) inserts one accepted request with its existing `created_at`, progress and job in the owning transaction. Its existing-request branch verifies the original request/actor/version/progress/job instead of rewriting the request. [Migration 088](../../db/migrations/088_organization_deletion_progress.sql) rejects every UPDATE/DELETE before parent/membership checks. | Organization lifecycle and `organization_deletion_progress` advance independently. [The observation reader](../../src/StrataAI.Infrastructure/Organizations/PostgresOrganizationDeletionObservationReader.cs) derives completion from the matching Organization/progress/lifecycle source. [Migration 124](../../db/migrations/124_organization_deletion_progress_clocks.sql) governs progress audit clocks. |
+| `organization_deletion_steps` | `apply_organization_deletion_page` in [migration 092](../../db/migrations/092_organization_deletion_pages.sql) inserts a completed page receipt with its original `completed_at` effect time, then advances progress and publishes the next job under the lease fence. Its history guard rejects every UPDATE/DELETE. | The progress cursor/phase/version and job lease/state change; the completed step receipt remains a fact. |
+
+The [mandatory deletion-surface driver](../../scripts/ci/test-organization-deletion-surfaces.sh)
+now checks no-op UPDATE, changed UPDATE and DELETE for all three relations after
+each existing completed-workflow scenario. It requires nonempty targets, each
+guard's exact SQLSTATE/message and unchanged complete target rows after every
+refusal. Unexpected success or a different error fails the batch. Existing
+visibility, retirement, audit, notification, source, retry and Worker assertions
+remain active; no capacity stage or runtime permission is relaxed.
+
+The **38.012-second** native verification creates one Organization, Board, List
+and Card through real authenticated HTTP on compiled `d12a6f47` API/Worker,
+using fresh PostgreSQL/all 149 migrations and restricted roles. The request
+row fingerprint remains unchanged through the Owner's `COMPLETED` version-3
+observation. Two Board routing rows join their finite canonical source clocks;
+one request and four completed step facts remain. Nine independent refusal
+probes each preserve a fingerprint of all **114 public base tables**. The exact
+persisted Bash/SQL function then passes its same nine contracts with per-target
+row comparisons and the whole public-table fingerprint unchanged afterward.
+
+All **717 captured source/driver inputs and 71 binary files** match afterward.
+The Release solution builds without warnings/errors, Bash syntax and all **285
+CI coverage guards** pass. Owned containers, volume, network and **6,671 temporary
+bytes** retire, restoring original Docker inventory. Fixture credentials stay in
+child environments; its Compose file contains placeholders and its session stays
+in memory. No existing local database/service, new image build/pull/import,
+external provider or large-load test is used.
+
+The first fixture attempt correctly withholds the Production Secure cookie over
+plain loopback HTTP and stops before Organization creation; its 21.477-second
+failure/cleanup is retained separately. Final verification limits its client
+exception to the exact disposable loopback origin, refuses redirects and confirms
+the cookie remains Secure. Application cookie flags and authorization are
+unchanged. This controlled local IntegrationTest/compiled-runtime evidence does
+not establish public HTTPS, strict verification/mail, the complete original
+deletion-surface matrix or current immutable-image release acceptance. The new
+registered assertions still require full current CI. Other candidates and
+historical provenance remain in the full foundation audit.
+
 ## Nullable-clock review queue
 
 | Relation | Nullable conventional clock fields | Owning migration/source to inspect |

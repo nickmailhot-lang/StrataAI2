@@ -1,5 +1,16 @@
 # PRD-01 foundation acceptance and closure audit
 
+The [Organization immutable-fact classification](schema149-clock-inventory.md#organization-immutable-facts-and-mutable-owners--2026-10-15)
+traces Board-event routing, deletion requests and completed deletion-step receipts
+to their owning writers/source clocks and distinguishes their mutable counters,
+progress and lifecycle. The real one-Card workflow completes; nine independent
+mutation refusals and the exact new mandatory CI function preserve a fingerprint
+covering all 114 public tables. All 717 source/driver inputs and 71 binaries match, and owned
+cleanup restores Docker inventory. The full deletion-surface matrix, remaining
+writer/history audit and current immutable/full CI remain required. Estimated
+PRD-01 work remaining stays **34%**; these three classifications do not exempt
+their mutable counterparts or other candidates from FOUND-FR-009.
+
 The [current schema-149 clock inventory](schema149-clock-inventory.md) refreshes
 the original schema-114 catalog baseline: 114 public base tables, partitioned
 into 50 with both physical clock columns non-null, 57 missing at least one

@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [Organization immutable-fact audit](schema149-clock-inventory.md#organization-immutable-facts-and-mutable-owners--2026-10-15)
+classifies three timestamp candidates through their writers/source clocks and
+adds nine exact no-op/update/delete refusal checks to the existing mandatory
+deletion-surface driver. A one-Card real HTTP/Worker workflow and the persisted
+CI function pass in 38.012 seconds, preserving the accepted request through
+completion and a fingerprint covering all 114 public tables across the guard probes. All
+717 source/driver and 71 binary inputs match; owned cleanup restores Docker
+inventory. This compiled-runtime slice retains full current CI and the complete
+surface/security/legacy-history acceptance requirements. No large-load test runs.
+
 The [code-scanning follow-up](security-test-assertions.md#code-scanning-follow-up--2026-10-15)
 reviews nine current alerts: one verified enum-category false positive is
 individually dismissed, five fixture credential-file writes are removed, and

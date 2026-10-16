@@ -61,6 +61,48 @@ effects() {
  'receipts',(SELECT count(*) FROM work_command_replays WHERE tenant_id='$org'))::text);"
 }
 completed=0
+assert_immutable_clock_facts() {
+ local organization="$1" sql
+ [[ "$organization" =~ ^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$ ]]
+ sql=$(cat <<'SQL'
+DO $clock$
+DECLARE scope uuid:='__CLOCK_ORGANIZATION__'; target record; operation integer;
+ statement text; snapshot_sql text; row_count bigint; original_rows jsonb; current_rows jsonb;
+ caught_state text; caught_message text; verified integer:=0;
+BEGIN
+ FOR target IN SELECT * FROM (VALUES
+  ('organization_board_events','sequence','event_id=gen_random_uuid()','23514','Organization Board event history is immutable'),
+  ('organization_deletion_requests','created_at','created_at=created_at+interval ''1 second''','P0001','Organization deletion requests are immutable'),
+  ('organization_deletion_steps','completed_at','completed_at=completed_at+interval ''1 second''','23514','Organization deletion steps are immutable')
+ ) AS facts(table_name,column_name,changed_set,expected_state,expected_message) LOOP
+  EXECUTE format('SELECT count(*) FROM public.%I WHERE tenant_id=$1',target.table_name) INTO row_count USING scope;
+  IF row_count=0 THEN RAISE EXCEPTION 'Immutable clock fixture has no target rows'; END IF;
+  snapshot_sql:=format('SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text) FROM public.%I t WHERE tenant_id=$1',target.table_name);
+  EXECUTE snapshot_sql INTO original_rows USING scope;
+  FOR operation IN 1..3 LOOP
+   statement:=CASE operation
+    WHEN 1 THEN format('UPDATE public.%I SET %I=%I WHERE tenant_id=$1',target.table_name,target.column_name,target.column_name)
+    WHEN 2 THEN format('UPDATE public.%I SET %s WHERE tenant_id=$1',target.table_name,target.changed_set)
+    ELSE format('DELETE FROM public.%I WHERE tenant_id=$1',target.table_name) END;
+   BEGIN
+    EXECUTE statement USING scope;
+    RAISE EXCEPTION 'Immutable clock refusal was not observed' USING ERRCODE='P0002';
+   EXCEPTION WHEN OTHERS THEN
+    GET STACKED DIAGNOSTICS caught_state=RETURNED_SQLSTATE,caught_message=MESSAGE_TEXT;
+    IF caught_state<>target.expected_state OR caught_message<>target.expected_message THEN RAISE; END IF;
+   END;
+   EXECUTE snapshot_sql INTO current_rows USING scope;
+   IF current_rows IS DISTINCT FROM original_rows THEN RAISE EXCEPTION 'Immutable clock facts changed'; END IF;
+   verified:=verified+1;
+  END LOOP;
+ END LOOP;
+ IF verified<>9 THEN RAISE EXCEPTION 'Immutable clock checks are incomplete'; END IF;
+END $clock$;
+SQL
+)
+ admin "${sql//__CLOCK_ORGANIZATION__/$organization}" >/dev/null
+ echo 'Immutable clock facts passed nine update/delete refusals with original rows preserved.'
+}
 for retirement in logout deactivate; do
 for visibility in PRIVATE ORGANIZATION PUBLIC; do
 for actor in owner recipient; do
@@ -156,6 +198,7 @@ owner=$(cat "$scratch/owner.id"); recipient=$(cat "$scratch/recipient.id")
   AND EXISTS(SELECT 1 FROM cards WHERE tenant_id='$org' AND id='$card' AND archived_at='$archive_at'::timestamptz)
   AND EXISTS(SELECT 1 FROM cards WHERE tenant_id='$org' AND id='$sibling' AND archived_at IS NULL)
   AND (SELECT count(*) FROM notification_events WHERE tenant_id='$org')=2; ")" = t
+ assert_immutable_clock_facts "$org"
  before=$(effects)
  empty_search active; empty_search archived; empty_search archived "$archived_cursor"
  for suffix in '' '/sync?after=0'; do
