@@ -106,7 +106,16 @@ internal sealed class BusinessMeterFactory : IMeterFactory
     public bool Fail { get; set; }
     public BusinessMeterFactory(string area, string fault)
     {
-        Meter = new(area == "organization" ? OrganizationTelemetry.MeterName : BoardSharingTelemetry.MeterName);
+        Meter = new(area switch
+        {
+            "organization" => OrganizationTelemetry.MeterName,
+            "board_sharing" => BoardSharingTelemetry.MeterName,
+            "activity" => ActivityClientTelemetry.MeterName,
+            "checklist" => ChecklistClientTelemetry.MeterName,
+            "http" => StrataAI.Api.HttpServerTelemetry.MeterName,
+            "authentication" => StrataAI.Api.Auth.AuthenticationTelemetry.MeterName,
+            _ => throw new ArgumentOutOfRangeException(nameof(area)),
+        });
         Fail = fault == "factory";
     }
     public Meter Create(MeterOptions options)
@@ -121,7 +130,7 @@ internal sealed class BusinessMeterFactory : IMeterFactory
 internal sealed class BusinessMetricCapture : IDisposable
 {
     private readonly MeterListener listener = new();
-    public List<(string Name, Dictionary<string, object?> Tags)> Samples { get; } = [];
+    public List<(string Name, Dictionary<string, object?> Tags, double Value)> Samples { get; } = [];
     public BusinessMetricCapture(Meter meter, string fault)
     {
         listener.InstrumentPublished = (instrument, observer) =>
@@ -131,14 +140,14 @@ internal sealed class BusinessMetricCapture : IDisposable
                 throw new InvalidOperationException("private-instrument-publication");
             observer.EnableMeasurementEvents(instrument);
         };
-        void Add(Instrument instrument, ReadOnlySpan<KeyValuePair<string, object?>> tags)
+        void Add(Instrument instrument, double value, ReadOnlySpan<KeyValuePair<string, object?>> tags)
         {
-            Samples.Add((instrument.Name, tags.ToArray().ToDictionary(pair => pair.Key, pair => pair.Value)));
+            Samples.Add((instrument.Name, tags.ToArray().ToDictionary(pair => pair.Key, pair => pair.Value), value));
             if (fault.StartsWith("measure_", StringComparison.Ordinal) && instrument.Name.EndsWith("." + fault[8..], StringComparison.Ordinal))
                 throw new InvalidOperationException("private-instrument-measurement");
         }
-        listener.SetMeasurementEventCallback<long>((i, _, tags, _) => Add(i, tags));
-        listener.SetMeasurementEventCallback<double>((i, _, tags, _) => Add(i, tags));
+        listener.SetMeasurementEventCallback<long>((i, value, tags, _) => Add(i, value, tags));
+        listener.SetMeasurementEventCallback<double>((i, value, tags, _) => Add(i, value, tags));
         listener.Start();
     }
     public void Dispose() => listener.Dispose();

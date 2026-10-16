@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [remaining custom API instrument repair](operator-metrics.md#remaining-custom-api-instrument-isolation--2026-10-15)
+extends optional, independent creation/publication/measurement guards to
+Checklist/Activity client observations and HTTP/auth metrics. Seventeen new
+regressions fail before repair; all 34 new and 196 related cases pass afterward.
+Client authentication, input privacy/size limits, empty acknowledgments, health,
+counts and duration units remain intact. All 798 source/test and 415 binary
+inputs match and owned cleanup restores Docker inventory. This completes that
+guard pattern across six custom API recorders, not full ARCH-08 or MVP acceptance.
+Current immutable/full CI remains required; large load tests stay deferred.
+
 The [Organization/Board instrument failure repair](operator-metrics.md#organization-and-board-instrument-failure-isolation--2026-10-15)
 moves optional instrumentation out of service construction and independently
 guards publication and measurement. Twenty-eight new cases reproduce blocked

@@ -14,19 +14,17 @@ public sealed class HttpServerTelemetry(IMeterFactory factory)
     {
         // Neither instrument publication nor an in-process listener may replace
         // an authoritative response or exception. No request content is read.
-        try
-        {
-            var meter = factory.Create(MeterName);
-            requests ??= meter.CreateCounter<long>("strataai.http.server.requests", "{request}");
-            duration ??= meter.CreateHistogram<double>("strataai.http.server.duration", "s");
-            KeyValuePair<string, object?>[] tags = [
-                new("method", method is "GET" or "HEAD" or "POST" or "PUT" or "PATCH" or "DELETE" or "OPTIONS" or "CONNECT" or "TRACE" ? method : "OTHER"),
-                new("status_code", status is >= 100 and <= 599 ? status : 0),
-                new("outcome", outcome is "completed" or "cancelled" ? outcome : "faulted")];
-            try { requests.Add(1, tags); } catch { /* Best-effort listener. */ }
-            try { duration.Record(seconds, tags); } catch { /* Independent best-effort listener. */ }
-        }
-        catch { /* Optional instrumentation cannot change product behavior. */ }
+        Meter meter;
+        try { meter = factory.Create(MeterName); }
+        catch { return; /* Optional instrumentation cannot change product behavior. */ }
+        KeyValuePair<string, object?>[] tags = [
+            new("method", method is "GET" or "HEAD" or "POST" or "PUT" or "PATCH" or "DELETE" or "OPTIONS" or "CONNECT" or "TRACE" ? method : "OTHER"),
+            new("status_code", status is >= 100 and <= 599 ? status : 0),
+            new("outcome", outcome is "completed" or "cancelled" ? outcome : "faulted")];
+        try { (requests ??= meter.CreateCounter<long>("strataai.http.server.requests", "{request}")).Add(1, tags); }
+        catch { /* Best-effort publication and measurement. */ }
+        try { (duration ??= meter.CreateHistogram<double>("strataai.http.server.duration", "s")).Record(seconds, tags); }
+        catch { /* Independent best-effort latency observation. */ }
     }
 }
 

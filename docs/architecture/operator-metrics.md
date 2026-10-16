@@ -9,6 +9,45 @@ The optional [operator alert package](operator-alerts.md) supplies tested warnin
 rules and a private backend example for these measurements. Deployment routing,
 live evaluation and firing/resolved notification tests remain operator work.
 
+## Remaining custom API instrument isolation — 2026-10-15
+
+The follow-up to the Organization/Board repair covers the four other custom API
+recorders: Checklist client observations, Activity client observations, HTTP
+outcomes and authentication outcomes. Checklist/Activity still created optional
+meters or instruments outside guards; HTTP/auth guarded publication in one
+block, so one publication failure could suppress the independent instrument.
+
+Checklist/Activity now defer meter acquisition until validated observations are
+recorded. All four recorders guard each counter/histogram creation, publication
+and measurement independently. Factory failure discards the optional observation;
+a later request can resume recording using the same service. Together with the
+Organization/Board change, all six custom API recorders use this boundary.
+Existing names, units, safe label sets, request outcomes, counts and millisecond
+to second conversion remain intact. No business retry or client-event replay is
+introduced. Client observations remain untrusted aggregates, never business audit.
+
+The baseline fails **17 of 34 new cases**. After repair **all 34 pass**: 24
+two-observation cases across four recorders and six diagnostic conditions, four
+same-service factory-recovery cases and six actual API-test-host HTTP cases.
+The HTTP cases retain anonymous refusal (401), private/invalid input rejection
+(400), accepted empty responses (204), oversized input rejection (413) and
+independent health (200) while the selected client meter factory or instrument
+publication fails. Healthy independent instruments still record both samples
+with the original count/duration values.
+
+All **196 related regression cases** pass: the prior 40 Organization/Board
+diagnostic cases, 58 HTTP/auth telemetry cases, 81 client/privacy/render/rate-limit
+cases, five business HTTP metrics cases and twelve operator/exporter cases.
+This gives **230 distinct focused passes**, with no skips/failures. The Release
+solution builds without warnings/errors. Each native invocation preserves all
+**798 captured source/test inputs and 415 binary files** and restores original
+Docker inventory after retiring owned containers. Cached Linux runtimes mount
+current compiled inputs read-only; API-host persistence remains controlled Demo.
+No database, existing local service, new image build/pull/import, external
+provider/collector or large-load test is used. These are scoped compiled-source
+contracts; exact-commit immutable/full CI, managed deployment and complete ARCH-08
+and MVP acceptance remain required.
+
 ## Organization and Board instrument failure isolation — 2026-10-15
 
 Organization and Board-sharing telemetry previously created their meter and

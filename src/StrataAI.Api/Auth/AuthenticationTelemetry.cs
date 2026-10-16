@@ -24,18 +24,16 @@ public sealed class AuthenticationTelemetry(IMeterFactory factory)
     {
         if (operation is not ("register" or "login" or "password_forgot" or "password_reset"
             or "verification_resend" or "verify_email" or "logout")) return;
-        try
-        {
-            var meter = factory.Create(MeterName);
-            KeyValuePair<string, object?>[] tags = [new("operation", operation),
-                new("status_code", status is >= 100 and <= 599 ? status : 0),
-                new("outcome", outcome is "completed" or "cancelled" ? outcome : "faulted")];
-            requests ??= meter.CreateCounter<long>("strataai.authentication.requests", "{request}");
-            try { requests.Add(1, tags); } catch { /* A listener cannot change the response. */ }
-            duration ??= meter.CreateHistogram<double>("strataai.authentication.duration", "s");
-            try { duration.Record(seconds, tags); } catch { /* Independent best-effort duration. */ }
-        }
-        catch { /* Optional diagnostics cannot change authoritative auth behavior. */ }
+        Meter meter;
+        try { meter = factory.Create(MeterName); }
+        catch { return; /* Optional diagnostics cannot change authoritative auth behavior. */ }
+        KeyValuePair<string, object?>[] tags = [new("operation", operation),
+            new("status_code", status is >= 100 and <= 599 ? status : 0),
+            new("outcome", outcome is "completed" or "cancelled" ? outcome : "faulted")];
+        try { (requests ??= meter.CreateCounter<long>("strataai.authentication.requests", "{request}")).Add(1, tags); }
+        catch { /* Publication/listener failure cannot change the response. */ }
+        try { (duration ??= meter.CreateHistogram<double>("strataai.authentication.duration", "s")).Record(seconds, tags); }
+        catch { /* Independent best-effort latency observation. */ }
     }
 }
 

@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace StrataAI.Api.WorkManagement;
 
 // Client counts are untrusted observations, never immutable business history.
-public sealed class ActivityClientTelemetry
+public sealed class ActivityClientTelemetry(IMeterFactory factory)
 {
     public const string MeterName = "StrataAI.ActivityClient";
     private static readonly HashSet<string> Actions = ["application_root_exception", "application_recovery_exception", "application_event_exception", "application_promise_exception", "application_render", "board_render", "card_render", "board_read", "card_read", "board_disclosure", "card_disclosure",
@@ -17,15 +17,9 @@ public sealed class ActivityClientTelemetry
         "organization_configuration_disclosure", "organization_configuration_read", "organization_configuration_change",
         "organization_configuration_history", "organization_configuration_activity",
         "organization_lifecycle_disclosure", "organization_lifecycle_read", "organization_lifecycle_change"];
-    public Meter Meter { get; }
-    private readonly Counter<long> _events;
-    private readonly Histogram<double> _duration;
-    public ActivityClientTelemetry(IMeterFactory factory)
-    {
-        Meter = factory.Create(MeterName);
-        _events = Meter.CreateCounter<long>("strataai.activity.client.events", "{event}");
-        _duration = Meter.CreateHistogram<double>("strataai.activity.client.duration", "s");
-    }
+    public Meter Meter => factory.Create(MeterName);
+    private Counter<long>? _events;
+    private Histogram<double>? _duration;
     public static IReadOnlyList<ChecklistClientTelemetry.Observation>? Parse(JsonElement root)
     {
         var observations = ChecklistClientTelemetry.Parse(root, Actions);
@@ -35,12 +29,17 @@ public sealed class ActivityClientTelemetry
     }
     public void Record(IReadOnlyList<ChecklistClientTelemetry.Observation> observations)
     {
+        Meter meter;
+        try { meter = Meter; }
+        catch { return; /* Optional observations cannot change client-event admission. */ }
         foreach (var observation in observations)
         {
             KeyValuePair<string, object?>[] tags = [new("action", observation.Action), new("kind", observation.Kind)];
-            try { _events.Add(observation.Count, tags); } catch { /* Operator listeners never affect product behavior. */ }
+            try { (_events ??= meter.CreateCounter<long>("strataai.activity.client.events", "{event}")).Add(observation.Count, tags); }
+            catch { /* Publication/listener failures never affect product behavior. */ }
             if (observation.DurationMs is double duration)
-                try { _duration.Record(duration / 1000, tags); } catch { /* Best effort only. */ }
+                try { (_duration ??= meter.CreateHistogram<double>("strataai.activity.client.duration", "s")).Record(duration / 1000, tags); }
+                catch { /* Independent best-effort latency observation. */ }
         }
     }
 }

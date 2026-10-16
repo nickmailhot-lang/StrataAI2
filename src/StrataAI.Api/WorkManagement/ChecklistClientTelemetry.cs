@@ -8,7 +8,7 @@ namespace StrataAI.Api.WorkManagement;
 public sealed class ChecklistClientTelemetry(IMeterFactory factory)
 {
     public const string MeterName = "StrataAI.ChecklistClient";
-    public Meter Meter { get; } = factory.Create(MeterName);
+    public Meter Meter => factory.Create(MeterName);
     private Counter<long>? _events;
     private Histogram<double>? _duration;
     private static readonly HashSet<string> Actions = ["read", "item_read", "create", "rename", "delete", "position",
@@ -46,14 +46,17 @@ public sealed class ChecklistClientTelemetry(IMeterFactory factory)
     }
     public void Record(IReadOnlyList<Observation> observations)
     {
-        _events ??= Meter.CreateCounter<long>("strataai.checklist.client.events", "{event}");
-        _duration ??= Meter.CreateHistogram<double>("strataai.checklist.client.duration", "s");
+        Meter meter;
+        try { meter = Meter; }
+        catch { return; /* Optional observations cannot change client-event admission. */ }
         foreach (var observation in observations)
         {
             KeyValuePair<string, object?>[] tags = [new("action", observation.Action), new("kind", observation.Kind)];
-            try { _events.Add(observation.Count, tags); } catch { /* Listener failures never affect the product. */ }
+            try { (_events ??= meter.CreateCounter<long>("strataai.checklist.client.events", "{event}")).Add(observation.Count, tags); }
+            catch { /* Publication/listener failures never affect the product. */ }
             if (observation.DurationMs is double duration)
-                try { _duration.Record(duration / 1000, tags); } catch { /* Best-effort operator observations. */ }
+                try { (_duration ??= meter.CreateHistogram<double>("strataai.checklist.client.duration", "s")).Record(duration / 1000, tags); }
+                catch { /* Independent best-effort operator observations. */ }
         }
     }
 }
