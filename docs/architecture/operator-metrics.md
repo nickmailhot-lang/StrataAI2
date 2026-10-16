@@ -1,5 +1,54 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Native Collector and database recovery rehearsal — 2026-10-16
+
+The current compiled API and Worker pass the complete bounded ingestion and
+recovery assertions from [the operator fixture](../../scripts/ci/test-operator-metrics.sh)
+through Nginx, restricted PostgreSQL17.11/schema149 and the actual pinned
+Collector0.161.0. The Collector uses the committed configuration and digest
+from [the optional metrics overlay](../../compose.metrics.yml). This is a
+functional rehearsal with two deliberately non-claimable backlog rows, not a
+capacity or service-objective benchmark.
+
+The private native harness changes only four endpoint literals to disposable
+loopback ports and supplies a Windows UUID adapter for Linux's
+`/proc/sys/kernel/random/uuid`. The fixture's business requests, assertions,
+database stop/start, process identity, row fingerprint, restoration and complete
+export verifier remain intact. API/Worker binaries are mounted read-only in
+cached application runtimes; this does **not** test the current commit's
+immutable application images or source-free startup. Their embedded local
+build revision is `e6e1f4bb`, while the rehearsed source is `ddbeb9f1`.
+
+The fixture exits **0 in 131.113 seconds**. All three original exporter checks
+pass: healthy backlog availability1, actual database outage availability0,
+and recovered availability1. Each executes the complete privacy/build/category/
+histogram verifier, including the six new invitation-history/revocation groups
+and their result durations. Client-event posts here are synthetic ingestion
+contracts; the separate real-browser producer evidence remains necessary.
+
+After the database restart, Worker readiness recovers. API readiness returns
+200 and the **first** account-registration request returns201 without a client
+retry; direct persistence checks require exactly one account and one
+`USER_REGISTERED` event. The original API container ID/start time and both
+backlog-row fingerprints remain unchanged. Worker restoration leaves the
+original cached image running without an Organization scope. All **16 driver
+ordering/refusal/cleanup cases** also pass independently with external-command
+substitutes; those tests are separate from this real Collector/database run.
+
+All **1,284 captured source inputs, 71 runtime binaries, four frontend assets**
+and staged private fixture hashes match. Original Docker inventory is restored
+and **52,156 temporary bytes** removed. The initial platform attempt stops
+before export because Git Bash lacks the Linux UUID source; it also restores
+inventory and removes48,646 temporary bytes. After the passing run, the newly
+downloaded Collector image is removed with no remaining container references;
+the pre-existing four cached images and Demo services are preserved. No
+application image is built, pulled or imported and no large-load test runs.
+
+ARCH-08, ARCH-11 and the operational MVP remain open. Current immutable-image
+CI, retained release provenance, deployment/provider acceptance and remaining
+issue criteria still govern completion. This rehearsal does not establish
+availability, latency objectives, backup/restore schedules or post-MVP capacity.
+
 ## Independent Worker backlog gauges — 2026-10-16
 
 Both Worker backlog observers previously published their count and availability

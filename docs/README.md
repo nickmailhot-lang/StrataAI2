@@ -67,6 +67,8 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Structured API/Worker console logs and support context](architecture/structured-logging.md)
 - [API and Worker operator metrics export (ARCH-08, partial)](architecture/operator-metrics.md)
   includes [independent Worker backlog gauges](architecture/operator-metrics.md#independent-worker-backlog-gauges--2026-10-16) and their publication-failure regressions.
+  The [native Collector recovery rehearsal](architecture/operator-metrics.md#native-collector-and-database-recovery-rehearsal--2026-10-16)
+  verifies complete export, actual database outage/recovery and first-request persistence with cleanup.
 - [Operational MVP alert baselines, deployment checks and isolated delivery verification](architecture/operator-alerts.md)
 - [Core task work during a mail-provider outage: API, desktop and phone](architecture/core-mail-outage.md)
 - [Runtime database roles](architecture/runtime-database-roles.md)

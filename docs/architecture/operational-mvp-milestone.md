@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [native Collector and database recovery rehearsal](operator-metrics.md#native-collector-and-database-recovery-rehearsal--2026-10-16)
+passes all three complete exporter checks through the actual pinned Collector:
+healthy, unavailable and recovered. The first registration after recovery
+persists exactly one account/event pair without a retry or API restart; backlog
+rows remain unchanged. Disposable resources and the newly downloaded Collector
+image are cleaned up. This compiled-host functional evidence supports the
+required immutable-image CI phase; the milestone remains open and large-load
+tests remain disabled until after MVP.
+
 [Invitation history/revocation observations](operator-metrics.md#issued-invitation-history-and-revocation-observations--2026-10-16)
 add fixed private-data-free outcomes without changing account/authority,
 consent, acknowledgment or read-only recovery. All 97 focused web, 34 new/API,
