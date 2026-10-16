@@ -117,6 +117,42 @@ def runtime_check(expected):
         raise ValueError("runtime_not_verified")
 
 
+def running_containers(project, expected_ids):
+    # Read only identity/state/Compose labels. Never capture container config,
+    # environment, mounts, logs, credentials or provider response bodies.
+    def query(args):
+        result = subprocess.run(["docker", *args], capture_output=True, text=True,
+                                encoding="utf-8", timeout=10)
+        if result.returncode or len(result.stdout) > 65536:
+            raise ValueError("container_inspection_failed")
+        return result.stdout
+
+    result = {}
+    fields = [".Id", ".Image", ".State.Running", ".State.Paused", ".State.Restarting", ".State.StartedAt",
+              '(index .Config.Labels "com.docker.compose.project")',
+              '(index .Config.Labels "com.docker.compose.service")',
+              '(index .Config.Labels "com.docker.compose.oneoff")']
+    template = "[" + ",".join("{{json " + field + "}}" for field in fields) + "]"
+    for host in HOSTS:
+        ids = query(["ps", "--all", "--no-trunc", "--filter", "label=com.docker.compose.project=" + project,
+                     "--filter", "label=com.docker.compose.service=" + host,
+                     "--filter", "label=com.docker.compose.oneoff=False", "--format", "{{.ID}}"]).splitlines()
+        if not ids or len(set(ids)) != len(ids) or any(not re.fullmatch(r"[a-f0-9]{64}", id) for id in ids):
+            raise ValueError("container_cardinality")
+        result[host] = []
+        for id in sorted(ids):
+            row = parse(query(["inspect", "--format", template, id]))
+            if not isinstance(row, list) or len(row) != 9 or row[0] != id or row[1] != expected_ids[host] \
+                    or row[2] is not True or row[3] is not False or row[4] is not False \
+                    or row[6:] != [project, host, "False"]:
+                raise ValueError("container_identity_or_state")
+            if not isinstance(row[5], str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?Z", row[5]):
+                raise ValueError("container_start_identity")
+            datetime.fromisoformat(row[5])
+            result[host].append(row[:2] + [row[5]])
+    return result
+
+
 def accept(bundle, state, environment, project, initialize=False, verify=runtime_check):
     if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", environment) or not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,62}", project):
         raise ValueError("deployment_identity")
@@ -143,11 +179,14 @@ def accept(bundle, state, environment, project, initialize=False, verify=runtime
             snapshot(previous["current"])
             if previous["previous"] is not None:
                 snapshot(previous["previous"])
+        containers = running_containers(project, provenance["imageIds"])
         # The verifier receives captured expected bytes, never a mutable
         # candidate path. Re-read both original inputs before publishing.
         with tempfile.TemporaryDirectory(prefix="strataai-release-acceptance-") as scratch:
             expected = Path(scratch) / "expected.json"; expected.write_bytes(raw)
             verify(expected)
+        if running_containers(project, provenance["imageIds"]) != containers:
+            raise ValueError("running_containers_changed")
         if read_private(metadata_path, 4096) != raw or read_private(provenance_path, 16384) != provenance_raw:
             raise ValueError("candidate_changed")
         current_bytes = read_private(state, 32768) if state.exists() or state.is_symlink() else None

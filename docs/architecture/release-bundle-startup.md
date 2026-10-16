@@ -7,6 +7,14 @@ work together. ARCH-11-FR-052 also requires API/Worker shutdown and restart proo
 
 ## Assembled acceptance-record gate — 2026-10-15
 
+The [running-image acceptance repair](../release/promotion-and-rollback.md#running-image-verification--2026-10-15)
+now makes the bundled command compare every selected web/API/Worker replica's
+actual image ID and stable container/start identity before and after runtime
+checks. All 31 state/command cases, six driver cases and 47 artifact cases pass.
+A fresh complete native phase also passes Worker stop/refusal/same-image recovery
+after three old-command wrong-image admissions are reproduced and repaired.
+This compiled-runtime proof retains exact-image/full CI as a release requirement.
+
 The mandatory Production bundle startup driver now executes the bundled
 `record-release.py` after its existing migration, image identity, database
 outage, graceful restart and password-rotation checks. The phase requires its

@@ -21,6 +21,7 @@ class ReleaseStateTests(unittest.TestCase):
         self.root = Path(self.temporary.name); self.bundle = self.root / "bundle"
         (self.bundle / "images").mkdir(parents=True)
         self.state = self.root / "deployment.json"; self.checked = []
+        self.docker_fault = None; self.docker_calls = []
         self.candidate("a", "1")
 
     def candidate(self, digit, run):
@@ -44,8 +45,46 @@ class ReleaseStateTests(unittest.TestCase):
         self.assertEqual(json.loads(expected.read_bytes()), self.metadata)
 
     def accept(self, initialize=False, **kwargs):
-        return release.accept(self.bundle, self.state, kwargs.pop("environment", "staging"),
-                              kwargs.pop("project", "strataai-staging"), initialize, kwargs.pop("verify", self.verify), **kwargs)
+        with patch.object(release.subprocess, "run", side_effect=self.docker_run):
+            return release.accept(self.bundle, self.state, kwargs.pop("environment", "staging"),
+                                  kwargs.pop("project", "strataai-staging"), initialize, kwargs.pop("verify", self.verify), **kwargs)
+
+    def docker_run(self, args, **kwargs):
+        self.docker_calls.append(args)
+        self.assertEqual(args[0], "docker"); self.assertIn(args[1], ["ps", "inspect"])
+        self.assertEqual(kwargs["timeout"], 10)
+        fault = self.docker_fault
+        ids = {host: str(index + 1) * 64 for index, host in enumerate(release.HOSTS)}
+        if args[1] == "ps":
+            host = next(host for host in release.HOSTS if "label=com.docker.compose.service=" + host in args)
+            self.assertIn("label=com.docker.compose.project=strataai-staging", args)
+            self.assertIn("label=com.docker.compose.oneoff=False", args)
+            output = ids[host] + "\n"
+            if fault == (host, "missing"): output = ""
+            if fault == (host, "duplicate"): output += ids[host] + "\n"
+            if fault and fault[0] == host and fault[1].startswith("replica"): output += "9" * 64 + "\n"
+        else:
+            host = fault[0] if args[-1] == "9" * 64 else next(host for host, id in ids.items() if id == args[-1])
+            self.assertEqual(args[2], "--format"); self.assertEqual(len(args), 5)
+            self.assertNotIn(".Config.Env", args[3]); self.assertNotIn("{{json .}}", args[3])
+            row = [args[-1], self.provenance["imageIds"][host], True, False, False,
+                   "2026-10-15T12:00:00.123456789Z", "strataai-staging", host, "False"]
+            if fault and fault[0] == host:
+                field = fault[1]
+                if field == "image": row[1] = "sha256:" + "f" * 64
+                elif field == "stopped": row[2] = False
+                elif field == "paused": row[3] = True
+                elif field == "restarting": row[4] = True
+                elif field == "start": row[5] = "2026-10-15T12:00:01.123456789Z"
+                elif field == "project": row[6] = "other-project"
+                elif field == "service": row[7] = "other-service"
+                elif field == "oneoff": row[8] = "True"
+                elif field == "id": row[0] = "9" * 64
+                elif field == "malformed": row = {"private": "provider-body"}
+                elif field == "replica-image" and args[-1] == "9" * 64: row[1] = "sha256:" + "f" * 64
+                elif field == "replica-start" and args[-1] == "9" * 64: row[5] = "2026-10-15T12:00:01Z"
+            output = json.dumps(row)
+        return subprocess.CompletedProcess(args, 0, output, "")
 
     def seed(self):
         self.assertEqual(self.accept(True), "recorded")
@@ -65,6 +104,72 @@ class ReleaseStateTests(unittest.TestCase):
         self.assertEqual(value["current"]["imageIds"], self.provenance["imageIds"])
         self.assertIsNone(value["previous"])
         self.assertEqual(len(self.checked), 1); self.assertFalse(self.checked[0].exists())
+
+    def test_running_images_are_checked_even_when_runtime_metadata_matches(self):
+        before = self.seed(); self.candidate("b", "2")
+        for host in release.HOSTS:
+            self.docker_fault = (host, "image")
+            with self.subTest(host=host), self.assertRaises(ValueError): self.accept()
+            self.assert_unchanged(before)
+
+    def test_project_cardinality_labels_and_running_state_fail_closed(self):
+        before = self.seed(); self.candidate("b", "2")
+        for host in release.HOSTS:
+            for fault in ["missing", "duplicate", "stopped", "paused", "restarting", "project", "service", "oneoff", "id", "malformed"]:
+                self.docker_fault = (host, fault)
+                with self.subTest(host=host, fault=fault), self.assertRaises(ValueError): self.accept()
+                self.assert_unchanged(before)
+
+    def test_runtime_checks_cannot_race_container_identity_or_restart(self):
+        before = self.seed(); self.candidate("b", "2")
+        for host in release.HOSTS:
+            for field in ["image", "id", "start"]:
+                self.docker_fault = None
+                def changed(expected): self.verify(expected); self.docker_fault = (host, field)
+                with self.subTest(host=host, field=field), self.assertRaises(ValueError): self.accept(verify=changed)
+                self.assert_unchanged(before)
+
+    def test_reacceptance_does_not_bypass_current_container_verification(self):
+        before = self.seed(); self.docker_fault = ("api", "image")
+        with self.assertRaises(ValueError): self.accept()
+        self.assert_unchanged(before)
+
+    def test_initialization_refuses_wrong_running_images_without_creating_state(self):
+        self.docker_fault = ("worker", "image")
+        with self.assertRaises(ValueError): self.accept(True)
+        self.assertFalse(self.state.exists()); self.assertEqual(self.checked, [])
+
+    def test_container_inspection_failures_preserve_prior_record(self):
+        before = self.seed(); self.candidate("b", "2")
+        for fault in [subprocess.CompletedProcess([], 1, "private-daemon-body", "private-daemon-url"),
+                      subprocess.TimeoutExpired("docker", 10, "private-daemon-body")]:
+            with patch.object(self, "docker_run", side_effect=fault if isinstance(fault, Exception) else None, return_value=fault):
+                with self.subTest(fault=type(fault).__name__), self.assertRaises((ValueError, subprocess.TimeoutExpired)): self.accept()
+            self.assert_unchanged(before)
+
+    def test_success_observes_all_three_services_before_and_after_runtime(self):
+        def verified(expected):
+            self.assertEqual(len(self.docker_calls), 6); self.verify(expected)
+        self.accept(True, verify=verified)
+        self.assertEqual(len(self.docker_calls), 12)
+
+    def test_all_selected_replicas_must_match_the_expected_images(self):
+        for host in release.HOSTS:
+            with self.subTest(host=host):
+                self.state.unlink(missing_ok=True); self.docker_fault = (host, "replicas")
+                self.seed(); before = self.state.read_bytes(); self.docker_fault = (host, "replica-image")
+                with self.assertRaises(ValueError): self.accept()
+                self.assert_unchanged(before)
+
+    def test_healthy_replica_membership_or_start_changes_during_checks_are_refused(self):
+        for host in release.HOSTS:
+            for initial, changed in [(None, "replicas"), ("replicas", "replica-start")]:
+                with self.subTest(host=host, initial=initial):
+                    self.state.unlink(missing_ok=True); self.docker_fault = (host, initial) if initial else None
+                    self.seed(); before = self.state.read_bytes()
+                    def altered(expected): self.verify(expected); self.docker_fault = (host, changed)
+                    with self.assertRaises(ValueError): self.accept(verify=altered)
+                    self.assert_unchanged(before)
 
     def test_new_release_atomically_retains_complete_prior_release(self):
         self.seed(); first = json.loads(self.state.read_bytes())["current"]

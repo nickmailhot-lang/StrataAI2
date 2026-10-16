@@ -62,23 +62,32 @@ python3 record-release.py --bundle . \
 Use an existing protected state directory outside the release bundle and Git.
 Choose the deployment's actual stable Compose project name; the example is not
 a new project to introduce during an upgrade. The command needs Python 3.11 or newer and
-the Bash/curl/jq/GNU tools already required by `verify-release-runtime.sh`.
-Run it in that tool environment (Git Bash on Windows). Add `--initialize` only
+the Bash/curl/jq/GNU tools already required by `verify-release-runtime.sh`, plus
+the Docker CLI in the context of the selected deployment. That context must
+permit read-only container listing and identity/state inspection. Run it in
+that tool environment (Git Bash on Windows). Add `--initialize` only
 for the first accepted deployment, which explicitly records no prior release.
 Initialization refuses an existing record; normal acceptance refuses a missing
 record or a different environment/project identity.
 
 The command validates the selected build metadata and original image-provenance
-shape/identity, then invokes the real runtime verifier with a captured copy of
-the expected metadata. Only successful web/direct API/Worker/proxied API checks
-allow the state update. It rechecks the original inputs and prior record before
+shape/identity and checks the selected Compose project's actual running image
+IDs before and after invoking the real runtime verifier with captured expected
+metadata. All non-one-off web/API/Worker replicas must use their corresponding
+provenance image ID, remain running, unpaused and not restarting, and preserve
+their container/start identities and replica membership across those checks.
+Missing services, malformed/duplicate IDs, changed service/project labels and
+unavailable Docker inspection refuse acceptance. Only successful image and
+web/direct API/Worker/proxied API checks allow the state update. The diagnostic
+URLs must still address this same deployment; these reads do not attest routing
+or every replica's configuration/readiness. It rechecks original inputs and prior record before
 publishing one atomic file containing both `current` and `previous`. The record
 contains the complete CI build identity, all three image IDs, input digests and
 acceptance time; it contains no credentials, configured URLs or response bodies.
 The previous entry preserves the entire immediately prior accepted reference.
 
-A failed runtime check leaves both entries unchanged. Reaccepting the same
-artifact rechecks runtime and preserves the record bytes and previous reference.
+A failed image or runtime check leaves both entries unchanged. Reaccepting the
+same artifact rechecks images/runtime and preserves record bytes and the prior reference.
 A per-state OS lock refuses competing writers and releases on process exit. The
 one-byte `.lock` file intentionally persists; leave it in place. Keep this state
 on protected storage with supported local file locking and atomic rename, and
@@ -105,6 +114,47 @@ Before changing images, retain a non-secret deployment record in the operator's 
 | Deployment result | Time, health/readiness/build-identity results and core workflow checks |
 
 Keep the prior known-good record and bundle until the candidate is accepted and the deployment's retention policy permits removal. A candidate with unfinished or failed CI does not replace that record. The first deployment has no prior application release; record that explicitly and prepare a recovery procedure before exposing traffic.
+
+### Running image verification — 2026-10-15
+
+The former command can record declared bundle image IDs without proving they
+are the images actually running. The repair binds the final acceptance to the
+selected Compose project's image IDs as well as the existing runtime metadata.
+It lists only that project's three named service families, excludes Compose
+one-off containers, and inspects only IDs, image IDs, running/paused/restarting
+state, start identity and Compose labels. It never reads environment values,
+mounts, application logs or full container configuration. Each Docker read has a
+ten-second deadline; failures use the existing private diagnostic and preserve
+the known-good reference. Concurrent deployment changes must still be managed
+by the operator; the command observes identities before and after runtime checks.
+
+All **31 state/command tests** pass, retaining the original 22 contracts and
+adding wrong-image, missing/duplicate identity, state/label, inspection failure,
+restart/replacement, repeated-acceptance and initialization refusals. Healthy
+replicas are accepted only when every selected replica matches; an incorrect
+second replica or changed healthy membership/start identity is refused.
+All **six acceptance-driver tests** and **47 release-artifact tests** pass too.
+The first local driver run lacks jq in its test PATH; adding the existing
+bundled jq resolves that environment failure without a product/test change.
+
+The complete **74.216-second** native run uses fresh PostgreSQL 17.11/all 149
+migrations, restricted runtime roles, current compiled `9dd58ac1` API/Worker
+and real cached web/API/Worker image IDs. All runtime checks match while the
+old CLI accepts each of three incorrect provenance image references. The
+repaired CLI rejects each, preserving original record bytes; restored matching
+references reaccept without rewriting history. The unchanged complete assembled
+acceptance-record phase then passes actual Worker stop/refusal/restart, strict
+diagnostic-address rediscovery and matching runtime/image checks. API process
+identity and Worker container/image identity remain intact.
+
+All **719 source/test/driver inputs and 71 binary files** match afterward.
+Owned containers, volume, network, private scratch files and **40,095 temporary
+bytes** are removed, restoring original Docker inventory. No images are built,
+pulled or imported, existing local services/database used, external provider
+called or large-load test run. The fixture mounts compiled assemblies read-only
+and supplies its own metadata/provenance; this proves the operator boundary,
+not a complete current immutable-image release or real two-version application
+rollback. Exact-commit full CI and the remaining ARCH-12/MVP acceptance apply.
 
 ### Atomic acceptance record verification — 2026-10-15
 

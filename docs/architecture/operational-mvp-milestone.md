@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [running-image acceptance repair](../release/promotion-and-rollback.md#running-image-verification--2026-10-15)
+binds the final release record to actual Compose service image IDs and stable
+replica membership/container/start identities across runtime verification. All
+31 state/command, six driver and 47 artifact cases pass. A complete 74.216-second
+native run reproduces three old-command wrong-image admissions, refuses each
+after repair with unchanged known-good bytes, then passes the unchanged Worker
+stop/recovery phase. All 719 source/test inputs and 71 binary files match; owned
+cleanup restores Docker inventory. Current immutable/full CI and complete
+deployment acceptance remain required; large load tests stay deferred.
+
 The [remaining custom API instrument repair](operator-metrics.md#remaining-custom-api-instrument-isolation--2026-10-15)
 extends optional, independent creation/publication/measurement guards to
 Checklist/Activity client observations and HTTP/auth metrics. Seventeen new
