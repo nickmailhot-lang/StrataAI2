@@ -12,6 +12,54 @@ implement account-bound recipient replay and protected SignalR transport. The
 invitations page consumes it for actual invitation transitions; broader authority
 invalidation and native acceptance evidence remain incomplete.
 
+## Synchronous invitation admission withdrawal (2026-10-16)
+
+A live invalidation must retire unsent acceptance before React renders the
+disabled controls. Four controlled cases reproduce an unwanted POST when
+change/reset/reconnect/outage invalidation and a queued Accept occur in one
+batch. Manual refresh already blocks that queued action through its pending
+read; the manual-read control passes against the original source.
+
+The page now clears admission immediately at invalidation, read start and
+account withdrawal, and checks it before account admission and again before
+submission. New grants require a successful canonical discovery in the current
+source epoch. Original receipt recovery has a separate freshly verified account
+epoch: it can still confirm its fixed original ID if listing returns 503,
+malformed metadata or a wrong scope, without displaying that untrusted listing.
+The receipt endpoint and final account check remain authoritative. Automatic
+discovery never POSTs and does not create new acceptance consent.
+
+An initial overstrict prototype required successful listing for original receipt
+recovery too. The existing Board recovery case correctly failed that prototype;
+this would have removed a supported recovery capability. The corrected baseline
+therefore records **four genuine failures and four passing controls**, preserving
+manual-read fencing and all three original-receipt listing-failure paths. Those
+eight cases also require successful explicit use after valid readmission or an
+admitted original receipt; disabling all actions cannot satisfy them.
+
+All 114 cases in the four related page/live/clock/telemetry files pass, including
+every existing assertion, with web/browser types, zero-warning lint and all 289
+CI integration guards passing. The complete **unchanged 18-case** native account
+file passes in **530,628.277 ms**, one attempt per case, zero failures/flaky
+results/skips/report errors. It retains all Internal/Portal/Board destinations,
+before/after account replacement, unavailable-account recovery, original receipt
+and history checks, keyboard/Axe assertions and original deadlines.
+
+Fresh restricted PostgreSQL 17.11/pgvector applies all 149 migrations; the API and
+separate Worker use current compiled assemblies in cached runtimes and both
+processes remain unchanged. All 1,286 captured source inputs, 71 binaries and four
+served production assets match before/after and independent final checks.
+Owned cleanup restores Docker inventory, removes the 3,320-byte temporary folder,
+and leaves zero owned containers/networks. No original database or Docker image
+build/pull/import/download is used. Runtime metadata remains `e88c6514`; optional
+account verification and a controlled mail provider do not establish strict
+managed delivery or current immutable-image certification. The complete frontend
+baseline (2,755 active cases) at parent `e6a9d6a7` predates this repair; it is not relabeled
+as a complete new-candidate source run. Current full CI still governs release.
+PRD-60 stays
+open at **18% estimated work remaining**, unchanged planning estimate. This
+repair does not complete the ticket or MVP; large-load testing stays deferred.
+
 ## Completed invitation acknowledgment recovery (2026-10-16)
 
 Retained [full-shard job 117009045494](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38858889512/job/117009045494)

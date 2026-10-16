@@ -239,3 +239,43 @@ it('withholds completed recovery through account outage and retires a refused or
   expect(screen.queryByRole('button', { name: 'Retry invitation acceptance' })).not.toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'Open Owner Portal' })).not.toBeInTheDocument(); expect(writes).toHaveLength(2); expect(writes[1]).toBe(writes[0]);
 });
+
+it.each(['change', 'reset', 'reconnecting', 'unavailable', 'manual'] as const)('requires current admission before queued acceptance after %s withdrawal', async reason => {
+  const writes: string[] = [];
+  const ack = { invitationId: item.id, organizationId: item.organizationId, surface: item.surface, targetRole: item.targetRole };
+  stable(vi.fn(async (input: string, init: RequestInit) => {
+    if (init.method === 'POST') { writes.push(input); return reply(ack); }
+    return reply({ items: writes.length ? [] : [item], nextCursor: null });
+  }) as typeof fetch);
+  mount(); await bootstrap(); const accept = await screen.findByRole('button', { name: /^Accept invitation to/ });
+  await waitFor(() => expect(accept).toBeEnabled());
+  await act(async () => {
+    if (reason === 'manual') screen.getByRole('button', { name: 'Refresh invitations' }).click(); else invalidate(reason);
+    accept.click();
+  });
+  expect(writes).toHaveLength(0);
+  const current = await screen.findByRole('button', { name: /^Accept invitation to/ }); await waitFor(() => expect(current).toBeEnabled());
+  fireEvent.click(current); await screen.findByRole('link', { name: 'Open Owner Portal' });
+  expect(writes).toEqual([`/me/invitations/${item.id}/accept?expectedActorId=${actor}`]);
+});
+it.each([
+  ['unavailable', 503, {}],
+  ['malformed page', 200, { items: null, nextCursor: null }],
+  ['wrong scope', 200, { items: [{ ...item, organizationId: 'not-an-organization' }], nextCursor: null }],
+] as const)('keeps only explicit original recovery after %s canonical discovery fails', async (_name, status, body) => {
+  let failed = false; const writes: string[] = [];
+  const ack = { invitationId: item.id, organizationId: item.organizationId, surface: item.surface, targetRole: item.targetRole };
+  stable(vi.fn(async (input: string, init: RequestInit) => {
+    if (init.method === 'POST') { writes.push(input); return reply(ack); }
+    return failed ? reply(body, status) : reply({ items: writes.length ? [] : [item], nextCursor: null });
+  }) as typeof fetch);
+  mount(); await bootstrap(); fireEvent.click(await screen.findByRole('button', { name: /^Accept invitation to/ }));
+  await screen.findByRole('link', { name: 'Open Owner Portal' }); failed = true;
+  await act(async () => invalidate('change')); await screen.findByText('Unable to load invitations. Please refresh and try again.');
+  const retry = screen.getByRole('button', { name: 'Retry invitation acceptance' }); expect(retry).toBeEnabled();
+  expect(writes).toHaveLength(1); expect(screen.queryByText(item.organizationName)).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Open Owner Portal' })).not.toBeInTheDocument();
+  // The listing may stay unavailable; only this original ID can be retried.
+  fireEvent.click(retry);
+  await screen.findByRole('link', { name: 'Open Owner Portal' }); expect(writes).toHaveLength(2); expect(writes[1]).toBe(writes[0]);
+});

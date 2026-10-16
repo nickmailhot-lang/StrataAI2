@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [synchronous invitation admission repair](invitation-recipient-events.md#synchronous-invitation-admission-withdrawal-2026-10-16)
+blocks queued unsent acceptance immediately on live withdrawal. Separate canonical
+and account admission preserve supported original-receipt recovery through a
+failed listing; the overstrict prototype is discarded. Four reproduced failures
+become passes and all 114 related cases pass with types/lint and 289 CI guards.
+The unchanged 18-case native account file passes with all original scope,
+receipt/history, keyboard/Axe assertions and deadlines. Captured inputs match,
+both processes stay unchanged and owned cleanup restores Docker inventory.
+Current immutable-image/full CI remains required; PRD-60 and the MVP stay open.
+Large-load tests remain deferred.
+
 The [completed invitation receipt repair](invitation-recipient-events.md#completed-invitation-acknowledgment-recovery-2026-10-16)
 withdraws stale navigation while preserving generic explicit original-ID recovery
 after a completed acceptance. Seven reproduced component failures become passes;

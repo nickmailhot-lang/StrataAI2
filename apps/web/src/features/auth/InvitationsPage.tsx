@@ -81,6 +81,9 @@ export function InvitationsPage() {
   const firstAdmission = useRef<{ actor: string; until: number } | undefined>(undefined);
   const [accountReady, setAccountReady] = useState(false);
   const epoch = useRef(0); const refreshQueued = useRef(false);
+  // New grants require canonical discovery. An original receipt can recover
+  // through a listing failure, but still needs fresh account admission.
+  const admittedEpoch = useRef<number | undefined>(undefined); const accountEpoch = useRef<number | undefined>(undefined);
   const [reloadVersion, setReloadVersion] = useState(0);
   const [connecting, setConnecting] = useState(true);
   const [admissionFailed, setAdmissionFailed] = useState(false);
@@ -104,13 +107,16 @@ export function InvitationsPage() {
       throw reason instanceof AccountUnavailable ? reason : new AccountUnavailable(503, failureReference(reason));
     }
   }
+  function withdrawAdmission() { admittedEpoch.current = undefined; accountEpoch.current = undefined; }
   function withdrawAccount(status: number, reference: string | null = null) {
+    withdrawAdmission();
     setPage(undefined); setAccepted(undefined); setAccountReady(false);
     if (status === 401) { setUncertain(undefined); navigate('/login', { replace: true }); }
     else setError('Unable to confirm the reviewed account. Refresh invitations before continuing.', reference);
   }
   async function load(after?: string, retry = false) {
     if (current.current) return;
+    withdrawAdmission();
     const controller = new AbortController(); current.current = controller;
     const observedAt = performance.now(); let succeeded = false;
     activityEvent('invitation_recipient_read', retry ? 'retry' : 'use');
@@ -127,12 +133,13 @@ export function InvitationsPage() {
       const query = new URLSearchParams({ expectedActorId: actor }); if (after) query.set('after', after);
       const response = await request(`/me/invitations?${query}`, controller);
       await verifyAccount(controller, actor); if (!valid(controller) || started !== epoch.current) return;
-      reviewedActor.current = actor; setAccountReady(true);
+      reviewedActor.current = actor;
       if (!mounted.current || current.current !== controller) return;
       if (response.status === 401) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); navigate('/login', { replace: true }); return; }
       if (response.status === 403) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); setError('Verify your email before viewing invitations.', response.reference); return; }
+      accountEpoch.current = started; setAccountReady(true);
       if (response.status !== 200 || !validPage(response.body) || (after && response.body.nextCursor !== null && response.body.nextCursor.toLowerCase() <= after.toLowerCase())) throw new InvitationResponseFailure(response.reference);
-      setPage(response.body);
+      admittedEpoch.current = started; setPage(response.body);
       succeeded = true;
       if (!disclosed.current) { disclosed.current = true; activityEvent('invitation_recipient_disclosure', 'open'); }
     } catch (reason) {
@@ -198,6 +205,7 @@ export function InvitationsPage() {
     // keeps explicit, bounded HTTP recovery available.
   }, [admissionAttempt]);
   function expire() {
+    withdrawAdmission();
     if (document.activeElement?.closest('[data-invitation-disclosure]')) refreshButton.current?.focus();
     epoch.current++; refreshQueued.current = true;
     setError(undefined);
@@ -222,7 +230,8 @@ export function InvitationsPage() {
     check(); return () => clearTimeout(timer);
   }, [page, uncertain?.id]);
   async function accept(invitation: Invitation) {
-    if (current.current || !accountReady || !reviewedActor.current || (uncertain && uncertain.id !== invitation.id)) return;
+    const recovering = uncertain?.id === invitation.id;
+    if (current.current || !accountReady || (recovering ? accountEpoch.current : admittedEpoch.current) !== epoch.current || !reviewedActor.current || (uncertain && uncertain.id !== invitation.id)) return;
     const actor = reviewedActor.current; let submitted = false;
     const started = epoch.current;
     const controller = new AbortController(); current.current = controller;
@@ -231,7 +240,8 @@ export function InvitationsPage() {
     const deadline = setTimeout(() => controller.abort(), 15_000);
     setBusy(true); setError(undefined); setAccepted(undefined);
     try {
-      await verifyAccount(controller, actor); if (!valid(controller)) return;
+      await verifyAccount(controller, actor);
+      if (!valid(controller) || (recovering ? accountEpoch.current : admittedEpoch.current) !== started || started !== epoch.current) return;
       // Keep a submitted attempt's exact-ID recovery; the server still owns
       // expiry and acknowledgment admission. Unsent acceptance loses consent.
       if (uncertain?.id !== invitation.id && Date.parse(invitation.expiresAt) <= Date.now()) { expire(); return; }
