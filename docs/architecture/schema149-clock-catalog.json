@@ -1,0 +1,2118 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "852ecb40ae116d311e13105db949719046a2fcd7",
+  "migrationCount": 149,
+  "tableCount": 114,
+  "scope": "public regular and partitioned base-table catalog metadata only; physical columns do not establish writer or legacy provenance acceptance",
+  "clockColumnCounts": {
+    "bothNonNull": 50,
+    "missingConventionalColumn": 57,
+    "nullableConventionalClockOnly": 7
+  },
+  "tables": [
+    {
+      "table": "attachment_preview_publications",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "attachment_preview_publication_guard",
+          "function": "enforce_attachment_preview_publication"
+        }
+      ]
+    },
+    {
+      "table": "attachment_preview_sweeps",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "preview_sweep_audit_clocks",
+          "function": "capture_attachment_sweep_audit_clocks"
+        }
+      ]
+    },
+    {
+      "table": "attachment_previews",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "attachment_preview_manifest_guard",
+          "function": "enforce_attachment_preview_manifest"
+        }
+      ]
+    },
+    {
+      "table": "attachment_scan_sweeps",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "scan_sweep_audit_clocks",
+          "function": "capture_attachment_sweep_audit_clocks"
+        }
+      ]
+    },
+    {
+      "table": "attachment_upload_intents",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "attachment_upload_intents_guard",
+          "function": "enforce_attachment_upload_intent"
+        }
+      ]
+    },
+    {
+      "table": "attachments",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "attachments_digest_guard",
+          "function": "enforce_attachment_digest"
+        },
+        {
+          "name": "attachments_lifecycle_count_guard",
+          "function": "enforce_attachment_lifecycle_revision"
+        },
+        {
+          "name": "attachments_lifecycle_guard",
+          "function": "enforce_attachment_lifecycle"
+        },
+        {
+          "name": "attachments_selected_cover_guard",
+          "function": "enforce_selected_cover_source"
+        }
+      ]
+    },
+    {
+      "table": "audit_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "audit_events_no_delete",
+          "function": "prevent_audit_event_mutation"
+        },
+        {
+          "name": "audit_events_no_update",
+          "function": "prevent_audit_event_mutation"
+        },
+        {
+          "name": "audit_invitation_recipient_event",
+          "function": "journal_invitation_recipient_event"
+        },
+        {
+          "name": "invitation_deletion_request_source",
+          "function": "journal_invitation_organization_lifecycle_source"
+        },
+        {
+          "name": "organization_invitation_acceptance_journal",
+          "function": "journal_organization_invitation_acceptance"
+        },
+        {
+          "name": "organization_invitation_revocation_journal",
+          "function": "journal_organization_invitation_revocation"
+        },
+        {
+          "name": "organization_member_addition_journal",
+          "function": "journal_organization_member_addition"
+        },
+        {
+          "name": "organization_member_invitation_journal",
+          "function": "journal_organization_member_invitation"
+        },
+        {
+          "name": "organization_member_removal_journal",
+          "function": "journal_organization_member_removal"
+        },
+        {
+          "name": "organization_metadata_journal",
+          "function": "journal_organization_metadata_event"
+        }
+      ]
+    },
+    {
+      "table": "background_jobs",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "attachment_preview_job_guard",
+          "function": "enforce_attachment_preview_job"
+        },
+        {
+          "name": "attachment_scan_job_guard",
+          "function": "enforce_attachment_scan_job"
+        }
+      ]
+    },
+    {
+      "table": "board_background_images",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "board_background_image_owner_guard",
+          "function": "enforce_board_background_image_owner"
+        }
+      ]
+    },
+    {
+      "table": "board_filter_interaction_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "board_filter_replay_immutable",
+          "function": "guard_board_filter_interaction_replay"
+        }
+      ]
+    },
+    {
+      "table": "board_labels",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "board_labels_route",
+          "function": "sync_label_route"
+        }
+      ]
+    },
+    {
+      "table": "board_lists",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "board_lists_archive_history",
+          "function": "preserve_work_archive_history"
+        },
+        {
+          "name": "board_lists_sync_route",
+          "function": "sync_list_route"
+        }
+      ]
+    },
+    {
+      "table": "board_members",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "board_directory_membership_revision",
+          "function": "revise_board_directory_membership"
+        },
+        {
+          "name": "board_reader_membership_revision",
+          "function": "revise_board_reader_membership"
+        }
+      ]
+    },
+    {
+      "table": "board_routes",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "board_route_clock",
+          "function": "maintain_entity_route_clocks"
+        }
+      ]
+    },
+    {
+      "table": "board_star_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "board_star_event_history",
+          "function": "guard_board_star_event_history"
+        }
+      ]
+    },
+    {
+      "table": "boards",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "board_background_selection_guard",
+          "function": "enforce_board_background_selection"
+        },
+        {
+          "name": "board_reader_visibility_revision",
+          "function": "revise_board_reader_visibility"
+        },
+        {
+          "name": "boards_archive_history",
+          "function": "preserve_work_archive_history"
+        },
+        {
+          "name": "boards_sync_route",
+          "function": "sync_board_route"
+        }
+      ]
+    },
+    {
+      "table": "card_assignment_notifications",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "notification_card_source",
+          "function": "enforce_notification_card_source"
+        },
+        {
+          "name": "notification_card_source_insert",
+          "function": "enforce_notification_insert_sources"
+        },
+        {
+          "name": "notification_private_journal",
+          "function": "journal_notification_transition"
+        }
+      ]
+    },
+    {
+      "table": "card_comments",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "card_comments_revision_guard",
+          "function": "enforce_card_comment_revision"
+        }
+      ]
+    },
+    {
+      "table": "card_labels",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "card_members",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "card_reminders",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "reminder_activity_identity_immutable",
+          "function": "enforce_private_activity_identity"
+        }
+      ]
+    },
+    {
+      "table": "card_routes",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "card_route_clock",
+          "function": "maintain_entity_route_clocks"
+        }
+      ]
+    },
+    {
+      "table": "cards",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "cards_archive_history",
+          "function": "preserve_work_archive_history"
+        },
+        {
+          "name": "cards_cover_selection_guard",
+          "function": "enforce_card_cover_selection"
+        },
+        {
+          "name": "cards_sync_inserted_routes",
+          "function": "sync_inserted_card_routes"
+        },
+        {
+          "name": "cards_sync_route",
+          "function": "sync_card_route"
+        },
+        {
+          "name": "cards_sync_updated_routes",
+          "function": "sync_updated_card_routes"
+        }
+      ]
+    },
+    {
+      "table": "checklist_items",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "checklists",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "comment_mention_recipients",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "comment_mention_recipient_complete",
+          "function": "enforce_comment_mention_cardinality"
+        },
+        {
+          "name": "comment_mention_recipient_immutable",
+          "function": "enforce_comment_mention_recipient"
+        }
+      ]
+    },
+    {
+      "table": "comment_mention_snapshots",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "comment_mention_snapshot_complete",
+          "function": "enforce_comment_mention_cardinality"
+        },
+        {
+          "name": "comment_mention_snapshot_revision",
+          "function": "enforce_comment_mention_snapshot"
+        }
+      ]
+    },
+    {
+      "table": "email_verification_tokens",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "identity_delivery_jobs",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "identity_event_streams",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "identity_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "issuer_authority_publication",
+          "function": "journal_invitation_issuer_authority_source"
+        },
+        {
+          "name": "issuer_identity_source_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "identity_handle_claim_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "identity_handle_claim_replay_immutable",
+          "function": "enforce_identity_handle_claim_replay_immutable"
+        }
+      ]
+    },
+    {
+      "table": "identity_login_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "identity_profile_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "identity_recovery_request_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "identity_registration_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "identity_revocation_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "identity_token_consumption_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "invitation_creation_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "invitation_issuer_authority_effects",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "issuer_authority_effect_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "invitation_issuer_authority_jobs",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "issuer_job_clock",
+          "function": "maintain_invitation_issuer_job_clock"
+        },
+        {
+          "name": "issuer_job_identity",
+          "function": "protect_invitation_issuer_job_identity"
+        }
+      ]
+    },
+    {
+      "table": "invitation_issuer_authority_proofs",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "issuer_authority_proof_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "invitation_issuer_authority_sources",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "issuer_authority_source_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "invitation_mail_intents",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_mail_update_clock",
+          "function": "capture_invitation_mail_update_clock"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_authority_dependencies",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_recipient_dependency_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_authority_effects",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_authority_effect_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_authority_pages",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_authority_page_clock",
+          "function": "maintain_invitation_authority_page_clocks"
+        },
+        {
+          "name": "invitation_authority_page_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_authority_revisions",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_authority_revision_clocks",
+          "function": "capture_invitation_authority_revision_clocks"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_authority_sources",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_authority_source_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_recipient_event_immutable",
+          "function": "protect_invitation_recipient_history"
+        },
+        {
+          "name": "invitation_recipient_stream_clock_publication",
+          "function": "refresh_invitation_recipient_stream_clocks"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_organization_lifecycle_proofs",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_organization_lifecycle_proof_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_organization_lifecycle_sources",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_lifecycle_authority_publication",
+          "function": "publish_invitation_recipient_authority"
+        },
+        {
+          "name": "invitation_organization_lifecycle_source_history",
+          "function": "protect_invitation_authority_history"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_proofs",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_recipient_proof_immutable",
+          "function": "protect_invitation_recipient_proof"
+        }
+      ]
+    },
+    {
+      "table": "invitation_recipient_streams",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_recipient_stream_clock_guard",
+          "function": "enforce_invitation_recipient_stream_clocks"
+        }
+      ]
+    },
+    {
+      "table": "invitation_routes",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_route_clock",
+          "function": "maintain_invitation_route_clocks"
+        }
+      ]
+    },
+    {
+      "table": "invitations",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_recipient_transition",
+          "function": "capture_invitation_recipient_transition"
+        },
+        {
+          "name": "invitation_revision",
+          "function": "advance_invitation_revision"
+        },
+        {
+          "name": "invitations_protect_acceptance",
+          "function": "protect_invitation_acceptance"
+        },
+        {
+          "name": "invitations_sync_route",
+          "function": "sync_invitation_route"
+        },
+        {
+          "name": "organization_invitation_acceptance",
+          "function": "capture_organization_invitation_acceptance"
+        },
+        {
+          "name": "organization_invitation_creation",
+          "function": "capture_organization_invitation_creation"
+        },
+        {
+          "name": "organization_invitation_revocation",
+          "function": "capture_organization_invitation_revocation"
+        }
+      ]
+    },
+    {
+      "table": "label_routes",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "label_route_clock",
+          "function": "maintain_entity_route_clocks"
+        }
+      ]
+    },
+    {
+      "table": "list_routes",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "list_route_clock",
+          "function": "maintain_entity_route_clocks"
+        }
+      ]
+    },
+    {
+      "table": "mass_mention_reservations",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "mass_mention_reservation_guard",
+          "function": "enforce_mass_mention_reservation"
+        }
+      ]
+    },
+    {
+      "table": "mention_handle_reservations",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "mention_handle_reservations_immutable",
+          "function": "enforce_mention_handle_reservation"
+        }
+      ]
+    },
+    {
+      "table": "navigation_interaction_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "navigation_interaction_immutable",
+          "function": "guard_navigation_interaction_history"
+        }
+      ]
+    },
+    {
+      "table": "navigation_interaction_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "navigation_replay_immutable",
+          "function": "guard_navigation_interaction_replay"
+        }
+      ]
+    },
+    {
+      "table": "notification_event_streams",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "notification_stream_clock_guard",
+          "function": "enforce_notification_stream_clocks"
+        }
+      ]
+    },
+    {
+      "table": "notification_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "notification_event_history",
+          "function": "protect_notification_event_history"
+        },
+        {
+          "name": "notification_stream_clock_publication",
+          "function": "refresh_notification_stream_clocks"
+        }
+      ]
+    },
+    {
+      "table": "organization_board_directory_epochs",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_board_event_streams",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_board_events",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_board_event_history",
+          "function": "guard_organization_board_event_history"
+        }
+      ]
+    },
+    {
+      "table": "organization_configuration_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_configuration_delivery_publication",
+          "function": "publish_organization_configuration_delivery"
+        },
+        {
+          "name": "organization_configuration_delivery_source",
+          "function": "guard_organization_configuration_delivery_source"
+        },
+        {
+          "name": "organization_configuration_event_attribution",
+          "function": "capture_organization_configuration_attribution"
+        },
+        {
+          "name": "organization_configuration_event_attribution_immutable",
+          "function": "guard_organization_configuration_attribution"
+        }
+      ]
+    },
+    {
+      "table": "organization_configuration_history",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": true,
+      "triggers": [
+        {
+          "name": "organization_configuration_history_immutable",
+          "function": "prevent_audit_event_mutation"
+        },
+        {
+          "name": "organization_configuration_history_source",
+          "function": "journal_organization_configuration_history"
+        }
+      ]
+    },
+    {
+      "table": "organization_configuration_receipts",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_configuration_receipt_source",
+          "function": "guard_organization_configuration_receipt"
+        },
+        {
+          "name": "organization_configuration_receipts_immutable",
+          "function": "prevent_audit_event_mutation"
+        }
+      ]
+    },
+    {
+      "table": "organization_configurations",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": true,
+      "triggers": [
+        {
+          "name": "organization_configuration_current_source",
+          "function": "guard_organization_configuration_current"
+        }
+      ]
+    },
+    {
+      "table": "organization_creation_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_deletion_progress",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_deletion_progress_clock",
+          "function": "maintain_organization_deletion_progress_clocks"
+        },
+        {
+          "name": "organization_deletion_progress_initial",
+          "function": "check_organization_deletion_initial_progress"
+        }
+      ]
+    },
+    {
+      "table": "organization_deletion_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_deletion_requests",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_deletion_requests_guard",
+          "function": "check_organization_deletion_request"
+        }
+      ]
+    },
+    {
+      "table": "organization_deletion_steps",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_deletion_steps_history",
+          "function": "guard_organization_deletion_step"
+        }
+      ]
+    },
+    {
+      "table": "organization_departure_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_invitation_acceptances",
+      "createdAtColumn": null,
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_invitation_creations",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_invitation_revocations",
+      "createdAtColumn": null,
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_lifecycle_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_deletion_terminal_source",
+          "function": "journal_invitation_organization_lifecycle_source"
+        },
+        {
+          "name": "organization_lifecycle_history",
+          "function": "guard_organization_lifecycle_event"
+        }
+      ]
+    },
+    {
+      "table": "organization_members",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_directory_membership_revision",
+          "function": "revise_organization_directory_membership"
+        },
+        {
+          "name": "organization_members_sync_access",
+          "function": "sync_user_organization_access"
+        },
+        {
+          "name": "organization_membership_activation",
+          "function": "capture_organization_membership_activation"
+        },
+        {
+          "name": "organization_membership_removal",
+          "function": "capture_organization_membership_removal"
+        }
+      ]
+    },
+    {
+      "table": "organization_membership_activations",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_membership_removals",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_metadata_event_streams",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_metadata_stream_clock_guard",
+          "function": "enforce_organization_metadata_stream_clocks"
+        }
+      ]
+    },
+    {
+      "table": "organization_metadata_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_recipient_authority_publication",
+          "function": "publish_invitation_recipient_authority"
+        },
+        {
+          "name": "organization_metadata_delivery_publication",
+          "function": "publish_organization_metadata_delivery"
+        },
+        {
+          "name": "organization_metadata_event_history",
+          "function": "guard_organization_metadata_event_history"
+        },
+        {
+          "name": "organization_metadata_stream_clock_publication",
+          "function": "refresh_organization_metadata_stream_clocks"
+        }
+      ]
+    },
+    {
+      "table": "organization_metadata_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organization_operational_lifecycle_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_operational_lifecycle_delivery_publication",
+          "function": "publish_organization_operational_lifecycle_delivery"
+        },
+        {
+          "name": "organization_operational_lifecycle_delivery_source",
+          "function": "guard_organization_operational_lifecycle_delivery_source"
+        }
+      ]
+    },
+    {
+      "table": "organization_operational_lifecycle_history",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_operational_lifecycle_history_immutable",
+          "function": "prevent_audit_event_mutation"
+        },
+        {
+          "name": "organization_operational_lifecycle_history_source",
+          "function": "journal_organization_operational_lifecycle_history"
+        }
+      ]
+    },
+    {
+      "table": "organization_operational_lifecycle_receipts",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_operational_lifecycle_receipt_source",
+          "function": "guard_organization_operational_lifecycle_receipt"
+        },
+        {
+          "name": "organization_operational_lifecycle_receipts_immutable",
+          "function": "prevent_audit_event_mutation"
+        }
+      ]
+    },
+    {
+      "table": "organization_removal_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "organizations",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_organization_lifecycle_capture",
+          "function": "capture_invitation_organization_lifecycle_transition"
+        },
+        {
+          "name": "organization_operational_lifecycle_parent_source",
+          "function": "guard_organization_operational_lifecycle_parent"
+        },
+        {
+          "name": "organizations_creation_type_immutable",
+          "function": "preserve_organization_creation_type"
+        },
+        {
+          "name": "organizations_terminal_guard",
+          "function": "guard_organization_terminal"
+        }
+      ]
+    },
+    {
+      "table": "password_reset_tokens",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "portal_access",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "record_retention_hold_history",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "retention_hold_history_complete",
+          "function": "guard_retention_hold_complete"
+        },
+        {
+          "name": "retention_hold_history_immutable",
+          "function": "guard_retention_source_immutable"
+        },
+        {
+          "name": "retention_hold_history_journal",
+          "function": "journal_retention_hold_history"
+        },
+        {
+          "name": "retention_hold_history_z_context",
+          "function": "capture_retention_hold_history_context"
+        }
+      ]
+    },
+    {
+      "table": "record_retention_hold_receipts",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "retention_hold_receipt_guard",
+          "function": "guard_retention_hold_receipt"
+        },
+        {
+          "name": "retention_hold_receipt_immutable",
+          "function": "guard_retention_source_immutable"
+        }
+      ]
+    },
+    {
+      "table": "record_retention_holds",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "retention_hold_current_complete",
+          "function": "guard_retention_hold_complete"
+        },
+        {
+          "name": "retention_hold_current_guard",
+          "function": "guard_retention_hold_current"
+        },
+        {
+          "name": "retention_hold_z_context",
+          "function": "capture_retention_hold_context"
+        }
+      ]
+    },
+    {
+      "table": "record_retention_policies",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "retention_policy_current_complete",
+          "function": "guard_retention_policy_complete_source"
+        },
+        {
+          "name": "retention_policy_current_guard",
+          "function": "guard_retention_policy_current"
+        }
+      ]
+    },
+    {
+      "table": "record_retention_policy_history",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "retention_policy_history_complete",
+          "function": "guard_retention_policy_complete_source"
+        },
+        {
+          "name": "retention_policy_history_immutable",
+          "function": "prevent_audit_event_mutation"
+        },
+        {
+          "name": "retention_policy_history_journal",
+          "function": "journal_retention_policy_history"
+        }
+      ]
+    },
+    {
+      "table": "record_retention_policy_receipts",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "retention_policy_receipt_source",
+          "function": "guard_retention_policy_receipt"
+        },
+        {
+          "name": "retention_policy_receipts_immutable",
+          "function": "prevent_audit_event_mutation"
+        }
+      ]
+    },
+    {
+      "table": "record_retention_source_receipts",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "retention_source_receipt_guard",
+          "function": "guard_retention_source_receipt"
+        },
+        {
+          "name": "retention_source_receipt_immutable",
+          "function": "guard_retention_source_immutable"
+        }
+      ]
+    },
+    {
+      "table": "record_retention_sources",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "record_retention_source_immutable",
+          "function": "guard_retention_source_immutable"
+        },
+        {
+          "name": "record_retention_source_journal",
+          "function": "journal_retention_source"
+        },
+        {
+          "name": "record_retention_source_z_context",
+          "function": "capture_retention_source_context"
+        }
+      ]
+    },
+    {
+      "table": "schema_migrations",
+      "createdAtColumn": null,
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "search_interaction_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": null,
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "search_interaction_immutable",
+          "function": "guard_search_interaction_history"
+        }
+      ]
+    },
+    {
+      "table": "search_interaction_streams",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "sessions",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "user_board_preferences",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "board_star_private_journal",
+          "function": "journal_board_star_transition"
+        }
+      ]
+    },
+    {
+      "table": "user_mention_handles",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "user_mention_handles_revision_guard",
+          "function": "enforce_user_mention_handle_revision"
+        }
+      ]
+    },
+    {
+      "table": "user_organization_access",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "organization_access_route_clock",
+          "function": "maintain_organization_access_route_clocks"
+        }
+      ]
+    },
+    {
+      "table": "users",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "issuer_authority_capture",
+          "function": "capture_invitation_issuer_authority_transition"
+        },
+        {
+          "name": "users_seed_mention_handle",
+          "function": "seed_user_mention_handle"
+        }
+      ]
+    },
+    {
+      "table": "watch_subscriptions",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "watch_activity_identity_immutable",
+          "function": "enforce_private_activity_identity"
+        }
+      ]
+    },
+    {
+      "table": "work_command_replays",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "work_replay_update_clock",
+          "function": "capture_work_replay_update_clock"
+        }
+      ]
+    },
+    {
+      "table": "work_event_streams",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": []
+    },
+    {
+      "table": "work_events",
+      "createdAtColumn": {
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "nullable": false
+      },
+      "updatedAtColumn": {
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "nullable": true
+      },
+      "hasRecordJsonColumn": false,
+      "triggers": [
+        {
+          "name": "invitation_recipient_board_authority_publication",
+          "function": "publish_invitation_recipient_authority"
+        },
+        {
+          "name": "organization_board_journal",
+          "function": "journal_organization_board_event"
+        },
+        {
+          "name": "work_event_activity_actor",
+          "function": "capture_activity_actor_label"
+        },
+        {
+          "name": "work_event_activity_immutable",
+          "function": "enforce_activity_event_immutable"
+        },
+        {
+          "name": "work_event_update_clock",
+          "function": "capture_work_event_update_clock"
+        }
+      ]
+    }
+  ]
+}

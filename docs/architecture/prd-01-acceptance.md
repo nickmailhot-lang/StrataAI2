@@ -1,5 +1,16 @@
 # PRD-01 foundation acceptance and closure audit
 
+The [current schema-149 clock inventory](schema149-clock-inventory.md) refreshes
+the original schema-114 catalog baseline: 114 public base tables, partitioned
+into 50 with both physical clock columns non-null, 57 missing at least one
+conventional column and seven with nullable clocks. The machine-readable
+snapshot covers all 114 tables without row data. Organization configuration
+already persists guarded creation/update facts in JSON; absent conventional
+columns do not alone establish a defect. The 5.825-second read-only capture
+preserves 152 inputs and restores Docker inventory after owned cleanup.
+Owning-writer/legacy-history audits and current immutable/full CI remain
+required. Estimated PRD-01 work remaining stays **34%**; the issue stays open.
+
 The [complete post-database-restart Work scenario](postgres-pool-recovery.md#complete-work-event-scenario-after-restart--2026-10-15)
 passes with current compiled API/Worker, fresh restricted PostgreSQL and all 149
 migrations. It strengthens the hierarchy/atomic mutation/convergence boundary:
