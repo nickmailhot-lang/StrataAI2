@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [notification visibility discovery repair](notification-inbox.md#card-visibility-changes-during-inbox-discovery--2026-10-16)
+addresses a hosted inbox retirement during Card archive. Real PostgreSQL lock
+waits reproduce false inbox/sync 404 responses; bounded fresh transactions now
+return the unrelated current notice. Actual Board denial and exact mark-read
+selection refusal remain. All 12 focused/27 related API cases, three native lock
+scenarios, complete verified-account desktop/phone watch workflow and 289 CI
+checks pass, with matching inputs and owned cleanup. This compiled-source proof
+supports the new candidate's required immutable-image/full CI; it does not close
+the MVP or PRD-17. Large-load testing remains deferred.
+
 The [render-failure route teardown repair](../kanban-telemetry.md#render-failure-route-teardown--2026-10-16)
 addresses a newly completed hosted phone-case failure. An injected read outlived
 the test's request context; the scenario now waits for callbacks before teardown

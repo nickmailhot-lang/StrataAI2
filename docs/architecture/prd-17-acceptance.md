@@ -7,6 +7,17 @@ functional requirements to implementation contracts and required completion
 evidence. A feature document or isolated passing scenario does not close a row.
 The adopted MUI/API/separate Worker/PostgreSQL architecture is unchanged.
 
+## Card visibility discovery races — 2026-10-16
+
+The [inbox discovery record](notification-inbox.md#card-visibility-changes-during-inbox-discovery--2026-10-16)
+reproduces a hosted false denial through real PostgreSQL lock waits. Current
+visible subsets now trigger bounded transaction rediscovery after valid Board
+gates; actual access denial and original mark-read IDs retain their refusal
+contracts. Twelve focused and 27 related API cases pass, as do all three native
+lock scenarios and the complete verified-account desktop/phone watch workflow.
+Input fingerprints and owned cleanup are independently checked. Current immutable
+CI/full acceptance remain required; estimated work remaining stays **15%**.
+
 ## Configured-producer read recovery admission — 2026-10-16
 
 The [read-recovery record](notification-inbox.md#configured-producer-read-recovery-admission-2026-10-16)

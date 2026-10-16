@@ -1,5 +1,66 @@
 # Authorized notification inbox (PRD-17)
 
+## Card visibility changes during inbox discovery — 2026-10-16
+
+Hosted [notification job 116971072311](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38855306982/job/116971072311)
+at `9dd58ac1` fails the configured-producer archive check with six other cases
+passing: one client shows zero articles instead of the copied Card's one notice.
+Original diagnostic artifact **12060161389** is authenticated at **7,326,948
+bytes**, SHA-256 `b3e1a6bb260c67ac67b9db783da6c107d1831fc9df25e69299ec148672fdc0b1`.
+The peer repeatedly receives the one-row 200 inbox; the failing client receives
+`notification_not_found` and retires its view. The service and inbox component
+are unchanged between that source and the pre-repair candidate.
+
+A controlled real PostgreSQL Board-lock wait reproduces the false denial.
+Discovery sees two visible notices before an uncommitted Card archive. After
+the exact blocking transaction commits, all Board gates still pass but the
+fresh joined read contains only the unrelated notice. The old service returns
+404 from inbox and sync. Mark-read also returns 404 for its original two IDs,
+which is the required all-or-nothing refusal.
+
+[NotificationInboxService](../../src/StrataAI.Application/WorkManagement/NotificationInboxService.cs)
+now releases the complete old transaction and rediscovers a current window when
+the post-lock rows are a valid smaller subset. It reuses the existing maximum
+of three attempts and returns transient unavailability under continuous change.
+Actual Board/Organization/account denial retains its refusal path. Unexpected
+identities are rejected; Board locks retain canonical order. Mark-read preserves
+its original IDs/key and refuses a newly hidden selection without partial writes.
+
+The [12 API cases](../../tests/StrataAI.Api.Tests/NotificationEligibilityDiscoveryTests.cs)
+first record **five failures and seven passing controls**, then all pass after
+the change. They cover inbox/sync/mark-read, bounded continuous change, hidden
+sources, surviving unread notices and immediate Board-access refusal. All **27
+related notification/watch cases** also pass. The complete Release solution
+build has zero warnings/errors; all 289 CI coverage checks pass.
+
+The native PostgreSQL17/all-149-migration probe observes the exact API lock wait
+in each of three fresh scenarios. Baseline codes are **404/404/404**; repaired
+codes are **200/200/404** for inbox/sync/mark-read. Both runs exclude hidden IDs,
+preserve the survivor's unread state and preserve complete notice/journal/receipt
+fingerprints. They take **55.865/57.782 seconds**, keep captured inputs and the
+API process unchanged, and restore original Docker inventory.
+
+The complete original verified-account configured-watch scenario then passes
+once, exercising both desktop and phone, in **83.349 seconds** (**131.404 seconds**
+including fixture setup/cleanup). Production verification remains required;
+fresh fixture accounts use the existing test's explicit admin activation branch,
+with pending login refused first. This does not prove mail-provider acceptance.
+All producer/delivery/private-envelope, archive/restore, original read receipt,
+focus/reconnect and accessibility assertions remain. Its **1,286 source inputs,
+71 binaries and four served assets** match independently. The API process stays
+stable; scoped Worker recreation/restoration uses the same cached image. Owned
+containers, networks and directories are independently absent afterward.
+
+Initial private expectation/setup/runner errors are retained separately: Board
+withdrawal expectations were corrected to the existing mandatory denial contract;
+a missing fixture membership ID stopped the first native setup; an unsupported
+runner exclusion and selection preflight executed no related test cases. Their
+cleanup/observations are not passing product evidence. Final probes use current
+read-only assemblies/assets in cached runtime images with local `e88c6514`
+metadata and this source change, not newly built immutable release images.
+Current exact-candidate/full CI and remaining PRD acceptance still govern closure.
+PRD-17 stays open at **15% estimated work remaining**. No large-load test runs.
+
 ## Current local preference and reconnect evidence
 
 On 2026-10-07 the complete `notification-center.spec.ts` scenario passed against

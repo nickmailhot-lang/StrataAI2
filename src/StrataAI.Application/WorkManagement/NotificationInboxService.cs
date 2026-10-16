@@ -153,7 +153,7 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
             }, ct), ct);
     }
 
-    private sealed class NotificationRouteChanged : Exception { }
+    private sealed class NotificationDiscoveryChanged : Exception { }
 
     private static async Task<WorkOperation<T>> RediscoverAsync<T>(Func<Task<WorkOperation<T>>> attempt, CancellationToken ct)
     {
@@ -161,9 +161,10 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
         {
             ct.ThrowIfCancellationRequested();
             try { return await attempt(); }
-            catch (NotificationRouteChanged) { }
+            catch (NotificationDiscoveryChanged) { }
         }
-        // Continuous movement is transient unavailability, not a revoked grant.
+        // Continuous movement/visibility changes are transient unavailability,
+        // not a revoked Organization grant.
         return WorkOperation<T>.Failure("work_storage_unavailable");
     }
 
@@ -187,15 +188,23 @@ public sealed class NotificationInboxService(INotificationInboxStore notificatio
         if (rows.Any(n => n.OrganizationId != org || n.RecipientId != recipient)) return false;
         var ids = rows.Select(n => n.Id).ToArray();
         var current = await notifications.FindVisibleAsync(org, recipient, ids, policy.RequireVerifiedEmail, ct);
-        if (current.Count != rows.Count || !current.Select(n => n.Id).ToHashSet().SetEquals(ids) ||
-            current.Any(n => !rows.Any(planned => planned.Id == n.Id && planned.BoardId == n.BoardId && planned.CardId == n.CardId)))
+        if (current.Any(n => n.OrganizationId != org || n.RecipientId != recipient ||
+            !rows.Any(planned => planned.Id == n.Id && planned.BoardId == n.BoardId && planned.CardId == n.CardId)))
             return false;
+        var currentIds = current.Select(n => n.Id).ToHashSet();
+        // A Card can become hidden while waiting for the first Board lock.
+        // All Board gates above still passed: restart the complete transaction
+        // and discover its current visible window instead of retiring the inbox.
+        // Mark-read still rechecks its original exact IDs on the next attempt.
+        if (current.Count < rows.Count && currentIds.Count == current.Count)
+            throw new NotificationDiscoveryChanged();
+        if (current.Count != rows.Count || !currentIds.SetEquals(ids)) return false;
         // A move can commit between discovery and the first parent-lock wait.
         // Release the entire old lock set before discovering/locking the new
         // route in canonical order. Never acquire another Board out of order,
         // accept an unlocked route, or label this movement as access withdrawal.
         if (current.Any(n => rows.Single(planned => planned.Id == n.Id).CurrentBoardId != n.CurrentBoardId))
-            throw new NotificationRouteChanged();
+            throw new NotificationDiscoveryChanged();
         return true;
     }
 }
