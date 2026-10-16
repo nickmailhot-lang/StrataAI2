@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [live invitation issuance admission repair](invitation-administration-ui.md#live-issuance-admission-before-account-failure-review-2026-10-16)
+opens history before issuance and requires its real delivery and protected read
+before account-outage review. Content-free Board events keep their privacy
+contract. Ten corrected protocol failures become 25 passes; all four complete
+desktop/phone scenarios pass with their 35 original assertions and deadlines.
+Final native inputs match and owned cleanup restores Docker inventory. The
+initial failed setup and blocked tiny-folder deletion are recorded separately.
+Current immutable/full CI remains required, the hosted cause is not claimed
+reproduced, and PRD-03/05/60 remain open. Large-load tests stay deferred.
+
 The [cached-detail observation repair](../kanban-performance.md#cached-detail-assertion-snapshot-isolation-2026-10-16)
 keeps assertion diagnostic snapshots outside the browser-painted opening sample.
 All four normal Kanban/date/Checklist scenarios pass their original budgets,

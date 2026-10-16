@@ -955,3 +955,16 @@ recovery remain required. The earlier hosted account-warning failure remains a
 separate unresolved diagnosis; current immutable/full CI and complete acceptance
 still govern closure. Estimated work remaining stays **8%**; large-load
 checks remain deferred until after the operational MVP.
+
+The [live issuance admission repair](invitation-administration-ui.md#live-issuance-admission-before-account-failure-review-2026-10-16)
+opens history before issuance, requires its actual source plus a subsequent
+protected read, and uses/restores the existing scoped Worker. Organization frames
+bind the invitation ID; content-free Board frames retain only Board identity.
+Ten corrected protocol failures establish the original observer's premature
+readiness; all 25 protocol cases and four complete desktop/phone account-outage
+scenarios pass afterward. All 35 original assertions and 90-second deadlines
+remain, with matching native inputs and complete final owned cleanup. An initial
+four-case setup failure and separately blocked tiny folder deletion remain
+recorded. This is compiled-source proof, not original hosted-failure reproduction
+or current immutable/full acceptance. Estimated work remaining stays **8%**;
+large-load tests remain post-MVP.

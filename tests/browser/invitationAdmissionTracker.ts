@@ -2,11 +2,16 @@ import type { Page, Request } from '@playwright/test';
 
 // Passive readiness: observe a real scoped stream head and the protected read
 // started after it. A previous screen/read cannot admit a keyboard action.
-export function trackInvitationAdmission(page: Page, organization: string, actor: string, board: string | undefined, pagePath: string, protectedReadPath?: string) {
+// Optional issuance admission observes new delivery, not historical replay.
+// Organization metadata names the invitation; Board invalidations deliberately
+// name only the Board. The caller can bind the acknowledgment after its frame.
+export function trackInvitationAdmission(page: Page, organization: string, actor: string, board: string | undefined, pagePath: string, protectedReadPath?: string, issuedInvitation?: { id?: string }) {
   const socketPath = board ? '/boards/live' : '/organizations/live/metadata';
   const scope = board ?? organization;
   const readPath = protectedReadPath ?? (board ? `/boards/${board}` : `/organizations/${organization}/members/${actor}`);
-  let heads = 0, readHead = 0, reads = 0;
+  let heads = 0, generation = 0, readGeneration = -1, reads = 0;
+  const issued = new Set<string>();
+  const seen = new Set<string>();
   const pending = new Map<Request, number>();
   page.on('websocket', socket => {
     if (new URL(socket.url()).pathname !== socketPath) return;
@@ -27,9 +32,20 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
         try {
           const value = JSON.parse(part);
           const item = board ? value.item : value.item?.organizationId === organization && value.item?.userId === actor ? value.item.page : undefined;
-          if (value.type === 2 && watches.has(value.invocationId) && !observed.has(value.invocationId)
-            && item && typeof item.cursor === 'string' && typeof item.resetRequired === 'boolean' && Array.isArray(item.events)) {
-            observed.add(value.invocationId); heads++;
+          if (value.type !== 2 || !watches.has(value.invocationId) || !item || typeof item.cursor !== 'string'
+            || typeof item.resetRequired !== 'boolean' || !Array.isArray(item.events)) continue;
+          if (issuedInvitation && (typeof item.pending !== 'boolean' || item.events.some((event: {
+            eventId?: unknown; eventType?: unknown; organizationId?: unknown; boardId?: unknown; entityId?: unknown;
+          }) => !event || typeof event.eventId !== 'string' || typeof event.eventType !== 'string'
+            || event.organizationId !== organization || event.boardId !== (board ?? null) || typeof event.entityId !== 'string'))) continue;
+          if (!observed.has(value.invocationId)) { observed.add(value.invocationId); heads++; generation++; }
+          if (issuedInvitation) {
+            if (item.resetRequired) { generation++; seen.clear(); }
+            for (const event of item.events) {
+              if (!seen.has(event.eventId)) { seen.add(event.eventId); generation++; }
+              if (event.entityType === (board ? 'Board' : 'Invitation') && (!board || event.entityId === board)
+                && event.eventType === (board ? 'BOARD_MEMBER_INVITED' : 'ORGANIZATION_MEMBER_INVITED')) issued.add(event.entityId);
+            }
           }
         } catch { /* Passive observation only. */ }
       }
@@ -37,14 +53,15 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
   });
   page.on('request', request => {
     if (heads > 0 && new URL(page.url()).pathname === pagePath && request.method() === 'GET'
-      && new URL(request.url()).pathname === readPath) pending.set(request, heads);
+      && new URL(request.url()).pathname === readPath) pending.set(request, generation);
   });
   page.on('response', response => {
-    const head = pending.get(response.request()); pending.delete(response.request());
-    if (head !== undefined && head === heads && response.status() === 200) { readHead = head; reads++; }
+    const started = pending.get(response.request()); pending.delete(response.request());
+    if (started !== undefined && started === generation && response.status() === 200) { readGeneration = started; reads++; }
   });
   page.on('requestfailed', request => pending.delete(request));
-  return { heads: () => heads, reads: () => reads, ready: () => heads > 0 && readHead === heads };
+  return { heads: () => heads, reads: () => reads,
+    ready: () => heads > 0 && readGeneration === generation && (!issuedInvitation || !!issuedInvitation.id && issued.has(board ?? issuedInvitation.id)) };
 }
 
 // A displayed review can precede the Board event that invalidates it. Observe

@@ -1,5 +1,68 @@
 # Administrator invitation creation
 
+## Live issuance admission before account-failure review (2026-10-16)
+
+The account-uncertainty browser scenario now opens history before creating its
+invitation. It observes the real scoped Watch head, performs one explicit setup
+refresh, issues the original invitation and requires a protected history read
+started after the new issuance frame. A separate Worker uses the existing scoped
+fixture helper and is restored in `finally`. This avoids relying on historical
+source replay or treating an empty initial head as delivery of a later event.
+
+The optional tracker admission binds Organization metadata to the acknowledged
+invitation ID. Board frames deliberately expose only `Board`/Board ID, not an
+invitation ID, recipient email, token or target role; the Board fixture observes
+its content-free issuance and then its protected history read. Source delivery
+may precede the creation acknowledgment. Later new source frames retire an
+older read; replay does not invent another event or require an unnecessary read.
+Foreign scopes, unobserved Watch invocations and failed/wrong reads cannot admit
+the review. Existing callers without this optional issuance requirement keep
+their head/read behavior.
+
+Ten controlled protocol cases fail against the original tracker; all **25**
+tracker cases pass after the change, including the 15 existing controls. The
+initial protocol prototype reused one source ID for two different invitations;
+the final baseline uses distinct canonical source identities. Browser TypeScript
+passes. This test file already runs in required CI metadata validation.
+
+An incomplete native attempt fails all four readiness checks before the account
+outage: it expected pre-subscription sources and incorrectly required invitation
+identity from Board frames, without scoped Board delivery. It is retained as a
+failed attempt, not a reproduction of the earlier hosted warning failure. Its
+containers/network are confirmed absent. Its outer cleanup failed with a Windows
+directory-not-empty error; automatic approval then blocked removal of a remaining
+3,527-byte folder. Full inventory equality for that attempt is unproven. The
+blocked folder is left for manual removal; this does not affect the final fixture.
+
+The corrected complete Organization/Board desktop/phone file passes **4/4 in
+180,296.023 ms**, with zero retries, failures, flaky results, skips or report errors.
+All **35 original assertion expressions** and the **90-second scenario deadline**
+are preserved. Only two bootstrap assertions are added. Exact pre-submit warning
+and zero DELETEs, submitted-command recovery and exactly one DELETE, canonical
+before/after rows, one document, Board-name withdrawal, Axe and viewport checks
+remain required. The source-aware setup does not change product behavior or
+weaken account uncertainty/privacy checks.
+
+The final native fixture uses fresh restricted PostgreSQL 17.11/pgvector and all
+149 migrations, current read-only compiled API/Worker assemblies and production
+Vite assets through Nginx, cached runtimes, a private fake email provider and the
+general phase's optional-verification policy. Runtime metadata remains
+`e88c6514`; this is compiled-source evidence, not current immutable-image release
+certification. All **1,286 source**, **71 binary** and **four served asset** hashes
+match. Relative to the preceding performance verification, only these three
+browser/helper test sources change; binaries and production assets are identical.
+The API stays unchanged; the scoped Worker is recreated/restored with the same
+image. Final cleanup restores the original Docker inventory and removes its
+3,347-byte temporary directory. No original database, local Demo, image build,
+pull/import/download or large-load test is used.
+
+The earlier hosted trace still establishes overlapping history/account reads and
+zero DELETEs, not the exact source interleaving. This protocol repair does not
+claim the original hosted failure was locally reproduced or exclusively explained.
+Current immutable/full CI and all remaining acceptance criteria govern closure.
+PRD-03/05/60 remain open at **8%/14%/18% estimated work remaining**, respectively.
+Large-load tests remain deferred until after the operational MVP.
+
 ## Immediate retirement of invitation revocation consent (2026-10-16)
 
 Organization and Board invitation history now retire reviewed consent immediately

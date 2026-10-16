@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { trackInvitationAdmission } from './invitationAdmissionTracker';
+import { scopedBoardWorker } from './scopedBoardWorker';
 
 for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
   test(`PRD-03/05/60: account uncertainty before and after revocation (Board=${boardSurface}, ${width}px)`, async ({ page, context }) => {
@@ -20,52 +21,62 @@ for (const width of [1280, 390]) for (const boardSurface of [false, true]) {
     }
     const root = board ? `/boards/${board}/invitations` : `/organizations/${org}/invitations`;
     const path = board ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`;
-    const admission = trackInvitationAdmission(page, org, actor, board, path, root);
-    const email = `history-account-recipient-${suffix}@example.test`;
-    const invitation = await context.request.post(root, { headers, data: board ? { email, role: 'MEMBER' }
-      : { email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
-    expect(invitation.status()).toBe(201); const id = (await invitation.json()).id;
-    const canonical = await context.request.get(root); expect(canonical.status()).toBe(200); const before = await canonical.json();
-    let failProfile = false, writes = 0, documents = 0;
-    await page.route(url => url.pathname === '/me', async route => {
-      if (!failProfile) { await route.continue(); return; }
-      // Background account reads must not consume the outage before the action.
-      // Recovery below explicitly restores the account before its protected read.
-      await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
-    });
-    await page.route(url => url.pathname === `${root}/${id}`, async route => {
-      if (route.request().method() !== 'DELETE') { await route.continue(); return; }
-      expect(new URL(route.request().url()).searchParams.get('expectedActorId')).toBe(actor);
-      writes++; const response = await route.fetch(); expect(response.status()).toBe(204);
-      failProfile = true; await route.fulfill({ response });
-    });
-    page.on('request', request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++; });
-    await page.goto(path);
-    // First displayed history can precede the watcher bootstrap invalidation.
-    // Wait for the actual scoped head and a protected history read after it.
-    await expect.poll(admission.ready).toBe(true);
-    const review = page.getByRole('button', { name: `Revoke invitation for ${email}` });
-    await review.click(); await expect(page.getByRole('dialog')).toBeVisible();
-    failProfile = true; await page.getByRole('button', { name: 'Confirm revocation' }).click();
-    await expect(page.getByText('Your account could not be confirmed. No revocation was sent. Refresh invitations before reviewing again.')).toBeVisible();
-    await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByRole('heading', { name: email })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Check revocation' })).toHaveCount(0); expect(writes).toBe(0);
-    const unchanged = await context.request.get(root); expect(unchanged.status()).toBe(200); expect(await unchanged.json()).toEqual(before);
-    failProfile = false;
-    await page.getByRole('button', { name: 'Refresh invitations' }).click(); await expect(review).toBeVisible(); expect(writes).toBe(0);
-    await review.click(); await page.getByRole('button', { name: 'Confirm revocation' }).click();
-    await expect(page.getByText('Revocation could not be confirmed. Check the current invitation state before another action.')).toBeVisible();
-    await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByRole('heading', { name: email })).toHaveCount(0);
-    await expect(page.getByText('Invitation revocation confirmed.')).toHaveCount(0); expect(writes).toBe(1);
-    if (board) await expect(page.getByRole('heading', { name: 'Private account history Board' })).toHaveCount(0);
-    const committed = await context.request.get(root); expect(committed.status()).toBe(200); const after = await committed.json();
-    expect(after.items.find((row: { id: string; revokedAt: string | null }) => row.id === id).revokedAt).not.toBeNull();
-    failProfile = false;
-    await page.getByRole('button', { name: 'Check revocation' }).click();
-    await expect(page.getByText('Invitation revocation confirmed.')).toBeVisible(); await expect(page.getByText('Revoked', { exact: true })).toBeVisible();
-    expect(writes).toBe(1); expect(documents).toBe(1);
-    const recovered = await context.request.get(root); expect(recovered.status()).toBe(200); expect(await recovered.json()).toEqual(after);
-    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const issued: { id?: string } = {};
+    const admission = trackInvitationAdmission(page, org, actor, board, path, root, issued);
+    const bootstrap = trackInvitationAdmission(page, org, actor, board, path, root);
+    let id = '';
+    const restoreWorker = scopedBoardWorker(org);
+    try {
+      let failProfile = false, writes = 0, documents = 0;
+      await page.route(url => url.pathname === '/me', async route => {
+        if (!failProfile) { await route.continue(); return; }
+        // Background account reads must not consume the outage before the action.
+        // Recovery below explicitly restores the account before its protected read.
+        await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+      });
+      await page.route(url => url.pathname === `${root}/${id}`, async route => {
+        if (route.request().method() !== 'DELETE') { await route.continue(); return; }
+        expect(new URL(route.request().url()).searchParams.get('expectedActorId')).toBe(actor);
+        writes++; const response = await route.fetch(); expect(response.status()).toBe(204);
+        failProfile = true; await route.fulfill({ response });
+      });
+      page.on('request', request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++; });
+      await page.goto(path);
+      await expect.poll(() => bootstrap.heads() > 0).toBe(true);
+      await page.getByRole('button', { name: 'Refresh invitations', exact: true }).click();
+      await expect.poll(bootstrap.ready).toBe(true);
+      const email = `history-account-recipient-${suffix}@example.test`;
+      const invitation = await context.request.post(root, { headers, data: board ? { email, role: 'MEMBER' }
+        : { email, surface: 'INTERNAL', targetRole: 'MEMBER' } });
+      expect(invitation.status()).toBe(201); id = (await invitation.json()).id; issued.id = id;
+      const canonical = await context.request.get(root); expect(canonical.status()).toBe(200); const before = await canonical.json();
+      // Issue after the real head: bootstrap does not promise historical replay.
+      // Organization frames bind this ID; private Board frames name only the Board.
+      // Both require a protected history read started after the actual issuance.
+      await expect.poll(admission.ready).toBe(true);
+      const review = page.getByRole('button', { name: `Revoke invitation for ${email}` });
+      await review.click(); await expect(page.getByRole('dialog')).toBeVisible();
+      failProfile = true; await page.getByRole('button', { name: 'Confirm revocation' }).click();
+      await expect(page.getByText('Your account could not be confirmed. No revocation was sent. Refresh invitations before reviewing again.')).toBeVisible();
+      await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByRole('heading', { name: email })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Check revocation' })).toHaveCount(0); expect(writes).toBe(0);
+      const unchanged = await context.request.get(root); expect(unchanged.status()).toBe(200); expect(await unchanged.json()).toEqual(before);
+      failProfile = false;
+      await page.getByRole('button', { name: 'Refresh invitations' }).click(); await expect(review).toBeVisible(); expect(writes).toBe(0);
+      await review.click(); await page.getByRole('button', { name: 'Confirm revocation' }).click();
+      await expect(page.getByText('Revocation could not be confirmed. Check the current invitation state before another action.')).toBeVisible();
+      await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByRole('heading', { name: email })).toHaveCount(0);
+      await expect(page.getByText('Invitation revocation confirmed.')).toHaveCount(0); expect(writes).toBe(1);
+      if (board) await expect(page.getByRole('heading', { name: 'Private account history Board' })).toHaveCount(0);
+      const committed = await context.request.get(root); expect(committed.status()).toBe(200); const after = await committed.json();
+      expect(after.items.find((row: { id: string; revokedAt: string | null }) => row.id === id).revokedAt).not.toBeNull();
+      failProfile = false;
+      await page.getByRole('button', { name: 'Check revocation' }).click();
+      await expect(page.getByText('Invitation revocation confirmed.')).toBeVisible(); await expect(page.getByText('Revoked', { exact: true })).toBeVisible();
+      expect(writes).toBe(1); expect(documents).toBe(1);
+      const recovered = await context.request.get(root); expect(recovered.status()).toBe(200); expect(await recovered.json()).toEqual(after);
+      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    } finally { restoreWorker(); }
   });
 }

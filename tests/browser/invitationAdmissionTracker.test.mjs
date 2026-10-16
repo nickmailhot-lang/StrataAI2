@@ -144,3 +144,61 @@ test('archive admission rejects wrong/failed reads and does not count source rep
   assert.equal(f.tracker.ready(), false); f.response(f.request()); f.frame([f.event]);
   assert.equal(f.tracker.ready(), true); assert.equal(f.tracker.count('BOARD_DELETED'), 1);
 });
+
+function issuedHistoryFixture(board) {
+  const page = new EventEmitter();
+  const target = board ? '/app/org/boards/board/invitations' : '/app/org/invitations';
+  const root = board ? '/boards/board/invitations' : '/organizations/org/invitations';
+  page.url = () => 'https://example.test' + target;
+  const issued = { id: 'invitation' };
+  const tracker = trackInvitationAdmission(page, 'org', 'actor', board, target, root, issued);
+  const socket = new EventEmitter(); socket.url = () => 'https://example.test' + (board ? '/boards/live' : '/organizations/live/metadata');
+  page.emit('websocket', socket);
+  socket.emit('framesent', { payload: JSON.stringify({ type: 4, target: 'Watch', arguments: [board ?? 'org'], invocationId: 'watch' }) });
+  const event = { eventId: 'issued', eventType: board ? 'BOARD_MEMBER_INVITED' : 'ORGANIZATION_MEMBER_INVITED',
+    organizationId: 'org', boardId: board ?? null, entityType: board ? 'Board' : 'Invitation', entityId: board ?? 'invitation' };
+  const frame = (events = [], invocationId = 'watch', actor = 'actor') => socket.emit('framereceived', { payload: JSON.stringify({
+    type: 2, invocationId, item: board ? { cursor: 'opaque', pending: false, resetRequired: false, events }
+      : { organizationId: 'org', userId: actor, page: { cursor: 'opaque', pending: false, resetRequired: false, events } },
+  }) });
+  const request = (path = root) => { const value = { method: () => 'GET', url: () => 'https://example.test' + path }; page.emit('request', value); return value; };
+  const response = (value, status = 200) => page.emit('response', { request: () => value, status: () => status });
+  return { tracker, event, frame, request, response, issued };
+}
+
+for (const board of [undefined, 'board']) {
+  test(`issued history can observe delivery before its creation acknowledgment (Board=${!!board})`, () => {
+    const f = issuedHistoryFixture(board); delete f.issued.id;
+    f.frame([f.event]); f.response(f.request()); assert.equal(f.tracker.ready(), false);
+    f.issued.id = 'invitation'; assert.equal(f.tracker.ready(), true);
+  });
+  test(`issued history cannot admit the first empty head before its own invitation source (Board=${!!board})`, () => {
+    const f = issuedHistoryFixture(board); f.frame(); f.response(f.request());
+    assert.equal(f.tracker.ready(), false);
+    const held = f.request(); f.frame([f.event]); f.response(held);
+    assert.equal(f.tracker.ready(), false);
+    f.response(f.request()); assert.equal(f.tracker.ready(), true);
+  });
+  test(`issued history ignores the wrong entity and fences a read before the matching source (Board=${!!board})`, () => {
+    const f = issuedHistoryFixture(board); f.frame([{ ...f.event, eventId: 'another-source', entityId: 'another' }]); f.response(f.request());
+    assert.equal(f.tracker.ready(), false);
+    const held = f.request(); f.frame([f.event]); f.response(held);
+    assert.equal(f.tracker.ready(), false);
+    f.response(f.request(), 503); assert.equal(f.tracker.ready(), false);
+    f.response(f.request()); assert.equal(f.tracker.ready(), true);
+  });
+  test(`issued history rejects foreign source scopes and unobserved invocations (Board=${!!board})`, () => {
+    const f = issuedHistoryFixture(board); f.frame();
+    f.frame([f.event], 'unobserved'); f.frame([{ ...f.event, organizationId: 'another' }]);
+    f.frame([{ ...f.event, boardId: board ? 'another' : 'board' }]); f.response(f.request());
+    assert.equal(f.tracker.ready(), false);
+    f.frame([f.event]); f.response(f.request()); assert.equal(f.tracker.ready(), true);
+  });
+  test(`issued history retires readiness on later sources without counting a replay as new (Board=${!!board})`, () => {
+    const f = issuedHistoryFixture(board); f.frame([f.event]); f.response(f.request());
+    assert.equal(f.tracker.ready(), true); f.frame([f.event]); assert.equal(f.tracker.ready(), true);
+    const held = f.request(); f.frame([{ ...f.event, eventId: 'revoked', eventType: 'INVITATION_REVOKED' }]);
+    f.response(held); assert.equal(f.tracker.ready(), false);
+    f.response(f.request()); assert.equal(f.tracker.ready(), true);
+  });
+}
