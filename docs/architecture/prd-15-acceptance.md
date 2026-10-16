@@ -1,5 +1,17 @@
 # PRD-15 acceptance map — open
 
+The [cross-Board Card activity admission follow-up](cross-board-card-movement.md#admitted-card-activity-review-after-cross-board-recovery--2026-10-16)
+verifies the original hosted diagnostic archive and observes its still-closed
+activity review/no Card-activity HTTP request. Both read-only openings now use
+the existing bounded keyboard-review helper. All 11 protocol tests, 285 CI guards
+and both actual PostgreSQL/API/Worker desktop/phone cases pass, retaining exact
+request count/key/body, source/destination streams, two canonical movement facts,
+current Board attribution, focus and reload assertions. Captured inputs and
+private composition match; the API is stable, scoped Worker is restored and
+owned cleanup restores Docker inventory. Local compiled-runtime/optional-email
+evidence retains full current immutable CI and complete PRD acceptance. Estimated
+PRD-15 work remaining stays **34%**; large-load tests remain deferred.
+
 The [comment refresh and retired-launcher follow-up](browser-recovery-ci.md#stop-waiting-on-retired-command-launchers--2026-10-15)
 records two hosted shard failures, a bounded read-only comment review change,
 five helper regressions and four passing desktop/phone comment/Reminder recovery

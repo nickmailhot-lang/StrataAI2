@@ -1,5 +1,31 @@
 # Browser recovery CI investigation
 
+## Observe cross-Board activity opening — 2026-10-16
+
+The [cross-Board activity admission record](cross-board-card-movement.md#admitted-card-activity-review-after-cross-board-recovery--2026-10-16)
+traces the latest completed shard failure to a still-closed review with no
+Card-activity request. The existing nonmutating keyboard helper now observes the
+region at both initial and post-reload openings; exact two-write/receipt/history
+and timing assertions remain. All 11 helper cases, 285 CI guards and both real
+desktop/phone workflows pass with unchanged inputs and owned cleanup. The record
+separates original hosted evidence, local current-source proof and remaining
+immutable-image/full acceptance.
+
+At the investigation checkpoint, GitHub reports 37 queued main CI runs and four
+active runs. Active .NET jobs have assigned runners; the current queued metadata
+job has runner ID zero and no failure conclusion. No explicit quota/root-cause
+message or failed step appears in those active runs. Healthy queued/running
+workflows are preserved. This is observed queue state, not a diagnosis of an
+account or platform limit.
+
+The latest completed Work/Worker failure is the old first registration call at
+line 17 in `20cfdc95` ([job 116789069276](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38814466984/job/116789069276)),
+which receives HTTP 503. Current Work admission and connection-opening sources
+are byte-identical to `5bb5dffd`, which includes the earlier `0116b9e9` pool
+recovery repair. Existing one-attempt bounded admission, pre-business recovery,
+diagnostic privacy and mandatory immutable-image acceptance remain required;
+this older failure is not a passing current-release result.
+
 ## Stop waiting on retired command launchers — 2026-10-15
 
 Hosted run [38714524264](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38714524264),

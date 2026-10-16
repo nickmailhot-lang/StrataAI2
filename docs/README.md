@@ -159,6 +159,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 - [Persisted board interface](architecture/board-interface.md)
 - [Cross-Board Card movement: implementation dependencies](architecture/cross-board-card-movement.md)
+- [Cross-Board activity review CI failure and native verification](architecture/cross-board-card-movement.md#admitted-card-activity-review-after-cross-board-recovery--2026-10-16)
 - [Work rank allocation](architecture/rank-allocation.md)
 - [Board administrator continuity](board-admin-continuity.md)
 - [Board archive review and recovery](board-archive-control.md)

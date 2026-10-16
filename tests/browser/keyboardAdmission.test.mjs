@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { pressObservedRequest } from './keyboardAdmission.ts';
+import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission.ts';
 
 // The real Playwright expectations/polling drive this isolated Locator protocol
 // fixture. Product browser cases separately prove native UI and HTTP behavior.
@@ -65,4 +65,59 @@ test('an unexpected initial observation cannot trigger another Enter', async () 
   const button = new Locator('normal'); button.count = 2;
   await assert.rejects(pressObservedRequest(button, () => button.count, 2));
   assert.equal(button.focuses, 0); assert.equal(button.presses, 0);
+});
+
+class ReviewRegion {
+  _apiName = 'Locator';
+  visible = false;
+  async isVisible() { return this.visible; }
+  async _expect() { return { matches: this.visible, received: this.visible, log: [], timedOut: !this.visible }; }
+}
+class ReviewLauncher {
+  _apiName = 'Locator';
+  focuses = 0;
+  presses = 0;
+  focused = false;
+  constructor(region, mode = 'normal') { this.region = region; this.mode = mode; }
+  async isVisible() { return !this.region.visible; }
+  async isEnabled() { return true; }
+  async focus() {
+    this.focuses++; this.focused = true;
+    if (this.mode === 'opens-during-focus') this.region.visible = true;
+  }
+  async _expect(expression) {
+    const matches = !this.region.visible && (expression !== 'to.be.focused' || this.focused);
+    return { matches, received: matches, log: [], timedOut: !matches };
+  }
+  async press(key) {
+    assert.equal(key, 'Enter'); this.presses++;
+    if (this.mode === 'never-opens' || this.mode === 'ignored-first' && this.presses === 1) return;
+    this.region.visible = true;
+  }
+}
+
+test('nonmutating activity review observes its inline region before returning', async () => {
+  const region = new ReviewRegion(); const launcher = new ReviewLauncher(region);
+  await openAdmittedReview(launcher, region);
+  assert.equal(region.visible, true); assert.equal(launcher.presses, 1);
+});
+test('an ignored review activation is retried only until its region opens', async () => {
+  const region = new ReviewRegion(); const launcher = new ReviewLauncher(region, 'ignored-first');
+  await openAdmittedReview(launcher, region);
+  assert.equal(region.visible, true); assert.equal(launcher.presses, 2);
+});
+test('an already-open region does not require its retired launcher', async () => {
+  const region = new ReviewRegion(); region.visible = true; const launcher = new ReviewLauncher(region);
+  await openAdmittedReview(launcher, region);
+  assert.equal(launcher.focuses, 0); assert.equal(launcher.presses, 0);
+});
+test('review opening during focus cannot activate the retired launcher', async () => {
+  const region = new ReviewRegion(); const launcher = new ReviewLauncher(region, 'opens-during-focus');
+  await openAdmittedReview(launcher, region);
+  assert.equal(region.visible, true); assert.equal(launcher.presses, 0);
+});
+test('an unopened review remains a failure within the original admission budget', { timeout: 10_000 }, async () => {
+  const region = new ReviewRegion(); const launcher = new ReviewLauncher(region, 'never-opens');
+  await assert.rejects(openAdmittedReview(launcher, region));
+  assert.equal(region.visible, false); assert.ok(launcher.presses > 0);
 });

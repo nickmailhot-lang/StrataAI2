@@ -209,3 +209,51 @@ original stopped PostgreSQL is preserved. These compiled-runtime/controlled-
 account results do not certify current immutable/full CI or managed providers.
 Estimated PRD-08 work remaining stays **35%**; large-load testing remains
 disabled until after the operational MVP milestone.
+
+## Admitted Card activity review after cross-Board recovery — 2026-10-16
+
+Hosted [run 38809952751, browser shard one](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38809952751/job/116786812691)
+at `2c4e0b2a53b6b200df733f62f02189ea05ae7b58` reports 102 passes and one
+desktop failure: the expected two activity entries are absent. The original
+diagnostic artifact **12026775307** is independently verified at **10,912,314
+bytes**, SHA-256 `6f259974a9a941992c2ca9c668db72311b1d964f8b62982398dc0a0090bef49d`.
+Its trace records the activity-button click, but no Card-activity HTTP read;
+the screenshot still shows **Review Card activity** and no opened history region.
+The test and activity component remain byte-identical to that failed revision
+before this change. This locates an unobserved opening transition; it does not
+identify the precise event that prevented activation or prove missing backend
+history. No local reproduction of that specific click loss is claimed.
+
+Both initial and post-reload activity openings now use the existing bounded
+nonmutating keyboard-review admission helper and observe the actual Card
+activity region. An unopened region still fails within the original five-second
+admission budget. Mutation/recovery retain their observed-request helper, exact
+original body/key, two POSTs and all current source/destination/stream/history/
+focus/reload/overflow assertions. The original 150-second scenarios and default
+activity-count assertion timeout remain unchanged; no product code changes.
+
+All **11** keyboard-admission protocol tests pass, including five new inline-
+review cases: successful opening, ignored first activation, already-open/retired
+launcher, opening during focus and failure when the region never opens. Browser
+types, collection and all **285** CI integration guards pass. Both maintained
+desktop/phone native scenarios pass on single attempts in **100,878.640 ms**,
+with zero unexpected/flaky/skipped cases or report errors. Actual restricted
+PostgreSQL 17.11/all 149 migrations, current API/Worker assemblies and current
+Vite assets verify both real peer streams, exact original recovery, two canonical
+CARD_MOVED activity facts with current destination attribution and reload.
+
+All **1,272 source/fixture inputs, 71 binaries and four served assets** match.
+The API process remains stable. The original scoped-Worker helper recreates the
+Worker as designed; the final Worker uses the same cached image, is healthy and
+has no Organization filter. Private Compose files contain environment placeholders
+only, retain the checked-in Organization-scope overlay and remain unchanged
+during execution. Owned cleanup removes **3,308 temporary bytes** and restores
+the original Docker inventory. The verified download archive is also removed;
+only its selected small failure diagnostics remain private. No image archives,
+new images, existing databases or large-load tests are used.
+
+This uses cached runtime images and current read-only assemblies/assets, with
+local metadata `2b59fd0c`/`1.0.0`, controlled provider/optional-email policy and
+private fixture composition. It does not certify current immutable/full CI or
+managed providers. PRD-08 remains open at **35% estimated work remaining** and
+PRD-15 at **34%**. Large-load testing remains disabled until after MVP.

@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [cross-Board activity CI follow-up](cross-board-card-movement.md#admitted-card-activity-review-after-cross-board-recovery--2026-10-16)
+repairs missing observation of a nonmutating review opening in a completed hosted
+failure. Both desktop/phone workflows pass exact original recovery, both peer
+streams, canonical history and reload with all assertions/deadlines retained.
+All 11 helper cases and 285 CI guards pass; unchanged source/binaries/assets,
+stable API, restored scoped Worker and owned cleanup are verified. The separate
+[queue audit](browser-recovery-ci.md#observe-cross-board-activity-opening--2026-10-16)
+records healthy active/queued runs and distinguishes an older Work admission
+failure from current acceptance. Current immutable/full release CI remains
+required; large-load testing remains deferred.
+
 The [deletion stage observations](operator-metrics.md#organization-deletion-client-observations--2026-10-16)
 separate accepted request, validated status read and verified terminal-view open
 through the existing private-data-free telemetry path. All 64 focused web,

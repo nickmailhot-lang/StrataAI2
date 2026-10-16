@@ -1,7 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
-import { pressObservedRequest } from './keyboardAdmission';
+import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-08/15 cross-Board keyboard move recovers after source removal and updates both streams at ${viewport.width}px`, async ({ page, context, browser }) => {
@@ -66,14 +66,15 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await page.getByRole('button', { name: 'Close', exact: true }).focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
       await destinationPeer.getByRole('link', { name: 'Stable cross Board Card', exact: true }).click();
-      await destinationPeer.getByRole('button', { name: 'Review Card activity', exact: true }).click();
-      await expect(destinationPeer.getByRole('region', { name: 'Card activity' }).getByText('Cross Board mover moved a Card.', { exact: true })).toHaveCount(2);
+      const activity = destinationPeer.getByRole('region', { name: 'Card activity', exact: true });
+      await openAdmittedReview(destinationPeer.getByRole('button', { name: 'Review Card activity', exact: true }), activity);
+      await expect(activity.getByText('Cross Board mover moved a Card.', { exact: true })).toHaveCount(2);
       const history = await context.request.get(`/cards/${card}/activity`); expect(history.status()).toBe(200);
       const moves = (await history.json()).items.filter((e: { eventType: string }) => e.eventType === 'CARD_MOVED');
       expect(moves).toHaveLength(2); expect(moves.every((e: { currentBoardId: string }) => e.currentBoardId === boards[1])).toBe(true);
       await destinationPeer.reload(); await expect(destinationPeer.getByRole('heading', { name: 'Card details', exact: true })).toBeVisible();
-      await destinationPeer.getByRole('button', { name: 'Review Card activity', exact: true }).click();
-      await expect(destinationPeer.getByRole('region', { name: 'Card activity' }).getByText('Cross Board mover moved a Card.', { exact: true })).toHaveCount(2);
+      await openAdmittedReview(destinationPeer.getByRole('button', { name: 'Review Card activity', exact: true }), activity);
+      await expect(activity.getByText('Cross Board mover moved a Card.', { exact: true })).toHaveCount(2);
     } finally { restore(); await peerContext.close(); }
   });
 }
