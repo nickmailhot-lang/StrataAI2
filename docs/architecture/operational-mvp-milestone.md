@@ -4,6 +4,18 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [complete durable mail-conflict rehearsal](identity-email.md#durable-verification-and-invitation-conflicts--2026-10-15)
+now passes reset, verification and invitation recovery against actual
+PostgreSQL/149 migrations and a separate restricted Worker. Closed signup refuses
+uninvited registration; real invitation proof creates one pending verification
+intent, and keyed invitation publication creates one delivery. Both retain
+retryable state through 409, then recover original-key receipts via normal
+backoff/lost-ack handling. Real proof consumption permits login without granting
+membership. The complete 299.274-second setup/cleanup preserves 719 source/71
+binary inputs and restores Docker inventory. Ten admission/caller cases, seven
+fixture cases and 277 CI guards pass. Current immutable/full CI and managed
+provider acceptance remain required; no large-load test runs.
+
 The [browser-origin transport repair](browser-security.md#browser-origin-interpretation-and-redirect-fencing--2026-10-15)
 rejects paths that the browser resolves to another origin and enforces
 same-origin fetch mode despite caller options. Seven new regressions fail before

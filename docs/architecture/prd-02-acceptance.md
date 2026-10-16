@@ -1,5 +1,15 @@
 # Authentication acceptance map — PRD-02
 
+The [complete durable conflict rehearsal](identity-email.md#durable-verification-and-invitation-conflicts--2026-10-15)
+passes password reset, invited verification and invitation delivery with real
+PostgreSQL/Worker execution. Closed registration, pending login refusal, original
+key/payload retries, matching stored receipts, real proof consumption and absent
+premature membership remain required. All captured inputs match and owned
+cleanup restores Docker inventory. The first expanded setup loses a temporary
+cookie file; a fresh HTTP sign-in before the scenarios corrects setup without
+relaxing assertions. Current immutable/full CI and remaining identity acceptance
+stay outstanding, at **16% estimated work remaining**. No large-load test runs.
+
 The [durable password-recovery conflict contract](identity-email.md#durable-conflict-recovery--2026-10-15)
 passes on fresh PostgreSQL/149 migrations with strict real verification and the
 separate Worker. An observed provider 409 leaves one intent pending with normal

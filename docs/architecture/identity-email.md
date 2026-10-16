@@ -215,6 +215,67 @@ required. PRD-02 stays open at **16% estimated work remaining**, PRD-60 at **18%
 ARCH-07/08 and MVP stay open. These few functional requests and bounded retry
 observations do not run deferred large-load testing.
 
+### Durable verification and invitation conflicts — 2026-10-15
+
+The [verification/invitation conflict contract](../../scripts/ci/invitation-mail-conflict.inc.sh)
+runs immediately after the reset conflict phase, before restoring the profile.
+It independently admits the expected Production revision, owned provider,
+verified active owner and active Organization ownership. It first requires an
+uninvited registration to fail with `self_registration_disabled`, then delivers
+a genuine bootstrap invitation using the separate scoped Worker. This keeps
+the scenario compatible with invitation-only registration without a policy or
+verification bypass.
+
+During sustained provider 409 failure, duplicate keyed invited registration
+requests must retain one pending verification intent and the same acknowledgment;
+login remains refused until verification. Duplicate keyed creation of a second
+invitation must retain one intent and acknowledgment with no exposed bearer.
+Both real queues must decide retry, retain future availability and clear leases,
+without a provider receipt or delivery effect. The invitation ledger remains
+`PENDING` rather than becoming permanently failed.
+
+After conflict recovery, normal backoff and lost-ack behavior must produce one
+effect per original key, no changed payloads, matching stored receipts, terminal
+verification `SENT` and invitation job `SUCCEEDED`/ledger `SENT`. Each path
+requires at least three claims and cleared error/lease fields. The delivered
+verification proof must work through the real HTTP endpoint and permit login;
+verification does not grant Organization membership or accept the invitation.
+The original owner's session, readiness and API/Worker process identities must
+survive. The contract does not edit queue scheduling, attempt limits, leases,
+token expiry or verification rows.
+
+The complete native setup, reset phase, verification/invitation phase and cleanup
+passes in **299.274 seconds** against fresh PostgreSQL **17.11** with all **149
+migrations**, restricted API/Worker/mail roles, strict verified-email policy,
+closed self-registration and explicitly scoped invitation execution. The reset
+finishes on claim three; verification and invitation require at least three
+claims, matching receipts and the stated terminal/lease checks. All **719 captured
+source/database/fixture inputs and 71 API/Worker binary files** match after
+execution. Both runtime metadata records identify
+`6cbe889780b812d7b01682bb447bf388e20bbfa8`, version `0.1.0-1736`.
+Cached images supply Linux runtimes with current compiled outputs mounted
+read-only, not a current immutable-release certification.
+
+The native setup replaces API/Worker only before starting the scenarios, to bind
+this fresh Organization and closed signup. The first expanded invocation loses
+its private temporary cookie file during that setup and stops at the original
+session assertion; no scenario assertion is relaxed. The final setup signs in
+again through real HTTP before process identities are captured. Both attempts
+have zero frozen-input differences and restore the original Docker inventory.
+The final run retires its owned API/Worker/PostgreSQL containers, network,
+provider thread/socket and empty temporary directory. No image is built, pulled
+or imported; the original database/local Demo are unused and no external email
+is sent.
+
+All **seven provider cases**, **ten admission/caller cases** (including twelve
+refusal subcases across the two conflict phases), **277 CI guards**, shell syntax,
+workflow lint and the zero-warning/error Release build pass. The normal
+exact-image identity stage must execute both conflict phases before restoring
+the profile. Current exact-image/full CI, managed-provider delivery and the
+remaining acceptance still govern closure. PRD-02 stays open at **16% estimated
+work remaining**, PRD-60 at **18%**; ARCH-07/08 and MVP remain open. These few
+functional requests and bounded retry observations do not run large-load tests.
+
 ### Provider response admission — 2026-10-15
 
 The previous adapter uses the default buffered `HttpClient.SendAsync` overload.

@@ -21,7 +21,7 @@ class CoreMailOutageAdmissionTests(unittest.TestCase):
             if conflict:
                 core = source.read_text()
                 helpers = core[core.index('core_uuid() {'):core.index('# Admit both process')]
-                source = self.repo/'scripts/ci/identity-mail-conflict.inc.sh'
+                source = self.repo/('scripts/ci/invitation-mail-conflict.inc.sh' if conflict == 'invitation' else 'scripts/ci/identity-mail-conflict.inc.sh')
             script = f'''set -euo pipefail
 calls={shlex.quote(calls.as_posix())}
 curl() {{
@@ -83,6 +83,7 @@ source {shlex.quote(source.as_posix())}
         ]:
             with self.subTest(options=options):
                 self.assertEqual(self.check_refusal(conflict=True, **options), expected)
+                self.assertEqual(self.check_refusal(conflict='invitation', **options), expected)
 
     def test_complete_identity_rehearsal_runs_conflict_once_after_outage_before_profile_restore(self):
         source = (self.repo/'scripts/ci/test-identity-email.sh').read_text()
@@ -91,6 +92,13 @@ source {shlex.quote(source.as_posix())}
         self.assertLess(source.index('source scripts/ci/core-mail-outage.inc.sh'), source.index(call))
         self.assertLess(source.index(call), source.rindex('up -d --wait --wait-timeout 180 api worker >/dev/null; signup_closed=false'))
         self.assertIn('"${mail_conflict_owned:-0}" = 1', source)
+
+    def test_verification_and_invitation_conflicts_run_once_before_restoring_the_profile(self):
+        source = (self.repo/'scripts/ci/test-identity-email.sh').read_text()
+        call = '\nsource scripts/ci/invitation-mail-conflict.inc.sh\n'
+        self.assertEqual(source.count(call), 1)
+        self.assertLess(source.index('source scripts/ci/identity-mail-conflict.inc.sh'), source.index(call))
+        self.assertLess(source.index(call), source.rindex('up -d --wait --wait-timeout 180 api worker >/dev/null; signup_closed=false'))
 
 
 if __name__ == '__main__':

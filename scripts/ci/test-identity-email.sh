@@ -696,6 +696,7 @@ core_mail_process_identity() {
 }
 source scripts/ci/core-mail-outage.inc.sh
 source scripts/ci/identity-mail-conflict.inc.sh
+source scripts/ci/invitation-mail-conflict.inc.sh
 "${compose[@]}" up -d --wait --wait-timeout 180 api worker >/dev/null; signup_closed=false
 echo 'Exact-image Board invitation mail: both roles, public signed issuance, sibling publication rollback, actual scoped Worker/provider delivery, verified proof review/discovery and explicit grants passed.'
 echo 'Exact-image invitation mail: atomic invitation/job/snapshot/audit/receipt rollback, keyed single publication, reference-only metadata, separate scoped Worker delivery, provider lost-acknowledgment idempotency, SENT completion recovery and no stored bearer passed.'
