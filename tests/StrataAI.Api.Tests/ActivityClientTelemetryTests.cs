@@ -67,6 +67,12 @@ public sealed partial class ApiHostTests
     [InlineData("board_invitation_history_disclosure")]
     [InlineData("board_invitation_history_read")]
     [InlineData("board_invitation_history_revoke")]
+    [InlineData("invitation_recipient_disclosure")]
+    [InlineData("invitation_recipient_read")]
+    [InlineData("invitation_recipient_accept")]
+    [InlineData("invitation_link_disclosure")]
+    [InlineData("invitation_link_review")]
+    [InlineData("invitation_link_accept")]
     public void PRD_03_Settings_observations_accept_fixed_categories_and_reject_private_material_atomically(string action)
     {
         using var valid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
@@ -145,6 +151,34 @@ public sealed partial class ApiHostTests
             new { action = "organization_invitation_history_read", kind = "use", count = 1 },
             new { action = "board_invitation_history_revoke", kind = "retry", count = 1, email = "private-recipient@example.test", invitationToken = "private-token" } } });
         Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(14, recorded.Count); Assert.Equal(6, durations.Count);
+    }
+
+    [Fact]
+    public async Task PRD_02_03_Recipient_observations_require_authentication_and_reject_private_batches_without_recording()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var actor = app.CreateClient(); using var anonymous = app.CreateClient();
+        await RegisterAndLogin(actor);
+        var meter = app.Services.GetRequiredService<ActivityClientTelemetry>().Meter;
+        var recorded = new ConcurrentQueue<Dictionary<string, object?>>(); var durations = new ConcurrentQueue<double>();
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, capture) => { if (ReferenceEquals(instrument.Meter, meter)) capture.EnableMeasurementEvents(instrument); };
+        listener.SetMeasurementEventCallback<long>((_, _, tags, _) => recorded.Enqueue(tags.ToArray().ToDictionary(pair => pair.Key, pair => pair.Value)));
+        listener.SetMeasurementEventCallback<double>((_, value, _, _) => durations.Enqueue(value)); listener.Start();
+        var payload = new { events = new[] { "invitation_recipient_disclosure", "invitation_recipient_read", "invitation_recipient_accept", "invitation_link_disclosure", "invitation_link_review", "invitation_link_accept" }
+            .Select(action => action.EndsWith("_disclosure", StringComparison.Ordinal)
+                ? (object)new { action, kind = "open", count = 1 }
+                : new { action, kind = "success", count = 1, durationMs = 125 }).ToArray() };
+        using var denied = await Mutate(anonymous, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode); Assert.Empty(recorded); Assert.Empty(durations);
+        using var accepted = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode); Assert.Equal("", await accepted.Content.ReadAsStringAsync(ct));
+        Assert.Equal(6, recorded.Count); Assert.Equal(Enumerable.Repeat(0.125, 4), durations.ToArray());
+        Assert.All(recorded, tags => Assert.Equal(new[] { "action", "kind" }, tags.Keys.Order().ToArray()));
+        using var rejected = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", new { events = new object[] {
+            new { action = "invitation_recipient_read", kind = "use", count = 1 },
+            new { action = "invitation_link_accept", kind = "retry", count = 1, email = "private-recipient@example.test", invitationToken = "private-token" } } });
+        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(6, recorded.Count); Assert.Equal(4, durations.Count);
     }
 
     [Fact]

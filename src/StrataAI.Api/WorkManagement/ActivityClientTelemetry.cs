@@ -20,6 +20,7 @@ public sealed class ActivityClientTelemetry(IMeterFactory factory)
         "organization_invitation_disclosure", "organization_invitation_read", "organization_invitation_create",
         "board_invitation_disclosure", "board_invitation_read", "board_invitation_create",
         "organization_invitation_history_disclosure", "organization_invitation_history_read", "organization_invitation_history_revoke", "board_invitation_history_disclosure", "board_invitation_history_read", "board_invitation_history_revoke",
+        "invitation_recipient_disclosure", "invitation_recipient_read", "invitation_recipient_accept", "invitation_link_disclosure", "invitation_link_review", "invitation_link_accept",
         "organization_configuration_disclosure", "organization_configuration_read", "organization_configuration_change",
         "organization_configuration_history", "organization_configuration_activity",
         "organization_lifecycle_disclosure", "organization_lifecycle_read", "organization_lifecycle_change"];

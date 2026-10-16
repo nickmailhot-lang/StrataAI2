@@ -14,6 +14,8 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Suggested starting points
 
+- [Recipient invitation observations, original recovery and required mail-phase evidence](architecture/operator-metrics.md#recipient-invitation-observations--2026-10-16)
+
 - [Personal Board preference current/history clocks and legacy preservation](architecture/schema149-clock-inventory.md#personal-board-preference-and-history-clocks--2026-10-16)
 
 - [Frontend capacity sequencing and active MVP correctness checks](architecture/web-capacity-phase.md)

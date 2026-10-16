@@ -5,6 +5,7 @@ import { apiFetch } from '../../api/apiFetch';
 import { publicCorrelationReference } from '../../api/correlationReference';
 import { watchInvitationRecipient, type InvitationRecipientInvalidation } from './invitationRecipientLive';
 import { isSourceDateTime } from './userDateTime';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 type Invitation = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string; boardTarget?: { boardId: string; role: 'ADMIN' | 'MEMBER' } | null; boardName?: string | null };
 type Page = { items: Invitation[]; nextCursor: string | null };
@@ -77,6 +78,7 @@ export function InvitationsPage() {
   const [admissionAttempt, setAdmissionAttempt] = useState(0);
   const [announcement, setAnnouncement] = useState('Connecting invitation updates.');
   const refreshButton = useRef<HTMLButtonElement>(null);
+  const disclosed = useRef(false);
   const navigate = useNavigate();
   function valid(controller: AbortController) { return mounted.current && current.current === controller && !controller.signal.aborted; }
   async function verifyAccount(controller: AbortController, expected?: string) {
@@ -98,9 +100,11 @@ export function InvitationsPage() {
     if (status === 401) { setUncertain(undefined); navigate('/login', { replace: true }); }
     else setError('Unable to confirm the reviewed account. Refresh invitations before continuing.', reference);
   }
-  async function load(after?: string) {
+  async function load(after?: string, retry = false) {
     if (current.current) return;
     const controller = new AbortController(); current.current = controller;
+    const observedAt = performance.now(); let succeeded = false;
+    activityEvent('invitation_recipient_read', retry ? 'retry' : 'use');
     const captured = firstAdmission.current; firstAdmission.current = undefined;
     const remaining = captured ? captured.until - performance.now() : 15_000;
     const deadline = setTimeout(() => controller.abort(), Math.max(0, remaining));
@@ -120,13 +124,17 @@ export function InvitationsPage() {
       if (response.status === 403) { setPage(undefined); setUncertain(undefined); setAccepted(undefined); setError('Verify your email before viewing invitations.', response.reference); return; }
       if (response.status !== 200 || !validPage(response.body) || (after && response.body.nextCursor !== null && response.body.nextCursor.toLowerCase() <= after.toLowerCase())) throw new InvitationResponseFailure(response.reference);
       setPage(response.body);
+      succeeded = true;
+      if (!disclosed.current) { disclosed.current = true; activityEvent('invitation_recipient_disclosure', 'open'); }
     } catch (reason) {
       if (mounted.current && current.current === controller && started === epoch.current) {
+        activityEvent('invitation_recipient_read', 'exception');
         if (reason instanceof AccountUnavailable) withdrawAccount(reason.status, reason.reference);
         else setError('Unable to load invitations. Please refresh and try again.', failureReference(reason));
       }
     } finally {
       clearTimeout(deadline);
+      if (mounted.current && current.current === controller && started === epoch.current) activityResult('invitation_recipient_read', succeeded, observedAt);
       if (current.current === controller) { current.current = undefined; if (mounted.current) setBusy(false); }
     }
   }
@@ -209,6 +217,8 @@ export function InvitationsPage() {
     const actor = reviewedActor.current; let submitted = false;
     const started = epoch.current;
     const controller = new AbortController(); current.current = controller;
+    const observedAt = performance.now(); let succeeded = false;
+    activityEvent('invitation_recipient_accept', uncertain?.id === invitation.id ? 'retry' : 'use');
     const deadline = setTimeout(() => controller.abort(), 15_000);
     setBusy(true); setError(undefined); setAccepted(undefined);
     try {
@@ -222,6 +232,7 @@ export function InvitationsPage() {
       if (!mounted.current || current.current !== controller) return;
       if (response.status === 401) { setPage(undefined); setUncertain(undefined); navigate('/login', { replace: true }); return; }
       if (response.status === 400 || response.status === 403 || response.status === 404 || response.status === 409) {
+        if (response.status === 409) activityEvent('invitation_recipient_accept', 'conflict');
         setUncertain(undefined);
         setPage(previous => previous && { ...previous, items: previous.items.filter(item => item.id !== invitation.id) });
         setError('This invitation is no longer available to your account. Refresh to check current invitations.', response.reference); return;
@@ -232,10 +243,12 @@ export function InvitationsPage() {
         || (invitation.boardTarget == null ? ack.boardTarget != null
           : ack.boardTarget?.boardId !== invitation.boardTarget.boardId || ack.boardTarget?.role !== invitation.boardTarget.role)) throw new InvitationResponseFailure(response.reference);
       setAccepted(invitation);
+      succeeded = true;
       setUncertain(undefined);
       setPage(previous => previous && { ...previous, items: previous.items.filter(item => item.id !== invitation.id) });
     } catch (reason) {
       if (mounted.current && current.current === controller) {
+        activityEvent('invitation_recipient_accept', 'exception');
         if (submitted) { setUncertain(invitation); setPage(undefined); }
         if (started === epoch.current) {
           if (reason instanceof AccountUnavailable) withdrawAccount(reason.status, reason.reference);
@@ -244,6 +257,7 @@ export function InvitationsPage() {
       }
     } finally {
       clearTimeout(deadline);
+      if (mounted.current && current.current === controller) activityResult('invitation_recipient_accept', succeeded, observedAt);
       if (current.current === controller) { current.current = undefined; if (mounted.current) setBusy(false); }
     }
   }
@@ -272,8 +286,8 @@ export function InvitationsPage() {
     {page?.nextCursor && <Button disabled={busy} onClick={() => void load(page.nextCursor!)}>More invitations</Button>}
     <Button ref={refreshButton} aria-disabled={busy || connecting} onClick={() => {
       if (busy || connecting || current.current) return;
-      if (admissionFailed) { setAdmissionFailed(false); setAdmissionAttempt(value => value + 1); }
-      else void load();
+      if (admissionFailed) { activityEvent('invitation_recipient_read', 'retry'); setAdmissionFailed(false); setAdmissionAttempt(value => value + 1); }
+      else void load(undefined, true);
     }}>Refresh invitations</Button>
   </Stack></Container>;
 }

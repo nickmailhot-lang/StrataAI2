@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [recipient observation increment](operator-metrics.md#recipient-invitation-observations--2026-10-16)
+passes146 focused web,41 fixed API,56 related API,37 exporter,12 browser-policy
+and289 CI checks. The complete expanded required mail phase passes4/4 with real
+proofs, original committed-acceptance recovery, canonical acceptance and actual
+private-data-free reports. API/input/Worker/cleanup checks pass. Current immutable
+CI and full release acceptance remain required; large-load tests stay disabled.
+The separate complete Collector fixture also passes all three healthy/outage/
+recovered checks, including the six new groups and first-request registration
+recovery on the same API. Its temporary resources and newly downloaded Collector
+image are removed; this remains compiled-host evidence, not a completed release.
+
 The [personal Board preference clock audit](schema149-clock-inventory.md#personal-board-preference-and-history-clocks--2026-10-16)
 adds required upgrade/API checks for real clock windows, unknown legacy creation,
 no-op/replay stability and immutable private history. The complete upgrade driver,

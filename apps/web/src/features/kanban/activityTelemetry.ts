@@ -13,6 +13,7 @@ export type ActivityAction = 'application_root_exception' | 'application_recover
   | 'board_invitation_disclosure' | 'board_invitation_read' | 'board_invitation_create'
   | 'organization_invitation_history_disclosure' | 'organization_invitation_history_read' | 'organization_invitation_history_revoke' | 'board_invitation_history_disclosure' | 'board_invitation_history_read' | 'board_invitation_history_revoke'
   | 'organization_configuration_disclosure' | 'organization_configuration_read' | 'organization_configuration_change'
+  | 'invitation_recipient_disclosure' | 'invitation_recipient_read' | 'invitation_recipient_accept' | 'invitation_link_disclosure' | 'invitation_link_review' | 'invitation_link_accept'
   | 'organization_configuration_history' | 'organization_configuration_activity'
   | 'organization_lifecycle_disclosure' | 'organization_lifecycle_read' | 'organization_lifecycle_change';
 type Kind = 'open' | 'use' | 'retry' | 'exception' | 'conflict' | 'reconnect' | 'success' | 'failure';
@@ -23,6 +24,7 @@ const actions = new Set<string>(['application_root_exception', 'application_reco
   'notification_disclosure', 'notification_read', 'notification_mark_read', 'watch_disclosure', 'watch_read', 'watch_change', 'archive_list_disclosure', 'archive_list_read', 'archive_list_restore', 'archive_list_delete', 'archive_card_disclosure', 'archive_card_read', 'archive_card_restore', 'archive_card_delete', 'list_archive', 'card_archive', 'archive_board_disclosure', 'archive_board_read', 'archive_board_restore', 'archive_board_delete', 'board_archive', 'board_metadata_update', 'board_star_disclosure', 'board_star_read', 'board_star_change', 'board_copy_disclosure', 'board_copy_read', 'board_copy_change', 'navigation_context', 'navigation_board', 'navigation_card', 'organization_settings_disclosure', 'organization_settings_read', 'organization_settings_update', 'organization_creation_disclosure', 'organization_creation']);
 const kinds = new Set<string>(['open', 'use', 'retry', 'exception', 'conflict', 'reconnect', 'success', 'failure']);
 for (const action of ['organization_configuration_disclosure', 'organization_configuration_read', 'organization_configuration_change',
+  'invitation_recipient_disclosure', 'invitation_recipient_read', 'invitation_recipient_accept', 'invitation_link_disclosure', 'invitation_link_review', 'invitation_link_accept',
   'organization_configuration_history', 'organization_configuration_activity',
   'organization_lifecycle_disclosure', 'organization_lifecycle_read', 'organization_lifecycle_change',
   'organization_members_disclosure', 'organization_members_read', 'organization_member_review', 'organization_member_remove',

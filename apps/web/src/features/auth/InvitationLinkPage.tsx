@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { AuthPage } from './AuthPage';
 import { isSourceDateTime } from './userDateTime';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 type Preview = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string; boardTarget?: { boardId: string; role: 'ADMIN' | 'MEMBER' } | null; boardName?: string | null };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -34,9 +35,11 @@ export function InvitationLinkPage() {
   const unconfirmed = useRef<Preview | undefined>(undefined);
   const reviewedActor = useRef<string | undefined>(undefined);
   const linkEpoch = useRef(0);
+  const disclosed = useRef(false); const reviewAttempted = useRef(false);
   useLayoutEffect(() => {
     if (!location.hash && !location.search) return;
     linkEpoch.current++;
+    disclosed.current = false; reviewAttempted.current = false;
     pending.current?.abort(); pending.current = undefined;
     unconfirmed.current = undefined; reviewedActor.current = undefined;
     const values = new URLSearchParams(location.hash.slice(1)).getAll('token');
@@ -81,6 +84,10 @@ export function InvitationLinkPage() {
     const recovering = accept && !!unconfirmed.current;
     let submitted = false;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined);
+    const action = accept ? 'invitation_link_accept' : 'invitation_link_review';
+    const observedAt = performance.now(); let succeeded = false;
+    activityEvent(action, (accept ? recovering : reviewAttempted.current) ? 'retry' : 'use');
+    if (!accept) reviewAttempted.current = true;
     let timer: ReturnType<typeof setTimeout> | undefined; let aborted: (() => void) | undefined;
     try {
       const result = await Promise.race([
@@ -112,12 +119,15 @@ export function InvitationLinkPage() {
         setError('Sign in with the invited account, then review the invitation again.'); return;
       }
       if ([400, 403, 404, 409].includes(result.status)) {
+        if (result.status === 409) activityEvent(action, 'conflict');
         setReview(undefined); setUncertain(false); setToken('');
         unconfirmed.current = undefined;
         setError('This link is unavailable to your account. Verify your email or check your current invitations.'); return;
       }
       if (!accept) {
         if (result.status !== 200 || !preview(result.value)) throw new Error('Unconfirmed preview');
+        succeeded = true;
+        if (!disclosed.current) { disclosed.current = true; activityEvent('invitation_link_disclosure', 'open'); }
         reviewedActor.current = result.actor; setReview(result.value); setUncertain(false); return;
       }
       const ack = result.value as { invitationId?: unknown; organizationId?: unknown; surface?: unknown; targetRole?: unknown; boardTarget?: Preview['boardTarget'] } | null;
@@ -126,9 +136,11 @@ export function InvitationLinkPage() {
         || (chosen!.boardTarget == null ? ack.boardTarget != null
           : ack.boardTarget?.boardId !== chosen!.boardTarget.boardId || ack.boardTarget?.role !== chosen!.boardTarget.role)) throw new Error('Unconfirmed acceptance');
       setAccepted(chosen); setReview(undefined); setToken(''); setUncertain(false);
+      succeeded = true;
       unconfirmed.current = undefined;
     } catch (reason) {
       if (pending.current === controller) {
+        activityEvent(action, 'exception');
         setReview(undefined); setAccepted(undefined);
         setUncertain(accept && (submitted || !!unconfirmed.current));
         if (reason instanceof ReviewExpired) expireReview();
@@ -141,6 +153,7 @@ export function InvitationLinkPage() {
       }
     } finally {
       clearTimeout(timer); if (aborted) controller.signal.removeEventListener('abort', aborted);
+      if (pending.current === controller) activityResult(action, succeeded, observedAt);
       if (pending.current === controller) { pending.current = undefined; setBusy(false); }
     }
   }

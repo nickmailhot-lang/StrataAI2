@@ -1,5 +1,13 @@
 # Authentication acceptance map — PRD-02
 
+The [recipient observation contract](operator-metrics.md#recipient-invitation-observations--2026-10-16)
+preserves final original-account checks and actual Worker proof handling while
+adding bounded private-data-free outcomes. All146 focused web cases and all four
+strict-mail desktop/phone calendar/observation cases pass, including committed
+acceptance recovery and actual report privacy. The linked record separates
+compiled-host/controlled-provider proof from current immutable/full acceptance.
+Estimated PRD-02 work remaining stays **16%**; the issue remains open.
+
 The [live diagnostic failure repair](api-error-contract-verification.md#live-diagnostic-failure-isolation--2026-10-15)
 prevents throwing warning providers from replacing the intended identity-stream
 error and abort. Eleven new regressions fail before repair; all 32 direct cases

@@ -1,5 +1,14 @@
 # Organization acceptance map — PRD-03
 
+The [recipient observation increment](operator-metrics.md#recipient-invitation-observations--2026-10-16)
+adds bounded discovery, proof-review and acceptance outcomes with original
+acknowledgment/account/recovery rules. All146 focused web,41 fixed API,56 related
+API,37 exporter and289 CI checks pass. The complete expanded strict-mail phase
+passes4/4, with real Worker proofs, original committed-response recovery, canonical
+acceptances, privacy and keyboard/WCAG checks. Compiled-host and current immutable
+release evidence remain distinct. Estimated PRD-03 work remaining stays **8%**;
+the ticket remains open and capacity testing stays deferred until after MVP.
+
 [PRD-03](https://github.com/nickmailhot-lang/StrataAI2/issues/3) remains open.
 This source review maps the ten functional requirements to implemented behavior
 and remaining work. It does not certify current release acceptance.

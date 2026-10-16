@@ -1,5 +1,14 @@
 # Verified-email invitation discovery and acceptance
 
+The [recipient observation contract](operator-metrics.md#recipient-invitation-observations--2026-10-16)
+adds fixed private-data-free discovery, proof-review and acceptance outcomes
+without changing consent, final account checks, original recovery or deadlines.
+The expanded required mail phase passes all four desktop/phone calendar and
+observation cases, including actual committed-response loss, explicit recovery,
+canonical single acceptance, report privacy and private Board access admission.
+Earlier two-case phase records below retain their historical scope; current
+immutable/full release and all original criteria remain necessary.
+
 ONBOARD-FR-004/005/009: `GET /me/invitations` derives the normalized email from the current account. A global identity transaction locks the account, revalidates its actual HTTP session after waits, requires an active verified account and rechecks session admission after the read. It borrows that transaction's connection. The bounded page contains at most 50 invitations and a nonempty UUID `nextCursor`; `after` seeks by invitation ID. Expired, revoked or accepted invitations are excluded. Refresh starts from the first page; this is a live listing rather than a frozen multi-page snapshot. Invalid cursors fail with 400. Unverified accounts receive 403, revoked sessions 401, and storage failure a masked 503. No token or token hash is returned.
 
 The pending result discloses only the invitation's own organization ID, organization label, intended surface/role and expiry. Migration 016 adds the email/UUID cursor index and a recipient-visible organization label to the existing routing projection. The label is captured when the invitation is published; existing rows receive their organization label at upgrade. It grants no membership, private Board visibility or Portal access by itself. Organization renames can make that invitation label historical; opening an accepted Organization retrieves current authorized state.

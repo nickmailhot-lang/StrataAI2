@@ -12,24 +12,26 @@ test('recipient clock owns complete sequential desktop/phone cases without retri
   assert.equal(result.status, 0, 'Recipient clock browser collection must succeed');
   const report = JSON.parse(result.stdout);
   const rows = cases(report);
-  assert.equal(rows.length, 2);
+  assert.equal(rows.length, 4);
   for (const row of rows) {
-    assert.equal(basename(row.file.split('\0')[0]), 'recipient-invitation-clock.case.ts');
+    assert.ok(['recipient-invitation-clock.case.ts', 'recipient-invitation-telemetry.case.ts'].includes(basename(row.file.split('\0')[0])));
     assert.equal(row.timeout, 120000); assert.equal(row.expectedStatus, 'passed');
   }
+  for (const file of ['recipient-invitation-clock.case.ts', 'recipient-invitation-telemetry.case.ts'])
+    assert.equal(rows.filter(row => basename(row.file.split('\0')[0]) === file).length, 2);
   const titles = report.suites.flatMap(suite => suite.specs.map(spec => spec.title));
-  assert.deepEqual(titles.map(title => title.match(/at (1280|390)px$/)?.[1]).sort(), ['1280', '390']);
+  assert.deepEqual(titles.map(title => title.match(/at (1280|390)px$/)?.[1]).sort(), ['1280', '1280', '390', '390']);
 });
 
 function report() {
   return { errors: [], config: { workers: 1, fullyParallel: false, projects: [{ retries: 0 }] },
-    stats: { expected: 2, unexpected: 0, flaky: 0, skipped: 0 }, suites: [{ specs: ['1280', '390'].map(width => ({
-      id: width, file: 'recipient-invitation-clock.case.ts', title: `Recipient clock at ${width}px`,
+    stats: { expected: 4, unexpected: 0, flaky: 0, skipped: 0 }, suites: [{ specs: ['recipient-invitation-clock.case.ts', 'recipient-invitation-telemetry.case.ts'].flatMap(file => ['1280', '390'].map(width => ({
+      id: file + width, file, title: `Recipient clock at ${width}px`,
       tests: [{ projectId: '', timeout: 120000, expectedStatus: 'passed', results: [{ status: 'passed', retry: 0 }] }],
-    })) }] };
+    }))) }] };
 }
 test('runtime evidence requires both actual passes', () => {
-  assert.deepEqual(verifyRecipientClockBrowser(report()), { passed: 2, skipped: 0, retries: 0 });
+  assert.deepEqual(verifyRecipientClockBrowser(report()), { passed: 4, skipped: 0, retries: 0 });
 });
 test('the CI wrapper validates a fresh runtime report before accepting the phase', () => {
   const wrapper = readFileSync('scripts/ci/test-recipient-clock-browser.sh', 'utf8').replace(/\r\n/g, '\n');
@@ -45,6 +47,8 @@ for (const [name, mutate] of [
   ['wrong viewport coverage', value => value.suites[0].specs[1].title = 'Recipient clock at 1280px'],
   ['changed deadline', value => value.suites[0].specs[0].tests[0].timeout = 30000],
   ['runner errors', value => value.errors.push({ message: 'synthetic fixture failure' })],
+  ['telemetry file replaced while passing counts remain unchanged', value => { value.suites[0].specs[2].file = value.suites[0].specs[3].file = 'recipient-invitation-clock.case.ts'; }],
+  ['duplicate telemetry viewport', value => { value.suites[0].specs[3].title = 'Recipient clock at 1280px'; }],
 ]) test(`runtime evidence refuses ${name}`, () => {
   const value = report(); mutate(value); assert.throws(() => verifyRecipientClockBrowser(value));
 });

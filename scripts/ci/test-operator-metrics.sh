@@ -92,6 +92,20 @@ for invitation_prefix in organization_invitation_history board_invitation_histor
     {action:($prefix+"_revoke"),kind:"failure",count:1,durationMs:250},
     {action:($prefix+"_revoke"),kind:"success",count:1,durationMs:125}]}')" >/dev/null
 done
+# Synthetic recipient ingestion; actual browser producers are checked separately.
+for invitation_prefix in invitation_recipient invitation_link; do
+  read_suffix=read
+  if [[ "$invitation_prefix" = invitation_link ]]; then read_suffix=review; fi
+  post /me/activity-client-events "$(jq -nc --arg prefix "$invitation_prefix" --arg read "$read_suffix" '{events:[
+    {action:($prefix+"_disclosure"),kind:"open",count:1},
+    {action:($prefix+"_"+$read),kind:"retry",count:1},
+    {action:($prefix+"_"+$read),kind:"success",count:1,durationMs:125},
+    {action:($prefix+"_accept"),kind:"use",count:1},
+    {action:($prefix+"_accept"),kind:"retry",count:1},
+    {action:($prefix+"_accept"),kind:"conflict",count:1},
+    {action:($prefix+"_accept"),kind:"failure",count:1,durationMs:250},
+    {action:($prefix+"_accept"),kind:"success",count:1,durationMs:125}]}')" >/dev/null
+done
 # PRD-27: actual authorized HTTP operations, not synthetic server observations.
 configuration="/organizations/$org/configuration"
 get "$configuration" >/dev/null

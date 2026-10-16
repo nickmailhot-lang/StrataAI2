@@ -1,5 +1,93 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Recipient invitation observations — 2026-10-16
+
+[Recipient discovery](../../apps/web/src/features/auth/InvitationsPage.tsx)
+and [proof review/acceptance](../../apps/web/src/features/auth/InvitationLinkPage.tsx)
+now emit six fixed categories through the existing optional queue and
+authenticated API parser. Reports contain only action, kind, bounded count and
+optional duration. Account/Organization/Board/invitation IDs, names, email,
+surface/role, proof, expiry, route, request body and exception text are excluded.
+These are untrusted adoption observations, separate from canonical acceptance,
+immutable audit and server measurements.
+
+| Category | Admission and outcomes |
+| --- | --- |
+| `invitation_recipient_disclosure` | One open per mounted discovery page, after valid protected page and final account admission; malformed/denied data cannot count. An admitted empty page is still a view. |
+| `invitation_recipient_read` | Initial/background/page use; explicit Refresh retry; caught exception and current-epoch success/failure with duration. The timed read starts at load entry; initial stream/account bootstrap is separate. Bootstrap recovery also observes the explicit Refresh action. |
+| `invitation_recipient_accept` | Explicit use or retained exact-invitation retry; caught uncertainty, HTTP409 conflict and complete attempt result/duration. Success requires the original matching acknowledgment and final original-account check. |
+| `invitation_link_disclosure` | One open after valid preview and final account check for the admitted proof route; a new fragment resets that admission counter. |
+| `invitation_link_review` | First explicit review use, later explicit retry; exception/conflict and complete current-controller result/duration. Merely opening the proof link is not an admitted disclosure. |
+| `invitation_link_accept` | Explicit use/original unconfirmed acceptance retry, uncertainty/conflict and full result/duration; the existing matching acknowledgment and final original-account admission remain mandatory. |
+
+A failed reply can follow a committed acceptance. It remains a failed attempt
+until the user explicitly recovers the original acknowledgment; observation
+failure cannot send, retry or reinterpret a command. Preflight is part of an
+acceptance attempt, so a use/failure need not imply a POST. Existing controller,
+epoch, account/proof, calendar/expiry and shared15-second deadline rules remain.
+Superseded/unmounted work cannot publish a late result. A successful receipt is
+not a promise of continuing Organization/Board access.
+
+All **18 new component cases** and **146 focused recipient/clock/live/queue
+cases** pass. The baseline has14 failures for absent observations and four
+already-passing account/unmount safety cases. New coverage includes malformed
+metadata, explicit read retry, acknowledgment, original lost-reply recovery,
+final account replacement, conflict, unmount and optional report failure with
+exact private-field exclusions. A test-only TypeScript non-null annotation is
+corrected after the initial typecheck; its request/body assertions are unchanged.
+All **41 fixed-category/authenticated HTTP cases**, **56 related API cases** and
+**37 exporter-verifier cases** pass. The Release solution builds with zero
+warnings/errors in54.84seconds; web/browser types, lint, Bash syntax,12 browser
+collection/report contracts and289 CI guards pass.
+
+The existing required strict-mail browser phase now owns **four** cases: the
+unchanged calendar-admission desktop/phone pair plus a new desktop/phone pair
+for recipient observations. Its runtime gate requires both files at both widths,
+the original120-second per-case deadlines, one actual pass each and zero
+skips/retries/errors. Passing counts cannot substitute the calendar file for
+the observation file. The wrapper's original required execution/restoration
+protocol remains; earlier two-case wrapper rehearsals are historical evidence.
+
+The complete current phase passes **4/4 in203,970.104ms**, and its actual report
+passes the updated runtime verifier. New cases verify real Worker-delivered
+email verification and invitation proofs, Internal Organization acceptance with
+a deliberately lost committed response, explicit identical-path/body retry,
+an actual recipient-stream protected read, and private Board proof review/
+acceptance. A lost review reply requires explicit same-proof recovery. Actual
+reports receive204 and contain only allowed fields; all captured private values
+are excluded. Each canonical invitation is accepted once with original expiry
+and no revocation, private Board access remains404 before its own acceptance,
+and keyboard/WCAG checks pass. Portal clock/shape component evidence remains
+separate from these native Internal/Board cases.
+
+All **1,287 captured source inputs,71 runtime binaries,four served assets** and
+private Compose hashes match. API identity/start stay stable; the scoped helper
+restores the same cached Worker image healthy/unscoped. Docker inventory is
+restored and3,733 temporary bytes removed, without application image builds,
+pulls or imports. API test invocations independently match799 source/415 binary
+inputs and restore inventory. These use current compiled hosts/assets in cached
+runtimes, fresh PostgreSQL17.11/schema149, strict verification and a controlled
+provider. Embedded runtime revision is `d236ae8f`, not current immutable-image
+release proof. Current full CI, managed-provider/deployment acceptance and all
+original criteria remain required; large-load testing stays post-MVP.
+
+The complete native Collector contract additionally exits **0 in159.342seconds**.
+All three original full exporter checks pass with the new groups included:
+healthy availability1, real database-outage availability0 and recovered
+availability1. First registration after readiness recovery returns201 without
+a client retry, with one account/`USER_REGISTERED` event, stable API identity/start
+and unchanged two-row backlog fingerprint. This separate fixture uses synthetic
+client-event posts; the real browser producer evidence above remains distinct.
+The pinned Collector0.161.0 uses the committed configuration. Four private
+loopback endpoint substitutions and a Windows UUID adapter retain all original
+business/recovery/privacy assertions. Its1287 source/71 binary/four asset/private
+fixture comparisons have zero mismatches, Worker is restored unscoped and original
+Docker inventory restored. It removes53,769 temporary bytes; the newly downloaded
+Collector image is then removed without remaining references. The original four
+cached images and Demo are preserved. A shell preparation quoting error occurs
+before any Collector fixture starts and is corrected with a saved preparation
+script; no application image is built, pulled or imported.
+
 ## Native Collector and database recovery rehearsal — 2026-10-16
 
 The current compiled API and Worker pass the complete bounded ingestion and
