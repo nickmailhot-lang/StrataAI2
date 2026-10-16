@@ -1,12 +1,25 @@
 # StrataAI2
 
-Card details support [safe Markdown descriptions](docs/card-description-markdown.md)
-with live draft previews, retained original source and authorized archived views.
-The linked guide describes supported syntax, security boundaries and verification.
-
 StrataAI2 is a strata/condominium governance and operations platform organized around collaborative Boards, Lists, and Cards. Organizations provide the membership and access boundary; Boards organize work into Lists and Cards. The repository contains the React/MUI web application, ASP.NET Core modular monolith API, separate background Worker, PostgreSQL migrations with forced row-level security, private object storage integrations, automated acceptance checks, and implementation documentation.
 
-Development follows the [PRD and architecture backlog](https://github.com/nickmailhot-lang/StrataAI2/issues). Implemented workflows include account and profile management, bounded Organization discovery with direct deep links, membership administration, Board collaboration and lifecycle controls, Lists and Cards, attachments, comments, notifications, and live updates. The browser supports bounded Organization and active Board directories, direct Organization/Board/Card links, and account-bound navigation recovery. Organization creation and Owner deletion requests have account-bound retry contracts. The [deletion request guide](docs/architecture/organization-deletion-retries.md) explains accepted requests and recovery. The [deletion completion contract](docs/architecture/organization-deletion-lifecycle.md) documents atomic job publication, bounded Worker graph stages, retained history, terminal storage checks, and completion-event delivery. Deletion requests atomically publish work for production Workers with bounded automatic deletion discovery, and the original Owner can query a minimal completion status. The browser supports explicit completion checks and tab-local recovery of the original request. Demo automatically processes accepted deletion graphs in the API and publishes a canonical terminal source for protected Owner and member recovery. Production retains its separate durable Worker. Current retained-image acceptance and remaining lifecycle/performance requirements are still unproven; a successful deletion request acknowledges acceptance only. See [Organization acceptance](docs/architecture/prd-03-acceptance.md) for remaining integration and verification work. Invitation creation, recipient review, registration proof, and explicit acceptance have separate documented contracts. Implementation is ongoing: a feature document or passing source check does not mean its full PRD acceptance is complete. Consult the acceptance records and CI for the relevant revision.
+Implemented workflows include accounts and profiles, Organization discovery and
+membership, invitations, Board collaboration and lifecycle controls, Lists and
+Cards, attachments, comments, notifications, and live updates. The browser
+provides bounded directories, direct Organization/Board/Card links and recovery
+bound to the signed-in account. Card details support
+[safe Markdown descriptions](docs/card-description-markdown.md), with live draft
+previews, preserved source and authorized archived views.
+
+Long-running operations have separate request and completion contracts. For
+example, an [Organization deletion request](docs/architecture/organization-deletion-retries.md)
+acknowledges acceptance; [Worker completion and protected status](docs/architecture/organization-deletion-lifecycle.md)
+establish its outcome. Demo uses the documented API simulation, while Production
+keeps the separate durable Worker. See [Organization acceptance](docs/architecture/prd-03-acceptance.md)
+for remaining lifecycle and release verification.
+
+Development follows the [PRD and architecture backlog](https://github.com/nickmailhot-lang/StrataAI2/issues).
+Implementation is ongoing: a feature guide or passing source check does not prove
+complete PRD acceptance. Match each result to its revision, scope and CI evidence.
 
 ## Start here
 
@@ -45,6 +58,13 @@ before MVP production promotion.
 Current main also adds [bounded database readiness and outage recovery checks](docs/architecture/release-bundle-startup.md#database-outage-and-bounded-readiness-2026-10-15).
 Those checks pass for the pinned candidate above; later main changes require
 their own full current-image CI before MVP acceptance.
+
+Newer main work also includes [database restart and first-request recovery](docs/architecture/postgres-pool-recovery.md),
+[atomic current/previous release records](docs/release/promotion-and-rollback.md#record-the-current-known-good-release),
+and [diagnostic failure isolation for synchronization and live streams](docs/architecture/api-error-contract-verification.md#core-work-synchronization-diagnostics--2026-10-15).
+These tools postdate the pinned release. Use the commands shipped with your
+selected bundle and require its exact CI result; current-main verification does
+not certify an older bundle, or make an untested main revision a release.
 
 **Demo login:** `demo@strataai.test` / `StrataAI-Demo-2026!`.
 Set `STRATAAI_RUNTIME_MODE=demo`, open `/login`, and sign in without registering.

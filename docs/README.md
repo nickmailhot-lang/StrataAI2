@@ -57,6 +57,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Demo reminder delivery, processing and audit evidence](architecture/demo-reminder-delivery.md)
 - [Embedded build identity (ARCH-01-AC-002 / ARCH-11)](architecture/build-identity.md)
 - [Assembled release payload startup and graceful restart](architecture/release-bundle-startup.md)
+- [Database restart and first-request recovery](architecture/postgres-pool-recovery.md)
 - [Configuration and secrets](architecture/configuration.md)
 - [Release authentication policy forwarding and startup verification](architecture/release-auth-policy-verification.md)
 - [Optional production identity-mail role provisioning](architecture/identity-mail-role-provisioning.md)
