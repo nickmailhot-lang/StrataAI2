@@ -23,7 +23,10 @@ public sealed class ResendIdentityEmailProvider(HttpClient client,string apiKey,
         using var response=await client.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,execution.Token);
         if (!response.IsSuccessStatusCode)
         {
-            var temporary=response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.RequestTimeout || (int)response.StatusCode>=500;
+            // Resend also uses 409 while an earlier same-key request is still
+            // processing. Retry the frozen key/body within the existing job
+            // limits; never inspect error text or invent a new delivery key.
+            var temporary=response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.RequestTimeout or HttpStatusCode.Conflict || (int)response.StatusCode>=500;
             // Never read or persist failure bodies (they can echo the message).
             throw new IdentityEmailProviderException(temporary ? "identity_provider_unavailable" : "identity_provider_rejected",!temporary);
         }

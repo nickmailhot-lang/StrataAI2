@@ -1,5 +1,13 @@
 # Authentication acceptance map — PRD-02
 
+The [provider conflict recovery record](identity-email.md#provider-conflict-recovery--2026-10-15)
+documents a reproduced permanent-failure bug for HTTP 409 in-flight delivery.
+Six new cases fail before repair; all 68 focused adapter/identity/invitation
+cases pass afterward, preserving the original key/message, bounded retries and
+unread error bodies. The Release build and owned cleanup pass. Current immutable
+CI, managed delivery and the remaining PRD acceptance still govern closure;
+estimated remaining stays **16%**. Large-load testing remains deferred after MVP.
+
 [PRD-02](https://github.com/nickmailhot-lang/StrataAI2/issues/2) remains open.
 Current estimated work remaining is **16%** (planning estimate); earlier estimates
 below record their historical evidence scope.

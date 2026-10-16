@@ -128,6 +128,22 @@ public sealed class InvitationEmailHandlerTests
     }
 
     [Fact]
+    public async Task ARCH_07_AC_002_ProviderConflictKeepsInvitationPendingAndRetriesTheOriginalMessage()
+    {
+        using var signer=Signer(); var (job,intent)=Fixture(signer); var store=new Store(intent);
+        var transport=new ResendConflictTransport(); using var client=new HttpClient(transport);
+        var handler=new InvitationEmailHandler(store,signer,new ResendIdentityEmailProvider(client,"test-credential"),Options,new Clock());
+        var queue=new Queue(job); var processor=new BackgroundJobProcessor(queue,new Clock(),[handler]);
+        Assert.Equal(JobProcessingResult.Retried,await processor.ProcessOneAsync(job.OrganizationId,job.WorkerId,TestContext.Current.CancellationToken));
+        Assert.Equal("job_handler_failed",queue.Error); Assert.False(queue.Completed);
+        Assert.Null(store.State); Assert.Null(store.Receipt); Assert.Equal(0,transport.Effects);
+        Assert.Equal(JobProcessingResult.Completed,await processor.ProcessOneAsync(job.OrganizationId,job.WorkerId,TestContext.Current.CancellationToken));
+        Assert.Equal(InvitationMailState.Sent,store.State); Assert.Null(store.Error); Assert.Equal(transport.Receipt,store.Receipt);
+        Assert.True(queue.Completed); Assert.Equal(2,transport.Requests.Count);
+        Assert.Equal(transport.Requests[0],transport.Requests[1]); Assert.Equal(1,transport.Effects);
+    }
+
+    [Fact]
     public async Task Permanent_provider_failure_persists_only_constant_error_code()
     {
         using var signer = Signer(); var (job, intent) = Fixture(signer); var store = new Store(intent);

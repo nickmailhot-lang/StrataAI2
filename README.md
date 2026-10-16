@@ -60,7 +60,7 @@ Jump to [documentation navigation](#navigating-the-documentation), [reading path
 | Understand the system | [Architecture overview](docs/architecture/README.md), [runtime modes](docs/architecture/runtime-modes.md), [web routing and state](docs/architecture/web-spa-boundary.md) |
 | Configure a local or production runtime | [Configuration reference](docs/architecture/configuration.md), [database roles](docs/architecture/runtime-database-roles.md), [schema upgrades](docs/architecture/schema-upgrades.md) |
 | Configure sign-in and invitation email | [Durable email setup and recovery](docs/architecture/identity-email.md), [provider response limits](docs/architecture/identity-email.md#provider-response-admission--2026-10-15) |
-| Review task behavior during a mail outage | [API, desktop and phone outage/recovery evidence](docs/architecture/core-mail-outage.md) |
+| Review task behavior during a mail outage | [API, desktop and phone outage/recovery evidence](docs/architecture/core-mail-outage.md), [in-flight delivery conflict recovery](docs/architecture/identity-email.md#provider-conflict-recovery--2026-10-15) |
 | Understand background work and live updates | [Durable jobs](docs/architecture/background-jobs.md), [work synchronization](docs/architecture/work-synchronization.md), [Organization Board realtime](docs/organization-board-realtime.md) |
 | Run a tested Docker release | [Release bundle guide](docs/release/README.md) |
 | Configure direct Linux HTTPS | [HTTPS operator instructions](docs/release/README.md#optional-https-on-a-linux-docker-host), [verification and limits](docs/architecture/https-deployment.md) |

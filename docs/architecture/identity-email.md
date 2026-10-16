@@ -80,7 +80,7 @@ writes and outbox INSERT in the same transaction.
 Claims commit a two-minute lease before provider calls. Current worker/lease
 identity fences completion; provider receipts are required for SENT. Five total
 claims, bounded exponential backoff, expiry cancellation and FAILED state prevent
-unlimited retries. Provider rejection stops retries; transient outages/ambiguous
+unlimited retries. Permanent provider rejection stops retries; transient outages/ambiguous
 acknowledgements retry with the same key. Shutdown leaves leases recoverable.
 Workers cancel calls before token/lease expiry and check account status, email and
 token usability before sending. Deactivated/suspended accounts and used/expired
@@ -124,6 +124,45 @@ pass. CI also requires both actual browser passes through a fresh validated
 report; all 10 report checks and 277 CI guards pass. See the linked rehearsal
 for runtime identity, hash and cleanup evidence. Current immutable/full CI,
 managed-provider/deployment outages and complete acceptance remain required.
+
+### Provider conflict recovery — 2026-10-15
+
+The provider's [documented error contract](https://resend.com/docs/api-reference/errors#concurrent_idempotent_requests)
+uses HTTP **409** when a same-key request is still in progress and recommends
+retrying later. The previous adapter classifies all 409 responses as permanent,
+which prematurely fails identity jobs and invitation intents during an otherwise
+recoverable in-flight delivery. The adapter now treats 409 as retryable with the
+fixed `identity_provider_unavailable` code and the existing frozen key/body.
+
+Error bodies remain unread: 409 can also represent a payload mismatch, which the
+application intentionally does not distinguish by inspecting provider text.
+Repeated conflicts remain subject to the original durable job attempt, lease,
+expiry and backoff limits. The application never changes a delivery key or
+payload to work around a conflict. A persistent mismatch still exhausts those
+limits; this repair does not certify a mismatched request as successful.
+Permanent refusals such as 400/401 retain their existing behavior.
+
+All **six new regression cases fail before repair**: three adapter checks
+(classification, unread-body/disposal and an actual loopback HTTP 409 with a
+withheld body), two adapter/identity-processor compositions for verification and
+password reset, and one adapter/invitation/background-processor composition.
+The composed cases require retry without terminal failure or a stored receipt,
+then a successful receipt using byte-identical message JSON and the original
+idempotency key, with one simulated provider effect. Controlled stores make
+subsequent claims immediately for these unit compositions; they do not test
+database scheduling or replace the separate durable retry integration contract.
+
+After repair **27 adapter, 13 identity-processor and 28 invitation-handler cases
+pass: 68 total, zero skipped**. The complete Release solution builds with zero
+warnings/errors. Both native runs preserve **795 captured source inputs and
+108 binary files** and restore the original Docker inventory. Cached Linux
+runtimes execute local compiled tests with no application/database start, image
+build/pull/import, external provider traffic or contact with the original
+database/local Demo. The normal mandatory Domain source gate includes these
+regressions. Current immutable/full CI, managed-provider conflict recovery and
+remaining acceptance still govern closure. PRD-02 remains at **16%** and PRD-60
+at **18% estimated work remaining**; ARCH-07/08 and MVP stay open. No large-load
+test runs.
 
 ### Provider response admission — 2026-10-15
 

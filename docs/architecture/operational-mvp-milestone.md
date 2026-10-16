@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [provider conflict repair](identity-email.md#provider-conflict-recovery--2026-10-15)
+preserves queued verification, reset and invitation delivery when an earlier
+same-key provider request is still in progress. Six regressions fail before
+repair; all 68 focused cases pass afterward, including actual loopback HTTP 409
+with a withheld body and original-key/message processor recovery. Existing
+error-body privacy, bounded retry, backoff and expiry remain intact. The Release
+solution builds without warnings/errors; 795 source/108 binary inputs match and
+Docker inventory is restored. Current immutable/full CI, managed-provider
+conflicts and complete acceptance remain required. Large-load tests stay deferred.
+
 The [core mail-outage contract](core-mail-outage.md) now proves that a strict
 verified owner can create/edit/reload protected task data while actual mail
 delivery retries under a sustained provider 503. Readiness, durable reset-intent

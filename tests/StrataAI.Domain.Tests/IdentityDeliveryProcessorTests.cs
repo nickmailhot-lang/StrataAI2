@@ -43,6 +43,23 @@ public sealed class IdentityDeliveryProcessorTests
     }
 
     [Theory]
+    [InlineData(IdentityTokenPurpose.VerifyEmail)]
+    [InlineData(IdentityTokenPurpose.ResetPassword)]
+    public async Task ARCH_07_AC_002_ProviderConflictRetriesTheOriginalIdentityMessage(IdentityTokenPurpose purpose)
+    {
+        var job=Job() with { Purpose=purpose }; using var signer=Signer(); var store=new Store(job,signer);
+        var transport=new ResendConflictTransport(); using var client=new HttpClient(transport);
+        var provider=new ResendIdentityEmailProvider(client,"test-credential");
+        var processor=new IdentityDeliveryProcessor(store,signer,provider,Options(),new Clock());
+        Assert.Equal(IdentityDeliveryPass.Retried,await processor.ProcessOneAsync(job.WorkerId,TestContext.Current.CancellationToken));
+        Assert.Equal(IdentityDeliveryOutcome.Retry,store.Outcome);
+        Assert.Equal("identity_provider_unavailable",store.Error); Assert.Null(store.Receipt); Assert.Equal(0,transport.Effects);
+        Assert.Equal(IdentityDeliveryPass.Sent,await processor.ProcessOneAsync(job.WorkerId,TestContext.Current.CancellationToken));
+        Assert.Equal(IdentityDeliveryOutcome.Sent,store.Outcome); Assert.Null(store.Error); Assert.Equal(transport.Receipt,store.Receipt);
+        Assert.Equal(2,transport.Requests.Count); Assert.Equal(transport.Requests[0],transport.Requests[1]); Assert.Equal(1,transport.Effects);
+    }
+
+    [Theory]
     [InlineData("invalid",IdentityDeliveryPass.Cancelled,"identity_token_unusable")]
     [InlineData("key",IdentityDeliveryPass.Failed,"identity_token_key_missing")]
     [InlineData("hash",IdentityDeliveryPass.Failed,"identity_token_hash_mismatch")]

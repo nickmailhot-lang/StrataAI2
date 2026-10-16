@@ -31,6 +31,7 @@ public sealed class ResendIdentityEmailProviderTests
     [Theory]
     [InlineData(429,false)]
     [InlineData(500,false)]
+    [InlineData(409,false)]
     [InlineData(401,true)]
     [InlineData(400,true)]
     public async Task ARCH_07_TC_01_ProviderErrorsAreClassifiedWithoutBodyDisclosure(int status,bool permanent)
@@ -55,6 +56,7 @@ public sealed class ResendIdentityEmailProviderTests
     [InlineData(400,true)]
     [InlineData(401,true)]
     [InlineData(408,false)]
+    [InlineData(409,false)]
     [InlineData(429,false)]
     [InlineData(500,false)]
     [InlineData(503,false)]
@@ -113,6 +115,7 @@ public sealed class ResendIdentityEmailProviderTests
 
     [Theory]
     [InlineData(401,true)]
+    [InlineData(409,false)]
     [InlineData(503,false)]
     public async Task ARCH_08_FR_010_LoopbackHttpErrorDoesNotWaitForTheWithheldBody(int status,bool permanent)
     {
