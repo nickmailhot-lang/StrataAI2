@@ -4,6 +4,13 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [exact invitation-mail CI wrapper rehearsal](invitation-discovery.md#exact-mail-phase-entry-and-restoration-2026-10-16)
+passes both real desktop/phone cases through the unchanged shell phase and
+runtime-report gate. A separate intentional all-skipped private report is
+rejected with exit1 while restoring the previously optional verification policy.
+Tested prior settings and original Docker inventory are restored. This local compiled-host rehearsal supports the required retained-
+image phase; full current CI remains required and large-load tests stay deferred.
+
 [Recipient expiry admission](invitation-discovery.md#recipient-source-calendar-admission-2026-10-16)
 rejects impossible or offset-free source clocks before discovery metadata or
 proof-review consent. All 127 focused recipient/date cases pass; valid offsets,

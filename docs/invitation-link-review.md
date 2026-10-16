@@ -64,3 +64,9 @@ admitted. Fresh review retains the original proof and account checks; no
 acceptance is sent for malformed data. All 127 focused recipient/date cases
 pass; current immutable/full acceptance remains required. PRD-60 stays open at
 **18% estimated work remaining**, with large-load testing deferred after MVP.
+
+The [exact mail-phase wrapper rehearsal](architecture/invitation-discovery.md#exact-mail-phase-entry-and-restoration-2026-10-16)
+now passes both actual viewport cases through the unchanged shell entry and
+runtime report gate, and verifies the tested prior settings are restored.
+Current retained-image/full acceptance still governs closure; PRD-60 remains
+open at **18% estimated work remaining** and load testing stays post-MVP.

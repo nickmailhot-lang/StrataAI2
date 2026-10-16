@@ -278,3 +278,60 @@ missing pacing or omitted source verification. Its wrapper preserves prior
 settings and validates a fresh runtime report; local case execution and syntax/
 source guards do not replace hosted execution of that wrapper or full exact-
 commit build-once CI. No existing case, policy or acceptance criterion is dropped.
+
+## Exact mail phase entry and restoration (2026-10-16)
+
+The actual [CI wrapper](../../scripts/ci/test-recipient-clock-browser.sh),
+[dedicated configuration](../../playwright.recipient-clock.config.ts), browser
+cases and runtime-report verifier are executed together in a fresh isolated
+local Compose topology. Their staged bytes are unchanged from `c02b6547`. This
+extends the preceding case-only evidence; it is not a hosted current-image run.
+
+The complete wrapper exits **0** and both native cases pass **2/2 in
+89,970.608 ms**, with zero failures, flaky/skipped cases or report errors. The
+wrapper's own fresh-report gate accepts both actual viewport results. Entry
+forces strict account verification, enables API invitation publication, and
+keeps the global Worker invitation handler disabled until the original helper
+selects each real Organization. Cleanup recreates the API/Worker from the same
+cached images, restores API invitation publication **off** and verification
+**on**, and restores the Worker healthy/unscoped. API/Worker recreation is an
+intentional fixture boundary here; this is not process-continuity evidence.
+
+All **1,282 captured repository inputs, 71 binaries, four served web assets**
+and staged script/configuration/helper bytes match. Original Docker inventory
+is restored and **41,766 temporary bytes** removed, including the bounded
+private staging copies; the verified dependency junction is unlinked without
+recursively touching its source. No images are built, pulled or imported.
+The topology uses current frontend/read-only compiled hosts in cached runtimes,
+fresh restricted PostgreSQL17.11/schema149 and the owned controlled provider.
+Runtime remains `13d9d83c`; managed delivery, durable public deployment and full
+current exact-commit immutable CI remain required.
+
+Two earlier local setups stop before browser execution: one incorrectly gives
+the private API its Worker's port; the next lacks the copied standard reporter
+module. Both are fixture-only setup failures, retained separately, and restore
+Docker inventory after removing **6,306** and **29,945 temporary bytes**,
+respectively. Correcting those staging prerequisites does not alter the wrapper,
+report gate, product configuration rules, browser assertions or deadlines.
+
+PRD-02 stays open at **16%**, PRD-03 at **8%** and PRD-60 at **18% estimated
+work remaining**, unchanged planning estimates. Large-load tests stay deferred.
+
+A separate negative fixture starts with API invitation publication **off** and
+account verification **off**. It changes only the private staged case copy to
+mark both scenarios skipped; repository tests, wrapper, configuration and report
+verifier remain unchanged. Playwright records zero passes/two skips, and the
+original report gate refuses that result. The exact wrapper exits **1**, then
+its original EXIT cleanup restores invitation publication **off**, verification
+**off**, and the Worker healthy/unscoped. Thus a successful CLI exit with no
+actual acceptance execution cannot certify the phase, and failure does not
+leave the temporary stricter API setting behind. This is an intentional rejected
+report, not a passing product/browser run.
+
+All **1,284 captured repository inputs, 71 binaries and four served assets**
+match; exactly the one declared private case copy differs. Original Docker
+inventory is restored and **44,098 temporary bytes** removed. No images are
+built, pulled or imported. Together with the positive run, this verifies the
+original wrapper's success and report-refusal cleanup paths under the tested
+prior settings. It does not replace hosted execution against the current
+retained images or broaden the PRD acceptance claim.

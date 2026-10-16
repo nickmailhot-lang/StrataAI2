@@ -912,3 +912,10 @@ metadata or consent. Seven malformed-input regressions fail before repair; all
 original proof/account/recovery rules remain. Current immutable/full CI still
 governs closure; estimated work remaining stays **8%** and capacity testing
 remains deferred until after the operational MVP.
+
+The [exact invitation-mail phase rehearsal](invitation-discovery.md#exact-mail-phase-entry-and-restoration-2026-10-16)
+executes the unchanged wrapper plus both browser cases and runtime verifier,
+then confirms the tested prior API/Worker settings are restored. It exits 0
+with two actual passes and owned cleanup. This local compiled-host evidence
+strengthens phase execution without replacing current immutable/full CI.
+Estimated work remaining stays **8%**; large-load tests remain post-MVP.
