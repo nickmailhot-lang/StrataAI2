@@ -264,3 +264,61 @@ open dialogs pass WCAG-tagged Axe checks. See the
 [executed scope and remaining gates](prd-17-acceptance.md#strict-personal-watch-controls-and-native-stored-clocks).
 The strict watch CI phase now includes this file alongside both existing
 producer files. Current immutable/full release acceptance remains required.
+
+## Initial Card-watch keyboard admission (2026-10-16)
+
+Newly completed run `38852429636` at `39c3a827` fails the personal-watch scenario
+in browser shard 4, job `116963300149`; 99 other cases pass. The aggregate
+`required-ci` fails and release assembly is skipped, with no release-bundle
+artifact. The test and `WatchControl` are unchanged from that candidate through
+parent `2d678d96`.
+
+Diagnostic artifact `12066224761` is authenticated in memory against its
+55,199,757-byte size and SHA-256
+`aa31b30c39bfbb2da06ccba74938367baf1e225312e99aa667449ab947a53bd2`.
+The selected trace logs the initial phone Card-watch focus resolving to a native
+**disabled** Watch Card button (`tabindex=-1`). One Enter follows, then the Retry
+focus assertion fails because its control is absent. Across the captured browser
+network, API command and route-callback traces, no Card-watch PUT follows that
+focus. This is an unadmitted fixture gesture, not evidence that an acknowledged
+watch command lost its recovery control. The full artifact/trace archives are
+not persisted; selected trace/network records, a small context/screenshot and audits are retained.
+
+The unchanged complete strict-account native scenario passes in **104,563.872 ms**.
+That local run does not reproduce the hosted failure or establish a product
+cause. The changed fixture uses the existing `focusAdmittedControl` for this one
+initial Watch Card action before the same single Enter. Only focus/readiness
+checks may repeat within its original five-second helper bound; no extra
+activation, command retry, force flag, timing allowance or product change is
+introduced. An exact source comparison retains every other statement, original
+assertion and activation keypress, including the 180-second scenario deadline.
+
+All eleven existing keyboard-admission protocol checks, browser TypeScript and
+289 immutable CI coverage checks pass. Same-key/body lost-response replay,
+exactly two Card-watch writes, six independent HTTP/SQL watch-state comparisons,
+immutable subscription identity/creation clock, precise update clocks, actual
+Card movement, List archive withdrawal, desktop/phone keyboard focus and tagged
+Axe/overflow checks remain required. Current immutable/full CI and complete
+PRD-17 acceptance still govern closure; estimated work remaining stays **15%**.
+Large-load tests remain deferred until after the operational MVP.
+
+The complete changed strict-account scenario passes in **104,287.816 ms**, with
+one result covering desktop and phone, no retries/skips/flaky results or report
+errors. API and Worker require verified email; the test checks pending login
+refusal and uses its existing administrator activation branch for only the
+newly created disposable account. This does not certify email-provider delivery.
+The private fake email provider remains explicit.
+
+Both native runs use fresh restricted PostgreSQL 17.11/pgvector with all 149
+migrations, current read-only compiled API/Worker assemblies and production Vite
+assets through Nginx, using cached runtime images. Runtime metadata remains
+`e88c6514`, so current-main immutable-image certification is not claimed. All
+1,286 captured sources, 71 binary files and four served frontend assets match
+within each invocation. Only the watch browser file differs between the two
+source maps; production assets and binaries match. The API remains stable,
+and the original scoped Worker helper recreates/restores the same Worker image.
+Both original Docker inventories are restored; the owned containers, network,
+credentials and temporary directories (3,496/3,484 bytes) are removed. No original
+database, local Demo, image build/pull/import/download or large-load test is used.
+Current immutable/full CI and complete PRD acceptance still govern closure;
+PRD-17 stays open at **15% estimated work remaining**.

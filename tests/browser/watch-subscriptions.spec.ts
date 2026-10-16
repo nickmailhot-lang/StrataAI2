@@ -3,6 +3,7 @@ import { registerNotificationAccount } from './notificationAccountFixture';
 import { commandOrderQuery } from './observedBoardCommandOrder';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { focusAdmittedControl } from './keyboardAdmission';
 
 test('PRD-17: desktop and phone recover personal watches for Board, List and moving Card', async ({ page, context, browser }) => {
   test.setTimeout(180_000); await page.setViewportSize({ width: 1280, height: 844 });
@@ -81,7 +82,7 @@ test('PRD-17: desktop and phone recover personal watches for Board, List and mov
       } else { expect(route.request().headers()['idempotency-key']).toBe(key); expect(route.request().postData()).toBe(body); await route.continue(); }
     });
     const mobile = other.getByRole('dialog', { name: 'Card watching', exact: true });
-    await mobile.getByRole('button', { name: 'Watch Card', exact: true }).focus(); await other.keyboard.press('Enter');
+    await focusAdmittedControl(mobile.getByRole('button', { name: 'Watch Card', exact: true })); await other.keyboard.press('Enter');
     await expect(mobile.getByRole('button', { name: 'Retry same watch change' })).toBeFocused();
     await mobile.getByRole('button', { name: 'Check current watching' }).focus(); await other.keyboard.press('Enter');
     await expect(mobile.getByText('You are watching this Card.', { exact: true })).toBeVisible();

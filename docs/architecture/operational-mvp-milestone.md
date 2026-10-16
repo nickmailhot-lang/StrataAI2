@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [initial Card-watch keyboard repair](watch-subscriptions.md#initial-card-watch-keyboard-admission-2026-10-16)
+requires enabled focus before the original single activation. Retained hosted
+evidence shows disabled focus and no PUT. Both unchanged and changed complete
+strict-account desktop/phone native scenarios pass; original recovery, stored
+identity/clocks, movement/archive and accessibility remain. Eleven helper cases,
+browser types and 289 CI guards pass. Inputs match and both owned cleanups
+restore Docker inventory. This is not local reproduction or current immutable
+release certification; PRD-17 and the milestone stay open. Large-load tests
+remain deferred.
+
 The [live invitation issuance admission repair](invitation-administration-ui.md#live-issuance-admission-before-account-failure-review-2026-10-16)
 opens history before issuance and requires its real delivery and protected read
 before account-outage review. Content-free Board events keep their privacy

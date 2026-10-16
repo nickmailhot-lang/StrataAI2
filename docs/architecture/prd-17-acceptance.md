@@ -1096,3 +1096,15 @@ The hosted fingerprint mismatch remains unreproduced and unresolved; neither
 local pass supports a repair or closure claim. Current complete immutable CI and
 all broader acceptance criteria remain required. Estimated remaining work stays
 **15%**.
+
+The [initial Card-watch admission repair](watch-subscriptions.md#initial-card-watch-keyboard-admission-2026-10-16)
+addresses a newly completed hosted gesture on a disabled Watch Card button,
+followed by no Card-watch PUT. The existing focus-only admission helper now
+precedes the same single Enter. All other statements/assertions, original-key
+recovery, exactly two writes, six SQL/HTTP identity/clock comparisons, actual
+movement/archive and accessibility remain. The unchanged local scenario passes
+and is not claimed as reproduction; the changed complete strict desktop/phone
+scenario also passes, with all captured inputs matching and both owned cleanups
+verified. Eleven helper cases, browser types and 289 CI guards pass. Current
+immutable/full acceptance remains required; estimated work remaining stays
+**15%**, and large-load tests remain deferred until after the MVP.
