@@ -1,5 +1,8 @@
 # StrataAI2 architecture
 
+[Frontend capacity sequencing](web-capacity-phase.md) keeps large component
+datasets post-MVP while preserving active virtualization and keyboard checks.
+
 [Optional HTTPS deployment](https-deployment.md) describes the existing web
 image's certificate overlay, private diagnostic ports and source-free CI gate.
 

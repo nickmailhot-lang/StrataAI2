@@ -14,6 +14,8 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Suggested starting points
 
+- [Frontend capacity sequencing and active MVP correctness checks](architecture/web-capacity-phase.md)
+
 - New contributor: [architecture overview](architecture/README.md), [runtime modes](architecture/runtime-modes.md), [configuration](architecture/configuration.md), and [API host testing](architecture/api-host-testing.md).
 - Implementing a ticket: [dependency audit](ticket-dependencies.md), [linked dependency map](ticket-dependency-map.md), the feature document below, then its shared contracts and acceptance records.
 - Reviewing completion: [foundation acceptance](architecture/prd-01-acceptance.md), [Board acceptance](architecture/prd-04-acceptance.md), [activity acceptance](architecture/prd-15-acceptance.md), and the relevant evidence documents. Match every result to its recorded revision and test scope.

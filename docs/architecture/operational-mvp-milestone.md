@@ -578,6 +578,18 @@ reduce its remaining scope.
 
 Verification of the split: 222 CI/startup guards pass, including refusal of missing phase gates, attempts to defer functional checks and hard-enabled source fixtures; workflow lint and a zero-warning/error solution build pass. Restricted PostgreSQL checks pass with the small datasets above, including concurrency, tenant isolation, late rollback, exact delivery references and actual Worker acknowledgment. The temporary fixture is removed with zero mismatches across 52 frozen source/runtime inputs. This is phase-policy and functional evidence, not a completed release milestone.
 
+### Frontend capacity phase correction — 2026-10-16
+
+The [frontend phase audit](web-capacity-phase.md) finds another inherited gap:
+the default component fixture still allocates 5,000 Cards and 200 Lists. Its
+24 original cases now require the same explicit post-MVP opt-in, with dataset
+allocation deferred until execution. All 24 small functional counterparts remain
+active using 128 Cards/32 Lists, preserving production virtualization, keyboard,
+focus and measurement coverage. The focused run passes 24 cases and reports
+24 capacity deferrals; all seven phase/architecture checks, types and lint pass.
+The linked record discloses the initial mistaken old-fixture launch and collection
+repair. Neither focused correctness nor phase deferral completes the milestone.
+
 ## Documentation links
 
 - [Documentation index](../README.md)

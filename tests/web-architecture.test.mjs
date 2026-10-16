@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { ESLint } from 'eslint';
+import './web-capacity-phase.test.mjs';
 
 const webRoot = fileURLToPath(new URL('../apps/web/', import.meta.url));
 const lint = new ESLint({ cwd: webRoot });
