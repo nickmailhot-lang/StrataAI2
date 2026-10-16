@@ -7,6 +7,18 @@ functional requirements to implementation contracts and required completion
 evidence. A feature document or isolated passing scenario does not close a row.
 The adopted MUI/API/separate Worker/PostgreSQL architecture is unchanged.
 
+## Configured-producer read recovery admission — 2026-10-16
+
+The [read-recovery record](notification-inbox.md#configured-producer-read-recovery-admission-2026-10-16)
+verifies the hosted missing-dispatch trace and uses bounded request admission
+for the explicit original read retry. Original command identity, exact counts,
+private envelopes, clocks, focus and accessibility remain required. The final
+complete desktop/phone case passes 1/1, including the additional bounded exact
+link-set observation; 11 keyboard protocol and 285 CI guard cases pass. Inputs
+and successful-run cleanup are verified within the linked local runtime scope.
+Current immutable/full CI still governs closure; estimated work remaining stays **15%**.
+Large-load tests remain deferred until after the operational MVP.
+
 ## Functional requirements
 
 | Requirement | Implementation and evidence source | Required completion evidence |

@@ -234,6 +234,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Assignment notification persistence (PRD-11 / PRD-17)](architecture/assignment-notifications.md)
 - [PRD-15 comments, mentions and activity acceptance](architecture/comments-mentions-activity.md)
 - [Authorized notification inbox (PRD-17)](architecture/notification-inbox.md)
+- [Configured-producer notification read recovery admission](architecture/notification-inbox.md#configured-producer-read-recovery-admission-2026-10-16)
 - [Watch and notification audit clocks](architecture/notification-audit-clocks.md) — stored subscription clocks, notification first-read clocks, observed permission ordering and verification limits.
 - [Recipient-private notification events and acceptance evidence](architecture/notification-realtime.md)
 - [Watch activity notifications (PRD-17)](architecture/watch-activity-notifications.md)

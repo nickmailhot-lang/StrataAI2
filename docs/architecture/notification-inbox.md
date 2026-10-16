@@ -266,3 +266,82 @@ fixture copies are removed, without using the original database, building or
 downloading/importing application images, or running load tests. This supports
 the admission repair; current exact-commit complete CI and all original
 acceptance remain required. Estimated PRD-17 work remaining stays **15%**.
+
+## Configured-producer read recovery admission (2026-10-16)
+
+[Run 38820133372](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38820133372),
+job `116809590908`, passes 99 full-browser shard cases and fails the configured
+watch-activity matrix when **Retry mark read** remains after Enter. Artifact
+`12038642620` is independently verified against its **19,839,829-byte** size,
+SHA-256 `53dd4776ef8aa60a553fe062d50f9d0018524ea1b909e721c05349c355fd9501`,
+original metadata and every embedded checksum. Only selected failure diagnostics
+are retained privately; the original ZIP is removed after verification.
+
+The phone trace has exactly one browser read POST, receiving the deliberately
+substituted 503 after its real intercepted server fetch succeeds. No second
+browser POST follows the retry keypress. The retained phone screen shows zero
+unread rows and the recovery control while a protected refresh disables it.
+The scenario and notification page are unchanged from that candidate to this
+repair's parent, `fabd5974`. This supports fixing keyboard request admission;
+it does not establish a failed server receipt or an exact local reproduction.
+
+That scenario's explicit original-read retry now uses the existing
+bounded request-observation helper. Bringing the phone forward still admits
+its foreground check. Keyboard admission can continue while no intended POST
+has started, and stops once the existing route counter observes that request.
+A sent request or failed server response cannot cause another activation.
+The original two POSTs, identical selection/key/body, canonical acknowledgment,
+returned focus, thirteen producers, actor suppression, archive concealment,
+complete persisted/private envelope clocks and sequences, no-op fingerprints,
+keyboard/WCAG and 180-second case deadline remain required. No product behavior,
+permission, count or response assertion changes. The related link-observation
+follow-up below additionally waits for the same exact admitted link set. All **11** existing keyboard
+admission protocol cases pass, including ignored activation, dispatch during
+focus and refusal of extra or pre-existing observations.
+
+PRD-17 remains open at **15% estimated work remaining**. Current exact-commit
+immutable CI and full original acceptance remain required. Large-load testing
+is deferred until after the operational MVP; this scenario uses two Cards and
+thirteen functional producer notifications.
+
+The unchanged complete local case passes **1/1 in 77,938.282 ms**, with no
+failures, flaky/skipped cases or report errors. Exact local reproduction of the
+hosted missing dispatch is therefore not claimed. All captured **1,277 source,
+71 binary, four served asset** and private composition hashes match. API
+identity/start are stable; the original scoped Worker helper restores the same
+cached image healthy and unscoped. Docker inventory is restored and **3,456
+temporary bytes** removed. The first local setup attempt stops before any
+browser case because the private PostgreSQL container lacks the Compose
+selection label. Supplying that fixture label makes the original read-only
+Compose SQL command succeed; no repository helper or query is substituted.
+That failed setup also restores inventory and removes 2,661 temporary bytes.
+
+The first changed complete invocation fails before reaching the read retry:
+an immediate `evaluateAll` obtains zero Open Card links after the preceding
+caption assertions. Both clients' retained reads are successful, and the failure
+screenshot shows the links restored. The scenario now observes one admitted
+complete link snapshot within the existing five-second assertion budget. All
+three original comparisons remain: thirteen total, twelve original-Card links
+and one copied-Card link. No mutation, response or whole-test retry is added.
+The failed invocation retains matching source/binary/asset/composition hashes,
+stable API, restored Worker scope and Docker inventory, with **4,046,165
+temporary bytes** removed; its report is preserved separately.
+
+The final complete case passes **1/1 in 78,133.103 ms**, with no failures,
+flaky/skipped cases or report errors. Both desktop and phone retain the complete
+thirteen-producer/private-envelope and read-transition assertions, original
+key/selection/body recovery, exact two POSTs, shared first-read timestamp,
+canonical no-op fingerprints, returned focus, WCAG and overflow checks. Browser
+types, intact one-case collection, **285 CI coverage guards**, 1,942 local
+documentation links and 599 anchors pass.
+
+All **1,277 source, 71 binary, four served asset** and private composition
+hashes match. API identity/start remain stable; the original scoped Worker
+helper restores its same cached image healthy and unscoped. Original Docker
+inventory is restored and **3,456 temporary bytes** removed. No images are
+built, pulled or imported. This compiled-host/current-frontend evidence uses
+fresh PostgreSQL 17.11 with 149 migrations/restricted roles, controlled mail
+and optional account verification. Local runtime metadata remains `13d9d83c`;
+it is not relabeled as the new immutable commit. Current retained-image CI,
+strict/managed-provider and full PRD acceptance remain required. Estimated
+PRD-17 work remaining stays **15%**. Large-load tests remain deferred.

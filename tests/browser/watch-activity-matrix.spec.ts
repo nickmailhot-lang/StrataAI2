@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { execFileSync } from 'node:child_process';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { focusAdmittedControl } from './keyboardAdmission';
+import { focusAdmittedControl, pressObservedRequest } from './keyboardAdmission';
 
 type PrivateEnvelope = {
   eventId: string; eventType: string; actorId: string; recipientId: string;
@@ -172,9 +172,13 @@ test('PRD-17-TC-01/06/07/08/10/11/12: all configured watch producers reach priva
       for (const caption of ['Card created', 'Card copied', 'Card updated', 'Card moved', 'Card member added', 'Card member removed',
         'Label added', 'Label removed', 'Card dates changed', 'Due date completed', 'Due date reopened', 'Card archived', 'Card restored'])
         await expect(client.getByText(`${caption} · Unread`, { exact: true })).toBeVisible();
-      const links = await client.getByRole('link', { name: 'Open Card', exact: true }).evaluateAll(elements => elements.map(element => element.getAttribute('href')));
-      expect(links).toHaveLength(13); expect(links.filter(href => href === `/app/${org}/boards/${board}/cards/${card}`)).toHaveLength(12);
-      expect(links.filter(href => href === `/app/${org}/boards/${board}/cards/${copied}`)).toHaveLength(1);
+      // A protected live read can withdraw links after the preceding captions
+      // are admitted. Observe one complete current set before comparing it.
+      await expect(async () => {
+        const links = await client.getByRole('link', { name: 'Open Card', exact: true }).evaluateAll(elements => elements.map(element => element.getAttribute('href')));
+        expect(links).toHaveLength(13); expect(links.filter(href => href === `/app/${org}/boards/${board}/cards/${card}`)).toHaveLength(12);
+        expect(links.filter(href => href === `/app/${org}/boards/${board}/cards/${copied}`)).toHaveLength(1);
+      }).toPass({ timeout: 5_000 });
       expect((await new AxeBuilder({ page: client }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       expect(await client.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
@@ -206,7 +210,7 @@ test('PRD-17-TC-01/06/07/08/10/11/12: all configured watch producers reach priva
     await activate(mobile.getByRole('button', { name: 'Mark selected read', exact: true }));
     const retryRead = mobile.getByRole('button', { name: 'Retry mark read', exact: true }); await expect(retryRead).toBeEnabled();
     await expect(page.getByText('0 unread on this page.', { exact: true })).toBeVisible({ timeout: 25_000 });
-    await activate(retryRead); await expect(retryRead).toHaveCount(0);
+    await mobile.bringToFront(); await pressObservedRequest(retryRead, () => attempts.length, 2); await expect(retryRead).toHaveCount(0);
     await expect(mobile.getByRole('button', { name: 'Refresh notifications', exact: true })).toBeFocused();
     expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
     expect([...JSON.parse(attempts[0].body).ids].sort()).toEqual(rows.map((row: { id: string }) => row.id).sort());

@@ -4,6 +4,14 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [configured-producer notification read-recovery follow-up](notification-inbox.md#configured-producer-read-recovery-admission-2026-10-16)
+addresses a verified hosted retry keypress with no second POST. Request
+admission stops once the intended request starts; original receipt, private
+journal, exact-count and accessibility assertions remain required. The complete
+desktop/phone case, 11 keyboard protocol cases and 285 CI guards pass; scoped
+cleanup restores Docker inventory. Current immutable CI and full release
+acceptance still govern completion.
+
 [Filter keyboard recovery](../board-filtering.md#keyboard-scrolling-through-filter-recovery-2026-10-16)
 keeps the scrollable dialog body focusable when live Board checks disable its
 controls. All 62 focused filter cases, 285 CI guards and four desktop/phone
