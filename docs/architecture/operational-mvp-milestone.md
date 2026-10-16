@@ -4,6 +4,18 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [deletion acknowledgment admission repair](organization-deletion-retries.md#final-account-admission-and-shared-operation-deadlines--2026-10-16)
+checks the current account after the write response and enforces one 15-second
+deadline across each complete review/write/status operation. All eight new
+regressions reproduce the original gaps; all 43 focused deletion/parser cases
+and 285 CI guards pass after repair. This is MVP command reliability work;
+five App routing cases and both desktop/phone native PostgreSQL cases also pass
+the real committed-response deadline, identical original recovery and final
+cookie-account withdrawal, with private state, keyboard/WCAG, input hashes,
+stable API/Worker processes and owned cleanup verified. Current immutable/full
+release acceptance remains required and large-load
+testing remains deferred.
+
 The [departure observation increment](operator-metrics.md#organization-departure-client-observations--2026-10-16)
 adds bounded, private-data-free attempts/results and original recovery to the
 existing confirmed departure flow. All 34 focused component/queue, 14 API

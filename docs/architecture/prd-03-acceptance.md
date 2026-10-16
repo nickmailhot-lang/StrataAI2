@@ -12,6 +12,22 @@ authorization and later factory recovery. Controlled Demo persistence and
 compiled assemblies do not certify current Production images or full release
 acceptance. Estimated PRD-03 work remaining stays **8%**; the issue stays open.
 
+## Deletion acknowledgment account/deadline repair — 2026-10-16
+
+The [deletion admission repair](organization-deletion-retries.md#final-account-admission-and-shared-operation-deadlines--2026-10-16)
+adds final account verification before accepting HTTP 202 and shares one
+15-second deadline across each complete account/data/body operation. All eight
+new regressions fail against the original page; all 43 focused deletion/parser
+cases and 285 CI guards pass after repair. Late results cannot admit content,
+acknowledgment or completion; uncertain acknowledgment retains only the original
+request for explicit recovery. All five App routing cases and both real
+desktop/phone PostgreSQL browser cases pass; the latter hold a committed 202
+past the total deadline and switch accounts before original-retry acknowledgment.
+Canonical request identity, privacy, keyboard/WCAG, unchanged inputs and owned
+cleanup are verified within the linked source-runtime scope. Current
+immutable/full CI and complete lifecycle
+acceptance remain required. PRD-03 stays open at **8% estimated work remaining**.
+
 ## Departure client observations — 2026-10-16
 
 The [departure observation contract](operator-metrics.md#organization-departure-client-observations--2026-10-16)

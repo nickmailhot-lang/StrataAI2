@@ -77,6 +77,58 @@ these native scenarios await CI execution.
 
 ## Browser confirmation and recovery
 
+### Final account admission and shared operation deadlines — 2026-10-16
+
+Source review found that deletion accepted an HTTP 202 without a final account
+check, and the 15-second timeout restarted for each account/data request. The
+route now shares the existing bounded operation helper across each complete
+review, write/recovery, status check or stored-reference verification. Every
+request checks its shared signal before transport and after body parsing, so
+even an ignored abort cannot continue a late chain or publish its result.
+Final account admission precedes acknowledgment and storage promotion. A
+technical verification failure retains only the original unacknowledged
+actor/version/key; an account switch clears it. A 401 can retain an unacknowledged
+reference for later same-account reauthentication, without displaying success.
+The server still authorizes every write and receipt; client checks grant no access.
+
+All **eight new regressions** fail against the original page. After repair, all
+**43** deletion component/parser cases pass. These cover switched/401/403/404
+final admission, cumulative review/write/status deadlines, late private or
+terminal results, exact original recovery and unavailable final verification.
+The preexisting retry-account test now switches at the explicit retry boundary
+instead of assuming a fixed number of profile reads; all original refusal and
+one-write assertions remain. The new deadline test advances the Dialog exit
+transition after React applies the timeout state, without changing deadlines
+or assertions. Both failed initial reports are retained privately. All **285**
+mandatory CI coverage guards pass. Full current immutable CI and complete PRD
+acceptance remain required; the issue stays open at **8% estimated work remaining**.
+
+All **five App routing cases** also pass, including independently mounted
+deletion recovery after ordinary surface withdrawal. Both [native desktop/phone
+admission cases](../../tests/browser/organization-deletion-admission.spec.ts) pass
+with no failures/flaky/skipped cases against fresh restricted PostgreSQL 17.11,
+all 149 migrations, current API/separate Worker assemblies and current Vite
+assets. They hold account verification for eight virtual seconds, hold an
+actually committed 202 through the remaining deadline, and require uncertainty
+with exactly one write and no private review/acknowledgment. Late release cannot
+acknowledge it. An explicit identical actor/version/key retry recovers the real
+202; switching the cookie account before its release must navigate to sign-in,
+clear the stored reference and withhold acknowledgment. A separate current Owner
+session observes that same canonical request/version. Keyboard/Dialog focus and
+WCAG 2.2 AA checks pass; there is no document reload or new destructive intent.
+
+All **1,266 source inputs, 71 binaries and four served assets** match during
+the run; API/Worker identities remain stable and owned cleanup restores the
+original Docker inventory. An unused test-only constant is removed afterward
+for lint; executed product/fixture code remains unchanged. Cached images supply
+the runtime and current assemblies/assets are mounted read-only. Runtime metadata
+still carries `3dec9af2`/local `1.0.0`, not a released image of this working source.
+The controlled provider and optional verification policy do not certify real
+provider delivery or strict-email admission. No images/release archives are
+built, pulled or imported and no large-load tests run. Current immutable-image
+CI and complete release/PRD acceptance remain required. The preceding complete
+2,602-test web result remains a baseline, not a full run of this later source.
+
 Current Owners can open **Request Organization deletion** from Organization
 home. `/app/{id}/delete` is an independent operation route: it performs its own
 canonical ACTIVE Organization and Owner review with `/me` before and after,
@@ -91,10 +143,17 @@ Cancel receives keyboard focus and produces no write. Confirm captures an
 immutable original account, reviewed version and UUID key. Unknown outcomes
 clear private review metadata, disable new reviews and offer only explicit
 **Retry original deletion request** with the same path/account/version/key.
-Every request has a 15-second deadline and late route responses are fenced.
-The pending intent lives in the mounted operation, not across a browser reload.
+Each review, acknowledgment/recovery and status observation has one 15-second
+deadline covering all account reads, HTTP requests and body parsing. Late route
+or timed-out responses cannot admit private content, continue the account chain
+or acknowledge a request. An actor-bound reference also survives a same-tab
+reload in session storage; restoration requires current account verification
+and never reopens ordinary Organization reads or sends a DELETE automatically.
 
-The account is checked before each write and also bound by the API query.
+The account is checked before and after each write and also bound by the API query.
+Only the same currently admitted account can acknowledge the response. A failed
+final verification leaves the original request unacknowledged for explicit
+recovery; a changed account withdraws the reference and navigates to sign-in.
 Current permission/version refusals require a new canonical review and renewed
 explicit confirmation before a fresh key. Denied recovery clears the original
 intent and metadata; switched accounts navigate to sign-in. A 202 displays

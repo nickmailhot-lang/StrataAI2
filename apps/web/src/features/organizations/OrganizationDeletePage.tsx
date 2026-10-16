@@ -50,13 +50,15 @@ function Deletion({ organizationId }: { organizationId: string }) {
     const controller = begin(); if (!controller) return;
     setUnverifiedRecovery(saved);
     try {
-      const profile = await request('/me', {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(profile.status)) { unavailable(profile.status); return; }
-      if (profile.status !== 200 || !isNotificationProfile(profile.body)) throw new Error('Account unavailable');
-      if (profile.body.id !== saved.actor) { unavailable(401, true); return; }
-      setUnverifiedRecovery(undefined);
-      if (saved.acknowledged) { recoveryFocus.current = true; setAccepted(saved); setAcknowledged(true); }
-      else { resumeFocus.current = true; intentRef.current = saved; setIntent(saved); setError('Retry the original deletion request to recover its acknowledgment.'); }
+      await boundedWorkRead(async signal => {
+        const profile = await request('/me', {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(profile.status)) { unavailable(profile.status); return; }
+        if (profile.status !== 200 || !isNotificationProfile(profile.body)) throw new Error('Account unavailable');
+        if (profile.body.id !== saved.actor) { unavailable(401, true); return; }
+        setUnverifiedRecovery(undefined);
+        if (saved.acknowledged) { recoveryFocus.current = true; setAccepted(saved); setAcknowledged(true); }
+        else { resumeFocus.current = true; intentRef.current = saved; setIntent(saved); setError('Retry the original deletion request to recover its acknowledgment.'); }
+      }, controller.signal);
     } catch { if (current(controller)) setError('Unable to verify the account for this deletion request. Refresh to try again.'); }
     finally { finish(controller); }
   }
@@ -64,20 +66,22 @@ function Deletion({ organizationId }: { organizationId: string }) {
     if (!accepted || observation?.state === 'COMPLETED') return;
     const original = accepted; const controller = begin(); if (!controller) return;
     try {
-      const before = await request('/me', {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(before.status)) { unavailable(before.status); return; }
-      if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Account unavailable');
-      if (before.body.id !== original.actor) { unavailable(401, true); return; }
-      const result = await request(`${root}/deletion-requests/${original.key}?expectedActorId=${original.actor}`, {}, controller);
-      if (!current(controller)) return;
-      if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
-      const snapshot = parseDeletionObservation(result.body, original);
-      if (result.status !== 200 || !snapshot) throw new Error('Completion unconfirmed');
-      const after = await request('/me', {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(after.status)) { unavailable(after.status); return; }
-      if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Account unavailable');
-      if (after.body.id !== original.actor) { unavailable(401, true); return; }
-      setObservation(snapshot);
+      await boundedWorkRead(async signal => {
+        const before = await request('/me', {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(before.status)) { unavailable(before.status); return; }
+        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Account unavailable');
+        if (before.body.id !== original.actor) { unavailable(401, true); return; }
+        const result = await request(`${root}/deletion-requests/${original.key}?expectedActorId=${original.actor}`, {}, signal);
+        if (!current(controller)) return;
+        if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
+        const snapshot = parseDeletionObservation(result.body, original);
+        if (result.status !== 200 || !snapshot) throw new Error('Completion unconfirmed');
+        const after = await request('/me', {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(after.status)) { unavailable(after.status); return; }
+        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Account unavailable');
+        if (after.body.id !== original.actor) { unavailable(401, true); return; }
+        setObservation(snapshot);
+      }, controller.signal);
     } catch { if (current(controller)) setError('Unable to confirm deletion status. Check the same request again.'); }
     finally { finish(controller); }
   }
@@ -87,12 +91,12 @@ function Deletion({ organizationId }: { organizationId: string }) {
   }
   function current(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
   function finish(controller: AbortController) { if (current(controller)) { pending.current = undefined; setBusy(false); } }
-  async function request(path: string, options: RequestInit, controller: AbortController) {
-    return boundedWorkRead(async signal => {
-      const result = await apiFetch(path, { ...options, signal });
-      const body: unknown = result.status === 401 ? undefined : await result.json().catch(() => undefined);
-      return { status: result.status, body };
-    }, controller.signal);
+  async function request(path: string, options: RequestInit, signal: AbortSignal) {
+    signal.throwIfAborted();
+    const result = await apiFetch(path, { ...options, signal });
+    const body: unknown = result.status === 401 ? undefined : await result.json().catch(() => undefined);
+    signal.throwIfAborted();
+    return { status: result.status, body };
   }
   function unavailable(status: number, switched = false) {
     if (switched || [403, 404].includes(status)) clearDeletionRecovery(organizationId);
@@ -108,22 +112,24 @@ function Deletion({ organizationId }: { organizationId: string }) {
     if (saved) { await resume(saved); return; }
     const controller = begin(); if (!controller) return; setReview(undefined); setActor(undefined); setOpen(false);
     try {
-      const before = await request('/me', {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(before.status)) { unavailable(before.status); return; }
-      if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Account unavailable');
-      const result = await request(root, {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
-      const value = result.body as Review | undefined;
-      if (result.status !== 200 || value?.organization?.id !== organizationId || typeof value.organization.name !== 'string'
-        || !value.organization.name.trim() || value.organization.name.length > 160 || value.organization.status !== 0
-        || !Number.isSafeInteger(value.organization.version) || value.organization.version < 1 || value.organization.version > Number.MAX_SAFE_INTEGER - 2 || ![0, 1, 2].includes(value.role))
-        throw new Error('Invalid review');
-      const after = await request('/me', {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(after.status)) { unavailable(after.status); return; }
-      if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Account unavailable');
-      if (before.body.id !== after.body.id) { unavailable(401); return; }
-      if (value.role !== 0) { setError('Only a current Organization Owner can request deletion.'); return; }
-      setActor(after.body.id); setReview(value);
+      await boundedWorkRead(async signal => {
+        const before = await request('/me', {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(before.status)) { unavailable(before.status); return; }
+        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Account unavailable');
+        const result = await request(root, {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
+        const value = result.body as Review | undefined;
+        if (result.status !== 200 || value?.organization?.id !== organizationId || typeof value.organization.name !== 'string'
+          || !value.organization.name.trim() || value.organization.name.length > 160 || value.organization.status !== 0
+          || !Number.isSafeInteger(value.organization.version) || value.organization.version < 1 || value.organization.version > Number.MAX_SAFE_INTEGER - 2 || ![0, 1, 2].includes(value.role))
+          throw new Error('Invalid review');
+        const after = await request('/me', {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(after.status)) { unavailable(after.status); return; }
+        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Account unavailable');
+        if (before.body.id !== after.body.id) { unavailable(401); return; }
+        if (value.role !== 0) { setError('Only a current Organization Owner can request deletion.'); return; }
+        setActor(after.body.id); setReview(value);
+      }, controller.signal);
     } catch { if (current(controller)) setError('Unable to review current deletion permission. Try loading it again.'); }
     finally { finish(controller); }
   }
@@ -133,29 +139,35 @@ function Deletion({ organizationId }: { organizationId: string }) {
     const original = intentRef.current ?? { key: crypto.randomUUID(), actor: actor!, version: review!.organization.version };
     intentRef.current = original; setIntent(original); saveDeletionRecovery(organizationId, original, false);
     try {
-      const before = await request('/me', {}, controller); if (!current(controller)) return;
-      if ([401, 403, 404].includes(before.status)) { unavailable(before.status); return; }
-      if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Account unavailable');
-      if (before.body.id !== original.actor) { unavailable(401, true); return; }
-      const result = await request(`${root}?version=${original.version}&expectedActorId=${encodeURIComponent(original.actor)}`,
-        { method: 'DELETE', headers: { 'Idempotency-Key': original.key } }, controller); if (!current(controller)) return;
-      setOpen(false); setReview(undefined); setActor(undefined);
-      if (result.status === 202) {
-        if (result.body !== undefined && (!result.body || typeof result.body !== 'object'
-          || Object.keys(result.body).length !== 1 || (result.body as { requestId?: unknown }).requestId !== original.key)) throw new Error('Wrong acknowledgment');
-        intentRef.current = undefined; setIntent(undefined); setAccepted(original); setAcknowledged(true);
-        saveDeletionRecovery(organizationId, original, true); return;
-      }
-      if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
-      const retentionNotice = retentionDispositionNotice(result.status,
-        result.body && typeof result.body === 'object' ? (result.body as { code?: unknown }).code : undefined);
-      if ([400, 409, 429].includes(result.status)) {
-        clearDeletionRecovery(organizationId);
-        intentRef.current = undefined; setIntent(undefined);
-        setError(retentionNotice ?? 'The deletion request was refused. Review current permission and version before considering another request.'); return;
-      }
-      if (retentionNotice) { setError(retentionNotice); return; }
-      throw new Error('Missing acknowledgment');
+      await boundedWorkRead(async signal => {
+        const before = await request('/me', {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(before.status)) { unavailable(before.status); return; }
+        if (before.status !== 200 || !isNotificationProfile(before.body)) throw new Error('Account unavailable');
+        if (before.body.id !== original.actor) { unavailable(401, true); return; }
+        const result = await request(`${root}?version=${original.version}&expectedActorId=${encodeURIComponent(original.actor)}`,
+          { method: 'DELETE', headers: { 'Idempotency-Key': original.key } }, signal); if (!current(controller)) return;
+        const after = await request('/me', {}, signal); if (!current(controller)) return;
+        if ([401, 403, 404].includes(after.status)) { unavailable(after.status); return; }
+        if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Account unavailable');
+        if (after.body.id !== original.actor) { unavailable(401, true); return; }
+        setOpen(false); setReview(undefined); setActor(undefined);
+        if (result.status === 202) {
+          if (result.body !== undefined && (!result.body || typeof result.body !== 'object'
+            || Object.keys(result.body).length !== 1 || (result.body as { requestId?: unknown }).requestId !== original.key)) throw new Error('Wrong acknowledgment');
+          intentRef.current = undefined; setIntent(undefined); setAccepted(original); setAcknowledged(true);
+          saveDeletionRecovery(organizationId, original, true); return;
+        }
+        if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
+        const retentionNotice = retentionDispositionNotice(result.status,
+          result.body && typeof result.body === 'object' ? (result.body as { code?: unknown }).code : undefined);
+        if ([400, 409, 429].includes(result.status)) {
+          clearDeletionRecovery(organizationId);
+          intentRef.current = undefined; setIntent(undefined);
+          setError(retentionNotice ?? 'The deletion request was refused. Review current permission and version before considering another request.'); return;
+        }
+        if (retentionNotice) { setError(retentionNotice); return; }
+        throw new Error('Missing acknowledgment');
+      }, controller.signal);
     } catch {
       if (current(controller)) {
         setOpen(false); setReview(undefined); setActor(undefined);

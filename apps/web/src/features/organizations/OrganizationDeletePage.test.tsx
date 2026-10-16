@@ -123,12 +123,12 @@ it('fences an account switch during canonical deletion review', async () => {
 });
 
 it('fences a changed account before resending the original deletion', async () => {
-  let accounts = 0; let writes = 0;
+  let switched = false; let writes = 0;
   vi.stubGlobal('fetch', vi.fn(async (path: string, options?: RequestInit) => path === '/me'
-    ? response({ ...profile, id: ++accounts <= 3 ? actor : '33333333-3333-4333-8333-333333333333' })
+    ? response({ ...profile, id: switched ? '33333333-3333-4333-8333-333333333333' : actor })
     : options?.method === 'DELETE' ? (writes++, response({}, 503)) : response(review)));
   mount(); await confirm(); const retry = await screen.findByRole('button', { name: 'Retry original deletion request' });
-  await waitFor(() => expect(retry).toBeEnabled()); fireEvent.click(retry); await screen.findByText('Sign in destination'); expect(writes).toBe(1);
+  await waitFor(() => expect(retry).toBeEnabled()); switched = true; fireEvent.click(retry); await screen.findByText('Sign in destination'); expect(writes).toBe(1);
 });
 
 it('aborts a route departure and ignores a late deletion acknowledgment', async () => {
