@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [mail provider response repair](identity-email.md#provider-response-admission--2026-10-15)
+classifies provider errors at headers and preserves the existing successful
+receipt size and whole-request timeout bounds. Eleven new native regressions
+fail before repair; all 62 focused transport/delivery/invitation cases pass
+afterward, including actual loopback HTTP errors with withheld bodies. The
+Release solution builds without warnings/errors; all 794 source and 108 binary
+inputs match and Docker inventory is restored. Current-image CI, managed
+provider/deployment outage acceptance and the remaining ticket scope stay open.
+Only tiny controlled transport samples run; large-load tests remain deferred.
+
 The [backup completion and freshness contract](database-recovery.md#completion-records-and-freshness)
 adds protected completion records and a read-only archive integrity/age check.
 Freshness starts at the beginning of the dump; late completion or changed file

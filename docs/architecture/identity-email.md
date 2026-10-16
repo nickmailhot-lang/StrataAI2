@@ -87,8 +87,10 @@ token usability before sending. Deactivated/suspended accounts and used/expired
 tokens cancel pending delivery. Provider idempotency handles the unavoidable gap
 between an external send and database acknowledgement.
 
-HTTP calls time out after 30 seconds, bound buffered response size, forbid
-redirects and redact headers. Provider error bodies, addresses, message/link
+HTTP calls share one 30-second budget across headers and receipt reading,
+bound successful receipt bodies to 65,536 bytes (or a smaller configured client
+limit), forbid redirects and redact headers. Failed statuses are classified at
+headers without reading their bodies in the application. Provider error bodies, addresses, message/link
 bodies, signing keys and credentials are excluded from Worker logs. Logs correlate
 job/subject/worker IDs, purpose, attempt and request correlation ID. An accepted
 request means queued work, not guaranteed inbox delivery; operators must monitor
@@ -103,6 +105,56 @@ tokens are rejected. Account creation explains required verification. Reset
 continues to consume tokens once and revoke existing sessions.
 
 ## Evidence and remaining scope
+
+### Provider response admission — 2026-10-15
+
+The previous adapter uses the default buffered `HttpClient.SendAsync` overload.
+That reads error content before inspecting status, contradicting its intended
+error-body policy. In particular, a rejected body read can replace a permanent
+401 refusal with a generic transport retry. Production already has a 65,536-byte
+buffer limit and 30-second client timeout; this repair preserves those bounds
+while moving response admission to headers.
+
+The adapter now uses headers-only completion, ignores unsuccessful response
+content and retains the existing status-based permanent/transient mapping. A
+successful body is explicitly buffered within the existing byte limit before
+parsing; malformed/nonobject/missing/invalid receipts receive only the fixed
+retryable `identity_provider_receipt_invalid` error. Responses are disposed on
+every outcome. The
+[.NET completion contract](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpcompletionoption?view=net-10.0)
+limits `HttpClient.Timeout` and automatic buffering to the chosen completion
+point, so a linked token starts before sending and enforces the same deadline
+through body reading. Caller/lease cancellation still propagates, including an
+explicitly infinite client timeout. This is bounded transport behavior, not a
+latency or capacity benchmark.
+
+The baseline native run fails **11 of 20** transport cases: six unread-error
+classifications, two oversized successful receipts and three invalid JSON/root
+receipts. After repair all **24 transport cases** pass, including two additional
+real loopback HTTP peers that send 401/503 headers while withholding their bodies,
+and the smaller-client-limit boundary. The existing request URL, credential and
+stable idempotency header checks, valid receipt, exact 65,536-byte success,
+unknown-length oversize, finite deadline, caller cancellation and disposal checks
+remain. The 65,536/65,537-byte samples are small boundary fixtures, not large-load
+testing or provider traffic.
+
+All **11 identity delivery processor** and **27 invitation email handler** cases
+also pass: **62 focused cases** total, without skips. The complete Release
+solution builds with zero warnings/errors. Both native runs freeze **794 source
+inputs and 108 binary files** with zero mismatches and restore the original Docker
+inventory. A cached API image supplies only the Linux .NET runtime; the
+application and database do not start, no image is built/pulled/imported, and no
+external provider or local Demo is contacted. This is compiled current-source
+evidence, not current immutable application-image or deployed provider acceptance.
+
+The normal mandatory Domain source gate includes these cases; no large-test
+phase gate is applied to them. Current exact-commit/full CI, managed delivery,
+deployment outage behavior and full functional/lifecycle acceptance remain
+required. PRD-02 stays open at **16% estimated work remaining**, PRD-60 at **18%**
+(unchanged planning estimates), and ARCH-07/08 remain open. Large-load tests stay
+deferred until after MVP.
+
+### Existing delivery pipeline coverage
 
 CI uses exact API/Worker/web images, real PostgreSQL and a role unable to read
 password hashes or Organization data. The isolated test provider accepts an effect

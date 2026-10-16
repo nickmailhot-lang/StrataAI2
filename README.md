@@ -59,6 +59,7 @@ Jump to [documentation navigation](#navigating-the-documentation), [reading path
 | Explore implemented workflows | [Boards and collaboration](docs/README.md#boards-and-collaboration), [Lists and Cards](docs/README.md#lists-and-cards), [accounts and invitations](docs/README.md#identity-profiles-and-invitations) |
 | Understand the system | [Architecture overview](docs/architecture/README.md), [runtime modes](docs/architecture/runtime-modes.md), [web routing and state](docs/architecture/web-spa-boundary.md) |
 | Configure a local or production runtime | [Configuration reference](docs/architecture/configuration.md), [database roles](docs/architecture/runtime-database-roles.md), [schema upgrades](docs/architecture/schema-upgrades.md) |
+| Configure sign-in and invitation email | [Durable email setup and recovery](docs/architecture/identity-email.md), [provider response limits](docs/architecture/identity-email.md#provider-response-admission--2026-10-15) |
 | Understand background work and live updates | [Durable jobs](docs/architecture/background-jobs.md), [work synchronization](docs/architecture/work-synchronization.md), [Organization Board realtime](docs/organization-board-realtime.md) |
 | Run a tested Docker release | [Release bundle guide](docs/release/README.md) |
 | Configure direct Linux HTTPS | [HTTPS operator instructions](docs/release/README.md#optional-https-on-a-linux-docker-host), [verification and limits](docs/architecture/https-deployment.md) |

@@ -6,6 +6,19 @@ below record their historical evidence scope.
 This map identifies verification paths; it does not certify release readiness.
 Current changes must pass the complete pipeline against their exact revision.
 
+## Provider response admission (2026-10-15)
+
+The [identity/invitation transport repair](identity-email.md#provider-response-admission--2026-10-15)
+prevents error-body reads from replacing status-based provider refusals, and
+keeps successful receipts within the existing size and overall timeout bounds.
+Eleven regressions fail before repair; all 62 focused native transport,
+identity-delivery and invitation-handler cases pass afterward. The Release
+solution builds with zero warnings/errors and all 794 source/108 binary inputs
+match. Docker inventory is restored without database/application startup or
+external mail. Current immutable/full CI, actual deployment/provider acceptance
+and the rest of AUTH/lifecycle criteria remain required; PRD-02 stays open at
+**16% estimated work remaining**. Large-load testing remains after MVP.
+
 ## Auth rate-limit response under diagnostic failure (2026-10-15)
 
 The [rate-limit diagnostic guard](api-error-contract-verification.md#rate-limit-diagnostic-creation-and-writing-failures--2026-10-15)
