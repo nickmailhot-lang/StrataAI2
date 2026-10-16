@@ -2,12 +2,14 @@ import copy
 import importlib.util
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from image_labels_test import saved_image
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/record-release.py"
 spec = importlib.util.spec_from_file_location("release_state", SCRIPT)
@@ -22,6 +24,7 @@ class ReleaseStateTests(unittest.TestCase):
         (self.bundle / "images").mkdir(parents=True)
         self.state = self.root / "deployment.json"; self.checked = []
         self.docker_fault = None; self.docker_calls = []
+        self.loaded_images = {}; self.container_image_ids = {}
         self.candidate("a", "1")
 
     def candidate(self, digit, run):
@@ -51,6 +54,12 @@ class ReleaseStateTests(unittest.TestCase):
 
     def docker_run(self, args, **kwargs):
         self.docker_calls.append(args)
+        if args[1:3] == ["image", "inspect"]:
+            self.assertEqual(kwargs["timeout"], 10)
+            self.assertEqual(args[3], "--format")
+            self.assertNotIn(".Config.Env", args[4]); self.assertNotIn("{{json .}}", args[4])
+            image = self.loaded_images.get(args[-1])
+            return subprocess.CompletedProcess(args, 0 if image else 1, json.dumps(image) if image else "", "")
         self.assertEqual(args[0], "docker"); self.assertIn(args[1], ["ps", "inspect"])
         self.assertEqual(kwargs["timeout"], 10)
         fault = self.docker_fault
@@ -67,7 +76,7 @@ class ReleaseStateTests(unittest.TestCase):
             host = fault[0] if args[-1] == "9" * 64 else next(host for host, id in ids.items() if id == args[-1])
             self.assertEqual(args[2], "--format"); self.assertEqual(len(args), 5)
             self.assertNotIn(".Config.Env", args[3]); self.assertNotIn("{{json .}}", args[3])
-            row = [args[-1], self.provenance["imageIds"][host], True, False, False,
+            row = [args[-1], self.container_image_ids.get(host, self.provenance["imageIds"][host]), True, False, False,
                    "2026-10-15T12:00:00.123456789Z", "strataai-staging", host, "False"]
             if fault and fault[0] == host:
                 field = fault[1]
@@ -301,3 +310,81 @@ class ReleaseStateTests(unittest.TestCase):
                                  "--state", str(self.state), "--environment", "staging", "--project", "strataai-staging"], capture_output=True, text=True)
         self.assertEqual(result.returncode, 1); self.assertNotIn("private-missing-path", result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr); self.assert_unchanged(before)
+
+    def archive_bound_images(self, reverse=False):
+        self.loaded_images = {}; self.container_image_ids = {}
+        for host in release.HOSTS:
+            inspected = {"Config": {"Labels": {
+                "org.opencontainers.image.source": "https://github.com/" + self.metadata["repository"],
+                "org.opencontainers.image.revision": self.metadata["commitSha"],
+                "org.opencontainers.image.version": self.metadata["version"],
+                "org.opencontainers.image.created": self.metadata["createdAt"]}, "Env": ["PUBLIC_FIXTURE_HOST=" + host]},
+                "RepoTags": [self.metadata["images"][host]]}
+            config, manifest, descriptor = saved_image(self.bundle / "images", host, inspected)
+            inspected["Id"] = config if reverse else manifest
+            inspected["Descriptor"] = None if reverse else descriptor
+            del inspected["Config"]["Env"]
+            self.provenance["imageIds"][host] = manifest if reverse else config
+            self.container_image_ids[host] = inspected["Id"]
+            self.loaded_images[inspected["Id"]] = inspected
+        self.write_candidate()
+
+    def test_original_archives_admit_both_runtime_id_representations(self):
+        for reverse in (False, True):
+            with self.subTest(reverse=reverse):
+                self.archive_bound_images(reverse)
+                if self.state.exists(): self.state.unlink()
+                self.assertEqual(self.accept(True), "recorded")
+                self.assertEqual(json.loads(self.state.read_bytes())["current"]["imageIds"], self.provenance["imageIds"])
+
+    def test_archive_bound_reacceptance_preserves_record_bytes_and_original_ids(self):
+        self.archive_bound_images()
+        before = self.seed()
+        self.assertEqual(self.accept(), "already-recorded")
+        self.assert_unchanged(before)
+
+    def test_packaged_archive_binding_needs_only_its_bundled_companion(self):
+        self.archive_bound_images()
+        toolkit = self.root / "standalone-operator"; toolkit.mkdir()
+        shutil.copyfile(SCRIPT, toolkit / SCRIPT.name)
+        shutil.copyfile(SCRIPT.parent / "ci/verify-image-labels.py", toolkit / "verify-image-labels.py")
+        with patch.object(release, "__file__", str(toolkit / SCRIPT.name)):
+            self.assertEqual(self.accept(True), "recorded")
+
+    def test_alternate_runtime_id_needs_each_original_archive(self):
+        for host in release.HOSTS:
+            with self.subTest(host=host):
+                self.archive_bound_images()
+                (self.bundle / "images" / f"strataai-{host}.tar.gz").unlink()
+                with self.assertRaises(ValueError): self.accept(True)
+                self.assertFalse(self.state.exists())
+
+    def test_matching_runtime_labels_cannot_replace_original_saved_image(self):
+        for host in release.HOSTS:
+            with self.subTest(host=host):
+                self.archive_bound_images()
+                forged = copy.deepcopy(self.loaded_images[self.container_image_ids[host]])
+                forged["Config"]["Env"] = ["PRIVATE DIFFERENT IMAGE"]
+                saved_image(self.bundle / "images", host, forged)
+                with self.assertRaises(ValueError): self.accept(True)
+                self.assertFalse(self.state.exists())
+
+    def test_corrupted_archive_preserves_previously_accepted_reference(self):
+        self.archive_bound_images()
+        before = self.seed()
+        (self.bundle / "images/strataai-web.tar.gz").write_bytes(b"PRIVATE INVALID ARCHIVE")
+        with self.assertRaisesRegex(ValueError, "loaded_image_not_bound_to_original_archive"):
+            self.accept()
+        self.assert_unchanged(before)
+
+    def test_alternate_runtime_id_refuses_wrong_labels_and_manifest_descriptor(self):
+        for host in release.HOSTS:
+            for field in ("labels", "descriptor", "id"):
+                with self.subTest(host=host, field=field):
+                    self.archive_bound_images()
+                    image = self.loaded_images[self.container_image_ids[host]]
+                    if field == "labels": image["Config"]["Labels"]["org.opencontainers.image.revision"] = "f" * 40
+                    elif field == "descriptor": image["Descriptor"]["digest"] = "sha256:" + "f" * 64
+                    else: image["Id"] = "sha256:" + "f" * 64
+                    with self.assertRaises(ValueError): self.accept(True)
+                    self.assertFalse(self.state.exists())

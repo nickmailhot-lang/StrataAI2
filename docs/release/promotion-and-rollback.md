@@ -1,5 +1,65 @@
 # Promote and roll back an immutable release
 
+## Archive-bound runtime identity and two-release rollback — 2026-10-16
+
+Docker Desktop can expose the saved manifest ID where CI records the image's
+config ID. The prior recorder rejects that legitimate representation change:
+a fresh native Production fixture passes all three original archive bindings
+and the real health/readiness/build/proxy verifier, but creates no acceptance
+record. That baseline takes 97.323 seconds and restores Docker inventory.
+
+The recorder now permits alternate IDs only through the existing original OCI
+archive proof, including config/manifest digests, build labels and the loaded
+manifest descriptor when applicable. Labels or tags alone cannot authorize a
+change. Narrow image inspection reads only ID, labels and descriptor; no runtime
+environment or full configuration is read. Records retain **original CI IDs**;
+every replica's actual container/start identity remains checked before and after
+runtime verification. Bindings are cached only within that invocation.
+
+The checksummed bundle must include `verify-image-labels.py` beside the recorder.
+Its archive-only path no longer imports the CI result-summary module; full CI
+build validation still uses its canonical validator. Three positive subcases
+fail before the ID repair, and the standalone packaging case separately exposes
+the import dependency. After repair, all **38 recorder, 18 archive-identity,
+47 release-payload and 289 CI coverage checks** pass, along with workflow lint.
+Missing/corrupt/substituted archives, wrong labels and wrong descriptors refuse
+acceptance without replacing the prior record. Reacceptance preserves its bytes.
+
+The complete native rehearsal uses original bundles from green
+[24f56246 / run 38603745814](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38603745814)
+and [be7bf9e4 / run 38802201471](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38802201471),
+with their GitHub artifact digests, schema/security/image evidence and all 149
+identical migration files verified. These historical bundles predate newer
+payload requirements; a standalone current operator toolkit checks their actual
+immutable images, without declaring the old payloads current-format compliant.
+One fresh database, restricted current runtime roles, one account and one Card
+exercise five passing stages:
+
+1. Accept the prior release and create the Card.
+2. Deploy the candidate, stop PostgreSQL, observe readiness refusal and reject
+   acceptance with the prior record byte-for-byte unchanged.
+3. Recover the same database container/volume and redeploy prior images; the
+   original session and Card remain usable without another sign-in.
+4. Accept healthy candidate images, retain the prior reference and edit the Card.
+5. Redeploy prior images and accept rollback, retaining the candidate's complete
+   reference, its persisted edit/version, the session and migration ledger.
+
+All stages pass in **240.798 seconds**, with **2,223 repository inputs unchanged**
+and independently matching operator hashes. Owned containers/volumes/network,
+three newly loaded images and **1,045,140,039 temporary bytes** are removed;
+original Docker inventory is restored. Independent checks find no owned resources
+or fixture directory. No application rebuild, mounted application assembly,
+external provider or large-load test is used.
+
+Earlier private setup failures remain recorded: raw-ID fixture comparison,
+missing standalone import dependency, a client withholding Secure cookies on
+local HTTP and an incorrect unchanged PostgreSQL start-clock assertion after
+restart. The final client exception is loopback-only; production cookies remain
+unchanged. Restart checks preserve container/image/volume/ledger identity while
+requiring a new start instant. This historical-image/current-tool proof does not
+certify current-main immutable CI, incompatible-schema rollback, managed
+providers or deployment acceptance. ARCH-12 and the MVP remain open.
+
 ## Web proxy build identity — 2026-10-15
 
 The operator verifier now also reads `/api/runtime` through `STRATAAI_WEB_URL`.
@@ -74,7 +134,8 @@ The command validates the selected build metadata and original image-provenance
 shape/identity and checks the selected Compose project's actual running image
 IDs before and after invoking the real runtime verifier with captured expected
 metadata. All non-one-off web/API/Worker replicas must use their corresponding
-provenance image ID, remain running, unpaused and not restarting, and preserve
+provenance image ID or its original-archive-bound config/manifest equivalent,
+remain running, unpaused and not restarting, and preserve
 their container/start identities and replica membership across those checks.
 Missing services, malformed/duplicate IDs, changed service/project labels and
 unavailable Docker inspection refuse acceptance. Only successful image and

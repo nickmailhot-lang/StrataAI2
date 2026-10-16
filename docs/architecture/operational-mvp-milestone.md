@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [archive-bound recorder and two-release rollback](../release/promotion-and-rollback.md#archive-bound-runtime-identity-and-two-release-rollback--2026-10-16)
+repair a native refusal of verified Docker Desktop images. Only original OCI
+archive proof permits alternate config/manifest IDs; records keep original CI
+IDs and all replica/runtime checks. The complete historical-image rehearsal
+passes failed promotion, both rollback paths, healthy promotion and persisted
+Card/session/ledger continuity. All 2,223 inputs match and owned cleanup restores
+Docker inventory. The standalone companion is mandatory in new bundles; 38
+recorder, 18 archive, 47 payload and 289 CI checks pass. Current immutable/full
+CI and deployment acceptance remain required; no large-load test runs.
+
 The [complete current backend source baseline](source-test-results.md#current-complete-mvp-backend-baseline--2026-10-16)
 passes 1,086 Domain and 1,399 API cases, with exactly three/two
 reviewed capacity deferrals and zero failures/errors/Not Run. Release build and

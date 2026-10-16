@@ -7,10 +7,16 @@ from pathlib import Path
 import re
 import tarfile
 
-spec = importlib.util.spec_from_file_location("source_identity", Path(__file__).with_name("summarize-source-tests.py"))
-identity = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(identity)
 HOSTS = ("web", "api", "worker")
+
+
+def build_identity(value):
+    # Archive-only operator use has no dependency on CI result summarization.
+    # Full provenance/CLI admission still uses the same canonical identity validator.
+    spec = importlib.util.spec_from_file_location("source_identity", Path(__file__).with_name("summarize-source-tests.py"))
+    identity = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(identity)
+    return identity.build_identity(value)
 
 
 def verify_labels(build, images):
@@ -143,7 +149,7 @@ def main():
     parser.add_argument("--archives", type=Path)
     args = parser.parse_args()
     try:
-        build = identity.build_identity(json.loads(args.metadata.read_text(encoding="utf-8")))
+        build = build_identity(json.loads(args.metadata.read_text(encoding="utf-8")))
         images = json.loads(args.images.read_text(encoding="utf-8"))
         ids = verify_labels(build, images)
         record = {"schemaVersion": 1, "build": build, "imageIds": ids}
@@ -167,7 +173,7 @@ def verify_record(build, value):
         raise ValueError("invalid_image_record")
     if type(value["schemaVersion"]) is not int or value["schemaVersion"] != 1 or value["build"] != build:
         raise ValueError("different_image_record")
-    identity.build_identity(value["build"])
+    build_identity(value["build"])
     ids = value["imageIds"]
     if not isinstance(ids, dict) or set(ids) != set(HOSTS) or any(
             not isinstance(item, str) or not re.fullmatch(r"sha256:[a-f0-9]{64}", item) for item in ids.values()):

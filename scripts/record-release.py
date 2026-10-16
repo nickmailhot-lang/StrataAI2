@@ -4,6 +4,7 @@ import argparse
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ import re
 import stat
 import subprocess
 import sys
+import tarfile
 import tempfile
 
 HOSTS = ("web", "api", "worker")
@@ -117,7 +119,32 @@ def runtime_check(expected):
         raise ValueError("runtime_not_verified")
 
 
-def running_containers(project, expected_ids):
+def archive_bound_runtime_image(query, bundle, metadata, host, actual, expected):
+    """Admit an ID representation change only through the original OCI bytes."""
+    template = '{"Id":{{json .Id}},"Config":{"Labels":{{json .Config.Labels}}},"Descriptor":{{json (index . "Descriptor")}}}'
+    try:
+        image = parse(query(["image", "inspect", "--format", template, actual]))
+        if not isinstance(image, dict) or image.get("Id") != actual:
+            raise ValueError("loaded_image_identity")
+        labels = image["Config"]["Labels"]
+        required = {"org.opencontainers.image.source": "https://github.com/" + metadata["repository"],
+                    "org.opencontainers.image.revision": metadata["commitSha"],
+                    "org.opencontainers.image.version": metadata["version"],
+                    "org.opencontainers.image.created": metadata["createdAt"]}
+        if not isinstance(labels, dict) or any(labels.get(key) != value for key, value in required.items()):
+            raise ValueError("loaded_image_labels")
+        companion = Path(__file__).with_name("verify-image-labels.py")
+        if not companion.is_file():
+            # Source checkout layout; assembled bundles carry the same helper beside this command.
+            companion = Path(__file__).parent / "ci/verify-image-labels.py"
+        spec = importlib.util.spec_from_file_location("release_archive_binding", companion)
+        verifier = importlib.util.module_from_spec(spec); spec.loader.exec_module(verifier)
+        verifier.archive_image_binding(bundle / "images" / f"strataai-{host}.tar.gz", image, expected)
+    except (ValueError, OSError, KeyError, TypeError, AttributeError, tarfile.TarError):
+        raise ValueError("loaded_image_not_bound_to_original_archive") from None
+
+
+def running_containers(project, expected_ids, bundle=None, metadata=None, bindings=None):
     # Read only identity/state/Compose labels. Never capture container config,
     # environment, mounts, logs, credentials or provider response bodies.
     def query(args):
@@ -142,10 +169,18 @@ def running_containers(project, expected_ids):
         result[host] = []
         for id in sorted(ids):
             row = parse(query(["inspect", "--format", template, id]))
-            if not isinstance(row, list) or len(row) != 9 or row[0] != id or row[1] != expected_ids[host] \
+            if not isinstance(row, list) or len(row) != 9 or row[0] != id \
+                    or not isinstance(row[1], str) or not re.fullmatch(r"sha256:[a-f0-9]{64}", row[1]) \
                     or row[2] is not True or row[3] is not False or row[4] is not False \
                     or row[6:] != [project, host, "False"]:
                 raise ValueError("container_identity_or_state")
+            if row[1] != expected_ids[host]:
+                if bundle is None or metadata is None or bindings is None:
+                    raise ValueError("container_image_identity")
+                key = (host, row[1])
+                if key not in bindings:
+                    archive_bound_runtime_image(query, bundle, metadata, host, row[1], expected_ids[host])
+                    bindings.add(key)
             if not isinstance(row[5], str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?Z", row[5]):
                 raise ValueError("container_start_identity")
             datetime.fromisoformat(row[5])
@@ -179,13 +214,14 @@ def accept(bundle, state, environment, project, initialize=False, verify=runtime
             snapshot(previous["current"])
             if previous["previous"] is not None:
                 snapshot(previous["previous"])
-        containers = running_containers(project, provenance["imageIds"])
+        bindings = set()
+        containers = running_containers(project, provenance["imageIds"], bundle, metadata, bindings)
         # The verifier receives captured expected bytes, never a mutable
         # candidate path. Re-read both original inputs before publishing.
         with tempfile.TemporaryDirectory(prefix="strataai-release-acceptance-") as scratch:
             expected = Path(scratch) / "expected.json"; expected.write_bytes(raw)
             verify(expected)
-        if running_containers(project, provenance["imageIds"]) != containers:
+        if running_containers(project, provenance["imageIds"], bundle, metadata, bindings) != containers:
             raise ValueError("running_containers_changed")
         if read_private(metadata_path, 4096) != raw or read_private(provenance_path, 16384) != provenance_raw:
             raise ValueError("candidate_changed")

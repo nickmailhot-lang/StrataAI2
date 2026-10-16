@@ -31,7 +31,7 @@ Use this index to find every document in `docs/`. Architecture documents describ
 - Reviewing completion: [foundation acceptance](architecture/prd-01-acceptance.md), [Board acceptance](architecture/prd-04-acceptance.md), [activity acceptance](architecture/prd-15-acceptance.md), and the relevant evidence documents. Match every result to its recorded revision and test scope.
 - Operating the application: [release guide](release/README.md), [database roles](architecture/runtime-database-roles.md), [schema upgrades](architecture/schema-upgrades.md), and [operator metrics](architecture/operator-metrics.md).
 - Configuring a Linux HTTPS endpoint: [operator instructions](release/README.md#optional-https-on-a-linux-docker-host) and [HTTPS verification](architecture/https-deployment.md).
-- Promoting or recovering a release: [immutable promotion and rollback](release/promotion-and-rollback.md), including stable deployment identity and the prior known-good record.
+- Promoting or recovering a release: [immutable promotion and rollback](release/promotion-and-rollback.md), including stable deployment identity and the prior known-good record. The [archive-bound verification and two-release rehearsal](release/promotion-and-rollback.md#archive-bound-runtime-identity-and-two-release-rollback--2026-10-16) covers failed promotion and preserved sessions/data across rollback.
 
 ## How to navigate
 

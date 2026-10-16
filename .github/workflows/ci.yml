@@ -1602,6 +1602,7 @@ jobs:
           cp scripts/health-check.sh bundle/health-check.sh
           cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh
           cp scripts/record-release.py bundle/record-release.py
+          cp scripts/ci/verify-image-labels.py bundle/verify-image-labels.py
           cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh
           cp scripts/backup-postgres.sh bundle/backup-postgres.sh
           cp scripts/verify-backup-record.py bundle/verify-backup-record.py
