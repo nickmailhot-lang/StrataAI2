@@ -558,8 +558,8 @@ and [promotion/rollback procedure](promotion-and-rollback.md) before production
 recovery. The full CI rehearsal exercises this exact backup command with a small
 source database and a fresh isolated target cluster. It checks distinct cluster
 identities, missing-role rollback and reviewed fixture-role recreation. It
-also verifies canonical target API/Worker provisioning, real SCRAM logins and
-scoped database operations. It does not certify deployed application recovery,
+also verifies canonical target API/Worker and separate mail-role provisioning,
+all three real SCRAM logins and scoped database operations. It does not certify deployed application recovery,
 production RPO/RTO or providers.
 
 ## Restore into an isolated empty Docker database
@@ -601,8 +601,13 @@ and the target isolated. A database dump does not create cluster-global roles;
 missing roles make this transactional restore fail. Preserve least privilege and
 use fresh protected login credentials rather than copying global superusers or
 password hashes. The CI fixture recreates restricted non-login identities before
-restore, provisions API/Worker credentials only after the schema/data/ACL checks,
-and verifies their actual authenticated sessions. Production ownership, roles,
+restore, provisions API/Worker and separate mail credentials only after the
+schema/data/ACL checks, and verifies their actual authenticated sessions. If the
+trusted archive references `strataai_identity_mail_runtime`, recreate that
+reviewed restricted non-login identity before restoring, along with the API and
+Worker identities. Activate it with fresh protected credentials through the
+bundled mail provisioner after validation. See the [mail-enabled recovery
+contract](../architecture/database-recovery.md#recovery-with-the-separate-mail-identity--2026-10-16). Production ownership, roles,
 credentials and post-restore application checks require their own review before
 traffic or background deliveries resume.
 

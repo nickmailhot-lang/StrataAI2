@@ -65,6 +65,34 @@ test -n "$result"
                                         capture_output=True, timeout=15, env={k: v for k, v in os.environ.items() if k != 'BASH_ENV'})
                 self.assertEqual(result.returncode == 0, dump_status == catalog_status == 0)
 
+    def test_source_state_guards_reject_changed_data_credentials_and_late_query_failures(self):
+        source = (Path(__file__).resolve().parents[1] / 'scripts/ci/test-database-backup-restore.sh').read_text()
+        guard = source.split('unset api_password worker_password mail_password password\n', 1)[1].split("\necho 'Encrypted PostgreSQL", 1)[0]
+        bash = 'C:/Program Files/Git/bin/bash.exe' if os.name == 'nt' else '/bin/bash'
+        expected_dump, expected_roles = 'b' * 64, 'a' * 32
+        for dump_value, role_value, dump_status, role_status in (
+            (expected_dump, expected_roles, 0, 0),
+            ('c' * 64, expected_roles, 0, 0),
+            (expected_dump, 'd' * 32, 0, 0),
+            (expected_dump, expected_roles, 13, 0),
+            (expected_dump, expected_roles, 0, 14),
+        ):
+            with self.subTest(dump_status=dump_status, role_status=role_status, dump_value=dump_value, role_value=role_value):
+                driver = f'''set -euo pipefail
+source_db=fixture
+container=fixture
+expected={expected_dump}
+source_roles_before={expected_roles}
+query() {{ printf '1'; }}
+fingerprint() {{ printf '%s' {dump_value}; return {dump_status}; }}
+source_role_fingerprint() {{ printf '%s' {role_value}; return {role_status}; }}
+{guard}
+'''
+                result = subprocess.run([bash, '-c', driver], capture_output=True, timeout=15,
+                                        env={k: v for k, v in os.environ.items() if k != 'BASH_ENV'})
+                self.assertEqual(result.returncode == 0,
+                                 dump_status == role_status == 0 and dump_value == expected_dump and role_value == expected_roles)
+
     def test_physical_row_order_is_irrelevant_but_duplicate_rows_are_preserved(self):
         first = 'COPY public.records (id, body) FROM stdin;\n2\t家\n1\tPréservé 🔒\n2\t家\n\\.\n'
         second = 'COPY public.records (id, body) FROM stdin;\n2\t家\n2\t家\n1\tPréservé 🔒\n\\.\n'

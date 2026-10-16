@@ -4,6 +4,20 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [mail-enabled database recovery increment](database-recovery.md#recovery-with-the-separate-mail-identity--2026-10-16)
+adds the separate mail identity to the mandatory fresh-cluster gate. A source
+with reviewed mail ACLs reproduces restore failure under the old two-role setup.
+The expanded contract requires missing-mail-role rollback, reviewed non-login
+role recreation, fresh target credentials and actual restricted mail lease and
+privacy checks alongside existing API/Worker recovery. Source credentials/flags
+must remain unchanged; late query failures cannot count as passing fingerprints.
+Both final complete native scenarios pass with all 163 inputs matching: source
+mail identity created and existing source password preserved. Each restores
+original Docker inventory and removes both owned containers and 790,240 temporary
+host bytes. All 13 corruption/refusal cases, three actual restored logins and ten
+parser/guard tests pass. Current immutable CI, managed-mail/application recovery
+and deployed backup schedules remain required. No large-load test runs.
+
 The [separate identity-mail boundary follow-up](identity-mail-role-provisioning.md#function-and-maintenance-boundaries--2026-10-16)
 repairs eight reproduced function/maintenance permission failures. All nine new
 reset/refusal/control cases pass, and a real restricted login claims/completes

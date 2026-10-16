@@ -15,7 +15,7 @@ source_db="strataai_backup_source_$suffix"
 target_db="strataai_backup_target_$suffix"
 reader="strataai_backup_reader_$suffix"
 target_container="strataai-recovery-target-$suffix"
-source_created=0; target_created=0; reader_created=0; stage=initialization
+source_created=0; target_created=0; reader_created=0; mail_role_created=0; stage=initialization
 cleanup() {
   local code=$?
   trap - EXIT
@@ -23,6 +23,7 @@ cleanup() {
   if [ "$target_created" = 1 ]; then docker rm --force --volumes "$target_container" > /dev/null 2>&1 || code=1; fi
   if [ "$source_created" = 1 ]; then docker exec "$container" dropdb -U "$admin" "$source_db" > /dev/null 2>&1 || code=1; fi
   if [ "$reader_created" = 1 ]; then docker exec "$container" dropuser -U "$admin" "$reader" > /dev/null 2>&1 || code=1; fi
+  if [ "$mail_role_created" = 1 ]; then docker exec "$container" dropuser -U "$admin" strataai_identity_mail_runtime > /dev/null 2>&1 || code=1; fi
   rm -rf "$scratch" || code=1
   exit "$code"
 }
@@ -63,6 +64,23 @@ target_identity=$(docker exec "$target_container" psql -X -U "$admin" -d postgre
 docker exec "$target_container" createdb -U "$admin" --template template0 "$target_db"
 docker exec "$container" createuser -U "$admin" --no-superuser --no-createdb --no-createrole --no-login "$reader"
 reader_created=1
+# The source fixture grants only database-local mail ACLs. Never rotate an
+# existing CI-service identity; remove only a role created by this rehearsal.
+mail_role_exists=$(docker exec "$container" psql -X -U "$admin" -d postgres -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM pg_roles WHERE rolname='strataai_identity_mail_runtime'")
+if [ "$mail_role_exists" = 0 ]; then
+  docker exec "$container" psql -X -U "$admin" -d postgres -v ON_ERROR_STOP=1 \
+    -c 'CREATE ROLE strataai_identity_mail_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT' > "$scratch/source-mail-identity.log" 2>&1
+  mail_role_created=1
+else
+  test "$mail_role_exists" = 1
+fi
+source_role_fingerprint() {
+  docker exec "$container" psql -X -U "$admin" -d postgres -At -v ON_ERROR_STOP=1 \
+    -c "SELECT md5(jsonb_agg(to_jsonb(r) ORDER BY rolname)::text) FROM pg_authid r WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime','strataai_identity_mail_runtime')"
+}
+test "$(docker exec "$container" psql -X -U "$admin" -d postgres -At -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM pg_roles WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime','strataai_identity_mail_runtime')")" = 3
+source_roles_before=$(source_role_fingerprint)
+[[ "$source_roles_before" =~ ^[a-f0-9]{32}$ ]]
 stage=migrations-and-seed
 scripts/migration-stream.sh | docker exec -i "$container" psql -X -U "$admin" -d "$source_db" -v ON_ERROR_STOP=1 > "$scratch/migrations.log" 2>&1
 docker exec -i "$container" psql -X -U "$admin" -d "$source_db" -v ON_ERROR_STOP=1 < scripts/ci/database-backup-fixture.sql > "$scratch/seed.log" 2>&1
@@ -167,6 +185,18 @@ docker exec -i "$target_container" psql -X -U "$admin" -d postgres -v ON_ERROR_S
 CREATE ROLE strataai_api_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT;
 CREATE ROLE strataai_worker_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT;
 SQL
+stage=missing-mail-role-refusal
+test "$(query "SELECT count(*) FROM pg_roles WHERE rolname='strataai_identity_mail_runtime'")" = 0
+before_missing_mail=$(fingerprint "$target_db")
+if restore "$scratch/backup.cms" recipient "$archive_digest" > "$scratch/missing-mail-role.log" 2>&1; then
+  echo 'Recovery accepted mail ACLs without the reviewed mail identity.' >&2; exit 1
+fi
+test "$(query "SELECT count(*) FROM pg_class WHERE relnamespace='public'::regnamespace")" = 0
+after_missing_mail=$(fingerprint "$target_db")
+test "$after_missing_mail" = "$before_missing_mail"
+docker exec "$target_container" psql -X -U "$admin" -d postgres -v ON_ERROR_STOP=1 \
+  -c 'CREATE ROLE strataai_identity_mail_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT' > "$scratch/mail-identity.log" 2>&1
+test "$(query "SELECT NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolcanlogin OR rolbypassrls OR rolreplication OR rolinherit) FROM pg_roles WHERE rolname='strataai_identity_mail_runtime'")" = t
 stage=authenticated-restore
 restore "$scratch/backup.cms" recipient "$archive_digest" > "$scratch/restore.log" 2>&1
 
@@ -214,14 +244,22 @@ docker exec -i "$target_container" psql -X -U "$admin" -d "$target_db" -v ON_ERR
 docker exec -i "$target_container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
   -v "reader=$reader" < scripts/ci/database-backup-verify.sql > "$scratch/verify.log" 2>&1
 stage=restored-runtime-provisioning
-api_password=$(openssl rand -hex 24); worker_password=$(openssl rand -hex 24)
+api_password=$(openssl rand -hex 24); worker_password=$(openssl rand -hex 24); mail_password=$(openssl rand -hex 24)
 docker exec -i --env "STRATAAI_API_DB_PASSWORD=$api_password" --env "STRATAAI_WORKER_DB_PASSWORD=$worker_password" \
   "$target_container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
   < db/provision-runtime-roles.sql > "$scratch/runtime-provision.log" 2>&1
+docker exec -i --env "STRATAAI_API_DB_PASSWORD=$api_password" --env "STRATAAI_WORKER_DB_PASSWORD=$worker_password" \
+  --env "STRATAAI_IDENTITY_DELIVERY_DB_PASSWORD=$mail_password" \
+  "$target_container" psql -X -U "$admin" -d "$target_db" -v ON_ERROR_STOP=1 \
+  < db/provision-identity-mail-role.sql > "$scratch/mail-provision.log" 2>&1
 ledger_count=$(docker exec "$container" psql -X -U "$admin" -d "$source_db" -At -v ON_ERROR_STOP=1 -c 'SELECT count(*) FROM schema_migrations')
 stage=restored-runtime-authentication-and-capabilities
-for role in strataai_api_runtime strataai_worker_runtime; do
-  password=$api_password; if [ "$role" = strataai_worker_runtime ]; then password=$worker_password; fi
+for role in strataai_api_runtime strataai_worker_runtime strataai_identity_mail_runtime; do
+  password=$api_password; verifier=scripts/ci/database-backup-runtime-verify.sql
+  if [ "$role" = strataai_worker_runtime ]; then password=$worker_password; fi
+  if [ "$role" = strataai_identity_mail_runtime ]; then
+    password=$mail_password; verifier=scripts/ci/database-backup-mail-runtime-verify.sql
+  fi
   if docker exec --env PGPASSWORD=deliberately-incorrect-fixture-password "$target_container" \
     psql -X -h 127.0.0.1 -U "$role" -d "$target_db" --no-password -At -v ON_ERROR_STOP=1 -c 'SELECT 1' > "$scratch/runtime-refusal.log" 2>&1; then
     echo 'Restored runtime admitted an incorrect password.' >&2; exit 1
@@ -231,11 +269,17 @@ for role in strataai_api_runtime strataai_worker_runtime; do
   test "$restored_ledger" = "$ledger_count"
   docker exec -i --env "PGPASSWORD=$password" "$target_container" \
     psql -X -h 127.0.0.1 -U "$role" -d "$target_db" --no-password -v ON_ERROR_STOP=1 \
-    < scripts/ci/database-backup-runtime-verify.sql > "$scratch/runtime-capabilities.log" 2>&1
+    < "$verifier" > "$scratch/runtime-capabilities-$role.log" 2>&1
 done
-unset api_password worker_password password
+unset api_password worker_password mail_password password
 test "$(query "SELECT count(*) FROM background_jobs WHERE id='bacc0000-0000-0000-0000-000000000901' AND state='SUCCEEDED' AND attempt_count=1")" = 1
 test "$(query "SELECT count(*) FROM background_jobs WHERE id='bacc0000-0000-0000-0000-000000000902' AND state='PENDING' AND attempt_count=0")" = 1
-test "$(fingerprint "$source_db" "$container")" = "$expected"
+test "$(query "SELECT count(*) FROM identity_delivery_jobs WHERE id='bacc0000-0000-0000-0000-000000000905' AND state='SENT' AND attempt_count=1 AND provider_message_id='bacc0000-0000-0000-0000-000000000908'")" = 1
+source_after=$(fingerprint "$source_db" "$container")
+test "$source_after" = "$expected"
+source_roles_after=$(source_role_fingerprint)
+test "$source_roles_after" = "$source_roles_before"
+unset source_after source_roles_before source_roles_after
 
-echo 'Encrypted PostgreSQL backup/restore passed: distinct fresh cluster, missing-role transaction rollback and least-privilege role recreation, complete migrated schema/data/ACL comparison, twelve deliberate corruption/refusal cases, pgvector, restricted tenant reads/writes, FK and append-only audit protections; restored API/Worker SCRAM login, password refusals, role guards, tenant isolation and durable queue publication/claim/acknowledgment passed.'
+echo 'Encrypted PostgreSQL backup/restore passed: distinct fresh cluster, missing-role transaction rollback and least-privilege role recreation, complete migrated schema/data/ACL comparison, thirteen deliberate corruption/refusal cases, pgvector, restricted tenant reads/writes, FK and append-only audit protections; restored API/Worker SCRAM login, password refusals, role guards, tenant isolation and durable queue publication/claim/acknowledgment passed.'
+echo 'Restored identity-mail SCRAM login, password refusal, safe role guard, service RLS, private-data denial and original lease completion passed; source runtime credentials and flags unchanged.'

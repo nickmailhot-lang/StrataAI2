@@ -72,6 +72,13 @@ or large-load workload is used. Release-payload tests pass 47/47 in 14.649 secon
 Current immutable-image and managed-mail delivery acceptance remain outstanding;
 PRD-02 stays open at **16% estimated work remaining**.
 
+The [mail-enabled fresh-cluster recovery contract](database-recovery.md#recovery-with-the-separate-mail-identity--2026-10-16)
+also preserves the reviewed mail identity's archived ACLs, recreates it without
+copying source credentials, and activates fresh target credentials only after
+restore verification. Its actual restricted session verifies delivery lease
+and privacy boundaries. Production managed-mail and coordinated application
+recovery remain separate acceptance requirements.
+
 ## Verification and limits
 
 The mandatory isolated PostgreSQL/pgvector test applies all ordered migrations

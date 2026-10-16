@@ -7,6 +7,59 @@ Use this with [schema compatibility](schema-upgrades.md),
 [runtime database roles](runtime-database-roles.md) and
 [promotion and rollback](../release/promotion-and-rollback.md).
 
+## Recovery with the separate mail identity — 2026-10-16
+
+The mandatory recovery fixture now represents a mail-enabled deployment: two
+Organizations/two Cards plus one pending password-recovery delivery, the token
+hash and approved identity-mail ACLs. The expanded source reproduces failure
+at authenticated restore with the prior two-role target setup (57.839 seconds,
+exit 1); cleanup restores original Docker inventory. Database dumps contain ACL
+references to roles, but do not recreate those cluster-global identities.
+
+The [maintained recovery driver](../../scripts/ci/test-database-backup-restore.sh)
+now proves a second missing-role refusal specifically with the reviewed API,
+Worker and fixture-reader identities present while the mail identity is absent.
+The complete empty-target fingerprint must remain unchanged. It then creates
+only the reviewed non-login mail identity and repeats the same authenticated
+restore. Full schema/data/ACL comparison and all original refusal checks remain;
+there are now thirteen deliberate corruption/refusal cases.
+
+Only the restored target runs the canonical general and
+[mail-role provisioners](../../db/provision-identity-mail-role.sql) with fresh
+credentials. All three actual SCRAM logins reject wrong passwords, read the
+complete ledger and pass the role guard. The new [mail SQL contract](../../scripts/ci/database-backup-mail-runtime-verify.sql)
+checks missing-service-context denial, credential/Card/general-queue/Worker
+capability denial, permitted identity columns, original lease claim, wrong
+process/lease rejection, one completion receipt and completed-lease refusal.
+Delivery does not redeem the reset token. Its SENT receipt is synthetic; no
+mail provider is called. Existing API tenant isolation and Worker queue tests
+remain unchanged.
+
+The source gains only fixture-local ACLs/data. An existing source mail identity
+is never activated, rotated or removed. If absent, a temporary restricted
+non-login identity is created and removed after dropping the owned source
+fixture database. All three source identities' credential/flag fingerprints
+must remain unchanged. Late query failures must fail the final source checks,
+even if a matching fingerprint was printed first: two injected failures expose
+the old command-substitution issue, and all ten parser/guard tests now pass.
+
+Both final complete native rehearsals pass: **91.479 seconds** when the source
+mail identity must be created, and **91.058 seconds** when it already has a
+working SCRAM password. The latter proves the same original source password
+still authenticates after recovery and cleanup. Each run matches all 163 frozen
+inputs, restores original Docker inventory and removes both owned containers
+and 790,240 temporary host bytes. All 149 migrations, complete dump comparison,
+all thirteen corruption/refusal cases and all three restored runtime contracts
+pass. The ten parser/failure-guard tests pass in 1.604 seconds; all 47 release-
+payload tests pass in 13.283 seconds. No existing
+database/application host/provider integration, new image or large-load workload
+is used.
+
+This extends the small CI recovery contract. It does not establish current
+immutable-image application startup, managed mail delivery, object/key recovery,
+deployed backup schedules or production RPO/RTO. ARCH-08/12, PRD-02 and the MVP
+remain open; large-load testing stays deferred.
+
 ## Recovery after runtime provisioning hardening — 2026-10-16
 
 The unchanged complete [mandatory rehearsal](../../scripts/ci/test-database-backup-restore.sh)
@@ -68,16 +121,19 @@ superusers or password hashes. Target readiness requires the final TCP listener,
 not the image's temporary initialization server. Owned target data is temporary
 and its container/volumes are removed on exit.
 
-The reviewed API and Worker identities are also created as restricted non-login
-roles before restoration: CI already has them when migrations conditionally
+The reviewed API, Worker and optional identity-mail identities are created as
+restricted non-login roles before restoration: CI already has them when migrations conditionally
 grant capabilities, so archive ACLs can reference them. After the restored
 schema/data/ACL and security checks pass, only the target runs the canonical
-role-provisioning SQL with fresh distinct passwords. Actual SCRAM-authenticated
+general/mail role-provisioning SQL with fresh distinct passwords. Actual SCRAM-authenticated
 loopback TCP sessions must reject incorrect passwords and accept each runtime
 login, pass the role guard and read the complete migration ledger. SQL exercises
 API tenant reads/writes and Worker capability separation, then commits two small
 API jobs and acknowledges only the scoped job through a separate Worker session.
-The source fingerprint must remain unchanged after these target operations.
+A separate mail login claims/completes the original restored recovery delivery,
+rejecting wrong-process/lease acknowledgment and completed-lease reuse without
+redeeming its token. The source data/ACL and runtime credential/flag fingerprints
+must remain unchanged after these target operations.
 
 The contract streams a custom-format `pg_dump` directly into OpenSSL CMS
 AES-256-GCM encryption using an ephemeral recipient certificate. Backup creation
@@ -544,8 +600,8 @@ Before routing production traffic, configure and record:
 - Recovery of PostgreSQL, object-storage versions, durable key rings and the
   external configuration/provider dependencies as a coordinated set. A logical
   PostgreSQL dump omits cluster-global roles. The current fresh-cluster rehearsal
-  recreates reviewed fixture/API/Worker identities; production recovery must separately
-  restore/reprovision the reviewed owners, grants and restricted API/Worker
+  recreates reviewed fixture/API/Worker/mail identities; production recovery must
+  separately restore/reprovision the reviewed owners, grants and restricted runtime
   identities before applying archive ACLs, with fresh protected login credentials.
 - A restore into an isolated empty destination, schema/image compatibility and
   actual application/provider checks before allowing traffic or background

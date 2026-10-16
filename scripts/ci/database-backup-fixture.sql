@@ -23,4 +23,20 @@ BEGIN
   VALUES(gen_random_uuid(),tenant,'bacc0000-0000-0000-0000-000000000099','RECOVERY_FIXTURE','BOARD',board,'recovery-fixture');
  END LOOP;
 END $$;
+-- Model an enabled mail deployment's database ACLs without activating or
+-- rotating any source-cluster identity. Global roles are not in logical dumps.
+GRANT USAGE ON SCHEMA public TO strataai_identity_mail_runtime;
+GRANT SELECT ON schema_migrations TO strataai_identity_mail_runtime;
+GRANT SELECT,UPDATE ON identity_delivery_jobs TO strataai_identity_mail_runtime;
+GRANT SELECT(id,email,status,email_verified) ON users TO strataai_identity_mail_runtime;
+GRANT SELECT(id,user_id,token_hash,used_at,revoked_at,expires_at)
+ ON password_reset_tokens,email_verification_tokens TO strataai_identity_mail_runtime;
+GRANT EXECUTE ON FUNCTION public.runtime_database_role_is_safe(),public.claim_identity_delivery(uuid),
+ public.finish_identity_delivery(uuid,uuid,uuid,text,text,uuid) TO strataai_identity_mail_runtime;
+INSERT INTO password_reset_tokens(id,user_id,token_hash,created_at,expires_at)
+VALUES('bacc0000-0000-0000-0000-000000000905','bacc0000-0000-0000-0000-000000000099',repeat('a',64),now(),now()+interval '30 minutes');
+INSERT INTO identity_delivery_jobs(id,user_id,purpose,password_reset_token_id,key_id,correlation_id,recipient_email,sender_address,public_origin,provider_account,created_at,expires_at)
+VALUES('bacc0000-0000-0000-0000-000000000905','bacc0000-0000-0000-0000-000000000099','RESET_PASSWORD',
+ 'bacc0000-0000-0000-0000-000000000905','recovery-fixture','recovery-fixture','backup@example.test',
+ 'sender@example.test','https://app.example.test','fixture',now(),now()+interval '30 minutes');
 COMMIT;
