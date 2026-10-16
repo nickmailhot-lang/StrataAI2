@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [membership observation increment](operator-metrics.md#organization-membership-browser-observations--2026-10-16)
+adds bounded directory/review/removal counts and durations without private data
+or changes to authority, consent or original request recovery. All 49 focused
+component/queue, ten API category/HTTP, 56 related API, 32 verifier and 285 CI guard
+cases pass. Current immutable-image/export and full release acceptance remain
+required. Both small desktop/phone browser cases also pass against fresh
+schema-149 PostgreSQL and current API/Worker assemblies/assets; lost-response
+recovery, privacy, keyboard and accessibility assertions pass with unchanged
+source/binaries and restored Docker inventory. PRD-03 stays open; large-load
+testing remains deferred.
+
 The [retained identity receipt audit](schema149-clock-inventory.md#retained-identity-receipt-facts--2026-10-16)
 traces five insert-only receipt writers and their actual publication/consumption
 clocks, with expired-only retention kept separate. Ten new role/table checks

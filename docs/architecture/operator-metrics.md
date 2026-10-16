@@ -786,7 +786,7 @@ PATCH whose response is lost, explicit identical-key/body recovery, actual
 production browser reports accepted by the authenticated endpoint, one stored
 revision, keyboard operation and WCAG 2.2 AA. Both cases pass in the immutable
 `5845da8b` hosted run; see [executed creation/settings evidence](prd-03-acceptance.md#hosted-organization-creationsettings-telemetry--2026-10-15).
-Broader Organization member/departure/deletion/invitation telemetry,
+Broader Organization departure/deletion/invitation telemetry,
 per-tenant adoption policy, successful transport reconnect measures and dashboards
 remain separate unfinished requirements.
 
@@ -797,6 +797,62 @@ typechecks and zero-warning lint. Both native cases collect successfully.
 The two native scenarios have hosted exact-image proof for that candidate;
 full current-main CI remains required. PRD-03 stays open at **8% estimated work
 remaining**, and ARCH-08 remains open.
+
+## Organization membership browser observations — 2026-10-16
+
+The existing bounded Activity queue admits `organization_members_disclosure`,
+`organization_members_read`, `organization_member_review` and
+`organization_member_remove`. A directory open is counted only after current
+administrative access and both account checks. Reads, review, explicit refresh,
+original-removal recovery, conflict, exception and current result observations
+carry only action/kind/count and optional bounded client duration. Live reset or
+unavailability counts a requested recovery retry, not a successful reconnect.
+An admitted self-removal records success before navigation; an account change
+after a response cannot produce a removal success observation.
+
+These are untrusted optional observations, not audit history. Reporting cannot
+change removal consent, the original key/version/actor, authority checks or the
+operation deadline. A failed report does not send another removal. Authentication
+is required; an unknown or private field rejects the entire batch before any
+measurement. Membership/user/Organization IDs, emails, names, keys, query fields
+and exception text are excluded.
+
+The [component regressions](../../apps/web/src/features/organizations/OrganizationMembersTelemetry.test.tsx)
+cover seven scenarios, including exact original recovery, denied access, conflict,
+account change, self-removal and a failed optional report. Together with existing
+members/queue tests, all **49** pass. The [API tests](../../tests/StrataAI.Api.Tests/ActivityClientTelemetryTests.cs)
+pass **10** category/authentication/private-batch cases and **56** related existing
+cases in the cached Linux runtime, with read-only current assemblies, no database
+or network, zero input changes and restored Docker inventories. Five new cases
+fail against the old API allowlist. All **32** Collector-verifier unit cases and
+**285** CI integration guards pass; missing membership categories now fail the
+export verifier. Its exact-image fixture sends synthetic observations, separately
+from the [real desktop/phone browser scenario](../../tests/browser/organization-members-telemetry.spec.ts).
+Current immutable Collector/CI execution and complete PRD acceptance remain open.
+
+Both browser cases pass against the current compiled API and separate Worker,
+current Vite assets and a fresh restricted PostgreSQL 17.11 database with all
+149 migrations. The private provider is controlled and email verification is
+optional, matching the ordinary membership fixture; this is not strict-email
+policy acceptance. Both cases require actual accepted browser reports, a real
+committed DELETE with its first response lost, exactly two identical-key/version
+attempts, canonical removal, revoked recipient access, one document navigation,
+keyboard operation and no WCAG 2.2 AA violations. No flaky or skipped cases occur.
+Initial live reconciliation is awaited before review, as in existing membership
+tests; the first fixture attempt raced that refresh and failed before mutation.
+That failed report is retained privately. Assertions and deadlines are unchanged.
+All 1,262 source inputs, 71 binaries and four served frontend assets match;
+API/Worker identity remains stable during both scenarios and owned cleanup
+restores the original Docker inventory. Cached images provide the runtime;
+current assemblies/assets are mounted read-only. No images or release archives
+are built, pulled or imported and no large-load test runs. This source-runtime
+proof does not certify the later immutable release images.
+
+The complete local web regression run passes **2,602 tests**, with no failures
+or pending cases. Web/browser TypeScript checks, zero-warning frontend lint,
+Bash syntax, full solution Release compilation (zero warnings/errors) and
+documentation navigation checks also pass. Large-load testing stays deferred;
+PRD-03 remains open at **8% estimated work remaining**.
 
 ## Organization creation client observations
 

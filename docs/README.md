@@ -142,6 +142,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Organization command transactions](architecture/organization-command-transactions.md)
 - [Organization and board discovery](architecture/organization-discovery.md)
 - [Organization member administration](architecture/organization-member-administration.md)
+- [Membership client observations, privacy and verification scope](architecture/operator-metrics.md#organization-membership-browser-observations--2026-10-16)
 - [Organization review, live invalidation and original-removal recovery verification](architecture/organization-review-recovery-verification.md)
 - [Authorized Organization member directory](architecture/organization-member-directory.md)
 - [Membership removal consent](architecture/organization-member-removal-consent.md)

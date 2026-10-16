@@ -237,6 +237,15 @@ def verify(raw, revision, version, *, backlog_available=1):
         observed("strataai_activity_client_events", {"action": "organization_settings_update", "kind": "use"}),
         observed("strataai_activity_client_events", {"action": "organization_settings_update", "kind": "success"}),
         observed("strataai_activity_client_duration_count", {"action": "organization_settings_update", "kind": "success"}),
+        *[observed("strataai_activity_client_events", {"action": action, "kind": kind}) for action, kind in [
+            ("organization_members_disclosure", "open"), ("organization_members_read", "retry"),
+            ("organization_members_read", "success"), ("organization_member_review", "use"),
+            ("organization_member_review", "success"), ("organization_member_remove", "use"),
+            ("organization_member_remove", "retry"), ("organization_member_remove", "conflict"),
+            ("organization_member_remove", "failure"), ("organization_member_remove", "success")]],
+        *[observed("strataai_activity_client_duration_count", {"action": action, "kind": kind}) for action, kind in [
+            ("organization_members_read", "success"), ("organization_member_review", "success"),
+            ("organization_member_remove", "failure"), ("organization_member_remove", "success")]],
         observed("strataai_organization_requests", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_duration_count", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_requests", {"operation": "read", "outcome": "denied"}),

@@ -43,18 +43,56 @@ public sealed partial class ApiHostTests
     [InlineData("organization_settings_update")]
     [InlineData("organization_creation_disclosure")]
     [InlineData("organization_creation")]
+    [InlineData("organization_members_disclosure")]
+    [InlineData("organization_members_read")]
+    [InlineData("organization_member_review")]
+    [InlineData("organization_member_remove")]
     public void PRD_03_Settings_observations_accept_fixed_categories_and_reject_private_material_atomically(string action)
     {
         using var valid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
             new { action, kind = "retry", count = 1 }, new { action, kind = "success", count = 1, durationMs = 125 } } }));
         Assert.Equal(2, ActivityClientTelemetry.Parse(valid.RootElement)!.Count);
-        foreach (var field in new[] { "organizationId", "actorId", "name", "description", "logoUrl", "draft", "version", "key", "route", "exception" })
+        foreach (var field in new[] { "organizationId", "actorId", "name", "description", "logoUrl", "draft", "version", "key", "route", "exception",
+                     "membershipId", "userId", "email", "expectedVersion", "target" })
         {
             using var invalid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
                 new { action, kind = "use", count = 1 },
                 new Dictionary<string,object> { ["action"] = action, ["kind"] = "retry", ["count"] = 1, [field] = "private-material" } } }));
             Assert.Null(ActivityClientTelemetry.Parse(invalid.RootElement));
         }
+    }
+
+    [Fact]
+    public async Task PRD_03_Member_observations_require_authentication_and_reject_private_batches_without_recording()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var actor = app.CreateClient(); using var anonymous = app.CreateClient();
+        await RegisterAndLogin(actor);
+        var meter = app.Services.GetRequiredService<ActivityClientTelemetry>().Meter;
+        var recorded = new ConcurrentQueue<Dictionary<string, object?>>(); var durations = new ConcurrentQueue<double>();
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, capture) => { if (ReferenceEquals(instrument.Meter, meter)) capture.EnableMeasurementEvents(instrument); };
+        listener.SetMeasurementEventCallback<long>((_, _, tags, _) => recorded.Enqueue(tags.ToArray().ToDictionary(pair => pair.Key, pair => pair.Value)));
+        listener.SetMeasurementEventCallback<double>((_, value, _, _) => durations.Enqueue(value)); listener.Start();
+        var payload = new { events = new object[] {
+            new { action = "organization_members_disclosure", kind = "open", count = 1 },
+            new { action = "organization_members_read", kind = "retry", count = 1 },
+            new { action = "organization_member_review", kind = "success", count = 1, durationMs = 125 },
+            new { action = "organization_member_remove", kind = "use", count = 1 },
+            new { action = "organization_member_remove", kind = "conflict", count = 1 },
+            new { action = "organization_member_remove", kind = "retry", count = 1 },
+            new { action = "organization_member_remove", kind = "failure", count = 1, durationMs = 250 },
+            new { action = "organization_member_remove", kind = "success", count = 1, durationMs = 125 } } };
+        using var denied = await Mutate(anonymous, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode); Assert.Empty(recorded); Assert.Empty(durations);
+        using var accepted = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode); Assert.Equal("", await accepted.Content.ReadAsStringAsync(ct));
+        Assert.Equal(8, recorded.Count); Assert.Equal(new[] { 0.125, 0.25, 0.125 }, durations.ToArray());
+        Assert.All(recorded, tags => Assert.Equal(new[] { "action", "kind" }, tags.Keys.Order().ToArray()));
+        using var rejected = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", new { events = new object[] {
+            new { action = "organization_members_read", kind = "use", count = 1 },
+            new { action = "organization_member_remove", kind = "retry", count = 1, email = "private-member@example.test", target = Guid.NewGuid() } } });
+        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(8, recorded.Count); Assert.Equal(3, durations.Count);
     }
 
     [Fact]

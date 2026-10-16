@@ -12,6 +12,27 @@ authorization and later factory recovery. Controlled Demo persistence and
 compiled assemblies do not certify current Production images or full release
 acceptance. Estimated PRD-03 work remaining stays **8%**; the issue stays open.
 
+## Membership client observations — 2026-10-16
+
+The [membership observation contract](operator-metrics.md#organization-membership-browser-observations--2026-10-16)
+adds fixed, private-data-free directory/review/removal observations through the
+existing optional queue and authenticated atomic parser. Seven component cases
+cover lost acknowledgment with original recovery, conflicts, denied admission,
+account change, self-removal and reporting failure. All 49 focused component/queue
+cases, ten API category/HTTP cases and 56 related API cases pass. The Collector
+verifier rejects omitted membership observations; all 32 verifier tests and 285
+CI integration guards pass. Both desktop/phone browser cases pass with real
+PostgreSQL, API and separate Worker: committed lost-response recovery preserves
+the original removal, telemetry excludes private material, keyboard and WCAG
+checks pass, and owned cleanup restores Docker inventory. The linked evidence
+records optional-email policy and compiled-runtime boundaries. Current full
+immutable-image CI/export, broader
+departure/deletion/invitation telemetry, adoption policy, successful reconnect
+metrics and complete acceptance remain required. This is scoped progress toward
+section 20, not closure; **8% estimated work remaining** is unchanged.
+The complete local web regression also passes all **2,602** tests with no
+failures or pending cases; compilation, typechecks and lint pass.
+
 ## Hosted Organization creation/settings telemetry — 2026-10-15
 
 The exact-image browser

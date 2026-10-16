@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { boundedWorkRead } from '../../api/workManagement';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 type Member = { membershipId: string; userId: string; displayName: string; email: string; role: number;
   accountStatus: string; emailVerified: boolean; isUsableOwner: boolean; joinedAt: string; updatedAt: string; version: number };
@@ -49,6 +50,7 @@ function Members({ organizationId }: { organizationId: string }) {
   const retry = useRef<HTMLButtonElement>(null); const acknowledgment = useRef<HTMLDivElement>(null);
   const retryFocus = useRef(false);
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
+  const opened = useRef(false);
   const cancel = useRef<HTMLButtonElement>(null);
   const recovery = useRef<HTMLButtonElement>(null); const reload = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -64,7 +66,9 @@ function Members({ organizationId }: { organizationId: string }) {
       setLiveNotice('Checking current membership and access. Any original removal retry is preserved.');
       setReloadVersion(value => value + 1);
     };
-    return watchOrganizationMetadata({ organizationId, userId: actorId, invalidate: refresh, reset: refresh, unavailable: refresh });
+    return watchOrganizationMetadata({ organizationId, userId: actorId, invalidate: refresh,
+      reset: () => { activityEvent('organization_members_read', 'retry'); refresh(); },
+      unavailable: () => { activityEvent('organization_members_read', 'retry'); refresh(); } });
   }, [organizationId, actorId]);
   useEffect(() => {
     if (!refreshQueued.current || busy) return;
@@ -100,9 +104,11 @@ function Members({ organizationId }: { organizationId: string }) {
     if (expected && id !== expected) { deny(401); return; }
     return id;
   }
-  async function load(after: string | null, previous: (string | null)[], live = false) {
+  async function load(after: string | null, previous: (string | null)[], live = false, retryRead = false) {
     if (retryIntent && !live) return;
     const controller = begin(!live || !currentIntent.current); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_members_read', retryRead ? 'retry' : 'use');
     const started = epoch.current;
     setPage(undefined); setSelected(undefined);
     if (!live) { setNotice(undefined); setRecovered(false); }
@@ -121,22 +127,31 @@ function Members({ organizationId }: { organizationId: string }) {
           || !(data.nextCursor === null || data.items.length === 50 && uuid(data.nextCursor) && data.nextCursor === data.items[49].userId))
           throw new Error('Invalid member page');
         const afterActor = await account(controller, signal, before); if (!afterActor || started !== epoch.current) return;
+        succeeded = true;
         actor.current = afterActor; setActorId(afterActor);
         if (live && currentIntent.current) {
           setLiveNotice('Current access checked. Retry the original removal before reviewing later membership.'); return;
         }
+        if (!opened.current) { opened.current = true; activityEvent('organization_members_disclosure', 'open'); }
         setPage(data); setCursor(after); setHistory(previous);
         if (!live) setReviewId(undefined);
         setDenied(false);
         if (live) setLiveNotice('Current members checked. Review a membership again before confirming removal.');
       }, controller.signal);
-    } catch { if (mounted.current && pending.current === controller) setError('Unable to load current members. Please retry.'); }
-    finally { finish(controller); }
+    } catch { if (mounted.current && pending.current === controller) {
+      activityEvent('organization_members_read', 'exception'); setError('Unable to load current members. Please retry.');
+    } }
+    finally {
+      if (mounted.current && pending.current === controller) activityResult('organization_members_read', succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   async function review(userId: string, uncertain: boolean) {
     if (retryIntent) return;
     setRecovered(false);
     const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_member_review', uncertain ? 'retry' : 'use');
     const started = epoch.current;
     setSelected(undefined); setReviewId(userId); setNotice(undefined); setPage(undefined);
     try {
@@ -148,6 +163,7 @@ function Members({ organizationId }: { organizationId: string }) {
         if (result.status !== 200 || !data || data.organizationId !== organizationId || ![0, 1].includes(data.actorRole)
           || !(data.member === null || member(data.member) && data.member.userId === userId)) throw new Error('Invalid member review');
         if (!await account(controller, signal, before) || started !== epoch.current) return;
+        succeeded = true;
         if (!data.member) {
           setReviewId(undefined); setNotice(uncertain
             ? 'This person is currently no longer an internal member. The earlier removal acknowledgment was unavailable.'
@@ -156,13 +172,21 @@ function Members({ organizationId }: { organizationId: string }) {
           setReviewId(undefined); setError('Only an Owner can remove an Owner. Load current members to continue.');
         } else { setSelected(data.member); if (uncertain) setError('Review this current membership and confirm again before making another removal request.'); }
       }, controller.signal);
-    } catch { if (mounted.current && pending.current === controller) setError('Unable to review this membership. No further removal will be sent until the current membership is reviewed.'); }
-    finally { finish(controller); }
+    } catch { if (mounted.current && pending.current === controller) {
+      activityEvent('organization_member_review', 'exception');
+      setError('Unable to review this membership. No further removal will be sent until the current membership is reviewed.');
+    } }
+    finally {
+      if (mounted.current && pending.current === controller) activityResult('organization_member_review', succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   async function remove(recover = false) {
     if (recover ? !retryIntent : !selected || !actorId || !!retryIntent) return;
     const intent = recover ? retryIntent! : { key: crypto.randomUUID(), target: selected!.userId, version: selected!.version, actor: actorId! };
     const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_member_remove', recover ? 'retry' : 'use');
     setNotice(undefined);
     try {
       await boundedWorkRead(async signal => {
@@ -175,12 +199,15 @@ function Members({ organizationId }: { organizationId: string }) {
         if (!await account(controller, signal, intent.actor)) return;
         setSelected(undefined); setPage(undefined);
         if (result.status === 204) {
+          succeeded = true;
+          activityResult('organization_member_remove', true, telemetryStarted);
           setRetryIntent(undefined); setRecovered(recover); setReviewId(recover ? intent.target : undefined);
           setNotice(recover ? 'Original removal acknowledged. Review current membership to check later access.' : 'Member removed.');
           if (!recover && intent.target === intent.actor) navigate('/app', { replace: true });
           return;
         }
         setReviewId(intent.target);
+        if (result.status === 409) activityEvent('organization_member_remove', 'conflict');
         const definitive = [400, 404, 409, 429].includes(result.status);
         setRetryIntent(definitive ? undefined : intent);
         setError(result.status === 409 && code === 'sole_owner'
@@ -192,10 +219,14 @@ function Members({ organizationId }: { organizationId: string }) {
       }, controller.signal);
     } catch {
       if (mounted.current && pending.current === controller) {
+        activityEvent('organization_member_remove', 'exception');
         setSelected(undefined); setPage(undefined); setReviewId(intent.target); setRetryIntent(intent);
         setError('The removal could not be confirmed. Retry the original removal to recover its acknowledgment.');
       }
-    } finally { finish(controller); }
+    } finally {
+      if (mounted.current && pending.current === controller && !succeeded) activityResult('organization_member_remove', false, telemetryStarted);
+      finish(controller);
+    }
   }
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to={`/app/${organizationId}`}>Organization boards</Button>
@@ -205,7 +236,7 @@ function Members({ organizationId }: { organizationId: string }) {
     {notice && <Alert ref={acknowledgment} tabIndex={-1} severity="info" role="status">{notice}</Alert>}
     {liveNotice && <Alert severity="info">{liveNotice}</Alert>}
     {busy && <CircularProgress aria-label="Loading Organization members" />}
-    {!denied && <Button ref={reload} disabled={busy || !!retryIntent} onClick={() => void load(null, [])}>Load current members</Button>}
+    {!denied && <Button ref={reload} disabled={busy || !!retryIntent} onClick={() => void load(null, [], false, true)}>Load current members</Button>}
     {reviewId && !selected && !denied && <Button ref={recovery} disabled={busy || !!retryIntent} onClick={() => void review(reviewId, !recovered)}>Review current membership</Button>}
     {retryIntent && !denied && <Button ref={retry} disabled={busy} onClick={() => {
       retryFocus.current = document.activeElement === retry.current; void remove(true);

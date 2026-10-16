@@ -14,6 +14,7 @@ public sealed class ActivityClientTelemetry(IMeterFactory factory)
         "archive_card_disclosure", "archive_card_read", "archive_card_restore", "archive_card_delete", "list_archive", "card_archive", "archive_board_disclosure", "archive_board_read", "archive_board_restore", "archive_board_delete", "board_archive", "board_metadata_update", "board_star_disclosure", "board_star_read", "board_star_change", "board_copy_disclosure", "board_copy_read", "board_copy_change", "navigation_context", "navigation_board", "navigation_card",
         "organization_settings_disclosure", "organization_settings_read", "organization_settings_update",
         "organization_creation_disclosure", "organization_creation",
+        "organization_members_disclosure", "organization_members_read", "organization_member_review", "organization_member_remove",
         "organization_configuration_disclosure", "organization_configuration_read", "organization_configuration_change",
         "organization_configuration_history", "organization_configuration_activity",
         "organization_lifecycle_disclosure", "organization_lifecycle_read", "organization_lifecycle_change"];
