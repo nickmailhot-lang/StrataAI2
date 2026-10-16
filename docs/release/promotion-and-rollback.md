@@ -108,6 +108,12 @@ Keep the prior known-good record and bundle until the candidate is accepted and 
 
 ### Atomic acceptance record verification — 2026-10-15
 
+The mandatory [assembled acceptance-record phase](../architecture/release-bundle-startup.md#assembled-acceptance-record-gate--2026-10-15)
+now executes the bundled command against running API/Worker services, requires
+record preservation through a stopped Worker, and rechecks the same image after
+restart. Its current compiled-runtime native rehearsal passes, including actual
+ephemeral address rediscovery; current immutable-bundle CI remains required.
+
 All **22 state/command cases** pass, including full prior-reference retention,
 failed runtime checks, idempotent acceptance, operator rollback recording,
 cross-environment refusal, explicit initialization, malformed/ambiguous/oversized

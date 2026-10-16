@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [assembled acceptance-record gate](release-bundle-startup.md#assembled-acceptance-record-gate--2026-10-15)
+requires the real bundled command to preserve its reference while the disposable
+Worker is unavailable, then succeed with unchanged state after the same image
+restarts. A native run exposes reassigned ephemeral ports; strict diagnostic
+rediscovery fixes that integration issue. The corrected full phase passes in
+59.396 seconds, preserving 718 source and 71 binary inputs and restoring Docker
+inventory after owned cleanup. Six driver tests cover 26 script scenarios.
+This is current compiled-runtime evidence with supplied metadata, not a complete
+current immutable-bundle release; full acceptance stays open and no large-load
+test runs.
+
 The [atomic acceptance record](../release/promotion-and-rollback.md#atomic-acceptance-record-verification--2026-10-15)
 adds an operator command for the final runtime check and atomic current/previous
 release record. All 22 state/command cases and five real CLI/Nginx cases pass,

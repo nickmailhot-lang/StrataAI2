@@ -36,6 +36,7 @@ compose=(docker compose --project-name "$project" --env-file .env -f compose.rel
 inspection_file=''
 runtime_file=''
 port_override=''
+acceptance_dir=''
 cleanup() {
   local code=$? remaining resource
   trap - EXIT
@@ -44,6 +45,10 @@ cleanup() {
   if [ -n "$inspection_file" ]; then rm -f "$inspection_file"; fi
   if [ -n "$runtime_file" ]; then rm -f "$runtime_file"; fi
   if [ -n "$port_override" ]; then rm -f "$port_override"; fi
+  if [ -n "${acceptance_dir:-}" ]; then
+    rm -f -- "$acceptance_dir/current.json" "$acceptance_dir/current.json.lock" "$acceptance_dir/before.json" || code=1
+    rmdir -- "$acceptance_dir" || code=1
+  fi
   for resource in container volume network; do
     if [ "$resource" = container ]; then
       if ! remaining=$(docker ps -aq --filter "label=com.docker.compose.project=$project"); then code=1; continue; fi
@@ -188,6 +193,55 @@ check_database_outage() {
   bash verify-release-runtime.sh build-metadata.json >/dev/null
   echo 'Database outage passed: live hosts refuse readiness privately; same database/volume/ledger and application processes recover without rebuild.'
 }
+check_release_acceptance_record() {
+  # This phase may stop only this startup gate's disposable Worker.
+  [[ "$project" =~ ^strataai-bundle-smoke-[a-f0-9]{16}$ ]]
+  local host container worker worker_image metadata_digest provenance_digest
+  local -A unchanged
+  acceptance_dir=$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/strataai-bundle-acceptance.XXXXXXXX")
+  local -a record=(python3 record-release.py --bundle . --state "$acceptance_dir/current.json" --environment ci-production --project "$project")
+  "${record[@]}" --initialize >/dev/null
+  metadata_digest=$(sha256sum -- build-metadata.json); metadata_digest=${metadata_digest%% *}
+  provenance_digest=$(sha256sum -- images/image-provenance.json); provenance_digest=${provenance_digest%% *}
+  jq -e --arg project "$project" --arg metadata "$metadata_digest" --arg provenance "$provenance_digest" \
+    --slurpfile build build-metadata.json --slurpfile images images/image-provenance.json \
+    'keys==["composeProject","current","environment","previous","schemaVersion"] and .schemaVersion==1
+      and .environment=="ci-production" and .composeProject==$project and .previous==null
+      and (.current|keys)==["acceptedAt","build","buildMetadataSha256","imageIds","imageProvenanceSha256"]
+      and .current.build==$build[0] and .current.imageIds==$images[0].imageIds
+      and .current.buildMetadataSha256==$metadata and .current.imageProvenanceSha256==$provenance' \
+    "$acceptance_dir/current.json" >/dev/null
+  cp -- "$acceptance_dir/current.json" "$acceptance_dir/before.json"
+  "${record[@]}" >/dev/null
+  cmp --silent -- "$acceptance_dir/current.json" "$acceptance_dir/before.json"
+  for host in postgres api web; do
+    container=$("${compose[@]}" ps -q "$host")
+    unchanged[$host]=$(docker inspect --format '{{.Id}} {{.Image}} {{.State.StartedAt}}' "$container")
+  done
+  worker=$("${compose[@]}" ps -q worker)
+  worker_image=$(docker inspect --format '{{.Image}}' "$worker")
+  "${compose[@]}" stop --timeout 20 worker >/dev/null
+  test "$(docker inspect --format '{{.State.Running}}' "$worker")" = false
+  test "$(docker inspect --format '{{.State.ExitCode}}' "$worker")" = 0
+  test "$(docker inspect --format '{{.State.OOMKilled}}' "$worker")" = false
+  if "${record[@]}" > "$runtime_file" 2>&1; then
+    echo 'Release acceptance recorded an unavailable Worker.' >&2; return 1
+  fi
+  grep -Fxq 'Release acceptance was not confirmed; retain and inspect the existing release record.' "$runtime_file"
+  cmp --silent -- "$acceptance_dir/current.json" "$acceptance_dir/before.json"
+  "${compose[@]}" up -d --no-deps --no-recreate --no-build --pull never --wait --wait-timeout 120 worker >/dev/null
+  test "$("${compose[@]}" ps -q worker)" = "$worker"
+  test "$(docker inspect --format '{{.Image}}' "$worker")" = "$worker_image"
+  for host in postgres api web; do
+    container=$("${compose[@]}" ps -q "$host")
+    test "$(docker inspect --format '{{.Id}} {{.Image}} {{.State.StartedAt}}' "$container")" = "${unchanged[$host]}"
+  done
+  # Published diagnostic ports may change even when the container is reused.
+  update_runtime_addresses
+  "${record[@]}" >/dev/null
+  cmp --silent -- "$acceptance_dir/current.json" "$acceptance_dir/before.json"
+  echo 'Assembled release acceptance record passed: verified identities, unavailable Worker refusal, unchanged record and same-image recovery.'
+}
 check_runtime
 bash verify-release-runtime.sh build-metadata.json >/dev/null
 check_database_outage
@@ -251,4 +305,5 @@ test "$("${compose[@]}" ps -q api)" != "$api"
 test "$("${compose[@]}" ps -q worker)" != "$worker"
 check_runtime
 
+check_release_acceptance_record
 echo 'Assembled bundle migrations, restricted Production startup, exact image identity, health/proxy, graceful restart and runtime password rotation passed.'

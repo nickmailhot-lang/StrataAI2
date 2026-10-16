@@ -300,6 +300,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(bundle.run.includes('cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh'), 'Release must include the tested deployment identity command');
   assert.ok(bundle.run.includes('cp scripts/record-release.py bundle/record-release.py'), 'Release must include the tested atomic deployment record command');
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'release_state_test.py'"), 'Release acceptance state checks must run');
+  assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'release_acceptance_driver_test.py'"), 'Assembled release acceptance refusal paths must run');
   assert.ok(bundle.run.includes('cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh'), 'Release must include the tested certificate lifetime command');
   assert.ok(bundle.run.includes('cp deploy/metrics/collector.yml deploy/metrics/alerts.yml deploy/metrics/prometheus.example.yml bundle/deploy/metrics/'), 'Release must include the tested alert rules and backend example');
   assert.ok(bundle.run.includes('cp scripts/restore-postgres.sh bundle/restore-postgres.sh'), 'Release must include the tested operator restore command');

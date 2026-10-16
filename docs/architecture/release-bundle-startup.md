@@ -5,6 +5,67 @@ source, Node.js or the .NET SDK. Checksums and a nonempty archive alone do not
 prove that its Compose, migrations, role provisioning and runtime instructions
 work together. ARCH-11-FR-052 also requires API/Worker shutdown and restart proof.
 
+## Assembled acceptance-record gate — 2026-10-15
+
+The mandatory Production bundle startup driver now executes the bundled
+`record-release.py` after its existing migration, image identity, database
+outage, graceful restart and password-rotation checks. The phase requires its
+own `strataai-bundle-smoke-<random>` project before any mutation. A private
+acceptance directory sits outside the immutable payload and is removed by the
+maintained EXIT cleanup, including its deliberately persistent lock file.
+
+The phase initializes an accepted reference, checks its complete build/image
+identity and input digests against the selected bundle, then requires repeated
+acceptance to preserve the record bytes. It gracefully stops only its own
+Worker, requires a clean exit without OOM, and requires the real command to
+refuse acceptance with its expected sanitized diagnostic and unchanged record.
+Restart must reuse the same Worker container/image and preserve PostgreSQL,
+API and web container/image/start identities. The final successful check must
+still preserve the original accepted record exactly.
+
+The first native setup supplied canonical CI metadata as served web metadata;
+initial verification correctly refused that fixture shape and cleanup passed.
+A later native diagnostic run exposed an integration issue in the new phase:
+Docker reassigns the ephemeral host port when the same Worker restarts. The
+new port serves readiness 200 and the correct runtime identity, while final
+verification with the old address fails. The corrected phase reuses the
+existing strict loopback address discovery before the final command. A prior
+rotation unit fixture also needed its extraction boundary moved to the new
+phase call; its original rotation assertions are retained.
+
+The corrected complete phase passes in **59.396 seconds** with fresh PostgreSQL
+17.11, all 149 migrations and canonical restricted roles, actual current
+compiled API/Worker and a separate Nginx runtime. It observes the changed Worker
+diagnostic address, readiness 200 and matching runtime identity, a real same-
+container/image restart, unchanged API process and removed record scratch.
+All **718 captured source/database/driver inputs** and **71 API/Worker binary
+files** match afterward. Owned containers, database volume, network and
+**23,899 temporary bytes** are removed; original Docker inventory is restored.
+All unsuccessful private attempts also clean up their owned resources.
+
+Six driver tests pass **26 script scenarios** plus registration assertions:
+namespace refusal before mutation, initial/repeated/final record failure,
+incorrect project/image/extra fields, unavailable-Worker false acceptance,
+unrelated errors, record mutation, stop/exit/OOM/recovery failures, replaced
+containers/images, changed unrelated host processes and failed address refresh.
+Those command-substitute scenarios verify orchestration, not live services;
+the independent native phase executes the real record/runtime commands. The
+existing cleanup tests now also require acceptance-directory removal.
+
+All **79 startup cases and 285 CI guard cases** pass after the address correction
+and fixture-boundary repair, **364 total**. The full solution builds with zero
+warnings/errors; Bash/workflow lint and documentation navigation checks pass.
+
+The native fixture mounts current compiled `b51da233` API/Worker assemblies in
+retained runtimes and supplies matching web/CI metadata. It does not execute the
+entire newly assembled downloadable bundle or certify current immutable images,
+real two-version application rollback, green release CI or managed providers.
+Those remain acceptance requirements. This phase initializes a first reference
+with no prior release; non-null history and rollback-record behavior retain the
+separate [state/CLI evidence](../release/promotion-and-rollback.md#atomic-acceptance-record-verification--2026-10-15).
+No application image is built/pulled/imported, existing local service/database
+used, external provider called or large-load test run.
+
 ## Independent 5845da8b bundle rehearsal — 2026-10-15
 
 The original [release artifact 12002794848](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901/artifacts/12002794848)

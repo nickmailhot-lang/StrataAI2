@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -277,7 +277,7 @@ ${restartSequence}
   });
 });
 
-const rotationEnd = startupSource.lastIndexOf('\necho ');
+const rotationEnd = startupSource.lastIndexOf('\ncheck_release_acceptance_record\n');
 assert.ok(rotationEnd > restartEnd, 'Maintained password-rotation sequence must be present');
 const rotationSequence = startupSource.slice(restartEnd + 1, rotationEnd);
 for (const scenario of ['healthy', 'environment-write-failure', 'postgres-start-failure',
@@ -405,6 +405,8 @@ for (const scenario of [
     writeFileSync(join(root, 'inspection.json'), 'PRIVATE_TEST_INSPECTION\n');
     writeFileSync(join(root, 'runtime.json'), 'PRIVATE_TEST_RUNTIME\n');
     writeFileSync(join(root, 'ports.yml'), 'PRIVATE_TEST_PORT_OVERRIDE\n');
+    mkdirSync(join(root, 'acceptance'));
+    for (const name of ['current.json', 'current.json.lock', 'before.json']) writeFileSync(join(root, 'acceptance', name), 'private-owned-record');
     const driver = join(root, 'cleanup-test.sh');
     writeFileSync(driver, `#!/usr/bin/env bash
 set -euo pipefail
@@ -413,6 +415,7 @@ compose=(docker compose)
 inspection_file=inspection.json
 runtime_file=runtime.json
 port_override=ports.yml
+acceptance_dir="$PWD/acceptance"
 docker() {
   printf '%s\\n' "$*" >> calls.log
   if [ "$1" = compose ]; then
@@ -439,6 +442,7 @@ exit "$STRATAAI_TEST_UPSTREAM"
     assert.throws(() => readFileSync(join(root, '.env')), { code: 'ENOENT' });
     assert.throws(() => readFileSync(join(root, 'inspection.json')), { code: 'ENOENT' });
     assert.throws(() => readFileSync(join(root, 'runtime.json')), { code: 'ENOENT' });
+    assert.equal(existsSync(join(root, 'acceptance')), false);
     const calls = readFileSync(join(root, 'calls.log'), 'utf8').trim().split('\n');
     assert.deepEqual(calls, [
       'compose down --volumes --remove-orphans',
