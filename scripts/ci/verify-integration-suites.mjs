@@ -172,7 +172,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
     'npx playwright test tests/browser/board.spec.ts tests/browser/board-metadata.spec.ts tests/browser/board-copy.spec.ts tests/browser/board-lifecycle.spec.ts tests/browser/board-archive-account.spec.ts tests/browser/board-star.spec.ts tests/browser/activity-history.spec.ts tests/browser/board-background-client.spec.ts tests/browser/organization-board-live.spec.ts tests/browser/board-visibility.spec.ts tests/browser/board-members.spec.ts tests/browser/board-admin-live.spec.ts tests/browser/card-labels.spec.ts tests/browser/label-filter-live.spec.ts tests/browser/card-description.spec.ts', '',
   ].join('\n'), 'Complete native Board management requires verified admission in both hosts');
   const browserCoverage = jobs['web-quality'].steps.find(step => step.name === 'Verify complete browser shard coverage');
-  assert.equal(browserCoverage?.run, 'node --test tests/browser-shards.test.mjs\nnode scripts/ci/verify-browser-shards.mjs\n');
+  assert.equal(browserCoverage?.run, 'node --test tests/browser-shards.test.mjs\nnode --test tests/mail-outage-browser.test.mjs\nnode scripts/ci/verify-browser-shards.mjs\n');
   assert.equal(browserCoverage.if, undefined);
   assert.equal(browserCoverage['continue-on-error'] ?? false, false);
 
@@ -279,6 +279,16 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(identityMail?.run, 'scripts/ci/test-identity-email.sh');
   assert.equal(identityMail?.if, "(matrix.suite == 'browser-notifications')");
   assert.equal(identityMail?.['continue-on-error'] ?? false, false);
+  const mailBrowser = jobs['container-integration'].steps.find(step => step.name === 'Desktop and phone task work through provider outage');
+  assert.equal(mailBrowser?.run, 'bash scripts/ci/test-core-mail-browser.sh');
+  assert.equal(mailBrowser?.if, "(matrix.suite == 'browser-notifications')");
+  assert.equal(mailBrowser?.['continue-on-error'] ?? false, false);
+  assert.equal(mailBrowser?.['timeout-minutes'], 18);
+  assert.equal(mailBrowser?.env.STRATAAI_E2E_IDENTITY_MAIL, '1');
+  const mailCollection = jobs['web-quality'].steps.find(step => step.name === 'Verify complete browser shard coverage');
+  assert.equal(mailCollection?.if, undefined);
+  assert.equal(mailCollection?.['continue-on-error'] ?? false, false);
+  assert.ok(mailCollection?.run.includes('node --test tests/mail-outage-browser.test.mjs'));
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'postgres_restore_test.py'"), 'Operator restore refusal paths must run before image builds');
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'key_recovery_archive_test.py'"), 'Key recovery archive refusals must run before image builds');
   assert.match(archive.run, /cp build-inputs\/build-metadata.json image-artifacts\/build-metadata.json/);

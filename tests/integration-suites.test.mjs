@@ -31,10 +31,15 @@ test('large fixtures cannot be hard-enabled in the normal workflow', () => {
 });
 
 test('every mandatory check has an owner and every group uses retained images', () => {
-  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 128 });
+  assert.deepEqual(verifyIntegrationSuites(workflow(), registry), { groups: 4, executions: 7, registeredSteps: 129 });
 });
 
 const mutations = [
+  ['mail outage browser runtime bypassed', value => { step(value, 'Desktop and phone task work through provider outage').run='true'; }],
+  ['mail outage browser failures ignored', value => { step(value, 'Desktop and phone task work through provider outage')['continue-on-error']=true; }],
+  ['mail outage browser fixture flag omitted', value => { delete step(value, 'Desktop and phone task work through provider outage').env.STRATAAI_E2E_IDENTITY_MAIL; }],
+  ['mail outage browser collection omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify complete browser shard coverage'); entry.run=entry.run.replace('node --test tests/mail-outage-browser.test.mjs',''); }],
+  ['mail outage browser collection skipped', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify complete browser shard coverage').if='false'; }],
   ['core mail outage provider instance unbound', value => { delete value.env.STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE; }],
   ['core mail outage source checks skipped', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy').if='false'; }],
   ['core mail outage source check failures ignored', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy')['continue-on-error']=true; }],

@@ -12,8 +12,16 @@ the original session remain intact. Normal provider recovery produces one
 effect/receipt with no API/Worker restart or edited backoff. The complete fresh
 PostgreSQL/149-migration rehearsal passes in 159.262 seconds with all 717 source
 and 71 binary inputs unchanged and Docker inventory restored. All 12 fixture/
-admission cases and 272 CI guards pass. Current-image/full CI, browser/managed
-outage behavior and the rest of ARCH-08 remain required; no large-load test runs.
+admission cases pass. The additional complete desktop/phone keyboard scenarios
+both pass without skips or retries in 307.267 seconds, including six
+accessibility/overflow checks, exactly one request per task write, persisted
+Card revision and recovery through normal mail backoff. All 10 browser-report
+checks and 277 CI guards pass. The browser fixture's full setup/cleanup takes
+354.471 seconds, preserves all 1,261 source/71 binary inputs and four served
+assets, retires its owned services and restores Docker inventory. CI now requires
+both actual browser passes and unchanged API/Worker identities. Current-image/
+full CI, managed deployment outages and the rest of ARCH-08 remain required;
+no large-load test runs.
 
 The [mail provider response repair](identity-email.md#provider-response-admission--2026-10-15)
 classifies provider errors at headers and preserves the existing successful

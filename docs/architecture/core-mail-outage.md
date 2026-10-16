@@ -4,7 +4,7 @@ This is partial [ARCH-08-AC-003](https://github.com/nickmailhot-lang/StrataAI2/i
 evidence for operational task management. Mail failure must leave existing
 verified users able to work with their protected Boards, Lists and Cards.
 Pending identity mail remains durable and retries through the separate Worker.
-The wider AI/meeting, browser, managed-provider and complete release acceptance
+The wider AI/meeting, managed-provider and complete release acceptance
 criteria remain in force.
 
 ## Mandatory controlled scenario
@@ -76,8 +76,60 @@ fixture controls are source-only CI tools, not release services or production
 provider controls. The normal browser-notification group must execute this
 contract against the three retained application images before release.
 
-These are a few functional HTTP/SQL operations and bounded retry observations,
+## Desktop and phone browser evidence — 2026-10-15
+
+The [dedicated browser scenario](../../tests/browser/core-mail-outage.case.ts)
+passes both complete cases at **1280 and 390 pixels**, with **zero skips,
+retries or flaky outcomes**, in **307.267 seconds**. Each case registers a real
+account, waits for Worker-delivered verification, consumes its proof and signs
+in through the browser. Pending verification correctly refuses login. There is
+no SQL verification bypass or mocked application response.
+
+With sustained provider HTTP 503 failure and an observed reset-delivery attempt,
+keyboard actions create one List, create one Card and save one Card title edit.
+The test observes exactly one request for each write, checks their successful
+responses and reloads the edited Card. The authoritative Board snapshot retains
+exactly one matching Card at revision 2. Anonymous Board access remains 404,
+readiness and the original session remain usable, and all **six accessibility
+and viewport-overflow checks** pass across the two cases. On provider recovery,
+normal retry and lost-ack behavior produce one effect for the same delivery key;
+the edited Card survives another reload. This browser observation proves the
+provider acknowledgment; the separate HTTP/SQL contract above proves terminal
+`SENT`, receipt persistence and audit additions.
+
+The full local setup, execution and cleanup takes **354.471 seconds**, using
+fresh PostgreSQL **17.11**, **149 migrations**, restricted runtime roles and
+separate API/Worker processes under strict verified-email policy. All three
+application runtime metadata records identify
+`5b959b2f0a3607ccb13cc411ccb01c75cec564f7`, version `0.1.0-1736`.
+All **1,261 source inputs**, **71 API/Worker binary files**, frontend output and
+**four served frontend assets** match their captured hashes. Cached images
+supply runtimes with local outputs mounted read-only; this is local execution
+evidence, not certification of a current immutable release.
+
+API/Worker identities and start times remain unchanged during both cases.
+All owned application/database containers, network and provider thread/socket
+are retired; the original Docker inventory is restored and **829 temporary host
+bytes** are removed. That byte count excludes ephemeral container data and does
+not imply physical Docker disk-file compaction. No image is built, pulled or
+imported, the original database and local Demo are unused, and no external email
+is sent.
+
+The [CI wrapper](../../scripts/ci/test-core-mail-browser.sh) owns a fresh runtime
+JSON report and requires the [report validator](../../scripts/ci/verify-core-mail-browser.mjs)
+to accept exactly both executed passes without skips or retries. It also checks
+unchanged API/Worker identities and restores only the admitted provider fixture.
+The validator accepts the actual native report; the final CI wrapper awaits
+exact-image execution. All **10 browser collection/report tests** and **277 CI
+guard tests** pass, alongside browser TypeScript, shell syntax and workflow
+lint. The additional mandatory stage belongs to `browser-notifications` and
+requires the identity-mail fixture. Its six-minute case budget accommodates real
+delivery backoff without shortening production retry intervals. Ordinary shard
+collection still covers **400 cases in 146 files**; collection alone does not
+execute those cases.
+
+These are a few functional HTTP/SQL/browser operations and bounded retry observations,
 not a throughput, capacity, latency or load test. Large-load testing remains
-deferred until after MVP. Current exact-image/full CI, native browser outage
-behavior, real provider/deployment resilience, AI/meeting coverage and remaining
+deferred until after MVP. Current exact-image/full CI, real provider/deployment
+resilience, AI/meeting coverage and remaining
 PRD/architecture acceptance still govern closure. ARCH-08 and MVP remain open.

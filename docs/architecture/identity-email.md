@@ -116,8 +116,14 @@ original session remain intact; normal recovery produces one provider effect
 and terminal receipt. The full local setup/scenario/cleanup passes in 159.262
 seconds with strict real email verification and restricted PostgreSQL roles.
 Its source/binary hashes and original Docker inventory match. CI now requires
-this phase inside the exact-image identity-mail stage. Current immutable/full
-CI, browser/deployment outages and complete acceptance remain required.
+this phase inside the exact-image identity-mail stage. The additional desktop
+and phone keyboard scenarios both pass without skips or retries: task creation,
+editing, reload and session access survive an observed mail outage, and normal
+provider recovery retains one delivery effect. Six accessibility/overflow checks
+pass. CI also requires both actual browser passes through a fresh validated
+report; all 10 report checks and 277 CI guards pass. See the linked rehearsal
+for runtime identity, hash and cleanup evidence. Current immutable/full CI,
+managed-provider/deployment outages and complete acceptance remain required.
 
 ### Provider response admission — 2026-10-15
 

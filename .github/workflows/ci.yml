@@ -97,6 +97,7 @@ jobs:
       - name: Verify complete browser shard coverage
         run: |
           node --test tests/browser-shards.test.mjs
+          node --test tests/mail-outage-browser.test.mjs
           node scripts/ci/verify-browser-shards.mjs
 
       - name: Typecheck
@@ -1227,6 +1228,13 @@ jobs:
         env:
           STRATAAI_E2E_IDENTITY_MAIL: '1'
         run: npx playwright test tests/browser/identity-mail.spec.ts
+
+      - name: Desktop and phone task work through provider outage
+        if: (matrix.suite == 'browser-notifications')
+        timeout-minutes: 18
+        env:
+          STRATAAI_E2E_IDENTITY_MAIL: '1'
+        run: bash scripts/ci/test-core-mail-browser.sh
 
       - name: Strict verified-account Organization departure and account continuity
         if: (matrix.suite == 'browser-notifications')
