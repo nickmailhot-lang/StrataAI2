@@ -1,5 +1,42 @@
 # Source test result artifacts — ARCH-11-FR-018/090
 
+## Complete schema-149 backend baseline — 2026-10-16
+
+A fresh zero-warning/error Release solution build at
+`c8ecfd4746c9c3deac52a09ff44e5ffe51437fa7`, version `0.1.0-local`, passes the
+complete unfiltered Domain and API assemblies in the cached Linux runtime.
+The checkout and binaries are mounted read-only, API test content-root mapping
+points to that checkout, and the runner uses two test threads. The explicit
+`STRATAAI_POST_MVP_LOAD_TESTS=0` setting defers only the reviewed capacity cases:
+
+| Assembly | Reported cases | Passed | Deferred capacity | Test execution seconds |
+| --- | ---: | ---: | ---: | ---: |
+| Domain | 1,089 | 1,086 | 3 | 4.798 |
+| API | 1,361 | 1,359 | 2 | 3,432.282 |
+
+Both invocations have zero failures, errors or Not Run cases. Independent
+console/XML/audit comparisons match all totals and outcome counts. The exact
+deferred methods are the 100,000-reference label plan, the 200/5,000-entry rank
+theory and the two 100,000-Card API graph/publication cases; their common explicit
+deferral reason is checked. No other case is skipped, and the large bodies are
+not executed. The successful complete fixture takes **3,443.856 seconds**.
+
+All **2,192 captured repository files and 523 binary files** match afterward.
+Owned containers retire, Docker inventory is restored, and the extracted report
+directory with **1,693,088 bytes** is removed. No database, external provider or
+image build/pull/import is used. An earlier local report-reader assertion uses
+the wrong XML location for a skip reason after the Domain tests themselves pass;
+that separate failed audit and successful cleanup are retained. Correcting the
+reader changes no application test, assertion or capacity gate.
+
+This baseline precedes the subsequent
+[Worker backlog publication repair](operator-metrics.md#independent-worker-backlog-gauges--2026-10-16),
+whose four new and 65 related cases pass separately. It is compiled-source
+evidence using an existing runtime, not the current immutable application images
+or a hosted CI result. Full current CI, retained-image integration/security,
+release assembly and deployment acceptance remain required. Deferred capacity
+acceptance remains post-MVP and does not count as completed PRD scope.
+
 ## Schema-146 hosted source result follow-up
 
 The [.NET source job](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38211744933/job/114687289697)

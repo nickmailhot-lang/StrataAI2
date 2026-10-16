@@ -1,5 +1,39 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+## Independent Worker backlog gauges — 2026-10-16
+
+Both Worker backlog observers previously published their count and availability
+gauges in one guarded block. An `InstrumentPublished` listener exception on the
+count gauge ended that block before availability registration. Sampling could
+continue while its independent availability signal remained absent.
+
+[Organization observation](../../src/StrataAI.Worker/OrganizationBacklogWorker.cs)
+and [identity-mail observation](../../src/StrataAI.Worker/IdentityEmailBacklogWorker.cs)
+now guard meter creation and each gauge publication separately. Factory failures
+remain optional; invalid Organization scope still fails before instrumentation.
+Names, units, fixed labels, readers, five-second sampling deadline, aggregation,
+cancellation and the 30-second schedule retain their original contracts. No
+sampling/export operation gains a claim, dispatch, send, acknowledgment or retry.
+
+The [four publication regressions](../../tests/StrataAI.Api.Tests/WorkerBacklogPublicationTests.cs)
+inject a real listener exception on either gauge for each queue. Both count-fault
+cases reproduce missing availability before repair; all four pass afterward.
+They require the actual fault, independent publication, unknown-before-read,
+successful counts/availability, read-only export, failed-read withdrawal and
+recovery, with only the original bounded labels. All **65 unchanged related
+Worker cases** also pass, including observation scope/deadline/cancellation,
+outcome counters, loop failures, job execution and logging failures. No case is
+skipped or retried in these focused invocations.
+
+The full Release solution builds without warnings/errors. Across each focused
+invocation, all **799 captured backend/test inputs and 415 binary files** match;
+owned test containers retire and the original Docker inventory is restored.
+No database, provider, new image build/pull/import or large-load test is used.
+The [complete pre-repair backend baseline](source-test-results.md#complete-schema-149-backend-baseline--2026-10-16)
+is separate evidence. Current immutable-image/full CI, deployed collection/alerts
+and remaining ARCH-08/MVP acceptance remain required; neither ticket nor milestone
+is closed by these compiled-runtime checks.
+
 The [PostgreSQL pool recovery contract](postgres-pool-recovery.md) adds first
 business-request persistence and unchanged API process checks after this
 fixture's database restart. Readiness alone cannot establish application pool

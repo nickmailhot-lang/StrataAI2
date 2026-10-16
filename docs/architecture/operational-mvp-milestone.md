@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [Worker backlog publication repair](operator-metrics.md#independent-worker-backlog-gauges--2026-10-16)
+preserves availability registration when a count-gauge listener throws. Both
+queues reproduce the old omission; all four new and 65 related Worker cases pass
+after repair, with unchanged input hashes and restored Docker inventory.
+The [complete pre-repair backend baseline](source-test-results.md#complete-schema-149-backend-baseline--2026-10-16)
+also passes 1,086 Domain and 1,359 API cases, with exactly five reviewed capacity
+cases deferred. All 2,192 repository and 523 binary inputs match and owned cleanup
+passes. These are separate compiled-runtime scopes; current immutable/full CI
+and complete release/deployment acceptance remain required. No large load runs.
+
 The [retained candidate security inspection](security-evidence-identity.md#retained-candidate-security-evidence--2026-10-16)
 verifies the original `be7bf9e4` security/build archives, six payload checksums,
 identical canonical metadata and current SBOM identity checks. All 15 prerequisite

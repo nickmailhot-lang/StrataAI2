@@ -13,10 +13,13 @@ internal sealed class IdentityEmailBacklogWorker : BackgroundService
     public IdentityEmailBacklogWorker(IIdentityDeliveryBacklogReader reader, IMeterFactory factory)
     {
         this.reader = reader;
+        Meter meter;
+        try { meter = factory.Create(WorkerJobTelemetry.MeterName); }
+        catch { return; /* Optional diagnostics cannot prevent the mail host starting. */ }
+        try { meter.CreateObservableGauge("strataai.worker.identity.backlog", Observe, "{job}"); }
+        catch { /* One publication failure must not suppress the other gauge. */ }
         try
         {
-            var meter = factory.Create(WorkerJobTelemetry.MeterName);
-            meter.CreateObservableGauge("strataai.worker.identity.backlog", Observe, "{job}");
             meter.CreateObservableGauge("strataai.worker.identity.backlog.available",
                 () => new Measurement<long>(Volatile.Read(ref snapshot) is null ? 0 : 1,
                     new KeyValuePair<string, object?>("queue", "identity_email")));

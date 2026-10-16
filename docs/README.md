@@ -66,6 +66,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Initial exact-commit build metadata and release versions (ARCH-11)](architecture/initial-build-metadata.md)
 - [Structured API/Worker console logs and support context](architecture/structured-logging.md)
 - [API and Worker operator metrics export (ARCH-08, partial)](architecture/operator-metrics.md)
+  includes [independent Worker backlog gauges](architecture/operator-metrics.md#independent-worker-backlog-gauges--2026-10-16) and their publication-failure regressions.
 - [Operational MVP alert baselines, deployment checks and isolated delivery verification](architecture/operator-alerts.md)
 - [Core task work during a mail-provider outage: API, desktop and phone](architecture/core-mail-outage.md)
 - [Runtime database roles](architecture/runtime-database-roles.md)
@@ -233,6 +234,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [API error envelope, correlation and content-negotiation verification (PRD-21)](architecture/api-error-contract-verification.md)
 - [Invitation, comment and Card-cover verification and remaining release scope](architecture/invitation-comment-cover-verification.md)
 - [Source test result artifacts and private-content exclusion (ARCH-11)](architecture/source-test-results.md)
+  includes the [complete schema-149 backend baseline](architecture/source-test-results.md#complete-schema-149-backend-baseline--2026-10-16), with explicit post-MVP capacity deferrals and release limits.
 - [Security archive integrity and evidence identity (ARCH-11)](architecture/security-evidence-identity.md)
   includes the [retained candidate security inspection](architecture/security-evidence-identity.md#retained-candidate-security-evidence--2026-10-16), with exact artifact digests and its release acceptance boundary.
 - [Capacity and diagnostic artifact provenance and layouts (ARCH-11)](architecture/artifact-evidence-provenance.md)

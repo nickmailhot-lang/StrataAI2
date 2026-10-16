@@ -1,5 +1,15 @@
 # PRD-01 foundation acceptance and closure audit
 
+The [complete schema-149 backend baseline](source-test-results.md#complete-schema-149-backend-baseline--2026-10-16)
+passes all 1,086 active Domain and 1,359 active API cases at `c8ecfd47`, with exactly
+five reviewed capacity cases deferred. Console/XML/audit counters agree; all
+2,192 captured repository files and 523 binaries match, and owned cleanup restores
+Docker inventory. This strengthens source regression evidence across the existing
+foundation/dependency set. It precedes the separately verified Worker monitoring
+repair and does not complete writer/history classification, primary-screen and
+release acceptance or post-MVP capacity requirements. Estimated PRD-01 work
+remaining stays **34%** (planning estimate); the issue remains open.
+
 The [Organization immutable-fact classification](schema149-clock-inventory.md#organization-immutable-facts-and-mutable-owners--2026-10-15)
 traces Board-event routing, deletion requests and completed deletion-step receipts
 to their owning writers/source clocks and distinguishes their mutable counters,

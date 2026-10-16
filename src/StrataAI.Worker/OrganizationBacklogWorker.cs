@@ -17,10 +17,13 @@ internal sealed class OrganizationBacklogWorker : BackgroundService
         organizations = scope.OrganizationIds.Distinct().ToArray();
         if (organizations.Length is < 1 or > 100 || organizations.Contains(Guid.Empty))
             throw new ArgumentException("Backlog observation requires explicit valid Worker scope.", nameof(scope));
+        Meter meter;
+        try { meter = factory.Create(WorkerJobTelemetry.MeterName); }
+        catch { return; /* Optional diagnostics cannot prevent startup. */ }
+        try { meter.CreateObservableGauge("strataai.worker.scoped.backlog", Observe, "{job}"); }
+        catch { /* One publication failure must not suppress the other gauge. */ }
         try
         {
-            var meter = factory.Create(WorkerJobTelemetry.MeterName);
-            meter.CreateObservableGauge("strataai.worker.scoped.backlog", Observe, "{job}");
             meter.CreateObservableGauge("strataai.worker.scoped.backlog.available",
                 () => new Measurement<long>(Volatile.Read(ref snapshot) is null ? 0 : 1,
                     new KeyValuePair<string, object?>("queue", "organization")));
