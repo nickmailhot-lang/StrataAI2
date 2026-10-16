@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [runtime provisioning boundary repair](runtime-database-roles.md#atomic-effective-capability-validation--2026-10-16)
+rejects unexpected effective `PUBLIC` capabilities and database-role memberships,
+including a real Worker `SET ROLE` escape despite `NOINHERIT`. Nine public-grant
+probes, one peer escape and one implicit owner grant-option probe now refuse
+atomically with credentials/ownership/ACLs/memberships unchanged. Canonical provisioning, redundant approved access and the complete
+RLS/runtime-role driver pass with captured inputs and Docker inventory preserved.
+This supports safe deployment/rotation; current immutable/full acceptance remains
+required, and no large-load test runs.
+
 The [recipient observation increment](operator-metrics.md#recipient-invitation-observations--2026-10-16)
 passes146 focused web,41 fixed API,56 related API,37 exporter,12 browser-policy
 and289 CI checks. The complete expanded required mail phase passes4/4 with real

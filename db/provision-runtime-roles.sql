@@ -154,4 +154,43 @@ GRANT EXECUTE ON FUNCTION public.deliver_organization_configuration_event(uuid,u
  public.discover_organization_configuration_scopes(uuid,integer),public.claim_organization_configuration_job(uuid) TO strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION public.deliver_organization_operational_lifecycle_event(uuid,uuid,uuid,uuid,uuid,uuid),
  public.discover_organization_operational_lifecycle_scopes(uuid,integer),public.claim_organization_operational_lifecycle_job(uuid) TO strataai_worker_runtime;
+-- Direct grants above define the relation boundary. PUBLIC or inherited grants
+-- must not expand it; refusing here rolls back credentials and all ACL changes.
+-- Do not silently revoke PUBLIC privileges belonging to other principals.
+DO $$ DECLARE runtime record; relation record; attribute record; privilege text;
+BEGIN
+ FOR runtime IN SELECT oid FROM pg_roles WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime') LOOP
+  -- NOINHERIT does not remove SET ROLE capability from a membership.
+  IF EXISTS(SELECT FROM pg_auth_members WHERE member=runtime.oid) THEN
+   RAISE EXCEPTION 'Runtime role memberships exceed provisioning boundary; no changes applied.';
+  END IF;
+  FOR relation IN
+   SELECT c.oid,c.relacl,c.relowner FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+   WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f')
+  LOOP
+   FOREACH privilege IN ARRAY ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN'] LOOP
+    IF (has_table_privilege(runtime.oid,relation.oid,privilege) AND NOT EXISTS(
+      SELECT FROM aclexplode(coalesce(relation.relacl,acldefault('r',relation.relowner))) capability
+      WHERE capability.grantee=runtime.oid AND capability.privilege_type=privilege))
+     OR has_table_privilege(runtime.oid,relation.oid,privilege||' WITH GRANT OPTION') THEN
+     RAISE EXCEPTION 'Effective runtime relation grants exceed provisioning boundary; no changes applied.';
+    END IF;
+   END LOOP;
+   FOR attribute IN SELECT attnum,attacl FROM pg_attribute
+    WHERE attrelid=relation.oid AND attnum>0 AND NOT attisdropped
+   LOOP
+    FOREACH privilege IN ARRAY ARRAY['SELECT','INSERT','UPDATE','REFERENCES'] LOOP
+     IF (has_column_privilege(runtime.oid,relation.oid,attribute.attnum,privilege) AND NOT (
+       EXISTS(SELECT FROM aclexplode(coalesce(relation.relacl,acldefault('r',relation.relowner))) capability
+        WHERE capability.grantee=runtime.oid AND capability.privilege_type=privilege)
+       OR EXISTS(SELECT FROM aclexplode(attribute.attacl) capability
+        WHERE capability.grantee=runtime.oid AND capability.privilege_type=privilege)))
+      OR has_column_privilege(runtime.oid,relation.oid,attribute.attnum,privilege||' WITH GRANT OPTION') THEN
+      RAISE EXCEPTION 'Effective runtime relation grants exceed provisioning boundary; no changes applied.';
+     END IF;
+    END LOOP;
+   END LOOP;
+  END LOOP;
+ END LOOP;
+END $$;
 COMMIT;

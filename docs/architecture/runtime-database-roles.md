@@ -1,5 +1,60 @@
 # Runtime database roles
 
+## Atomic effective-capability validation — 2026-10-16
+
+[General role provisioning](../../db/provision-runtime-roles.sql) previously
+reset direct API/Worker grants but still accepted extra effective privileges
+from `PUBLIC`. Nine native probes reproduce acceptance of unintended credential
+column reads, preview insertion/publication updates, private-history updates,
+references, deletion, truncation, trigger and maintenance privileges. These are
+permission probes in a disposable database; no destructive data operation or
+maintenance workload is performed.
+
+A further native Worker login shows why `NOINHERIT` is insufficient: ordinary
+access to the credential column is false, but `SET ROLE` into a separately
+granted peer makes it true. The relation-only repair still accepts that
+configuration; the additional membership regression reproduces this escape.
+An owned-table probe also isolates implicit owner grant options after ordinary
+SELECT is revoked; provisioning refuses and preserves the original owner/ACLs.
+
+Provisioning now validates its completed canonical direct grants before commit:
+
+- API and Worker database identities must have no other database-role memberships.
+- Effective table and column capabilities may not exceed their explicit canonical
+  ACL entries. All public regular/partitioned/foreign tables, views and materialized
+  views are inspected, including PostgreSQL17 maintenance capability.
+- These dedicated runtime roles may not acquire grant options.
+- Extra `PUBLIC` rights are not silently revoked from other principals. A redundant
+  public schema-ledger read already allowed to both roles remains admissible.
+
+Refusal aborts the same transaction that creates/configures roles, rotates
+passwords and applies grants. The new probes compare fingerprints of both
+managed identities/credentials, relation ownership, relation/column/function ACLs and memberships
+before and after refusal. The operator must review and remove the unintended
+grant or membership, then rerun canonical provisioning; recovery also passes.
+Application Organization/Board memberships are unrelated to these PostgreSQL
+database-role memberships and are unchanged.
+
+The [required provisioning test](../../tests/identity_role_provision_test.py)
+passes the nine `PUBLIC` refusals, actual-login peer escape refusal, implicit
+owner grant-option refusal, benign
+redundant grant and all previous password, retained-receipt, restricted mail
+claim/completion and unsafe-mail-role checks. The maintained test method passes
+in **52.497 seconds**; the independent wrapper takes 53.708 seconds and matches
+all 154 captured database/fixture inputs. The separate complete RLS/runtime-role
+driver passes in 52.879 seconds, with all 192 captured inputs matching. Its
+114-table fingerprint stays unchanged through ten real runtime UPDATE refusals
+and ten injected-column-grant guard refusals. Both wrappers restore original
+Docker inventory; their owned databases/directories are removed. No existing
+database, application host, provider, image build/pull/import or large-load test
+is used. Expired-receipt batch fixtures remain functional retention checks.
+
+This is a provisioning safeguard, not continuous monitoring of later DBA grants.
+The existing per-connection security-function checks remain a separate boundary.
+Externally provisioned equivalent roles need the same effective-capability review.
+Historical bundles retain their original provisioner; current immutable-image,
+source-free bundle and complete architecture acceptance remain required.
+
 The [retained identity receipt audit](schema149-clock-inventory.md#retained-identity-receipt-facts--2026-10-16)
 requires no UPDATE capability on any column of five global receipt tables for
 either API or Worker. The disposable CI driver now checks that stronger
@@ -42,8 +97,10 @@ Hosted deployments may provision equivalent roles externally. Grant only the
 permissions listed in `db/provision-runtime-roles.sql`, plus the guard function.
 Never use the migration account as a runtime credential. Existing managed roles
 must have no extra memberships, ownership or column grants; provisioning resets
-table grants and role flags but operators must remove legacy column grants and
-memberships. Future migrations must explicitly review any new runtime grants.
+managed grants and role flags, then refuses unexpected memberships/effective
+capabilities before commit. Operators must remedy shared `PUBLIC` grants and
+role memberships rather than relying on direct-grant resets. Future migrations
+must explicitly review any new runtime grants.
 
 CI tests actual login sessions (not administrator sessions using SET ROLE),
 service-specific denied access, privilege escalation and recovery, and the exact

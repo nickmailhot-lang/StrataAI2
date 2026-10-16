@@ -14,6 +14,8 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Suggested starting points
 
+- [Atomic runtime-role provisioning and effective capability checks](architecture/runtime-database-roles.md#atomic-effective-capability-validation--2026-10-16)
+
 - [Recipient invitation observations, original recovery and required mail-phase evidence](architecture/operator-metrics.md#recipient-invitation-observations--2026-10-16)
 
 - [Personal Board preference current/history clocks and legacy preservation](architecture/schema149-clock-inventory.md#personal-board-preference-and-history-clocks--2026-10-16)

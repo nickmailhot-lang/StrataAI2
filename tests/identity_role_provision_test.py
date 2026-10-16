@@ -129,6 +129,97 @@ class IdentityRoleProvisionTests(unittest.TestCase):
             for table in receipts:
                 self.assertEqual(self.sql(f"SELECT has_any_column_privilege('{role}','{table}','UPDATE');").stdout.strip(), b'f',
                                  'Runtime reprovisioning retained a receipt UPDATE path')
+        # ARCH-04/12: effective permissions include PUBLIC, which resetting the
+        # managed roles cannot remove. Refuse that deployment atomically.
+        fingerprint = """SELECT md5(jsonb_build_object(
+          'roles',(SELECT jsonb_agg(to_jsonb(r) ORDER BY rolname) FROM pg_authid r
+            WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime')),
+          'relations',(SELECT jsonb_agg(jsonb_build_object('oid',c.oid,'owner',c.relowner,'acl',c.relacl) ORDER BY c.oid)
+            FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public'),
+          'columns',(SELECT jsonb_agg(jsonb_build_object('table',a.attrelid,'column',a.attnum,'acl',a.attacl)
+            ORDER BY a.attrelid,a.attnum) FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid
+            JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND a.attnum>0 AND NOT a.attisdropped),
+          'functions',(SELECT jsonb_agg(jsonb_build_object('oid',p.oid,'acl',p.proacl) ORDER BY p.oid)
+            FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public'),
+          'memberships',(SELECT jsonb_agg(to_jsonb(m) ORDER BY m.roleid,m.member,m.grantor)
+            FROM pg_auth_members m WHERE member IN (SELECT oid FROM pg_roles
+              WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime')))
+          )::text);"""
+        for privilege, table, column, role in (
+            ('SELECT', 'users', 'password_hash', 'strataai_worker_runtime'),
+            ('UPDATE', 'attachment_preview_publications', 'published_at', 'strataai_api_runtime'),
+            ('INSERT', 'attachment_previews', 'created_at', 'strataai_api_runtime'),
+            ('UPDATE', 'board_star_events', 'created_at', 'strataai_worker_runtime'),
+            ('REFERENCES', 'users', 'id', 'strataai_worker_runtime'),
+            ('TRUNCATE', 'board_star_events', None, 'strataai_api_runtime'),
+            ('DELETE', 'attachments', None, 'strataai_api_runtime'),
+            ('TRIGGER', 'user_board_preferences', None, 'strataai_worker_runtime'),
+            ('MAINTAIN', 'attachments', None, 'strataai_worker_runtime'),
+        ):
+            with self.subTest(public_capability=(privilege, table, column)):
+                column_sql = f'({column})' if column else ''
+                check = (f"has_column_privilege('{role}','{table}','{column}','{privilege}')" if column
+                         else f"has_table_privilege('{role}','{table}','{privilege}')")
+                self.assertEqual(self.sql(f'SELECT {check};').stdout.strip(), b'f',
+                                 'Drift fixture must start outside the canonical role boundary')
+                self.assertEqual(self.sql(f'GRANT {privilege}{column_sql} ON {table} TO PUBLIC;').returncode, 0)
+                try:
+                    self.assertEqual(self.sql(f'SELECT {check};').stdout.strip(), b't',
+                                     'PUBLIC fixture did not establish the unexpected effective capability')
+                    before = self.sql(fingerprint).stdout
+                    result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
+                                                         'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
+                    self.assertNotEqual(result.returncode, 0, 'General provisioning accepted effective PUBLIC privilege expansion')
+                    self.assertEqual(self.sql(fingerprint).stdout, before,
+                                     'Refused general provisioning changed credentials or relation/column capabilities')
+                finally:
+                    self.assertEqual(self.sql(f'REVOKE {privilege}{column_sql} ON {table} FROM PUBLIC;').returncode, 0)
+                    self.assertEqual(self.sql(general).returncode, 0, 'Canonical provision did not recover after PUBLIC drift was removed')
+        self.assertEqual(self.sql('GRANT SELECT ON schema_migrations TO PUBLIC;').returncode, 0)
+        try:
+            self.assertEqual(self.sql(general).returncode, 0,
+                             'Redundant PUBLIC access already present in both canonical role grants must remain admissible')
+        finally:
+            self.assertEqual(self.sql('REVOKE SELECT ON schema_migrations FROM PUBLIC;').returncode, 0)
+        # NOINHERIT alone does not prevent SET ROLE into a separately granted peer.
+        self.assertEqual(self.sql('CREATE ROLE runtime_provision_peer NOLOGIN; '
+                                 'GRANT SELECT(password_hash) ON users TO runtime_provision_peer; '
+                                 'GRANT runtime_provision_peer TO strataai_worker_runtime;').returncode, 0)
+        try:
+            self.assertEqual(self.sql("SELECT has_column_privilege('strataai_worker_runtime','users','password_hash','SELECT');").stdout.strip(), b'f')
+            peer = self.command('exec', '-i', '--env', 'PGPASSWORD', self.name, 'psql', '-X', '-qAt',
+                                '-v', 'ON_ERROR_STOP=1', '-h', '127.0.0.1', '-U', 'strataai_worker_runtime', '-d', 'role_fixture',
+                                input=b"SET ROLE runtime_provision_peer; SELECT has_column_privilege(current_user,'users','password_hash','SELECT'); RESET ROLE;",
+                                environment={'PGPASSWORD': self.passwords['STRATAAI_WORKER_DB_PASSWORD']})
+            self.assertEqual(peer.returncode, 0, 'Owned peer fixture did not exercise actual SET ROLE')
+            self.assertEqual(peer.stdout.strip(), b't')
+            before = self.sql(fingerprint).stdout
+            result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
+                                                 'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
+            self.assertNotEqual(result.returncode, 0, 'General provisioning accepted a SET ROLE escape from its direct capability boundary')
+            self.assertEqual(self.sql(fingerprint).stdout, before, 'Refused peer-role provisioning changed protected state')
+        finally:
+            self.assertEqual(self.sql('REVOKE runtime_provision_peer FROM strataai_worker_runtime; '
+                                     'REVOKE SELECT(password_hash) ON users FROM runtime_provision_peer; DROP ROLE runtime_provision_peer;').returncode, 0)
+            self.assertEqual(self.sql(general).returncode, 0)
+        # Ownership retains implicit grant options even after ordinary grants
+        # are revoked. This exercises that separate postcondition directly.
+        self.assertEqual(self.sql('CREATE TABLE runtime_provision_owned(id integer); '
+                                 'ALTER TABLE runtime_provision_owned OWNER TO strataai_api_runtime;').returncode, 0)
+        try:
+            option = self.sql("BEGIN; REVOKE ALL ON runtime_provision_owned FROM strataai_api_runtime; "
+                              "SELECT has_table_privilege('strataai_api_runtime','runtime_provision_owned','SELECT'),"
+                              "has_table_privilege('strataai_api_runtime','runtime_provision_owned','SELECT WITH GRANT OPTION'); ROLLBACK;")
+            self.assertEqual(option.returncode, 0)
+            self.assertEqual(option.stdout.strip(), b'f|t', 'Ownership fixture must isolate implicit grant options')
+            before = self.sql(fingerprint).stdout
+            result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
+                                                 'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
+            self.assertNotEqual(result.returncode, 0, 'General provisioning accepted implicit owner grant options')
+            self.assertEqual(self.sql(fingerprint).stdout, before, 'Refused ownership configuration changed protected state')
+        finally:
+            self.assertEqual(self.sql('DROP TABLE runtime_provision_owned;').returncode, 0)
+            self.assertEqual(self.sql(general).returncode, 0)
         for password in ('', 'short', *self.passwords.values()):
             with self.subTest(refused_password=True):
                 self.assertNotEqual(self.provision(password).returncode, 0)

@@ -120,6 +120,13 @@ See [policy configuration and verification](../architecture/release-auth-policy-
 
 ## Start and migrate
 
+The [runtime provisioner checks effective capabilities](../architecture/runtime-database-roles.md#atomic-effective-capability-validation--2026-10-16),
+including `PUBLIC` grants and database-role memberships. An unsafe configuration
+refuses atomically, preserving existing credentials/grants. Review and remove
+the unintended grant or membership before retrying; the script does not silently
+change permissions belonging to other principals. These password-based runtime
+roles are dedicated identities with no peer-role memberships.
+
 ```bash
 docker compose --env-file .env -f compose.release.yml up -d --wait postgres
 COMPOSE_FILE=compose.release.yml ./apply-migrations.sh
