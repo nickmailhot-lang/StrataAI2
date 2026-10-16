@@ -23,15 +23,17 @@ PRD and architecture tickets remain open until their complete criteria pass.
 
 ## Code-scanning follow-up — 2026-10-15
 
-A fresh main-branch CodeQL alert inventory contains nine open findings. Review
-the actual source and reported flow before classifying a finding; an alert's
+The initial main-branch CodeQL inventory contains nine open findings. Hosted
+analysis at `852ecb40` subsequently confirms eight fixes; one verified enum
+false positive is individually dismissed, leaving zero open alerts at that
+checkpoint. Review actual source and reported flows before classification;
 severity alone does not establish a production credential disclosure.
 
 | Alerts | Inspected scope | Action and acceptance boundary |
 | --- | --- | --- |
 | [13](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/13) | Worker structured logging; both flows originate at the `IdentityTokenPurpose.ResetPassword` enum constant | Dismissed individually as a false positive after confirming the typed job category contains no password/token/proof. Logging, the query and scanning remain enabled. |
-| [7](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/7), [8](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/8), [9](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/9), [10](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/10), [11](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/11) | Five temporary credential-file write paths in the identity-role and List-move PostgreSQL fixtures | Removed file materialization; Docker inherits named values from each child process environment. Fresh CodeQL analysis must establish closure. |
-| [3](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/3), [6](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/6), [12](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/12) | Configuration test selectors escape only parentheses before constructing regular expressions | Escape the full set of regex metacharacters, preserving literal label matching. Fresh CodeQL analysis and retained-image browser execution remain required. |
+| [7](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/7), [8](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/8), [9](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/9), [10](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/10), [11](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/11) | Five temporary credential-file write paths in the identity-role and List-move PostgreSQL fixtures | Removed file materialization; Docker inherits named values from each child process environment. GitHub marks all five fixed after the `852ecb40` Python analysis. |
+| [3](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/3), [6](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/6), [12](https://github.com/nickmailhot-lang/StrataAI2/security/code-scanning/12) | Configuration test selectors escape only parentheses before constructing regular expressions | Escape all regex metacharacters, preserving literal label matching. GitHub marks all three fixed after the `852ecb40` JavaScript/TypeScript analysis; current retained-image browser execution remains required. |
 
 The dismissed finding points at [the guarded log sink](../../src/StrataAI.Worker/WorkerLog.cs).
 Its source is [the two-value purpose enum](../../src/StrataAI.Application/Identity/IIdentityDeliveryTokenSigner.cs),
@@ -61,7 +63,16 @@ in child/container environments until their processes and owned containers retir
 no existing local database/service or new image build/pull/import is used.
 
 All **18 configuration component tests**, web/browser typechecks and focused
-lint pass. Full CI, actual new CodeQL results and complete ARCH-06/MVP acceptance
-remain required. The eight source-corrected alerts are not manually dismissed or
-claimed closed; only the independently verified enum false positive is dismissed.
-No scan rule, security gate, functional assertion or load-phase policy is disabled.
+lint pass. The [completed hosted CodeQL run](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38857983822)
+passes all five jobs at `852ecb40ae116d311e13105db949719046a2fcd7`.
+Python analysis `1965202767` executes 43 rules and JavaScript/TypeScript analysis
+`1965202102` executes 87; both report zero findings and empty error/warning
+fields. C# analysis `1965221412` executes 52 rules and retains one reported
+finding, the individually dismissed enum false positive. GitHub's alert API
+confirms all eight source findings are `fixed`, alert 13 remains `dismissed`
+with reason `false positive`, and the open-alert inventory is empty.
+
+This verifies the captured CodeQL checkpoint. Full immutable-image CI and
+complete ARCH-06/MVP acceptance remain required; no broader security or release
+certification follows from an empty open-alert inventory. No scan rule,
+security gate, functional assertion or load-phase policy is disabled.
