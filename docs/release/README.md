@@ -120,6 +120,11 @@ See [policy configuration and verification](../architecture/release-auth-policy-
 
 ## Start and migrate
 
+The [canonical role provisioner resets function grants](../architecture/runtime-database-roles.md#function-capability-reset-and-public-grants--2026-10-16)
+as well as table grants. Remove any unintended `PUBLIC EXECUTE` on private
+non-trigger definer functions before retrying a refused rotation. Refusal rolls
+back credential and ACL changes; shared grants are preserved for operator review.
+
 Provisioning also [matches the runtime connection guard](../architecture/runtime-database-roles.md#provisioning-and-connection-guard-agreement--2026-10-16):
 API/Worker roles must lack effective public-schema `CREATE` and own no public
 relations (including sequences) or functions. Remove unintended schema grants

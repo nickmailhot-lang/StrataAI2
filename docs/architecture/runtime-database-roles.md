@@ -1,5 +1,44 @@
 # Runtime database roles
 
+## Function capability reset and public grants — 2026-10-16
+
+[Canonical API/Worker provisioning](../../db/provision-runtime-roles.sql) now
+resets direct public-schema routine grants before restoring its approved function
+capabilities. Previously, three deliberately obsolete direct grants and both
+roles' function grant options survived reprovisioning. Four further native cases
+accepted `PUBLIC` execution of private non-trigger `SECURITY DEFINER` functions.
+The unchanged baseline fails all nine assertions; an already explicit private
+preview-source revocation remains a passing control.
+
+Provisioning now restores direct execution without delegation and refuses
+unexpected effective public access to non-trigger definer functions. Refusal
+rolls back the transaction's credential/role/ACL changes; it does not revoke
+shared `PUBLIC` permissions. Operators must remedy the unexpected public grant
+before retrying. Ordinary invoker helpers and default trigger-function execution
+remain compatible. Definer trigger functions cannot be invoked as ordinary
+functions, so their default public grants are excluded from this callable
+capability check. The separate ownership/membership/schema and relation/column
+checks remain in force. This adds no migration or application capability.
+
+The [required native provisioning regression](../../tests/identity_role_provision_test.py)
+passes in **98.009 seconds**: four direct-reset cases, two grant-option resets,
+four atomic public-definer refusals and all previous role, identity-mail,
+password, receipt, ownership, membership and public-relation checks. State
+fingerprints now explicitly require a successful query and a nonempty digest
+before comparing protected credentials/ACLs/ownership. The wrapper takes
+99.243 seconds, matches all 154 captured inputs and restores original Docker
+inventory. The complete RLS/runtime-role driver passes separately in 53.237 seconds
+with all 192 captured inputs matching. Its 114-table fingerprint stays unchanged
+through ten runtime UPDATE refusals and ten injected-column guard refusals;
+owned resources are removed. Release-payload tests pass 47/47. No existing
+database, application host, provider integration, new image or large-load
+workload is used. The [complete fresh-cluster recovery driver](database-recovery.md#recovery-after-runtime-provisioning-hardening--2026-10-16)
+also passes in 79.668 seconds with restored restricted logins and scoped queue
+processing, all 160 inputs matching, original Docker inventory restored and
+767,633 owned temporary host bytes removed. Historical bundles retain their
+original provisioner; current immutable-image/full release acceptance remains
+required.
+
 ## Provisioning and connection guard agreement — 2026-10-16
 
 The previous provisioning safeguard still accepted public-schema `CREATE` and

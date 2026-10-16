@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [function provisioning follow-up](runtime-database-roles.md#function-capability-reset-and-public-grants--2026-10-16)
+reproduces and repairs obsolete direct execution, retained delegation and
+unexpected public access to private definer functions. All ten new reset/refusal
+cases pass, including the existing private-source revocation control, alongside
+all prior provisioning regressions. Refusal preserves credentials and ACLs;
+canonical direct capabilities are restored. The complete RLS/runtime-role and
+fresh-cluster encrypted recovery drivers also pass, with matching captured
+inputs, restored restricted logins and original Docker inventory restored.
+This supports safe deployment and credential rotation; current immutable/full
+CI remains required and large-load tests remain deferred.
+
 The [fresh-cluster recovery follow-up](database-recovery.md#recovery-after-runtime-provisioning-hardening--2026-10-16)
 passes the unchanged encrypted backup/restore contract with hardened runtime
 provisioning. Both actual restored logins, tenant isolation, scoped Worker queue

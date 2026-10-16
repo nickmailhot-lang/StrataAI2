@@ -147,6 +147,59 @@ class IdentityRoleProvisionTests(unittest.TestCase):
             FROM pg_auth_members m WHERE member IN (SELECT oid FROM pg_roles
               WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime')))
           )::text);"""
+        def protected_state():
+            result = self.sql(fingerprint)
+            self.assertEqual(result.returncode, 0, 'Protected-state fingerprint query failed')
+            self.assertRegex(result.stdout.strip(), rb'^[0-9a-f]{32}$', 'Protected-state fingerprint is missing')
+            return result.stdout
+
+        worker_mail = 'public.load_invitation_mail(uuid,uuid,uuid,uuid,uuid,boolean)'
+        api_binding = 'public.bind_invitation_recipient_authority_dependency(uuid,uuid,uuid,uuid)'
+        private_preview = 'public.load_attachment_preview_source(uuid,uuid,uuid,uuid,uuid,uuid,uuid,bigint)'
+        api_navigation = 'public.append_or_replay_navigation_interaction(uuid,text,uuid,uuid,text,uuid,uuid,uuid,bigint,timestamptz)'
+        # Rotation restores the canonical callable capabilities, including old
+        # direct function grants and grant options, before committing passwords.
+        for role, function in (('strataai_api_runtime', worker_mail), ('strataai_worker_runtime', api_binding),
+                               ('strataai_worker_runtime', api_navigation), ('strataai_api_runtime', private_preview)):
+            with self.subTest(stale_function=(role, function)):
+                check = f"SELECT has_function_privilege('{role}','{function}','EXECUTE');"
+                self.assertEqual(self.sql(check).stdout.strip(), b'f')
+                self.assertEqual(self.sql(f'GRANT EXECUTE ON FUNCTION {function} TO {role};').returncode, 0)
+                try:
+                    self.assertEqual(self.sql(check).stdout.strip(), b't')
+                    self.assertEqual(self.sql(general).returncode, 0)
+                    self.assertEqual(self.sql(check).stdout.strip(), b'f', 'Reprovisioning retained an obsolete direct function capability')
+                finally:
+                    self.assertEqual(self.sql(f'REVOKE EXECUTE ON FUNCTION {function} FROM {role};').returncode, 0)
+                    self.assertEqual(self.sql(general).returncode, 0)
+        for role in ('strataai_api_runtime', 'strataai_worker_runtime'):
+            with self.subTest(function_grant_option=role):
+                function = 'public.runtime_database_role_is_safe()'
+                self.assertEqual(self.sql(f'GRANT EXECUTE ON FUNCTION {function} TO {role} WITH GRANT OPTION;').returncode, 0)
+                try:
+                    self.assertEqual(self.sql(general).returncode, 0)
+                    self.assertEqual(self.sql(f"SELECT has_function_privilege('{role}','{function}','EXECUTE'),"
+                                              f"has_function_privilege('{role}','{function}','EXECUTE WITH GRANT OPTION');").stdout.strip(),
+                                     b't|f', 'Reprovisioning must preserve canonical execution without delegation')
+                finally:
+                    self.assertEqual(self.sql(f'REVOKE GRANT OPTION FOR EXECUTE ON FUNCTION {function} FROM {role};').returncode, 0)
+                    self.assertEqual(self.sql(general).returncode, 0)
+        for role, function in (('strataai_api_runtime', worker_mail), ('strataai_worker_runtime', api_binding),
+                               ('strataai_api_runtime', private_preview), ('strataai_worker_runtime', private_preview)):
+            with self.subTest(public_function=(role, function)):
+                self.assertEqual(self.sql(f"SELECT prosecdef FROM pg_proc WHERE oid='{function}'::regprocedure;").stdout.strip(), b't')
+                self.assertEqual(self.sql(f"SELECT has_function_privilege('{role}','{function}','EXECUTE');").stdout.strip(), b'f')
+                self.assertEqual(self.sql(f'GRANT EXECUTE ON FUNCTION {function} TO PUBLIC;').returncode, 0)
+                try:
+                    self.assertEqual(self.sql(f"SELECT has_function_privilege('{role}','{function}','EXECUTE');").stdout.strip(), b't')
+                    before = protected_state()
+                    result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
+                                                         'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
+                    self.assertNotEqual(result.returncode, 0, 'Provisioning accepted PUBLIC access to a private definer capability')
+                    self.assertEqual(protected_state(), before, 'Refused function provisioning changed protected state')
+                finally:
+                    self.assertEqual(self.sql(f'REVOKE EXECUTE ON FUNCTION {function} FROM PUBLIC;').returncode, 0)
+                    self.assertEqual(self.sql(general).returncode, 0)
         for privilege, table, column, role in (
             ('SELECT', 'users', 'password_hash', 'strataai_worker_runtime'),
             ('UPDATE', 'attachment_preview_publications', 'published_at', 'strataai_api_runtime'),
@@ -168,11 +221,11 @@ class IdentityRoleProvisionTests(unittest.TestCase):
                 try:
                     self.assertEqual(self.sql(f'SELECT {check};').stdout.strip(), b't',
                                      'PUBLIC fixture did not establish the unexpected effective capability')
-                    before = self.sql(fingerprint).stdout
+                    before = protected_state()
                     result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
                                                          'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
                     self.assertNotEqual(result.returncode, 0, 'General provisioning accepted effective PUBLIC privilege expansion')
-                    self.assertEqual(self.sql(fingerprint).stdout, before,
+                    self.assertEqual(protected_state(), before,
                                      'Refused general provisioning changed credentials or relation/column capabilities')
                 finally:
                     self.assertEqual(self.sql(f'REVOKE {privilege}{column_sql} ON {table} FROM PUBLIC;').returncode, 0)
@@ -195,11 +248,11 @@ class IdentityRoleProvisionTests(unittest.TestCase):
                                 environment={'PGPASSWORD': self.passwords['STRATAAI_WORKER_DB_PASSWORD']})
             self.assertEqual(peer.returncode, 0, 'Owned peer fixture did not exercise actual SET ROLE')
             self.assertEqual(peer.stdout.strip(), b't')
-            before = self.sql(fingerprint).stdout
+            before = protected_state()
             result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
                                                  'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
             self.assertNotEqual(result.returncode, 0, 'General provisioning accepted a SET ROLE escape from its direct capability boundary')
-            self.assertEqual(self.sql(fingerprint).stdout, before, 'Refused peer-role provisioning changed protected state')
+            self.assertEqual(protected_state(), before, 'Refused peer-role provisioning changed protected state')
         finally:
             self.assertEqual(self.sql('REVOKE runtime_provision_peer FROM strataai_worker_runtime; '
                                      'REVOKE SELECT(password_hash) ON users FROM runtime_provision_peer; DROP ROLE runtime_provision_peer;').returncode, 0)
@@ -221,11 +274,11 @@ class IdentityRoleProvisionTests(unittest.TestCase):
                     self.assertEqual(self.sql(f'GRANT CREATE ON SCHEMA public TO {source};').returncode, 0)
                     try:
                         self.assertEqual(connection_guard(role), b'f', 'Schema fixture must fail the real connection guard')
-                        before = self.sql(fingerprint).stdout
+                        before = protected_state()
                         result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
                                                              'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
                         self.assertNotEqual(result.returncode, 0, 'Provisioning accepted a schema-creation configuration rejected at connection time')
-                        self.assertEqual(self.sql(fingerprint).stdout, before, 'Refused schema provisioning changed protected state')
+                        self.assertEqual(protected_state(), before, 'Refused schema provisioning changed protected state')
                     finally:
                         self.assertEqual(self.sql(f'REVOKE CREATE ON SCHEMA public FROM {source};').returncode, 0)
                         self.assertEqual(self.sql(general).returncode, 0)
@@ -238,11 +291,11 @@ class IdentityRoleProvisionTests(unittest.TestCase):
                     self.assertEqual(self.sql(f'CREATE {declaration}; ALTER {identifier} OWNER TO {role};').returncode, 0)
                     try:
                         self.assertEqual(connection_guard(role), b'f', 'Owned object fixture must fail the real connection guard')
-                        before = self.sql(fingerprint).stdout
+                        before = protected_state()
                         result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
                                                              'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
                         self.assertNotEqual(result.returncode, 0, 'Provisioning accepted object ownership rejected at connection time')
-                        self.assertEqual(self.sql(fingerprint).stdout, before, 'Refused object ownership changed protected state')
+                        self.assertEqual(protected_state(), before, 'Refused object ownership changed protected state')
                     finally:
                         self.assertEqual(self.sql(f'DROP {identifier};').returncode, 0)
                         self.assertEqual(self.sql(general).returncode, 0)
@@ -257,11 +310,11 @@ class IdentityRoleProvisionTests(unittest.TestCase):
                               "has_table_privilege('strataai_api_runtime','runtime_provision_owned','SELECT WITH GRANT OPTION'); ROLLBACK;")
             self.assertEqual(option.returncode, 0)
             self.assertEqual(option.stdout.strip(), b'f|t', 'Ownership fixture must isolate implicit grant options')
-            before = self.sql(fingerprint).stdout
+            before = protected_state()
             result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
                                                  'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
             self.assertNotEqual(result.returncode, 0, 'General provisioning accepted implicit owner grant options')
-            self.assertEqual(self.sql(fingerprint).stdout, before, 'Refused ownership configuration changed protected state')
+            self.assertEqual(protected_state(), before, 'Refused ownership configuration changed protected state')
         finally:
             self.assertEqual(self.sql('DROP TABLE runtime_provision_owned;').returncode, 0)
             self.assertEqual(self.sql(general).returncode, 0)

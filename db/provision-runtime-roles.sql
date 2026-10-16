@@ -15,6 +15,7 @@ END $$;
 ALTER ROLE strataai_api_runtime LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT PASSWORD :'api_password';
 ALTER ROLE strataai_worker_runtime LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT PASSWORD :'worker_password';
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM strataai_api_runtime,strataai_worker_runtime;
+REVOKE ALL ON ALL ROUTINES IN SCHEMA public FROM strataai_api_runtime,strataai_worker_runtime;
 GRANT USAGE ON SCHEMA public TO strataai_api_runtime,strataai_worker_runtime;
 GRANT SELECT ON schema_migrations TO strataai_api_runtime,strataai_worker_runtime;
 GRANT EXECUTE ON FUNCTION append_or_replay_navigation_interaction(uuid,text,uuid,uuid,text,uuid,uuid,uuid,bigint,timestamptz) TO strataai_api_runtime;
@@ -157,7 +158,7 @@ GRANT EXECUTE ON FUNCTION public.deliver_organization_operational_lifecycle_even
 -- Direct grants above define the relation boundary. PUBLIC or inherited grants
 -- must not expand it; refusing here rolls back credentials and all ACL changes.
 -- Do not silently revoke PUBLIC privileges belonging to other principals.
-DO $$ DECLARE runtime record; relation record; attribute record; privilege text;
+DO $$ DECLARE runtime record; relation record; attribute record; routine record; privilege text;
 BEGIN
  FOR runtime IN SELECT oid FROM pg_roles WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime') LOOP
   -- NOINHERIT does not remove SET ROLE capability from a membership.
@@ -199,6 +200,19 @@ BEGIN
      END IF;
     END LOOP;
    END LOOP;
+  END LOOP;
+  FOR routine IN SELECT p.oid,p.proacl,p.proowner,p.prosecdef,p.prorettype
+   FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public'
+  LOOP
+   -- Definer trigger functions cannot be invoked as ordinary functions; their
+   -- default PUBLIC EXECUTE does not expose an independent runtime capability.
+   IF (routine.prosecdef AND routine.prorettype NOT IN ('pg_catalog.trigger'::regtype,'pg_catalog.event_trigger'::regtype)
+    AND has_function_privilege(runtime.oid,routine.oid,'EXECUTE') AND NOT EXISTS(
+     SELECT FROM aclexplode(coalesce(routine.proacl,acldefault('f',routine.proowner))) capability
+     WHERE capability.grantee=runtime.oid AND capability.privilege_type='EXECUTE'))
+    OR has_function_privilege(runtime.oid,routine.oid,'EXECUTE WITH GRANT OPTION') THEN
+    RAISE EXCEPTION 'Effective runtime function grants exceed provisioning boundary; no changes applied.';
+   END IF;
   END LOOP;
  END LOOP;
 END $$;

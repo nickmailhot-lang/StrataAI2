@@ -38,6 +38,14 @@ immutable-image application startup, managed-provider/object/key recovery,
 scheduled production backups or deployed RPO/RTO. ARCH-08, ARCH-12 and the MVP
 remain open pending complete acceptance.
 
+The subsequent [function capability reset/public-access safeguard](runtime-database-roles.md#function-capability-reset-and-public-grants--2026-10-16)
+also passes the unchanged complete recovery driver in **79.668 seconds**. Both
+restored restricted SCRAM logins, canonical capabilities, tenant isolation,
+scoped queue processing and all original dump/record/refusal checks pass.
+All 160 captured inputs match; both owned containers and 767,633 temporary host
+bytes are removed, restoring original Docker inventory. The same database-only
+scope and outstanding application/managed/deployed recovery acceptance apply.
+
 ## Mandatory small CI rehearsal
 
 The PostgreSQL source-quality job executes
