@@ -35,7 +35,7 @@ export function ArchivedListsPage() {
 function Archive({ org, board }: { org: string; board: string }) {
   const [page, setPage] = useState<ArchivePage>(); const [reading, setReading] = useState(false);
   const [ready, setReady] = useState(false); const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
-  const [history, setHistory] = useState<(string | null)[]>([]); const [selected, setSelected] = useState<Entry>();
+  const [history, setHistory] = useState<(string | null)[]>([]); const [selected, setSelectedState] = useState<Entry>();
   const [intent, setIntent] = useState<LifecycleIntent>(); const [writing, setWriting] = useState(false); const [conflict, setConflict] = useState(false);
   const [deleting, setDeleting] = useState(false); const [confirmed, setConfirmed] = useState(false);
   const [subscribed, setSubscribed] = useState(false); const [live, setLive] = useState<LiveStatus>('connecting');
@@ -43,6 +43,8 @@ function Archive({ org, board }: { org: string; board: string }) {
   const position = useRef<{ cursor: string | null; history: (string | null)[] }>({ cursor: null, history: [] });
   const read = useRef<AbortController | undefined>(undefined); const write = useRef<AbortController | undefined>(undefined);
   const mounted = useRef(false); const refresh = useRef<HTMLButtonElement>(null);
+  const selection = useRef<Entry | undefined>(undefined); const admittedPage = useRef<ArchivePage | undefined>(undefined);
+  function setSelected(entry: Entry | undefined) { selection.current = entry; setSelectedState(entry); }
   const recovering = useRef(false);
   const queuedKind = useRef<'use' | 'retry' | 'reconnect'>('use');
   const queued = useRef(false);
@@ -67,6 +69,7 @@ function Archive({ org, board }: { org: string; board: string }) {
   const changed = !!selected && !intent && (!current || current.list.version !== selected.list.version
     || current.list.name !== selected.list.name || current.list.rank !== selected.list.rank || current.containedCardCount !== selected.containedCardCount);
   function deny() {
+    admittedPage.current = undefined;
     write.current?.abort(); write.current = undefined; setWriting(false);
     setPage(undefined); setSelected(undefined); setIntent(undefined); setReady(false); setSubscribed(false);
     queued.current = false;
@@ -75,6 +78,7 @@ function Archive({ org, board }: { org: string; board: string }) {
   async function load(cursor: string | null, trail: (string | null)[], kind: 'use' | 'retry' | 'reconnect' = 'use') {
     const started = performance.now(); activityEvent('archive_list_read', kind);
     if (document.activeElement === refresh.current) focusRequested.current = true;
+    admittedPage.current = undefined;
     read.current?.abort(); queued.current = false; const c = new AbortController(); read.current = c;
     position.current = { cursor, history: trail }; setHistory(trail); setReading(true); setReady(false); setRetryRead(false); setError(undefined);
     try {
@@ -87,6 +91,7 @@ function Archive({ org, board }: { org: string; board: string }) {
         || (p.nextCursor !== null && (!uuid(p.nextCursor) || p.items.length !== 50 || p.nextCursor !== p.items.at(-1)?.list.id)))
         throw new Error('Invalid archive page');
       activityResult('archive_list_read', true, started);
+      admittedPage.current = p;
       setPage(p); setReady(true); setSubscribed(true);
     } catch { if (mounted.current && read.current === c) {
       activityEvent('archive_list_read', 'exception'); activityResult('archive_list_read', false, started);
@@ -115,7 +120,8 @@ function Archive({ org, board }: { org: string; board: string }) {
     [org, board, subscribed]);
   useEffect(() => { if (!retryRead || reading) return; const timer = setTimeout(() => invalidate('retry'), 10_000); return () => clearTimeout(timer); }, [retryRead, reading]);
   async function change() {
-    if (write.current || !selected || !ready || reading || (!intent && (changed || conflict || deleting && !confirmed))) return;
+    if (!mounted.current || write.current || read.current || page !== admittedPage.current
+      || !selected || selected !== selection.current || !ready || reading || (!intent && (changed || conflict || deleting && !confirmed))) return;
     const command = intent ?? { entry: selected, key: crypto.randomUUID(), deleting }; const l = command.entry.list;
     const action = command.deleting ? 'archive_list_delete' : 'archive_list_restore';
     const started = performance.now(); activityEvent(action, intent ? 'retry' : 'use');
@@ -179,7 +185,7 @@ function Archive({ org, board }: { org: string; board: string }) {
       <Button disabled={!ready || reading || writing || !!intent || history.length === 0} onClick={() => void load(history.at(-1)!, history.slice(0, -1))}>Previous archived lists</Button>
       <Button disabled={!ready || reading || writing || !!intent || !page?.nextCursor} onClick={() => void load(page!.nextCursor, [...history, position.current.cursor])}>Next archived lists</Button>
     </Stack>
-  </Stack><Dialog open={!!selected} onClose={() => { if (!writing && !intent) setSelected(undefined); }} fullWidth maxWidth="sm"
+  </Stack><Dialog open={!!selected} onClose={() => { if (!write.current && !writing && !intent) setSelected(undefined); }} fullWidth maxWidth="sm"
     disableRestoreFocus slotProps={{ transition: { onExited: restoreFocus } }}>
     <DialogTitle>{deleting ? 'Permanently delete List' : 'Restore List'}</DialogTitle><DialogContent>
       {deleting ? <>
@@ -198,7 +204,7 @@ function Archive({ org, board }: { org: string; board: string }) {
       {intent && <Alert severity="info">{deleting ? 'The original deletion is unresolved. Retry that same request; it cannot apply twice.' : 'The original restore is unresolved. Retry that same request; it cannot apply twice.'}</Alert>}
       <Button disabled={writing || reading} onClick={() => void load(position.current.cursor, position.current.history)}>{deleting ? 'Check current archive for this deletion' : 'Check current archive for this restore'}</Button>
     </DialogContent><DialogActions>
-      {!intent && <Button disabled={writing} onClick={() => setSelected(undefined)}>{deleting ? 'Cancel deletion' : 'Cancel restore'}</Button>}
+      {!intent && <Button disabled={writing} onClick={() => { if (!write.current) setSelected(undefined); }}>{deleting ? 'Cancel deletion' : 'Cancel restore'}</Button>}
       <Button color={deleting ? 'error' : 'primary'} disabled={writing || reading || !ready || (!intent && (changed || conflict || deleting && !confirmed))} onClick={() => void change()}>
         {deleting ? intent ? 'Retry this deletion' : 'Confirm permanent deletion' : intent ? 'Retry this restore' : 'Confirm restore'}
       </Button>

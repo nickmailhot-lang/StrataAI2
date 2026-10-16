@@ -27,14 +27,15 @@ export function ArchivedBoardsPage() {
 }
 function Archive({ org }: { org: string }) {
   const [current, setCurrent] = useState<Page>(); const [reading, setReading] = useState(false); const [ready, setReady] = useState(false);
-  const [review, setReview] = useState<Board>(); const [deleting, setDeleting] = useState(false); const [confirmed, setConfirmed] = useState(false);
+  const [review, setReviewState] = useState<Board>(); const [deleting, setDeleting] = useState(false); const [confirmed, setConfirmed] = useState(false);
   const [intent, setIntent] = useState<Intent>(); const [writing, setWriting] = useState(false); const [conflict, setConflict] = useState(false);
   const [notice, setNotice] = useState<string>(); const [history, setHistory] = useState<(string | null)[]>([]);
   const [liveActor, setLiveActor] = useState<string>();
   const [liveNotice, setLiveNotice] = useState<string>();
   const mounted = useRef(false); const actor = useRef<string | undefined>(undefined); const read = useRef<AbortController | undefined>(undefined);
   const write = useRef<AbortController | undefined>(undefined); const position = useRef<{ cursor: string | null; trail: (string | null)[] }>({ cursor: null, trail: [] });
-  const reviewEpoch = useRef(0);
+  const reviewEpoch = useRef(0); const selection = useRef<Board | undefined>(undefined);
+  function setReview(value: Board | undefined) { reviewEpoch.current++; selection.current = value; setReviewState(value); }
   const refresh = useRef<HTMLButtonElement>(null); const queued = useRef(false);
   const queuedKind = useRef<'use' | 'retry' | 'reconnect'>('use');
   const focusRequested = useRef(false); const focusFrame = useRef<number | undefined>(undefined);
@@ -116,7 +117,7 @@ function Archive({ org }: { org: string }) {
   const latest = current?.items.find(b => b.id === review?.id);
   const changed = !!review && !intent && (!latest || latest.version !== review.version || latest.name !== review.name || latest.archivedAt !== review.archivedAt);
   async function change() {
-    if (write.current || reading || !ready || !review && !intent || !actor.current || !intent && (changed || conflict || deleting && !confirmed)) return;
+    if (!mounted.current || write.current || read.current || reading || !ready || !intent && (!review || review !== selection.current) || !actor.current || !intent && (changed || conflict || deleting && !confirmed)) return;
     const command = intent ?? { board: review!, deleting, key: crypto.randomUUID(), actor: actor.current };
     const recovering = !!intent;
     if (command.actor !== actor.current) { retire(); return; }

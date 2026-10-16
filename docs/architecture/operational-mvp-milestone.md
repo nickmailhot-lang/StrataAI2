@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [archive confirmation retirement repair](lifecycle-acceptance.md#synchronous-archive-confirmation-retirement-2026-10-16)
+fences queued restore/deletion inputs after cancellation or during archive
+readmission across Board, List and Card controls, while preserving visible recovery
+after submission. Sixteen new failures become passes; all 111 archived-page cases,
+web/browser types, lint and 289 CI guards pass. The unchanged 12-case native
+desktop/phone invocation passes with original receipt, parent/impact, account and
+accessibility assertions. Captured inputs match and owned cleanup restores Docker
+inventory. Current immutable/full CI still governs closure; this compiled-source
+proof does not declare the milestone or any ticket complete. Large-load tests
+remain deferred.
+
 The [archived Checklist disclosure repair](checklist-acceptance.md#archived-checklist-disclosure-revalidation-2026-10-16)
 preserves open choices across access revalidation while purging private records
 and cancelling obsolete reads. Account/Card changes retire choices; a retained

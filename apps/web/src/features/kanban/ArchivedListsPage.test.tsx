@@ -277,3 +277,46 @@ it.each([{ status: 409, code: 'retention_hold_prevents_disposition', notice: ret
       expect(new Headers(commands[1].init.headers).get('Idempotency-Key')).toBe(new Headers(commands[0].init.headers).get('Idempotency-Key'));
     }
   });
+
+it.each(['restore', 'delete'] as const)('retires cancelled %s consent before a queued confirmation', async action => {
+  const fetch = vi.fn().mockResolvedValue(reply(page)); mount(fetch);
+  if (action === 'delete') {
+    await reviewDeletion(); fireEvent.click(await screen.findByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  } else await review();
+  const confirm = screen.getByRole('button', { name: action === 'delete' ? 'Confirm permanent deletion' : 'Confirm restore' });
+  const cancel = screen.getByRole('button', { name: action === 'delete' ? 'Cancel deletion' : 'Cancel restore' });
+  await act(async () => { cancel.click(); confirm.click(); });
+  expect(fetch.mock.calls.filter(([, init]) => ['DELETE', 'POST'].includes(init?.method))).toHaveLength(0);
+});
+it('retires unchecked deletion consent before a queued confirmation', async () => {
+  const fetch = vi.fn().mockResolvedValue(reply(page)); mount(fetch); await reviewDeletion();
+  const consent = await screen.findByRole('checkbox', { name: 'I understand this cannot be undone.' }); fireEvent.click(consent);
+  const confirm = screen.getByRole('button', { name: 'Confirm permanent deletion' });
+  await act(async () => { consent.click(); confirm.click(); });
+  expect(fetch.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(0);
+});
+it.each(['restore', 'delete'] as const)('blocks queued %s while archive admission starts', async action => {
+  let invalidate!: () => void;
+  vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  const fetch = vi.fn().mockResolvedValueOnce(reply(page)).mockImplementation(() => new Promise<Response>(() => {})); mount(fetch);
+  if (action === 'delete') {
+    await reviewDeletion(); fireEvent.click(await screen.findByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  } else await review();
+  const confirm = screen.getByRole('button', { name: action === 'delete' ? 'Confirm permanent deletion' : 'Confirm restore' });
+  await act(async () => { invalidate(); confirm.click(); });
+  expect(fetch.mock.calls.filter(([, init]) => ['DELETE', 'POST'].includes(init?.method))).toHaveLength(0);
+});
+
+it.each(['restore', 'delete'] as const)('keeps submitted %s recovery after queued cancellation', async action => {
+  const fetch = vi.fn((_path: RequestInfo | URL, init?: RequestInit) => ['DELETE', 'POST'].includes(init?.method ?? '')
+    ? Promise.reject(new Error('Lost acknowledgment')) : Promise.resolve(reply(page)));
+  mount(fetch);
+  fireEvent.click(await screen.findByRole('button', { name: action === 'delete' ? 'Permanently delete Planning list' : 'Restore Planning list' }));
+  if (action === 'delete') fireEvent.click(await screen.findByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  const confirm = screen.getByRole('button', { name: action === 'delete' ? 'Confirm permanent deletion' : 'Confirm restore' });
+  const cancel = screen.getByRole('button', { name: action === 'delete' ? 'Cancel deletion' : 'Cancel restore' });
+  await act(async () => { confirm.click(); cancel.click(); });
+  const retry = await screen.findByRole('button', { name: action === 'delete' ? 'Retry this deletion' : 'Retry this restore' });
+  await waitFor(() => expect(retry).toBeEnabled()); expect(retry).toBeVisible();
+  expect(fetch.mock.calls.filter(([, init]) => ['DELETE', 'POST'].includes(init?.method ?? ''))).toHaveLength(1);
+});

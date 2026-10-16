@@ -390,3 +390,47 @@ it.each([{ status: 409, code: 'retention_hold_prevents_disposition', notice: ret
       expect(new Headers(commands[1].init.headers).get('Idempotency-Key')).toBe(new Headers(commands[0].init.headers).get('Idempotency-Key'));
     }
   });
+
+it.each(['restore', 'delete'] as const)('retires cancelled %s consent before a queued confirmation', async action => {
+  const fetch = vi.fn((path: string, _init?: RequestInit) => Promise.resolve(response(path === '/me' ? profile : page))); mount(fetch);
+  if (action === 'delete') {
+    fireEvent.click(await screen.findByRole('button', { name: 'Permanently delete Planning board' })); fireEvent.click(await screen.findByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  } else fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  const confirm = screen.getByRole('button', { name: action === 'delete' ? 'Confirm permanent deletion' : 'Confirm restore' });
+  const cancel = screen.getByRole('button', { name: 'Cancel change' });
+  await act(async () => { cancel.click(); confirm.click(); await Promise.resolve(); await Promise.resolve(); });
+  expect(fetch.mock.calls.filter(([, init]) => ['DELETE', 'POST'].includes(init?.method ?? ''))).toHaveLength(0);
+});
+it('retires unchecked deletion consent before a queued confirmation', async () => {
+  const fetch = vi.fn((path: string, _init?: RequestInit) => Promise.resolve(response(path === '/me' ? profile : page))); mount(fetch); fireEvent.click(await screen.findByRole('button', { name: 'Permanently delete Planning board' }));
+  const consent = await screen.findByRole('checkbox', { name: 'I understand this cannot be undone.' }); fireEvent.click(consent);
+  const confirm = screen.getByRole('button', { name: 'Confirm permanent deletion' });
+  await act(async () => { consent.click(); confirm.click(); });
+  expect(fetch.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(0);
+});
+it.each(['restore', 'delete'] as const)('blocks queued %s while archive admission starts', async action => {
+  let invalidate!: () => void;
+  vi.mocked(watchOrganizationBoards).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  let hold = false;
+  const fetch = vi.fn((path: string, _init?: RequestInit) => hold ? new Promise<Response>(() => {}) : Promise.resolve(response(path === '/me' ? profile : page))); mount(fetch);
+  if (action === 'delete') {
+    fireEvent.click(await screen.findByRole('button', { name: 'Permanently delete Planning board' })); fireEvent.click(await screen.findByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  } else fireEvent.click(await screen.findByRole('button', { name: 'Restore Planning board' }));
+  const confirm = screen.getByRole('button', { name: action === 'delete' ? 'Confirm permanent deletion' : 'Confirm restore' });
+  await act(async () => { hold = true; invalidate(); confirm.click(); });
+  expect(fetch.mock.calls.filter(([, init]) => ['DELETE', 'POST'].includes(init?.method ?? ''))).toHaveLength(0);
+});
+it.each(['restore', 'delete'] as const)('retires queued cancellation during the %s account check', async action => {
+  let hold = false; let release!: (value: Response) => void;
+  const fetch = vi.fn((path: string, _init?: RequestInit) => {
+    if (hold && path === '/me') { hold = false; return new Promise<Response>(done => { release = done; }); }
+    return Promise.resolve(response(path === '/me' ? profile : page));
+  }); mount(fetch);
+  fireEvent.click(await screen.findByRole('button', { name: action === 'delete' ? 'Permanently delete Planning board' : 'Restore Planning board' }));
+  if (action === 'delete') fireEvent.click(screen.getByRole('checkbox', { name: 'I understand this cannot be undone.' }));
+  const confirm = screen.getByRole('button', { name: action === 'delete' ? 'Confirm permanent deletion' : 'Confirm restore' });
+  const cancel = screen.getByRole('button', { name: 'Cancel change' }); hold = true;
+  await act(async () => { confirm.click(); cancel.click(); });
+  await act(async () => release(response(profile)));
+  expect(fetch.mock.calls.filter(([, init]) => ['DELETE', 'POST'].includes(init?.method ?? ''))).toHaveLength(0);
+});

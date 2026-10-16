@@ -1,6 +1,58 @@
 # PRD-18 acceptance audit
 
-Current status (2026-10-09): open, **15% estimated work remaining**. This is a planning estimate. Earlier estimates below record the scope and evidence available at those points; current immutable-image acceptance and the remaining integrated matrix still govern closure.
+Current status (2026-10-16): open, **15% estimated work remaining**. This is a planning estimate. Earlier estimates below record the scope and evidence available at those points; current immutable-image acceptance and the remaining integrated matrix still govern closure.
+
+## Synchronous archive confirmation retirement (2026-10-16)
+
+The archived Board, List and Card controls must retire a cancelled review before
+React commits its next render. A queued confirmation previously retained the
+old selected record and could send a restore or permanent deletion after Cancel.
+This supports LIFE-FR-005's permitted restoration and LIFE-FR-007's explicit
+permanent-deletion confirmation; it does not establish the complete ticket.
+List/Card confirmation could also submit while a new archive read was already
+checking access. Board commands additionally await an account check; cancellation
+during that check must retire the original consent before any mutation is sent.
+
+Seventeen controlled cases cover these boundaries and unchecked consent.
+Twelve fail against the original controls with one unwanted POST/DELETE each;
+five controls already pass. The repair tracks the current selection immediately,
+fences List/Card commands against the actual admitted page and pending read,
+and advances the Board review generation on every selection change. Submitted
+original commands retain their fixed identity/key/payload and existing receipt
+recovery. Four additional reverse-order cases expose a separate boundary:
+cancellation immediately after List/Card submission hides the original request's
+recovery if its reply is lost. The initial List assertions only found enabled
+buttons in the exiting dialog; requiring visibility correctly exposes both List
+failures as well as both missing Card recovery controls. Cancel and dialog-close
+now check the actual pending write before discarding a submitted review.
+
+All 111 cases in the three complete archived-page component files pass,
+including the prior denial, timeout, parent/impact change, focus, retention and
+lost-acknowledgment controls. No server authorization or command contract changes.
+
+Web/browser type checks, zero-warning lint and all 289 CI integration guards pass.
+The final unchanged five-file native browser invocation passes **12/12 in
+485,513.759 ms**, one attempt per case, zero failures/flaky results/skips/report
+errors. It covers Card/List restore and permanent deletion plus Board account
+uncertainty before/after both commands, at desktop and phone widths. Original
+keys/payloads, lost committed replies, parent/impact changes, account withdrawal,
+peer state, keyboard and accessibility assertions remain in their original files.
+
+The fixture uses fresh restricted PostgreSQL 17.11/pgvector with all 149
+migrations, a separate Worker, current compiled API/Worker assemblies mounted
+read-only into cached runtimes, and four verified current production frontend
+assets served by Nginx. The runtime metadata remains `e88c6514`; this is compiled
+source verification, not current immutable-image release certification. Open
+registration/optional verification and a controlled mail provider do not prove
+strict managed-provider readiness. All 1,286 captured source inputs, 71 binary
+files and four served assets remain unchanged. Independent checks confirm one
+passing attempt per case, matching final source/binaries and zero owned
+containers/networks. Cleanup restores the original Docker inventory and removes
+the owned 3,320-byte temporary folder. No original database is used and no image
+is built, pulled, imported or downloaded.
+PRD-18 remains open at **15% estimated work remaining**, a planning estimate;
+current immutable/full CI and the remaining full acceptance criteria still govern
+closure. Large-load testing remains deferred until after the operational MVP.
 
 ## Deleted List child-receipt admission
 
