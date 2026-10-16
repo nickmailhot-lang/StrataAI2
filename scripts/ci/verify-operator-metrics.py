@@ -246,6 +246,14 @@ def verify(raw, revision, version, *, backlog_available=1):
         *[observed("strataai_activity_client_duration_count", {"action": action, "kind": kind}) for action, kind in [
             ("organization_members_read", "success"), ("organization_member_review", "success"),
             ("organization_member_remove", "failure"), ("organization_member_remove", "success")]],
+        *[observed("strataai_activity_client_events", {"action": action, "kind": kind}) for action, kind in [
+            ("organization_departure_disclosure", "open"), ("organization_departure_read", "retry"),
+            ("organization_departure_read", "success"), ("organization_departure_change", "use"),
+            ("organization_departure_change", "retry"), ("organization_departure_change", "conflict"),
+            ("organization_departure_change", "failure"), ("organization_departure_change", "success")]],
+        *[observed("strataai_activity_client_duration_count", {"action": action, "kind": kind}) for action, kind in [
+            ("organization_departure_read", "success"), ("organization_departure_change", "failure"),
+            ("organization_departure_change", "success")]],
         observed("strataai_organization_requests", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_duration_count", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_requests", {"operation": "read", "outcome": "denied"}),

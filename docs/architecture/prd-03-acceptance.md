@@ -12,6 +12,25 @@ authorization and later factory recovery. Controlled Demo persistence and
 compiled assemblies do not certify current Production images or full release
 acceptance. Estimated PRD-03 work remaining stays **8%**; the issue stays open.
 
+## Departure client observations — 2026-10-16
+
+The [departure observation contract](operator-metrics.md#organization-departure-client-observations--2026-10-16)
+adds admitted open/read and attempted departure/original recovery observations
+without private data. Pre-submission account failure cannot create an intent;
+account change cannot report success; optional reporting failure cannot repeat
+the departure. All 34 focused component/queue cases, 14 API category/HTTP cases,
+56 related API cases, 33 exporter-verifier cases and 285 CI guards pass, as do
+compilation, typechecks, lint and syntax. Synthetic Collector ingestion remains
+distinct from actual browser reporting. Both small desktop/phone browser cases
+also pass against restricted schema-149 PostgreSQL and current API/Worker/web
+inputs: sole-owner refusal, committed lost response and exact original recovery
+preserve a later rejoined membership; privacy/keyboard/WCAG checks pass and Docker
+inventory is restored. The linked evidence records local runtime metadata and
+optional-email boundaries. Current immutable-image CI/export,
+broader deletion/invitation observations, adoption/reconnect/dashboard requirements
+and full lifecycle/release acceptance remain required. PRD-03 stays open at
+**8% estimated work remaining**; capacity testing remains deferred until after MVP.
+
 ## Membership client observations — 2026-10-16
 
 The [membership observation contract](operator-metrics.md#organization-membership-browser-observations--2026-10-16)

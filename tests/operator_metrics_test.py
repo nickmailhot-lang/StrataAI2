@@ -108,6 +108,17 @@ class OperatorEvidenceTests(unittest.TestCase):
                         ("strataai_activity_client_duration_count", 'action="organization_member_remove",kind="failure"'),
                         ("strataai_activity_client_events", 'action="organization_member_remove",kind="success"'),
                         ("strataai_activity_client_duration_count", 'action="organization_member_remove",kind="success"'),
+                        ("strataai_activity_client_events", 'action="organization_departure_disclosure",kind="open"'),
+                        ("strataai_activity_client_events", 'action="organization_departure_read",kind="retry"'),
+                        ("strataai_activity_client_events", 'action="organization_departure_read",kind="success"'),
+                        ("strataai_activity_client_duration_count", 'action="organization_departure_read",kind="success"'),
+                        ("strataai_activity_client_events", 'action="organization_departure_change",kind="use"'),
+                        ("strataai_activity_client_events", 'action="organization_departure_change",kind="retry"'),
+                        ("strataai_activity_client_events", 'action="organization_departure_change",kind="conflict"'),
+                        ("strataai_activity_client_events", 'action="organization_departure_change",kind="failure"'),
+                        ("strataai_activity_client_duration_count", 'action="organization_departure_change",kind="failure"'),
+                        ("strataai_activity_client_events", 'action="organization_departure_change",kind="success"'),
+                        ("strataai_activity_client_duration_count", 'action="organization_departure_change",kind="success"'),
                         ("strataai_organization_requests", 'operation="create",outcome="success"'),
                         ("strataai_organization_duration_count", 'operation="create",outcome="success"'),
                         ("strataai_organization_requests", 'operation="read",outcome="denied"'),
@@ -382,6 +393,12 @@ class OperatorEvidenceTests(unittest.TestCase):
         escaped = r'path\\part\"quote\nnext'
         self.assertEqual({"job": escaped}, metrics.parse_labels('job="' + escaped + '"'))
         self.assertEqual({"job": "comma,inside"}, metrics.parse_labels('job="comma,inside",'))
+
+    def test_missing_departure_observations_cannot_pass(self):
+        for action in ('organization_departure_disclosure', 'organization_departure_read', 'organization_departure_change'):
+            with self.subTest(action=action):
+                rows = [row for row in self.fixture().splitlines() if f'action="{action}"' not in row]
+                self.assertFalse(metrics.verify('\n'.join(rows), self.revision, self.version))
 
     def test_missing_member_observations_cannot_pass(self):
         for action in ('organization_members_disclosure', 'organization_members_read', 'organization_member_review', 'organization_member_remove'):

@@ -854,6 +854,59 @@ Bash syntax, full solution Release compilation (zero warnings/errors) and
 documentation navigation checks also pass. Large-load testing stays deferred;
 PRD-03 remains open at **8% estimated work remaining**.
 
+## Organization departure client observations — 2026-10-16
+
+The existing bounded Activity queue and authenticated atomic parser admit
+`organization_departure_disclosure`, `organization_departure_read` and
+`organization_departure_change`. Open requires current membership review and
+both account checks, and occurs once per mounted route. The explicit current
+membership button records read retry. A confirmed change records an attempted
+use before account admission, an explicit original recovery records retry,
+and a current 409 records conflict. Technical exceptions and current completed
+results include bounded duration. Attempted use is not a count of submitted or
+committed departures: a failed pre-submission account check sends no command.
+Account changes and retired routes cannot report departure success. Cancel
+sends no departure or change observation.
+
+Only action/kind/count and optional duration are sent; Organization/account IDs,
+names, original keys, request bodies, routes and exception text are excluded.
+These optional observations do not replace audit history or alter confirmation,
+actor binding, the original key/body, deadline, owner floor or recovery after
+membership withdrawal. A failed observation report cannot repeat the departure.
+The export fixture requires these categories and read/change durations through
+synthetic ingestion; it does not claim those reports came from a browser.
+
+All **34** focused [departure/component/queue cases](../../apps/web/src/features/organizations/OrganizationLeaveTelemetry.test.tsx),
+**14** [API category and authenticated private-batch cases](../../tests/StrataAI.Api.Tests/ActivityClientTelemetryTests.cs)
+and **56** related API cases pass. The API fixture uses cached Linux runtime and
+current read-only assemblies, without a database or network; all 799 source and
+415 binary inputs match and original Docker inventories are restored. All **33**
+Collector-verifier tests pass; four baseline assertions demonstrate the previous
+verifier could accept omitted departure observations. All **285** CI guards,
+solution Release compilation (zero warnings/errors), web/browser typechecks,
+zero-warning lint and Bash syntax pass.
+
+The [desktop/phone browser scenario](../../tests/browser/organization-departure-telemetry.spec.ts)
+checks a real sole-owner refusal, committed departure with lost response, later
+rejoin, and identical original receipt recovery that preserves the new membership.
+Both cases pass with zero failures/flaky/skipped cases against fresh restricted
+PostgreSQL 17.11 and all 149 migrations, the current API/separate Worker assemblies
+and current Vite output. Actual reports receive 204, with exact open/read/change
+counts, original key/body, one document navigation, canonical rejoined membership,
+keyboard operation and zero WCAG 2.2 AA violations. All 1,264 source inputs,
+71 binaries and four served assets match; API/Worker identities remain stable
+through both scenarios and cleanup restores the original Docker inventory.
+Cached images supply the runtime and current assemblies/assets are read-only
+mounts. Runtime metadata carries the preceding `3dec9af2` revision with local
+version `1.0.0`; source hashes describe this later working source, not a released
+image for that revision. The private provider is controlled and email verification
+is optional, so this does not certify strict-email policy or actual provider
+delivery. No images or release archives are built, pulled or imported.
+Current immutable-image CI/export and broader deletion/invitation observations,
+adoption/reconnect/dashboard requirements and full PRD acceptance remain open.
+The preceding main revision's complete 2,602-test web run is a baseline, not proof
+of this later increment. Large-load testing remains deferred until after MVP.
+
 ## Organization creation client observations
 
 The creation dialog records one `organization_creation_disclosure/open` per

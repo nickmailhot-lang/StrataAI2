@@ -4,6 +4,18 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [departure observation increment](operator-metrics.md#organization-departure-client-observations--2026-10-16)
+adds bounded, private-data-free attempts/results and original recovery to the
+existing confirmed departure flow. All 34 focused component/queue, 14 API
+category/HTTP, 56 related API, 33 exporter-verifier and 285 CI guard cases pass;
+compilation/typechecks/lint/syntax also pass. The preceding 2,602-test complete web
+run remains a baseline rather than later-source proof. Current immutable CI/export
+and complete release acceptance remain required. Both desktop/phone PostgreSQL
+browser cases pass original departure recovery after rejoin, owner continuity,
+actual report/privacy, keyboard and WCAG checks. Input hashes match, API/Worker
+identities remain stable and original Docker inventory is restored. No large-load
+testing runs.
+
 The [membership observation increment](operator-metrics.md#organization-membership-browser-observations--2026-10-16)
 adds bounded directory/review/removal counts and durations without private data
 or changes to authority, consent or original request recovery. All 49 focused

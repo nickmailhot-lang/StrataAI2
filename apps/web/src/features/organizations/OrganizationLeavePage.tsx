@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { boundedWorkRead } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 class DepartureUnavailable extends Error { constructor(readonly status: number) { super('Departure unavailable'); } }
 type Review = { organization: { id: string; name: string; status: number }; role: number };
@@ -18,6 +19,7 @@ function Departure({ organizationId }: { organizationId: string }) {
   const [retryKey, setRetryKey] = useState<string>(); const [recovered, setRecovered] = useState(false);
   const [actorId, setActorId] = useState<string>();
   const mounted = useRef(false); const pending = useRef<AbortController | undefined>(undefined);
+  const opened = useRef(false);
   const cancel = useRef<HTMLButtonElement>(null); const action = useRef<HTMLButtonElement>(null);
   const confirmation = useRef<HTMLDivElement>(null);
   const retry = useRef<HTMLButtonElement>(null); const recoveryFocus = useRef(false);
@@ -55,9 +57,11 @@ function Departure({ organizationId }: { organizationId: string }) {
     setError('This Organization is unavailable to your account.');
     if (status === 401) navigate('/login', { replace: true });
   }
-  async function load() {
+  async function load(retryRead = false) {
     if (retryKey) return;
     const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_departure_read', retryRead ? 'retry' : 'use');
     setReview(undefined); setActorId(undefined); setOpen(false); setNotice(undefined); setRecovered(false);
     try {
       const admitted = await boundedWorkRead(async signal => {
@@ -72,15 +76,22 @@ function Departure({ organizationId }: { organizationId: string }) {
         return { actor: after.id, value };
       }, controller.signal);
       if (!current(controller)) return;
+      succeeded = true;
+      if (!opened.current) { opened.current = true; activityEvent('organization_departure_disclosure', 'open'); }
       setActorId(admitted.actor); setReview(admitted.value);
     } catch (error) { if (current(controller)) {
       if (error instanceof DepartureUnavailable) unavailable(error.status);
-      else setError('Unable to review current membership. Try loading it again.');
-    } } finally { finish(controller); }
+      else { activityEvent('organization_departure_read', 'exception'); setError('Unable to review current membership. Try loading it again.'); }
+    } } finally {
+      if (current(controller)) activityResult('organization_departure_read', succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   async function leave(recover = false) {
     if (!actorId || (recover ? !retryKey : !review || !open || !!retryKey)) return;
     const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_departure_change', recover ? 'retry' : 'use');
     const key = retryKey ?? crypto.randomUUID(); let submitted = false;
     setNotice(undefined); setRecovered(false);
     try {
@@ -98,10 +109,12 @@ function Departure({ organizationId }: { organizationId: string }) {
       if (!current(controller)) return;
       setOpen(false); setReview(undefined);
       if (result.status === 204) {
+        succeeded = true;
         setRetryKey(undefined); setRecovered(recover);
         setNotice(recover ? 'Original departure acknowledged. Review current membership to check later access.' : 'You left the Organization.'); return;
       }
       const code = (result.body as { code?: unknown } | undefined)?.code;
+      if (result.status === 409) activityEvent('organization_departure_change', 'conflict');
       setRetryKey([400, 409, 429].includes(result.status) ? undefined : key);
       setError(result.status === 409 && code === 'sole_owner'
         ? 'The last usable owner cannot leave. Another usable owner must remain.'
@@ -110,18 +123,22 @@ function Departure({ organizationId }: { organizationId: string }) {
     } catch (error) {
       if (current(controller)) {
         if (error instanceof DepartureUnavailable) { unavailable(error.status); return; }
+        activityEvent('organization_departure_change', 'exception');
         setOpen(false); setReview(undefined);
         if (submitted || retryKey) { setRetryKey(key); setError('Your departure could not be confirmed. Retry the original departure to recover its acknowledgment.'); }
         else { setActorId(undefined); setError('Your account could not be confirmed. No departure was sent. Review current membership before trying again.'); }
       }
-    } finally { finish(controller); }
+    } finally {
+      if (current(controller)) activityResult('organization_departure_change', succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   return <Container maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
     <Typography component="h1" variant="h4">Leave Organization</Typography>
     {error && <Alert severity="error">{error}</Alert>}
     {notice && <Alert ref={confirmation} tabIndex={-1} severity="success" role="status">{notice}</Alert>}
     <Button component={Link} to="/app">Your Organizations</Button>
-    {(!notice || recovered) && <Button ref={action} disabled={busy || !!retryKey} onClick={() => void load()}>Review current membership</Button>}
+    {(!notice || recovered) && <Button ref={action} disabled={busy || !!retryKey} onClick={() => void load(true)}>Review current membership</Button>}
     {retryKey && <Button ref={retry} disabled={busy} onClick={() => {
       recoveryFocus.current = document.activeElement === retry.current; void leave(true);
     }}>Retry original departure</Button>}

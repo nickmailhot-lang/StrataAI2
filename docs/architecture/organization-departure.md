@@ -10,6 +10,15 @@ successful departure removes that shell's membership authority.
 
 ## Confirmation after membership withdrawal
 
+The [departure observation contract](operator-metrics.md#organization-departure-client-observations--2026-10-16)
+records admitted open/read and attempted change/original recovery through the
+existing optional queue, excluding private identifiers/content. An attempted
+change does not imply submission or commitment, and only current account-bound
+204 completion reports success. Reporting failure cannot send another departure.
+Focused source/API/export-verifier evidence and immutable-image acceptance
+boundaries are recorded in that contract; PRD-03 remains open at **8% estimated
+work remaining**.
+
 The independent route retains the success announcement and actor-bound original
 retry after its own command removes membership. It does not keep the internal
 navigation shell or private Organization review after leaving. A later rejoin is
