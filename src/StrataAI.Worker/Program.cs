@@ -40,6 +40,7 @@ builder.Services.AddSingleton<WorkerJobTelemetry>();
 
 builder.Services.AddSingleton<IClock, SystemClock>();
 var runtime = builder.Services.AddStrataAiRuntime(builder.Configuration, typeof(Program).Assembly);
+var workerRequireVerifiedEmail = IdentityRegistration.ReadRequireVerifiedEmail(builder.Configuration, runtime);
 var attachmentsEnabled = builder.Services.AddAttachmentRuntime(builder.Configuration, runtime, worker: true, environmentName: builder.Environment.EnvironmentName);
 if (attachmentsEnabled) builder.Services.AddSingleton(AttachmentPreviewRuntimeVerification.CurrentExecutable());
 builder.Services.AddHostedService<WorkerHeartbeat>();
@@ -93,9 +94,8 @@ if (runtime.Mode == RuntimeMode.Production)
     builder.Services.AddHostedService<IdentityRetryCleanupWorker>();
     builder.Services.AddSingleton<StrataAI.Application.WorkManagement.IWorkEventDeliveryStore, StrataAI.Infrastructure.WorkManagement.PostgresWorkEventDeliveryStore>();
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.WorkManagement.WorkEventDeliveryHandler>();
-    var reminderRequireVerified = !bool.TryParse(builder.Configuration["STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL"], out var reminderVerified) || reminderVerified;
     builder.Services.AddSingleton<StrataAI.Application.WorkManagement.ICardReminderDeliveryStore>(provider =>
-        new StrataAI.Infrastructure.WorkManagement.PostgresCardReminderDeliveryStore(provider.GetRequiredService<PostgresConnectionFactory>(), reminderRequireVerified));
+        new StrataAI.Infrastructure.WorkManagement.PostgresCardReminderDeliveryStore(provider.GetRequiredService<PostgresConnectionFactory>(), workerRequireVerifiedEmail));
     builder.Services.AddSingleton<IBackgroundJobHandler, StrataAI.Application.WorkManagement.CardReminderDeliveryHandler>();
 }
 
@@ -172,9 +172,8 @@ if (InvitationMailRegistration.IsEnabled(builder.Configuration, runtime))
 {
     if (string.IsNullOrWhiteSpace(jobScope))
         throw new InvalidOperationException("Invitation delivery requires explicit Worker Organization scope.");
-    var requireVerifiedEmail = !bool.TryParse(builder.Configuration["STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL"], out var verified) || verified;
     builder.Services.AddSingleton<IInvitationDeliveryStore>(provider => new PostgresInvitationDeliveryStore(
-        provider.GetRequiredService<PostgresConnectionFactory>(), requireVerifiedEmail));
+        provider.GetRequiredService<PostgresConnectionFactory>(), workerRequireVerifiedEmail));
     builder.Services.AddSingleton<IBackgroundJobHandler, InvitationEmailHandler>();
 }
 if (!string.IsNullOrWhiteSpace(jobScope))

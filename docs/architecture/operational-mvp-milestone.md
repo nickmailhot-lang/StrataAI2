@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [shared Worker/API verification policy](configuration.md#shared-verification-policy-admission--2026-10-15)
+now rejects malformed supplied Worker values rather than silently defaulting
+them for Reminder/invitation delivery. Six actual Worker startups reproduce the
+old behavior; after repair those six refuse and ten valid/default startups pass.
+All 90 focused configuration/delivery tests and 277 CI guards pass, and the
+expanded unmodified startup runner passes all 30 actual host cases in 95.794
+seconds. Frozen inputs match and owned cleanup restores Docker inventory.
+Existing API transport guards remain unchanged; initial local wrapper/checker
+errors are recorded separately. Current immutable/full CI and complete
+deployment acceptance remain required. No large-load test runs.
+
 The [complete durable mail-conflict rehearsal](identity-email.md#durable-verification-and-invitation-conflicts--2026-10-15)
 now passes reset, verification and invitation recovery against actual
 PostgreSQL/149 migrations and a separate restricted Worker. Closed signup refuses

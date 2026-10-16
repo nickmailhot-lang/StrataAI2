@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ARCH-05-AC-002 / ARCH-12 / PRD-02: actual retained host images must reject
 # missing/unknown mode, missing Production persistence, unsafe external database
-# transport, unsafe public origins and invalid API policy.
+# transport, unsafe public origins and invalid API/Worker policy.
 api_image="${1:?Pass the exact retained API image}"
 worker_image="${2:?Pass the exact retained Worker image}"
 temp_root="$(cd "${TMPDIR:-/tmp}" && pwd -P)"
@@ -72,5 +72,13 @@ for mode in demo production; do
       -e "$policy"
   done
 done
-test "$sequence" = 24
-echo 'Both retained hosts reject missing/unknown mode, missing Production persistence, external plaintext and unsafe public origins; API policy refuses across both modes (24 startup cases).'
+for mode in demo production; do
+  for value in invalid-policy-value '' ' '; do
+    expect_refusal "$worker_image" "$mode" 'STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL must be' \
+      -e 'ConnectionStrings__Postgres=Host=127.0.0.1;Port=1;Database=fixture;Username=fixture;Password=fixture;Timeout=1' \
+      -e "STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL=$value"
+  done
+done
+
+test "$sequence" = 30
+echo 'Both retained hosts reject missing/unknown mode, missing Production persistence, external plaintext and unsafe public origins; API policy and Worker verification policy refuse across both modes (30 startup cases).'

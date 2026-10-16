@@ -24,9 +24,7 @@ public static class IdentityRegistration
             configuration, "STRATAAI_AUTH_ALLOW_SELF_REGISTRATION",
             runtime.Mode == RuntimeMode.Demo);
 
-        var requireVerifiedEmail = GetBoolean(
-            configuration, "STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL",
-            runtime.Mode == RuntimeMode.Production);
+        var requireVerifiedEmail = ReadRequireVerifiedEmail(configuration, runtime);
 
         var minimumPasswordLength = GetInteger(
             configuration, "STRATAAI_AUTH_MIN_PASSWORD_LENGTH",
@@ -143,6 +141,11 @@ public static class IdentityRegistration
         { throw new InvalidOperationException("Production sign-in retry keys require a valid current version and a unique JSON key ring of base64 32-byte secrets."); }
         services.AddSingleton<IdentityLoginRetrySecrets>(_ => signer);
     }
+
+    // API admission and Worker delivery must interpret the same supplied policy.
+    // Missing selects the mode default; an explicit empty/invalid value is not missing.
+    public static bool ReadRequireVerifiedEmail(IConfiguration configuration, RuntimeDescriptor runtime) =>
+        GetBoolean(configuration, "STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL", runtime.Mode == RuntimeMode.Production);
 
     private static bool GetBoolean(IConfiguration configuration, string key, bool fallback)
     {

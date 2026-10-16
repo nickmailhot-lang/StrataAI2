@@ -52,7 +52,7 @@ for scenario in intended-refusals successful-startup unrelated-crash timeout dis
   grep -q '^stopped$' "$FIXTURE_LOG"
   if [ "$scenario" = intended-refusals ]; then
     test "$status" = 0
-    test "$(grep -c '^run$' "$FIXTURE_LOG")" = 24
+    test "$(grep -c '^run$' "$FIXTURE_LOG")" = 30
   elif [ "$scenario" = disclosed-transport-value ]; then
     test "$status" != 0
     test "$(grep -c '^run$' "$FIXTURE_LOG")" = 4

@@ -80,6 +80,43 @@ public sealed class IdentityPolicyConfigurationTests
         }
     }
 
+    [Theory]
+    [InlineData(RuntimeMode.Demo, null, false)]
+    [InlineData(RuntimeMode.Production, null, true)]
+    [InlineData(RuntimeMode.Demo, "true", true)]
+    [InlineData(RuntimeMode.Production, "true", true)]
+    [InlineData(RuntimeMode.Demo, "false", false)]
+    [InlineData(RuntimeMode.Production, "false", false)]
+    [InlineData(RuntimeMode.Demo, "TRUE", true)]
+    [InlineData(RuntimeMode.Production, "TRUE", true)]
+    [InlineData(RuntimeMode.Demo, " false ", false)]
+    [InlineData(RuntimeMode.Production, " false ", false)]
+    public void ARCH_12_WorkerAndApiShareVerificationDefaultsAndValidValues(RuntimeMode mode, string? value, bool expected)
+    {
+        var settings = new Dictionary<string, string?>();
+        if (value is not null) settings["STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL"] = value;
+        var configuration = Configuration(settings); var runtime = new RuntimeDescriptor(mode, "test", "test");
+        Assert.Equal(expected, IdentityRegistration.ReadRequireVerifiedEmail(configuration, runtime));
+        var services = new ServiceCollection(); services.AddStrataAiIdentity(configuration, runtime);
+        using var provider = services.BuildServiceProvider();
+        Assert.Equal(expected, provider.GetRequiredService<IdentityPolicy>().RequireVerifiedEmail);
+    }
+
+    [Theory]
+    [InlineData(RuntimeMode.Demo, "invalid-policy-value")]
+    [InlineData(RuntimeMode.Production, "invalid-policy-value")]
+    [InlineData(RuntimeMode.Demo, "")]
+    [InlineData(RuntimeMode.Production, "")]
+    [InlineData(RuntimeMode.Demo, " ")]
+    [InlineData(RuntimeMode.Production, " ")]
+    public void ARCH_12_WorkerVerificationPolicyRejectsSuppliedInvalidValues(RuntimeMode mode, string value)
+    {
+        var error = Assert.Throws<InvalidOperationException>(() => IdentityRegistration.ReadRequireVerifiedEmail(
+            Configuration(new() { ["STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL"] = value }), new(mode, "test", "test")));
+        Assert.Equal("STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL must be true or false when supplied.", error.Message);
+        Assert.DoesNotContain("invalid-policy-value", error.Message);
+    }
+
     private static IConfiguration Configuration(Dictionary<string, string?> settings)
     {
         settings["STRATAAI_AUTH_RETRY_CURRENT_KEY"] = "fixture";

@@ -33,6 +33,15 @@ the setting and its allowed form without echoing the supplied value.
 
 Boolean parsing is case-insensitive; integer parsing uses invariant culture.
 
+API and Worker use the same parser for
+`STRATAAI_AUTH_REQUIRE_VERIFIED_EMAIL`. Worker validates it at startup in both
+modes, before constructing delivery services, and passes that one value to
+Reminder and invitation stores. Missing selects Demo `false` or Production
+`true`; explicit empty, whitespace-only or malformed values fail startup, even
+when optional mail is disabled. Valid `true`/`false`, including the existing
+case-insensitive/trimmed forms, preserve their requested meaning. See the
+[shared verification-policy evidence](#shared-verification-policy-admission--2026-10-15).
+
 The release Compose file forwards all five settings to the API and the
 verification requirement to Worker handlers. Set them in the deployment `.env`
 or runtime environment. When omitted, the production Compose defaults match
@@ -46,10 +55,53 @@ not omission. This validation changes startup admission, not stored profiles,
 passwords, issued sessions or security-token records.
 
 The mandatory [retained-image startup gate](runtime-modes.md#retained-host-startup-refusal-verification)
-checks six real invalid-policy API startups across both modes, plus both hosts'
-runtime-mode and missing-database refusals. It requires the intended startup error
-and rejects unrelated crashes/timeouts. All twelve cases passed locally with
-current compiled hosts in cached runtime images; exact current CI remains required.
+requires **30 cases**: both hosts' runtime-mode, missing-database, external
+plaintext and unsafe-origin refusals, six API policy cases and six Worker
+verification-policy cases across both modes. It requires the intended startup
+error and rejects unrelated crashes/timeouts. All 30 pass locally with current
+compiled hosts in cached runtime images; exact current CI remains required.
+
+### Shared verification-policy admission — 2026-10-15
+
+The old Worker parses this setting separately for Reminders and invitations,
+silently defaulting to `true` when a supplied value cannot be parsed. Actual
+Worker runtime endpoints remain available for all **six malformed/empty/blank
+cases across Demo and Production** before repair. This hides configuration
+errors; it is not evidence that verification was bypassed.
+
+The API's existing strict parser is now shared through
+`IdentityRegistration.ReadRequireVerifiedEmail`. Worker reads once during startup
+and both delivery consumers use that validated result. After repair all six
+invalid cases produce the fixed setting-name error without echoing the supplied
+value; **ten valid/default actual Worker startups** remain available. All **33
+configuration, 29 Reminder delivery and 28 invitation-handler cases** pass:
+**90 total, zero skipped**. The Release solution builds with zero warnings/errors.
+
+The complete unmodified expanded startup runner also passes all **30 actual
+API/Worker cases** in **95.794 seconds**, with every call verified through the
+native wrapper. The seven runner refusal fixtures and 277 CI guards pass.
+Initial local checker errors are retained separately: one missed stderr, and
+the full-gate wrapper initially selected cached binaries through an incorrectly
+formatted Windows search path. Direct current API probing confirmed its existing
+plaintext refusal; no application transport change or relaxed expectation was
+needed. Final wrapper admission verifies all 30 calls use the mounted outputs.
+
+Native Worker runs preserve **563 source inputs/42 binaries**; the unit run
+preserves **795 inputs/108 binaries**; the full gate preserves its **72 captured
+runner/binary files**, with zero mismatches. Runtime metadata identifies parent
+`918ade6fecddca8f80194345f610fa72a2b6e72b`, version `0.1.0-1736`.
+Cached images supply runtimes with local outputs mounted read-only rather than
+certifying a current immutable release. All owned containers retire and original
+Docker inventory is restored; **774 temporary wrapper bytes** are removed by the
+final gate. No image is built/pulled/imported, no real database or external
+provider is contacted, and the original database/local Demo are unused. Production
+fixtures point only at unreachable loopback port 1 with networking disabled.
+
+Before upgrading, correct invalid Worker values or omit the setting deliberately
+for its mode default. Existing valid policy and stored user/session/job state
+are unaffected. Current exact-image/full CI and complete deployment/identity
+acceptance remain required; PRD-02 remains open at **16% estimated work remaining**,
+and ARCH-12/MVP remain open. No large-load tests run.
 
 ## Runtime and provider configuration
 

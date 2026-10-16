@@ -207,11 +207,14 @@ acceptance require their own evidence before ARCH-05 can close.
 ### Retained-host startup refusal verification
 
 The [startup refusal gate](../../scripts/ci/test-runtime-startup-refusals.sh)
-replaces the previous API-only missing-database check. It runs twelve actual
-startup cases against the already-built API and Worker images, with networking
-disabled and no published ports: both hosts reject empty/unknown runtime modes
-and missing Production persistence; API startup rejects malformed verified-email
-policy, excessive session lifetime and a weak password minimum in both modes.
+replaces the previous API-only missing-database check. It runs **30 actual
+startup cases** against the already-built API and Worker images, with networking
+disabled and no published ports: both hosts reject empty/unknown runtime modes,
+missing Production persistence, external plaintext database settings and unsafe
+public origins; API startup rejects malformed verification policy, excessive
+session lifetime and weak password minimums in both modes. Worker rejects
+malformed, empty and whitespace-only verification settings in both modes using
+the [shared policy reader](configuration.md#shared-verification-policy-admission--2026-10-15).
 Policy cases use a deliberately unreachable fixture database configuration.
 
 Each case must terminate unsuccessfully with its expected configuration error.
@@ -220,10 +223,10 @@ diagnostics report the fixed case number without printing the captured startup
 body, and the test's invalid policy value must not appear in that body. Temporary
 logs and the uniquely named test container are cleaned up on exit.
 
-Five [runner refusal fixtures](../../scripts/ci/test-runtime-startup-refusals-fixture.sh)
+Seven [runner refusal fixtures](../../scripts/ci/test-runtime-startup-refusals-fixture.sh)
 pass: intended refusals, unexpected successful startup, unrelated crash, timeout
-and disclosed policy input. These are mandatory source checks. The unmodified
-startup runner also passed all twelve actual host cases locally using current
+and disclosed policy/transport/origin input. These are mandatory source checks.
+The unmodified expanded startup runner passes all 30 actual host cases locally using current
 compiled assemblies mounted read-only in cached runtime images. This is current
 host behavior evidence, not current retained-image identity or whole-release
 acceptance. The exact-image invocation is mandatory in container integration.
