@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
-import { pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
 
 // Explicit alternate config: never discovered by the ordinary .spec.ts suite.
 // The CI shell fixture supplies a real uploaded/published image and owns the
@@ -219,7 +219,7 @@ for (const width of [1280, 390]) {
       else { expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]); await route.fulfill({ response: result }); }
     });
     const review = page.getByRole('button', { name: 'Review Board background images', exact: true });
-    await pressAdmittedAction(review);
+    await openAdmittedReview(review, page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true }));
     await pressAdmittedAction(page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true }));
     const confirm = page.getByRole('button', { name: 'Confirm Board background image', exact: true });
     await expect(confirm).toBeDisabled();

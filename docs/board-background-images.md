@@ -1,5 +1,35 @@
 # Stored Board image ownership
 
+## Board-background review read admission (2026-10-16)
+
+The phone image-pipeline case at `d12a6f47` fails in
+[foundation job 117004398853](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38859369620/job/117004398853)
+before selecting the Board background. The retained trace records its final
+enabled check at 74,273.327 ms, a foreground Board GET at 74,290.472 ms and
+the opening Enter at 74,293.573 ms. No subsequent account/candidate review read
+starts before failure. The final Card dialog still shows the primary background
+review launcher; the desired candidate does not appear. This is an opening
+admission failure, not a failed background-publication acknowledgment.
+
+The original pipeline and production background component are unchanged between
+that candidate and parent `df07d924`. The fixture now uses the existing bounded
+read-only `openAdmittedReview` helper to observe the actual candidate before
+continuing. It may retry this nonmutating opening only while the target remains
+absent. Candidate selection, public-image consent, the single original mutation,
+lost committed reply, explicit same-key recovery, two exact POSTs, copied-image
+ownership, peer privacy and every original assertion remain unchanged. The
+150-second case deadline and five-second opening budget are unchanged.
+
+All 11 existing keyboard-admission cases pass, including ignored openings,
+opening during focus, already-open targets and refusal within the original
+budget. Browser type checks and all 289 CI integration guards pass. These verify
+the reused helper and fixture wiring; no local reproduction or new complete
+native image-pipeline execution is claimed. Current exact-image foundation CI
+must verify the full changed scenario before release acceptance. Production
+code and providers are unchanged, no Docker workload or image download is
+started by this follow-up, and large-load testing stays deferred. PRD-04 remains
+open at **15% estimated work remaining**, an unchanged planning estimate.
+
 ## Card-cover reopening in the real image pipeline
 
 The phone case in the `d3f5a8a3`

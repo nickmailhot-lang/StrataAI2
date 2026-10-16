@@ -4,6 +4,14 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [Board-background opening follow-up](../board-background-images.md#board-background-review-read-admission-2026-10-16)
+observes the actual read-only candidate before continuing after a retained phone
+opening that starts no review read. All original image consent, receipt, copy,
+privacy assertions and deadlines remain. Eleven helper cases, browser types and
+289 CI guards pass; complete changed exact-image foundation execution remains
+required. No local native reproduction, new Docker workload or image download is
+claimed. PRD-04 and the milestone remain open; large-load tests stay deferred.
+
 The [archive confirmation retirement repair](lifecycle-acceptance.md#synchronous-archive-confirmation-retirement-2026-10-16)
 fences queued restore/deletion inputs after cancellation or during archive
 readmission across Board, List and Card controls, while preserving visible recovery
