@@ -54,6 +54,41 @@ commands job fails on a registration HTTP 503 in the Work-event stage; other
 integration groups remain live/queued at inspection. That failure requires its
 own diagnosis and prevents a full-green claim. ARCH-11 and MVP remain open.
 
+## Retained candidate security evidence — 2026-10-16
+
+Independent inspection of `be7bf9e47eaa617181483fbe86ac09f7faf87c4b`,
+[run 38802201471](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38802201471),
+verifies the original GitHub archive sizes and SHA-256 digests before extraction:
+
+| Artifact | ID | Bytes | SHA-256 |
+| --- | --- | ---: | --- |
+| Security evidence | 12018919002 | 95,773 | `c4b223e5a0629d6a7182c834d3ec294ff7f4bbe1779a738dca5fa5ee58e67fb4` |
+| Canonical build metadata | 12005394351 | 420 | `1233b772926740b777e5926e576429a332bebb8f796ec4565d06036e9c94871d` |
+
+The archives contain exactly the expected seven security files and one metadata
+file. All six internal payload checksums match; the separately retained metadata
+is byte-identical to the security copy and identifies version `0.1.0-1805`, the
+full candidate SHA, repository and workflow run. The current release verifier
+accepts all three application SBOM image IDs and four OCI build labels against
+the retained image-provenance record, plus the collector inventory schema. No
+config/manifest conversion or substitute image archive is supplied. Both
+validator source files remain unchanged during the inspection.
+
+The extracted directory and **1,839,083 temporary bytes** are removed. This check
+downloads only **96,193 compressed bytes**; it uses no Docker, database, external
+provider or load test and downloads no application images. The original image
+archive bytes are not independently compared, and no scanner is rerun.
+
+At this checkpoint, all **15 prerequisite jobs**, including security, all seven
+integration executions and `required-ci`, succeed; release-bundle job
+**116845558421** remains queued. This supports the retained candidate's declared
+security/build identity, not a completed assembled release. The candidate also
+predates later main fixes. Current main's full immutable CI, assembled bundle,
+deployment acceptance and remaining ARCH-11 requirements still govern release;
+the operational MVP and ticket remain open. Large load tests stay deferred.
+
+## Security input verification
+
 Before installing dependencies, auditing packages, loading application images or invoking scanners, the security job downloads the same `strataai-images-<sha>` artifact used by integration. It verifies `SHA256SUMS`, covering all three image archives and the original build metadata document. It then requires the metadata repository, full SHA, image tag, workflow run ID and application version to match the triggering workflow and initial metadata job. Failure stops the required security job before image loading/scanning.
 
 After verification, the job copies the original metadata bytes into `security-artifacts/build-metadata.json`. The existing always-run security evidence upload retains that document alongside any generated CycloneDX SBOMs. Existing SBOM filenames and schemas are preserved. A metadata-only artifact after an early audit failure indicates provenance, not successful scans or a passing security gate. The stable aggregate continues to require security success before release bundling.

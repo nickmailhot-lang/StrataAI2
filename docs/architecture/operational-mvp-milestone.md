@@ -4,6 +4,14 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [retained candidate security inspection](security-evidence-identity.md#retained-candidate-security-evidence--2026-10-16)
+verifies the original `be7bf9e4` security/build archives, six payload checksums,
+identical canonical metadata and current SBOM identity checks. All 15 prerequisite
+jobs succeed at that checkpoint while its release assembly remains queued.
+Only 96,193 compressed bytes are downloaded; extracted inputs are removed and no
+Docker or load test runs. This older candidate does not certify later main fixes
+or complete MVP deployment acceptance. Current immutable/full CI stays required.
+
 The [Organization immutable-fact audit](schema149-clock-inventory.md#organization-immutable-facts-and-mutable-owners--2026-10-15)
 classifies three timestamp candidates through their writers/source clocks and
 adds nine exact no-op/update/delete refusal checks to the existing mandatory
