@@ -14,6 +14,8 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Suggested starting points
 
+- [Personal Board preference current/history clocks and legacy preservation](architecture/schema149-clock-inventory.md#personal-board-preference-and-history-clocks--2026-10-16)
+
 - [Frontend capacity sequencing and active MVP correctness checks](architecture/web-capacity-phase.md)
   includes the [complete 2,689-case frontend baseline](architecture/source-test-results.md#complete-mvp-phase-frontend-baseline--2026-10-16), with 24 explicitly deferred capacity cases.
 

@@ -214,6 +214,69 @@ immutable/full CI retain their own acceptance. No unknown historical time is
 backfilled. Catalog counts stay unchanged and PRD-01 stays open at **34% estimated
 work remaining**; large-load testing remains deferred until after MVP.
 
+## Personal Board preference and history clocks — 2026-10-16
+
+`user_board_preferences` is mutable personal state; `board_star_events` is its
+append-only private transition journal. They have different clock contracts:
+
+| Record | Owning source and clock semantics |
+| --- | --- |
+| Current preference | [The PostgreSQL writer](../../src/StrataAI.Infrastructure/WorkManagement/PostgresWorkManagementStore.cs) inserts both clocks from the accepted server timestamp. Later transitions preserve `created_at`, use `GREATEST` to preserve update-clock ordering, and increment the revision. Its conflict predicate prevents same-value changes from rewriting the row. Unstarring retains the same preference identity. |
+| Legacy preference | [Migration070](../../db/migrations/070_board_star_revisions.sql) preserves unknown creation as null and the retained update time. [Migration071](../../db/migrations/071_board_star_private_journal.sql) assigns a stable identity without inventing a version1 event. Its guard preserves even a null creation value across later changes. |
+| Private journal fact | The source trigger appends one event with the preference's accepted `updated_at`, stable entity/actor/Board identity and revision. The first new preference's event therefore shares its creation time; a legacy preference's first real post-upgrade transition publishes version2 without fabricating version1 history. UPDATE/DELETE are refused, including privileged no-op UPDATE. |
+
+The [new upgrade contract](../../scripts/ci/test-board-star-legacy-clocks.sql)
+runs inside the existing [complete migration driver](../../scripts/ci/test-migration-runner.sh)
+after a real schema69 preference is upgraded through70/71. It checks a real
+transition's database time window, preserved unknown creation, exact source-clock
+history, no-op stability, refused creation invention/backwards update and
+immutable history. Its transaction rolls back; the owning driver independently
+checks the original preference fingerprint and empty journal before continuing
+all later upgrades.
+
+The existing [restricted HTTP fixture](../../scripts/ci/test-board-star-preferences.sh)
+also checks persisted creation/update against database clock windows, exact
+row stability on same-value intent and original-key replay, and the corresponding
+version1/2 source clocks in history. Original actor isolation, stale/key conflict,
+atomic rollback/recovery, private reads and revoked-admission checks remain.
+These normal-clock cases do not establish every clock-rollback, historical or
+other-writer path. No production store, schema or historical clock is changed.
+
+The complete current migration driver exits **0**, including all149 migrations,
+repeat/forward/serialized execution and intentional failure rollback. A private
+counterfeit legacy-clock probe exits **3 at the exact new guard**:
+`Legacy Board preference mutation manufactured a creation clock`. It combines
+a before-update injector that actually changes the stored clock with an altered
+private journal function; neither is committed or applied outside the disposable
+upgrade database. The upgrade/negative sequence later stops before HTTP setup
+because the private orchestration tries to recreate an already staged folder;
+those completed phase outcomes are separate from that overall setup failure.
+
+The original maintained HTTP script then exits **0** in a separate fresh
+PostgreSQL17.11/schema149 fixture, with restricted runtime roles and current
+read-only API/Worker binaries in cached runtimes. The fixture takes **67.873
+seconds**; API identity/start time are unchanged. All **1,285 captured source
+inputs, 261 staged SQL/shell sources and 71 runtime binaries** match. Embedded
+runtime revision is `e6e1f4bb`; the script's historical success wording does not
+certify current immutable release images. This fixture explicitly permits open
+signup/unverified accounts and uses a controlled mail provider.
+
+The initial SQL fixture expects a generic exception instead of the existing
+guard's SQLSTATE23514; its catch is corrected to require that actual contract.
+The first negative injector changes only an AFTER-trigger value and does not
+persist the intended defect; it is corrected to introduce the stored defect
+before the update. These fixture failures and the later duplicate-folder setup
+failure remain retained. All four owned attempts restore original Docker
+inventory, removing **5,426,798 temporary bytes** in total. No existing database,
+application image build/pull/import, external provider or large-load test is used.
+Bash syntax and mandatory CI coverage (four groups/seven executions/130 stages)
+pass. The new SQL runs inside the existing required upgrade driver; the extended
+HTTP script stays in its existing required command phase.
+
+Current immutable-image/full CI, other writer/history paths and full issue
+acceptance remain required. PRD-01 stays open at **34%**, PRD-04 at **15%
+estimated work remaining**; these specific clock facts do not complete the MVP.
+
 ## Nullable-clock review queue
 
 | Relation | Nullable conventional clock fields | Owning migration/source to inspect |

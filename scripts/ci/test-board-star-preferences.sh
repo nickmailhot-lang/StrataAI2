@@ -48,25 +48,36 @@ jq -S '{board,lists}' "$scratch/response" > "$scratch/before.json"
 preference owner "$owner_id" false
 preference member "$member_id" false
 key="$(uuid)"
+creation_before="$(admin 'SELECT clock_timestamp();')"
 test "$(request owner PUT "/boards/$board/star?version=0" "$key" '')" = 204
 test ! -s "$scratch/response"
 test "$(admin "SELECT version=1 AND created_at IS NOT NULL AND created_at=updated_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
+creation_after="$(admin 'SELECT clock_timestamp();')"
+test "$(admin "SELECT isfinite(created_at) AND created_at BETWEEN '$creation_before'::timestamptz AND '$creation_after'::timestamptz FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
 creation="$(admin "SELECT created_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")"
+initial_preference="$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")"
 test "$(request owner PUT "/boards/$board/star?version=1" "$(uuid)" '')" = 204
 test "$(admin "SELECT version FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = 1
+test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$initial_preference"
 preference owner "$owner_id" true
 preference member "$member_id" false
 # The same key belongs to a different actor namespace.
 test "$(request member PUT "/boards/$board/star?version=0" "$key" '')" = 204
 test "$(request owner DELETE "/boards/$board/star?version=0" "$(uuid)" '')" = 409
 jq -e '.code == "version_conflict"' "$scratch/response" >/dev/null
+update_before="$(admin 'SELECT clock_timestamp();')"
 test "$(request owner DELETE "/boards/$board/star?version=1" "$(uuid)" '')" = 204
+update_after="$(admin 'SELECT clock_timestamp();')"
+test "$(admin "SELECT isfinite(updated_at) AND updated_at BETWEEN '$update_before'::timestamptz AND '$update_after'::timestamptz FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
+removed_preference="$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")"
 test "$(request owner PUT "/boards/$board/star?version=0" "$key" '')" = 204
+test "$(admin "SELECT to_jsonb(p)::text FROM user_board_preferences p WHERE board_id='$board' AND user_id='$owner_id';")" = "$removed_preference"
 preference owner "$owner_id" false
 preference member "$member_id" true
 test "$(admin "SELECT version=2 AND NOT starred AND created_at<=updated_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = t
 test "$(admin "SELECT created_at FROM user_board_preferences WHERE board_id='$board' AND user_id='$owner_id';")" = "$creation"
 test "$(admin "SELECT count(*) FROM board_star_events WHERE board_id='$board' AND actor_id='$owner_id';")" = 2
+test "$(admin "SELECT count(*) FROM board_star_events e JOIN user_board_preferences p ON p.tenant_id=e.tenant_id AND p.id=e.entity_id WHERE p.board_id='$board' AND p.user_id='$owner_id' AND ((e.version=1 AND e.created_at=p.created_at) OR (e.version=2 AND e.created_at=p.updated_at));")" = 2
 test "$(admin "SELECT count(*) FROM board_star_events WHERE board_id='$board' AND actor_id='$member_id';")" = 1
 test "$(admin "SELECT count(*) FROM board_star_events e JOIN user_board_preferences p ON p.tenant_id=e.tenant_id AND p.id=e.entity_id WHERE e.board_id='$board' AND (e.actor_id<>p.user_id OR e.board_id<>p.board_id OR e.event_type<>'BOARD_STARRED' OR e.entity_type<>'UserBoardPreference' OR e.metadata<>'{}'::jsonb);")" = 0
 test "$(request owner DELETE "/boards/$board/star?version=0" "$key" '')" = 409

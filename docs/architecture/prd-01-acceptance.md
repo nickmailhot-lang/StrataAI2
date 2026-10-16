@@ -1,5 +1,14 @@
 # PRD-01 foundation acceptance and closure audit
 
+The [personal Board preference clock review](schema149-clock-inventory.md#personal-board-preference-and-history-clocks--2026-10-16)
+traces the mutable preference and its private journal separately. The complete
+upgrade driver passes; the exact new guard rejects an injected invented legacy
+creation time. The maintained restricted API fixture passes real clock windows,
+no-op/replay stability and original isolation/rollback cases in a separate fresh
+fixture, with unchanged inputs and restored inventory. The linked record retains
+fixture failures and compiled-host/current-image boundaries. Estimated PRD-01
+work remaining stays **34%**; full writer/history and release acceptance remain.
+
 The [mutable profile receipt clock review](schema149-clock-inventory.md#mutable-profile-receipt-clocks--2026-10-16)
 separates account creation/mutation time from an acknowledgment generation's
 publication/update/24-hour expiry. Required persistence assertions now verify

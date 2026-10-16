@@ -2,6 +2,14 @@
 
 This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 15%.
 
+The [personal Board preference clock review](schema149-clock-inventory.md#personal-board-preference-and-history-clocks--2026-10-16)
+verifies real new-write time windows, preserved unknown legacy creation and
+unchanged clocks on no-op/original-key replay. The complete upgrade driver and
+separate restricted API fixture pass; the exact new legacy guard rejects an
+injected invented creation time. The linked record distinguishes phase outcomes,
+private setup failures and current immutable-image/full acceptance. Estimated
+work remaining stays **15%**; the issue stays open.
+
 The [Board invitation issuer recovery/observations](operator-metrics.md#invitation-issuer-observations-and-transient-permission-recovery--2026-10-16)
 keep temporary permission-read failures recoverable without admitting stale form
 authority and add fixed private-data-free observations. All 81 focused web,

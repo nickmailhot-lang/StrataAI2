@@ -456,6 +456,9 @@ test "$(query 'SELECT count(*) FROM schema_migrations')" = 71
 test "$(query 'SELECT count(*) FROM board_star_events')" = 0
 test "$(query 'SELECT count(*) FROM user_board_preferences WHERE id IS NULL OR created_at IS NOT NULL OR version<>1')" = 0
 test "$(query 'SELECT md5(string_agg(row(tenant_id,board_id,user_id,starred,updated_at)::text,chr(10) ORDER BY board_id,user_id)) FROM user_board_preferences')" = "$preferences_before"
+PGDATABASE="$database" psql -X -v ON_ERROR_STOP=1 -f scripts/ci/test-board-star-legacy-clocks.sql >/dev/null
+test "$(query 'SELECT count(*) FROM board_star_events')" = 0
+test "$(query 'SELECT md5(string_agg(row(tenant_id,board_id,user_id,starred,updated_at)::text,chr(10) ORDER BY board_id,user_id)) FROM user_board_preferences')" = "$preferences_before"
 cp db/migrations/072_board_background_images.sql "$scratch/migrations/"
 run
 run

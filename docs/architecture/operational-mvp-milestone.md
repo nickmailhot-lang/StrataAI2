@@ -4,6 +4,14 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [personal Board preference clock audit](schema149-clock-inventory.md#personal-board-preference-and-history-clocks--2026-10-16)
+adds required upgrade/API checks for real clock windows, unknown legacy creation,
+no-op/replay stability and immutable private history. The complete upgrade driver,
+targeted negative guard and separate restricted API fixture pass; owned cleanup
+restores inventory. Production stores/schema remain unchanged. Current immutable
+CI and complete release acceptance still govern the milestone, with large-load
+testing deferred.
+
 The [native Collector and database recovery rehearsal](operator-metrics.md#native-collector-and-database-recovery-rehearsal--2026-10-16)
 passes all three complete exporter checks through the actual pinned Collector:
 healthy, unavailable and recovered. The first registration after recovery
