@@ -136,12 +136,14 @@ per-request total limit. Response bodies are discarded. Configure the documented
 service URLs to their actual deployment addresses; a login or redirect page is
 not readiness evidence.
 
-It then checks the web, API and Worker build revision/version against this
+It then checks the web, direct API, Worker and web-proxied API build revision/version against this
 bundle's already verified metadata. Metadata transfers are limited to 15 seconds
 (or the smaller health timeout) and 4,096 response bytes. Mismatches, redirects,
 malformed or incomplete responses fail. The API and Worker must report their
 respective `strataai-api` / `strataai-worker` service identities and `production`
 mode; healthy Demo or mixed-mode hosts cannot satisfy Production acceptance.
+The web proxy must serve the same selected API build and Production service
+identity; a healthy proxy routed to an older API cannot pass verification.
 Both commands connect directly and
 ignore personal curl configuration; TLS verification stays enabled. The plain
 `health-check.sh` remains a health diagnostic and does not prove build identity.

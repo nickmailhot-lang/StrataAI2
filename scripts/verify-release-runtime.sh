@@ -42,4 +42,5 @@ verify() {
 verify "${STRATAAI_WEB_URL:-http://127.0.0.1:8088}/build-metadata.json"
 verify "${STRATAAI_API_URL:-http://127.0.0.1:8080}/api/runtime" strataai-api
 verify "${STRATAAI_WORKER_URL:-http://127.0.0.1:8081}/runtime" strataai-worker
+verify "${STRATAAI_WEB_URL:-http://127.0.0.1:8088}/api/runtime" strataai-api
 echo 'Selected release health, readiness, proxy and web/API/Worker build identity verified.'

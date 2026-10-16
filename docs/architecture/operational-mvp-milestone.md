@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [web-proxy build verification](../release/promotion-and-rollback.md#web-proxy-build-identity--2026-10-15)
+requires the selected Production API build through the web origin, alongside
+direct API, Worker and web metadata. Twelve new negative cases reproduce the
+old acceptance gap. A real Nginx routing fixture previously admits both a
+different and matching API revision; the repair refuses the mismatch and admits
+the match without changing container identity or the known-good reference.
+Its metadata is synthetic, so this is operator-check evidence, not current
+application release certification. Owned cleanup restores Docker inventory;
+full current immutable CI remains required and large load tests stay deferred.
+
 The [PostgreSQL pool recovery repair](postgres-pool-recovery.md) reconnects once
 after a transient failure during read-only connection admission, before business
 work, and repeats every role/schema/version guard. The first registration after

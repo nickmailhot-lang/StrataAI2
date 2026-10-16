@@ -1,5 +1,37 @@
 # Promote and roll back an immutable release
 
+## Web proxy build identity — 2026-10-15
+
+The operator verifier now also reads `/api/runtime` through `STRATAAI_WEB_URL`.
+The web-facing API must match the selected revision/version, `strataai-api`
+service and `production` mode. Successful direct API checks and proxy health
+alone can conceal a web proxy routed to an older, otherwise healthy API.
+The existing HTTP 200, redirect refusal, bounded transfer, timeout, JSON and
+private-diagnostic requirements apply to this fourth metadata response too.
+
+All 12 new negative proxy cases fail before repair: wrong/missing service,
+invalid/missing/Demo modes, revision/version mismatch, redirect, unavailable
+endpoint and malformed JSON. After repair all **75 real-HTTP runtime/health
+cases**, **282 CI guards** and **47 release-artifact cases** pass. Mandatory CI
+already executes the runtime tests and includes this command in the source-free
+bundle and Production startup acceptance; no gate or assertion is removed.
+
+A separate retained Nginx fixture routes `/api/runtime` to a different synthetic
+API revision while direct API, Worker and web build metadata match and all six
+health endpoints return 200. The old command accepts this mismatch. The repaired
+command rejects it, then accepts the matching revision after Nginx reload, with
+the same container/image/start identity and an unchanged known-good reference.
+Both completed scoped runs preserve their three captured source inputs, remove
+private scratch files and owned fixture directories/container, and restore the
+original Docker inventory. No database, original local service, application
+image build/download/import, external provider or load test is used.
+
+The native result exercises real Nginx routing and the real operator command
+with synthetic identity responses. It does not prove current application
+deployment, successful two-version rollback or a passing current immutable-image
+release. Those remain required before acceptance; ARCH-12 stays open and large
+load tests remain deferred until after the operational MVP.
+
 Use this with the [release guide](README.md), [configuration reference](../architecture/configuration.md), [schema compatibility rules](../architecture/schema-upgrades.md) and [operational MVP milestone](../architecture/operational-mvp-milestone.md). This is an operator procedure; its presence does not establish successful production promotion or rollback.
 
 The [encrypted database recovery contract](../architecture/database-recovery.md)
@@ -40,7 +72,7 @@ Keep the prior known-good record and bundle until the candidate is accepted and 
    configuration instead of selecting a development image.
 2. Review migrations and application compatibility before applying changes. Forward-only or irreversible changes need a phased procedure and verified recovery plan. Do not assume an older image accepts a newer schema or reverse SQL files automatically.
 3. Preserve the same project name and environment configuration. Set the three image references to the verified candidate values. Apply the candidate's migrations and provision restricted roles from its release directory, as documented in the release guide.
-4. Start the candidate and run `bash verify-release-runtime.sh build-metadata.json` from its verified bundle. It requires health/readiness for web, API, Worker and the web-to-API proxy, then matches all three served build identities to that bundle. Configure `STRATAAI_WEB_URL`, `STRATAAI_API_URL` and `STRATAAI_WORKER_URL` for this same deployment when the loopback diagnostic defaults do not apply. The HTTPS-only overlay keeps API/Worker private; use approved private diagnostic addresses rather than opening their ports. Validate sign-in, a persisted Board/List/Card workflow, authorized collaboration and enabled storage/mail providers through the deployment's configured origins.
+4. Start the candidate and run `bash verify-release-runtime.sh build-metadata.json` from its verified bundle. It requires health/readiness for web, API, Worker and the web-to-API proxy, then matches web, direct API, Worker and web-proxied API build identities to that bundle. Configure `STRATAAI_WEB_URL`, `STRATAAI_API_URL` and `STRATAAI_WORKER_URL` for this same deployment when the loopback diagnostic defaults do not apply. The HTTPS-only overlay keeps API/Worker private; use approved private diagnostic addresses rather than opening their ports. Validate sign-in, a persisted Board/List/Card workflow, authorized collaboration and enabled storage/mail providers through the deployment's configured origins.
 5. If any required check fails, mark promotion failed and keep the prior known-good record available. Route traffic only when required checks pass. Record the candidate as known-good only after its measured exit criteria are satisfied.
 
 ## Roll back a failed promotion
@@ -100,11 +132,14 @@ deployed providers or two-version application rollback. ARCH-12 remains open.
 The bundled `verify-release-runtime.sh` supplies the health and served-build
 check used before accepting a Production release. It requires the selected,
 already verified `build-metadata.json`; invalid or ambiguous expected metadata
-fails before HTTP. Six health/readiness/proxy responses and all three build
+fails before HTTP. Six health/readiness/proxy responses and all four build
 responses must be HTTP 200 without redirects. Every served revision/version
 must equal the selected bundle. API and Worker must additionally report their
 respective `strataai-api` / `strataai-worker` service identities and `production`
 mode. Healthy Demo or mixed-mode hosts cannot satisfy this Production check.
+The fourth metadata response is `/api/runtime` through the configured web
+origin, with the same API service, Production mode and selected revision/version
+requirements. Direct API success cannot hide an older or incorrect web upstream.
 Responses and diagnostic configuration remain
 private; the command prints neither response bodies nor configured URLs.
 

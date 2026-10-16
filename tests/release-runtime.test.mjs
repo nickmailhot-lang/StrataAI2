@@ -10,7 +10,7 @@ const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' 
 const script = resolve('scripts/verify-release-runtime.sh');
 const expected = { commitSha: 'a'.repeat(40), version: '1.0.0' };
 const identity = { revision: expected.commitSha, version: expected.version };
-const paths = ['/web/build-metadata.json', '/api/api/runtime', '/worker/runtime'];
+const paths = ['/web/build-metadata.json', '/api/api/runtime', '/worker/runtime', '/web/api/runtime'];
 const privateBody = 'private-response-must-not-appear-in-diagnostics';
 async function fixture(scenario = {}) {
   const root = mkdtempSync(join(tmpdir(), 'strataai-release-runtime-'));
@@ -25,7 +25,7 @@ async function fixture(scenario = {}) {
     if (selected && scenario.stall) return;
     response.statusCode = selected ? (scenario.status ?? 200) : 200;
     if (response.statusCode === 302) response.setHeader('Location', '/redirect-target');
-    const runtime = request.url === paths[1] ? { service: 'strataai-api', mode: 'production' }
+    const runtime = [paths[1], paths[3]].includes(request.url) ? { service: 'strataai-api', mode: 'production' }
       : request.url === paths[2] ? { service: 'strataai-worker', mode: 'production' } : {};
     let body = JSON.stringify(paths.includes(request.url) ? { ...identity, ...runtime, privateBody } : { privateBody });
     if (selected && scenario.body !== undefined) body = scenario.body;
@@ -63,11 +63,11 @@ async function fixture(scenario = {}) {
     assert.match(basename(root), /^strataai-release-runtime-/); rmSync(root, { recursive: true, force: true });
   }
 }
-test('healthy web/API/Worker must all match the selected bundle', async () => {
+test('healthy web/API/Worker and proxied API must all match the selected bundle', async () => {
   const r = await fixture(); assert.equal(r.code, 0, r.output); assert.match(r.output, /build identity verified/);
-  assert.deepEqual(r.requests.slice(-3), paths); assert.equal(r.requests.length, 9);
+  assert.deepEqual(r.requests.slice(-4), paths); assert.equal(r.requests.length, 10);
 });
-for (const [path, service] of [[paths[1], 'strataai-api'], [paths[2], 'strataai-worker']]) {
+for (const [path, service] of [[paths[1], 'strataai-api'], [paths[2], 'strataai-worker'], [paths[3], 'strataai-api']]) {
   for (const mode of ['demo', null, undefined, 'unknown', 'Production'])
     test(`${path}: runtime mode ${String(mode)} refuses Production acceptance`, async () => {
       const r = await fixture({ path, body: JSON.stringify({ ...identity, service, mode }) });
