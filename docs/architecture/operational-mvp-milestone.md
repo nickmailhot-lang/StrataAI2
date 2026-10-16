@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [complete post-restart Work-event scenario](postgres-pool-recovery.md#complete-work-event-scenario-after-restart--2026-10-15)
+passes the unchanged driver against current `d635b54d` compiled API/Worker and
+fresh PostgreSQL/149 migrations. After 503 → 200 readiness, first registration,
+atomic event/queue failure rollback, concurrent ordering, forced RLS, constrained
+privileges, Worker crash replay, substitution refusals and expired-lease rollback/
+recovery all pass in 118.472 seconds. All 716 source and 71 binary inputs match;
+owned cleanup restores Docker inventory and removes temporary credentials.
+This is compiled-source evidence, not current immutable-image release proof.
+Full release acceptance remains required; no large-load test runs.
+
 The [web-proxy build verification](../release/promotion-and-rollback.md#web-proxy-build-identity--2026-10-15)
 requires the selected Production API build through the web origin, alongside
 direct API, Worker and web metadata. Twelve new negative cases reproduce the

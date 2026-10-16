@@ -1,5 +1,14 @@
 # Authentication acceptance map — PRD-02
 
+The [full post-database-restart Work scenario](postgres-pool-recovery.md#complete-work-event-scenario-after-restart--2026-10-15)
+now passes its first registration and subsequent command/Worker contracts with
+the unchanged API process, rather than stopping at first-registration proof.
+The fixture explicitly permits open signup/unverified accounts and uses current
+compiled assemblies in retained runtimes; strict production-policy, managed
+mail and current immutable-image/full CI acceptance remain required. Frozen
+inputs match, temporary credentials/resources are removed and Docker inventory
+is restored. Estimated PRD-02 work remaining stays **16%**; the issue stays open.
+
 The [complete durable conflict rehearsal](identity-email.md#durable-verification-and-invitation-conflicts--2026-10-15)
 passes password reset, invited verification and invitation delivery with real
 PostgreSQL/Worker execution. Closed registration, pending login refusal, original

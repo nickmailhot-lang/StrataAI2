@@ -65,3 +65,56 @@ large load testing remains disabled until after the operational MVP milestone.
 See [operator metrics](operator-metrics.md),
 [runtime modes](runtime-modes.md) and the
 [operational MVP milestone](operational-mvp-milestone.md).
+
+## Complete Work event scenario after restart — 2026-10-15
+
+The full unchanged [Work-event driver](../../scripts/ci/test-work-events.sh)
+passes after a real PostgreSQL stop/start with current compiled API/Worker
+assemblies from `d635b54d97c61de981cda7a6d5d48651b93f92d1`. This is the complete
+scenario whose first registration fails in the older hosted commands job,
+extending the earlier first-registration check to its downstream contracts.
+
+The **118.472-second** native run uses fresh PostgreSQL 17.11, all **149
+migrations**, the canonical restricted runtime roles and a separate Worker.
+Registration/login first warm the application pool. Only that owned database is
+stopped and restarted, preserving its volume; readiness reports 503 → 200.
+The same API process then executes the driver without automatic HTTP retries.
+The driver's first registration succeeds, leaving exactly one fixture account.
+
+The unchanged assertions verify:
+
+- Board/List/Card creation, three initial content-free events and corresponding
+  correctly attributed delivery jobs, and exact original-key Card replay.
+- Revoked event/queue INSERT privileges each produce HTTP 503 and roll back the
+  Card version, event sequence, event rows, audit and replay claim. Restored
+  permissions allow one recovered edit; replay does not duplicate it.
+- Concurrent Card creation produces six contiguous Board events; cross-tenant
+  reads return no rows and a cross-tenant stream insert is refused by RLS.
+- Restricted Worker columns and API/Worker mutation privileges stay constrained.
+  The Worker completes six jobs and publishes six readiness effects.
+- Reclaim after a simulated post-effect crash preserves the original readiness
+  timestamps and unrelated Organization metadata jobs/events exactly.
+- Actor, Board and tenant substitution jobs are refused without publishing the
+  protected readiness effect. Forced lease expiry rolls that effect back; normal
+  later recovery succeeds after the fault trigger is removed.
+
+The fixture's base Compose configuration mounts the **71 current API/Worker
+binary files read-only** in cached runtimes. The canonical Work-event scope
+overlay and driver are unchanged; a host adapter supplies UUIDs for Git Bash's
+missing Linux UUID file. Real HTTP, SQL, PostgreSQL RLS, Worker jobs, permission
+changes and lease triggers are used. IntegrationTest explicitly permits local
+transport, open signup and unverified accounts for this commands fixture; this
+does not establish strict production verification or managed mail acceptance.
+
+All **716 source/database/driver inputs** and **71 binary files** match the
+captured values afterward. The API process remains unchanged. Owned API/Worker/
+PostgreSQL containers, persistent volume, network and **4,119 temporary bytes**
+including fixture credentials are removed; original Docker inventory is restored.
+No existing local service/database is used, application image is built/pulled/
+imported, provider is called or large-load test is executed.
+
+This proves current compiled-source behavior for the full scenario, not the
+current immutable application images. It does not establish the exact cause of
+the historical response whose body was discarded. Current exact-commit CI and
+complete release acceptance remain mandatory. PRD-01 and PRD-02 stay open at
+**34%** and **16% estimated work remaining**, respectively (planning estimates).

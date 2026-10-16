@@ -1,5 +1,14 @@
 # PRD-01 foundation acceptance and closure audit
 
+The [complete post-database-restart Work scenario](postgres-pool-recovery.md#complete-work-event-scenario-after-restart--2026-10-15)
+passes with current compiled API/Worker, fresh restricted PostgreSQL and all 149
+migrations. It strengthens the hierarchy/atomic mutation/convergence boundary:
+full-state rollback on event/queue refusal, contiguous concurrent events,
+cross-tenant RLS refusal and leased Worker recovery all pass. All captured inputs
+match and owned cleanup restores Docker inventory. It does not replace current
+immutable-image/full CI or the complete navigation/role/lifecycle matrices.
+Estimated PRD-01 work remaining stays **34%**; the issue remains open.
+
 ## Current Card description dependency verification
 
 The [PRD-09 Markdown implementation and evidence](../card-description-markdown.md)
