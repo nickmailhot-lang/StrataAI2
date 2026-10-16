@@ -172,6 +172,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Independent Board copies](board-copy.md)
 - [Board deletion consent](board-deletion-consent.md)
 - [Board filtering (PRD-10 / PRD-16)](board-filtering.md)
+- [Keyboard scrolling while Board filters recover](board-filtering.md#keyboard-scrolling-through-filter-recovery-2026-10-16)
 - [Board invitations — permission foundation](board-invitations.md)
 - [Board label command foundation](board-label-api.md)
 - [Board label storage](board-label-storage.md)

@@ -29,6 +29,19 @@ const storage = (id = actor) => `strataai:board-filter:v1:${id}:${org}:${board}`
 function mount(p: ComponentProps<typeof BoardFilterControl> = props()) { return render(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>, { wrapper: AppThemeFixture }); }
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' })); await screen.findByRole('checkbox', { name: 'Priority (red)' }); }
 beforeEach(() => sessionStorage.clear()); afterEach(() => vi.unstubAllGlobals());
+it('keeps the filter scroll region keyboard accessible while Board admission disables its controls', async () => {
+  const fetch = vi.fn((path: string) => Promise.resolve(path === '/me' ? response({ id: actor }) : choices()));
+  vi.stubGlobal('fetch', fetch); const p = props(); const view = mount(p); await open();
+  fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: 'Retained draft' } });
+  view.rerender(<MemoryRouter><BoardFilterControl {...p} disabled /></MemoryRouter>);
+  expect(screen.getByLabelText('Card keyword')).toBeDisabled();
+  const region = screen.getByRole('region', { name: 'Board filter choices and results' });
+  expect(region).toHaveAttribute('tabindex', '0'); region.focus(); expect(region).toHaveFocus();
+  expect(screen.getByRole('button', { name: 'Close filters' })).toBeEnabled();
+  view.rerender(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>);
+  expect(region).toHaveFocus(); expect(screen.getByLabelText('Card keyword')).toHaveValue('Retained draft');
+  expect(fetch.mock.calls.every(([, init]: [string, RequestInit?]) => !init?.method || init.method === 'GET')).toBe(true);
+});
 it('lets an admitted anonymous PUBLIC visitor filter without assignee discovery or another actor criteria', async () => {
   sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Private actor criterion', labels: [], members: [actor], match: 'all' }));
   const fetch = vi.fn((path: string) => Promise.resolve(path === '/me' ? response({}, 401)

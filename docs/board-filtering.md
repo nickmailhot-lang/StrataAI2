@@ -879,3 +879,58 @@ Mounted compiled applications with controlled account setup provide supporting
 interaction evidence; they do not establish the original product root cause,
 current retained-image release or full PRD acceptance. Estimated PRD-16 work
 remaining stays **18%**; the issue remains open. No large-load tests run.
+
+## Keyboard scrolling through filter recovery (2026-10-16)
+
+[Run 38816748769](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38816748769),
+job `116792531591`, fails the phone deadline-filter case at its unchanged Axe
+assertion. The reported serious `scrollable-region-focusable` violation targets
+`.MuiDialogContent-root`. The filter component and original deadline browser
+file are unchanged from that candidate (`07b5f075`) to the repair's parent
+(`ed84851b`). Live Board recovery can disable the content's controls while the
+scrollable dialog body remains visible; Close filters is outside that body.
+
+The content now exposes an always-focusable, named region, **Board filter
+choices and results**, with an inset two-pixel theme-colored keyboard focus
+outline. Keyboard scrolling therefore remains available independently of the
+fields' current permission/read admission. This does not enable disabled fields,
+change authorization, submit Apply/Clear or move focus automatically. The same
+region remains mounted through recovery, preserving user-chosen focus and draft.
+
+The new component regression fails against the original source (35 existing
+cases pass) and passes after repair. All **62** filter-control, real-transport
+interaction and original-change protocol cases pass. Web/browser types, lint
+and all **285 CI coverage guards** pass. The initial desktop/phone native
+regressions fail on the absent named content target. Their controlled baseline
+Axe checks pass, so they are not claimed as reproducing the exact hosted Axe
+failure. The new native cases independently require the region's focus, visible
+outline and actual phone PageDown movement during a held real Board read, then
+fresh recovery, retained draft, keyboard Close and zero filter-change POSTs.
+The original deadline-filter file remains unchanged and is included in the
+complete follow-up, preserving its real date mutations, missed delivery,
+filtering, canvas persistence, canonical state and WCAG assertions.
+
+PRD-16 remains open at **18% estimated work remaining**, an unchanged planning
+estimate. Current exact-commit immutable CI and all original acceptance criteria
+remain required. Large-load testing stays deferred until after the operational
+MVP; these browser fixtures create only a small functional graph.
+
+The complete two-file desktop/phone follow-up passes **4/4 in 188,886.108 ms**,
+with no failures, flaky/skipped cases or report errors. Both new cases pass
+keyboard focus and visible outline checks; the phone case proves actual
+PageDown scroll movement while the protected Board GET is held. Both original
+deadline cases pass unchanged. All **1,277 source, 71 binary, four served web
+asset** and private Compose hashes match. The API process remains unchanged;
+the original scoped Worker helper restores the same cached image healthy and
+unscoped. Original Docker inventory is restored and **3,314 temporary bytes**
+removed after success. No images are built, pulled or imported.
+
+This uses current frontend and read-only compiled hosts in cached runtimes,
+fresh PostgreSQL 17.11/schema 149 with restricted roles, controlled mail and
+optional account verification. Runtime revision is the local compiled host's
+`13d9d83c`; it is not relabeled as the new immutable release candidate. Current
+retained images, managed providers and full release acceptance remain required.
+The failed baseline's containers are removed, but Windows long-path cleanup
+leaves a small private diagnostic folder; automatic approval review then blocks
+its explicit cleanup, which is not retried. Final documentation validation
+passes 1,939 local links and 596 anchors across 214 Markdown files.

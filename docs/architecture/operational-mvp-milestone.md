@@ -4,6 +4,13 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+[Filter keyboard recovery](../board-filtering.md#keyboard-scrolling-through-filter-recovery-2026-10-16)
+keeps the scrollable dialog body focusable when live Board checks disable its
+controls. All 62 focused filter cases, 285 CI guards and four desktop/phone
+native browser cases pass; successful-run resources are removed and original
+permission, observation and draft boundaries remain. Current full release
+acceptance remains required, and large-load tests stay deferred after MVP.
+
 [Board invitation-history recovery](invitation-history-head-admission-verification.md#temporary-board-scope-read-recovery-2026-10-16)
 keeps temporary scope-read failures recoverable with fresh admission. All 128
 focused history/issuer/telemetry checks and both desktop/phone native browser

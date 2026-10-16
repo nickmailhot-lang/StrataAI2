@@ -344,7 +344,9 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     {!open && changeNotice && <Typography role="status">{changeNotice}</Typography>}
     <Dialog open={open && available} onClose={close} fullWidth maxWidth="sm">
       <DialogTitle>Filter Board Cards</DialogTitle>
-      <DialogContent>{openingPending ? <Typography role="status">Checking current Board access…</Typography> : <Stack spacing={2}>
+      <DialogContent tabIndex={0} role="region" aria-label="Board filter choices and results"
+        sx={{ '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: '-3px' } }}>
+        {openingPending ? <Typography role="status">Checking current Board access…</Typography> : <Stack spacing={2}>
         <TextField label="Card keyword" value={criteria.keyword} onChange={e => { const keyword = e.target.value; setCriteria(c => ({ ...c, keyword })); }} disabled={disabled || labelLoading || !identity} slotProps={{ htmlInput: { maxLength: 160 } }} />
         <TextField select label="Match filters" value={criteria.match} onChange={e => { const match = e.target.value as Criteria['match']; setCriteria(c => ({ ...c, match })); }} disabled={disabled || labelLoading || !identity}>
           <MenuItem value="all">Match ALL</MenuItem><MenuItem value="any">Match ANY</MenuItem>
