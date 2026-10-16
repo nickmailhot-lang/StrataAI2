@@ -2,6 +2,7 @@
 set -euo pipefail
 test "${CI:-}" = true || { echo 'Disposable event fixtures may run only in CI.' >&2; exit 1; }
 BASE_URL="${1:-http://localhost:8080}"
+umask 077
 scratch="$(mktemp -d)"
 admin() { docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<< "$1"; }
 restore() {
@@ -14,8 +15,32 @@ trap 'echo "Work event check failed at line $LINENO" >&2' ERR
 uuid() { cat /proc/sys/kernel/random/uuid; }
 email="events-${RANDOM}-${RANDOM}@example.test"
 body="$(jq -nc --arg email "$email" '{email:$email,password:"events-correct-horse-battery",displayName:"Event fixture"}')"
-curl --fail --silent --show-error -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$body" "$BASE_URL/auth/register" > "$scratch/account.json"
-curl --fail --silent --show-error -c "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d "$body" "$BASE_URL/auth/login" >/dev/null
+# One attempt only: a first-request failure must fail the immutable-image gate.
+identity_admission() {
+  local phase="$1" expected="$2" path="$3" response="$4" status category
+  shift 4
+  if ! curl --disable --silent --globoff --proto '=http,https' --noproxy '*' \
+    --connect-timeout 5 --max-time 30 -H 'X-StrataAI-Request: 1' \
+    -H 'Content-Type: application/json' -d "$body" "$@" \
+    --write-out '%{stderr}%{http_code}' "$BASE_URL$path" \
+    2> "$scratch/admission-status" | head -c 65537 > "$response"; then
+    echo "Work event $phase transport_or_size_failure" >&2; return 1
+  fi
+  if [ "$(wc -c < "$response")" -gt 65536 ]; then
+    echo "Work event $phase transport_or_size_failure" >&2; return 1
+  fi
+  status="$(cat "$scratch/admission-status")"
+  if [ "$status" != "$expected" ]; then
+    # Never echo arbitrary provider/body fields, account data or correlation IDs.
+    category="$(jq -ser 'if length==1 and (.[0]|type)=="object" then
+      .[0].code as $code | if (["identity_storage_unavailable", "self_registration_disabled",
+        "email_verification_required", "invalid_credentials", "rate_limited"] | index($code)) != null
+        then $code else "unrecognized_response" end else "unrecognized_response" end' "$response" 2>/dev/null)" || category=unrecognized_response
+    echo "Work event $phase status=$status category=$category" >&2; return 1
+  fi
+}
+identity_admission registration 201 /auth/register "$scratch/account.json"
+identity_admission login 200 /auth/login "$scratch/login.json" -c "$scratch/cookies"
 request() { curl --max-time 30 --fail --silent --show-error -b "$scratch/cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $4" -X "$1" -d "$3" "$BASE_URL$2"; }
 organization="$(request POST /organizations '{"name":"Event Organization"}' "$(uuid)" | jq -r '.organization.id')"
 other_org="$(request POST /organizations '{"name":"Other Event Organization"}' "$(uuid)" | jq -r '.organization.id')"

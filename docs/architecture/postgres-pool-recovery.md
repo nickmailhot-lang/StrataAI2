@@ -1,5 +1,44 @@
 # PostgreSQL connection admission after restart
 
+## Bounded first-request CI admission — 2026-10-15
+
+The [Work-event driver](../../scripts/ci/test-work-events.sh) now makes exactly
+one registration attempt and one login attempt, requiring HTTP 201 and 200
+respectively before domain writes. Each request has a five-second connection
+timeout, a thirty-second total deadline and a 65,536-byte response limit. Curl
+configuration cannot introduce redirects or retries. Private scratch files use
+restrictive permissions and are removed by the existing EXIT cleanup.
+
+Failed HTTP admission reports only the phase, status and a fixed allowlist of
+public error categories. Unknown or malformed responses produce
+`unrecognized_response`; transport or size failures produce a fixed diagnostic.
+No account, password, cookie, body, provider message or correlation ID is printed.
+This preserves a useful failure category for future hosted failures without
+claiming to recover the discarded historical response.
+
+Before repair, **18 of 19 real-HTTP admission cases fail**, including unexpected
+success statuses, redirects, unbounded responses and a withheld response reaching
+the fixture watchdog. After repair **all 19 pass**, including an actual
+thirty-second timeout with one request and no retry. The tests execute the
+driver's actual registration/login prefix with Docker substituted; they do not
+replace database or immutable-image integration. Mandatory source CI runs them.
+All **285 CI coverage guards** pass; the Release solution builds without
+warnings/errors and Bash/workflow lint passes.
+
+The complete updated driver also passes a **99.540-second** native rehearsal
+against fresh PostgreSQL 17.11/all 149 migrations, restricted roles and the
+compiled `13878b77` API/Worker. After warming the pool and restarting only the
+owned database, readiness reports 503 → 200 and the first driver registration
+stores exactly one account in the unchanged API process. All existing domain,
+event/queue rollback, concurrent ordering, RLS, Worker replay, substitution and
+lease-recovery assertions pass. All **716 source/driver inputs and 71 binary
+files** match afterward. Cleanup removes the owned services, volume, network
+and **4,119 temporary bytes**, restoring original Docker inventory. Cached
+runtimes mount compiled assemblies read-only; no application images are built,
+pulled or imported, existing local database/services used, provider called or
+large-load test run. This is compiled-runtime evidence, not a complete current
+immutable-image release. Exact-commit CI and full MVP acceptance remain required.
+
 ## First request recovery — 2026-10-15
 
 The commands group in candidate `32236a3d` run `38805351041` passed the

@@ -91,6 +91,7 @@ jobs:
           node --test tests/https-recovery-cursor.test.mjs
           node --test tests/health-check.test.mjs
           node --test tests/release-runtime.test.mjs
+          node --test tests/work-events-admission.test.mjs
           node --test tests/release-database-outage.test.mjs
           node --test tests/https-certificate.test.mjs
 

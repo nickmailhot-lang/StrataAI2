@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [bounded first-request CI admission](postgres-pool-recovery.md#bounded-first-request-ci-admission--2026-10-15)
+requires one 201 registration and one 200 login before Work-event writes, with
+request/response bounds and allowlisted failure diagnostics. Eighteen admission
+regressions fail before repair; all 19 real-HTTP cases and 285 CI guards pass
+afterward. The complete updated driver also passes after an actual database
+restart in 99.540 seconds, preserving 716 source and 71 binary inputs and the
+API process. Owned cleanup restores Docker inventory. These compiled-runtime
+checks do not replace exact-commit immutable CI or full deployment acceptance;
+large load tests stay deferred until after the operational MVP.
+
 The [core Work diagnostic follow-up](api-error-contract-verification.md#core-work-synchronization-diagnostics--2026-10-15)
 guards the remaining sync endpoint, live middleware and Work hub warning writes.
 Five regressions reproduce incorrect 500/escaped-error/missing-abort behavior;
