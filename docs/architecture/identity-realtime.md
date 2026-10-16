@@ -1,5 +1,12 @@
 # Identity realtime recovery
 
+The [live diagnostic guard](api-error-contract-verification.md#live-diagnostic-failure-isolation--2026-10-15)
+preserves safe error/connection abort when a warning provider throws during
+session or replay-read failure. Direct iterator and actual API-host WebSocket
+cases pass with no profile disclosure, retained cancellation semantics and
+subscription cleanup. Current immutable/full release and deployed provider
+acceptance remain required.
+
 The profile opens the existing SignalR SDK over `/me/live` after its first authenticated `/me/sync` snapshot. A connection may watch only its authenticated account, with one active subscription; no user/Organization/Board ID is accepted. Strict configured-origin checks cover negotiation and websocket upgrade. The route requires authentication, shares existing buffer/message bounds and uses same-origin cookies without query-string credentials. Development and release proxies forward websocket upgrade correctly.
 
 The API revalidates the opaque session before each bounded identity replay read and again before sending its result. Logout, expiry, reset or deactivation therefore ends access rather than preserving handshake authority. Each read enters the existing global identity user/session lock boundary. Account-status JSON uses the same canonical strings as HTTP profile responses. Failure codes and correlation-only logs avoid leaking exception text or account data. Cancellation and disconnect release the subscription slot.

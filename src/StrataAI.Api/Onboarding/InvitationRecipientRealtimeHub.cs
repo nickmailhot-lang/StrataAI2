@@ -96,7 +96,7 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
             }
             catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Invitation recipient live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Invitation recipient live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("invitation_sync_unavailable"); throw;
             }
         }
@@ -105,7 +105,7 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
             try { return await replay.ReadAsync(actor, cursor, cancellationToken: token); }
             catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Invitation recipient live read unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Invitation recipient live read unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("invitation_sync_unavailable"); throw;
             }
         }
@@ -120,7 +120,7 @@ public sealed class InvitationRecipientRealtimeHub(TransactionalInvitationRecipi
             }
             catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Invitation recipient live account binding unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Invitation recipient live account binding unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("invitation_sync_unavailable"); throw;
             }
         }

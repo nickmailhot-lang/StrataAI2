@@ -41,7 +41,7 @@ public sealed class OrganizationBoardRealtimeHub(TransactionalOrganizationBoardS
                 try { result = await selected.ReadAsync(organizationId, actor, cursor, cancellationToken: token); }
                 catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
                 {
-                    logger.LogWarning("Organization live replay unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                    ApiDiagnostics.Warning(logger, "Organization live replay unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                     Denied("organization_sync_unavailable"); throw;
                 }
                 if (!result.Succeeded || result.Value is null) Denied(result.ErrorCode ?? "organization_sync_unavailable");
@@ -53,7 +53,7 @@ public sealed class OrganizationBoardRealtimeHub(TransactionalOrganizationBoardS
                 try { current = await selected.IsCursorCurrentAsync(organizationId, actor, page.Cursor, token); }
                 catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
                 {
-                    logger.LogWarning("Organization live admission unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                    ApiDiagnostics.Warning(logger, "Organization live admission unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                     Denied("organization_sync_unavailable"); throw;
                 }
                 if (!current.Succeeded || !current.Value) Denied(current.ErrorCode ?? "organization_sync_unavailable");
@@ -82,7 +82,7 @@ public sealed class OrganizationBoardRealtimeHub(TransactionalOrganizationBoardS
             }
             catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Organization live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Organization live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("organization_sync_unavailable"); throw;
             }
         }

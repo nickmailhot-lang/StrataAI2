@@ -66,7 +66,7 @@ public sealed class RetentionHoldRealtimeHub(RetentionHoldService records, IIden
             }
             catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Hold live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Hold live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("retention_hold_source_unavailable");
             }
         }

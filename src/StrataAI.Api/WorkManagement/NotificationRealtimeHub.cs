@@ -76,7 +76,7 @@ public sealed class NotificationRealtimeHub(NotificationInboxService inbox, IIde
             }
             catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Notification live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Notification live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("notification_sync_unavailable");
                 throw;
             }
@@ -86,7 +86,7 @@ public sealed class NotificationRealtimeHub(NotificationInboxService inbox, IIde
             try { return await inbox.ReadEventsAsync(organizationId, actor, since, token); }
             catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Notification live read unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Notification live read unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("notification_sync_unavailable");
                 throw;
             }

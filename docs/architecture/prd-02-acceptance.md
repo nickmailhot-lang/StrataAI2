@@ -1,5 +1,15 @@
 # Authentication acceptance map — PRD-02
 
+The [live diagnostic failure repair](api-error-contract-verification.md#live-diagnostic-failure-isolation--2026-10-15)
+prevents throwing warning providers from replacing the intended identity-stream
+error and abort. Eleven new regressions fail before repair; all 32 direct cases
+and both real HTTP/SignalR test-host cases pass after repair, preserving caller
+cancellation and withholding profiles through session/read failure. Captured
+source/binary inputs match and owned cleanup restores Docker inventory. These
+controlled compiled-source fixtures do not certify current immutable images,
+strict deployment policies or managed providers. Estimated PRD-02 work remaining
+stays **16%**; the ticket remains open and large load tests stay deferred.
+
 The [full post-database-restart Work scenario](postgres-pool-recovery.md#complete-work-event-scenario-after-restart--2026-10-15)
 now passes its first registration and subsequent command/Worker contracts with
 the unchanged API process, rather than stopping at first-registration proof.

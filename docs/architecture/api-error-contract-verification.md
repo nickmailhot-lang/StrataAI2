@@ -1,5 +1,57 @@
 # API error envelope verification
 
+## Live diagnostic failure isolation — 2026-10-15
+
+The live-hub audit finds **24 unguarded warning writes in ten existing hubs**.
+They run after a session/read/admission failure but before the safe hub error
+and connection abort. A throwing diagnostic provider can replace that intended
+error. The affected paths now use the existing `ApiDiagnostics.Warning` guard;
+warning templates, levels, correlation fields, denial codes, authorization and
+cancellation filters are unchanged. This covers identity, notification, private
+stars, Organization Board/metadata/configuration/lifecycle, invitations and
+existing retention-hold streams without expanding those features.
+
+The [direct iterator regressions](../../tests/StrataAI.Api.Tests/LiveDiagnosticFailureTests.cs)
+execute the real async iterators with controlled session/storage faults and
+logging providers. Before repair, **11 of 32 cases fail** because a logging
+exception replaces the intended `HubException`. After repair, **32/32 pass**:
+all ten session-failure paths with both healthy and throwing writers, ten caller
+cancellation paths, and identity replay-read failure with both writer modes.
+Failures abort the connection, release subscription state and preserve the safe
+code without yielding a page. Cancellation remains cancellation. Healthy
+providers still receive one warning with only the original template and bound
+correlation field, excluding cookie, provider exception and diagnostic details.
+
+Two additional [HTTP/SignalR transport cases](../../tests/StrataAI.Api.Tests/LiveDiagnosticFailureHttpTests.cs)
+pass through the actual API test host: an already authenticated WebSocket sees
+a session-service or identity-read fault while its hub logger throws. The
+transport closes within the unchanged eight-second deadline, emits no profile
+stream item and discloses neither failure detail. A completion error alone is
+not accepted as proof of connection abort. These are injected service faults,
+not an observed disclosure exploit against an older deployed release.
+
+All **64 selected existing live-update transport/admission cases** also pass,
+excluding the new direct class and transport method from that selection:
+**98 focused cases total**, with zero skipped or failed. The Release solution
+and final API test build have zero warnings/errors. Existing successful streams,
+origin/cursor rules, access withdrawal and recovery remain covered by those
+unchanged regression assertions; individual test deadlines are retained.
+
+The direct run preserves **794 source and 415 binary files**; the transport run
+and existing-live run preserve **795 source and 415 binary files**, with zero mismatches. Owned test
+containers are removed and original Docker inventory restored. No database,
+existing local service, new image build/pull/import, external provider or load
+test is used. The first transport invocation refuses the Windows-generated
+content-root path before hosting; the existing explicit Linux test-root setting
+corrects only that private launcher. Source inputs and binaries remain unchanged.
+
+The transport host uses controlled Demo persistence in a retained Linux runtime
+with current compiled assemblies, not current immutable release images or
+managed diagnostics/providers. Full current CI, deployed failure/authorization
+acceptance and the remaining PRD/architecture scope remain required. PRD-02 stays
+open at **16% estimated work remaining**, a planning estimate. Large load testing
+remains deferred until after the operational MVP.
+
 PRD-21 API-FR-003 requires code, message and correlationId in error responses.
 The shared Problem Details customization preserves existing domain codes and
 public titles and adds the actual response correlation reference. Empty errors

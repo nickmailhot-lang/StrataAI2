@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [live diagnostic guard](api-error-contract-verification.md#live-diagnostic-failure-isolation--2026-10-15)
+protects 24 existing warning sites across ten hubs. Eleven regressions reproduce
+logging exceptions replacing intended failures; all 32 direct iterator cases
+and two API-host SignalR cases pass after reusing the existing guarded logger.
+Safe errors, connection abort, cancellation and private payload boundaries are
+preserved. Captured inputs match and owned cleanup restores Docker inventory;
+current immutable/full release and deployed diagnostic acceptance remain
+required. No large-load test runs.
+
 The [assembled acceptance-record gate](release-bundle-startup.md#assembled-acceptance-record-gate--2026-10-15)
 requires the real bundled command to preserve its reference while the disposable
 Worker is unavailable, then succeed with unchanged state after the same image

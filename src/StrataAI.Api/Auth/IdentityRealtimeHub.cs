@@ -73,7 +73,7 @@ public sealed class IdentityRealtimeHub(IIdentityService identities, IdentityPol
             }
             catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Identity live session check unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Identity live session check unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("identity_sync_unavailable");
                 throw;
             }
@@ -83,7 +83,7 @@ public sealed class IdentityRealtimeHub(IIdentityService identities, IdentityPol
             try { return await identities.ReadEventsAsync(actor, since, token); }
             catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Identity live read unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Identity live read unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("identity_sync_unavailable");
                 throw;
             }

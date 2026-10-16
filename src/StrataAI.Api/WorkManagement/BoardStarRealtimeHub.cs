@@ -74,7 +74,7 @@ public sealed class BoardStarRealtimeHub(IWorkManagementService work, IIdentityS
             }
             catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Private star session unavailable. CorrelationId={CorrelationId}",http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Private star session unavailable. CorrelationId={CorrelationId}",http?.TraceIdentifier);
                 Denied("board_star_sync_unavailable"); throw;
             }
         }
@@ -88,7 +88,7 @@ public sealed class BoardStarRealtimeHub(IWorkManagementService work, IIdentityS
             }
             catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Private star admission unavailable. CorrelationId={CorrelationId}",http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Private star admission unavailable. CorrelationId={CorrelationId}",http?.TraceIdentifier);
                 Denied("board_star_sync_unavailable"); throw;
             }
         }
@@ -103,7 +103,7 @@ public sealed class BoardStarRealtimeHub(IWorkManagementService work, IIdentityS
             }
             catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Private star delivery unavailable. CorrelationId={CorrelationId}",http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Private star delivery unavailable. CorrelationId={CorrelationId}",http?.TraceIdentifier);
                 Denied("board_star_sync_unavailable"); throw;
             }
         }

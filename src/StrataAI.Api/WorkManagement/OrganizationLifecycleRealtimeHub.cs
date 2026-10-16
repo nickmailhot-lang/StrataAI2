@@ -61,7 +61,7 @@ public sealed class OrganizationLifecycleRealtimeHub(IOrganizationLifecycleEvent
             }
             catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Organization lifecycle stream unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Organization lifecycle stream unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("organization_storage_unavailable"); throw;
             }
         }
@@ -75,7 +75,7 @@ public sealed class OrganizationLifecycleRealtimeHub(IOrganizationLifecycleEvent
             }
             catch (Exception error) when (error is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Organization lifecycle session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Organization lifecycle session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("organization_storage_unavailable"); throw;
             }
         }

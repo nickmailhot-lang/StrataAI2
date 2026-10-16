@@ -39,7 +39,7 @@ public sealed class OrganizationConfigurationRealtimeHub(OrganizationConfigurati
                 try { result = await selected.ReadAsync(organizationId, actor, cursor, ct: token); }
                 catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
                 {
-                    logger.LogWarning("Configuration live replay unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                    ApiDiagnostics.Warning(logger, "Configuration live replay unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                     Denied("configuration_sync_unavailable"); throw;
                 }
                 if (!result.Succeeded || result.Value is null) Denied(result.ErrorCode ?? "configuration_sync_unavailable");
@@ -51,7 +51,7 @@ public sealed class OrganizationConfigurationRealtimeHub(OrganizationConfigurati
                 try { current = await selected.IsCursorCurrentAsync(organizationId, actor, page.Cursor, token); }
                 catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
                 {
-                    logger.LogWarning("Configuration live admission unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                    ApiDiagnostics.Warning(logger, "Configuration live admission unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                     Denied("configuration_sync_unavailable"); throw;
                 }
                 if (!current.Succeeded || !current.Value) Denied(current.ErrorCode ?? "configuration_sync_unavailable");
@@ -80,7 +80,7 @@ public sealed class OrganizationConfigurationRealtimeHub(OrganizationConfigurati
             }
             catch (Exception exception) when (exception is not HubException && !token.IsCancellationRequested)
             {
-                logger.LogWarning("Configuration live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Configuration live session unavailable. CorrelationId={CorrelationId}", http?.TraceIdentifier);
                 Denied("configuration_sync_unavailable"); throw;
             }
         }
