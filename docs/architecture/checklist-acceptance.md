@@ -400,3 +400,18 @@ preserved text/completion, socket recovery, versions, committed receipt,
 revocation, unchanged state, accessibility and deadline checks. Captured inputs
 match during execution and owned fixtures are removed. Current immutable/full
 acceptance remains pending; estimated work remaining stays **33%**.
+
+The [cached-detail assertion snapshot repair](../kanban-performance.md#cached-detail-assertion-snapshot-isolation-2026-10-16)
+awaits the existing browser-painted observation before enabled-title assertion
+polling can build a document-wide accessibility failure snapshot during the timed
+opening. The exact title/focus/enabled/viewport/paint criteria, 200 ms budget,
+all 63 items, 50/13 pages, held-command feedback and 20 mutation samples remain.
+The unchanged local baseline passes at 162.5 ms; a separate CPU-instrumented
+318.9 ms failure identifies observer work and remains retained as a diagnostic
+failure. Final normal execution passes the complete four-scenario shared group,
+with Checklist detail 107.0 ms, feedback 44.6 ms and mutation p95 79.449 ms.
+Nine observer checks, browser types and 289 CI guards pass. Native inputs match
+and owned cleanup restores Docker inventory. This is compiled-source evidence,
+not current immutable/full CI or proof of the hosted failure's exclusive cause.
+PRD-13 remains open at **33% estimated work remaining**; large-load tests stay
+post-MVP.

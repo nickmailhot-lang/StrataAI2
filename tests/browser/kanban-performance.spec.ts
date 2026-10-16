@@ -146,9 +146,10 @@ test(`PRD-06: normal Board readiness, cached detail and mutation latency meet bu
   await page.evaluate(armCachedDetailPaint, { path: `/app/${org}/boards/${board}/cards/${card}`, title: 'Performance card 1' });
   const detailStarted = performance.now();
   await page.getByRole('link', { name: 'Performance card 1', exact: true }).click();
+  // Assertion failure snapshots must not compete with the timed opening.
+  const detailMs = await page.evaluate(readCachedDetailPaint);
   await expect(page.getByRole('dialog', { name: 'Card details', exact: true }).getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
   const detailAutomationMs = performance.now() - detailStarted;
-  const detailMs = await page.evaluate(readCachedDetailPaint);
   const mutations: number[] = [];
   for (let index = 0; index < 20; index++) {
     const began = performance.now();

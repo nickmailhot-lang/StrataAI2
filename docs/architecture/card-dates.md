@@ -882,3 +882,16 @@ registry and collection of all 400 cases in 146 intact files also pass;
 collection is not execution. PRD-12 remains open at **24% estimated work
 remaining**. Full current-image CI and all original acceptance remain required;
 large-load tests remain disabled until after MVP.
+
+## Painted-detail observation before assertion diagnostics (2026-10-16)
+
+The [shared benchmark observer repair](../kanban-performance.md#cached-detail-assertion-snapshot-isolation-2026-10-16)
+keeps the exact painted editable title criterion and original budgets, while
+moving enabled-title assertion polling after that observation. All four normal
+scenarios pass; dated-Card readiness is 1,219.789 ms, detail 125.9 ms and mutation
+p95 93.554 ms, with all 20 original date-command samples. The production bundle
+and binaries are unchanged. Profiling identifies benchmark snapshot work but
+does not establish the hosted Checklist failure's exclusive cause. Native input
+and cleanup audits pass; current immutable/full CI remains required. PRD-12 stays
+open at **24% estimated work remaining**, with large-load tests deferred until
+after the operational MVP.

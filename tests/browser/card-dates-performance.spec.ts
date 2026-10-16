@@ -44,9 +44,10 @@ test('PRD-12: normal dated Board readiness, cached detail and date commands meet
   await page.evaluate(armCachedDetailPaint, { path: `${path}/cards/${card}`, title: 'Date performance card 1' });
   const detailBegan = performance.now(); await link.click();
   const detail = page.getByRole('dialog', { name: 'Card details', exact: true });
+  // Assertion failure snapshots must not compete with the timed opening.
+  const detailMs = await page.evaluate(readCachedDetailPaint);
   await expect(detail.getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
   const detailAutomationMs = performance.now() - detailBegan;
-  const detailMs = await page.evaluate(readCachedDetailPaint);
   await expect(detail.getByRole('region', { name: 'Card dates', exact: true })).toContainText('Upcoming');
   const samples: number[] = [];
   for (let index = 0; index < 20; index++) {

@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [cached-detail observation repair](../kanban-performance.md#cached-detail-assertion-snapshot-isolation-2026-10-16)
+keeps assertion diagnostic snapshots outside the browser-painted opening sample.
+All four normal Kanban/date/Checklist scenarios pass their original budgets,
+with 80 actual mutation samples, unchanged readiness criteria and no retries or
+skips. Nine observer checks, browser types and 289 CI guards pass. Production
+assets/binaries are unchanged, captured inputs match and owned cleanup restores
+Docker inventory. This does not establish the hosted failure's exclusive cause
+or replace new-candidate immutable/full CI. PRD-06/12/13 and the milestone remain
+open; large-load tests remain deferred.
+
 The [invitation consent retirement repair](invitation-administration-ui.md#immediate-retirement-of-invitation-revocation-consent-2026-10-16)
 prevents queued inputs from revoking after cancellation or source withdrawal,
 including during asynchronous account admission. Ten controlled pre-fix failures

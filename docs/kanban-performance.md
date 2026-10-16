@@ -1020,3 +1020,82 @@ containers/credentials/new support images are removed; original stopped
 database data is preserved. Current immutable/full CI and full AC/DoD remain
 required. PRD-12/13 stay open at **24%/33% estimated work remaining**.
 Large-load testing remains deferred until after the operational MVP.
+
+## Cached-detail assertion snapshot isolation (2026-10-16)
+
+Hosted run `38846497301` at `d635b54d` fails the normal Checklist cached-detail
+budget at **231.1 ms**. Its timing helper, tracing settings, Checklist scenario
+and dependency lock file are unchanged through parent `63e20ecf`. The retained
+trace locates the delay after activation but contains two empty browser-network
+files and no dedicated CPU profile. It cannot establish the product bottleneck.
+
+The unchanged current-source native Checklist scenario passes at **162.5 ms**;
+this is not a local reproduction of that hosted failure. A separate timeline
+invocation passes at 152.2 ms. A CPU-instrumented diagnostic then fails at
+318.9 ms and samples Playwright's `ariaSnapshotForExpectFailure` 44 times in the
+first 170 ms after activation (159 samples total in that interval). The installed
+Playwright 1.63.0 source confirms that a missing-element assertion can generate
+an accessibility tree of the entire document body. Sampling changes the timing
+conditions; that diagnostic is retained as a failure, not ordinary acceptance.
+
+Kanban desktop/phone, dated-Card and Checklist benchmarks now await their existing
+browser-painted observation immediately after the click, before polling the
+enabled-title assertion. The assertion remains immediately afterward. No timing
+is subtracted. The observer still requires the intended activation, exact title,
+enabled focused input, non-hidden/non-inert ancestry, nonzero in-viewport bounds
+and readiness across a painted frame, with the same five-second bound. The
+**200 ms** target, all other budgets, original fixture sizes, request/version
+assertions, mutation samples and test deadlines remain unchanged. A statement
+comparison confirms that only this await's placement and explanatory comments
+change across the three files. The automation-duration diagnostic still includes
+the click, observation and enabled-title assertion.
+
+The same CPU-instrumented diagnostic passes after the reorder at **129.1 ms**.
+All production frontend assets and 71 API/Worker binary hashes are identical;
+the only three changed captured sources are those benchmark files. These
+independent runs do not establish a percentage speedup or the exclusive cause
+of the hosted failure. The compact profile retains only the 80 largest stack
+entries, so absent entries cannot establish zero samples. Current immutable-image
+CI remains necessary to verify the candidate under the hosted conditions.
+
+All nine painted-readiness checks pass, including refusal of disabled, wrong-title,
+hidden, offscreen, unfocused and zero-size controls, loss of readiness before paint
+and missing activation. Browser TypeScript and all 289 immutable CI coverage
+checks pass. Large-load testing remains deferred until after the operational MVP.
+
+The final invocation runs all four normal scenarios without CPU instrumentation
+in **161,677.462 ms**, with four passes, no failures/retries/flaky results/skips
+or report errors:
+
+| Scenario | Usable Board (<1,500 ms) | Painted editable detail (<200 ms) | Feedback (<100 ms) | Mutation p95 (<500 ms) |
+| --- | ---: | ---: | ---: | ---: |
+| Dated Cards, desktop | 1,219.789 | 125.900 | Not sampled by this scenario | 93.554 |
+| Checklists, desktop | 824.027 | 107.000 | 44.600 | 79.449 |
+| Kanban, desktop | 637.316 | 99.200 | 84.100 | 127.865 |
+| Kanban, phone/touch | 750.265 | 93.700 | 74.800 | 118.406 |
+
+Each scenario retains three Lists, 50 Cards and 20 actual mutation samples. The
+Checklist scenario retains 63 items, authoritative 50/13 item pages and actual
+held-command feedback. All 80 samples and their p95 calculations are independently
+reconciled against the original budgets. This is normal-condition verification,
+not a large-load test.
+
+Each native invocation uses fresh restricted PostgreSQL 17.11/pgvector with all
+149 migrations, current read-only compiled API/Worker assemblies, current
+production Vite assets through Nginx, cached runtime images, an explicit private
+fake mail provider and the general phase's optional-verification policy. Runtime
+metadata remains `e88c6514`; the report's fixed release-topology caption does not
+certify exact current-main images. All 1,286 captured sources, 71 binary files and
+four served frontend assets match within the final invocation. Across baseline
+and final runs, only the three benchmark sources change; binaries and frontend
+assets match. The API remains stable while the original scoped Worker helper
+recreates/restores its scope using the same image. Every owned fixture is removed
+and its original Docker inventory restored, including the failed CPU diagnostic.
+No original database, Demo, image build/pull/import/download or large-load test
+is used. The final invocation removes 3,311 temporary bytes; private failed
+CPU diagnostics remain available for review.
+
+PRD-06, PRD-12 and PRD-13 remain open at **25%, 24% and 33% estimated work
+remaining**, respectively. Current immutable/full CI and all remaining acceptance
+criteria govern closure; this observation repair does not establish that every
+hosted timing failure has been resolved.

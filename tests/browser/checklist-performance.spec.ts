@@ -53,9 +53,11 @@ test('PRD-13: normal checklist feedback, seek pages and mutation latency meet bu
     const usableMs = performance.now() - began;
     await page.evaluate(armCachedDetailPaint, { path: `${boardPath}/cards/${card}`, title: 'Checklist performance Card 1' });
     const detailBegan = performance.now(); await page.getByRole('link', { name: 'Checklist performance Card 1', exact: true }).click();
+    // Let the browser-painted observer finish before assertion polling can
+    // serialize an accessibility failure snapshot during the timed opening.
+    const detailMs = await page.evaluate(readCachedDetailPaint);
     await expect(page.getByRole('dialog', { name: 'Card details', exact: true }).getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
     const detailAutomationMs = performance.now() - detailBegan;
-    const detailMs = await page.evaluate(readCachedDetailPaint);
     await page.getByRole('button', { name: 'Show checklists', exact: true }).press('Enter');
     await expect(page.getByText('0 of 63 items complete (0%)', { exact: true })).toBeVisible();
     const itemBegan = performance.now(); await page.getByRole('button', { name: 'Show items in Paged preparations', exact: true }).press('Enter');
