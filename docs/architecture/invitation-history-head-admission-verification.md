@@ -92,3 +92,54 @@ managed providers or full release acceptance. PRD-03, PRD-05 and PRD-60 remain
 open at **8%**, **14%** and **18% estimated work remaining**, respectively,
 unchanged planning estimates. Large-load testing remains disabled until after
 the operational MVP milestone.
+
+## Temporary Board scope-read recovery (2026-10-16)
+
+Board history previously treated every non-200 Board scope response as a
+permanent unavailable administration scope. A temporary 429/500/502/503 now
+clears private display authority and shows the existing generic retry error with
+Refresh invitations available. Every later read still checks the current
+account, actual Board head, matching active Board and administrative permission,
+history shape and final account before publishing rows. Confirmed
+401/403/404 or invalid/nonadministrative 200 scopes retain private denial.
+Background live/account rechecks remain independently authorized; this change
+does not require a user action before an already scheduled fresh read.
+
+All five new component cases fail against the original source and pass after
+the repair. They cover four temporary statuses, zero history reads or revocations
+before admission, explicit Refresh recovery and a subsequent nonadministrative
+scope that still withholds history. The complete focused history/issuer/telemetry
+selection passes **128/128**. No backend, schema, deadline or mutation policy
+changes are involved.
+
+The native browser fixture keeps the simulated scope outage active throughout
+its privacy assertions, then restores the real endpoint before keyboard Refresh.
+Its first version restored service after one request and failed both viewports
+because competing live admission reads could already recover. That observation
+does not establish a product privacy failure: successful disclosure followed
+a fresh real authorized scope check. The corrected fixture retains fresh-head,
+keyboard, accessibility, exact single revocation and canonical-state assertions.
+
+PRD-03 remains open at **8%**, PRD-04 at **15% estimated work remaining**.
+Current exact-commit immutable CI and all remaining acceptance criteria still
+govern closure. Large-load testing remains disabled until after the MVP.
+
+The corrected complete desktop/phone file passes **2/2 in 88,791.274 ms**,
+with no failures, flaky/skipped cases or report errors. It checks the private
+outage display, fresh real protected history, keyboard Cancel with zero DELETEs,
+keyboard confirmation with exactly one DELETE, one canonical revoked invitation,
+one document navigation and zero WCAG 2.2 violations. The fixture runs current
+frontend and read-only compiled API/Worker against fresh PostgreSQL 17.11,
+149 migrations and restricted roles. Production runtime uses controlled mail
+and optional verification; this does not certify managed providers, strict
+verification, retained current images or full release acceptance.
+
+All **1,276 source, 71 binary, four served frontend asset** and private Compose
+hashes match. API identity/start remain stable; the original scoped Worker
+helper restores the same cached image healthy and unscoped. Original Docker
+inventory is restored and **3,329 temporary bytes** removed after success,
+without building, downloading or importing images. The earlier failed fixture's
+containers are removed, but automatic approval review blocked cleanup of its
+remaining private diagnostic folder; that deletion was not retried. Web/browser
+types, lint, all **285 CI coverage guards**, 1,937 documentation links and
+594 anchors pass. The repository load-test flag is independently confirmed **0**.

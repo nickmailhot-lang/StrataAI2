@@ -891,3 +891,9 @@ accessibility and deadlines intact. Captured inputs independently match and
 owned local fixtures are removed. This compiled controlled-account run does
 not establish strict managed-mail, current immutable release or full PRD
 acceptance. Estimated work remaining stays **8%**; PRD-03 remains open.
+
+The [temporary Board invitation-history recovery](invitation-history-head-admission-verification.md#temporary-board-scope-read-recovery-2026-10-16)
+keeps transient scope-read failures retryable while preserving fresh admission
+and private denial. All 128 focused history/issuer/telemetry checks pass.
+Current immutable CI and full acceptance remain required; estimated work
+remaining stays **8%**, and large-load tests remain deferred until after MVP.

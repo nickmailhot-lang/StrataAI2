@@ -617,3 +617,9 @@ Board-screen checks pass, as does the complete unchanged desktop/phone file
 2/2 with original counts, peer/draft/reload/focus assertions and deadlines.
 Inputs and cleanup are independently verified. Current immutable/full evidence
 still governs closure; work remaining stays **15%** and no large-load tests run.
+
+The [temporary Board invitation-history recovery](invitation-history-head-admission-verification.md#temporary-board-scope-read-recovery-2026-10-16)
+keeps transient scope-read failures retryable while preserving fresh admission
+and private denial. All 128 focused history/issuer/telemetry checks pass.
+Current immutable CI and full acceptance remain required; estimated work
+remaining stays **15%**, and large-load tests remain deferred until after MVP.

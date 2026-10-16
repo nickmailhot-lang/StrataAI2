@@ -4,6 +4,12 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+[Board invitation-history recovery](invitation-history-head-admission-verification.md#temporary-board-scope-read-recovery-2026-10-16)
+keeps temporary scope-read failures recoverable with fresh admission. All 128
+focused history/issuer/telemetry checks and both desktop/phone native browser
+cases pass, with owned successful-run resources removed; current immutable/full release
+acceptance remains required. Large-load tests stay deferred until after MVP.
+
 The [invitation issuer recovery/observation increment](operator-metrics.md#invitation-issuer-observations-and-transient-permission-recovery--2026-10-16)
 keeps temporary Board permission-read failures recoverable through a fresh check
 and adds fixed private-data-free Organization/Board invitation observations.

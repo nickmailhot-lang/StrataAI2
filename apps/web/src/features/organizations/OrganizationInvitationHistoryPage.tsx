@@ -201,8 +201,9 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
           if (!validInvitationKey(boardId)) { deny(404); return; }
           const boardResult = await request(`/boards/${encodeURIComponent(boardId)}`, {}, signal); if (!valid(controller)) return;
           if ([401, 403, 404].includes(boardResult.status)) { deny(boardResult.status); return; }
+          if (boardResult.status !== 200) throw new Error('Board history admission unavailable');
           const scope = boardResult.body as { board?: { id: string; organizationId: string; lifecycleState: string; name: string }; access?: { canAdminister: boolean } } | undefined;
-          if (boardResult.status !== 200 || scope?.board?.id !== boardId || scope.board.organizationId !== organizationId
+          if (scope?.board?.id !== boardId || scope.board.organizationId !== organizationId
             || scope.board.lifecycleState !== 'active' || typeof scope.board.name !== 'string' || !scope.board.name.trim()
             || scope.access?.canAdminister !== true) { deny(404); return; }
           currentBoardName = scope.board.name;
