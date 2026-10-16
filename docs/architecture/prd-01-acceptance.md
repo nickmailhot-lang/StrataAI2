@@ -1,5 +1,17 @@
 # PRD-01 foundation acceptance and closure audit
 
+The [mutable profile receipt clock review](schema149-clock-inventory.md#mutable-profile-receipt-clocks--2026-10-16)
+separates account creation/mutation time from an acknowledgment generation's
+publication/update/24-hour expiry. Required persistence assertions now verify
+actual publication windows, immutable replay clocks/expiry, expired-key version-3
+replacement, canonical source/audit counts, unchanged session and preserved user
+creation. The native positive contract passes; a deliberately stale replacement
+clock is rejected by the exact new guard in a separate negative probe. Both runs
+preserve captured source/binaries and original Docker inventory. Production stores
+already implement the reviewed semantics and remain unchanged; compilation and
+all 285 CI guards pass. Historical/other-writer and current immutable/full release
+acceptance remain required. PRD-01 stays open at **34% estimated work remaining**.
+
 The [retained identity receipt classification](schema149-clock-inventory.md#retained-identity-receipt-facts--2026-10-16)
 traces five receipt writers, retained publication/consumption clocks and bounded
 expiry cleanup. The maintained role guard now checks every column's UPDATE

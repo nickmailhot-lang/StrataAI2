@@ -68,8 +68,31 @@ internal static class IdentityProfileExpiryContract
             }
             async Task Sql(string text)
             { await using var command = new NpgsqlCommand(text, admin); await command.ExecuteNonQueryAsync(ct); }
-            Task<IdentityOperation<UserProfile>> Update(string name = "Elapsed profile") => identity.UpdateProfileAsync(
-                actor, name, "https://example.test/avatar.png", "en-CA", "America/Vancouver", 1, "profile-expiry-contract", ct);
+            Task<IdentityOperation<UserProfile>> Update(string name = "Elapsed profile", long expectedVersion = 1) => identity.UpdateProfileAsync(
+                actor, name, "https://example.test/avatar.png", "en-CA", "America/Vancouver", expectedVersion, "profile-expiry-contract", ct);
+            async Task<DateTimeOffset> DatabaseNow()
+            {
+                await using var query = new NpgsqlCommand("SELECT clock_timestamp();", admin);
+                return await query.ExecuteScalarAsync(ct) is DateTime value
+                    ? new DateTimeOffset(value) : throw new InvalidOperationException("Database clock unavailable.");
+            }
+            async Task VerifyReceiptClocks(DateTimeOffset before, DateTimeOffset after)
+            {
+                await using var query = new NpgsqlCommand("""
+                    SELECT created_at,updated_at,expires_at,
+                        isfinite(created_at) AND isfinite(updated_at) AND isfinite(expires_at)
+                    FROM identity_profile_replays WHERE user_id=@actor AND key_id=@key;
+                    """, admin);
+                query.Parameters.AddWithValue("actor", actor); query.Parameters.AddWithValue("key", context.IdempotencyKey!.Value);
+                await using var rows = await query.ExecuteReaderAsync(ct);
+                Require(await rows.ReadAsync(ct) && rows.GetBoolean(3), "Profile receipt clocks are missing or not finite.");
+                var created = rows.GetFieldValue<DateTimeOffset>(0); var updated = rows.GetFieldValue<DateTimeOffset>(1);
+                var expires = rows.GetFieldValue<DateTimeOffset>(2);
+                Require(created >= before && created <= after && updated >= created && updated <= after
+                    && expires >= before.AddHours(24) && expires <= after.AddHours(24) && expires > updated,
+                    "Profile receipt clocks do not describe its actual publication and 24-hour retention window.");
+                Require(!await rows.ReadAsync(ct), "Profile receipt identity is not unique.");
+            }
             var table = keyed ? "identity_profile_replays" : "identity_events";
             var fault = $"ci_profile_expiry_{actor:N}";
             // Fixture-generated identifiers only. The trigger verifies the
@@ -115,12 +138,18 @@ internal static class IdentityProfileExpiryContract
             await Sql($"UPDATE sessions SET expires_at=clock_timestamp()+interval '30 minutes' WHERE id='{sessionId:D}'::uuid;");
             using var retryBaseline = JsonDocument.Parse(await Snapshot());
             var sessionBaseline = retryBaseline.RootElement.GetProperty("sessions").GetRawText();
+            var publicationBefore = await DatabaseNow();
             var recovered = await Update();
+            var publicationAfter = await DatabaseNow();
             Require(recovered.Succeeded && recovered.Value is { Version: 2, DisplayName: "Elapsed profile", Locale: "en-CA", Timezone: "America/Vancouver" },
                 "Profile command did not recover with the original intent after expiry rollback.");
             Require(recovered.Value!.Id == actor && recovered.Value.AvatarUrl == "https://example.test/avatar.png"
                 && recovered.Value.Status == AccountStatus.Active && recovered.Value.EmailVerified,
                 "Recovered profile acknowledgment changed its account or complete fields.");
+            Require(recovered.Value.CreatedAt == retryBaseline.RootElement.GetProperty("user").GetProperty("created_at").GetDateTimeOffset()
+                && recovered.Value.UpdatedAt >= publicationBefore && recovered.Value.UpdatedAt <= publicationAfter,
+                "Profile update changed user creation provenance or lost its accepted mutation clock.");
+            if (keyed) await VerifyReceiptClocks(publicationBefore, publicationAfter);
             var saved = await Snapshot();
             using (var publication = JsonDocument.Parse(saved))
             {
@@ -145,6 +174,45 @@ internal static class IdentityProfileExpiryContract
             var changed = await Update("Different profile");
             Require(!changed.Succeeded && changed.Value is null && changed.ErrorCode == (keyed ? "idempotency_key_reused" : "version_conflict")
                 && saved == await Snapshot(), "Changed profile intent modified or disclosed protected state.");
+            if (keyed)
+            {
+                using var originalState = JsonDocument.Parse(saved);
+                // Profile retry keys are reusable after expiry. Model that
+                // passage privately; never claim these fixture times as history.
+                await using (var expire = new NpgsqlCommand("""
+                    UPDATE identity_profile_replays
+                    SET created_at=clock_timestamp()-interval '25 hours',updated_at=clock_timestamp()-interval '25 hours',
+                        expires_at=clock_timestamp()-interval '1 second'
+                    WHERE user_id=@actor AND key_id=@key;
+                    """, admin))
+                {
+                    expire.Parameters.AddWithValue("actor", actor); expire.Parameters.AddWithValue("key", context.IdempotencyKey!.Value);
+                    Require(await expire.ExecuteNonQueryAsync(ct) == 1, "Expired profile receipt fixture was not reached.");
+                }
+                var replacementBefore = await DatabaseNow();
+                var replacement = await Update("Replacement profile", 2);
+                var replacementAfter = await DatabaseNow();
+                Require(replacement.Succeeded && replacement.Value is { Version: 3, DisplayName: "Replacement profile" }
+                    && replacement.Value.CreatedAt == recovered.Value.CreatedAt
+                    && replacement.Value.UpdatedAt >= replacementBefore && replacement.Value.UpdatedAt <= replacementAfter,
+                    "Expired profile key did not publish a new acknowledgment while preserving user creation provenance.");
+                await VerifyReceiptClocks(replacementBefore, replacementAfter);
+                var replaced = await Snapshot();
+                using var replacementState = JsonDocument.Parse(replaced);
+                var replacementRoot = replacementState.RootElement;
+                var receipt = replacementRoot.GetProperty("receipts")[0];
+                Require(replacementRoot.GetProperty("receipts").GetArrayLength() == 1
+                    && receipt.GetProperty("result_json").GetProperty("Version").GetInt64() == 3
+                    && receipt.GetProperty("fingerprint").GetString() != originalState.RootElement.GetProperty("receipts")[0].GetProperty("fingerprint").GetString()
+                    && replacementRoot.GetProperty("events").GetArrayLength() == 2 && replacementRoot.GetProperty("audits").GetArrayLength() == 2
+                    && replacementRoot.GetProperty("stream").GetProperty("last_sequence").GetInt64() == 2
+                    && replacementRoot.GetProperty("sessions").GetRawText() == sessionBaseline,
+                    "Profile receipt replacement lost its new intent, source attribution or unchanged session.");
+                var replacementReplay = await Update("Replacement profile", 2);
+                Require(replacementReplay.Succeeded && replacementReplay.Value == replacement.Value && replaced == await Snapshot(),
+                    "Profile replacement replay restamped clocks, extended retention or repeated publication.");
+                Console.WriteLine("Restricted PostgreSQL profile receipt publication/replay/expired-key replacement clocks passed.");
+            }
             Console.WriteLine($"Restricted PostgreSQL profile elapsed-expiry rollback and retry/replay passed: keyed={keyed}.");
         }
     }

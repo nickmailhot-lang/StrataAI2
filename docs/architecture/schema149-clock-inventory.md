@@ -122,7 +122,8 @@ invokes bounded expired-only purge functions in its own transaction-local
 `GLOBAL_IDENTITY_RETRY_CLEANUP` scope. Retention removes expired facts rather than
 rewriting their clocks. By comparison,
 [profile replay storage](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityProfileReplayStore.cs)
-has an explicit upsert/update path and remains in the mutable-record audit.
+has an explicit upsert/update path; its current publication/replay/replacement
+clocks are traced in the [mutable profile receipt review](#mutable-profile-receipt-clocks--2026-10-16).
 
 The [mandatory runtime-role driver](../../scripts/ci/test-runtime-roles.sh) now
 requires `has_any_column_privilege(...,'UPDATE')` to be false for both roles on
@@ -160,6 +161,58 @@ HTTP fresh-proof/recovery, all historical upgrade paths, other mutable records
 and current immutable-image/full CI retain their own acceptance requirements.
 No new `updated_at` value or historical time is invented. The physical catalog
 counts stay unchanged; estimated PRD-01 work remaining stays **34%**.
+
+## Mutable profile receipt clocks — 2026-10-16
+
+`identity_profile_replays` is a mutable 24-hour acknowledgment cache, distinct
+from the five insert-only retained facts above. [Migration 013](../../db/migrations/013_identity_profile_replays.sql)
+requires non-null creation/update/expiry clocks from its original schema. The
+[PostgreSQL replay store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityProfileReplayStore.cs)
+publishes database-clock defaults, returns only live same-subject entries, and
+replaces an expired row's fingerprint, result and all three clocks. The account
+lock and [transactional service](../../src/StrataAI.Application/Identity/TransactionalIdentityService.cs)
+serialize command/replay with the owning user mutation, audit, event and final
+session admission. The [in-memory provider](../../src/StrataAI.Infrastructure/Identity/InMemoryIdentityProfileReplayStore.cs)
+likewise removes expired entries before a new publication. This is deliberate
+expired-key reuse, not permission to rewrite a live original acknowledgment.
+
+| Clock owner | Meaning verified |
+| --- | --- |
+| `users` / embedded `UserProfile` | Original account `CreatedAt` survives profile edits; `UpdatedAt` comes from the accepted Application command's clock and the [profile writer](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityStore.cs) preserves creation while incrementing version. |
+| `identity_profile_replays` | `created_at` and `updated_at` identify the current acknowledgment generation's publication; `expires_at` uses its 24-hour database-clock retention window. Matching replay preserves all fields and cannot slide expiry. Expired replacement publishes a new generation for the same key; it does not restamp the user's creation. |
+
+The existing [profile expiry contract](../../tests/StrataAI.Persistence.Contracts/IdentityProfileExpiryContract.cs)
+now brackets actual publication using database times and verifies finite ordered
+receipt clocks and retention within that window. Both keyed/unkeyed commands
+retain the original elapsed-session-expiry rollback and same-intent recovery,
+source/audit attribution, unchanged session, replay/collision and state-fingerprint
+assertions. A privately expired receipt then admits a version-3 replacement with
+changed fingerprint/result, one retained receipt, exactly two sources/audits for
+that account and an unchanged original user creation time. Replaying the new
+generation preserves the complete snapshot, including clocks and expiry.
+
+Native execution passes in **41.729 seconds** against fresh restricted PostgreSQL
+17.11/all 149 migrations and current read-only compiled contracts in the cached
+Linux runtime. The two accounts retain one receipt and three total profile
+events/audits. A separate **40.802-second** negative probe installs a fixture-only
+trigger that incorrectly preserves the expired generation's old clocks. The
+new exact publication-window guard rejects it; its expected unhandled assertion
+exits nonzero (**139**) and is retained privately. This is a deliberate negative
+fixture, not an application success. Both runs match all **789 source inputs
+and 41 binaries**, remove owned containers/network/tmpfs data and restore the
+original Docker inventory. Credentials stay in child environments. No images
+are built, pulled or imported; no release archives, providers, existing databases
+or large-load tests are used.
+
+The contract remains in the required default PostgreSQL persistence execution;
+no workflow or original acceptance check is removed. Compilation has zero
+warnings/errors and all **285** CI guards pass. Production SQL/schema/store
+behavior is unchanged. This proves current owning-writer clocks and restricted
+service transactions with an admitted fixture context; HTTP/managed deployment,
+all historical producer/upgrade paths, other mutable writers and current
+immutable/full CI retain their own acceptance. No unknown historical time is
+backfilled. Catalog counts stay unchanged and PRD-01 stays open at **34% estimated
+work remaining**; large-load testing remains deferred until after MVP.
 
 ## Nullable-clock review queue
 
@@ -201,9 +254,10 @@ WHERE n.nspname='public' AND c.relkind IN ('r','p')
 ORDER BY c.relname,a.attnum;
 ```
 
-The inventory locates remaining work. Every candidate still needs its owning
+The inventory locates remaining work. Unreviewed candidates still need owning
 writers, transitions, source projections, historical upgrade and refusal/rollback
-evidence; the 50 physical two-clock tables also need writer verification.
+evidence; reviewed current paths do not establish every historical producer.
+Physical two-clock columns alone do not establish the remaining writers.
 Current immutable-image/full CI and the rest of PRD-01 remain required.
 Estimated PRD-01 work remaining stays **34%** (planning estimate); the issue
 stays open and large load tests remain deferred until after the operational MVP.

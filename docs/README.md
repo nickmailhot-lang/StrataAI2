@@ -85,6 +85,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Session and security-token lifecycle audit clocks (PRD-01 / PRD-02)](architecture/identity-lifecycle-clocks.md)
 - [Current schema-149 timestamp inventory and writer review queue (PRD-01)](architecture/schema149-clock-inventory.md)
   includes [retained identity receipt facts](architecture/schema149-clock-inventory.md#retained-identity-receipt-facts--2026-10-16), column-level privilege checks and expired-only cleanup evidence.
+  The [mutable profile receipt audit](architecture/schema149-clock-inventory.md#mutable-profile-receipt-clocks--2026-10-16) covers publication, replay and expired-key replacement clocks separately.
 - [Canonical invitation clocks and revisions (PRD-01 / PRD-03 / PRD-60)](architecture/invitation-audit-metadata.md)
 - [Invitation issuer facts, mutable job clocks and remaining repair evidence (PRD-01)](architecture/invitation-issuer-clock-audit.md)
 - [Board background ownership and canonical selection clock audit (PRD-01)](architecture/board-background-clock-audit.md)

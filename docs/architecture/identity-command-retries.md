@@ -1,5 +1,14 @@
 # Identity command retries
 
+The [profile receipt clock audit](schema149-clock-inventory.md#mutable-profile-receipt-clocks--2026-10-16)
+verifies actual database-clock publication/24-hour retention, no clock/expiry
+changes on replay, and expired-key replacement preserving original user creation.
+The required PostgreSQL profile contract retains elapsed-session-expiry rollback,
+current actor, source/audit, unchanged session and original-intent assertions. Its
+native positive execution passes; a separate deliberately stale-clock fixture
+is rejected by the exact new guard. No production store/schema behavior changes.
+Current immutable/full CI and complete PRD acceptance remain required.
+
 PRD-02 and PRD-60 require retry safety for identity mutations. Identity is global; tenant Work replay storage and fabricated Organization IDs are unsuitable. A saved acknowledgment must never bypass current authorization, token expiry, account lifecycle or revocation. Raw passwords, session cookies and recovery/verification bearer tokens must not be persisted in replay responses or ordinary request fingerprints.
 
 The first implemented boundary is authenticated `PATCH /me`. An optional `Idempotency-Key` is a nonempty canonical UUID. The browser generates one per exact submitted profile body and retains it for an unchanged retry after a deadline or transport failure. Editing the body or receiving a confirmed acknowledgment starts a new intent. Keys are scoped to the actual authenticated account, not to a session or Organization. Omitting the key retains ordinary version-precondition behavior for existing clients.

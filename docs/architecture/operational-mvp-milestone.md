@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [profile retry clock audit](schema149-clock-inventory.md#mutable-profile-receipt-clocks--2026-10-16)
+verifies real publication/24-hour retention, immutable replay clocks and expired-key
+replacement without changing user creation provenance. The existing restricted
+PostgreSQL expiry contract passes all original rollback/recovery assertions and
+the added clock lifecycle checks; a deliberately stale replacement is rejected
+in a separate negative probe. Captured inputs match and owned cleanup restores
+Docker inventory. Production code/schema is unchanged; compilation and 285 CI
+guards pass. Current immutable/full release acceptance remains required and
+large-load testing remains deferred.
+
 The [cross-Board activity CI follow-up](cross-board-card-movement.md#admitted-card-activity-review-after-cross-board-recovery--2026-10-16)
 repairs missing observation of a nonmutating review opening in a completed hosted
 failure. Both desktop/phone workflows pass exact original recovery, both peer
