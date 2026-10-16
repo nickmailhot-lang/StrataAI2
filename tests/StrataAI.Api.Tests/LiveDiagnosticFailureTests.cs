@@ -30,6 +30,7 @@ public sealed class LiveDiagnosticFailureTests
         { typeof(OrganizationOperationalLifecycleRealtimeHub), "organization_storage_unavailable" },
         { typeof(InvitationRecipientRealtimeHub), "invitation_sync_unavailable" },
         { typeof(RetentionHoldRealtimeHub), "retention_hold_source_unavailable" },
+        { typeof(WorkRealtimeHub), "sync_unavailable" },
     };
     public static IEnumerable<object[]> FailureCases => Hubs.SelectMany(row => new[]
     {
@@ -71,7 +72,8 @@ public sealed class LiveDiagnosticFailureTests
         var arguments = watch.GetParameters().Select(parameter =>
             parameter.ParameterType == typeof(CancellationToken) ? (object)stop.Token :
             parameter.ParameterType == typeof(Guid) ? Actor :
-            parameter.ParameterType == typeof(long) ? 0L : null).ToArray();
+            parameter.ParameterType == typeof(long) ? 0L :
+            parameter.ParameterType == typeof(string) && hubType == typeof(WorkRealtimeHub) ? "0" : null).ToArray();
         var stream = watch.Invoke(hub, arguments)!;
         // Execute the real async iterator; reflection only accommodates its
         // different public payload types and preserves the shared assertions.

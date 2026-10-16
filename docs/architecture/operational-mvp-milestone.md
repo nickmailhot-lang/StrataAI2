@@ -4,6 +4,14 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [core Work diagnostic follow-up](api-error-contract-verification.md#core-work-synchronization-diagnostics--2026-10-15)
+guards the remaining sync endpoint, live middleware and Work hub warning writes.
+Five regressions reproduce incorrect 500/escaped-error/missing-abort behavior;
+all 55 expanded focused cases pass after repair. Existing origin, cancellation,
+started-response and database-security refusals remain intact. Frozen inputs
+match and owned cleanup restores Docker inventory. Current immutable/full release
+and deployed-provider acceptance remain required; large load tests stay deferred.
+
 The [live diagnostic guard](api-error-contract-verification.md#live-diagnostic-failure-isolation--2026-10-15)
 protects 24 existing warning sites across ten hubs. Eleven regressions reproduce
 logging exceptions replacing intended failures; all 32 direct iterator cases

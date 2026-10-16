@@ -33,6 +33,12 @@ public sealed partial class ApiHostTests
         using var socket = await LiveSocket(app, cookie, "/me/live");
         identities!.Fault = fault;
         await SendFrame(socket, new { type = 4, invocationId = "diagnostic-failure", target = "Watch", arguments = new string?[] { null } });
+        await AssertDiagnosticTransportAborted(socket);
+        Assert.Equal(1, logger.Attempts); Assert.Single(logger.Entries);
+    }
+
+    private static async Task AssertDiagnosticTransportAborted(WebSocket socket)
+    {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         deadline.CancelAfter(TimeSpan.FromSeconds(8));
         var closed = false;
@@ -52,8 +58,7 @@ public sealed partial class ApiHostTests
             }
         }
         catch (WebSocketException) { closed = true; }
-        Assert.True(closed); Assert.Equal(1, logger.Attempts);
-        Assert.Single(logger.Entries);
+        Assert.True(closed);
     }
 
     public class WireDiagnosticIdentity : DispatchProxy

@@ -44,7 +44,7 @@ public sealed class WorkRealtimeOriginMiddleware(RequestDelegate next)
         catch (Exception exception) when (!context.Response.HasStarted && !context.RequestAborted.IsCancellationRequested &&
             exception is not (RuntimeDatabaseRoleException or RuntimeDatabaseSchemaException))
         {
-            logger.LogWarning("Work live connection unavailable. CorrelationId={CorrelationId}", context.TraceIdentifier);
+            ApiDiagnostics.Warning(logger, "Work live connection unavailable. CorrelationId={CorrelationId}", context.TraceIdentifier);
             await Results.Problem(statusCode: 503, title: "Live updates are unavailable.",
                 extensions: new Dictionary<string, object?> { ["code"] = "realtime_unavailable" }).ExecuteAsync(context);
         }
@@ -133,7 +133,7 @@ public sealed class WorkRealtimeHub(WorkSynchronizationService synchronization, 
             try { return await operation(); }
             catch (Exception) when (!ct.IsCancellationRequested)
             {
-                logger.LogWarning("Work live read unavailable. CorrelationId={CorrelationId}", correlation);
+                ApiDiagnostics.Warning(logger, "Work live read unavailable. CorrelationId={CorrelationId}", correlation);
                 Denied("sync_unavailable");
                 throw;
             }

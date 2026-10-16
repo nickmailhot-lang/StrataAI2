@@ -28,7 +28,7 @@ public static class WorkSynchronizationEndpoints
             {
                 // No exception body or event details: SQL diagnostics can contain
                 // protected data. This read never discloses a partial event batch.
-                logger.LogWarning("Work synchronization read unavailable. CorrelationId={CorrelationId}", context.TraceIdentifier);
+                ApiDiagnostics.Warning(logger, "Work synchronization read unavailable. CorrelationId={CorrelationId}", context.TraceIdentifier);
                 return Problem(503, "work_sync_unavailable");
             }
         });

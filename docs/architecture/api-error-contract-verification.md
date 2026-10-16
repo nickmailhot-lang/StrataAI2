@@ -1,8 +1,56 @@
 # API error envelope verification
 
+## Core Work synchronization diagnostics — 2026-10-15
+
+The follow-up audit finds three remaining warning writes outside the guarded
+helper: the Board synchronization endpoint, live-origin middleware and core
+Work hub. These paths now use the same `ApiDiagnostics.Warning` boundary. A
+diagnostic exception cannot replace `work_sync_unavailable` / HTTP 503,
+`realtime_unavailable` / HTTP 503 or the core hub's `sync_unavailable` abort.
+Templates, correlation fields, origin checks, authorization, event disclosure
+and cancellation/database-security exclusions remain unchanged.
+
+The expanded direct/middleware/HTTP/SignalR invocation has **55 cases**. Before
+repair, **five fail**: core hub denial is replaced by a logging exception, the
+live middleware lets that exception escape, the actual sync endpoint returns
+500 instead of 503, and two Work transport cases fail to observe connection
+abort. After repair **55/55 pass**, with no skipped cases:
+
+- The direct iterator matrix now covers eleven hubs, including core Work, under
+  healthy/throwing diagnostics and caller cancellation, plus identity-read failure.
+- Fourteen middleware cases retain temporary-unavailability responses, private
+  correlation-bound Problems and exactly one downstream call. Cancelled requests,
+  already-started responses and runtime role/schema errors propagate unchanged
+  without a diagnostic attempt; bad/disabled origins refuse before downstream.
+- Both actual sync HTTP cases preserve the expected 503 code/message, no-store
+  and no partial event/cursor response, with one authority read and warning.
+- Four actual API-host SignalR cases cover identity and core Work with session,
+  replay-read or Board-authority faults while logging throws. Connections abort
+  within the unchanged eight-second deadline with no profile/event page or
+  private diagnostic detail. A completion error alone is insufficient.
+
+The independent unchanged-live selection also passes **73/73 cases**, including
+the core Work negotiation, streaming, anonymous refusal and subscription/revocation
+cases. It excludes the new direct/middleware/transport tests from this selection,
+for **128 distinct focused cases total**, zero failed or skipped. The Release
+solution build has zero warnings/errors; documentation navigation checks pass.
+
+All **796 captured source inputs** and **415 binary files** match before/after
+the native runs. Owned containers retire and original Docker inventory is
+restored. No database, original local service, new image build/pull/import,
+external provider or load test is used. The real transport fixtures use controlled
+Demo persistence/current compiled assemblies in retained Linux runtimes; service
+and diagnostic faults are injected. This is not current immutable-image or
+managed-provider certification, nor proof of a prior deployed disclosure exploit.
+
+The complete current CI/release and remaining API/authorization/failure matrix
+remain required. PRD-21 stays open at **23% estimated work remaining**, unchanged
+planning estimate. Large load testing stays deferred until after the operational
+MVP. The earlier ten-hub checkpoint below retains its historical execution scope.
+
 ## Live diagnostic failure isolation — 2026-10-15
 
-The live-hub audit finds **24 unguarded warning writes in ten existing hubs**.
+At checkpoint `2c206290`, the live-hub audit finds **24 unguarded warning writes in ten existing hubs**.
 They run after a session/read/admission failure but before the safe hub error
 and connection abort. A throwing diagnostic provider can replace that intended
 error. The affected paths now use the existing `ApiDiagnostics.Warning` guard;

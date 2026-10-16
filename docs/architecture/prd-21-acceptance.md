@@ -1,5 +1,14 @@
 # PRD-21 API contract acceptance map
 
+The [core Work diagnostic repair](api-error-contract-verification.md#core-work-synchronization-diagnostics--2026-10-15)
+keeps synchronization failures at their private, correlated HTTP 503 and closes
+failed Work streams when logging also fails. Five new regressions fail before
+repair; all 55 expanded iterator/middleware/HTTP/SignalR cases pass afterward,
+including cancellation, already-started replies and runtime role/schema refusal
+preservation. Inputs match and owned cleanup restores Docker inventory. Current
+immutable/full CI, deployed providers and the complete API matrix remain required.
+Estimated PRD-21 work remaining stays **23%** (planning estimate).
+
 [PRD-21](https://github.com/nickmailhot-lang/StrataAI2/issues/22) remains open.
 The complete requirements, acceptance criteria, thirteen scenarios and Definition
 of Done govern closure. This map locates implementation and verification;
