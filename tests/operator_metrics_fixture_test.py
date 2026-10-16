@@ -33,10 +33,16 @@ if kind=='cat':
  assert args==['/proc/sys/kernel/random/uuid']
  n=int(read('uuid','0'))+1;write('uuid',str(n));print('aaaaaaaa-aaaa-aaaa-aaaa-'+str(n).zfill(12));sys.exit(0)
 if kind=='docker':
+ if args[:2]==['inspect','--format']:
+  n=int(read('api-process-checks','0'))+1;write('api-process-checks',str(n));log('api-process-'+str(n))
+  print('changed-api' if fault=='api-recreated' and n>1 else 'same-api-start-time');sys.exit(0)
  assert args[:3]==['compose','-f','compose.release.yml']
- if 'exec' in args:
+ if 'ps' in args:print('owned-api')
+ elif 'exec' in args:
   sql=sys.stdin.read()
-  if 'SELECT md5' in sql:
+  if "e.event_type='USER_REGISTERED'" in sql:
+   log('verify-recovered-account');print('1:2' if fault=='duplicate-account-event' else '2:1' if fault=='duplicate-account' else '1:1')
+  elif 'SELECT md5' in sql:
    n=int(read('fingerprints','0'))+1;write('fingerprints',str(n))
    missing=(fault=='missing-before' and n==1) or (fault=='missing-after' and n>1)
    print('' if missing else 'b'*32 if fault=='changed-jobs' and n>1 else 'a'*32)
@@ -73,6 +79,7 @@ if url.endswith('/healthz'):body={'status':'ok','service':'strataai-worker','tim
 if url.endswith('/readyz'):
  status=503 if phase=='down' else 200
  if fault=='wrong-readiness' and phase=='down':status=200
+ if ':8080/' in url and fault=='api-not-ready':status=503
  body={'status':'not-ready'} if status==503 else {'status':'ready','mode':'production'}
 written='-w' in args or '--write-out' in args
 if written and ':8088/' in url:
@@ -80,6 +87,11 @@ if written and ':8088/' in url:
   status=401 if '-b' not in args else 400 if any('private-metric-fixture' in a for a in args) else 403
  elif url.endswith('/configuration'):status=409 if '-X' in args else 404
  elif url.endswith('/auth/login'):status=401 if 'X-StrataAI-Request: 1' in args else 403
+ elif url.endswith('/auth/register'):
+  assert phase=='recovered' and not (root/'recovery-request').exists()
+  write('recovery-request','1');log('first-recovered-registration')
+  assert '--retry' not in args and any(a.startswith('Idempotency-Key: ') for a in args)
+  status=503 if fault=='first-request-fails' else 201
  else:status=401
 if written:log('status-'+url.rsplit('/',1)[-1]+'-'+str(status))
 if '-o' in args or '--output' in args:
@@ -166,6 +178,10 @@ class OperatorFixtureDriverTests(unittest.TestCase):
                     self.assertTrue(record["verified"]["serverLatencyBuckets"])
                 self.assertLess(journal.index("scrape-down-0"), journal.index("start-postgres"))
                 self.assertGreater(journal.index("scrape-recovered-1"), journal.index("start-postgres"))
+                self.assertEqual(journal.count('first-recovered-registration'), 1)
+                self.assertLess(journal.index('start-postgres'), journal.index('first-recovered-registration'))
+                self.assertLess(journal.index('first-recovered-registration'), journal.index('verify-recovered-account'))
+                self.assertLess(journal.index('verify-recovered-account'), journal.index('api-process-2'))
 
     def test_complete_driver_requires_three_stages_and_restores_owned_resources(self):
         self.run_driver("")
@@ -199,3 +215,18 @@ class OperatorFixtureDriverTests(unittest.TestCase):
 
     def test_missing_recovered_job_rows_refuse_recovery_evidence(self):
         self.run_driver("missing-after")
+
+    def test_first_recovered_request_failure_cannot_be_retried_into_success(self):
+        self.run_driver("first-request-fails")
+
+    def test_api_restart_cannot_count_as_pool_recovery(self):
+        self.run_driver("api-recreated")
+
+    def test_api_readiness_must_recover_before_business_request(self):
+        self.run_driver("api-not-ready")
+
+    def test_duplicate_registration_refuses_evidence(self):
+        self.run_driver("duplicate-account")
+
+    def test_duplicate_registration_event_refuses_evidence(self):
+        self.run_driver("duplicate-account-event")

@@ -1,5 +1,10 @@
 # API and Worker operator metrics export (ARCH-08, partial)
 
+The [PostgreSQL pool recovery contract](postgres-pool-recovery.md) adds first
+business-request persistence and unchanged API process checks after this
+fixture's database restart. Readiness alone cannot establish application pool
+recovery; the mutation must succeed on its first attempt.
+
 The optional [operator alert package](operator-alerts.md) supplies tested warning
 rules and a private backend example for these measurements. Deployment routing,
 live evaluation and firing/resolved notification tests remain operator work.

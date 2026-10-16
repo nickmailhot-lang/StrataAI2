@@ -118,6 +118,9 @@ collect "$scratch/evidence.json"
 
 # Actual dependency failure, not synthetic zero counts. Only this disposable
 # CI project's database is stopped; its existing volume must survive recovery.
+api_process() { docker inspect --format '{{.Id}} {{.State.StartedAt}}' "$(docker compose -f compose.release.yml ps -q api)"; }
+before_api=$(api_process)
+test -n "$before_api"
 postgres_stopped=true
 docker compose -f compose.release.yml stop postgres >/dev/null
 worker_probe healthz 200
@@ -128,9 +131,18 @@ postgres_stopped=false
 collect "$scratch/backlog-recovered.json"
 worker_probe healthz 200
 worker_probe readyz 200
+# Readiness uses an independent pool. The first business request must also
+# recover in the same API process, without client-side mutation retries.
+test "$(curl --max-time 8 --silent --show-error -o "$scratch/api-state" -w '%{http_code}' http://127.0.0.1:8080/readyz)" = 200
+jq -e '.=={"status":"ready","mode":"production"}' "$scratch/api-state" >/dev/null
+recovery_email="metrics-recovery-$(uuid)@example.test"
+recovery_body=$(jq -nc --arg email "$recovery_email" '{email:$email,password:"private-metric-recovery-password",displayName:"private-metric-recovery"}')
+test "$(curl --max-time 30 --silent --show-error -o "$scratch/recovered-account" -w '%{http_code}' -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -H "Idempotency-Key: $(uuid)" -d "$recovery_body" "$base/auth/register")" = 201
+test "$(admin "SELECT (SELECT count(*) FROM users WHERE lower(email_normalized)=lower('$recovery_email'))::text || ':' || (SELECT count(*) FROM identity_events e JOIN users u ON u.id=e.user_id WHERE e.event_type='USER_REGISTERED' AND lower(u.email_normalized)=lower('$recovery_email'))::text;")" = 1:1
+test "$(api_process)" = "$before_api"
 test "$(fingerprint)" = "$before_jobs"
 mkdir -p artifacts/metrics
 mv "$scratch/evidence.json" artifacts/metrics/operator.json
 mv "$scratch/backlog-unavailable.json" artifacts/metrics/backlog-unavailable.json
 mv "$scratch/backlog-recovered.json" artifacts/metrics/backlog-recovered.json
-echo 'Exact-image operator ingestion, database observation failure/recovery, unchanged backlog rows, health/readiness and private-field checks passed.'
+echo 'Exact-image operator ingestion, database recovery, first-request account persistence, unchanged API process/backlog rows, health/readiness and private-field checks passed.'

@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [PostgreSQL pool recovery repair](postgres-pool-recovery.md) reconnects once
+after a transient failure during read-only connection admission, before business
+work, and repeats every role/schema/version guard. The first registration after
+a real database restart now succeeds with one stored user/event in the unchanged
+API process. All 20 focused admission/version/readiness cases pass; the native
+28.096-second check preserves captured inputs and restores Docker inventory.
+Exact-image CI now requires first-request recovery without client mutation
+retries. Full current CI and release acceptance remain required; large load
+testing stays disabled until after the operational MVP.
+
 The [SBOM image/build binding repair](security-evidence-identity.md#sbom-image-and-build-binding--2026-10-15)
 blocks same-tag SBOM substitutions with a different declared image ID or build
 labels, while retaining archive-proved config/manifest conversions. All 49 new

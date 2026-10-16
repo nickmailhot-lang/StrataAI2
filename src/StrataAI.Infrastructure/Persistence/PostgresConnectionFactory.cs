@@ -47,6 +47,22 @@ public sealed class PostgresConnectionFactory : IAsyncDisposable
 
     private static async ValueTask<NpgsqlConnection> OpenVerifiedConnectionAsync(NpgsqlDataSource source, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        try { return await OpenVerifiedConnectionOnceAsync(source, cancellationToken); }
+        catch (NpgsqlException exception) when (exception.IsTransient && !cancellationToken.IsCancellationRequested)
+        {
+            // A database restart can leave stale idle sockets after readiness
+            // recovers through its independent pool. Only read-only admission
+            // has run here: retire this pool's old sockets and reconnect once.
+            // Repeat every guard; never retry a business query or transaction.
+            cancellationToken.ThrowIfCancellationRequested();
+            source.Clear();
+            return await OpenVerifiedConnectionOnceAsync(source, cancellationToken);
+        }
+    }
+
+    private static async ValueTask<NpgsqlConnection> OpenVerifiedConnectionOnceAsync(NpgsqlDataSource source, CancellationToken cancellationToken)
+    {
         var connection = await source.OpenConnectionAsync(cancellationToken);
         try
         {
