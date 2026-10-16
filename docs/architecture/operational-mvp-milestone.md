@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [fresh-cluster recovery follow-up](database-recovery.md#recovery-after-runtime-provisioning-hardening--2026-10-16)
+passes the unchanged encrypted backup/restore contract with hardened runtime
+provisioning. Both actual restored logins, tenant isolation, scoped Worker queue
+handling, all twelve corruption/refusal cases and complete schema/data/ACL
+comparison pass. All 160 inputs match; both owned containers and 766,589 temporary
+host bytes are removed, preserving original Docker inventory. Current immutable
+CI, application/managed-provider recovery and deployed backup schedules remain
+required. No large-load test runs.
+
 The [provisioning/connection guard follow-up](runtime-database-roles.md#provisioning-and-connection-guard-agreement--2026-10-16)
 closes a reproduced deployment mismatch: provisioning accepted schema creation
 and function ownership that actual API/Worker connections rejected. All eight

@@ -7,6 +7,37 @@ Use this with [schema compatibility](schema-upgrades.md),
 [runtime database roles](runtime-database-roles.md) and
 [promotion and rollback](../release/promotion-and-rollback.md).
 
+## Recovery after runtime provisioning hardening — 2026-10-16
+
+The unchanged complete [mandatory rehearsal](../../scripts/ci/test-database-backup-restore.sh)
+passes at source revision `dc81ca13152fe3f6d7403695c1fb9aa7884fd050` with the
+[effective-capability and ownership safeguards](runtime-database-roles.md#provisioning-and-connection-guard-agreement--2026-10-16).
+It uses two owned, network-isolated PostgreSQL17 clusters with distinct system
+identifiers and the same cached provider image. The source has preexisting
+restricted API/Worker identities, all 149 migrations, two Organizations and two
+Cards. The restored target recreates only reviewed identities, then canonical
+provisioning activates independent API/Worker credentials without copying global
+password hashes.
+
+The complete encrypted operator backup/restore passes in **81.519 seconds**,
+including initialization and cleanup. Full schema/data/ACL comparison, all twelve
+corruption/refusal cases, completion-record integrity and stale/future/altered
+archive refusals pass. Both real SCRAM logins reject incorrect passwords, read
+the complete ledger and pass the unchanged runtime role guard. API tenant
+reads/writes and Worker queue publication/claim/acknowledgment retain the
+[restored security contract](../../scripts/ci/database-backup-runtime-verify.sql).
+The foreign tenant's job remains Pending at attempt zero; the source fingerprint
+is unchanged.
+
+All 160 captured inputs match. Both owned containers, temporary databases/roles
+and 766,589 temporary host bytes are removed, restoring original Docker inventory.
+No existing database, application host, provider integration, application image
+build or large-load workload is used. This proves compatibility of the hardened
+provisioner with fresh-cluster database recovery. It does not prove current
+immutable-image application startup, managed-provider/object/key recovery,
+scheduled production backups or deployed RPO/RTO. ARCH-08, ARCH-12 and the MVP
+remain open pending complete acceptance.
+
 ## Mandatory small CI rehearsal
 
 The PostgreSQL source-quality job executes

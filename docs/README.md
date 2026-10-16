@@ -63,6 +63,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 ## Runtime, deployment, and operations
 
 - [Encrypted PostgreSQL backup records, freshness checks, recovery verification and deployment requirements](architecture/database-recovery.md)
+  includes the [fresh-cluster rehearsal with hardened runtime provisioning](architecture/database-recovery.md#recovery-after-runtime-provisioning-hardening--2026-10-16).
 - [Durable Organization job foundation (ARCH-07)](architecture/background-jobs.md)
 - [Demo reminder delivery, processing and audit evidence](architecture/demo-reminder-delivery.md)
 - [Embedded build identity (ARCH-01-AC-002 / ARCH-11)](architecture/build-identity.md)

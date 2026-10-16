@@ -34,6 +34,12 @@ injected-column guard refusals. Both disposable fixtures restore original
 Docker inventory and remove their owned directories. Current immutable-image
 CI and source-free release acceptance remain separate and outstanding.
 
+The [fresh-cluster recovery rehearsal after this hardening](database-recovery.md#recovery-after-runtime-provisioning-hardening--2026-10-16)
+also passes with the unchanged complete backup/restore driver: restored API/Worker
+SCRAM authentication, safe role guards, tenant isolation and scoped durable queue
+processing. This remains database recovery evidence; application/managed-provider
+and current immutable-release acceptance are separate.
+
 ## Atomic effective-capability validation — 2026-10-16
 
 [General role provisioning](../../db/provision-runtime-roles.sql) previously
