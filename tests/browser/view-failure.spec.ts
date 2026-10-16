@@ -1,6 +1,12 @@
 import { expect, test } from './releaseTest';
 import { isCanonicalWorkMutation } from './canonicalWorkMutation';
 
+test.afterEach(async ({ page }) => {
+  // Finish injected reads before Playwright closes their request context.
+  // Waiting preserves callback failures rather than suppressing them.
+  await page.unrouteAll({ behavior: 'wait' });
+});
+
 for (const width of [1280, 390]) for (const kind of ['board', 'card'] as const) {
   test(`PRD-06: private-safe ${kind} render failure and explicit recovery at ${width}px`, async ({ page, context }) => {
     await page.setViewportSize({ width, height: 844 });

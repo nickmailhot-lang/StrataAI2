@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [render-failure route teardown repair](../kanban-telemetry.md#render-failure-route-teardown--2026-10-16)
+addresses a newly completed hosted phone-case failure. An injected read outlived
+the test's request context; the scenario now waits for callbacks before teardown
+while preserving their errors. Native held-read baseline/fixed and deliberate
+callback-failure controls distinguish completion from suppression. All four
+original desktop/phone Board/Card recovery cases pass with their privacy,
+telemetry, keyboard and unchanged-data checks, no retries/skips/flaky results,
+matching captured inputs and restored Docker inventory. Browser types and all
+289 CI coverage checks pass. This compiled-source proof does not replace the
+new candidate's required immutable-image/full CI; large-load tests remain deferred.
+
 The [Organization receipt capability audit](schema149-clock-inventory.md#organization-command-receipt-classification-and-capability-checks--2026-10-16)
 repairs five existing required checks that miss 25 unsupported grants. Column
 privileges and Worker DELETE now refuse; canonical grants pass. Both native

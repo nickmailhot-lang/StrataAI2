@@ -172,6 +172,41 @@ and current immutable-release execution also remain required. PRD-06 remains
 open; its estimate at this routed-render increment was **31%**. The runtime
 section above records the current planning estimate.
 
+### Render-failure route teardown — 2026-10-16
+
+Hosted run [38841161459](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38841161459)
+at `044331dd` finishes with 99 browser cases passing and one phone Board-render
+case failing: an injected Board read remains inside `route.fetch` when Playwright
+closes its request context. The same scenario source is still present on the
+current candidate. This is a test callback lifetime failure, not evidence that
+the application's recovery/privacy assertions passed in that failed case.
+
+The [scenario](../tests/browser/view-failure.spec.ts) now waits for its in-flight
+routes in `afterEach`, before context teardown. It uses `behavior: 'wait'` and
+preserves callback errors. Every original assertion, timeout, request count,
+limiter and pacing setting remains. A native-browser held-read reproduction
+fails before the hook with the same `route.fetch: Test ended` error and passes
+with the actual hook. A separate deliberate response-assertion failure still
+exits 1 after the hook. The initial private baseline harness also mistook a
+quoted source line for a completion marker; independent parsing of that same
+retained console reconciles the genuine baseline failure without rerunning it.
+
+All four unchanged desktop/phone Board/Card application scenarios then pass in
+one invocation: **129.756 seconds**, zero retries/flaky/skipped results. The
+whole disposable Production fixture takes **179.999 seconds**. It uses restricted
+PostgreSQL17/all 149 migrations, compiled API/Worker from `c5545abf` whose
+application sources still match, a fresh current web build and Nginx. All four
+served assets match their build hashes; 1,286 captured source inputs and 71
+binary files remain unchanged. The API process and Worker identity remain
+unchanged during the cases. Original Docker inventory is restored; the four
+owned containers, network and 3,308 temporary host bytes are removed, with a
+separate absence check. No Demo instance or large-load test runs.
+
+Browser type checking, diff validation and all 289 CI coverage checks pass.
+This is local compiled-source evidence; exact current immutable-image/full
+release acceptance remains required. PRD-06 stays open at **25% estimated work
+remaining** (unchanged planning estimate).
+
 The existing operator meter `StrataAI.BoardSharing` now covers PATCH list
 commands as `list_update` (rename/rank/move) and POST card movement as
 `card_move`. It records native `strataai.board_sharing.requests` counters and
