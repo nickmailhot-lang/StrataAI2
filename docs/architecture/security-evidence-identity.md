@@ -1,5 +1,24 @@
 # Security input integrity and evidence identity — ARCH-11
 
+## Completed 5b959b2f security evidence — 2026-10-16
+
+[Successful run 38832396684](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38832396684)
+retains security artifact **12035261067**, **95,756 bytes**, SHA-256
+`549504100048a4db6c34de45751f861c2f59af9ab791c227b640685d9249d317`,
+and canonical metadata artifact **12019603805**, **420 bytes**, SHA-256
+`a3a24055fb042c56b7ba87c44470aed41027a9591d29588f084754e72c4c5e0e`.
+Both original archives authenticate to their GitHub digests. Build metadata bytes
+match exactly for `5b959b2f0a3607ccb13cc411ccb01c75cec564f7`, `0.1.0-1820`.
+All six security payload checksums and original three-image provenance match.
+All four SBOMs pass current checks, including original image/build binding for
+the three application SBOMs.
+
+All three verifier sources remain unchanged and the extracted 1,839,083-byte
+private fixture is removed. No Docker resource or new build is used. The full
+image archives and release bundle are not downloaded/compared here; this does
+not independently rescan layers or certify later main. See [the exact release
+record and remaining acceptance](operational-mvp-milestone.md#completed-5b959b2f-ci-release--2026-10-16).
+
 ## SBOM image and build binding — 2026-10-15
 
 The release verifier previously checked each application SBOM's tag/name and

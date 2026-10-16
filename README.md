@@ -25,10 +25,10 @@ complete PRD acceptance. Match each result to its revision, scope and CI evidenc
 
 The next release milestone is a [deployable, stable operational task-management MVP](docs/architecture/operational-mvp-milestone.md). Core workflow reliability and verified deployment take priority before new governance and AI modules; the complete PRD roadmap remains in force.
 
-**Latest passing CI release candidate:** [`be7bf9e4`](https://github.com/nickmailhot-lang/StrataAI2/commit/be7bf9e47eaa617181483fbe86ac09f7faf87c4b)
-passed [all 16 CI and release jobs](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38802201471).
-[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38802201471/artifacts/12034986860)
-and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/be7bf9e47eaa617181483fbe86ac09f7faf87c4b/docs/release/README.md). This evidence identifies
+**Latest passing CI release candidate:** [`5b959b2f`](https://github.com/nickmailhot-lang/StrataAI2/commit/5b959b2f0a3607ccb13cc411ccb01c75cec564f7)
+passed [all 16 CI and release jobs](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38832396684).
+[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38832396684/artifacts/12060959891)
+and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/5b959b2f0a3607ccb13cc411ccb01c75cec564f7/docs/release/README.md). This evidence identifies
 that exact candidate; later main changes require their own CI. Review
 [remaining deployment acceptance](docs/architecture/operational-mvp-milestone.md#current-status)
 before production promotion. Large-load tests remain deferred until after MVP.
@@ -36,7 +36,7 @@ Its exact tested images pass hosted source-free Production, seeded Demo and
 HTTPS checks, including migrations/restricted roles, graceful restart, password
 rotation, database outage/recovery and served-certificate rotation/restoration.
 It includes atomic certificate-file replacement and certificate lifetime checks.
-The [completed release record](docs/architecture/operational-mvp-milestone.md#completed-be7bf9e4-ci-release--2026-10-16)
+The [completed release record](docs/architecture/operational-mvp-milestone.md#completed-5b959b2f-ci-release--2026-10-16)
 binds the original artifact IDs, digests and build version. The new bundle's large
 archive has not been independently downloaded or rehearsed locally; the earlier
 independent result below retains its own scope. Current-main fixes and complete

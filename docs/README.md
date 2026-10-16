@@ -14,6 +14,8 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Suggested starting points
 
+- [Latest completed 5b959b2f CI release and artifact boundaries](architecture/operational-mvp-milestone.md#completed-5b959b2f-ci-release--2026-10-16)
+
 - [Organization receipt clocks and runtime capability checks](architecture/schema149-clock-inventory.md#organization-command-receipt-classification-and-capability-checks--2026-10-16)
 
 - [Runtime function grants, safe credential rotation and public-access refusal](architecture/runtime-database-roles.md#function-capability-reset-and-public-grants--2026-10-16)

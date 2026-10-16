@@ -729,6 +729,45 @@ job remain intact. Current exact-commit immutable CI is still required.
 
 ## Current status
 
+### Completed 5b959b2f CI release — 2026-10-16
+
+Exact candidate `5b959b2f0a3607ccb13cc411ccb01c75cec564f7`, version
+`0.1.0-1820`, completes [run 38832396684](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38832396684)
+successfully on attempt 1: all **16 jobs** pass. Release job **117028851887**
+passes original-input verification, bundle assembly/checksums, source-free
+Production/Demo/HTTPS startup, unchanged-payload verification and upload. Its
+actual log includes exact success markers for restricted startup, graceful
+restart, password rotation, seeded Demo sign-in, HTTPS task workflow and
+served-certificate rotation/restoration. All 27 registered retained-image
+capacity stages are skipped; no stage is enabled during this inspection.
+
+The [retained Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38832396684/artifacts/12060959891)
+is artifact **12060959891**, **518,876,335 bytes**, SHA-256
+`6f8d4ef46545f4007cd87c48dd8fc08020876c9fe4ecd7a58abbe9ab9e7a9181`.
+Its ID and digest match the actual successful upload log; it is unexpired at
+inspection. Follow the [operator guide for this revision](https://github.com/nickmailhot-lang/StrataAI2/blob/5b959b2f0a3607ccb13cc411ccb01c75cec564f7/docs/release/README.md).
+
+Independent inspection authenticates eleven small artifacts, **363,222 ZIP
+bytes total**, against their original GitHub digests. Canonical metadata,
+security checksums and all four SBOMs pass current checks, including original
+image/build binding for the three application SBOMs.
+[Sanitized source reports](source-test-results.md#hosted-5b959b2f-source-results--2026-10-16)
+contain 2,588 web, 1,064 Domain and 1,221 API passes, zero failures/errors, and
+three/two backend capacity deferrals. All six normal-size performance records
+retain their original budgets and observed detail/feedback flags; twenty-sample
+mutation p95 values independently recompute correctly. Their fixtures have zero
+or fifty Cards. No performance test is executed during this artifact inspection.
+
+The full bundle and original image archives are not independently downloaded or
+compared in this follow-up. The **1,839,083-byte** extracted security fixture is
+removed, all three verifier sources remain unchanged, and no Docker resource,
+application build or provider is used. This hosted release predates later
+provider-conflict, pool-recovery, diagnostic-failure, runtime-role, observation
+and release-recording repairs on main. Its frontend also predates the separate
+post-MVP component-capacity phase correction. Current-main immutable/full CI
+and complete deployment/provider acceptance remain required; the MVP and broader
+roadmap stay open, with large-load testing deferred.
+
 ### Completed be7bf9e4 CI release — 2026-10-16
 
 Exact candidate `be7bf9e47eaa617181483fbe86ac09f7faf87c4b`, version

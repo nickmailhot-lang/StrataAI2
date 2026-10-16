@@ -1,5 +1,29 @@
 # Source test result artifacts — ARCH-11-FR-018/090
 
+## Hosted 5b959b2f source results — 2026-10-16
+
+The complete successful [CI run 38832396684](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38832396684)
+belongs to `5b959b2f0a3607ccb13cc411ccb01c75cec564f7`, version `0.1.0-1820`,
+attempt 1. Its original sanitized source artifacts are independently downloaded
+and authenticated by their GitHub ZIP digests. Report build identities match
+canonical metadata, reports are complete, case IDs are unique per report, and
+individual outcomes match all counters:
+
+| Source report | Reported cases | Passed | Skipped | Failed/errors |
+| --- | ---: | ---: | ---: | ---: |
+| Web | 2,588 | 2,588 | 0 | 0 |
+| Domain | 1,067 | 1,064 | 3 | 0 |
+| API | 1,223 | 1,221 | 2 | 0 |
+
+Web artifact **12022456185** is 117,623 bytes, SHA-256
+`64608d28da4905b312d36c64342cdf6dd3bd080d0b08052e852038817dde2d2d`;
+.NET artifact **12022609327** is 139,056 bytes, SHA-256
+`f74d47eeed986fd94813c27eccdc4d264bad5e6a801b66e11f94b42bf232e600`.
+This is hosted evidence for its recorded older source, not the current source
+baselines below. In particular, its frontend precedes the later component
+capacity-phase correction; this follow-up reads existing reports and runs no
+test bodies. See [the exact completed release and artifact boundaries](operational-mvp-milestone.md#completed-5b959b2f-ci-release--2026-10-16).
+
 ## Current complete MVP backend baseline — 2026-10-16
 
 A fresh Release solution build at `c5545abf28ae14fcda8126f4f6d9e1ec65dc0775`, version
