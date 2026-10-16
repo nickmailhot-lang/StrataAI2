@@ -387,6 +387,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
       ...['web', 'api', 'worker'].map(host => `gunzip -c image-artifacts/strataai-${host}.tar.gz | docker load`),
       'docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json',
       'python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json --archives image-artifacts',
+      'rm -- image-artifacts/loaded-image-inspection.json',
     ], 'Load every retained archive and verify complete provenance before executing or scanning images');
   }
   assert.deepEqual(security.needs, ['metadata', 'build-images-once']);
@@ -416,6 +417,19 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(securityUpload.if, 'always()');
   assert.equal(securityUpload.with.path, 'security-artifacts/');
   const securityChecksums = securitySteps.find(step => step.name === 'Bind retained security evidence checksums');
+  const securitySboms = securitySteps.find(step => step.name === 'Verify SBOM image and build identities');
+  assert.equal(securitySboms?.if, undefined);
+  assert.equal(securitySboms?.['continue-on-error'] ?? false, false);
+  assert.equal(securitySboms?.shell, 'bash');
+  assert.equal(securitySboms?.run, [
+    'set -euo pipefail',
+    '(cd security-artifacts && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)',
+    'python3 scripts/ci/verify-release-artifacts.py inputs --images image-artifacts --security security-artifacts', '',
+  ].join('\n'));
+  for (const name of ['Generate SBOMs', 'Scan and inventory pinned operator receiver']) {
+    assert.ok(securitySteps.indexOf(securitySboms) > securitySteps.findIndex(step => step.name === name));
+  }
+  assert.ok(securitySteps.indexOf(securitySboms) < securitySteps.indexOf(securityChecksums));
   assert.equal(securityChecksums?.if, 'always()');
   assert.equal(securityChecksums['continue-on-error'] ?? false, false);
   assert.ok(securityChecksums.run.includes('sha256sum > SHA256SUMS'));

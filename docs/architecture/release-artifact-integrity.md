@@ -1,7 +1,16 @@
 # Release bundle integrity and tested SBOMs — ARCH-11-FR-075/077/078/080/083
 
-The [latest completed candidate record](operational-mvp-milestone.md#current-status)
-now identifies `e5570793` / run `38690507857`, all 16 jobs successful and the
+The [current application SBOM binding](security-evidence-identity.md#sbom-image-and-build-binding--2026-10-15)
+compares declared image IDs and four OCI build labels with the tested-image
+record, requiring original archive proof for config/manifest conversions. All
+49 substitution subcases reproduce the old gap; the untouched retained security
+artifact passes and three actual same-tag substitutions are refused after
+repair. All 47 release-artifact, 18 image-provenance and 282 CI guard tests pass.
+The check is mandatory in security as well as input/bundle verification.
+Complete exact-image CI and release acceptance remain required.
+
+The [completed candidate history](operational-mvp-milestone.md#current-status)
+includes `e5570793` / run `38690507857`, all 16 jobs successful and the
 retained 518,744,746-byte runnable bundle. Its small metadata and security
 archives are independently size/SHA verified; the maintained verifier validates
 all six security payload hashes, four SBOM inventories and the three-image

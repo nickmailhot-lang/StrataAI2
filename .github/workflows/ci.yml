@@ -668,6 +668,7 @@ jobs:
           gunzip -c image-artifacts/strataai-worker.tar.gz | docker load
           docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json
           python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json --archives image-artifacts
+          rm -- image-artifacts/loaded-image-inspection.json
 
       - name: Start release topology
         shell: bash
@@ -1461,6 +1462,7 @@ jobs:
           gunzip -c image-artifacts/strataai-worker.tar.gz | docker load
           docker image inspect "strataai-web:${GITHUB_SHA}" "strataai-api:${GITHUB_SHA}" "strataai-worker:${GITHUB_SHA}" > image-artifacts/loaded-image-inspection.json
           python3 scripts/ci/verify-image-labels.py --metadata image-artifacts/build-metadata.json --images image-artifacts/loaded-image-inspection.json --expected image-artifacts/image-provenance.json --archives image-artifacts
+          rm -- image-artifacts/loaded-image-inspection.json
 
       - name: Generate SBOMs
         shell: bash
@@ -1489,6 +1491,13 @@ jobs:
           collector='otel/opentelemetry-collector-contrib:0.161.0@sha256:fd328de2552466ad78385e1b1289c3f2402b1c45f265b252aab1955b42845ac1'
           docker run --rm -v "${PWD}/security-artifacts:/output" aquasec/trivy:0.74.0 image --format cyclonedx --output /output/metrics-collector.cdx.json "$collector"
           docker run --rm aquasec/trivy:0.74.0 image --exit-code 1 --ignore-unfixed --severity CRITICAL "$collector"
+
+      - name: Verify SBOM image and build identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd security-artifacts && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS)
+          python3 scripts/ci/verify-release-artifacts.py inputs --images image-artifacts --security security-artifacts
 
       - name: Bind retained security evidence checksums
         if: always()

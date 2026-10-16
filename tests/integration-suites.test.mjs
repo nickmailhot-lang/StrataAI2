@@ -35,6 +35,11 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['SBOM identity verification bypassed', value => { value.jobs.security.steps.find(entry => entry.name === 'Verify SBOM image and build identities').run = 'true'; }],
+  ['SBOM identity verification skipped', value => { value.jobs.security.steps.find(entry => entry.name === 'Verify SBOM image and build identities').if = 'false'; }],
+  ['SBOM identity failure ignored', value => { value.jobs.security.steps.find(entry => entry.name === 'Verify SBOM image and build identities')['continue-on-error'] = true; }],
+  ['SBOM identity verification moved before generation', value => { const entries=value.jobs.security.steps; const item=entries.find(entry=>entry.name==='Verify SBOM image and build identities'); entries.splice(entries.indexOf(item),1); entries.splice(entries.findIndex(entry=>entry.name==='Generate SBOMs'),0,item); }],
+  ['temporary security inspection dirties retained image inputs', value => { const entry=value.jobs.security.steps.find(entry=>entry.name==='Load exact built images'); entry.run=entry.run.replace('rm -- image-artifacts/loaded-image-inspection.json',''); }],
   ['mail outage browser runtime bypassed', value => { step(value, 'Desktop and phone task work through provider outage').run='true'; }],
   ['mail outage browser failures ignored', value => { step(value, 'Desktop and phone task work through provider outage')['continue-on-error']=true; }],
   ['mail outage browser fixture flag omitted', value => { delete step(value, 'Desktop and phone task work through provider outage').env.STRATAAI_E2E_IDENTITY_MAIL; }],

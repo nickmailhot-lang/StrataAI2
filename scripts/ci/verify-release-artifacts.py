@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import tarfile
 from urllib.parse import unquote, urlsplit
 
 spec = importlib.util.spec_from_file_location("source_identity", Path(__file__).with_name("summarize-source-tests.py"))
@@ -69,12 +70,42 @@ def metadata(root):
     return value
 
 
-def sboms(root, build):
+def sboms(root, build, images):
+    expected_ids = image_record(images, build)["imageIds"]
+    expected_labels = {"org.opencontainers.image.source": "https://github.com/" + build["repository"],
+                       "org.opencontainers.image.revision": build["commitSha"],
+                       "org.opencontainers.image.version": build["version"],
+                       "org.opencontainers.image.created": build["createdAt"]}
     for host in HOSTS:
         value = json.loads((root / f"strataai-{host}.cdx.json").read_text(encoding="utf-8"))
         component = value.get("metadata", {}).get("component", {})
         if value.get("bomFormat") != "CycloneDX" or component.get("type") != "container" or component.get("name") != build["images"][host] or not value.get("components"):
             raise ValueError("missing_or_wrong_sbom")
+        properties = component.get("properties")
+        if not isinstance(properties, list):
+            raise ValueError("different_sbom_provenance")
+        ids = [item.get("value") for item in properties if isinstance(item, dict) and item.get("name") == "aquasecurity:trivy:ImageID"]
+        if len(ids) != 1 or not isinstance(ids[0], str) or not re.fullmatch(r"sha256:[a-f0-9]{64}", ids[0]):
+            raise ValueError("different_sbom_provenance")
+        labels = {}
+        prefix = "aquasecurity:trivy:Labels:"
+        for item in properties:
+            name = item.get("name") if isinstance(item, dict) else None
+            if isinstance(name, str) and name.startswith(prefix):
+                label = name[len(prefix):]
+                if label in labels or not isinstance(item.get("value"), str):
+                    raise ValueError("different_sbom_provenance")
+                labels[label] = item["value"]
+        if any(labels.get(name) != expected for name, expected in expected_labels.items()):
+            raise ValueError("different_sbom_provenance")
+        if ids[0] != expected_ids[host]:
+            try:
+                # Containerd/Docker may expose config vs manifest IDs. Only
+                # their original saved bytes can authorize that conversion.
+                image_provenance.archive_image_binding(images / f"strataai-{host}.tar.gz",
+                    {"Id": ids[0], "Config": {"Labels": labels}}, expected_ids[host], loaded_descriptor=False)
+            except (ValueError, OSError, KeyError, TypeError, AttributeError, tarfile.TarError):
+                raise ValueError("different_sbom_provenance") from None
     receiver = json.loads((root / "metrics-collector.cdx.json").read_text(encoding="utf-8"))
     if receiver.get("bomFormat") != "CycloneDX" or receiver.get("metadata", {}).get("component", {}).get("type") != "container" or not receiver.get("components"):
         raise ValueError("missing_receiver_sbom")
@@ -92,7 +123,7 @@ def verify_inputs(images, security):
     for host in HOSTS:
         if not (images / f"strataai-{host}.tar.gz").stat().st_size:
             raise ValueError("empty_image")
-    sboms(security, build)
+    sboms(security, build, images)
     return build
 
 
@@ -173,8 +204,8 @@ def verify_bundle(bundle, images=None, security_input=None):
     metadata(security)
     if (security / "build-metadata.json").read_bytes() != (bundle / "build-metadata.json").read_bytes():
         raise ValueError("different_security_identity")
-    sboms(security, build)
-    sboms(bundle / "sbom", build)
+    sboms(security, build, image_copy)
+    sboms(bundle / "sbom", build, image_copy)
     for name in [*(f"strataai-{host}.cdx.json" for host in HOSTS), "metrics-collector.cdx.json"]:
         if (security / name).read_bytes() != (bundle / "sbom" / name).read_bytes():
             raise ValueError("changed_sbom_copy")

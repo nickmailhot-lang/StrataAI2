@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [SBOM image/build binding repair](security-evidence-identity.md#sbom-image-and-build-binding--2026-10-15)
+blocks same-tag SBOM substitutions with a different declared image ID or build
+labels, while retaining archive-proved config/manifest conversions. All 49 new
+substitution subcases reproduce the old gap; 47 release-artifact, 18 provenance
+and 282 CI guard tests pass after repair. The actual `32236a3d` security artifact
+passes; three rehashed same-tag substitutions fail. Its small-archive audit
+removes 1,839,083 temporary bytes without downloading/loading application images.
+The new check is mandatory in security before release. Current immutable/full
+CI and the candidate's separate Work-event registration 503 remain acceptance
+work. No large-load test runs.
+
 The [shared Worker/API verification policy](configuration.md#shared-verification-policy-admission--2026-10-15)
 now rejects malformed supplied Worker values rather than silently defaulting
 them for Reminder/invitation delivery. Six actual Worker startups reproduce the

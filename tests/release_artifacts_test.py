@@ -10,6 +10,7 @@ import tempfile
 import textwrap
 import unittest
 from unittest.mock import patch
+from image_labels_test import saved_image
 
 spec = importlib.util.spec_from_file_location("release_artifacts", Path(__file__).parents[1] / "scripts/ci/verify-release-artifacts.py")
 release = importlib.util.module_from_spec(spec); spec.loader.exec_module(release)
@@ -31,7 +32,14 @@ class ReleaseArtifactTests(unittest.TestCase):
                 'imageIds':{host:'sha256:'+str(i+1)*64 for i,host in enumerate(release.HOSTS)}}),encoding='utf-8')
         for host in release.HOSTS:
             (self.images/f'strataai-{host}.tar.gz').write_bytes(b'synthetic image transport fixture')
-            (self.security/f'strataai-{host}.cdx.json').write_text(json.dumps({'bomFormat':'CycloneDX','metadata':{'component':{'type':'container','name':META['images'][host]}},'components':[{'type':'library','name':'synthetic'}]}))
+            image_id=json.loads((self.security/'image-provenance.json').read_text())['imageIds'][host]
+            properties={'aquasecurity:trivy:ImageID':image_id,
+                'aquasecurity:trivy:Labels:org.opencontainers.image.source':'https://github.com/'+META['repository'],
+                'aquasecurity:trivy:Labels:org.opencontainers.image.revision':META['commitSha'],
+                'aquasecurity:trivy:Labels:org.opencontainers.image.version':META['version'],
+                'aquasecurity:trivy:Labels:org.opencontainers.image.created':META['createdAt']}
+            (self.security/f'strataai-{host}.cdx.json').write_text(json.dumps({'bomFormat':'CycloneDX','metadata':{'component':{'type':'container','name':META['images'][host],
+                'properties':[{'name':key,'value':value} for key,value in properties.items()]}},'components':[{'type':'library','name':'synthetic'}]}))
         (self.security/'metrics-collector.cdx.json').write_text(json.dumps({'bomFormat':'CycloneDX','metadata':{'component':{'type':'container','name':'synthetic receiver'}},'components':[{'type':'library','name':'synthetic'}]}))
         self.checksums(self.images); self.checksums(self.security)
         self.environment=patch.dict(os.environ,{},clear=True); self.environment.start(); self.addCleanup(self.environment.stop)
@@ -98,6 +106,81 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_sbom_from_another_commit_rejected(self):
         p=self.security/'strataai-api.cdx.json'; value=json.loads(p.read_text()); value['metadata']['component']['name']='strataai-api:'+('b'*40); p.write_text(json.dumps(value)); self.checksums(self.security)
         with self.assertRaises(ValueError): release.verify_inputs(self.images,self.security)
+
+    def reject_changed_sbom_identity(self, host, mutate):
+        path=self.security/f'strataai-{host}.cdx.json'; original=path.read_bytes()
+        value=json.loads(original); mutate(value['metadata']['component'])
+        path.write_text(json.dumps(value)); self.checksums(self.security)
+        try:
+            with self.assertRaisesRegex(ValueError,'different_sbom_provenance'):
+                release.verify_inputs(self.images,self.security)
+        finally:
+            path.write_bytes(original); self.checksums(self.security)
+
+    def test_same_tag_sbom_with_different_actual_image_id_is_rejected(self):
+        for host in release.HOSTS:
+            with self.subTest(host=host):
+                self.reject_changed_sbom_identity(host, lambda component: component['properties'][0].update(value='sha256:'+'f'*64))
+
+    def test_same_tag_sbom_with_different_build_labels_is_rejected(self):
+        for host in release.HOSTS:
+            for index in range(1,5):
+                with self.subTest(host=host,index=index):
+                    self.reject_changed_sbom_identity(host, lambda component: component['properties'][index].update(value='different-private-input'))
+
+    def test_missing_sbom_identity_property_is_rejected(self):
+        for host in release.HOSTS:
+            for index in range(5):
+                with self.subTest(host=host,index=index):
+                    self.reject_changed_sbom_identity(host, lambda component: component['properties'].pop(index))
+
+    def test_duplicate_sbom_identity_property_is_rejected_even_if_identical(self):
+        for host in release.HOSTS:
+            for index in range(5):
+                with self.subTest(host=host,index=index):
+                    self.reject_changed_sbom_identity(host, lambda component: component['properties'].append(dict(component['properties'][index])))
+
+    def test_malformed_sbom_identity_property_collection_is_rejected(self):
+        for properties in [None,{},'different-private-input',[None]]:
+            with self.subTest(properties=properties):
+                self.reject_changed_sbom_identity('api', lambda component: component.update(properties=properties))
+
+    def bind_saved_sbom(self, host, manifest_record=False, corrupt=False):
+        path=self.security/f'strataai-{host}.cdx.json'; value=json.loads(path.read_text())
+        properties=value['metadata']['component']['properties']
+        prefix='aquasecurity:trivy:Labels:'
+        labels={item['name'][len(prefix):]:item['value'] for item in properties if item['name'].startswith(prefix)}
+        def damage(entries):
+            return [(name, raw+b'changed' if name.startswith('blobs/') and b'"rootfs"' in raw else raw) for name,raw in entries]
+        config,manifest,_=saved_image(self.images,host,{'Config':{'Labels':labels,'Env':['PUBLIC_FIXTURE_HOST='+host]}},damage if corrupt else None)
+        for directory in (self.images,self.security):
+            record=directory/'image-provenance.json'; data=json.loads(record.read_text())
+            data['imageIds'][host]=manifest if manifest_record else config; record.write_text(json.dumps(data))
+        properties[0]['value']=config if manifest_record else manifest
+        path.write_text(json.dumps(value)); self.checksums(self.images); self.checksums(self.security)
+
+    def test_sbom_manifest_id_requires_the_original_config_manifest_binding(self):
+        for host in release.HOSTS:
+            with self.subTest(host=host):
+                self.bind_saved_sbom(host); self.assertEqual(release.verify_inputs(self.images,self.security),META)
+
+    def test_sbom_config_id_can_match_a_retained_manifest_record(self):
+        for host in release.HOSTS:
+            with self.subTest(host=host):
+                self.bind_saved_sbom(host,manifest_record=True); self.assertEqual(release.verify_inputs(self.images,self.security),META)
+
+    def test_corrupt_saved_bytes_cannot_authorize_a_different_sbom_id(self):
+        self.bind_saved_sbom('worker',corrupt=True)
+        with self.assertRaisesRegex(ValueError,'different_sbom_provenance'): release.verify_inputs(self.images,self.security)
+
+    def test_rehashed_bundle_cannot_substitute_both_sbom_copies(self):
+        self.make_bundle()
+        for directory in (self.bundle/'security',self.bundle/'sbom'):
+            path=directory/'strataai-worker.cdx.json'; value=json.loads(path.read_text())
+            value['metadata']['component']['properties'][0]['value']='sha256:'+'f'*64
+            path.write_text(json.dumps(value))
+        self.checksums(self.bundle/'security'); self.checksums(self.bundle)
+        with self.assertRaisesRegex(ValueError,'different_sbom_provenance'): release.verify_bundle(self.bundle)
 
     def test_security_identity_from_another_run_rejected(self):
         p=self.security/'build-metadata.json'; value=json.loads(p.read_text()); value['workflowRunId']='456'; p.write_text(json.dumps(value)); self.checksums(self.security)

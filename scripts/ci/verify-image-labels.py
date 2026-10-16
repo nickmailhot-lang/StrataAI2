@@ -41,7 +41,7 @@ def verify_labels(build, images):
     return admitted
 
 
-def archive_image_binding(path, image, expected_id):
+def archive_image_binding(path, image, expected_id, *, loaded_descriptor=True):
     """Prove a config/manifest ID conversion using the original saved OCI bytes.
 
     Labels alone cannot authorize a different loaded ID. Read small metadata
@@ -98,7 +98,10 @@ def archive_image_binding(path, image, expected_id):
         raise ValueError("different_archive_labels")
     if expected_id not in (config_id, digest) or image["Id"] not in (config_id, digest):
         raise ValueError("different_loaded_images")
-    if image["Id"] == digest:
+    # Docker inspections must also prove their loaded manifest descriptor.
+    # SBOMs have no Docker Descriptor; their IDs/labels still require the same
+    # cryptographic config/manifest binding above.
+    if loaded_descriptor and image["Id"] == digest:
         loaded = image.get("Descriptor")
         if not isinstance(loaded, dict) or loaded.get("digest") != digest \
                 or loaded.get("mediaType") != descriptor["mediaType"] or loaded.get("size") != len(raw_manifest):
