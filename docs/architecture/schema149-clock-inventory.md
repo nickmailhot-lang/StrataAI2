@@ -99,6 +99,68 @@ deletion-surface matrix or current immutable-image release acceptance. The new
 registered assertions still require full current CI. Other candidates and
 historical provenance remain in the full foundation audit.
 
+## Retained identity receipt facts — 2026-10-16
+
+Five candidates use insert-only application writers while their receipts remain
+retained. Each records its actual database publication `created_at` and bounded
+`expires_at`; token consumption also retains its accepted source `consumed_at`.
+These global User receipts use forced subject RLS and a separate expired-only
+Worker maintenance scope.
+
+| Relation | Declaration and writer | Retained meaning |
+| --- | --- | --- |
+| `identity_revocation_replays` | [Migration 015](../../db/migrations/015_identity_revocation_replays.sql), [store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityRevocationReplayStore.cs) | Original session/operation acknowledgment. The saver can remove its own expired same-key receipt before a fresh publication. |
+| `identity_login_replays` | [Migration 017](../../db/migrations/017_identity_login_replays.sql), [store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityLoginReplayStore.cs) | Original credential-checked session coordinates and proof fingerprint. |
+| `identity_registration_replays` | [Migration 018](../../db/migrations/018_identity_registration_replays.sql), [store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityRegistrationReplayStore.cs) | Original registration/verification coordinates and source discriminator. |
+| `identity_recovery_request_replays` | [Migration 019](../../db/migrations/019_identity_recovery_request_replays.sql), [store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityRecoveryRequestReplayStore.cs) | Original reset/verification request's token coordinates, source and proof fingerprint. |
+| `identity_token_consumption_replays` | [Migration 020](../../db/migrations/020_identity_token_consumption_replays.sql), [store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityTokenConsumptionReplayStore.cs) | Original accepted token-consumption fact and proof fingerprint. [The owning service](../../src/StrataAI.Application/Identity/IdentityService.cs) rereads the consumed token and saves its actual `UsedAt`; acknowledgment recovery requires that same source time. |
+
+[Canonical runtime grants](../../db/provision-runtime-roles.sql) provide neither
+role with an UPDATE path to these five receipts. The
+[cleanup store](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityRetryCleanupStore.cs)
+invokes bounded expired-only purge functions in its own transaction-local
+`GLOBAL_IDENTITY_RETRY_CLEANUP` scope. Retention removes expired facts rather than
+rewriting their clocks. By comparison,
+[profile replay storage](../../src/StrataAI.Infrastructure/Identity/PostgresIdentityProfileReplayStore.cs)
+has an explicit upsert/update path and remains in the mutable-record audit.
+
+The [mandatory runtime-role driver](../../scripts/ci/test-runtime-roles.sh) now
+requires `has_any_column_privilege(...,'UPDATE')` to be false for both roles on
+each receipt. A table-level UPDATE predicate stays false after a column-only
+grant, so it cannot establish this invariant alone. In fresh PostgreSQL/all 149
+migrations, the complete RLS prerequisite and updated role driver pass in a
+**52.724-second** native fixture. Its expired-only visibility, protected proof
+columns, rollback and 100-row cleanup boundaries remain active. Two retained
+rows remain per receipt table. Ten normal runtime UPDATE attempts refuse with
+SQLSTATE `42501`; all ten deliberate `UPDATE(created_at)` role/table grants are
+rejected by the exact persisted new guard. Every refusal, grant probe and restored
+guard preserves a fingerprint covering all **114 public base tables**.
+
+All **192 captured database/store/driver/fixture inputs** match during that
+invocation; owned resources retire and Docker inventory is restored. Its first
+7.840-second attempt omits the preceding CI RLS Board seed and stops at that
+precondition, with successful cleanup; the final run restores the unchanged
+prerequisite. Separately, the complete updated
+[native provisioning test](../../tests/identity_role_provision_test.py) passes in
+**25.474 seconds**. It proves all ten column grants exist while table-level
+UPDATE remains false, then verifies canonical reprovisioning clears them. The
+provisioning SQL already implements that behavior and is unchanged. No owned
+role fixture remains afterward. Neither invocation uses existing databases,
+application hosts, providers, new images or large-load workloads.
+
+Bash syntax and all **285 mandatory-CI coverage guards** pass. The stronger
+privilege checks and provisioning regression run in their existing required
+PostgreSQL job; no workflow gate, original fixture or acceptance assertion is
+removed or deferred.
+
+This classification relies on reviewed application writers and runtime grants;
+these tables do not have a universal owner-level UPDATE/DELETE immutability
+trigger. Privileged maintenance authority and intentional expiry deletion remain.
+HTTP fresh-proof/recovery, all historical upgrade paths, other mutable records
+and current immutable-image/full CI retain their own acceptance requirements.
+No new `updated_at` value or historical time is invented. The physical catalog
+counts stay unchanged; estimated PRD-01 work remaining stays **34%**.
+
 ## Nullable-clock review queue
 
 | Relation | Nullable conventional clock fields | Owning migration/source to inspect |

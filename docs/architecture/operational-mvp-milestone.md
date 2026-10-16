@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [retained identity receipt audit](schema149-clock-inventory.md#retained-identity-receipt-facts--2026-10-16)
+traces five insert-only receipt writers and their actual publication/consumption
+clocks, with expired-only retention kept separate. Ten new role/table checks
+reject column UPDATE grants that table-level checks miss. The complete native
+RLS/role driver, ten exact UPDATE refusals and ten injected-grant guard refusals pass,
+preserving a fingerprint covering all 114 public tables and captured inputs. The separately
+updated provisioning test confirms all ten grants are removed on reprovisioning.
+Owned cleanup passes. Current full CI/deployment acceptance remains required;
+large-load testing stays deferred.
+
 The [Worker backlog publication repair](operator-metrics.md#independent-worker-backlog-gauges--2026-10-16)
 preserves availability registration when a count-gauge listener throws. Both
 queues reproduce the old omission; all four new and 65 related Worker cases pass

@@ -113,6 +113,22 @@ class IdentityRoleProvisionTests(unittest.TestCase):
             self.assertNotEqual(self.sql(general, overrides=override).returncode, 0)
             self.assertEqual(self.sql("SELECT count(*) FROM pg_roles WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime');").stdout.strip(), b'0')
         self.assertEqual(self.sql(general).returncode, 0, 'General runtime role provision failed')
+        # PRD-01 FOUND-FR-009: retained receipts cannot acquire a mutable column
+        # path, including after reprovisioning an existing runtime identity.
+        receipts = ('identity_revocation_replays', 'identity_login_replays',
+                    'identity_registration_replays', 'identity_recovery_request_replays',
+                    'identity_token_consumption_replays')
+        for role in ('strataai_api_runtime', 'strataai_worker_runtime'):
+            for table in receipts:
+                self.assertEqual(self.sql(f'GRANT UPDATE(created_at) ON {table} TO {role};').returncode, 0)
+                self.assertEqual(self.sql(f"SELECT has_table_privilege('{role}','{table}','UPDATE'),"
+                                          f"has_any_column_privilege('{role}','{table}','UPDATE');").stdout.strip(), b'f|t',
+                                 'Column-grant fixture did not exercise the table-level blind spot')
+        self.assertEqual(self.sql(general).returncode, 0, 'Runtime reprovisioning failed after column privilege drift')
+        for role in ('strataai_api_runtime', 'strataai_worker_runtime'):
+            for table in receipts:
+                self.assertEqual(self.sql(f"SELECT has_any_column_privilege('{role}','{table}','UPDATE');").stdout.strip(), b'f',
+                                 'Runtime reprovisioning retained a receipt UPDATE path')
         for password in ('', 'short', *self.passwords.values()):
             with self.subTest(refused_password=True):
                 self.assertNotEqual(self.provision(password).returncode, 0)

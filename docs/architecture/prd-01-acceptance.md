@@ -1,5 +1,16 @@
 # PRD-01 foundation acceptance and closure audit
 
+The [retained identity receipt classification](schema149-clock-inventory.md#retained-identity-receipt-facts--2026-10-16)
+traces five receipt writers, retained publication/consumption clocks and bounded
+expiry cleanup. The maintained role guard now checks every column's UPDATE
+capability for both runtime roles. Complete native RLS/role execution, ten
+UPDATE refusals and ten column-grant refusals pass with unchanged row fingerprints
+and captured inputs; canonical reprovisioning removes all ten grants in the
+updated native test. Profile replays keep their separate mutable/upsert audit.
+These scoped storage/privilege facts retain HTTP, historical, other-writer and
+current immutable/full release requirements. Estimated PRD-01 work remaining
+stays **34%** (planning estimate); the issue stays open.
+
 The [complete schema-149 backend baseline](source-test-results.md#complete-schema-149-backend-baseline--2026-10-16)
 passes all 1,086 active Domain and 1,359 active API cases at `c8ecfd47`, with exactly
 five reviewed capacity cases deferred. Console/XML/audit counters agree; all

@@ -11,6 +11,12 @@ psql -X -v ON_ERROR_STOP=1 -c "DO \$\$ BEGIN
 psql -X -v ON_ERROR_STOP=1 -f db/provision-runtime-roles.sql
 api() { PGUSER=strataai_api_runtime PGPASSWORD="$STRATAAI_API_DB_PASSWORD" psql -X -At -v ON_ERROR_STOP=1 -c "$1"; }
 worker() { PGUSER=strataai_worker_runtime PGPASSWORD="$STRATAAI_WORKER_DB_PASSWORD" psql -X -At -v ON_ERROR_STOP=1 -c "$1"; }
+# PRD-01 FOUND-FR-009: retained identity receipts have no runtime UPDATE path.
+# Table-level privilege checks alone miss UPDATE grants on individual columns.
+for receipt_table in identity_revocation_replays identity_login_replays identity_registration_replays identity_recovery_request_replays identity_token_consumption_replays; do
+ test "$(api "SELECT has_any_column_privilege(current_user,'$receipt_table','UPDATE')")" = f
+ test "$(worker "SELECT has_any_column_privilege(current_user,'$receipt_table','UPDATE')")" = f
+done
 for mention_table in comment_mention_snapshots comment_mention_recipients mass_mention_reservations; do
  test "$(api "SELECT relrowsecurity AND relforcerowsecurity FROM pg_class WHERE oid='$mention_table'::regclass")" = t
  test "$(api "SELECT has_table_privilege(current_user,'$mention_table','SELECT') AND has_table_privilege(current_user,'$mention_table','INSERT') AND NOT has_table_privilege(current_user,'$mention_table','UPDATE') AND NOT has_table_privilege(current_user,'$mention_table','DELETE')")" = t

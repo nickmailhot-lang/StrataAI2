@@ -1,5 +1,14 @@
 # Runtime database roles
 
+The [retained identity receipt audit](schema149-clock-inventory.md#retained-identity-receipt-facts--2026-10-16)
+requires no UPDATE capability on any column of five global receipt tables for
+either API or Worker. The disposable CI driver now checks that stronger
+predicate; its native guard rejects all ten injected column-grant states.
+The maintained provisioning test also verifies canonical reprovisioning removes all ten deliberately added
+grants. Existing role SQL and expiry/subject boundaries remain unchanged; the
+full RLS/role driver and updated provisioning test pass separately. These are
+isolated database contracts; current image/deployment acceptance remains required.
+
 The [fresh-cluster recovery contract](database-recovery.md#restored-runtime-identity-verification--2026-10-15)
 now recreates the reviewed API/Worker identities before restoring archive ACLs,
 then runs canonical provisioning on the verified target with fresh passwords.
