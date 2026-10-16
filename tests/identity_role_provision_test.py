@@ -133,7 +133,7 @@ class IdentityRoleProvisionTests(unittest.TestCase):
         # managed roles cannot remove. Refuse that deployment atomically.
         fingerprint = """SELECT md5(jsonb_build_object(
           'roles',(SELECT jsonb_agg(to_jsonb(r) ORDER BY rolname) FROM pg_authid r
-            WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime')),
+            WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime','strataai_identity_mail_runtime')),
           'relations',(SELECT jsonb_agg(jsonb_build_object('oid',c.oid,'owner',c.relowner,'acl',c.relacl) ORDER BY c.oid)
             FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public'),
           'columns',(SELECT jsonb_agg(jsonb_build_object('table',a.attrelid,'column',a.attnum,'acl',a.attacl)
@@ -145,7 +145,7 @@ class IdentityRoleProvisionTests(unittest.TestCase):
             FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public'),
           'memberships',(SELECT jsonb_agg(to_jsonb(m) ORDER BY m.roleid,m.member,m.grantor)
             FROM pg_auth_members m WHERE member IN (SELECT oid FROM pg_roles
-              WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime')))
+              WHERE rolname IN ('strataai_api_runtime','strataai_worker_runtime','strataai_identity_mail_runtime')))
           )::text);"""
         def protected_state():
             result = self.sql(fingerprint)
@@ -325,6 +325,58 @@ class IdentityRoleProvisionTests(unittest.TestCase):
         self.assertEqual(self.provision().returncode, 0, 'Valid isolated mail role provision failed')
         self.assertEqual(self.provision().returncode, 0, 'Repeated provision failed')
         self.assertEqual(self.sql('SELECT runtime_database_role_is_safe();', runtime=True).stdout.strip(), b't')
+        # The separate production mail identity has its own provisioning path.
+        # Its actual login must never gain domain/Worker definer capabilities.
+        mail_role = 'strataai_identity_mail_runtime'
+        for function in (worker_mail, api_binding, api_navigation):
+            with self.subTest(stale_mail_function=function):
+                check = f"SELECT has_function_privilege(current_user,'{function}','EXECUTE');"
+                self.assertEqual(self.sql(check, runtime=True).stdout.strip(), b'f')
+                self.assertEqual(self.sql(f'GRANT EXECUTE ON FUNCTION {function} TO {mail_role};').returncode, 0)
+                try:
+                    self.assertEqual(self.sql(check, runtime=True).stdout.strip(), b't')
+                    self.assertEqual(self.provision().returncode, 0)
+                    self.assertEqual(self.sql(check, runtime=True).stdout.strip(), b'f', 'Mail reprovisioning retained an obsolete function capability')
+                finally:
+                    self.assertEqual(self.sql(f'REVOKE EXECUTE ON FUNCTION {function} FROM {mail_role};').returncode, 0)
+                    self.assertEqual(self.provision().returncode, 0)
+        with self.subTest(mail_function_grant_option=True):
+            self.assertEqual(self.sql(f'GRANT EXECUTE ON FUNCTION public.runtime_database_role_is_safe() TO {mail_role} WITH GRANT OPTION;').returncode, 0)
+            try:
+                self.assertEqual(self.provision().returncode, 0)
+                self.assertEqual(self.sql("SELECT has_function_privilege(current_user,'public.runtime_database_role_is_safe()','EXECUTE'),"
+                                          "has_function_privilege(current_user,'public.runtime_database_role_is_safe()','EXECUTE WITH GRANT OPTION');",
+                                          runtime=True).stdout.strip(), b't|f', 'Mail role retained execution delegation')
+            finally:
+                self.assertEqual(self.sql(f'REVOKE GRANT OPTION FOR EXECUTE ON FUNCTION public.runtime_database_role_is_safe() FROM {mail_role};').returncode, 0)
+                self.assertEqual(self.provision().returncode, 0)
+        for function in (worker_mail, private_preview):
+            with self.subTest(public_mail_function=function):
+                self.assertEqual(self.sql(f'GRANT EXECUTE ON FUNCTION {function} TO PUBLIC;').returncode, 0)
+                try:
+                    self.assertEqual(self.sql(f"SELECT has_function_privilege(current_user,'{function}','EXECUTE');", runtime=True).stdout.strip(), b't')
+                    before = protected_state()
+                    self.assertNotEqual(self.provision(secrets.token_hex(24)).returncode, 0, 'Mail provisioning accepted private definer PUBLIC execution')
+                    self.assertEqual(protected_state(), before, 'Refused mail function provisioning changed credentials or ACLs')
+                finally:
+                    self.assertEqual(self.sql(f'REVOKE EXECUTE ON FUNCTION {function} FROM PUBLIC;').returncode, 0)
+                    self.assertEqual(self.provision().returncode, 0)
+        for table in ('attachments', 'identity_delivery_jobs'):
+            with self.subTest(public_mail_maintenance=table):
+                self.assertEqual(self.sql(f"SELECT has_table_privilege(current_user,'{table}','MAINTAIN');", runtime=True).stdout.strip(), b'f')
+                self.assertEqual(self.sql(f'GRANT MAINTAIN ON {table} TO PUBLIC;').returncode, 0)
+                try:
+                    self.assertEqual(self.sql(f"SELECT has_table_privilege(current_user,'{table}','MAINTAIN');", runtime=True).stdout.strip(), b't')
+                    before = protected_state()
+                    self.assertNotEqual(self.provision(secrets.token_hex(24)).returncode, 0, 'Mail provisioning accepted PUBLIC maintenance capability')
+                    self.assertEqual(protected_state(), before, 'Refused mail maintenance provisioning changed credentials or ACLs')
+                finally:
+                    self.assertEqual(self.sql(f'REVOKE MAINTAIN ON {table} FROM PUBLIC;').returncode, 0)
+                    self.assertEqual(self.provision().returncode, 0)
+        # Direct obsolete maintenance is reset; do not run any maintenance work.
+        self.assertEqual(self.sql(f'GRANT MAINTAIN ON attachments TO {mail_role};').returncode, 0)
+        self.assertEqual(self.provision().returncode, 0)
+        self.assertEqual(self.sql("SELECT has_table_privilege(current_user,'attachments','MAINTAIN');", runtime=True).stdout.strip(), b'f')
         # Seed only this disposable database; runtime role must claim with service RLS.
         seed = """
 INSERT INTO users(id,email,email_normalized,display_name,password_hash,status,email_verified,created_at,updated_at)
@@ -353,7 +405,18 @@ DO $$ DECLARE job identity_delivery_jobs; BEGIN
 END $$;
 COMMIT;
 """
-        self.assertEqual(self.sql(contract, runtime=True).returncode, 0, 'Restricted mail delivery contract failed')
+        # Harden shared function defaults without removing approved delivery.
+        helpers = 'public.claim_identity_delivery(uuid), public.finish_identity_delivery(uuid,uuid,uuid,text,text,uuid)'
+        self.assertEqual(self.sql(f'REVOKE EXECUTE ON FUNCTION {helpers} FROM PUBLIC;').returncode, 0)
+        try:
+            self.assertEqual(self.provision().returncode, 0)
+            self.assertEqual(self.sql("SELECT has_function_privilege(current_user,'public.claim_identity_delivery(uuid)','EXECUTE'),"
+                                      "has_function_privilege(current_user,'public.finish_identity_delivery(uuid,uuid,uuid,text,text,uuid)','EXECUTE');",
+                                      runtime=True).stdout.strip(), b't|t', 'Approved delivery helpers depend on PUBLIC execution')
+            self.assertEqual(self.sql(contract, runtime=True).returncode, 0, 'Restricted mail delivery contract failed with PUBLIC helpers revoked')
+        finally:
+            self.assertEqual(self.sql(f'GRANT EXECUTE ON FUNCTION {helpers} TO PUBLIC;').returncode, 0)
+            self.assertEqual(self.provision().returncode, 0)
         self.assertEqual(self.sql('GRANT SELECT(password_hash) ON users TO strataai_identity_mail_runtime;').returncode, 0)
         self.assertEqual(self.provision().returncode, 0)
         self.assertEqual(self.sql("SELECT has_column_privilege(current_user,'users','password_hash','SELECT');", runtime=True).stdout.strip(), b'f')

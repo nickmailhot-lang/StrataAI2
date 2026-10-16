@@ -19,7 +19,7 @@ identity. The helper does not enable transport or provision cloud resources.
 
 Provisioning is transactional. It refuses an existing privileged, role-member,
 public-schema-creating or application-object-owning role before changing its
-credential. Reprovisioning resets public-table and column grants before adding
+credential. Reprovisioning resets public-table, column and routine grants before adding
 the narrow capability boundary. Column reset is necessary because table-level
 REVOKE does not remove old column grants.
 An effective-permission check also includes PUBLIC grants and rolls back if
@@ -30,6 +30,47 @@ used `\quit 3`, which this PostgreSQL client treated as successful termination.
 Both general and mail-role provisioners now raise a named database exception
 under ON_ERROR_STOP. Weak/reused credentials return failure before role creation,
 with no supplied secret in the error message.
+
+## Function and maintenance boundaries — 2026-10-16
+
+The separate [mail-role provisioner](../../db/provision-identity-mail-role.sql)
+now resets public-schema routine grants along with its table/column grants.
+Native baseline probes reproduce eight failures: three obsolete direct function
+capabilities, retained execution delegation, two public private-definer grants,
+and public maintenance privileges on both an unrelated attachment table and the
+permitted delivery queue. The complete baseline fails in 111.319 seconds; the
+existing direct-maintenance reset remains a passing control. No maintenance
+operation is performed by these probes.
+
+Only the approved role guard and caller-permission claim/completion helpers are
+explicitly regranted. Claim/completion no longer depend on shared public
+execution remaining enabled. Unexpected public access to non-trigger definer
+functions or remaining function grant options refuses provisioning. Relation
+checks also refuse `MAINTAIN` alongside `DELETE`, `TRUNCATE` and `TRIGGER`.
+Existing narrow column grants, forced service-scope RLS and privileged-role,
+membership, schema-creation and ownership refusals remain in force.
+
+Refusal rolls back credentials and ACLs in the same provisioning transaction;
+shared `PUBLIC` permissions are preserved for operator review. Remove the
+unintended public grant before retrying. This is provisioning validation, not
+continuous monitoring of subsequent administrator grants. It adds no transport,
+provider integration, application feature or migration. Historical bundles keep
+their original script; current complete immutable-image CI remains required.
+
+The [required native PostgreSQL regression](../../tests/identity_role_provision_test.py)
+passes in **115.445 seconds**: all nine new reset/refusal/control cases, followed
+by an actual restricted login's claim/completion with public access to both
+approved helpers revoked. All previous API/Worker and mail password, column,
+lease, membership, ownership, service RLS and permission checks also pass.
+Refusal fingerprints include all three runtime identities/credentials plus
+schema/relation/column/function ACLs, ownership and memberships, and require a
+successful query with a nonempty digest. The wrapper takes 116.669 seconds,
+matches all 154 captured inputs and restores original Docker inventory. Its
+owned PostgreSQL container and temporary directory are removed. No existing
+database, application host, provider integration, new image, maintenance operation
+or large-load workload is used. Release-payload tests pass 47/47 in 14.649 seconds.
+Current immutable-image and managed-mail delivery acceptance remain outstanding;
+PRD-02 stays open at **16% estimated work remaining**.
 
 ## Verification and limits
 

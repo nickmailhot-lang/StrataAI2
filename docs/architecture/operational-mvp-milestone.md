@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [separate identity-mail boundary follow-up](identity-mail-role-provisioning.md#function-and-maintenance-boundaries--2026-10-16)
+repairs eight reproduced function/maintenance permission failures. All nine new
+reset/refusal/control cases pass, and a real restricted login claims/completes
+mail with public access to both approved helpers revoked. All prior provisioning
+checks pass; 154 captured inputs match and original Docker inventory is restored.
+The owned database container/directory are removed. This supports safe optional
+mail deployment/rotation; current immutable CI and managed-mail acceptance remain
+required. PRD-02 stays open at 16% estimated work remaining. No maintenance or
+large-load workload runs.
+
 The [function provisioning follow-up](runtime-database-roles.md#function-capability-reset-and-public-grants--2026-10-16)
 reproduces and repairs obsolete direct execution, retained delegation and
 unexpected public access to private definer functions. All ten new reset/refusal

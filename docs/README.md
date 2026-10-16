@@ -74,6 +74,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Configuration and secrets](architecture/configuration.md)
 - [Release authentication policy forwarding and startup verification](architecture/release-auth-policy-verification.md)
 - [Optional production identity-mail role provisioning](architecture/identity-mail-role-provisioning.md)
+  includes [function, maintenance and explicit delivery-helper boundaries](architecture/identity-mail-role-provisioning.md#function-and-maintenance-boundaries--2026-10-16).
 - [Dependency locking (ARCH-01 / ARCH-11)](architecture/dependency-locking.md)
 - [Mandatory integration CI groups and coverage guard (ARCH-11)](architecture/integration-ci-groups.md)
 - [Initial exact-commit build metadata and release versions (ARCH-11)](architecture/initial-build-metadata.md)

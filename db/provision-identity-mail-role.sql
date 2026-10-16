@@ -32,6 +32,7 @@ END $$;
 ALTER ROLE strataai_identity_mail_runtime LOGIN NOSUPERUSER NOBYPASSRLS
     NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT PASSWORD :'identity_password';
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM strataai_identity_mail_runtime;
+REVOKE ALL ON ALL ROUTINES IN SCHEMA public FROM strataai_identity_mail_runtime;
 -- Table-level REVOKE does not remove old column grants. Reset those as well.
 DO $$ DECLARE relation record;
 BEGIN
@@ -48,23 +49,31 @@ BEGIN
 END $$;
 GRANT USAGE ON SCHEMA public TO strataai_identity_mail_runtime;
 GRANT EXECUTE ON FUNCTION public.runtime_database_role_is_safe() TO strataai_identity_mail_runtime;
+-- Approved invoker helpers must not depend on PUBLIC execution remaining open.
+GRANT EXECUTE ON FUNCTION public.claim_identity_delivery(uuid),
+    public.finish_identity_delivery(uuid,uuid,uuid,text,text,uuid) TO strataai_identity_mail_runtime;
 GRANT SELECT ON schema_migrations TO strataai_identity_mail_runtime;
 GRANT SELECT,UPDATE ON identity_delivery_jobs TO strataai_identity_mail_runtime;
 GRANT SELECT(id,email,status,email_verified) ON users TO strataai_identity_mail_runtime;
 GRANT SELECT(id,user_id,token_hash,used_at,revoked_at,expires_at)
     ON password_reset_tokens,email_verification_tokens TO strataai_identity_mail_runtime;
 -- Effective checks include PUBLIC grants, which direct role REVOKE cannot remove.
-DO $$ DECLARE attribute record; privilege text;
+DO $$ DECLARE relation record; attribute record; routine record; privilege text;
 BEGIN
+    FOR relation IN
+        SELECT c.oid FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f')
+    LOOP
+        IF has_table_privilege('strataai_identity_mail_runtime',relation.oid,'DELETE,TRUNCATE,TRIGGER,MAINTAIN') THEN
+            RAISE EXCEPTION 'Effective identity mail grants exceed delivery boundary; no changes applied.';
+        END IF;
+    END LOOP;
     FOR attribute IN
         SELECT c.oid,c.relname,a.attnum,a.attname
         FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
         JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped
         WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f')
     LOOP
-        IF has_table_privilege('strataai_identity_mail_runtime',attribute.oid,'DELETE,TRUNCATE,TRIGGER') THEN
-            RAISE EXCEPTION 'Effective identity mail grants exceed delivery boundary; no changes applied.';
-        END IF;
         FOREACH privilege IN ARRAY ARRAY['SELECT','INSERT','UPDATE','REFERENCES'] LOOP
             IF has_column_privilege('strataai_identity_mail_runtime',attribute.oid,attribute.attnum,privilege)
                 AND NOT (
@@ -77,6 +86,20 @@ BEGIN
                 RAISE EXCEPTION 'Effective identity mail grants exceed delivery boundary; no changes applied.';
             END IF;
         END LOOP;
+    END LOOP;
+    FOR routine IN
+        SELECT p.oid,p.proacl,p.proowner,p.prosecdef,p.prorettype
+        FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public'
+    LOOP
+        -- Trigger functions cannot be called as ordinary functions. Caller-
+        -- permission mail claim/completion helpers retain their public grants.
+        IF (routine.prosecdef AND routine.prorettype NOT IN ('pg_catalog.trigger'::regtype,'pg_catalog.event_trigger'::regtype)
+            AND has_function_privilege('strataai_identity_mail_runtime',routine.oid,'EXECUTE') AND NOT EXISTS(
+                SELECT FROM aclexplode(coalesce(routine.proacl,acldefault('f',routine.proowner))) capability
+                WHERE capability.grantee='strataai_identity_mail_runtime'::regrole AND capability.privilege_type='EXECUTE'))
+            OR has_function_privilege('strataai_identity_mail_runtime',routine.oid,'EXECUTE WITH GRANT OPTION') THEN
+            RAISE EXCEPTION 'Effective identity mail function grants exceed delivery boundary; no changes applied.';
+        END IF;
     END LOOP;
 END $$;
 COMMIT;

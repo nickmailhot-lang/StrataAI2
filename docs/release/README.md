@@ -430,7 +430,13 @@ COMPOSE_FILE=compose.release.yml ./provision-identity-mail-role.sh
 This creates or reprovisions `strataai_identity_mail_runtime` with only the mail
 job, required identity-column and schema-version grants. It refuses privileged,
 role-member or application-object-owning existing roles before changing their
-credentials. Reprovisioning removes obsolete public-table and column grants.
+credentials. Reprovisioning removes obsolete public-table, column and routine
+grants. The role guard and approved caller-permission claim/completion functions
+receive explicit execution grants, supporting deployments that revoke shared
+public access to those helpers. Unexpected public private-definer execution or
+maintenance privileges refuse rotation with credentials/ACLs preserved. Review
+and remove the unintended shared grant, then retry. See the [mail-role boundary
+and verification](../architecture/identity-mail-role-provisioning.md#function-and-maintenance-boundaries--2026-10-16).
 Password validation errors now return a failing exit status in both provisioners.
 
 Configure `STRATAAI_IDENTITY_DELIVERY_CONNECTION_STRING` for this role and the

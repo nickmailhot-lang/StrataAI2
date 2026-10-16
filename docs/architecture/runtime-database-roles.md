@@ -1,5 +1,10 @@
 # Runtime database roles
 
+The [separate optional identity-mail provisioner](identity-mail-role-provisioning.md#function-and-maintenance-boundaries--2026-10-16)
+also resets function capabilities and refuses unintended public definer execution
+and maintenance rights. Its approved delivery helpers are explicitly granted,
+allowing public helper execution to be revoked without disabling mail delivery.
+
 ## Function capability reset and public grants — 2026-10-16
 
 [Canonical API/Worker provisioning](../../db/provision-runtime-roles.sql) now
