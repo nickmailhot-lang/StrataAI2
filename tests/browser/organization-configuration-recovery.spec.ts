@@ -49,7 +49,7 @@ for (const width of [1280, 390]) {
       await waitForInitialAuthority();
       await expect(page.getByRole('link', { name: 'Back to Organization', exact: true })).toHaveAttribute('href', `/app/${organizationId}`);
       for (const [label, value] of [['Legal name', 'Original reviewed legal name'], ['Jurisdiction', 'CA-BC'], ['Organization timezone (IANA)', 'UTC']])
-        await page.getByLabel(new RegExp('^' + label.replace(/[()]/g, '\\$&'))).fill(value);
+        await page.getByLabel(new RegExp('^' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).fill(value);
       await page.getByRole('button', { name: 'Review configuration change', exact: true }).click();
       await page.getByRole('dialog', { name: 'Review configuration change', exact: true }).getByRole('button', { name: 'Approve configuration change' }).click();
       await expect(page.getByRole('button', { name: 'Retry original submission', exact: true })).toBeEnabled();

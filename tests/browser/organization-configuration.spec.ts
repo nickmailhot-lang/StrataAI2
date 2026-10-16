@@ -26,7 +26,7 @@ for (const width of [1280, 390]) {
         ['Management company', 'Reviewed manager'], ['Insurance renewal date', '2027-03-15'], ['Lot count', '24'],
         ['Fiscal year end month', '12'], ['Fiscal year end day', '31'], ['AGM cycle (months)', '12'], ['Depreciation report cycle (months)', '36'],
       ]) {
-        const input = page.getByLabel(new RegExp('^' + label.replace(/[()]/g, '\\$&')));
+        const input = page.getByLabel(new RegExp('^' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
         // A protected foreground read can retire an edit between focus and input.
         // Observe the unsent draft value before proceeding to the next field.
         await expect(async () => {

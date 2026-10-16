@@ -232,7 +232,7 @@ describe('PRD-27 configuration form, human review and recovery', () => {
     fixture(null); mount(); expect(await screen.findByText(/No configuration has been recorded/)).toBeInTheDocument();
     for (const label of ['Legal name', 'Jurisdiction', 'Organization timezone (IANA)', 'Corporation or registration identifier', 'Civic address',
       'Management company', 'Insurance renewal date', 'Lot count', 'Fiscal year end month', 'Fiscal year end day', 'AGM cycle (months)', 'Depreciation report cycle (months)',
-      'Intake Board', 'Intake List']) expect(screen.getByLabelText(new RegExp('^' + label.replace(/[()]/g, '\\$&')))).toBeInTheDocument();
+      'Intake Board', 'Intake List']) expect(screen.getByLabelText(new RegExp('^' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))).toBeInTheDocument();
     expect(screen.getByLabelText(/^Legal name/)).toHaveValue(''); expect(screen.getByLabelText(/^Organization timezone/)).toHaveValue('');
     fireEvent.click(reviewButton()); await screen.findByText('Enter legal name.'); expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     for (const name of ['Add emergency contact', 'Add category', 'Add priority', 'Add jurisdiction policy']) expect(screen.getByRole('button', { name })).toBeEnabled();

@@ -30,14 +30,13 @@ class IdentityRoleProvisionTests(unittest.TestCase):
         cls.passwords = {key: secrets.token_hex(24) for key in
                          ('POSTGRES_PASSWORD', 'STRATAAI_API_DB_PASSWORD', 'STRATAAI_WORKER_DB_PASSWORD')}
         cls.mail_password = secrets.token_hex(24) + "';mail"
-        cls.environment = cls.folder / 'server.env'
-        cls.environment.write_text('POSTGRES_USER=postgres\nPOSTGRES_DB=role_fixture\n' +
-                                   ''.join(f'{key}={value}\n' for key, value in cls.passwords.items()) +
-                                   f'STRATAAI_IDENTITY_DELIVERY_DB_PASSWORD={cls.mail_password}\n', encoding='utf-8')
+        server_environment = {'POSTGRES_USER': 'postgres', 'POSTGRES_DB': 'role_fixture', **cls.passwords,
+                              'STRATAAI_IDENTITY_DELIVERY_DB_PASSWORD': cls.mail_password}
         cls.addClassCleanup(cls.cleanup_container)
         result = cls.command('run', '-d', '--name', cls.name, '--network', 'none',
                              '--tmpfs', '/var/lib/postgresql/data', '--label', 'strataai.fixture=identity-role-provision',
-                             '--env-file', str(cls.environment), 'pgvector/pgvector:pg17')
+                             *[argument for key in server_environment for argument in ('--env', key)],
+                             'pgvector/pgvector:pg17', environment=server_environment)
         if result.returncode:
             raise AssertionError('Disposable PostgreSQL role fixture could not start')
         for _ in range(80):
@@ -62,11 +61,17 @@ class IdentityRoleProvisionTests(unittest.TestCase):
         assert root == cls.folder
         assert root.parent == Path(tempfile.gettempdir()).resolve()
         assert root.name.startswith('strataai-mail-role-test-')
-        cls.temporary.cleanup()
+        try:
+            assert not list(root.glob('*.env')), 'Fixture credentials must not be materialized in local files'
+        finally:
+            cls.temporary.cleanup()
 
     @classmethod
-    def command(cls, *arguments, input=None):
-        return subprocess.run([cls.docker, *arguments], input=input, capture_output=True, timeout=90)
+    def command(cls, *arguments, input=None, environment=None):
+        # Docker inherits explicitly named values from this child environment;
+        # secrets are neither command-line arguments nor temporary file content.
+        env = {**os.environ, **environment} if environment is not None else None
+        return subprocess.run([cls.docker, *arguments], input=input, env=env, capture_output=True, timeout=90)
 
     @classmethod
     def cleanup_container(cls):
@@ -82,22 +87,21 @@ class IdentityRoleProvisionTests(unittest.TestCase):
 
     @classmethod
     def sql(cls, statement, *, runtime=False, mail_password=None, overrides=None):
+        environment = {}
         if runtime:
-            client = cls.folder / 'client.env'
-            client.write_text(f'PGPASSWORD={cls.mail_password}\n', encoding='utf-8')
-            arguments = ['exec', '-i', '--env-file', str(client), cls.name, 'psql', '-X', '-qAt',
+            environment['PGPASSWORD'] = cls.mail_password
+            arguments = ['exec', '-i', '--env', 'PGPASSWORD', cls.name, 'psql', '-X', '-qAt',
                          '-v', 'ON_ERROR_STOP=1', '-h', '127.0.0.1', '-U', 'strataai_identity_mail_runtime', '-d', 'role_fixture']
         else:
             arguments = ['exec', '-i']
             if mail_password is not None or overrides:
-                client = cls.folder / 'provision.env'
                 values = dict(overrides or {})
                 if mail_password is not None:
                     values['STRATAAI_IDENTITY_DELIVERY_DB_PASSWORD'] = mail_password
-                client.write_text(''.join(f'{key}={value}\n' for key, value in values.items()), encoding='utf-8')
-                arguments += ['--env-file', str(client)]
+                environment.update(values)
+                arguments += [argument for key in values for argument in ('--env', key)]
             arguments += [cls.name, 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', 'role_fixture']
-        return cls.command(*arguments, input=statement.encode())
+        return cls.command(*arguments, input=statement.encode(), environment=environment)
 
     def provision(self, password=None):
         return self.sql((self.repo / 'db/provision-identity-mail-role.sql').read_text(), mail_password=password)

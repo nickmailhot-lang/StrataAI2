@@ -29,16 +29,14 @@ class ListMoveParentIntegrityTests(unittest.TestCase):
         cls.addClassCleanup(cls.cleanup_folder)
         cls.name = 'strataai-list-move-' + uuid.uuid4().hex[:12]
         cls.role_password = secrets.token_hex(24)
-        environment = cls.folder / 'server.env'
-        environment.write_text('POSTGRES_USER=postgres\nPOSTGRES_DB=list_move\nPOSTGRES_PASSWORD=' + secrets.token_hex(24) + '\n'
-                               'STRATAAI_API_DB_PASSWORD=' + cls.role_password + '\n'
-                               'STRATAAI_WORKER_DB_PASSWORD=' + secrets.token_hex(24) + '\n')
-        cls.client = cls.folder / 'client.env'
-        cls.client.write_text('PGPASSWORD=' + cls.role_password + '\n')
+        server_environment = {'POSTGRES_USER': 'postgres', 'POSTGRES_DB': 'list_move',
+                              'POSTGRES_PASSWORD': secrets.token_hex(24), 'STRATAAI_API_DB_PASSWORD': cls.role_password,
+                              'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)}
         cls.addClassCleanup(cls.cleanup_container)
         started = cls.command('run', '-d', '--name', cls.name, '--network', 'none',
                               '--tmpfs', '/var/lib/postgresql/data', '--label', 'strataai.fixture=list-move-parent',
-                              '--env-file', str(environment), 'pgvector/pgvector:pg17')
+                              *[argument for key in server_environment for argument in ('--env', key)],
+                              'pgvector/pgvector:pg17', environment=server_environment)
         if started.returncode:
             raise AssertionError('Disposable PostgreSQL List fixture could not start')
         for _ in range(80):
@@ -101,8 +99,10 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
             raise AssertionError('Restricted runtime role provision failed')
 
     @classmethod
-    def command(cls, *arguments, input=None):
-        return subprocess.run([cls.docker, *arguments], input=input, capture_output=True, timeout=90)
+    def command(cls, *arguments, input=None, environment=None):
+        # Pass secrets only in the Docker child's environment, never argv/files.
+        env = {**os.environ, **environment} if environment is not None else None
+        return subprocess.run([cls.docker, *arguments], input=input, env=env, capture_output=True, timeout=90)
 
     @staticmethod
     def complete_graph_hash_sql():
@@ -163,12 +163,12 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
     def sql(cls, statement, runtime=False):
         args = ['exec', '-i']
         if runtime:
-            args += ['--env-file', str(cls.client)]
+            args += ['--env', 'PGPASSWORD']
         args += [cls.name, 'psql', '-X', '-w', '-qAt', '-v', 'ON_ERROR_STOP=1', '-v', 'VERBOSITY=sqlstate']
         if runtime:
             args += ['-h', '127.0.0.1']
         args += ['-U', 'strataai_api_runtime' if runtime else 'postgres', '-d', 'list_move']
-        return cls.command(*args, input=statement.encode())
+        return cls.command(*args, input=statement.encode(), environment={'PGPASSWORD': cls.role_password} if runtime else None)
 
     @classmethod
     def cleanup_container(cls):
@@ -185,7 +185,10 @@ INSERT INTO cards(id,tenant_id,board_id,list_id,title,rank,created_at,updated_at
     def cleanup_folder(cls):
         assert cls.folder.resolve() == cls.folder and cls.folder.parent == Path(tempfile.gettempdir()).resolve()
         assert cls.folder.name.startswith('strataai-list-move-')
-        cls.temporary.cleanup()
+        try:
+            assert not list(cls.folder.glob('*.env')), 'Fixture credentials must not be materialized in local files'
+        finally:
+            cls.temporary.cleanup()
 
     def test_real_commit_preserves_all_lifecycles_and_rejects_incomplete_or_cross_tenant_graphs(self):
         constraint = self.sql("SELECT condeferrable AND NOT condeferred AND convalidated FROM pg_constraint WHERE conrelid='cards'::regclass AND conname='cards_list_id_board_id_tenant_id_fkey';")

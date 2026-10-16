@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [code-scanning follow-up](security-test-assertions.md#code-scanning-follow-up--2026-10-15)
+reviews nine current alerts: one verified enum-category false positive is
+individually dismissed, five fixture credential-file writes are removed, and
+three test selectors gain complete literal regex escaping. The original three
+real PostgreSQL contracts and 18 component tests pass, as do web/browser types
+and focused lint. All 156 captured inputs match and owned cleanup restores
+Docker inventory. The eight source-corrected alerts still require actual CodeQL
+reanalysis; current full CI and MVP acceptance remain open. No rule or security
+gate is disabled, and no large-load test runs.
+
 The [running-image acceptance repair](../release/promotion-and-rollback.md#running-image-verification--2026-10-15)
 binds the final release record to actual Compose service image IDs and stable
 replica membership/container/start identities across runtime verification. All

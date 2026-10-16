@@ -250,6 +250,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [PRD-05 sharing and permission acceptance audit](architecture/prd-05-acceptance.md)
 - [PRD-15 acceptance map — open](architecture/prd-15-acceptance.md)
 - [Negative security fixture assertions](architecture/security-test-assertions.md)
+- [Code-scanning triage and private fixture credentials](architecture/security-test-assertions.md#code-scanning-follow-up--2026-10-15)
 - [Board invitation release evidence](board-invitation-release-evidence.md)
 - [Board-sharing request telemetry](board-sharing-telemetry.md)
 - [Card move browser evidence](card-move-browser-evidence.md)
