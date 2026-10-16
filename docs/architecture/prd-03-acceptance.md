@@ -12,6 +12,24 @@ authorization and later factory recovery. Controlled Demo persistence and
 compiled assemblies do not certify current Production images or full release
 acceptance. Estimated PRD-03 work remaining stays **8%**; the issue stays open.
 
+## Deletion stage observations — 2026-10-16
+
+The [deletion observation contract](operator-metrics.md#organization-deletion-client-observations--2026-10-16)
+tracks admitted review/reference restoration, original request acknowledgment,
+status reads and a verified terminal-view open separately. A 202 or PENDING read
+cannot produce completion; a switched account cannot report accepted request or
+terminal view. Privacy, optional-reporting failure and shared operation deadlines
+remain enforced. All 64 focused component/parser/queue/App cases, 20 API category/
+HTTP cases, 56 related API cases, 34 exporter-verifier cases and 285 CI guards
+pass, alongside build/typecheck/lint/syntax. Both desktop/phone native cases pass
+actual lost-response/original recovery, canonical separate Worker completion,
+real accepted reports, completion-stage separation, privacy and keyboard/WCAG.
+Inputs match and cleanup restores Docker inventory; the linked record limits
+the scope to compiled current assets, optional-email policy and an empty graph.
+Current immutable/full CI, invitation
+observations, adoption/reconnect/dashboard and complete lifecycle acceptance
+remain required. PRD-03 remains open at **8% estimated work remaining**.
+
 ## Deletion acknowledgment account/deadline repair — 2026-10-16
 
 The [deletion admission repair](organization-deletion-retries.md#final-account-admission-and-shared-operation-deadlines--2026-10-16)

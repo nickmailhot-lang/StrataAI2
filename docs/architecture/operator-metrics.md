@@ -907,6 +907,80 @@ adoption/reconnect/dashboard requirements and full PRD acceptance remain open.
 The preceding main revision's complete 2,602-test web run is a baseline, not proof
 of this later increment. Large-load testing remains deferred until after MVP.
 
+## Organization deletion client observations — 2026-10-16
+
+Five fixed categories use the existing bounded Activity queue, authenticated
+atomic parser and optional exporter. Their meanings preserve the workflow stages:
+
+| Action | Observation meaning |
+| --- | --- |
+| `organization_deletion_disclosure` | One open per mounted route after current Owner review or account-matched restoration of the same-tab reference. |
+| `organization_deletion_read` | Review/reference verification attempts, explicit review retries and current results with bounded duration. |
+| `organization_deletion_change` | Confirmed request attempt or explicit original recovery; success means the original 202 is validated and the final account still matches. It does not mean terminal deletion. |
+| `organization_deletion_status` | First status check/use, later checks/retry, technical exception and current validated read result/duration. Both PENDING and COMPLETED can be successful status reads. |
+| `organization_deletion_completion` | Open of the validated COMPLETED view after final account admission. It has no duration and does not measure Worker processing latency. |
+
+A restored acknowledged reference does not invent another successful command
+or terminal observation. A current non-Owner review does not emit disclosure;
+account switches after the write/status response cannot emit request success or
+completion. Conflict, exception, failed result and explicit original retry remain
+separate observations. Cancellation sends no command. All observations are
+untrusted best-effort client reports, not canonical audit history. Reporting
+failure cannot repeat deletion, change actor/version/key/consent, bypass a
+server permission or extend the shared 15-second operation deadline.
+
+Only action/kind/count and optional bounded duration are admitted. Organization,
+actor, request/event IDs, names, emails, passwords, original keys, routes/query
+fields, completion timestamps and exception text are excluded. The API rejects
+the complete batch before recording any measurement if an unknown/private field
+appears. The Collector fixture now requires these fixed categories and read,
+request and status durations using synthetic observations; actual browser
+reporting remains a separate verification scope.
+
+Both [desktop/phone deletion observation cases](../../tests/browser/organization-deletion-telemetry.spec.ts)
+pass with no failures/flaky/skipped cases against fresh restricted PostgreSQL
+17.11, all 149 migrations, current API/separate Worker assemblies and current
+Vite assets. Each creates one Organization without a Board graph. A real
+committed DELETE loses its first response; explicit identical actor/version/key
+recovery receives 202. Actual reports receive 204 with exact observation counts
+and permitted fields. Completion stays absent after acknowledgment and after
+the separate Worker reaches canonical COMPLETED. Only the browser's subsequent
+validated status check emits the terminal-view open. Canonical request/event/
+completion coordinates are verified and excluded from every report, together
+with account/Organization identifiers, credentials, names, keys and query fields.
+Keyboard/Cancel/no-write behavior, one document navigation, withdrawn ordinary
+access and zero WCAG 2.2 AA violations pass.
+
+All **1,271 source/fixture inputs, 71 binaries and four served assets** match
+during execution; API/Worker identities remain stable and owned cleanup restores
+the original Docker inventory. Cached images supply the runtime with current
+read-only assemblies/assets. Local metadata carries preceding `2b59fd0c`/`1.0.0`,
+not an immutable release of this working source. Controlled provider/optional
+email verification does not certify real provider delivery or strict policy;
+the small empty-graph completion does not replace the separate Board/List/Card
+tombstone acceptance. No images/release archives are built, pulled or imported.
+
+All **64** focused deletion/admission/parser/queue/App cases pass, including
+seven new observation scenarios. They inspect actual queued wire bodies at the
+202, PENDING and COMPLETED boundaries, original retry identity, non-Owner
+admission, restored references, switched accounts and optional reporting failure.
+The existing result contract requires durations; initial new client/API tests
+expose an incorrectly modeled untimed completion result. Modeling terminal-view
+open fixes that error without changing sender/parser limits; private failed
+reports are retained. All **20** API category/HTTP authentication/atomic-private-
+batch cases and **56** related API cases pass in the cached Linux runtime with
+current read-only assemblies and no database/network. All 799 source and 415
+binary inputs match; owned cleanup restores Docker inventories.
+
+All **34** Collector-verifier tests and **285** CI coverage guards pass. Six
+baseline assertions expose missing deletion observations accepted by the prior
+verifier. Solution Release compilation has zero warnings/errors, and web/browser
+typechecks, zero-warning lint, Bash syntax and browser collection pass. The
+preceding full 2,602-test web run remains a baseline, not later-source full-suite
+proof. Current immutable-image/Collector/full release acceptance, invitation
+observations, adoption/reconnect/dashboard requirements and full PRD acceptance
+remain open. Large-load tests remain deferred until after MVP.
+
 ## Organization creation client observations
 
 The creation dialog records one `organization_creation_disclosure/open` per

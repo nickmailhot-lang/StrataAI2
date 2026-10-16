@@ -50,19 +50,59 @@ public sealed partial class ApiHostTests
     [InlineData("organization_departure_disclosure")]
     [InlineData("organization_departure_read")]
     [InlineData("organization_departure_change")]
+    [InlineData("organization_deletion_disclosure")]
+    [InlineData("organization_deletion_read")]
+    [InlineData("organization_deletion_change")]
+    [InlineData("organization_deletion_status")]
+    [InlineData("organization_deletion_completion")]
     public void PRD_03_Settings_observations_accept_fixed_categories_and_reject_private_material_atomically(string action)
     {
         using var valid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
             new { action, kind = "retry", count = 1 }, new { action, kind = "success", count = 1, durationMs = 125 } } }));
         Assert.Equal(2, ActivityClientTelemetry.Parse(valid.RootElement)!.Count);
         foreach (var field in new[] { "organizationId", "actorId", "name", "description", "logoUrl", "draft", "version", "key", "route", "exception",
-                     "membershipId", "userId", "email", "expectedVersion", "target" })
+                     "membershipId", "userId", "email", "expectedVersion", "target", "requestId", "eventId", "completedAt" })
         {
             using var invalid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
                 new { action, kind = "use", count = 1 },
                 new Dictionary<string,object> { ["action"] = action, ["kind"] = "retry", ["count"] = 1, [field] = "private-material" } } }));
             Assert.Null(ActivityClientTelemetry.Parse(invalid.RootElement));
         }
+    }
+
+    [Fact]
+    public async Task PRD_03_Deletion_observations_require_authentication_and_reject_private_batches_without_recording()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var actor = app.CreateClient(); using var anonymous = app.CreateClient();
+        await RegisterAndLogin(actor);
+        var meter = app.Services.GetRequiredService<ActivityClientTelemetry>().Meter;
+        var recorded = new ConcurrentQueue<Dictionary<string, object?>>(); var durations = new ConcurrentQueue<double>();
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, capture) => { if (ReferenceEquals(instrument.Meter, meter)) capture.EnableMeasurementEvents(instrument); };
+        listener.SetMeasurementEventCallback<long>((_, _, tags, _) => recorded.Enqueue(tags.ToArray().ToDictionary(pair => pair.Key, pair => pair.Value)));
+        listener.SetMeasurementEventCallback<double>((_, value, _, _) => durations.Enqueue(value)); listener.Start();
+        var payload = new { events = new object[] {
+            new { action = "organization_deletion_disclosure", kind = "open", count = 1 },
+            new { action = "organization_deletion_read", kind = "success", count = 1, durationMs = 125 },
+            new { action = "organization_deletion_change", kind = "use", count = 1 },
+            new { action = "organization_deletion_change", kind = "conflict", count = 1 },
+            new { action = "organization_deletion_change", kind = "retry", count = 1 },
+            new { action = "organization_deletion_change", kind = "failure", count = 1, durationMs = 250 },
+            new { action = "organization_deletion_change", kind = "success", count = 1, durationMs = 125 },
+            new { action = "organization_deletion_status", kind = "use", count = 1 },
+            new { action = "organization_deletion_status", kind = "success", count = 1, durationMs = 125 },
+            new { action = "organization_deletion_completion", kind = "open", count = 1 } } };
+        using var denied = await Mutate(anonymous, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode); Assert.Empty(recorded); Assert.Empty(durations);
+        using var accepted = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode); Assert.Equal("", await accepted.Content.ReadAsStringAsync(ct));
+        Assert.Equal(10, recorded.Count); Assert.Equal(new[] { 0.125, 0.25, 0.125, 0.125 }, durations.ToArray());
+        Assert.All(recorded, tags => Assert.Equal(new[] { "action", "kind" }, tags.Keys.Order().ToArray()));
+        using var rejected = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", new { events = new object[] {
+            new { action = "organization_deletion_read", kind = "use", count = 1 },
+            new { action = "organization_deletion_completion", kind = "open", count = 1, requestId = Guid.NewGuid(), eventId = Guid.NewGuid() } } });
+        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(10, recorded.Count); Assert.Equal(4, durations.Count);
     }
 
     [Fact]

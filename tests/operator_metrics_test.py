@@ -119,6 +119,24 @@ class OperatorEvidenceTests(unittest.TestCase):
                         ("strataai_activity_client_duration_count", 'action="organization_departure_change",kind="failure"'),
                         ("strataai_activity_client_events", 'action="organization_departure_change",kind="success"'),
                         ("strataai_activity_client_duration_count", 'action="organization_departure_change",kind="success"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_disclosure",kind="open"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_read",kind="retry"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_read",kind="success"'),
+                        ("strataai_activity_client_duration_count", 'action="organization_deletion_read",kind="success"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_change",kind="use"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_change",kind="retry"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_change",kind="conflict"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_change",kind="failure"'),
+                        ("strataai_activity_client_duration_count", 'action="organization_deletion_change",kind="failure"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_change",kind="success"'),
+                        ("strataai_activity_client_duration_count", 'action="organization_deletion_change",kind="success"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_status",kind="use"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_status",kind="retry"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_status",kind="failure"'),
+                        ("strataai_activity_client_duration_count", 'action="organization_deletion_status",kind="failure"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_status",kind="success"'),
+                        ("strataai_activity_client_duration_count", 'action="organization_deletion_status",kind="success"'),
+                        ("strataai_activity_client_events", 'action="organization_deletion_completion",kind="open"'),
                         ("strataai_organization_requests", 'operation="create",outcome="success"'),
                         ("strataai_organization_duration_count", 'operation="create",outcome="success"'),
                         ("strataai_organization_requests", 'operation="read",outcome="denied"'),
@@ -393,6 +411,12 @@ class OperatorEvidenceTests(unittest.TestCase):
         escaped = r'path\\part\"quote\nnext'
         self.assertEqual({"job": escaped}, metrics.parse_labels('job="' + escaped + '"'))
         self.assertEqual({"job": "comma,inside"}, metrics.parse_labels('job="comma,inside",'))
+
+    def test_missing_deletion_observations_cannot_pass(self):
+        for action in ('organization_deletion_disclosure', 'organization_deletion_read', 'organization_deletion_change', 'organization_deletion_status', 'organization_deletion_completion'):
+            with self.subTest(action=action):
+                rows = [row for row in self.fixture().splitlines() if f'action="{action}"' not in row]
+                self.assertFalse(metrics.verify('\n'.join(rows), self.revision, self.version))
 
     def test_missing_departure_observations_cannot_pass(self):
         for action in ('organization_departure_disclosure', 'organization_departure_read', 'organization_departure_change'):

@@ -7,6 +7,7 @@ import { boundedWorkRead } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { clearDeletionRecovery, parseDeletionObservation, readDeletionRecovery, saveDeletionRecovery } from './deletionObservation';
 import type { DeletionIntent, DeletionObservation, DeletionRecovery } from './deletionObservation';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 type Review = { organization: { id: string; name: string; status: number; version: number }; role: number };
 type Intent = DeletionIntent;
@@ -23,6 +24,7 @@ function Deletion({ organizationId }: { organizationId: string }) {
   const checkButton = useRef<HTMLButtonElement>(null); const completionFocus = useRef(false); const resumeFocus = useRef(false);
   const [intent, setIntent] = useState<Intent>(); const intentRef = useRef<Intent | undefined>(undefined);
   const mounted = useRef(false); const pending = useRef<AbortController | undefined>(undefined);
+  const opened = useRef(false); const statusAttempts = useRef(0);
   const cancel = useRef<HTMLButtonElement>(null); const reload = useRef<HTMLButtonElement>(null);
   const launcher = useRef<HTMLButtonElement>(null); const retry = useRef<HTMLButtonElement>(null);
   const notice = useRef<HTMLDivElement>(null); const recoveryFocus = useRef(false);
@@ -46,8 +48,13 @@ function Deletion({ organizationId }: { organizationId: string }) {
       resumeFocus.current = false;
     }
   }, [busy, intent]);
-  async function resume(saved: DeletionRecovery) {
+  function disclose() {
+    if (!opened.current) { opened.current = true; activityEvent('organization_deletion_disclosure', 'open'); }
+  }
+  async function resume(saved: DeletionRecovery, retryRead = false) {
     const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_deletion_read', retryRead ? 'retry' : 'use');
     setUnverifiedRecovery(saved);
     try {
       await boundedWorkRead(async signal => {
@@ -55,16 +62,24 @@ function Deletion({ organizationId }: { organizationId: string }) {
         if ([401, 403, 404].includes(profile.status)) { unavailable(profile.status); return; }
         if (profile.status !== 200 || !isNotificationProfile(profile.body)) throw new Error('Account unavailable');
         if (profile.body.id !== saved.actor) { unavailable(401, true); return; }
+        succeeded = true; disclose();
         setUnverifiedRecovery(undefined);
         if (saved.acknowledged) { recoveryFocus.current = true; setAccepted(saved); setAcknowledged(true); }
         else { resumeFocus.current = true; intentRef.current = saved; setIntent(saved); setError('Retry the original deletion request to recover its acknowledgment.'); }
       }, controller.signal);
-    } catch { if (current(controller)) setError('Unable to verify the account for this deletion request. Refresh to try again.'); }
-    finally { finish(controller); }
+    } catch { if (current(controller)) {
+      activityEvent('organization_deletion_read', 'exception'); setError('Unable to verify the account for this deletion request. Refresh to try again.');
+    } }
+    finally {
+      if (current(controller)) activityResult('organization_deletion_read', succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   async function checkStatus() {
     if (!accepted || observation?.state === 'COMPLETED') return;
     const original = accepted; const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_deletion_status', statusAttempts.current++ ? 'retry' : 'use');
     try {
       await boundedWorkRead(async signal => {
         const before = await request('/me', {}, signal); if (!current(controller)) return;
@@ -80,10 +95,17 @@ function Deletion({ organizationId }: { organizationId: string }) {
         if ([401, 403, 404].includes(after.status)) { unavailable(after.status); return; }
         if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Account unavailable');
         if (after.body.id !== original.actor) { unavailable(401, true); return; }
+        succeeded = true;
+        if (snapshot.state === 'COMPLETED') activityEvent('organization_deletion_completion', 'open');
         setObservation(snapshot);
       }, controller.signal);
-    } catch { if (current(controller)) setError('Unable to confirm deletion status. Check the same request again.'); }
-    finally { finish(controller); }
+    } catch { if (current(controller)) {
+      activityEvent('organization_deletion_status', 'exception'); setError('Unable to confirm deletion status. Check the same request again.');
+    } }
+    finally {
+      if (current(controller)) activityResult('organization_deletion_status', succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   function begin() {
     if (pending.current) return;
@@ -106,11 +128,13 @@ function Deletion({ organizationId }: { organizationId: string }) {
     setError('Organization deletion is unavailable to this account.');
     if (status === 401) navigate('/login', { replace: true });
   }
-  async function load() {
+  async function load(retryRead = false) {
     if (intentRef.current || acknowledged) return;
     const saved = unverifiedRecovery ?? readDeletionRecovery(organizationId);
-    if (saved) { await resume(saved); return; }
+    if (saved) { await resume(saved, retryRead); return; }
     const controller = begin(); if (!controller) return; setReview(undefined); setActor(undefined); setOpen(false);
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_deletion_read', retryRead ? 'retry' : 'use');
     try {
       await boundedWorkRead(async signal => {
         const before = await request('/me', {}, signal); if (!current(controller)) return;
@@ -128,14 +152,22 @@ function Deletion({ organizationId }: { organizationId: string }) {
         if (after.status !== 200 || !isNotificationProfile(after.body)) throw new Error('Account unavailable');
         if (before.body.id !== after.body.id) { unavailable(401); return; }
         if (value.role !== 0) { setError('Only a current Organization Owner can request deletion.'); return; }
+        succeeded = true; disclose();
         setActor(after.body.id); setReview(value);
       }, controller.signal);
-    } catch { if (current(controller)) setError('Unable to review current deletion permission. Try loading it again.'); }
-    finally { finish(controller); }
+    } catch { if (current(controller)) {
+      activityEvent('organization_deletion_read', 'exception'); setError('Unable to review current deletion permission. Try loading it again.');
+    } }
+    finally {
+      if (current(controller)) activityResult('organization_deletion_read', succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   async function remove(recover = false) {
     if (acknowledged || (recover ? !intentRef.current : !open || !review || !actor || !!intentRef.current)) return;
     const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent('organization_deletion_change', recover ? 'retry' : 'use');
     const original = intentRef.current ?? { key: crypto.randomUUID(), actor: actor!, version: review!.organization.version };
     intentRef.current = original; setIntent(original); saveDeletionRecovery(organizationId, original, false);
     try {
@@ -154,10 +186,12 @@ function Deletion({ organizationId }: { organizationId: string }) {
         if (result.status === 202) {
           if (result.body !== undefined && (!result.body || typeof result.body !== 'object'
             || Object.keys(result.body).length !== 1 || (result.body as { requestId?: unknown }).requestId !== original.key)) throw new Error('Wrong acknowledgment');
+          succeeded = true;
           intentRef.current = undefined; setIntent(undefined); setAccepted(original); setAcknowledged(true);
           saveDeletionRecovery(organizationId, original, true); return;
         }
         if ([401, 403, 404].includes(result.status)) { unavailable(result.status); return; }
+        if (result.status === 409) activityEvent('organization_deletion_change', 'conflict');
         const retentionNotice = retentionDispositionNotice(result.status,
           result.body && typeof result.body === 'object' ? (result.body as { code?: unknown }).code : undefined);
         if ([400, 409, 429].includes(result.status)) {
@@ -170,10 +204,14 @@ function Deletion({ organizationId }: { organizationId: string }) {
       }, controller.signal);
     } catch {
       if (current(controller)) {
+        activityEvent('organization_deletion_change', 'exception');
         setOpen(false); setReview(undefined); setActor(undefined);
         setError('The deletion request is not yet acknowledged. Retry the original request; it may already have succeeded.');
       }
-    } finally { finish(controller); }
+    } finally {
+      if (current(controller)) activityResult('organization_deletion_change', succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   return <Container maxWidth="sm" sx={{ py: 3 }}><Stack spacing={2}>
     <Typography component="h1" variant="h4">Request Organization deletion</Typography>
@@ -185,7 +223,7 @@ function Deletion({ organizationId }: { organizationId: string }) {
     {acknowledged && accepted && observation?.state !== 'COMPLETED' && <Button ref={checkButton} disabled={busy}
       onClick={() => { completionFocus.current = document.activeElement === checkButton.current; void checkStatus(); }}>Check deletion status</Button>}
     <Button component={Link} to="/app">Your Organizations</Button>
-    {!acknowledged && <Button ref={reload} disabled={busy || !!intent} onClick={() => void load()}>{unverifiedRecovery ? 'Retry account verification' : 'Review current deletion permission'}</Button>}
+    {!acknowledged && <Button ref={reload} disabled={busy || !!intent} onClick={() => void load(true)}>{unverifiedRecovery ? 'Retry account verification' : 'Review current deletion permission'}</Button>}
     {intent && <Button ref={retry} disabled={busy} onClick={() => { recoveryFocus.current = document.activeElement === retry.current; void remove(true); }}>
       Retry original deletion request
     </Button>}

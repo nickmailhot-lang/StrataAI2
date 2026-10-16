@@ -16,6 +16,7 @@ public sealed class ActivityClientTelemetry(IMeterFactory factory)
         "organization_creation_disclosure", "organization_creation",
         "organization_members_disclosure", "organization_members_read", "organization_member_review", "organization_member_remove",
         "organization_departure_disclosure", "organization_departure_read", "organization_departure_change",
+        "organization_deletion_disclosure", "organization_deletion_read", "organization_deletion_change", "organization_deletion_status", "organization_deletion_completion",
         "organization_configuration_disclosure", "organization_configuration_read", "organization_configuration_change",
         "organization_configuration_history", "organization_configuration_activity",
         "organization_lifecycle_disclosure", "organization_lifecycle_read", "organization_lifecycle_change"];

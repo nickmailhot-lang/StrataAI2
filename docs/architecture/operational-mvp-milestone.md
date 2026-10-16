@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [deletion stage observations](operator-metrics.md#organization-deletion-client-observations--2026-10-16)
+separate accepted request, validated status read and verified terminal-view open
+through the existing private-data-free telemetry path. All 64 focused web,
+20 API category/HTTP, 56 related API, 34 exporter-verifier and 285 CI guard cases
+pass, alongside build/typecheck/lint/syntax. Both native desktop/phone cases pass
+actual request recovery and separate Worker completion with accepted private-data-free
+reports, explicit stage separation, canonical coordinates, keyboard/WCAG,
+unchanged inputs/stable processes and restored Docker inventory. Current immutable-image/export/full
+release acceptance remains required. No large-load tests run.
+
 The [deletion acknowledgment admission repair](organization-deletion-retries.md#final-account-admission-and-shared-operation-deadlines--2026-10-16)
 checks the current account after the write response and enforces one 15-second
 deadline across each complete review/write/status operation. All eight new

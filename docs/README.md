@@ -137,6 +137,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Organization deletion Worker stages and completion contract (product integration pending)](architecture/organization-deletion-lifecycle.md)
 - [Owner deletion request acknowledgments](architecture/organization-deletion-retries.md)
 - [Deletion final account checks and shared deadlines](architecture/organization-deletion-retries.md#final-account-admission-and-shared-operation-deadlines--2026-10-16)
+- [Deletion observations: acknowledgment, status and verified completion](architecture/operator-metrics.md#organization-deletion-client-observations--2026-10-16)
 - [Durable Organization creation acknowledgments](architecture/organization-creation-retries.md)
 - [Confirmed membership departure and owner continuity](architecture/organization-departure.md)
 - [Departure observations, original recovery and privacy](architecture/operator-metrics.md#organization-departure-client-observations--2026-10-16)
