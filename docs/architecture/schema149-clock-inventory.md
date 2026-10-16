@@ -277,6 +277,54 @@ Current immutable-image/full CI, other writer/history paths and full issue
 acceptance remain required. PRD-01 stays open at **34%**, PRD-04 at **15%
 estimated work remaining**; these specific clock facts do not complete the MVP.
 
+## Organization command receipt classification and capability checks — 2026-10-16
+
+Five missing-update-column candidates use insert-only application stores and
+retain their original acknowledgment after later entity changes. The
+[owning service](../../src/StrataAI.Application/Organizations/OrganizationService.cs)
+checks the original fingerprint/expiry; an expired key remains reserved instead
+of being republished. Their `created_at DEFAULT clock_timestamp()` is the actual
+receipt publication time, separate from creation/update clocks inside a returned
+Organization snapshot. Each schema requires expiry after publication.
+
+| Retained receipt | Schema | Owning store |
+| --- | --- | --- |
+| Metadata acknowledgment | [082](../../db/migrations/082_organization_metadata_replays.sql) | [Metadata store](../../src/StrataAI.Infrastructure/Organizations/OrganizationMetadataReplayStores.cs) |
+| Departure acknowledgment | [083](../../db/migrations/083_organization_departure_replays.sql) | [Departure store](../../src/StrataAI.Infrastructure/Organizations/OrganizationDepartureReplayStores.cs) |
+| Member-removal acknowledgment | [084](../../db/migrations/084_organization_removal_replays.sql) | [Removal store](../../src/StrataAI.Infrastructure/Organizations/OrganizationRemovalReplayStores.cs) |
+| Creation acknowledgment | [086](../../db/migrations/086_organization_creation_replays.sql) | [Creation store](../../src/StrataAI.Infrastructure/Organizations/OrganizationCreationReplayStores.cs) |
+| Deletion-request acknowledgment | [087](../../db/migrations/087_organization_deletion_replays.sql) | [Deletion store](../../src/StrataAI.Infrastructure/Organizations/OrganizationDeletionReplayStores.cs) |
+
+The [canonical runtime provisioner](../../db/provision-runtime-roles.sql) grants
+API SELECT/INSERT only and gives Worker no access to these receipts. There is
+no application UPDATE, DELETE or upsert writer for them. Administrative expiry
+edits in the [existing command fixture](../../scripts/ci/test-organization-commands.sh)
+are outside that writer contract. The mutable Organization, membership,
+lifecycle/progress and their histories retain their own clock requirements.
+
+That fixture's five permission checks previously examined table grants only.
+Twenty column-only grants (API UPDATE and Worker SELECT/INSERT/UPDATE across
+five tables), plus five Worker DELETE grants, escape the original checks in a
+**72.302-second** native baseline. The repaired checks use any-column predicates
+for column-grantable privileges and also refuse Worker DELETE. The exact five
+maintained Bash/SQL checks reject all **25/25** independent grant probes in
+**71.271 seconds**, passing after each temporary grant is revoked.
+
+Both runs use a fresh network-isolated PostgreSQL17/pgvector fixture with all
+149 migrations and canonical runtime provisioning. They preserve the complete
+row fingerprint of **114 public tables**, all **153 captured inputs** and the
+original Docker inventory; owned container/tmpfs and temporary directory retire.
+No business rows are needed for these capability checks. No application host,
+existing database, new image build/pull/import, provider or large-load test is
+used. Bash syntax and all 289 CI coverage checks pass.
+
+Only the five existing required checks change; runtime grants, schemas,
+application stores and original command/concurrency/expiry scenarios remain.
+This source classification and isolated capability proof leave complete current
+HTTP writer/history and immutable-image/full CI acceptance required. PRD-01
+stays open at **34%**, PRD-03 at **8% estimated work remaining** (unchanged planning
+estimates); no historical clock is manufactured and no issue is closed.
+
 ## Nullable-clock review queue
 
 | Relation | Nullable conventional clock fields | Owning migration/source to inspect |

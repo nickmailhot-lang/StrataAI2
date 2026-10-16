@@ -1,5 +1,13 @@
 # PRD-01 foundation acceptance and closure audit
 
+The [Organization receipt review](schema149-clock-inventory.md#organization-command-receipt-classification-and-capability-checks--2026-10-16)
+traces five insert-only acknowledgment stores and their publication clocks.
+All 25 unsupported privilege probes escape the old checks and are detected by
+the five repaired required checks. Native baseline/final runs preserve all 114
+public tables' row fingerprints, 153 inputs and original Docker inventory.
+Runtime grants and schemas remain unchanged; full current HTTP/history and
+immutable CI acceptance remain required. Estimated work remaining stays **34%**.
+
 The [personal Board preference clock review](schema149-clock-inventory.md#personal-board-preference-and-history-clocks--2026-10-16)
 traces the mutable preference and its private journal separately. The complete
 upgrade driver passes; the exact new guard rejects an injected invented legacy

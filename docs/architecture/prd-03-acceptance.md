@@ -1,5 +1,14 @@
 # Organization acceptance map — PRD-03
 
+The [retained receipt review](schema149-clock-inventory.md#organization-command-receipt-classification-and-capability-checks--2026-10-16)
+classifies creation/metadata/departure/removal/deletion acknowledgments from
+their insert-only writers and publication clocks. The required command fixture
+now detects 25 unsupported privilege grants that escape its old table-only
+checks. Native positive/refusal probes preserve table contents and original
+Docker inventory; 153 captured inputs match. Production grants/schema remain
+unchanged. Complete current HTTP/history and immutable CI acceptance remain
+required; PRD-03 stays open at **8% estimated work remaining**.
+
 The [recipient observation increment](operator-metrics.md#recipient-invitation-observations--2026-10-16)
 adds bounded discovery, proof-review and acceptance outcomes with original
 acknowledgment/account/recovery rules. All146 focused web,41 fixed API,56 related

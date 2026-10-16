@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [Organization receipt capability audit](schema149-clock-inventory.md#organization-command-receipt-classification-and-capability-checks--2026-10-16)
+repairs five existing required checks that miss 25 unsupported grants. Column
+privileges and Worker DELETE now refuse; canonical grants pass. Both native
+runs preserve all public row fingerprints, 153 inputs and original Docker
+inventory, with owned resources removed. Insert-only receipt clocks remain
+separate from mutable Organization/lifecycle clocks. No production schema/grant
+change or large-load test runs; current full HTTP/history and immutable CI
+acceptance remain required.
+
 The [archive-bound recorder and two-release rollback](../release/promotion-and-rollback.md#archive-bound-runtime-identity-and-two-release-rollback--2026-10-16)
 repair a native refusal of verified Docker Desktop images. Only original OCI
 archive proof permits alternate config/manifest IDs; records keep original CI

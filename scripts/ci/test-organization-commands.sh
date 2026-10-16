@@ -416,7 +416,7 @@ test "$metadata_actor_committed" = "$(metadata_actor_state)"
 test "$(request PATCH "/organizations/$retry_org" '{"name":"Later metadata edit","version":2}')" = 200
 metadata_after="$(metadata_state)"
 test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_metadata_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
-test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_metadata_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_metadata_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_metadata_replays','DELETE');")" = f
+test "$(admin "SELECT has_any_column_privilege('strataai_worker_runtime','organization_metadata_replays','SELECT') OR has_any_column_privilege('strataai_worker_runtime','organization_metadata_replays','INSERT') OR has_any_column_privilege('strataai_worker_runtime','organization_metadata_replays','UPDATE') OR has_table_privilege('strataai_worker_runtime','organization_metadata_replays','DELETE') OR has_any_column_privilege('strataai_api_runtime','organization_metadata_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_metadata_replays','DELETE');")" = f
 test "$(retry_metadata "$retry_body")" = 200
 test "$(jq -Sc . "$scratch/metadata-reply.json")" = "$(jq -Sc . "$scratch/original-metadata.json")"
 test "$metadata_after" = "$(metadata_state)"
@@ -541,7 +541,7 @@ test "$(departure_request departure-other-actor owner)" = 409
 jq -e '.code=="sole_owner"' "$scratch/departure-other-actor.json" >/dev/null
 test "$departure_rejoined" = "$(departure_state)"
 test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_departure_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
-test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_departure_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_departure_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_departure_replays','DELETE');")" = f
+test "$(admin "SELECT has_any_column_privilege('strataai_worker_runtime','organization_departure_replays','SELECT') OR has_any_column_privilege('strataai_worker_runtime','organization_departure_replays','INSERT') OR has_any_column_privilege('strataai_worker_runtime','organization_departure_replays','UPDATE') OR has_table_privilege('strataai_worker_runtime','organization_departure_replays','DELETE') OR has_any_column_privilege('strataai_api_runtime','organization_departure_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_departure_replays','DELETE');")" = f
 admin "UPDATE organization_departure_replays SET expires_at=clock_timestamp()-interval '1 second',created_at=clock_timestamp()-interval '2 seconds' WHERE tenant_id='$retry_org' AND key_id='$departure_key';" >/dev/null
 departure_expired="$(departure_state)"
 test "$(departure_request departure-expired)" = 409
@@ -640,7 +640,7 @@ test "$(removal_request removal-target-conflict 1 "$owner")" = 409
 jq -e '.code=="idempotency_conflict"' "$scratch/removal-target-conflict.json" >/dev/null
 test "$removal_rejoined" = "$(removal_state)"
 test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_removal_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
-test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_removal_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_removal_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_removal_replays','DELETE');")" = f
+test "$(admin "SELECT has_any_column_privilege('strataai_worker_runtime','organization_removal_replays','SELECT') OR has_any_column_privilege('strataai_worker_runtime','organization_removal_replays','INSERT') OR has_any_column_privilege('strataai_worker_runtime','organization_removal_replays','UPDATE') OR has_table_privilege('strataai_worker_runtime','organization_removal_replays','DELETE') OR has_any_column_privilege('strataai_api_runtime','organization_removal_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_removal_replays','DELETE');")" = f
 admin "UPDATE organization_removal_replays SET expires_at=clock_timestamp()-interval '1 second',created_at=clock_timestamp()-interval '2 seconds' WHERE tenant_id='$retry_org' AND key_id='$removal_key';" >/dev/null
 removal_expired="$(removal_state)"
 test "$(removal_request removal-expired)" = 409
@@ -746,7 +746,7 @@ scripts/ci/assert-file-excludes.sh "$creation_org|$owner|Original receipt creati
 test "$creation_withdrawn" = "$(creation_state)"
 admin "UPDATE organization_members SET status='ACTIVE',version=version+1 WHERE tenant_id='$creation_org' AND user_id='$owner';" >/dev/null
 test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_creation_replays WHERE tenant_id='$creation_org'; ROLLBACK;" | tail -n1)" = 0
-test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_creation_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_creation_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_creation_replays','DELETE');")" = f
+test "$(admin "SELECT has_any_column_privilege('strataai_worker_runtime','organization_creation_replays','SELECT') OR has_any_column_privilege('strataai_worker_runtime','organization_creation_replays','INSERT') OR has_any_column_privilege('strataai_worker_runtime','organization_creation_replays','UPDATE') OR has_table_privilege('strataai_worker_runtime','organization_creation_replays','DELETE') OR has_any_column_privilege('strataai_api_runtime','organization_creation_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_creation_replays','DELETE');")" = f
 admin "UPDATE organization_creation_replays SET expires_at=clock_timestamp()-interval '1 second',created_at=clock_timestamp()-interval '2 seconds' WHERE tenant_id='$creation_org' AND key_id='$creation_key';" >/dev/null
 creation_expired="$(creation_state)"
 test "$(creation_request creation-expired)" = 409
@@ -868,7 +868,7 @@ test "$(deletion_request deletion-demoted)" = 404
 test "$deletion_demoted" = "$(deletion_state)"
 admin "UPDATE organization_members SET role='OWNER',version=version+1 WHERE tenant_id='$retry_org' AND user_id='$owner';" >/dev/null
 test "$(admin "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','$organization',true) IS NOT NULL; SELECT count(*) FROM organization_deletion_replays WHERE tenant_id='$retry_org'; ROLLBACK;" | tail -n1)" = 0
-test "$(admin "SELECT has_table_privilege('strataai_worker_runtime','organization_deletion_replays','SELECT') OR has_table_privilege('strataai_api_runtime','organization_deletion_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_deletion_replays','DELETE');")" = f
+test "$(admin "SELECT has_any_column_privilege('strataai_worker_runtime','organization_deletion_replays','SELECT') OR has_any_column_privilege('strataai_worker_runtime','organization_deletion_replays','INSERT') OR has_any_column_privilege('strataai_worker_runtime','organization_deletion_replays','UPDATE') OR has_table_privilege('strataai_worker_runtime','organization_deletion_replays','DELETE') OR has_any_column_privilege('strataai_api_runtime','organization_deletion_replays','UPDATE') OR has_table_privilege('strataai_api_runtime','organization_deletion_replays','DELETE');")" = f
 # PRD-03-TC-01/06/07/10: let the actual release Worker consume only the
 # product-published Organization discovered automatically. No fixture edits advance checkpoints,
 # mutate descendants, create completion events, or mark jobs successful.

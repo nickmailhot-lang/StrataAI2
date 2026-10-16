@@ -14,6 +14,8 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Suggested starting points
 
+- [Organization receipt clocks and runtime capability checks](architecture/schema149-clock-inventory.md#organization-command-receipt-classification-and-capability-checks--2026-10-16)
+
 - [Runtime function grants, safe credential rotation and public-access refusal](architecture/runtime-database-roles.md#function-capability-reset-and-public-grants--2026-10-16)
 
 - [Atomic runtime-role provisioning and effective capability checks](architecture/runtime-database-roles.md#atomic-effective-capability-validation--2026-10-16)
