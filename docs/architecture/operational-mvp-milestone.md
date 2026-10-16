@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+[Invitation history/revocation observations](operator-metrics.md#issued-invitation-history-and-revocation-observations--2026-10-16)
+add fixed private-data-free outcomes without changing account/authority,
+consent, acknowledgment or read-only recovery. All 97 focused web, 34 new/API,
+56 related API and 36 exporter-verifier cases pass, alongside build/types/lint/
+syntax and 289 CI guards. Both desktop/phone native Organization/Board cases
+also pass actual acknowledgments, canonical revocations and private report
+ingestion; successful-run cleanup restores Docker inventory. Current immutable
+browser/Collector/full acceptance
+remains required and large-load tests stay deferred until after MVP.
+
 The [exact invitation-mail CI wrapper rehearsal](invitation-discovery.md#exact-mail-phase-entry-and-restoration-2026-10-16)
 passes both real desktop/phone cases through the unchanged shell phase and
 runtime-report gate. A separate intentional all-skipped private report is

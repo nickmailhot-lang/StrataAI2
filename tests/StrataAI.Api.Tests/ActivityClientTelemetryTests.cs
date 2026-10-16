@@ -61,6 +61,12 @@ public sealed partial class ApiHostTests
     [InlineData("board_invitation_disclosure")]
     [InlineData("board_invitation_read")]
     [InlineData("board_invitation_create")]
+    [InlineData("organization_invitation_history_disclosure")]
+    [InlineData("organization_invitation_history_read")]
+    [InlineData("organization_invitation_history_revoke")]
+    [InlineData("board_invitation_history_disclosure")]
+    [InlineData("board_invitation_history_read")]
+    [InlineData("board_invitation_history_revoke")]
     public void PRD_03_Settings_observations_accept_fixed_categories_and_reject_private_material_atomically(string action)
     {
         using var valid = JsonDocument.Parse(JsonSerializer.Serialize(new { events = new object[] {
@@ -106,6 +112,38 @@ public sealed partial class ApiHostTests
         using var rejected = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", new { events = new object[] {
             new { action = "organization_invitation_read", kind = "use", count = 1 },
             new { action = "board_invitation_create", kind = "retry", count = 1, email = "private-recipient@example.test", invitationToken = "private-token" } } });
+        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(14, recorded.Count); Assert.Equal(6, durations.Count);
+    }
+
+    [Fact]
+    public async Task PRD_03_04_Invitation_history_observations_require_authentication_and_reject_private_batches_without_recording()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var app = new ApiFactory(); using var actor = app.CreateClient(); using var anonymous = app.CreateClient();
+        await RegisterAndLogin(actor);
+        var meter = app.Services.GetRequiredService<ActivityClientTelemetry>().Meter;
+        var recorded = new ConcurrentQueue<Dictionary<string, object?>>(); var durations = new ConcurrentQueue<double>();
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, capture) => { if (ReferenceEquals(instrument.Meter, meter)) capture.EnableMeasurementEvents(instrument); };
+        listener.SetMeasurementEventCallback<long>((_, _, tags, _) => recorded.Enqueue(tags.ToArray().ToDictionary(pair => pair.Key, pair => pair.Value)));
+        listener.SetMeasurementEventCallback<double>((_, value, _, _) => durations.Enqueue(value)); listener.Start();
+        var payload = new { events = new[] { "organization_invitation_history", "board_invitation_history" }.SelectMany(prefix => new object[] {
+            new { action = prefix + "_disclosure", kind = "open", count = 1 },
+            new { action = prefix + "_read", kind = "success", count = 1, durationMs = 125 },
+            new { action = prefix + "_revoke", kind = "use", count = 1 },
+            new { action = prefix + "_revoke", kind = "conflict", count = 1 },
+            new { action = prefix + "_revoke", kind = "retry", count = 1 },
+            new { action = prefix + "_revoke", kind = "failure", count = 1, durationMs = 250 },
+            new { action = prefix + "_revoke", kind = "success", count = 1, durationMs = 125 } }).ToArray() };
+        using var denied = await Mutate(anonymous, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode); Assert.Empty(recorded); Assert.Empty(durations);
+        using var accepted = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", payload);
+        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode); Assert.Equal("", await accepted.Content.ReadAsStringAsync(ct));
+        Assert.Equal(14, recorded.Count); Assert.Equal(new[] { 0.125, 0.25, 0.125, 0.125, 0.25, 0.125 }, durations.ToArray());
+        Assert.All(recorded, tags => Assert.Equal(new[] { "action", "kind" }, tags.Keys.Order().ToArray()));
+        using var rejected = await Mutate(actor, HttpMethod.Post, "/me/activity-client-events", new { events = new object[] {
+            new { action = "organization_invitation_history_read", kind = "use", count = 1 },
+            new { action = "board_invitation_history_revoke", kind = "retry", count = 1, email = "private-recipient@example.test", invitationToken = "private-token" } } });
         Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode); Assert.Equal(14, recorded.Count); Assert.Equal(6, durations.Count);
     }
 

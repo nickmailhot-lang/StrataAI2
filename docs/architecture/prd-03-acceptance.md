@@ -919,3 +919,11 @@ then confirms the tested prior API/Worker settings are restored. It exits 0
 with two actual passes and owned cleanup. This local compiled-host evidence
 strengthens phase execution without replacing current immutable/full CI.
 Estimated work remaining stays **8%**; large-load tests remain post-MVP.
+
+The [issued-history/revocation observations](operator-metrics.md#issued-invitation-history-and-revocation-observations--2026-10-16)
+add fixed private-data-free history admission/read and review/revocation
+outcomes. Read-only unknown-reply recovery cannot invent another mutation or
+mutation success. All 97 focused web, 34 new/category HTTP, 56 related API and
+36 exporter-verifier cases pass, with build/types/lint/syntax and 289 CI guards.
+Current immutable browser/Collector/full acceptance remains required; estimated
+work remaining stays **8%** and large-load tests remain post-MVP.

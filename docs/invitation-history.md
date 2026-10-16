@@ -316,3 +316,10 @@ No product code or command semantics changed. Browser TypeScript and diff checks
 pass. This is browser-clock withdrawal proof, not server-clock expiry, provider
 sending or current retained-image release proof. Full immutable CI remains
 required before issue closure.
+
+The [history/revocation observation contract](architecture/operator-metrics.md#issued-invitation-history-and-revocation-observations--2026-10-16)
+records fixed read, review and confirmed-attempt outcomes without private fields.
+An unknown DELETE reply followed by canonical recovery records a successful
+read; it does not resend DELETE or manufacture a mutation-success measurement.
+Existing consent, account, expiry and authority rules remain. Full current CI
+remains required; PRD-60 stays open at **18% estimated work remaining**.

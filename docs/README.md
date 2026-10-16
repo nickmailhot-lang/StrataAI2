@@ -117,6 +117,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Recipient discovery and proof expiry validation](architecture/invitation-discovery.md#recipient-source-calendar-admission-2026-10-16)
 - [Exact invitation mail CI wrapper and setting restoration](architecture/invitation-discovery.md#exact-mail-phase-entry-and-restoration-2026-10-16)
 - [Administrator invitation history](invitation-history.md)
+- [Issued-history and revocation observations, privacy and recovery](architecture/operator-metrics.md#issued-invitation-history-and-revocation-observations--2026-10-16)
 - [Recipient invitation links](invitation-link-review.md)
 - [Invitation mail recovery fixture](invitation-mail-recovery-fixture.md)
 - [Protected invitation mail storage](invitation-mail-store.md)

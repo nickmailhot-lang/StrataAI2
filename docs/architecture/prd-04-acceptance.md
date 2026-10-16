@@ -630,3 +630,11 @@ All eight malformed-field/scope regressions fail before repair; all 152 focused
 invitation/date cases pass afterward, preserving valid offset/leap-day input
 and source clocks. Current immutable/full CI remains required; estimated work
 remaining stays **15%** and large-load testing remains deferred after MVP.
+
+The [issued-history/revocation observations](operator-metrics.md#issued-invitation-history-and-revocation-observations--2026-10-16)
+add fixed private-data-free history admission/read and review/revocation
+outcomes. Read-only unknown-reply recovery cannot invent another mutation or
+mutation success. All 97 focused web, 34 new/category HTTP, 56 related API and
+36 exporter-verifier cases pass, with build/types/lint/syntax and 289 CI guards.
+Current immutable browser/Collector/full acceptance remains required; estimated
+work remaining stays **15%** and large-load tests remain post-MVP.

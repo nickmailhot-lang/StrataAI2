@@ -81,6 +81,17 @@ for invitation_prefix in organization_invitation board_invitation; do
     {action:($prefix+"_create"),kind:"failure",count:1,durationMs:250},
     {action:($prefix+"_create"),kind:"success",count:1,durationMs:125}]}')" >/dev/null
 done
+for invitation_prefix in organization_invitation_history board_invitation_history; do
+  post /me/activity-client-events "$(jq -nc --arg prefix "$invitation_prefix" '{events:[
+    {action:($prefix+"_disclosure"),kind:"open",count:1},
+    {action:($prefix+"_read"),kind:"retry",count:1},
+    {action:($prefix+"_read"),kind:"success",count:1,durationMs:125},
+    {action:($prefix+"_revoke"),kind:"use",count:1},
+    {action:($prefix+"_revoke"),kind:"open",count:1},
+    {action:($prefix+"_revoke"),kind:"conflict",count:1},
+    {action:($prefix+"_revoke"),kind:"failure",count:1,durationMs:250},
+    {action:($prefix+"_revoke"),kind:"success",count:1,durationMs:125}]}')" >/dev/null
+done
 # PRD-27: actual authorized HTTP operations, not synthetic server observations.
 configuration="/organizations/$org/configuration"
 get "$configuration" >/dev/null

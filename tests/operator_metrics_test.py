@@ -168,6 +168,13 @@ class OperatorEvidenceTests(unittest.TestCase):
                 observations.append(('strataai_activity_client_events', labels))
                 if kind in ('success', 'failure'):
                     observations.append(('strataai_activity_client_duration_count', labels))
+        for prefix in ('organization_invitation_history', 'board_invitation_history'):
+            for suffix, kind in [('disclosure', 'open'), ('read', 'retry'), ('read', 'success'), ('revoke', 'use'),
+                                 ('revoke', 'open'), ('revoke', 'conflict'), ('revoke', 'failure'), ('revoke', 'success')]:
+                labels = f'action="{prefix}_{suffix}",kind="{kind}"'
+                observations.append(('strataai_activity_client_events', labels))
+                if kind in ('success', 'failure'):
+                    observations.append(('strataai_activity_client_duration_count', labels))
         for operation in ["configuration_read", "configuration_change", "configuration_history",
                           "configuration_activity", "configuration_replay", "operational_lifecycle_review",
                           "operational_lifecycle_directory", "operational_lifecycle_replay", "operational_lifecycle_change"]:
@@ -422,6 +429,14 @@ class OperatorEvidenceTests(unittest.TestCase):
     def test_missing_invitation_issuer_observations_cannot_pass(self):
         for prefix in ('organization_invitation', 'board_invitation'):
             for suffix in ('disclosure', 'read', 'create'):
+                action = prefix + '_' + suffix
+                with self.subTest(action=action):
+                    rows = [row for row in self.fixture().splitlines() if f'action="{action}"' not in row]
+                    self.assertFalse(metrics.verify('\n'.join(rows), self.revision, self.version))
+
+    def test_missing_invitation_history_observations_cannot_pass(self):
+        for prefix in ('organization_invitation_history', 'board_invitation_history'):
+            for suffix in ('disclosure', 'read', 'revoke'):
                 action = prefix + '_' + suffix
                 with self.subTest(action=action):
                     rows = [row for row in self.fixture().splitlines() if f'action="{action}"' not in row]

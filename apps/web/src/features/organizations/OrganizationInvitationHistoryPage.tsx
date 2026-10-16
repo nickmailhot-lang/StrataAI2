@@ -9,6 +9,7 @@ import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchBoard } from '../../api/boardLive';
 import { watchIdentity } from '../auth/identityLive';
 import { isNotificationProfile } from '../notifications/notificationInbox';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 type Row = { id: string; email: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; createdAt: string;
   expiresAt: string; acceptedAt: string | null; revokedAt: string | null; deliveryState: string | null; boardTarget?: { boardId: string; role: string } | null };
@@ -47,6 +48,10 @@ export function BoardInvitationHistoryPage() {
   return <History key={`${organizationId}:${boardId}`} organizationId={organizationId ?? ''} boardId={boardId ?? ''} />;
 }
 function History({ organizationId, boardId }: { organizationId: string; boardId?: string }) {
+  const observations = boardId === undefined
+    ? { disclosure: 'organization_invitation_history_disclosure', read: 'organization_invitation_history_read', revoke: 'organization_invitation_history_revoke' } as const
+    : { disclosure: 'board_invitation_history_disclosure', read: 'board_invitation_history_read', revoke: 'board_invitation_history_revoke' } as const;
+  const opened = useRef(false);
   const root = boardId !== undefined ? `/boards/${encodeURIComponent(boardId)}/invitations` : `/organizations/${encodeURIComponent(organizationId)}/invitations`;
   const [boardName, setBoardName] = useState<string>();
   const [rows, setRows] = useState<Page>(); const [preferences, setPreferences] = useState<Preferences>();
@@ -179,8 +184,10 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     if (expected && prefs.id !== expected) { deny(401); return; }
     return prefs;
   }
-  async function load(next: string | null, history: (string | null)[], live = false, quiet = false) {
+  async function load(next: string | null, history: (string | null)[], live = false, quiet = false, retryRead = false) {
     const controller = begin(quiet); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent(observations.read, retryRead ? 'retry' : 'use');
     const started = epoch.current;
     if (!quiet) { setBoardName(undefined); setError(undefined); setRows(undefined); setSelected(undefined); }
     try {
@@ -217,6 +224,8 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
         if (quiet) setSelected(review => review && currentBoardName === boardName
           && JSON.stringify(currentPage.items.find(row => row.id === review.id)) === JSON.stringify(review) ? review : undefined);
         setBoardName(currentBoardName); setRows(result.body); setPreferences(current); setCursor(next); setPrevious(history); setDenied(false);
+        succeeded = true;
+        if (!opened.current) { opened.current = true; activityEvent(observations.disclosure, 'open'); }
         if (live && !quiet) setLiveNotice('Current invitations checked. Review an invitation again before confirming revocation.');
         if (recoveryId.current) {
           const recovered = result.body.items.find(row => row.id === recoveryId.current);
@@ -229,14 +238,20 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
         }
       }, controller.signal);
     } catch { if (mounted.current && pending.current === controller) {
+      activityEvent(observations.read, 'exception');
       setBoardName(undefined); setRows(undefined); setSelected(undefined); setPreferences(undefined); setNotice(undefined);
       setError('Unable to confirm invitation history. Please retry.');
     } }
-    finally { finish(controller); }
+    finally {
+      if (mounted.current && pending.current === controller) activityResult(observations.read, succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   async function revoke() {
     if (!selected || unconfirmed) return;
     const target = selected; const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent(observations.revoke, 'use');
     const started = epoch.current;
     setError(undefined); setNotice(undefined); let reload = false, submitted = false;
     try {
@@ -250,19 +265,22 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
         const result = await request(`${root}/${target.id}?expectedActorId=${encodeURIComponent(current.id)}`, { method: 'DELETE' }, signal); if (!valid(controller)) return;
         if ([401, 403].includes(result.status) || boardId !== undefined && (result.body as { code?: string } | undefined)?.code === 'board_not_found') { deny(result.status); return; }
         if (!await account(controller, signal, current.id)) return;
-        if (result.status === 204) { setNotice('Invitation revocation confirmed.'); reload = true; }
+        if (result.status === 204) { succeeded = true; setNotice('Invitation revocation confirmed.'); reload = true; }
         else {
+          if (result.status === 409) activityEvent(observations.revoke, 'conflict');
           recoveryId.current = target.id; setUnconfirmed(target.id); setBoardName(undefined); setRows(undefined);
           setError('Revocation could not be confirmed. Check the current invitation state before another action.');
         }
       }, controller.signal);
     } catch { if (mounted.current && pending.current === controller) {
+      activityEvent(observations.revoke, 'exception');
       setBoardName(undefined); setRows(undefined); setPreferences(undefined); setNotice(undefined);
       if (submitted) {
         recoveryId.current = target.id; setUnconfirmed(target.id);
         setError('Revocation could not be confirmed. Check the current invitation state before another action.');
       } else setError('Your account could not be confirmed. No revocation was sent. Refresh invitations before reviewing again.');
     } } finally {
+      if (mounted.current && pending.current === controller) activityResult(observations.revoke, succeeded, telemetryStarted);
       if (mounted.current) setSelected(undefined); finish(controller);
       if (reload && mounted.current) await load(cursor, previous);
     }
@@ -275,7 +293,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     {liveNotice && <Alert severity="info">{liveNotice}</Alert>}
     {busy && <CircularProgress aria-label="Loading issued invitations" />}
     {denied ? <Button component={Link} to="/login">Sign in</Button> : <>
-      <Stack direction="row" spacing={1}><Button ref={refresh} disabled={busy} onClick={() => void load(cursor, previous)}>{unconfirmed ? 'Check revocation' : 'Refresh invitations'}</Button>
+      <Stack direction="row" spacing={1}><Button ref={refresh} disabled={busy} onClick={() => void load(cursor, previous, false, false, true)}>{unconfirmed ? 'Check revocation' : 'Refresh invitations'}</Button>
         {boardReady && rows && !unconfirmed && <Button component={Link} to={boardId !== undefined ? `/app/${organizationId}/boards/${boardId}/invite` : `/app/${organizationId}/invite`}>Create invitation</Button>}</Stack>
       {boardReady && rows && preferences && <><Typography>Email acknowledgment does not prove inbox delivery or grant access. Revocation prevents acceptance; existing membership is managed separately.</Typography>
         {rows.items.length === 0 && <Typography>No issued invitations on this page.</Typography>}
@@ -283,7 +301,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
           <Typography component={boardId !== undefined ? "h3" : "h2"} variant="h6">{row.email}</Typography><Typography>{boardId !== undefined ? `Board access: ${row.boardTarget!.role.toLowerCase()}` : <>{row.surface === 'PORTAL' ? 'Owner Portal' : 'Internal Organization'} · {row.targetRole.replaceAll('_', ' ').toLowerCase()}</>}</Typography>
           <Typography>{row.revokedAt ? 'Revoked' : row.acceptedAt ? 'Accepted' : Date.parse(row.expiresAt) <= Date.now() ? 'Expired' : 'Awaiting acceptance'}</Typography>
           <Typography>{delivery(row.deliveryState)}</Typography><Typography>Expires: {formatUserDateTime(row.expiresAt, preferences)}</Typography>
-          {!row.revokedAt && !row.acceptedAt && Date.parse(row.expiresAt) > Date.now() && <Button disabled={busy || !!unconfirmed} onClick={() => setSelected(row)}>Revoke invitation for {row.email}</Button>}
+          {!row.revokedAt && !row.acceptedAt && Date.parse(row.expiresAt) > Date.now() && <Button disabled={busy || !!unconfirmed} onClick={() => { activityEvent(observations.revoke, 'open'); setSelected(row); }}>Revoke invitation for {row.email}</Button>}
         </Stack></Paper>)}
         <Stack direction="row" spacing={1}><Button disabled={busy || previous.length === 0} onClick={() => void load(previous.at(-1) ?? null, previous.slice(0, -1))}>Previous invitations</Button>
           <Button disabled={busy || !rows.nextCursor} onClick={() => void load(rows.nextCursor, [...previous, cursor])}>Next invitations</Button></Stack>

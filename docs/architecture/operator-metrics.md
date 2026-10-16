@@ -1096,3 +1096,75 @@ does not replace the separately recorded hosted execution or complete PRD-03
 acceptance. Current-main CI and remaining requirements still govern closure;
 PRD-03 stays open at **8% estimated work remaining**. No load test runs in the
 hosted-evidence audit, and large-load testing remains deferred until after MVP.
+
+## Issued invitation history and revocation observations — 2026-10-16
+
+Organization and Board issued-history routes now use six fixed categories
+through the existing bounded best-effort client queue and authenticated atomic
+API parser. The only fields are `action`, `kind`, `count` and optional whole-
+operation `durationMs`; recipient/account/Organization/Board/invitation IDs,
+names, emails, roles, tokens, expiry/revocation clocks, cursors, paths and
+exception text are excluded. These are untrusted analytics, separate from audit
+history and authoritative server measurements.
+
+| Fixed category | Observations and admission |
+| --- | --- |
+| `organization_invitation_history_disclosure`, `board_invitation_history_disclosure` | One `open` per mounted route, only after current scope/history and final account admission; denied or malformed data cannot count as disclosure. |
+| `organization_invitation_history_read`, `board_invitation_history_read` | `use` for protected initial/background/page reads; explicit Refresh/Check revocation records `retry`; caught failures record `exception`; current attempts record success/failure and complete operation duration. |
+| `organization_invitation_history_revoke`, `board_invitation_history_revoke` | Review `open`; explicit confirmation `use`; caught uncertainty `exception`; admitted 409 `conflict`; full attempt success/failure plus duration. Success requires the existing 204 acknowledgment and final original-account check. |
+
+Review/Cancel is not a mutation. A confirmation attempt includes preflight and
+can fail without sending DELETE. A successful acknowledgment does not promise
+continuing administration rights. Unknown replies remain failures even if the
+server committed; later exact-row canonical recovery is a **history read**, not
+a second DELETE or fabricated mutation-success/latency observation. Existing
+account, Board/head/admin, epoch, malformed-calendar, deadline and read-only
+recovery behavior is unchanged. Superseded/unmounted controllers cannot report
+late results; optional reporting cannot resend or reinterpret a command.
+
+All **16 new component cases** pass, covering both scopes: disclosure and
+review/Cancel, explicit read retry, acknowledged revoke, lost reply with
+read-only recovery, conflict, final account replacement, denied scope and
+report transport failure. All **97 focused history/clock/recovery/queue cases**
+pass. The initial no-observation baseline fails all sixteen; two new fixture
+lookups are subsequently changed to await the actual accessible recovery button
+after MUI exit, preserving their assertions and five-second limits.
+
+The API's **34 fixed-category/authenticated HTTP cases** and **56 related API
+cases** pass. Each new category rejects mixed private batches atomically; the
+HTTP tests require authentication, exact fixed tags/durations and no partial
+publication. The Release solution builds with zero warnings/errors. Captured
+799 API source/415 test-binary inputs match and Docker inventory is restored.
+Web/browser types, lint, Bash syntax, **36 exporter-verifier cases** and **289
+CI coverage guards** pass. The exact-image Collector fixture now requires these
+fixed groups and durations; those posts are synthetic ingestion evidence, not
+proof of real browser activity. Current-image Collector execution remains
+required independently.
+
+Two native desktop/phone scenarios additionally require actual Organization/
+Board private history, genuine initial stream/read admission, keyboard review
+and Cancel with no DELETE, exactly one real confirmed revoke per scope, one
+canonical revoked record, actual accepted reports, full privacy exclusions and
+WCAG checks. Their required source/native and retained-image scopes must remain
+distinct. PRD-03 remains open at **8%**, PRD-04 at **15%** and PRD-60 at **18%
+estimated work remaining**; full exact-commit CI and all original criteria still
+govern closure. No large-load tests run; capacity remains post-MVP.
+
+The complete current desktop/phone file passes **2/2 in 104,769.873 ms**, zero
+failures, flaky/skipped cases or report errors. Each viewport exercises both
+Organization and Board history with real API/Worker/restricted PostgreSQL.
+Actual production client reports receive HTTP204, contain only the allowed
+fields, and exclude every captured account/scope/invitation/recipient value.
+Each scope records one admitted disclosure, successful protected reads, review
+opens, exactly one confirmation use/success and one actual DELETE/canonical
+revocation. Keyboard Cancel sends no DELETE; all WCAG checks pass.
+
+All **1,283 captured source inputs, 71 runtime binaries, four served assets**
+and private Compose hashes match. API identity/start are stable; the original
+scoped helper restores the same cached Worker image healthy/unscoped. Original
+Docker inventory is restored and **3,299 temporary bytes** removed. No images
+are built, pulled or imported. This uses current frontend/read-only compiled
+hosts, fresh PostgreSQL17.11/schema149, controlled optional-email accounts and
+cached runtimes. Runtime revision is the local build's `e6e1f4bb`, not a claim
+that the new commit's immutable release images passed. Current-image Collector
+export, strict/managed-provider and full release acceptance remain required.

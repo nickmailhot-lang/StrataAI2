@@ -273,6 +273,13 @@ def verify(raw, revision, version, *, backlog_available=1):
         *[observed("strataai_activity_client_duration_count", {"action": prefix + "_" + suffix, "kind": kind})
           for prefix in ("organization_invitation", "board_invitation")
           for suffix, kind in [("read", "success"), ("create", "failure"), ("create", "success")]],
+        *[observed("strataai_activity_client_events", {"action": prefix + "_" + suffix, "kind": kind})
+          for prefix in ("organization_invitation_history", "board_invitation_history")
+          for suffix, kind in [("disclosure", "open"), ("read", "retry"), ("read", "success"),
+              ("revoke", "use"), ("revoke", "open"), ("revoke", "conflict"), ("revoke", "failure"), ("revoke", "success")]],
+        *[observed("strataai_activity_client_duration_count", {"action": prefix + "_" + suffix, "kind": kind})
+          for prefix in ("organization_invitation_history", "board_invitation_history")
+          for suffix, kind in [("read", "success"), ("revoke", "failure"), ("revoke", "success")]],
         observed("strataai_organization_requests", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_duration_count", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_requests", {"operation": "read", "outcome": "denied"}),
