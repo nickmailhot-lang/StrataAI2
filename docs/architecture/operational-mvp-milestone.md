@@ -443,9 +443,43 @@ Verification of the split: 222 CI/startup guards pass, including refusal of miss
 
 ## Current status
 
+### Completed be7bf9e4 CI release — 2026-10-16
+
+Exact candidate `be7bf9e47eaa617181483fbe86ac09f7faf87c4b`, version
+`0.1.0-1805`, completes
+[run 38802201471](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38802201471)
+successfully on attempt 1: all **16 jobs** pass. Release job **116845558421**
+verifies the tested inputs, assembles/checksums the bundle, executes source-free
+Production, seeded Demo and HTTPS startup, verifies the bundle remains unchanged
+and uploads it. Its completed log contains the actual Production/password-rotation,
+Demo sign-in, database-outage recovery and HTTPS certificate-rotation/task-workflow
+success markers.
+
+The retained [Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38802201471/artifacts/12034986860)
+is artifact **12034986860**, **518,853,616 bytes**, with GitHub-reported SHA-256
+`5a820593cabdd11c74870d2ce0ebbff94fac33e486b09b42161394079997bf40`.
+Both its ID and digest match the successful upload log. Canonical build metadata
+**12005394351** and security evidence **12018919002** retain the same IDs, sizes
+and digests as the [independently inspected small archives](security-evidence-identity.md#retained-candidate-security-evidence--2026-10-16),
+whose metadata, checksums and declared SBOM image/build bindings pass current
+verification. All three retained artifacts report unexpired at inspection.
+
+This is a completed hosted release for that exact candidate. Its large bundle
+and original image archives are not independently downloaded/compared or
+rehearsed locally in this follow-up. The earlier independent `5845da8b` execution
+below remains separate. Follow the
+[operator guide shipped with be7bf9e4](https://github.com/nickmailhot-lang/StrataAI2/blob/be7bf9e47eaa617181483fbe86ac09f7faf87c4b/docs/release/README.md).
+The candidate includes the workload-identity dependency repair, atomic
+certificate-file replacement and lifetime checks, but predates first-request
+PostgreSQL pool recovery, current/previous release records and later diagnostic
+failure isolation, including Worker backlog gauge independence. Its green run
+does not certify those later main changes, managed providers or complete MVP
+deployment acceptance. Current full CI remains required; large-load tests remain
+deferred and the broader PRD roadmap stays open.
+
 ### Latest completed CI release — 2026-10-15
 
-The latest successful-main query identifies `5845da8be8c5a4b476e0743c0b3a31fc01d6e46f`:
+At this 2026-10-15 checkpoint, the latest successful-main query identifies `5845da8be8c5a4b476e0743c0b3a31fc01d6e46f`:
 [run 38713394901](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901)
 has all **16 jobs completed successfully**, including `required-ci` and the
 final release job. The original-input, assembled Production/Demo/HTTPS,

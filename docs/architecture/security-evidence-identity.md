@@ -87,6 +87,13 @@ predates later main fixes. Current main's full immutable CI, assembled bundle,
 deployment acceptance and remaining ARCH-11 requirements still govern release;
 the operational MVP and ticket remain open. Large load tests stay deferred.
 
+The release job subsequently completes successfully: all 16 jobs pass, including
+Production/Demo/HTTPS startup, final unchanged-bundle verification and upload.
+The [completed release record](operational-mvp-milestone.md#completed-be7bf9e4-ci-release--2026-10-16)
+binds the uploaded bundle ID/digest and unchanged original metadata/security
+artifact records. This hosted completion does not add an independent large-image
+archive comparison or certify later main changes.
+
 ## Security input verification
 
 Before installing dependencies, auditing packages, loading application images or invoking scanners, the security job downloads the same `strataai-images-<sha>` artifact used by integration. It verifies `SHA256SUMS`, covering all three image archives and the original build metadata document. It then requires the metadata repository, full SHA, image tag, workflow run ID and application version to match the triggering workflow and initial metadata job. Failure stops the required security job before image loading/scanning.

@@ -25,27 +25,24 @@ complete PRD acceptance. Match each result to its revision, scope and CI evidenc
 
 The next release milestone is a [deployable, stable operational task-management MVP](docs/architecture/operational-mvp-milestone.md). Core workflow reliability and verified deployment take priority before new governance and AI modules; the complete PRD roadmap remains in force.
 
-**Latest passing CI release candidate:** [`5845da8b`](https://github.com/nickmailhot-lang/StrataAI2/commit/5845da8be8c5a4b476e0743c0b3a31fc01d6e46f)
-passed [all 16 CI and release jobs](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901).
-[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38713394901/artifacts/12002794848)
-and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/5845da8be8c5a4b476e0743c0b3a31fc01d6e46f/docs/release/README.md). This evidence identifies
+**Latest passing CI release candidate:** [`be7bf9e4`](https://github.com/nickmailhot-lang/StrataAI2/commit/be7bf9e47eaa617181483fbe86ac09f7faf87c4b)
+passed [all 16 CI and release jobs](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38802201471).
+[Download its tested Docker bundle](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38802201471/artifacts/12034986860)
+and follow [that candidate's operator guide](https://github.com/nickmailhot-lang/StrataAI2/blob/be7bf9e47eaa617181483fbe86ac09f7faf87c4b/docs/release/README.md). This evidence identifies
 that exact candidate; later main changes require their own CI. Review
 [remaining deployment acceptance](docs/architecture/operational-mvp-milestone.md#current-status)
 before production promotion. Large-load tests remain deferred until after MVP.
-This candidate includes the PostgreSQL TLS contract, Production HTTPS-origin
-checks, source-free Demo with known sign-in, and runtime database-password
-rotation. It includes encrypted backup/restore operator commands, their isolated
-rehearsal, populated schema-149 upgrades and the optional HTTPS listener with
-Secure sign-in and persisted task checks. It also includes build-bound Production
-API/Worker verification, bounded database readiness and outage/recovery checks,
-and served-certificate rotation/restoration. It predates the workload-identity
-dependency repair, atomic certificate-file replacement, certificate lifetime
-monitoring and later observability changes. Use the
-instructions included in its own bundle;
-see [the evidence and remaining gaps](docs/architecture/operational-mvp-milestone.md#current-status)
-before applying newer documentation to that artifact.
+Its exact tested images pass hosted source-free Production, seeded Demo and
+HTTPS checks, including migrations/restricted roles, graceful restart, password
+rotation, database outage/recovery and served-certificate rotation/restoration.
+It includes atomic certificate-file replacement and certificate lifetime checks.
+The [completed release record](docs/architecture/operational-mvp-milestone.md#completed-be7bf9e4-ci-release--2026-10-16)
+binds the original artifact IDs, digests and build version. The new bundle's large
+archive has not been independently downloaded or rehearsed locally; the earlier
+independent result below retains its own scope. Current-main fixes and complete
+deployment acceptance still govern the MVP milestone.
 
-An [independent check of this original `5845da8b` bundle](docs/architecture/release-bundle-startup.md#independent-5845da8b-bundle-rehearsal--2026-10-15)
+A separate [independent check of the earlier `5845da8b` bundle](docs/architecture/release-bundle-startup.md#independent-5845da8b-bundle-rehearsal--2026-10-15)
 passes Production, seeded Demo and HTTPS, including database-outage recovery,
 encrypted database/key restoration into a fresh cluster, original-session
 recovery and protected collaboration. All 189 original files remain unchanged;
