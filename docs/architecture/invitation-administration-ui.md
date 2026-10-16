@@ -1,5 +1,46 @@
 # Administrator invitation creation
 
+## Immediate retirement of invitation revocation consent (2026-10-16)
+
+Organization and Board invitation history now retire reviewed consent immediately
+when a live source, expiry, authority/read failure or cancellation withdraws the
+review. React may not yet have removed the old dialog or row when another queued
+input arrives. Confirmation checks the current consent both before account
+admission and after that asynchronous check, before sending DELETE. A retired
+row's queued opening cannot restore the same consent before the next render.
+Quiet checks still preserve an unchanged review and keyboard focus; original
+submitted-command recovery remains read-only and keeps its original identity.
+
+Ten controlled regressions reproduce one unwanted DELETE each before the repair:
+both surfaces, source/cancel retirement, queued reopening, and cancellation during
+the account check. All 98 cases across history, Board recovery, clock admission
+and telemetry pass after the repair, without skips or retries. Web types and
+zero-warning lint pass. The first ten-case baseline had eight inaccessible-role
+lookup errors because the modal hides background controls; its corrected baseline
+uses the retained hidden row control and reproduces all ten unwanted mutations.
+
+The four unchanged desktop/phone Organization/Board account-uncertainty browser
+cases pass in **119,441.88 ms**, with zero failures, retries, flaky results, skips
+or report errors. They retain the exact pre-submit warning/no DELETE, actual
+post-submit recovery/one DELETE, canonical row comparisons, one document,
+accessibility and viewport checks. The native fixture uses current compiled
+API/Worker assemblies, current production Vite assets and cached runtime images,
+with fresh restricted PostgreSQL 17.11/pgvector and all 149 migrations. API/Worker
+metadata still reports the earlier `e88c6514` build; this is scoped compiled-source
+verification, not current-main immutable-image certification. Mail uses an
+explicit private fake provider and optional account verification. All 1,286
+source hashes, 71 binary hashes and four served frontend asset hashes match.
+API/Worker processes stay unchanged during the scenarios. Owned containers,
+network, credentials and temporary files are removed; original Docker inventory
+is restored. No image build, pull, import, download or original-database use occurs.
+
+This is a separately reproduced consent race. It does not establish the cause of
+the earlier hosted account-warning failure, whose trace has no DELETE and a
+protected read overlapping confirmation. Full current immutable-image CI and
+remaining acceptance still govern closure. PRD-03, PRD-05 and PRD-60 remain open
+at **8%, 14% and 18% estimated work remaining**, respectively. These are planning
+estimates. Large-load testing remains deferred until after the operational MVP.
+
 Board issuance browser acceptance now waits for the initial live permission
 refresh before composing or retrying its retained request. The qualified
 Board-read tracker excludes reads from the previous canvas and retains its

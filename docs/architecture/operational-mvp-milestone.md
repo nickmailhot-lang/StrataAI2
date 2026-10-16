@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [invitation consent retirement repair](invitation-administration-ui.md#immediate-retirement-of-invitation-revocation-consent-2026-10-16)
+prevents queued inputs from revoking after cancellation or source withdrawal,
+including during asynchronous account admission. Ten controlled pre-fix failures
+and 98 passing post-fix history/recovery/clock/telemetry cases support this
+specific repair. Quiet unchanged reviews and original submitted-command recovery
+remain required. This does not establish the cause of the earlier hosted
+account-warning failure or replace current immutable-image/full CI acceptance.
+PRD-03/05/60 and the milestone remain open; large-load tests stay deferred.
+
 The [notification visibility discovery repair](notification-inbox.md#card-visibility-changes-during-inbox-discovery--2026-10-16)
 addresses a hosted inbox retirement during Card archive. Real PostgreSQL lock
 waits reproduce false inbox/sync 404 responses; bounded fresh transactions now

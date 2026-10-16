@@ -581,3 +581,13 @@ metadata or consent. Seven malformed-input regressions fail before repair; all
 original proof/account/recovery rules remain. Current immutable/full CI still
 governs closure; estimated work remaining stays **14%** and capacity testing
 remains deferred until after the operational MVP.
+
+The [immediate consent retirement repair](invitation-administration-ui.md#immediate-retirement-of-invitation-revocation-consent-2026-10-16)
+prevents queued confirmation or reopening after review withdrawal, including
+cancellation during account admission. Ten controlled pre-fix unwanted DELETEs
+and 98 passing focused history/recovery/clock/telemetry cases establish this
+specific boundary. Quiet unchanged consent and original submitted-command
+recovery remain required. The earlier hosted account-warning failure remains a
+separate unresolved diagnosis; current immutable/full CI and complete acceptance
+still govern closure. Estimated work remaining stays **14%**; large-load
+checks remain deferred until after the operational MVP.

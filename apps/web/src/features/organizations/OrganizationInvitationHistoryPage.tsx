@@ -57,6 +57,17 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
   const [rows, setRows] = useState<Page>(); const [preferences, setPreferences] = useState<Preferences>();
   const [cursor, setCursor] = useState<string | null>(null); const [previous, setPrevious] = useState<(string | null)[]>([]);
   const [selected, setSelected] = useState<Row>(); const [unconfirmed, setUnconfirmed] = useState<string>();
+  // Retire consent synchronously: queued inputs may arrive before React commits
+  // the corresponding dialog/row update, including during account admission.
+  const reviewConsent = useRef<Row | undefined>(undefined);
+  const reviewGeneration = useRef(0);
+  const renderedReviewGeneration = reviewGeneration.current;
+  function selectReview(update: Row | undefined | ((current: Row | undefined) => Row | undefined)) {
+    const next = typeof update === 'function' ? update(reviewConsent.current) : update;
+    if (!next) reviewGeneration.current++;
+    reviewConsent.current = next;
+    setSelected(next);
+  }
   const [error, setError] = useState<string>(); const [notice, setNotice] = useState<string>();
   const [busy, setBusy] = useState(false); const [denied, setDenied] = useState(false);
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(false);
@@ -79,7 +90,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
   useEffect(() => {
     if (!actorId) return;
     const invalidate = () => {
-      epoch.current++; refreshQueued.current = true; quietQueued.current = false; setRows(undefined); setSelected(undefined);
+      epoch.current++; refreshQueued.current = true; quietQueued.current = false; setRows(undefined); selectReview(undefined);
       setLiveNotice('Checking current invitations and access. Any revocation recovery is preserved.');
       setReloadVersion(value => value + 1);
     };
@@ -147,7 +158,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
       const remaining = expires - Date.now();
       if (remaining > 0) { timer = setTimeout(check, Math.min(remaining, 2_147_483_647)); return; }
       epoch.current++; refreshQueued.current = true; quietQueued.current = false;
-      setBoardName(undefined); setRows(undefined); setSelected(undefined);
+      setBoardName(undefined); setRows(undefined); selectReview(undefined);
       setLiveNotice('An invitation reached its expiry time. Checking current invitations and access.');
       setReloadVersion(value => value + 1);
     }
@@ -171,7 +182,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
   } }
   function deny(status: number) {
     actor.current = undefined; setActorId(undefined); refreshQueued.current = false; setLiveNotice(undefined);
-    setBoardName(undefined); setRows(undefined); setSelected(undefined); setPreferences(undefined); setNotice(undefined); setDenied(true);
+    setBoardName(undefined); setRows(undefined); selectReview(undefined); setPreferences(undefined); setNotice(undefined); setDenied(true);
     recoveryId.current = undefined; setUnconfirmed(undefined);
     setError(status === 401 ? `Sign in again to review ${boardId !== undefined ? 'Board' : 'Organization'} invitations.` : `${boardId !== undefined ? 'Board' : 'Organization'} invitation administration is unavailable.`);
   }
@@ -189,7 +200,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     const telemetryStarted = performance.now(); let succeeded = false;
     activityEvent(observations.read, retryRead ? 'retry' : 'use');
     const started = epoch.current;
-    if (!quiet) { setBoardName(undefined); setError(undefined); setRows(undefined); setSelected(undefined); }
+    if (!quiet) { setBoardName(undefined); setError(undefined); setRows(undefined); selectReview(undefined); }
     try {
       await boundedWorkRead(async signal => {
         if (!validInvitationKey(organizationId)) { deny(404); return; }
@@ -221,7 +232,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
         const currentPage = result.body;
         const current = await account(controller, signal, prefs.id); if (!current || started !== epoch.current) return;
         actor.current = current.id; setActorId(current.id);
-        if (quiet) setSelected(review => review && currentBoardName === boardName
+        if (quiet) selectReview(review => review && currentBoardName === boardName
           && JSON.stringify(currentPage.items.find(row => row.id === review.id)) === JSON.stringify(review) ? review : undefined);
         setBoardName(currentBoardName); setRows(result.body); setPreferences(current); setCursor(next); setPrevious(history); setDenied(false);
         succeeded = true;
@@ -239,7 +250,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
       }, controller.signal);
     } catch { if (mounted.current && pending.current === controller) {
       activityEvent(observations.read, 'exception');
-      setBoardName(undefined); setRows(undefined); setSelected(undefined); setPreferences(undefined); setNotice(undefined);
+      setBoardName(undefined); setRows(undefined); selectReview(undefined); setPreferences(undefined); setNotice(undefined);
       setError('Unable to confirm invitation history. Please retry.');
     } }
     finally {
@@ -248,7 +259,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     }
   }
   async function revoke() {
-    if (!selected || unconfirmed) return;
+    if (!selected || reviewConsent.current !== selected || unconfirmed) return;
     const target = selected; const controller = begin(); if (!controller) return;
     const telemetryStarted = performance.now(); let succeeded = false;
     activityEvent(observations.revoke, 'use');
@@ -257,7 +268,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     try {
       await boundedWorkRead(async signal => {
         const current = await account(controller, signal); if (!current) return;
-        if (started !== epoch.current) return;
+        if (started !== epoch.current || reviewConsent.current !== target) return;
         if (Date.parse(target.expiresAt) <= Date.now()) {
           setNotice('This invitation reached its expiry time. Review its current state.'); reload = true; return;
         }
@@ -281,7 +292,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
       } else setError('Your account could not be confirmed. No revocation was sent. Refresh invitations before reviewing again.');
     } } finally {
       if (mounted.current && pending.current === controller) activityResult(observations.revoke, succeeded, telemetryStarted);
-      if (mounted.current) setSelected(undefined); finish(controller);
+      if (mounted.current) selectReview(undefined); finish(controller);
       if (reload && mounted.current) await load(cursor, previous);
     }
   }
@@ -301,16 +312,19 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
           <Typography component={boardId !== undefined ? "h3" : "h2"} variant="h6">{row.email}</Typography><Typography>{boardId !== undefined ? `Board access: ${row.boardTarget!.role.toLowerCase()}` : <>{row.surface === 'PORTAL' ? 'Owner Portal' : 'Internal Organization'} · {row.targetRole.replaceAll('_', ' ').toLowerCase()}</>}</Typography>
           <Typography>{row.revokedAt ? 'Revoked' : row.acceptedAt ? 'Accepted' : Date.parse(row.expiresAt) <= Date.now() ? 'Expired' : 'Awaiting acceptance'}</Typography>
           <Typography>{delivery(row.deliveryState)}</Typography><Typography>Expires: {formatUserDateTime(row.expiresAt, preferences)}</Typography>
-          {!row.revokedAt && !row.acceptedAt && Date.parse(row.expiresAt) > Date.now() && <Button disabled={busy || !!unconfirmed} onClick={() => { activityEvent(observations.revoke, 'open'); setSelected(row); }}>Revoke invitation for {row.email}</Button>}
+          {!row.revokedAt && !row.acceptedAt && Date.parse(row.expiresAt) > Date.now() && <Button disabled={busy || !!unconfirmed} onClick={() => {
+            if (renderedReviewGeneration !== reviewGeneration.current || pending.current && !quietPending.current) return;
+            activityEvent(observations.revoke, 'open'); selectReview(row);
+          }}>Revoke invitation for {row.email}</Button>}
         </Stack></Paper>)}
         <Stack direction="row" spacing={1}><Button disabled={busy || previous.length === 0} onClick={() => void load(previous.at(-1) ?? null, previous.slice(0, -1))}>Previous invitations</Button>
           <Button disabled={busy || !rows.nextCursor} onClick={() => void load(rows.nextCursor, [...previous, cursor])}>Next invitations</Button></Stack>
       </>}
     </>}
-    <Dialog open={!!selected} onClose={() => { if (!busy) setSelected(undefined); }} aria-labelledby="revoke-invitation-title"
+    <Dialog open={!!selected} onClose={() => { if (!busy) selectReview(undefined); }} aria-labelledby="revoke-invitation-title"
       slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: () => refresh.current?.focus() } }}>
       <DialogTitle id="revoke-invitation-title">Revoke invitation?</DialogTitle><DialogContent>{boardId !== undefined && <Typography>{boardName}: {selected?.boardTarget?.role.toLowerCase()}</Typography>}<Typography>{selected?.email}</Typography><Typography>This prevents invitation acceptance. It cannot recall email or remove access already granted.</Typography></DialogContent>
-      <DialogActions><Button ref={cancel} disabled={busy} onClick={() => setSelected(undefined)}>Cancel</Button><Button disabled={busy} onClick={() => void revoke()}>Confirm revocation</Button></DialogActions>
+      <DialogActions><Button ref={cancel} disabled={busy} onClick={() => selectReview(undefined)}>Cancel</Button><Button disabled={busy} onClick={() => void revoke()}>Confirm revocation</Button></DialogActions>
     </Dialog>
   </Stack></Container>;
 }

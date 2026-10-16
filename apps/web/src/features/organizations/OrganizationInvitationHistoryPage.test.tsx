@@ -43,6 +43,49 @@ async function invalidate() {
   await act(async () => { live.watch.mock.calls.at(-1)![0].invalidate(); });
 }
 
+it.each([
+  ['Organization', 'source', false], ['Board', 'source', false], ['Organization', 'cancel', false], ['Board', 'cancel', false],
+  ['Organization', 'source', true], ['Board', 'source', true], ['Organization', 'cancel', true], ['Board', 'cancel', true],
+])('rejects a queued confirmation of a retired %s review before React renders %s retirement (stale opening=%s)', async (surface, retirement, reopen) => {
+  let revoked = false;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => {
+    if (options?.method === 'DELETE') { revoked = true; return reply(null, 204); }
+    return reply(path === '/me' ? profile : path === `/boards/${board}` ? boardScope
+      : { items: [{ ...(surface === 'Board' ? boardRow : row), revokedAt: revoked ? '2034-01-02T00:00:00Z' : null }], nextCursor: null });
+  });
+  vi.stubGlobal('fetch', mock); if (surface === 'Board') boardMount(); else mount(); await review();
+  await waitFor(() => expect((surface === 'Board' ? boardLive : live).watch).toHaveBeenCalled());
+  const confirm = screen.getByRole('button', { name: 'Confirm revocation' });
+  const open = screen.getByRole('button', { name: `Revoke invitation for ${row.email}`, hidden: true });
+  await act(async () => {
+    if (retirement === 'source') (surface === 'Board' ? boardLive : live).watch.mock.calls.at(-1)![0].invalidate();
+    else fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    // Deliver the already queued input before the state update removes its DOM.
+    if (reopen) fireEvent.click(open);
+    fireEvent.click(confirm);
+  });
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+  expect(revoked).toBe(false);
+});
+
+it.each(['Organization', 'Board'])('fences %s revocation when cancellation retires consent during its account check', async surface => {
+  let hold = false, finish!: (response: Response) => void;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => {
+    if (options?.method === 'DELETE') return reply(null, 204);
+    if (path === '/me' && hold) { hold = false; return new Promise<Response>(resolve => { finish = resolve; }); }
+    return reply(path === '/me' ? profile : path === `/boards/${board}` ? boardScope
+      : { items: [surface === 'Board' ? boardRow : row], nextCursor: null });
+  });
+  vi.stubGlobal('fetch', mock); if (surface === 'Board') boardMount(); else mount(); await review();
+  const confirm = screen.getByRole('button', { name: 'Confirm revocation' });
+  const cancel = screen.getByRole('button', { name: 'Cancel' }); hold = true;
+  await act(async () => { fireEvent.click(confirm); fireEvent.click(cancel); });
+  expect(finish).toBeDefined(); await act(async () => finish(reply(profile)));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(0);
+});
+
 it('retires reviewed revocation consent and reloads newly issued invitations after a live source', async () => {
   const later = { ...row, id: '20000000-0000-0000-0000-000000000002', email: 'later@example.test' };
   const mock = fetcher(reply(profile), reply(page()), reply(page([row, later])));
