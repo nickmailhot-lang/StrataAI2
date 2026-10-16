@@ -462,3 +462,15 @@ The ordinary-account API fixture and disabled mail transport do not establish
 strict managed-mail or current-main/full-release acceptance. PRD-07 remains
 open at **17% estimated work remaining**, and PRD-18 at **15%**. Large-load
 testing remains disabled until the operational MVP is complete.
+
+The [archived Checklist disclosure repair](checklist-acceptance.md#archived-checklist-disclosure-revalidation-2026-10-16)
+retains only disclosure choices and scope/actor/revision guards across protected
+readmission; private contents and pending reads still retire. Four component
+regressions reproduce the lost open view, and a separate guard regression bounds
+repeated revision mismatch refreshes. All 96 focused cases and the unchanged four
+Card/List desktop/phone lifecycle scenarios pass, including original pending
+rename/key/body recovery, exact read-only items, 404 while archived, restore
+receipt, repeated archive and deletion/cascade refusal. Types/lint and 289 CI
+guards pass, captured inputs match, and both owned native cleanups restore Docker
+inventory. Current immutable/full acceptance remains required. Estimated PRD-18
+work remaining stays **15%**; large-load testing remains post-MVP.

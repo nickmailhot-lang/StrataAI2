@@ -415,3 +415,72 @@ and owned cleanup restores Docker inventory. This is compiled-source evidence,
 not current immutable/full CI or proof of the hosted failure's exclusive cause.
 PRD-13 remains open at **33% estimated work remaining**; large-load tests stay
 post-MVP.
+
+## Archived Checklist disclosure revalidation (2026-10-16)
+
+Retained run `38847132876` at `72597dca`, browser shard 2/job `116949485635`,
+fails the phone List-parent lifecycle case at its retained-item assertion;
+95 other cases pass. Diagnostic artifact `12061415431` is authenticated in
+memory against its 4,419,160-byte size and SHA-256
+`ea1f3c12ffa65770c537b472c769a0c31543e8f6190c3a80c9eac92889b18d03`.
+The selected trace shows a successful read-only Checklist collection read,
+then an aborted item GET overlapping profile/Board revalidation. The final
+snapshot still shows the archived Card but the Checklist disclosure has returned
+to Show. The lifecycle test, archived reader and Checklist disclosure sources
+are unchanged between that candidate and parent `01a8f092`.
+
+The archived reader previously keyed its entire subtree by refresh sequence and
+availability. Revalidation correctly purged private records and cancelled pending
+reads, but also discarded which Checklists the user had opened. A scope-keyed
+wrapper now retains only open/closed choices and Checklist IDs, plus actor/revision
+admission guards. The refresh-keyed reader still aborts/unmounts every old data
+read and withholds all titles, descriptions and item text until fresh pre/post
+account admission and scoped reads succeed. No content, draft or command receipt
+is cached in the wrapper. A different Card/Organization/Board resets its state;
+a different freshly admitted account closes the choices before rendering its
+newly authorized data. Current collection results must contain an ID before its
+retained item disclosure can issue a new read.
+
+Four controlled component regressions fail before repair: completed or pending
+item reads across access and sequence invalidation lose the open disclosure.
+Identity-change controls pass against that baseline. The repair recovers the
+read-only collection and items without another user opening, discards late old
+item bodies, and sends no mutation. A prototype revision-guard regression then
+reproduces two parent refreshes for the same mismatch across reader resets. The
+final scope/actor guard retains that observation, bounds repeated mismatch
+readmission and retires it on account/Card change; user-controlled read retry
+and fresh matching server data remain available. Effect callbacks use current
+handlers without restarting the archived read for disclosure-only changes.
+
+All **96** focused cases pass with no failures/skips: 11 archived-detail, ten
+Checklist disclosure, 42 Checklist management and 33 item-management cases.
+Web/browser TypeScript, zero-warning lint and all 289 immutable CI coverage
+checks pass. The original four-case browser lifecycle file is unchanged, as are
+its deadlines, committed/lost rename, original key/body/version replay,
+read-only and access refusal, retained exact items and archive/restore/delete
+cascade assertions. Current immutable/full CI and complete PRD acceptance remain
+required; estimated PRD-13 work remaining stays **33%**, with large-load testing
+deferred until after the operational MVP.
+
+The **final** unchanged four-case native lifecycle file passes **4/4 in
+185,172.690 ms**, with zero retries, failures, flaky results, skips or report
+errors. A prior complete invocation before the additional mismatch guard also
+passed 4/4; it is not substituted for final-code execution. The guard regression
+failed against that prototype before its repair. Neither native invocation is
+claimed as an unchanged pre-repair reproduction of the hosted timing sequence;
+the four component failures establish the lost-disclosure mechanism directly.
+
+The final fixture uses fresh restricted PostgreSQL 17.11/pgvector and all 149
+migrations, current read-only compiled API/Worker assemblies, current production
+Vite assets through Nginx, cached runtimes, a private fake email provider and the
+general phase's optional-verification policy. Runtime metadata remains
+`e88c6514`; this is compiled-source evidence, not current-main immutable-image
+certification or managed-provider acceptance. All 1,286 source, 71 binary and
+four served-asset hashes match within the final run. Only the two production
+web components and their archived-detail test differ from the preceding watch
+verification; backend binaries and the lifecycle browser file are unchanged.
+The API remains stable; the original scoped Worker helper recreates/restores
+the same Worker image. Final cleanup restores the original Docker inventory
+and removes its 3,353-byte temporary directory. The preceding prototype also
+restores its inventory and removes its 3,335-byte directory. No original database,
+local Demo, image build/pull/import/download or large-load test is used.

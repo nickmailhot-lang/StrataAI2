@@ -1,11 +1,14 @@
-import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useId, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { Alert, Box, Button, LinearProgress, Stack, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { checklistEvent, checklistResult } from './checklistTelemetry';
 import { parseChecklistItemPage, parseChecklistPage, type ChecklistItemPage, type ChecklistPage, type ChecklistScope, type ChecklistSummary } from './checklists';
 
+export type ChecklistDisclosureState = { open: boolean; openItems: Set<string> };
+type DisclosureControl = { disclosure: ChecklistDisclosureState; onDisclosureChange: Dispatch<SetStateAction<ChecklistDisclosureState>> };
 type Props = ChecklistScope & { version: number; unavailable: boolean; onRefresh: () => void; reconnectSequence?: number;
-  onRevisionMismatch?: (version: number) => void };
+  onRevisionMismatch?: (version: number) => void }
+  & (DisclosureControl | { disclosure?: undefined; onDisclosureChange?: undefined });
 type Disclosures = { openItems: Set<string>; onItemToggle: (id: string) => void };
 function usePage(props: Props, open: boolean, cursor: string | undefined, attempt: number, checklistId?: string) {
   const [result, setResult] = useState<ChecklistPage | ChecklistItemPage>();
@@ -43,7 +46,9 @@ export function CardChecklists(props: Props) {
   return <ChecklistDisclosure key={`${props.organizationId}/${props.boardId}/${props.cardId}`} {...props} />;
 }
 function ChecklistDisclosure(props: Props) {
-  const [open, setOpen] = useState(false); const region = useId();
+  const [localDisclosure, setLocalDisclosure] = useState<ChecklistDisclosureState>(() => ({ open: false, openItems: new Set() }));
+  const { open, openItems } = props.disclosure ?? localDisclosure;
+  const updateDisclosure = props.onDisclosureChange ?? setLocalDisclosure; const region = useId();
   // A current, scoped checklist read can discover a mutation before Board
   // delivery. Readmit the parent once per observed revision; a repeated bad
   // response must not create an automatic refresh loop or expose stale items.
@@ -52,7 +57,8 @@ function ChecklistDisclosure(props: Props) {
     if (actual <= props.version) return;
     const mismatch = `${props.version}/${actual}`;
     if (lastMismatch.current === mismatch) return;
-    lastMismatch.current = mismatch; props.onRefresh();
+    lastMismatch.current = mismatch;
+    if (props.onRevisionMismatch) props.onRevisionMismatch(actual); else props.onRefresh();
   }
   const previousReconnect = useRef(props.reconnectSequence ?? 0);
   useEffect(() => {
@@ -61,10 +67,15 @@ function ChecklistDisclosure(props: Props) {
       for (let index = 0; index < Math.min(current - previousReconnect.current, 100); index++) checklistEvent('realtime', 'reconnect');
     previousReconnect.current = current;
   }, [open, props.reconnectSequence]);
-  const [openItems, setOpenItems] = useState<Set<string>>(() => new Set());
-  function onItemToggle(id: string) { setOpenItems(previous => { const next = new Set(previous); if (next.has(id)) next.delete(id); else next.add(id); return next; }); }
+  function onItemToggle(id: string) { updateDisclosure(previous => {
+    const next = new Set(previous.openItems); if (next.has(id)) next.delete(id); else next.add(id);
+    return { ...previous, openItems: next };
+  }); }
   return <Box sx={{ my: 2 }}>
-    <Button aria-expanded={open} aria-controls={region} onClick={() => { if (!open) checklistEvent('disclosure', 'open'); if (open) setOpenItems(new Set()); setOpen(value => !value); }}>
+    <Button aria-expanded={open} aria-controls={region} onClick={() => {
+      if (!open) checklistEvent('disclosure', 'open');
+      updateDisclosure(previous => ({ open: !previous.open, openItems: previous.open ? new Set() : previous.openItems }));
+    }}>
       {open ? 'Hide checklists' : 'Show checklists'}
     </Button>
     {open && <Stack id={region} component="section" aria-label="Card checklists" spacing={2}>

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { Alert, CircularProgress, Stack, Typography } from '@mui/material';
 import { CardDescriptionPreview } from './CardDescriptionPreview';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../../api/workManagement';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { ActivityHistoryControl } from './ActivityHistoryControl';
 import { CardCommentsControl } from './CardCommentsControl';
-import { CardChecklists } from './CardChecklists';
+import { CardChecklists, type ChecklistDisclosureState } from './CardChecklists';
 import { CardAttachments } from './CardAttachments';
 import { SourceRetentionEntry } from '../records/SourceRetentionEntry';
 import { AttachmentManageControl } from './AttachmentManageControl';
@@ -27,10 +27,34 @@ export function parseArchivedCardDetail(value: unknown, scope: Scope): Detail {
   return { ...scope, title: row.title, description: row.description as string | null, version: row.version as number };
 }
 export function ArchivedCardDetail(props: Props) {
-  return <Reader key={`${props.organizationId}/${props.boardId}/${props.cardId}/${props.refreshSequence}/${props.unavailable}`} {...props} />;
+  return <DisclosureReader key={`${props.organizationId}/${props.boardId}/${props.cardId}`} {...props} />;
 }
-function Reader(props: Props) {
+const closedChecklists = (): ChecklistDisclosureState => ({ open: false, openItems: new Set() });
+function DisclosureReader(props: Props) {
+  // Keep only disclosure choices across readmission. The keyed reader still
+  // discards every private record and aborts its children on each invalidation.
+  const [disclosure, setDisclosure] = useState(closedChecklists);
+  const actor = useRef<string | undefined>(undefined);
+  const mismatch = useRef<string | undefined>(undefined);
+  function admittedActor(value?: string) {
+    const current = value?.toLowerCase();
+    if (actor.current && actor.current !== current) { setDisclosure(closedChecklists()); mismatch.current = undefined; }
+    actor.current = current;
+  }
+  function revisionMismatch(expected: number, actual: number) {
+    if (actual <= expected || mismatch.current === `${expected}/${actual}`) return;
+    mismatch.current = `${expected}/${actual}`; props.onRefresh();
+  }
+  return <Reader key={`${props.refreshSequence}/${props.unavailable}`} {...props} disclosure={disclosure}
+    onDisclosureChange={setDisclosure} onAdmittedActor={admittedActor} onChecklistRevisionMismatch={revisionMismatch} />;
+}
+type ReaderProps = Props & { disclosure: ChecklistDisclosureState;
+  onDisclosureChange: Dispatch<SetStateAction<ChecklistDisclosureState>>; onAdmittedActor: (actor?: string) => void;
+  onChecklistRevisionMismatch: (expected: number, actual: number) => void };
+function Reader({ disclosure, onDisclosureChange, onAdmittedActor, onChecklistRevisionMismatch, ...props }: ReaderProps) {
   const [detail, setDetail] = useState<Detail>(); const [failed, setFailed] = useState(false);
+  const admittedActor = useEffectEvent(onAdmittedActor);
+  const denied = useEffectEvent(props.onDenied);
   useEffect(() => {
     if (props.unavailable) return;
     const controller = new AbortController();
@@ -41,16 +65,16 @@ function Reader(props: Props) {
         `/boards/${encodeURIComponent(props.boardId)}/cards/${encodeURIComponent(props.cardId)}/archived-details`, { signal }), props);
       const after = await workRequest<unknown>('/me', { signal });
       if (!isNotificationProfile(after) || before.id.toLowerCase() !== after.id.toLowerCase()) throw new WorkRequestError(401, null);
-      return result;
-    }, controller.signal).then(result => { if (!controller.signal.aborted) setDetail(result); }).catch(error => {
+      return { detail: result, actor: after.id };
+    }, controller.signal).then(result => { if (!controller.signal.aborted) { admittedActor(result.actor); setDetail(result.detail); } }).catch(error => {
       if (controller.signal.aborted) return;
       setFailed(true);
       // A missing Card is local. A revoked session or Board read purges the
       // parent scope through its existing admission boundary.
-      if (error instanceof WorkRequestError && [401, 403].includes(error.status)) props.onDenied(error);
+      if (error instanceof WorkRequestError && [401, 403].includes(error.status)) { admittedActor(); denied(error); }
     });
     return () => controller.abort();
-  }, [props]);
+  }, [props.unavailable, props.organizationId, props.boardId, props.cardId, props.refreshSequence]);
   if (props.unavailable || failed) return <Alert severity="info">This card is unavailable in this board.</Alert>;
   if (!detail) return <CircularProgress size={24} aria-label="Reading archived Card" />;
   return <Stack spacing={2}>
@@ -60,7 +84,8 @@ function Reader(props: Props) {
     <SourceRetentionEntry organizationId={props.organizationId} boardId={props.boardId}
       cardId={props.cardId} cardVersion={detail.version} kind="card" recordId={props.cardId} sourceVersion={detail.version}
       canAdminister={props.canAdminister ?? false} unavailable={props.unavailable} onRefresh={props.onRefresh} />
-    <CardChecklists {...props} version={detail.version} />
+    <CardChecklists {...props} version={detail.version} disclosure={disclosure} onDisclosureChange={onDisclosureChange}
+      onRevisionMismatch={actual => onChecklistRevisionMismatch(detail.version, actual)} />
     <CardAttachments {...props} version={detail.version} />
     <AttachmentManageControl {...props} version={detail.version} editable={false} disabled={false} archiveOnly
       canAdminister={props.canAdminister ?? false} onBusyChange={ignore} onRecoveryChange={ignore} />

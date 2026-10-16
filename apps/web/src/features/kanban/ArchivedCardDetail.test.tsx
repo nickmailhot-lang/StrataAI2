@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ArchivedCardDetail, parseArchivedCardDetail } from './ArchivedCardDetail';
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -75,4 +75,86 @@ it('fails closed for a mismatched scope and a changed authenticated account', as
     ? reply({ ...profile, id: ++profiles === 1 ? profile.id : id(5) }) : reply(detail)));
   render(<MemoryRouter><ArchivedCardDetail {...props} onDenied={denied} /></MemoryRouter>);
   await waitFor(() => expect(denied).toHaveBeenCalled()); expect(screen.queryByText(detail.title)).toBeNull();
+});
+
+function retainedChecklistFixture(holdFirstItems = false) {
+  const at = '2026-10-04T08:00:00.123456Z', rank = '000000000000000000000000001000';
+  let currentScope = scope, currentActor = profile.id, itemReads = 0, catalogVersion = 2;
+  let release!: (value: Response) => void; let firstSignal: AbortSignal | undefined;
+  const checklist = { id: id(5), organizationId: scope.organizationId, cardId: scope.cardId, title: 'Retained preparations',
+    rank, version: 1, createdAt: at, updatedAt: at, deletedAt: null };
+  const item = { id: id(6), organizationId: scope.organizationId, checklistId: checklist.id, text: 'Retained preparation',
+    rank, completed: false, completedAt: null, completedBy: null, createdAt: at, updatedAt: at, version: 1, deletedAt: null };
+  const items = () => ({ ...currentScope, cardVersion: catalogVersion, canEdit: false,
+    summary: { checklist: { ...checklist, cardId: currentScope.cardId }, total: 1, completed: 0, percent: 0 }, items: [item], nextCursor: null });
+  const fetch = vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
+    const path = String(input);
+    if (path === '/me') return reply({ ...profile, id: currentActor });
+    if (path.endsWith('/archived-details')) return reply({ ...detail, ...currentScope });
+    if (path.endsWith('/checklists')) return reply({ ...currentScope, cardVersion: catalogVersion, canEdit: false, items: [items().summary], nextCursor: null });
+    if (path.endsWith('/items')) {
+      itemReads++; if (holdFirstItems && itemReads === 1) {
+        firstSignal = options?.signal as AbortSignal;
+        return new Promise<Response>(resolve => { release = resolve; });
+      }
+      return reply(items());
+    }
+    throw new Error('Unexpected retained Checklist request');
+  });
+  vi.stubGlobal('fetch', fetch);
+  return { fetch, itemReads: () => itemReads, firstSignal: () => firstSignal,
+    releaseLate: () => release(reply({ ...items(), items: [{ ...item, text: 'Stale unpublished preparation' }] })),
+    mismatchVersion: () => { catalogVersion = 3; }, changeActor: () => { currentActor = id(40); }, changeCard: () => { currentScope = { ...scope, cardId: id(30) }; },
+    element: (extra = {}) => <MemoryRouter><ArchivedCardDetail {...props} {...currentScope} {...extra} /></MemoryRouter> };
+}
+
+for (const pending of [false, true]) for (const invalidation of ['access', 'sequence']) {
+  it(`recovers the open retained Checklist after ${invalidation} revalidation (pending items=${pending})`, async () => {
+    const f = retainedChecklistFixture(pending); const view = render(f.element());
+    await screen.findByText(detail.title);
+    fireEvent.click(screen.getByRole('button', { name: 'Show checklists' })); await screen.findByText('Read-only checklists.');
+    fireEvent.click(screen.getByRole('button', { name: 'Show items in Retained preparations' }));
+    if (pending) await waitFor(() => expect(f.itemReads()).toBe(1)); else await screen.findByText('Incomplete: Retained preparation');
+    view.rerender(f.element({ unavailable: invalidation === 'access', refreshSequence: '2' }));
+    expect(screen.queryByText('Incomplete: Retained preparation')).toBeNull();
+    if (pending) {
+      expect(f.firstSignal()?.aborted).toBe(true); await act(async () => f.releaseLate());
+      expect(screen.queryByText('Incomplete: Stale unpublished preparation')).toBeNull();
+    }
+    if (invalidation === 'access') view.rerender(f.element({ unavailable: false, refreshSequence: '2' }));
+    expect(await screen.findByText('Incomplete: Retained preparation')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Hide checklists' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Hide items in Retained preparations' })).toHaveAttribute('aria-expanded', 'true');
+    expect(f.itemReads()).toBe(2);
+    expect(f.fetch.mock.calls.every(call => !call[1]?.method || call[1]?.method === 'GET')).toBe(true);
+    expect(screen.queryByRole('textbox')).toBeNull(); expect(screen.queryByRole('checkbox')).toBeNull();
+  });
+}
+for (const change of ['actor', 'Card']) {
+  it(`retires retained Checklist disclosure choices for a different ${change}`, async () => {
+    const f = retainedChecklistFixture(); const view = render(f.element());
+    await screen.findByText(detail.title);
+    fireEvent.click(screen.getByRole('button', { name: 'Show checklists' })); await screen.findByText('Read-only checklists.');
+    fireEvent.click(screen.getByRole('button', { name: 'Show items in Retained preparations' })); await screen.findByText('Incomplete: Retained preparation');
+    if (change === 'actor') f.changeActor(); else f.changeCard();
+    view.rerender(f.element({ refreshSequence: '2' })); await screen.findByText(detail.title);
+    expect(screen.getByRole('button', { name: 'Show checklists' })).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('Incomplete: Retained preparation')).toBeNull(); expect(f.itemReads()).toBe(1);
+  });
+}
+
+it('bounds archived Checklist revision re-admission across reader resets and retires the guard for another actor', async () => {
+  const f = retainedChecklistFixture(); const refresh = vi.fn(); const view = render(f.element({ onRefresh: refresh }));
+  await screen.findByText(detail.title);
+  fireEvent.click(screen.getByRole('button', { name: 'Show checklists' })); await screen.findByText('Read-only checklists.');
+  fireEvent.click(screen.getByRole('button', { name: 'Show items in Retained preparations' })); await screen.findByText('Incomplete: Retained preparation');
+  f.mismatchVersion(); view.rerender(f.element({ onRefresh: refresh, refreshSequence: '2' }));
+  await screen.findByText(/Unable to load current checklists/); expect(refresh).toHaveBeenCalledOnce();
+  expect(screen.queryByText('Incomplete: Retained preparation')).toBeNull();
+  view.rerender(f.element({ onRefresh: refresh, refreshSequence: '3' }));
+  await screen.findByText(/Unable to load current checklists/); expect(refresh).toHaveBeenCalledOnce();
+  f.changeActor(); view.rerender(f.element({ onRefresh: refresh, refreshSequence: '4' })); await screen.findByText(detail.title);
+  expect(screen.getByRole('button', { name: 'Show checklists' })).toHaveAttribute('aria-expanded', 'false');
+  fireEvent.click(screen.getByRole('button', { name: 'Show checklists' }));
+  await screen.findByText(/Unable to load current checklists/); expect(refresh).toHaveBeenCalledTimes(2);
 });

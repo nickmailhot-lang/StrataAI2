@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [archived Checklist disclosure repair](checklist-acceptance.md#archived-checklist-disclosure-revalidation-2026-10-16)
+preserves open choices across access revalidation while purging private records
+and cancelling obsolete reads. Account/Card changes retire choices; a retained
+revision guard prevents repeated automatic refresh for the same mismatch. Four
+lost-disclosure regressions and a prototype guard failure become 96 focused
+passes. The unchanged four-case native lifecycle file passes with original
+receipt, read-only, archive/restore/delete and cascade assertions. Types/lint and
+289 CI guards pass; final inputs match and owned cleanup restores Docker inventory.
+Current immutable/full CI still governs PRD-13/18 and milestone closure. Large-load
+testing remains deferred.
+
 The [initial Card-watch keyboard repair](watch-subscriptions.md#initial-card-watch-keyboard-admission-2026-10-16)
 requires enabled focus before the original single activation. Retained hosted
 evidence shows disabled focus and no PUT. Both unchanged and changed complete
