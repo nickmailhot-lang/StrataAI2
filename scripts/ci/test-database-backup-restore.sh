@@ -73,8 +73,24 @@ docker exec "$container" psql -X -U "$admin" -d "$source_db" -v ON_ERROR_STOP=1 
 # the target has a different cluster identity and does not inherit source roles.
 stage=encrypted-backup
 STRATAAI_BACKUP_DB_USER="$admin" bash scripts/backup-postgres.sh "$container" "$source_db" \
-  "$scratch/recipient.crt" "$scratch/backup.cms" > "$scratch/backup.log" 2>&1
+  "$scratch/recipient.crt" "$scratch/backup.cms" "$scratch/backup.json" > "$scratch/backup.log" 2>&1
 test -s "$scratch/backup.cms"
+stage=completion-record
+python3 scripts/verify-backup-record.py "$(host_path "$scratch/backup.json")" "$(host_path "$scratch/backup.cms")" 86400 \
+  > "$scratch/record.log" 2>&1
+for clock_probe in stale future; do
+  python3 - "$(host_path "$scratch/backup.json")" "$(host_path "$scratch/refused.json")" "$clock_probe" <<'PY'
+import json, pathlib, sys, time
+value = json.loads(pathlib.Path(sys.argv[1]).read_text())
+if sys.argv[3] == 'stale': value['startedAtUnixSeconds'] = 1
+else: value['completedAtUnixSeconds'] = int(time.time()) + 86400
+pathlib.Path(sys.argv[2]).write_text(json.dumps(value))
+PY
+  if python3 scripts/verify-backup-record.py "$(host_path "$scratch/refused.json")" "$(host_path "$scratch/backup.cms")" 86400 \
+    > "$scratch/refusal.log" 2>&1; then
+    echo 'Backup freshness accepted an invalid completion record.' >&2; exit 1
+  fi
+done
 python3 - "$(host_path "$scratch/backup.cms")" "$(host_path "$scratch/tampered.cms")" <<'PY'
 import pathlib, sys
 data = bytearray(pathlib.Path(sys.argv[1]).read_bytes())
@@ -82,6 +98,11 @@ assert len(data) > 2048
 data[len(data) // 2] ^= 1
 pathlib.Path(sys.argv[2]).write_bytes(data)
 PY
+if python3 scripts/verify-backup-record.py "$(host_path "$scratch/backup.json")" "$(host_path "$scratch/tampered.cms")" 86400 \
+  > "$scratch/refusal.log" 2>&1; then
+  echo 'Backup record accepted an altered archive.' >&2; exit 1
+fi
+echo 'Backup completion record integrity, stale/future clock and altered-archive refusals passed.'
 restore() {
   STRATAAI_RESTORE_DB_USER="$admin" STRATAAI_RESTORE_TMPDIR="$scratch" \
     bash scripts/restore-postgres.sh "$target_container" "$target_db" "$scratch/$2.crt" "$scratch/$2.key" "$1" "$3"

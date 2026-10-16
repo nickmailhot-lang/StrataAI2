@@ -1,8 +1,11 @@
 import os
+import hashlib
+import json
 from pathlib import Path
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -36,19 +39,31 @@ class PostgresBackupTests(unittest.TestCase):
         self.addCleanup(self.remove_owned,self.folder,self.root,'case-')
         self.output = self.folder / 'protected backup.cms'
 
-    def run_command(self, mode='success', *, admin='fixture_role', database='fixture_db', container='fixture-container', certificate=None):
+    def run_command(self, mode='success', *, admin='fixture_role', database='fixture_db', container='fixture-container', certificate=None, record=None):
         certificate = certificate or self.root / 'fixture.crt'
         driver = f'''set -euo pipefail
 export STRATAAI_BACKUP_DB_USER={shlex.quote(admin)}
 output={shlex.quote(self.output.as_posix())}
 calls={shlex.quote((self.folder/'calls').as_posix())}
 protocol_certificate={shlex.quote(certificate.as_posix())}
+record={shlex.quote(record.as_posix() if record else '')}
+record_arguments=(); if [ -n "$record" ]; then record_arguments=("$record"); fi
+date() {{
+ if [ {shlex.quote(mode)} = clock-failure ]; then printf '%s' PRIVATE_CLOCK_ERROR >&2; return 19; fi
+ if [ {shlex.quote(mode)} = clock-format ]; then printf '%s' invalid-clock; return; fi
+ if [ {shlex.quote(mode)} = clock-rollback ]; then
+  if [ -f "$calls.clock" ]; then printf '1000'; else touch "$calls.clock"; printf '2000'; fi
+  return
+ fi
+ command date "$@"
+}}
 docker() {{
  printf '%s\\n' "$@" > "$calls"
  case {shlex.quote(mode)} in
   dump-failure) printf '%s' PGDMP-partial-private-fixture; printf '%s' PRIVATE_DUMP_ERROR >&2; return 14 ;;
   file-race) printf '%s' preserved-race-file > "$output" ;;
   directory-race) mkdir "$output" ;;
+  record-race) printf '%s' preserved-record-race > "$record" ;;
  esac
  printf '%s' PGDMP-private-transport-fixture
 }}
@@ -61,7 +76,7 @@ openssl() {{
  fi
  command openssl "$@"
 }}
-source {shlex.quote(self.script.as_posix())} {shlex.quote(container)} {shlex.quote(database)} {shlex.quote(certificate.as_posix())} "$output"
+source {shlex.quote(self.script.as_posix())} {shlex.quote(container)} {shlex.quote(database)} {shlex.quote(certificate.as_posix())} "$output" "${{record_arguments[@]}}"
 '''
         result = subprocess.run([self.bash, '-c', driver], cwd=self.repo, capture_output=True, timeout=20,
                                 env={k: v for k, v in os.environ.items() if k != 'BASH_ENV'})
@@ -86,6 +101,67 @@ source {shlex.quote(self.script.as_posix())} {shlex.quote(container)} {shlex.quo
         self.assertNotEqual(self.run_command().returncode, 0)
         self.assertEqual(self.output.read_bytes(), b'original-encrypted-backup')
         self.assertFalse((self.folder/'calls').exists())
+
+    def test_record_binds_the_completed_encrypted_archive_without_private_identity(self):
+        record = self.folder/'protected completion.json'
+        self.assertEqual(self.run_command(record=record).returncode, 0)
+        value = json.loads(record.read_text())
+        self.assertEqual(set(value), {'schemaVersion','startedAtUnixSeconds','completedAtUnixSeconds','archiveBytes','sha256'})
+        self.assertEqual(value['schemaVersion'], 1)
+        self.assertGreater(value['startedAtUnixSeconds'], 0)
+        self.assertGreaterEqual(value['completedAtUnixSeconds'], value['startedAtUnixSeconds'])
+        self.assertEqual(value['archiveBytes'], self.output.stat().st_size)
+        self.assertEqual(value['sha256'], hashlib.sha256(self.output.read_bytes()).hexdigest())
+        self.assertNotIn('fixture', record.read_text())
+        if os.name != 'nt': self.assertEqual(record.stat().st_mode & 0o777, 0o600)
+        checked = subprocess.run([sys.executable, str(self.repo/'scripts/verify-backup-record.py'),
+                                  str(record), str(self.output), '60'], capture_output=True, timeout=10)
+        self.assertEqual(checked.returncode, 0, checked.stderr)
+        self.assertEqual(json.loads(checked.stdout)['status'], 'verified')
+
+    def test_record_existing_or_wrong_directory_refuses_before_database_read(self):
+        existing = self.folder/'existing.json'; existing.write_text('preserved-record')
+        for record in [existing, self.root/'different-parent.json', self.folder/'wrong.cms']:
+            with self.subTest(record=record):
+                self.assertNotEqual(self.run_command(record=record).returncode, 0)
+                self.assertFalse((self.folder/'calls').exists())
+                self.assertFalse(self.output.exists())
+        self.assertEqual(existing.read_text(), 'preserved-record')
+
+    def test_record_race_preserves_the_other_file_and_reports_failure(self):
+        record = self.folder/'raced.json'
+        result = self.run_command('record-race', record=record)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn(b'backup created', result.stdout)
+        self.assertEqual(record.read_text(), 'preserved-record-race')
+        self.assertTrue(self.output.exists())
+
+    def test_failed_stream_never_publishes_a_completion_record(self):
+        record = self.folder/'failed.json'
+        self.assertNotEqual(self.run_command('dump-failure', record=record).returncode, 0)
+        self.assertFalse(record.exists())
+        self.assertFalse(self.output.exists())
+
+    def test_clock_failure_refuses_before_database_read(self):
+        record = self.folder/'failed-clock.json'
+        self.assertNotEqual(self.run_command('clock-failure', record=record).returncode, 0)
+        self.assertFalse((self.folder/'calls').exists())
+        self.assertFalse(record.exists())
+        self.assertFalse(self.output.exists())
+
+    def test_clock_format_refuses_before_database_read(self):
+        record = self.folder/'invalid-clock.json'
+        self.assertNotEqual(self.run_command('clock-format', record=record).returncode, 0)
+        self.assertFalse((self.folder/'calls').exists())
+        self.assertFalse(record.exists())
+        self.assertFalse(self.output.exists())
+
+    def test_clock_rollback_cannot_publish_archive_or_completion(self):
+        record = self.folder/'reversed-clock.json'
+        self.assertNotEqual(self.run_command('clock-rollback', record=record).returncode, 0)
+        self.assertTrue((self.folder/'calls').exists())
+        self.assertFalse(record.exists())
+        self.assertFalse(self.output.exists())
 
     def test_encryption_uses_the_validated_certificate_snapshot(self):
         certificate=self.folder/'rotating.crt'

@@ -45,7 +45,7 @@ class ReleaseArtifactTests(unittest.TestCase):
         shutil.copyfile(self.images/'build-metadata.json',self.bundle/'build-metadata.json'); shutil.copytree(self.security,self.bundle/'security')
         (self.bundle/'sbom').mkdir()
         for p in self.security.glob('*.cdx.json'): shutil.copyfile(p,self.bundle/'sbom'/p.name)
-        names=['compose.release.yml','compose.demo.release.yml','compose.metrics.yml','compose.attachments.yml','.env.release.example','.env.demo.example','README.md','promotion-and-rollback.md','health-check.sh','verify-release-runtime.sh','verify-https-certificate.sh','backup-postgres.sh','restore-postgres.sh','apply-migrations.sh','migration-stream.sh','provision-runtime-roles.sh','provision-identity-mail-role.sh','deploy/metrics/collector.yml','deploy/metrics/alerts.yml','deploy/metrics/prometheus.example.yml','db/provision-runtime-roles.sql','db/provision-identity-mail-role.sql','db/migrations/001_initial.sql']
+        names=['compose.release.yml','compose.demo.release.yml','compose.metrics.yml','compose.attachments.yml','.env.release.example','.env.demo.example','README.md','promotion-and-rollback.md','health-check.sh','verify-release-runtime.sh','verify-https-certificate.sh','backup-postgres.sh','verify-backup-record.py','restore-postgres.sh','apply-migrations.sh','migration-stream.sh','provision-runtime-roles.sh','provision-identity-mail-role.sh','deploy/metrics/collector.yml','deploy/metrics/alerts.yml','deploy/metrics/prometheus.example.yml','db/provision-runtime-roles.sql','db/provision-identity-mail-role.sql','db/migrations/001_initial.sql']
         for name in names:
             p=self.bundle/name; p.parent.mkdir(parents=True,exist_ok=True); p.write_bytes(b'synthetic fixture')
         for name in ('compose.https.yml','deploy/https/nginx-tls.inc'):
@@ -108,6 +108,10 @@ class ReleaseArtifactTests(unittest.TestCase):
 
     def test_missing_operator_backup_tool_rejects_even_with_matching_checksums(self):
         self.make_bundle(); (self.bundle/'backup-postgres.sh').unlink(); self.checksums(self.bundle)
+        with self.assertRaisesRegex(ValueError,'incomplete_bundle'): release.verify_bundle(self.bundle)
+
+    def test_missing_backup_record_verifier_rejects_even_with_matching_checksums(self):
+        self.make_bundle(); (self.bundle/'verify-backup-record.py').unlink(); self.checksums(self.bundle)
         with self.assertRaisesRegex(ValueError,'incomplete_bundle'): release.verify_bundle(self.bundle)
 
     def test_missing_operator_restore_tool_rejects_even_with_matching_checksums(self):

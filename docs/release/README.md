@@ -471,8 +471,9 @@ database and database-user values with this deployment's actual values:
 postgres_container=$(docker compose --env-file .env -f compose.release.yml ps -q postgres)
 export STRATAAI_BACKUP_DB_USER=strataai
 backup_archive="/secure/backups/strataai-$(date -u +%Y%m%dT%H%M%SZ).cms"
-bash backup-postgres.sh "$postgres_container" strataai /secure/backup-recipient.crt "$backup_archive"
-sha256sum "$backup_archive"
+backup_record="${backup_archive%.cms}.json"
+bash backup-postgres.sh "$postgres_container" strataai /secure/backup-recipient.crt "$backup_archive" "$backup_record"
+python3 verify-backup-record.py "$backup_record" "$backup_archive" 86400
 ```
 
 The database login must be able to dump the entire database, including forced
@@ -485,13 +486,39 @@ The custom-format dump streams directly into authenticated encryption. No
 plaintext dump is written. A failed dump/encryption leaves no published archive.
 Publication is atomic and refuses an existing file/directory, including one
 created while the dump runs. Temporary encrypted output and private diagnostics
-are removed. Record the successful archive's protected location, SHA-256,
-creation time, recipient identity and restore-test result; copy it to the
-approved off-host encrypted destination under your backup policy.
+are removed. The optional fifth argument publishes a new sibling JSON completion
+record after publishing the encrypted archive. It contains only schema version,
+dump start/completion Unix times, archive length and SHA-256; it contains no
+database/container/path/recipient identity. Existing records are refused before
+reading the database. Record publication races fail without overwriting the
+other file; an already published encrypted archive may then remain without a
+valid completion marker. Do not treat that partial result as a successful job.
+The four-argument archive command remains available without a completion record.
+
+The read-only checker needs Python 3.11 or newer. It verifies the entire archive
+against the explicitly supplied, operator-protected record, rejects changed or
+missing files, and measures age from the dump's start after checking integrity.
+The last argument is the chosen maximum age in seconds: use the deployment's
+database recovery policy, such as 86400 for the Standard 24-hour limit or 3600
+for the Enhanced one-hour limit. Old snapshots, future/reversed clocks and
+malformed records fail. Copying a file or finishing a slow dump does not renew
+the snapshot's age. Success prints only fixed status/age/length fields; failure
+returns nonzero without printing private input paths or a passing result.
+
+Keep a separately protected authoritative copy of the completion record. The
+record is not signed: permission to rewrite both record and archive defeats its
+provenance. Record the protected archive location, recipient identity and
+restore-test result separately; copy the encrypted archive and its trusted
+record to the approved off-host destination under your backup policy. Verify
+that stored copy against the authoritative record as well. This check does not
+decrypt/authenticate CMS, restore data, prove off-host durability or cover object
+storage and key rings; retain authenticated recovery drills.
 
 Schedule this command and restore drills in the deployment's operating system
 or managed backup system. This command does not configure a scheduler, storage
-retention or freshness monitoring. A database dump omits global roles, object
+retention or a running freshness monitor. Run the checker for the explicit
+record/archive pair from the scheduler or monitoring system and alert on its
+nonzero exit. A database dump omits global roles, object
 storage and durable key rings. Follow the
 [recovery requirements and authenticated restore sequence](../architecture/database-recovery.md)
 and [promotion/rollback procedure](promotion-and-rollback.md) before production

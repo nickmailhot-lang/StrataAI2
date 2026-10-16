@@ -146,6 +146,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'release_artifacts_test.py'
           python3 -m unittest discover -s tests -p 'recovery_dump_test.py'
           python3 -m unittest discover -s tests -p 'postgres_backup_test.py'
+          python3 -m unittest discover -s tests -p 'backup_record_test.py'
           python3 -m unittest discover -s tests -p 'postgres_restore_test.py'
           python3 -m unittest discover -s tests -p 'key_recovery_archive_test.py'
           python3 -m unittest discover -s tests -p 'release_auth_policy_test.py'
@@ -1571,6 +1572,7 @@ jobs:
           cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh
           cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh
           cp scripts/backup-postgres.sh bundle/backup-postgres.sh
+          cp scripts/verify-backup-record.py bundle/verify-backup-record.py
           cp scripts/restore-postgres.sh bundle/restore-postgres.sh
           cp scripts/apply-compose-migrations.sh bundle/apply-migrations.sh
           cp scripts/migration-stream.sh bundle/migration-stream.sh

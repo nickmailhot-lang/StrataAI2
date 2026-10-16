@@ -136,6 +136,71 @@ of the operator command or its pre-build refusal tests. Shell/workflow lint and
 payloads; older bundles do not gain it. New exact-commit hosted CI remains
 required, and this evidence does not establish a deployed backup schedule.
 
+## Completion records and freshness
+
+The [operator backup instructions](../release/README.md#encrypted-docker-postgresql-backups)
+now support an optional new sibling completion record and the bundled
+[read-only checker](../../scripts/verify-backup-record.py). The record is
+published after the encrypted archive and binds its exact length/SHA-256 to the
+dump start and completion times. Failed streams or reversed clocks publish
+neither file. A race at record publication fails without overwriting the rival
+record; an already published encrypted archive remains unconfirmed. No private
+database, container, path, recipient or credential value enters the record.
+
+Freshness is bounded by the beginning of the dump, rather than completion or
+filesystem modification time. The checker hashes the full archive, detects file
+changes during inspection, then evaluates the supplied maximum age. Strict
+bounded JSON parsing refuses duplicate, unknown, missing or wrongly typed fields.
+Missing/changed/partial archives and stale/future/reversed timestamps fail with a
+fixed diagnostic and no passing output. Success reports only status, age, limit
+and byte length. All operations are read-only; nothing selects an existing
+deployment or installs a scheduler. Python 3.11+ is required for the checker.
+
+The record must come from protected operator custody; it is not signed and does
+not establish producer authenticity if both it and the archive can be rewritten.
+Keep an authoritative protected copy separately, verify the approved off-host
+archive against it, and retain recipient/key custody and actual restore drills.
+An integrity/freshness result does not authenticate CMS, establish recoverability,
+measure achieved RPO/RTO or prove object-storage/key-ring recovery. Schedule
+creation, freshness checks, nonzero-exit alerts and recovery drills in the chosen
+deployment; those remain deployment acceptance requirements under ARCH-08.
+
+The maintained two-Card recovery rehearsal now requests the completion record,
+checks its actual encrypted archive, and refuses stale/future records and an
+altered archive before continuing the complete restore/security contract.
+Mandatory source tests cover record creation/publication races, failed streams,
+clock failure/rollback, privacy, malformed records and read-only inspection
+races. Release integrity requires the checker even when other asset checksums
+match. Existing bundles do not gain this new command.
+
+The final complete local rehearsal passes in **122.493 seconds** with all **160**
+captured inputs unchanged, **763,541 temporary bytes** removed and the original
+Docker inventory restored. It applies all 149 migrations to the two-Card fixture,
+requires distinct cluster identities, and retains the complete migrated
+schema/data/ACL comparison, original twelve corruption/refusal probes, pgvector,
+append-only audit, RLS/FK isolation, restricted runtime role provisioning, actual
+SCRAM password refusals/logins and scoped queue publication/acknowledgment.
+The new completion-record checks pass before that recovery sequence. The
+original database and Demo are unused; no application image build/import or
+large-load test is involved. This is current-source functional evidence, not
+current immutable-image or managed-provider release acceptance.
+
+All **15 backup command cases**, **11 record verifier cases**, **38 release
+artifact tests** and **265 CI guard tests** pass; one additional symbolic-link
+case is skipped because this Windows host cannot create the link. The verifier
+keeps device/file identity, size and nanosecond modification checks on both
+platforms, plus POSIX change time on Unix. The first Windows attempt refuses
+unchanged files because path/descriptor creation metadata differ; it no longer
+treats deprecated Windows `ctime` as POSIX change time, consistent with the
+[Python filesystem metadata contract](https://docs.python.org/3/library/os.html#os.stat_result).
+Actual modification-race refusal remains tested. Earlier missing-record cases
+also fail before implementation. A further regression proves that a successful
+clock command with invalid output must stop before any database read; standalone
+validation fixes the earlier Bash AND-list exception to error termination.
+Hosted exact-commit checks, actual scheduled
+creation/freshness alerts, trusted off-host custody and recorded deployment
+restore drills remain required; ARCH-08 and MVP acceptance stay open.
+
 ## Operator restore path
 
 The [restore command](../release/README.md#restore-into-an-isolated-empty-docker-database)

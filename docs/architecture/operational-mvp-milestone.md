@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [backup completion and freshness contract](database-recovery.md#completion-records-and-freshness)
+adds protected completion records and a read-only archive integrity/age check.
+Freshness starts at the beginning of the dump; late completion or changed file
+times cannot renew an old snapshot. The complete two-Card, distinct-cluster
+recovery rehearsal passes in 122.493 seconds with all 160 inputs unchanged,
+763,541 temporary bytes removed and Docker inventory restored. Existing RLS,
+schema/ACL, audit, role/login and queue recovery checks remain. All 15 command,
+11 verifier, 38 artifact and 265 CI guard cases pass; one extra verifier case is
+platform-skipped. Current CI, deployment scheduling, off-host custody and real
+freshness alerts remain required. Large-load testing stays after MVP.
+
 The [live warning transport contract](operator-alerts.md#live-warning-transport-contract)
 now passes healthy scrape → outage → original two-minute hold → firing webhook
 → recovery → matching resolved webhook in 404.087 seconds. Pinned tools run on

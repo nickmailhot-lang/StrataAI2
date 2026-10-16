@@ -35,6 +35,8 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['backup record refusal tests omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy'); entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'backup_record_test.py'",''); }],
+  ['backup record verifier omitted from bundle', value => { const entry=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle'); entry.run=entry.run.replace('cp scripts/verify-backup-record.py bundle/verify-backup-record.py',''); }],
   ['alert delivery unit boundary omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify operator evidence rejects missing and private metric fields');entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'operator_alert_delivery_test.py'",''); }],
   ['live alert delivery bypassed', value => { step(value, 'Verify operator warning firing and resolved delivery').run='true'; }],
   ['live alert delivery errors ignored', value => { step(value, 'Verify operator warning firing and resolved delivery')['continue-on-error']=true; }],
