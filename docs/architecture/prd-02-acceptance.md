@@ -961,3 +961,10 @@ together (8/8). All 51 focused boundary/rendering/editor regressions pass. These
 local current compiled-runtime results; complete immutable CI and all original
 identity/policy/provider acceptance remain required. PRD-02 stays open at **16%
 estimated work remaining**.
+
+The [invitation source-calendar admission repair](invitation-history-head-admission-verification.md#invitation-source-calendar-admission-2026-10-16)
+reuses existing strict calendar validation before admitting issued history.
+All eight malformed-field/scope regressions fail before repair; all 152 focused
+invitation/date cases pass afterward, preserving valid offset/leap-day input
+and source clocks. Current immutable/full CI remains required; estimated work
+remaining stays **16%** and large-load testing remains deferred after MVP.

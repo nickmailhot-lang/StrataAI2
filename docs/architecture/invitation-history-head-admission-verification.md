@@ -143,3 +143,71 @@ containers are removed, but automatic approval review blocked cleanup of its
 remaining private diagnostic folder; that deletion was not retried. Web/browser
 types, lint, all **285 CI coverage guards**, 1,937 documentation links and
 594 anchors pass. The repository load-test flag is independently confirmed **0**.
+
+## Invitation source-calendar admission (2026-10-16)
+
+Issued Organization/Board history previously accepted an explicit-offset clock
+whenever JavaScript `Date.parse` returned a finite instant. That accepts
+impossible calendars such as February 30, April 31, a non-leap February 29 or
+hour 24 by silently rolling into another date. The existing display formatter
+already rejects these values, but history could still admit the private row and
+revocation review, with a missing or fallback displayed clock.
+
+The formatter's existing pure source-calendar check is now exported and reused
+for history `createdAt`, `expiresAt`, and non-null `acceptedAt`/`revokedAt`.
+Validation checks the supplied calendar before applying its explicit offset.
+Malformed history is withheld through the existing generic read error and fresh
+Refresh path; a valid reread still requires all original account, Board/head,
+admin scope, page-shape and final-account checks. Null optional clocks, valid
+leap days, seven fractional digits and explicit offsets remain supported.
+No stored/source clock is rewritten and locale/timezone formatting is preserved.
+Issuer acknowledgments already use the strict formatter and remain unchanged.
+
+All **eight new malformed-field/scope regressions fail** against the original
+source; all eight valid leap-day/offset counterparts pass. After repair, all
+**152** focused history, history-recovery, issuer, issuer-observation and date
+formatter checks pass. The new component cases verify hidden private rows/Board
+name and absent revocation controls until a fresh valid read, including zero
+DELETEs. This is validation of supplied response data, not a schema migration
+or evidence of malformed persisted production rows.
+
+The native desktop/phone scenarios use actual Organization/Board invitations
+and alter only one intercepted history expiry. The simulated malformed response
+remains active throughout privacy assertions so competing live rechecks cannot
+restore valid content early. After service restoration, keyboard Refresh,
+revocation-review Cancel, WCAG checks and canonical source clocks remain
+required. Mail delivery may independently advance; only its delivery-state field
+is excluded from the otherwise exact source-history comparison. No revocation
+is sent and no stored source timestamp is fabricated.
+
+Current exact-commit immutable CI/full acceptance remains required. Planning
+estimates stay **PRD-01 34%, PRD-02 16%, PRD-03 8%, PRD-04 15% work remaining**.
+All tickets stay open; large-load testing remains deferred until after MVP.
+
+The first native invocation passes phone and fails desktop Cancel focus after
+review is withdrawn during initial live admission. Its separate report retains
+**1/2**, all input hashes matching, stable API/restored Worker scope, restored
+Docker inventory and **3,228,003 temporary bytes** removed. The new fixture now
+uses the existing passive tracker to require an actual matching stream head
+and protected history read started after that head before opening review.
+Cancel-focus, privacy, no-write and canonical clock assertions remain unchanged;
+no product focus policy or source frame is altered.
+
+The final complete desktop/phone file passes **2/2 in 95,024.581 ms**, with
+zero failures, flaky/skipped cases or report errors. Each viewport covers
+Organization and Board history, genuine protected-read/stream admission,
+malformed expiry withdrawal, fresh valid recovery, automatic Cancel focus,
+keyboard Cancel, zero DELETEs, exact canonical source-field/clock comparison,
+two document navigations and zero WCAG 2.2 violations.
+
+All **1,279 source, 71 binary, four served frontend asset** and private Compose
+hashes match. API identity/start remain stable; the original scoped Worker
+helper restores its same cached image healthy and unscoped. Original Docker
+inventory is restored and **3,320 temporary bytes** removed after success.
+No images are built, pulled or imported. The small fixture uses current frontend
+and read-only compiled hosts, cached runtimes, fresh PostgreSQL 17.11/schema149
+and restricted roles, controlled mail and optional verification. Local runtime
+revision remains `13d9d83c`; this is supporting evidence rather than current
+retained-image, strict/managed-provider or full release certification. Web/browser
+types, lint, **285 CI guards**, 1,948 local documentation links and 605 anchors
+pass. No large-load tests run; all remaining acceptance still governs closure.

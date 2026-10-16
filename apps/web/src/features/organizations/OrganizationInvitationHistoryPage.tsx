@@ -3,7 +3,7 @@ import { Alert, Button, CircularProgress, Container, Dialog, DialogActions, Dial
 import { Link, useParams } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { boundedWorkRead } from '../../api/workManagement';
-import { formatUserDateTime } from '../auth/userDateTime';
+import { formatUserDateTime, isSourceDateTime } from '../auth/userDateTime';
 import { invitationRoles, validInvitationKey } from './invitationIntent';
 import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchBoard } from '../../api/boardLive';
@@ -14,8 +14,6 @@ type Row = { id: string; email: string; surface: 'INTERNAL' | 'PORTAL'; targetRo
   expiresAt: string; acceptedAt: string | null; revokedAt: string | null; deliveryState: string | null; boardTarget?: { boardId: string; role: string } | null };
 type Page = { items: Row[]; nextCursor: string | null };
 type Preferences = { id: string; locale: string; timezone: string };
-const date = (value: unknown): value is string => typeof value === 'string'
-  && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value));
 function page(value: unknown, boardId?: string): value is Page {
   if (!value || typeof value !== 'object') return false;
   const result = value as Page;
@@ -24,8 +22,8 @@ function page(value: unknown, boardId?: string): value is Page {
     && invitationRoles(row.surface).includes(row.targetRole)
     && (boardId !== undefined ? row.surface === 'INTERNAL' && row.targetRole === 'MEMBER'
       && row.boardTarget?.boardId === boardId && ['ADMIN', 'MEMBER'].includes(row.boardTarget.role) : row.boardTarget == null)
-    && date(row.createdAt) && date(row.expiresAt)
-    && (row.acceptedAt === null || date(row.acceptedAt)) && (row.revokedAt === null || date(row.revokedAt))
+    && isSourceDateTime(row.createdAt) && isSourceDateTime(row.expiresAt)
+    && (row.acceptedAt === null || isSourceDateTime(row.acceptedAt)) && (row.revokedAt === null || isSourceDateTime(row.revokedAt))
     && [null, 'PENDING', 'SENT', 'CANCELLED', 'FAILED', 'RETRY_EXHAUSTED'].includes(row.deliveryState))
     && new Set(result.items.map(row => row.id)).size === result.items.length
     && (result.nextCursor === null || validInvitationKey(result.nextCursor) && result.items.length === 50

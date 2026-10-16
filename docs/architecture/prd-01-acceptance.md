@@ -427,3 +427,10 @@ deadlines. All 26 navigation checks and the full 2,581-test web suite pass.
 Inputs and owned cleanup are independently verified. Current immutable/full
 acceptance remains required; work remaining stays **34%**, with large-load
 testing deferred until after the MVP.
+
+The [invitation source-calendar admission repair](invitation-history-head-admission-verification.md#invitation-source-calendar-admission-2026-10-16)
+reuses existing strict calendar validation before admitting issued history.
+All eight malformed-field/scope regressions fail before repair; all 152 focused
+invitation/date cases pass afterward, preserving valid offset/leap-day input
+and source clocks. Current immutable/full CI remains required; estimated work
+remaining stays **34%** and large-load testing remains deferred after MVP.

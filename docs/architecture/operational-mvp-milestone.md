@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+[Invitation source-calendar admission](invitation-history-head-admission-verification.md#invitation-source-calendar-admission-2026-10-16)
+rejects silently normalized impossible clocks before exposing history or
+revocation review. All 152 focused invitation/date checks, both desktop/phone
+Organization/Board browser cases and 285 CI guards pass; owned successful-run
+resources are removed and Docker inventory is restored. Valid source
+precision, offsets, preferences and fresh authority checks remain. Current
+immutable/full release acceptance remains required; large-load tests stay
+deferred until after MVP.
+
 The [configured-producer notification read-recovery follow-up](notification-inbox.md#configured-producer-read-recovery-admission-2026-10-16)
 addresses a verified hosted retry keypress with no second POST. Request
 admission stops once the intended request starts; original receipt, private

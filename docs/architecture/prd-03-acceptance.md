@@ -897,3 +897,10 @@ keeps transient scope-read failures retryable while preserving fresh admission
 and private denial. All 128 focused history/issuer/telemetry checks pass.
 Current immutable CI and full acceptance remain required; estimated work
 remaining stays **8%**, and large-load tests remain deferred until after MVP.
+
+The [invitation source-calendar admission repair](invitation-history-head-admission-verification.md#invitation-source-calendar-admission-2026-10-16)
+reuses existing strict calendar validation before admitting issued history.
+All eight malformed-field/scope regressions fail before repair; all 152 focused
+invitation/date cases pass afterward, preserving valid offset/leap-day input
+and source clocks. Current immutable/full CI remains required; estimated work
+remaining stays **8%** and large-load testing remains deferred after MVP.
