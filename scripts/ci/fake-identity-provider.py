@@ -8,6 +8,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 messages = {}
 lock = threading.Lock()
 reject_next = False
+outage = False
+outage_attempts = {}
+instance = os.environ.get("STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE", uuid.uuid4().hex)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -24,14 +27,18 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/health":
-            return self.respond(200, {"ready": True})
+            return self.respond(200, {"ready": True, "instance": instance})
+        if self.path == "/outage":
+            with lock:
+                return self.respond(200, {"active": outage, "attempts": [
+                    {"key": key, "attempts": count} for key, count in outage_attempts.items()]})
         if self.path == "/messages":
             with lock:
                 return self.respond(200, list(messages.values()))
         self.respond(404, {})
 
     def do_POST(self):
-        global reject_next
+        global reject_next, outage
         # JsonContent streams HTTP/1.1 requests using chunked transfer. Decode
         # that framing as well as fixed-length requests, with the same bound.
         try:
@@ -66,9 +73,13 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, EOFError):
             return self.respond(400, {})
         if self.path == "/control":
+            if set(data) - {"reject_next", "outage"} or any(type(value) is not bool for value in data.values()):
+                return self.respond(400, {})
             with lock:
                 reject_next = bool(data.get("reject_next"))
-            return self.respond(200, {})
+                if "outage" in data:
+                    outage = data["outage"]
+                return self.respond(200, {"outage": outage})
         if self.path != "/emails":
             return self.respond(404, {})
         if self.headers.get("Authorization") != "Bearer ci-test-provider-key":
@@ -77,6 +88,9 @@ class Handler(BaseHTTPRequestHandler):
         if not key or not all(recipient.endswith("@example.test") for recipient in data.get("to", [])):
             return self.respond(400, {})
         with lock:
+            if outage:
+                outage_attempts[key] = outage_attempts.get(key, 0) + 1
+                return self.respond(503, {"message": "controlled fixture outage"})
             if reject_next:
                 reject_next = False
                 return self.respond(401, {"message": "deliberately rejected fixture request"})
@@ -92,4 +106,5 @@ class Handler(BaseHTTPRequestHandler):
             return self.respond(503, {"message": "simulated lost acknowledgement"})
 
 
-ThreadingHTTPServer(("0.0.0.0", int(os.environ.get("STRATAAI_TEST_IDENTITY_PROVIDER_PORT", "19090"))), Handler).serve_forever()
+if __name__ == "__main__":
+    ThreadingHTTPServer(("0.0.0.0", int(os.environ.get("STRATAAI_TEST_IDENTITY_PROVIDER_PORT", "19090"))), Handler).serve_forever()

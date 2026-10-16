@@ -106,6 +106,19 @@ continues to consume tokens once and revoke existing sessions.
 
 ## Evidence and remaining scope
 
+### Core task continuity during provider failure
+
+The [core mail-outage rehearsal](core-mail-outage.md) holds the provider in
+HTTP 503 failure, observes the real Worker's durable retry and neutral keyed
+reset acknowledgment, then creates/edits/reloads protected task data without
+restarting API or Worker. Readiness, audit additions, anonymous refusal and the
+original session remain intact; normal recovery produces one provider effect
+and terminal receipt. The full local setup/scenario/cleanup passes in 159.262
+seconds with strict real email verification and restricted PostgreSQL roles.
+Its source/binary hashes and original Docker inventory match. CI now requires
+this phase inside the exact-image identity-mail stage. Current immutable/full
+CI, browser/deployment outages and complete acceptance remain required.
+
 ### Provider response admission — 2026-10-15
 
 The previous adapter uses the default buffered `HttpClient.SendAsync` overload.

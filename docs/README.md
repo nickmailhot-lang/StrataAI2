@@ -66,6 +66,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Structured API/Worker console logs and support context](architecture/structured-logging.md)
 - [API and Worker operator metrics export (ARCH-08, partial)](architecture/operator-metrics.md)
 - [Operational MVP alert baselines, deployment checks and isolated delivery verification](architecture/operator-alerts.md)
+- [Core task work during a mail-provider outage](architecture/core-mail-outage.md)
 - [Runtime database roles](architecture/runtime-database-roles.md)
 - [Runtime modes and seeded Demo sign-in credentials](architecture/runtime-modes.md)
 - [Schema upgrades and compatibility](architecture/schema-upgrades.md)

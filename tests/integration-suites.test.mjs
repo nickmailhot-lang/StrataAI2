@@ -35,6 +35,13 @@ test('every mandatory check has an owner and every group uses retained images', 
 });
 
 const mutations = [
+  ['core mail outage provider instance unbound', value => { delete value.env.STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE; }],
+  ['core mail outage source checks skipped', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy').if='false'; }],
+  ['core mail outage source check failures ignored', value => { value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy')['continue-on-error']=true; }],
+  ['core mail outage fixture tests omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy'); entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'fake_identity_provider_test.py'",''); }],
+  ['core mail outage admission tests omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy'); entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'core_mail_outage_admission_test.py'",''); }],
+  ['identity mail and core outage runtime bypassed', value => { step(value, 'Identity mail against exact API/Worker images and restricted database role').run='true'; }],
+  ['identity mail and core outage failures ignored', value => { step(value, 'Identity mail against exact API/Worker images and restricted database role')['continue-on-error']=true; }],
   ['backup record refusal tests omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify source test report completeness and privacy'); entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'backup_record_test.py'",''); }],
   ['backup record verifier omitted from bundle', value => { const entry=value.jobs['release-bundle'].steps.find(step=>step.name==='Assemble release bundle'); entry.run=entry.run.replace('cp scripts/verify-backup-record.py bundle/verify-backup-record.py',''); }],
   ['alert delivery unit boundary omitted', value => { const entry=value.jobs['web-quality'].steps.find(step=>step.name==='Verify operator evidence rejects missing and private metric fields');entry.run=entry.run.replace("python3 -m unittest discover -s tests -p 'operator_alert_delivery_test.py'",''); }],

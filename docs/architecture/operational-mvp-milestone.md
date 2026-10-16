@@ -4,6 +4,17 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [core mail-outage contract](core-mail-outage.md) now proves that a strict
+verified owner can create/edit/reload protected task data while actual mail
+delivery retries under a sustained provider 503. Readiness, durable reset-intent
+deduplication, persisted Card revision, audit additions, anonymous refusal and
+the original session remain intact. Normal provider recovery produces one
+effect/receipt with no API/Worker restart or edited backoff. The complete fresh
+PostgreSQL/149-migration rehearsal passes in 159.262 seconds with all 717 source
+and 71 binary inputs unchanged and Docker inventory restored. All 12 fixture/
+admission cases and 272 CI guards pass. Current-image/full CI, browser/managed
+outage behavior and the rest of ARCH-08 remain required; no large-load test runs.
+
 The [mail provider response repair](identity-email.md#provider-response-admission--2026-10-15)
 classifies provider errors at headers and preserves the existing successful
 receipt size and whole-request timeout bounds. Eleven new native regressions

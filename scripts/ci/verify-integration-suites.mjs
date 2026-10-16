@@ -270,6 +270,15 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'image_labels_test.py'"));
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'postgres_backup_test.py'"), 'Operator backup refusal paths must run before image builds');
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'backup_record_test.py'"), 'Backup record integrity and freshness checks must run before image builds');
+  assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'fake_identity_provider_test.py'"), 'Controlled mail outage fixture tests must run before image builds');
+  assert.equal(sourceProvenance.if, undefined);
+  assert.equal(sourceProvenance['continue-on-error'] ?? false, false);
+  assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'core_mail_outage_admission_test.py'"), 'Core mail outage ownership admission must run before image builds');
+  assert.equal(workflow.env.STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE, '${{ github.run_id }}-${{ github.run_attempt }}');
+  const identityMail = jobs['container-integration'].steps.find(step => step.name === 'Identity mail against exact API/Worker images and restricted database role');
+  assert.equal(identityMail?.run, 'scripts/ci/test-identity-email.sh');
+  assert.equal(identityMail?.if, "(matrix.suite == 'browser-notifications')");
+  assert.equal(identityMail?.['continue-on-error'] ?? false, false);
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'postgres_restore_test.py'"), 'Operator restore refusal paths must run before image builds');
   assert.ok(sourceProvenance.run.includes("python3 -m unittest discover -s tests -p 'key_recovery_archive_test.py'"), 'Key recovery archive refusals must run before image builds');
   assert.match(archive.run, /cp build-inputs\/build-metadata.json image-artifacts\/build-metadata.json/);

@@ -8,6 +8,9 @@ gate_pid=''
 request_pid=''
 recovery_pids=()
 cleanup() {
+  if [ "${core_mail_outage_owned:-0}" = 1 ]; then
+    curl --max-time 5 --silent -H 'Content-Type: application/json' -d '{"outage":false}' "$fixture/control" >/dev/null 2>&1 || true
+  fi
   if test -n "$gate_pid"; then printf 'ROLLBACK;\n\\q\n' >&3 || true; exec 3>&-; wait "$gate_pid" || true; fi
   if test -n "$request_pid"; then kill "$request_pid" 2>/dev/null || true; wait "$request_pid" 2>/dev/null || true; fi
   for pid in "${recovery_pids[@]}"; do kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; done
@@ -680,6 +683,13 @@ for target in INTERNAL PORTAL BOARD_ADMIN BOARD_MEMBER; do
   scripts/ci/assert-file-excludes.sh "$email|$signup_invitation|$signup_token|deliveryState" "$scratch/invitation-history-denied"
 done
 unset signup_token signup_hash mail_proof signup_body
+core_mail_process_identity() {
+  for service in api worker; do
+    identity=$("${compose[@]}" ps -q "$service"); test -n "$identity"
+    docker inspect --format '{{.Id}} {{.State.StartedAt}}' "$identity"
+  done
+}
+source scripts/ci/core-mail-outage.inc.sh
 "${compose[@]}" up -d --wait --wait-timeout 180 api worker >/dev/null; signup_closed=false
 echo 'Exact-image Board invitation mail: both roles, public signed issuance, sibling publication rollback, actual scoped Worker/provider delivery, verified proof review/discovery and explicit grants passed.'
 echo 'Exact-image invitation mail: atomic invitation/job/snapshot/audit/receipt rollback, keyed single publication, reference-only metadata, separate scoped Worker delivery, provider lost-acknowledgment idempotency, SENT completion recovery and no stored bearer passed.'

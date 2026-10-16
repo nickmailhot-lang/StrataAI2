@@ -26,6 +26,7 @@ env:
   DOTNET_NOLOGO: 'true'
   DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
   STRATAAI_IMAGE_TAG: ${{ github.sha }}
+  STRATAAI_TEST_IDENTITY_PROVIDER_INSTANCE: ${{ github.run_id }}-${{ github.run_attempt }}
 
 jobs:
   metadata:
@@ -147,6 +148,8 @@ jobs:
           python3 -m unittest discover -s tests -p 'recovery_dump_test.py'
           python3 -m unittest discover -s tests -p 'postgres_backup_test.py'
           python3 -m unittest discover -s tests -p 'backup_record_test.py'
+          python3 -m unittest discover -s tests -p 'fake_identity_provider_test.py'
+          python3 -m unittest discover -s tests -p 'core_mail_outage_admission_test.py'
           python3 -m unittest discover -s tests -p 'postgres_restore_test.py'
           python3 -m unittest discover -s tests -p 'key_recovery_archive_test.py'
           python3 -m unittest discover -s tests -p 'release_auth_policy_test.py'
