@@ -190,3 +190,91 @@ recipient stream and drains its browser invalidation before reviewing recovery;
 otherwise that source can legitimately cancel a retry in flight. No server clock,
 membership, audit, source or lease is modified to force the result. This local
 Demo evidence does not replace exact-image release verification.
+
+## Recipient source-calendar admission (2026-10-16)
+
+Recipient discovery and proof review previously accepted finite parsed expiry
+instants that JavaScript silently normalized from impossible source calendars.
+Discovery also admitted offset-free input, interpreting it in the browser's
+local timezone. Both consumers now reuse the existing strict source-calendar
+validator before publishing invitation metadata or acceptance controls. Link
+review retains its additional future-expiry check.
+
+The change does not consume a proof, accept an invitation, rewrite source
+clocks or alter account/epoch/deadline/recovery rules. Invalid discovery uses
+the existing generic Refresh error. Invalid proof review keeps the existing
+generic review error and permits fresh explicit review with the same proof;
+acceptance requires a valid reviewed response. Null/offset-free expiry is not
+a valid invitation instant. Real leap days, explicit offsets and seven
+fractional digits remain valid.
+
+All **seven new malformed-expiry regressions fail** against the original
+source: Internal, Portal and Board discovery/review calendars, plus offset-free
+discovery. Six valid leap-day/offset counterparts pass. After repair all **127**
+focused recipient discovery, live discovery, proof review and date-display
+cases pass. Tests require hidden metadata/consent, zero acceptance requests and
+fresh valid recovery; proof retries retain their exact original body.
+
+The new desktop/phone native scenarios use an actual separate Worker-delivered
+Internal invitation proof. They keep malformed intercepted expiry active during
+discovery privacy checks, restore actual data before Refresh, then separately
+withhold proof-review consent on a malformed response. Explicit re-review uses
+the same proof and current actor. Canonical pending state/expiry, zero acceptance
+requests, continued denial of Organization/private Board access, URL/storage
+proof exclusion and WCAG checks remain required. These Internal native checks
+do not stand in for Portal/Board native acceptance; those surfaces have scoped
+component coverage in this increment and retain their full release requirements.
+
+PRD-02 stays open at **16%**, PRD-03 at **8%**, PRD-05 at **14%** and PRD-60 at
+**18% estimated work remaining**, unchanged planning estimates. Current
+immutable/full CI and all original acceptance remain required. Large-load
+testing stays deferred until after the operational MVP.
+
+The initial native fixture stops both cases before browser validation because
+invitation-mail publication is disabled by default. Its **0/2** report is
+preserved, with captured inputs unchanged and original Docker inventory
+restored; **115,064 temporary bytes** are removed. The new proof-dependent
+cases are now owned by an explicit required `browser-notifications` mail-enabled
+phase, using the existing isolated provider and retained images. Their dedicated
+configuration inherits normal sequential/no-retry policy, and a runtime report
+verifier requires both actual desktop/phone passes without skipped/retried cases.
+The default general browser configuration does not select this `.case.ts` file;
+no existing scenario is removed or skipped. Entry/cleanup preserve the previous
+mail and verification settings, and neither entry nor restore may pull images.
+
+The first mail-enabled local setup correctly refuses an unscoped invitation
+Worker before any browser case (17.8 seconds, 3,359 temporary bytes removed and
+Docker inventory restored). The fixture now keeps global identity delivery
+mail-enabled but invitation delivery disabled until each case owns its actual
+Organization through the original scoped-Worker helper. Case cleanup restores
+the unscoped Worker with invitation delivery disabled. The startup refusal,
+explicit actual-tenant scope and original helper remain intact; no fabricated
+Organization ID or broader Worker scope is introduced.
+
+The final complete dedicated desktop/phone file passes **2/2 in 90,225.506 ms**,
+with no failures, flaky/skipped cases or report errors. Its runtime report also
+passes the new independent two-viewport/no-skip/no-retry verifier. Both accounts
+consume real Worker-delivered verification proofs before login under strict API
+and Worker verification. An actual scoped invitation-mail effect supplies the
+review proof; no SQL fabricates a proof, membership or timestamp. UI recovery
+retains the same actual proof/body and actor, sends zero acceptance POSTs,
+preserves the issued expiry and pending/unrevoked record, and keeps Organization
+and private Board reads at 404. URL/storage proof exclusion and WCAG checks pass.
+
+All **1,284 captured source, 71 binary, four served asset** and private Compose
+hashes match. API identity/start remain stable; the original scoped helper
+restores the same cached Worker healthy and unscoped with invitation delivery
+disabled. Original Docker inventory is restored and **3,721 temporary bytes**
+removed after success. No images are built, pulled or imported. The fixture uses
+current frontend/read-only compiled hosts (local runtime `13d9d83c`), fresh
+restricted PostgreSQL17.11/schema149 and a controlled provider. It does not
+certify external inbox delivery, managed providers or retained current images.
+
+All **127** focused web checks, web/browser types, lint, Bash syntax, actionlint,
+**289 CI coverage guards plus ten collection/report checks**, 1,954 local doc
+links and 611 anchors pass. The new required phase is registered in the original
+integration owner inventory; source checks reject bypass, ignored failures,
+missing pacing or omitted source verification. Its wrapper preserves prior
+settings and validates a fresh runtime report; local case execution and syntax/
+source guards do not replace hosted execution of that wrapper or full exact-
+commit build-once CI. No existing case, policy or acceptance criterion is dropped.

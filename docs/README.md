@@ -114,6 +114,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Invitation proof in a request body](invitation-body-acceptance.md)
 - [Reconstructable invitation delivery proof](invitation-delivery-tokens.md)
 - [Invitation email handler and protected delivery contract](invitation-email-handler.md)
+- [Recipient discovery and proof expiry validation](architecture/invitation-discovery.md#recipient-source-calendar-admission-2026-10-16)
 - [Administrator invitation history](invitation-history.md)
 - [Recipient invitation links](invitation-link-review.md)
 - [Invitation mail recovery fixture](invitation-mail-recovery-fixture.md)

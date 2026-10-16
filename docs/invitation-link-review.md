@@ -57,3 +57,10 @@ compare unchanged pending history, then reopen the original proof for a fresh
 server review before continuing their cookie/receipt checks. They use the existing
 isolated proof fixtures and do not alter server clocks, proofs or grants. Native
 execution remains pending exact-image CI.
+
+The [recipient source-calendar admission repair](architecture/invitation-discovery.md#recipient-source-calendar-admission-2026-10-16)
+rejects impossible reviewed expiry before metadata or acceptance controls are
+admitted. Fresh review retains the original proof and account checks; no
+acceptance is sent for malformed data. All 127 focused recipient/date cases
+pass; current immutable/full acceptance remains required. PRD-60 stays open at
+**18% estimated work remaining**, with large-load testing deferred after MVP.

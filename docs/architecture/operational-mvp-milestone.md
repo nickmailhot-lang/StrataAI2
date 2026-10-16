@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+[Recipient expiry admission](invitation-discovery.md#recipient-source-calendar-admission-2026-10-16)
+rejects impossible or offset-free source clocks before discovery metadata or
+proof-review consent. All 127 focused recipient/date cases pass; valid offsets,
+original proof identity, account checks and recovery remain. Both dedicated
+desktop/phone strict Worker-mail cases and all 299 CI/collection/report checks
+pass; successful-run cleanup restores Docker inventory. The new mail-enabled
+phase remains required against the retained images. Current immutable CI and
+full acceptance still govern closure; large-load tests stay post-MVP.
+
 [Invitation source-calendar admission](invitation-history-head-admission-verification.md#invitation-source-calendar-admission-2026-10-16)
 rejects silently normalized impossible clocks before exposing history or
 revocation review. All 152 focused invitation/date checks, both desktop/phone

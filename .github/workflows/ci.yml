@@ -99,6 +99,7 @@ jobs:
         run: |
           node --test tests/browser-shards.test.mjs
           node --test tests/mail-outage-browser.test.mjs
+          node --test tests/recipient-clock-browser.test.mjs
           node scripts/ci/verify-browser-shards.mjs
 
       - name: Typecheck
@@ -1226,6 +1227,13 @@ jobs:
       - name: Identity mail against exact API/Worker images and restricted database role
         if: (matrix.suite == 'browser-notifications')
         run: scripts/ci/test-identity-email.sh
+
+      - name: Recipient calendar admission through actual invitation mail proof
+        if: (matrix.suite == 'browser-notifications')
+        timeout-minutes: 8
+        env:
+          STRATAAI_E2E_RATE_PACING: '1'
+        run: bash scripts/ci/test-recipient-clock-browser.sh
 
       - name: Desktop and mobile accessible keyboard verification/recovery through Worker delivery
         if: (matrix.suite == 'browser-notifications')

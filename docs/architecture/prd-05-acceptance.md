@@ -573,3 +573,11 @@ race assertions. All 772 relevant source hashes match and owned fixtures are
 removed. It does not explain the older immutable hash failures or replace
 current exact-image/full acceptance. Estimated PRD-05 work remaining stays
 **14%**; the issue remains open.
+
+The [recipient expiry-admission repair](invitation-discovery.md#recipient-source-calendar-admission-2026-10-16)
+reuses strict source-calendar validation for discovery and proof review before
+metadata or consent. Seven malformed-input regressions fail before repair; all
+127 focused recipient/date cases pass afterward. Valid offsets/precision and
+original proof/account/recovery rules remain. Current immutable/full CI still
+governs closure; estimated work remaining stays **14%** and capacity testing
+remains deferred until after the operational MVP.

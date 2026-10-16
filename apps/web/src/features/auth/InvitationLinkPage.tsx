@@ -3,6 +3,7 @@ import { Alert, Button, Container, Paper, Stack, Typography } from '@mui/materia
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { AuthPage } from './AuthPage';
+import { isSourceDateTime } from './userDateTime';
 
 type Preview = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string; boardTarget?: { boardId: string; role: 'ADMIN' | 'MEMBER' } | null; boardName?: string | null };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,7 +18,7 @@ function preview(value: unknown): value is Preview {
     && typeof row.organizationName === 'string' && row.organizationName.trim()
     && (row.surface === 'INTERNAL' ? ['OWNER', 'ADMIN', 'MEMBER'].includes(row.targetRole ?? '')
       : row.surface === 'PORTAL' && ['OWNER', 'CO_OWNER', 'TENANT', 'OCCUPANT', 'AUTHORIZED_REPRESENTATIVE', 'OTHER'].includes(row.targetRole ?? ''))
-    && typeof row.expiresAt === 'string' && /(?:Z|[+-]\d{2}:\d{2})$/.test(row.expiresAt) && Date.parse(row.expiresAt) > Date.now());
+    && isSourceDateTime(row.expiresAt) && Date.parse(row.expiresAt) > Date.now());
 }
 
 class AccountUnavailable extends Error { constructor(readonly status: number) { super('Reviewed invitation account unavailable'); } }

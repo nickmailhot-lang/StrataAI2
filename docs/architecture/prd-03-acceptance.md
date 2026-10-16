@@ -904,3 +904,11 @@ All eight malformed-field/scope regressions fail before repair; all 152 focused
 invitation/date cases pass afterward, preserving valid offset/leap-day input
 and source clocks. Current immutable/full CI remains required; estimated work
 remaining stays **8%** and large-load testing remains deferred after MVP.
+
+The [recipient expiry-admission repair](invitation-discovery.md#recipient-source-calendar-admission-2026-10-16)
+reuses strict source-calendar validation for discovery and proof review before
+metadata or consent. Seven malformed-input regressions fail before repair; all
+127 focused recipient/date cases pass afterward. Valid offsets/precision and
+original proof/account/recovery rules remain. Current immutable/full CI still
+governs closure; estimated work remaining stays **8%** and capacity testing
+remains deferred until after the operational MVP.

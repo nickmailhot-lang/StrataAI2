@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../api/apiFetch';
 import { publicCorrelationReference } from '../../api/correlationReference';
 import { watchInvitationRecipient, type InvitationRecipientInvalidation } from './invitationRecipientLive';
+import { isSourceDateTime } from './userDateTime';
 
 type Invitation = { id: string; organizationId: string; organizationName: string; surface: 'INTERNAL' | 'PORTAL'; targetRole: string; expiresAt: string; boardTarget?: { boardId: string; role: 'ADMIN' | 'MEMBER' } | null; boardName?: string | null };
 type Page = { items: Invitation[]; nextCursor: string | null };
@@ -22,7 +23,7 @@ function validPage(value: unknown): value is Page {
     if (!validBoard || !item || typeof item.id !== 'string' || typeof item.organizationId !== 'string' || !uuid.test(item.id) || !uuid.test(item.organizationId) || typeof item.organizationName !== 'string' || !item.organizationName.trim()
       || !(item.surface === 'INTERNAL' ? ['OWNER', 'ADMIN', 'MEMBER'].includes(item.targetRole)
         : item.surface === 'PORTAL' && ['OWNER', 'CO_OWNER', 'TENANT', 'OCCUPANT', 'AUTHORIZED_REPRESENTATIVE', 'OTHER'].includes(item.targetRole))
-      || typeof item.expiresAt !== 'string' || !Number.isFinite(Date.parse(item.expiresAt)) || seen.has(item.id)) return false;
+      || !isSourceDateTime(item.expiresAt) || seen.has(item.id)) return false;
     seen.add(item.id);
   }
   // Authorization filtering can leave a short or empty page with a cursor for the last scanned candidate.
