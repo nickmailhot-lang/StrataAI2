@@ -2,6 +2,15 @@
 
 This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 15%.
 
+The [business instrument failure repair](operator-metrics.md#organization-and-board-instrument-failure-isolation--2026-10-15)
+prevents optional meter factory/publication faults from blocking Board request
+execution and preserves independent latency observations. All 40 new diagnostic
+and 17 existing metrics cases pass, including actual HTTP creation/read while
+the selected factory throws, private Board concealment and authenticated member
+administration. Compiled-source/controlled Demo evidence does not replace
+current immutable/full CI or complete ticket acceptance. Estimated PRD-04 work
+remaining stays **15%**; large load testing remains deferred until after MVP.
+
 ## Current supported-scale Board verification
 
 The [complete schema-146 rank/capacity chain](../kanban-performance.md#current-schema-146-full-rank-and-three-viewport-capacity-chain)

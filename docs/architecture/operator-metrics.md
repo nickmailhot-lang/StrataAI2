@@ -9,6 +9,45 @@ The optional [operator alert package](operator-alerts.md) supplies tested warnin
 rules and a private backend example for these measurements. Deployment routing,
 live evaluation and firing/resolved notification tests remain operator work.
 
+## Organization and Board instrument failure isolation — 2026-10-15
+
+Organization and Board-sharing telemetry previously created their meter and
+instruments during service construction. A throwing meter factory or native
+instrument-publication callback could therefore prevent request execution,
+before the existing guarded measurement writes were reached. A throwing request
+counter listener also suppressed the independent duration observation.
+
+Both services now create optional instruments during guarded recording after
+the request. Factory failure skips that observation, and each instrument's
+creation/publication/measurement has an independent guard. A later request can
+record normally after factory recovery using the same telemetry service.
+Existing meter/instrument names, units, operation mapping, outcome/error
+categories, retry-key boolean and private-label boundaries are unchanged.
+Business execution, responses, original exceptions and cancellation remain
+authoritative; optional telemetry adds no business retry.
+
+The baseline fails **28 of 40 new cases**. After repair **all 40 pass**:
+36 direct middleware cases span two services, six diagnostic conditions and
+success/fault/cancellation; two cases recover a factory without replacing the
+service; two actual API-test-host HTTP cases perform authentication and
+Organization/Board creation/read while the selected business meter factory
+throws. Private Board reads still conceal existence with 404, member
+administration still requires authentication with 401, and health remains 200.
+The first repaired HTTP attempt incorrectly expects 401 for the private Board
+read; the corrected tests verify both existing 404/401 contracts. That fixture
+failure is preserved separately from the final passing evidence.
+
+All **17 unchanged regression cases** also pass: five Organization/Board/search/
+invitation HTTP metrics contracts and twelve operator exporter/configuration/
+histogram cases. The Release solution builds without warnings/errors. All
+**797 captured source/test inputs and 415 test binary files** match after each
+completed native run; owned test containers retire and original Docker inventory
+is restored. The cached Linux runtime executes current compiled assemblies with
+read-only mounts, no database, image build/pull/import, existing local service,
+external collector/provider or large-load test. HTTP persistence uses controlled
+Demo adapters, not a Production database. Current exact-image/full CI and
+managed deployment acceptance remain required; ARCH-08 and the MVP stay open.
+
 ## Server duration histogram resolution — 2026-10-15
 
 The custom HTTP and authentication timers record seconds, but their unconfigured

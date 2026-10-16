@@ -7,19 +7,13 @@ namespace StrataAI.Api.Organizations;
 
 // Fixed operator aggregates only: no content, actor/tenant/object IDs, paths,
 // correlation IDs or retry-key values enter labels. Audit remains authoritative.
-public sealed class OrganizationTelemetry
+public sealed class OrganizationTelemetry(IMeterFactory factory)
 {
     public const string MeterName = "StrataAI.Organizations";
-    public Meter Meter { get; }
-    private readonly Counter<long> requests;
-    private readonly Histogram<double> duration;
+    public Meter Meter => factory.Create(MeterName);
+    private Counter<long>? requests;
+    private Histogram<double>? duration;
     private static readonly object ErrorKey = new();
-    public OrganizationTelemetry(IMeterFactory factory)
-    {
-        Meter = factory.Create(MeterName);
-        requests = Meter.CreateCounter<long>("strataai.organization.requests", "{request}");
-        duration = Meter.CreateHistogram<double>("strataai.organization.duration", "s");
-    }
     internal static string? Operation(HttpContext context) =>
         ((context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText, context.Request.Method.ToUpperInvariant()) switch
         {
@@ -83,8 +77,13 @@ public sealed class OrganizationTelemetry
         var keyed = context.Request.Headers.TryGetValue("Idempotency-Key", out var keys) && keys.Count == 1
             && keys[0] is { Length: 36 } key && Guid.TryParseExact(key, "D", out var id) && id != Guid.Empty;
         TagList tags = new() { { "operation", operation }, { "outcome", outcome }, { "error_code", code }, { "keyed_attempt", keyed } };
-        try { requests.Add(1, tags); duration.Record(seconds, tags); }
-        catch { /* Operator listener failure cannot change an authoritative result. */ }
+        Meter meter;
+        try { meter = Meter; }
+        catch { return; /* Optional instrumentation must not prevent business execution. */ }
+        try { (requests ??= meter.CreateCounter<long>("strataai.organization.requests", "{request}")).Add(1, tags); }
+        catch { /* Publication/listener failure cannot change an authoritative result. */ }
+        try { (duration ??= meter.CreateHistogram<double>("strataai.organization.duration", "s")).Record(seconds, tags); }
+        catch { /* Independent best-effort latency observation. */ }
     }
 }
 public sealed class OrganizationTelemetryMiddleware(RequestDelegate next)

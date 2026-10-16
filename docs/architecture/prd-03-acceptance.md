@@ -4,6 +4,14 @@
 This source review maps the ten functional requirements to implemented behavior
 and remaining work. It does not certify current release acceptance.
 
+The [business instrument failure repair](operator-metrics.md#organization-and-board-instrument-failure-isolation--2026-10-15)
+prevents optional meter factory/publication faults from blocking Organization
+request execution. All 40 new diagnostic cases and 17 existing metrics cases
+pass, including actual HTTP creation/read with a throwing factory, retained
+authorization and later factory recovery. Controlled Demo persistence and
+compiled assemblies do not certify current Production images or full release
+acceptance. Estimated PRD-03 work remaining stays **8%**; the issue stays open.
+
 ## Hosted Organization creation/settings telemetry — 2026-10-15
 
 The exact-image browser

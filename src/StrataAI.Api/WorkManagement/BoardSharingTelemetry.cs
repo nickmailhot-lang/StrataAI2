@@ -7,19 +7,13 @@ namespace StrataAI.Api.WorkManagement;
 
 // Operator-only native instruments. No request content, identity, tenant/object
 // identifiers, route values, correlation IDs or retry keys become metric labels.
-public sealed class BoardSharingTelemetry
+public sealed class BoardSharingTelemetry(IMeterFactory factory)
 {
     public const string MeterName = "StrataAI.BoardSharing";
-    public Meter Meter { get; }
-    private readonly Counter<long> _requests;
-    private readonly Histogram<double> _duration;
+    public Meter Meter => factory.Create(MeterName);
+    private Counter<long>? _requests;
+    private Histogram<double>? _duration;
     private static readonly object ErrorKey = new();
-    public BoardSharingTelemetry(IMeterFactory factory)
-    {
-        Meter = factory.Create(MeterName);
-        _requests = Meter.CreateCounter<long>("strataai.board_sharing.requests", "{request}");
-        _duration = Meter.CreateHistogram<double>("strataai.board_sharing.duration", "s");
-    }
 
     internal static string? Operation(HttpContext context) =>
         ((context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText, context.Request.Method.ToUpperInvariant()) switch
@@ -167,8 +161,13 @@ public sealed class BoardSharingTelemetry
         TagList tags = new() { { "operation", operation }, { "outcome", outcome }, { "error_code", code }, { "keyed_attempt", keyed } };
         // A failing operator listener must never turn a committed action into an
         // application error or prevent its authoritative response being returned.
-        try { _requests.Add(1, tags); _duration.Record(seconds, tags); }
-        catch { /* Native listener failure is isolated from application behavior. */ }
+        Meter meter;
+        try { meter = Meter; }
+        catch { return; /* Optional instrumentation must not prevent business execution. */ }
+        try { (_requests ??= meter.CreateCounter<long>("strataai.board_sharing.requests", "{request}")).Add(1, tags); }
+        catch { /* Publication/listener failure is isolated from application behavior. */ }
+        try { (_duration ??= meter.CreateHistogram<double>("strataai.board_sharing.duration", "s")).Record(seconds, tags); }
+        catch { /* Independent best-effort latency observation. */ }
     }
 }
 

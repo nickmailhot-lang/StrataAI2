@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [Organization/Board instrument failure repair](operator-metrics.md#organization-and-board-instrument-failure-isolation--2026-10-15)
+moves optional instrumentation out of service construction and independently
+guards publication and measurement. Twenty-eight new cases reproduce blocked
+execution or missing independent measurements; all 40 new and 17 unchanged
+metrics cases pass after repair. Core HTTP creation/read, private Board
+concealment, member authentication and health remain intact while the selected
+business meter factory throws. Frozen inputs match and owned cleanup restores
+Docker inventory. This is controlled compiled-source evidence; current complete
+immutable CI and deployment acceptance remain required. No large-load test runs.
+
 The [bounded first-request CI admission](postgres-pool-recovery.md#bounded-first-request-ci-admission--2026-10-15)
 requires one 201 registration and one 200 login before Work-event writes, with
 request/response bounds and allowlisted failure diagnostics. Eighteen admission
