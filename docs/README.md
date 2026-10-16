@@ -15,6 +15,7 @@ Use this index to find every document in `docs/`. Architecture documents describ
 ## Suggested starting points
 
 - [Atomic runtime-role provisioning and effective capability checks](architecture/runtime-database-roles.md#atomic-effective-capability-validation--2026-10-16)
+- [Provisioning and connection guard agreement](architecture/runtime-database-roles.md#provisioning-and-connection-guard-agreement--2026-10-16): refuse unsafe schema creation and public-object ownership before credential rotation.
 
 - [Recipient invitation observations, original recovery and required mail-phase evidence](architecture/operator-metrics.md#recipient-invitation-observations--2026-10-16)
 

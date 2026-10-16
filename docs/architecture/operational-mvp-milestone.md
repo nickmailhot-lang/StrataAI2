@@ -4,6 +4,14 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [provisioning/connection guard follow-up](runtime-database-roles.md#provisioning-and-connection-guard-agreement--2026-10-16)
+closes a reproduced deployment mismatch: provisioning accepted schema creation
+and function ownership that actual API/Worker connections rejected. All eight
+new schema/function/sequence cases now refuse atomically, preserve credentials
+and ownership/ACLs, and recover safe logins after remediation. Existing role,
+identity-mail and release-payload regressions pass; current immutable/full CI
+remains required. No large-load tests run.
+
 The [runtime provisioning boundary repair](runtime-database-roles.md#atomic-effective-capability-validation--2026-10-16)
 rejects unexpected effective `PUBLIC` capabilities and database-role memberships,
 including a real Worker `SET ROLE` escape despite `NOINHERIT`. Nine public-grant

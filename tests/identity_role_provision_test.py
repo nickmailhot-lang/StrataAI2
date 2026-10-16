@@ -139,7 +139,9 @@ class IdentityRoleProvisionTests(unittest.TestCase):
           'columns',(SELECT jsonb_agg(jsonb_build_object('table',a.attrelid,'column',a.attnum,'acl',a.attacl)
             ORDER BY a.attrelid,a.attnum) FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid
             JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND a.attnum>0 AND NOT a.attisdropped),
-          'functions',(SELECT jsonb_agg(jsonb_build_object('oid',p.oid,'acl',p.proacl) ORDER BY p.oid)
+          'schemas',(SELECT jsonb_agg(jsonb_build_object('oid',n.oid,'owner',n.nspowner,'acl',n.nspacl) ORDER BY n.oid)
+            FROM pg_namespace n WHERE n.nspname='public'),
+          'functions',(SELECT jsonb_agg(jsonb_build_object('oid',p.oid,'owner',p.proowner,'acl',p.proacl) ORDER BY p.oid)
             FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public'),
           'memberships',(SELECT jsonb_agg(to_jsonb(m) ORDER BY m.roleid,m.member,m.grantor)
             FROM pg_auth_members m WHERE member IN (SELECT oid FROM pg_roles
@@ -202,8 +204,51 @@ class IdentityRoleProvisionTests(unittest.TestCase):
             self.assertEqual(self.sql('REVOKE runtime_provision_peer FROM strataai_worker_runtime; '
                                      'REVOKE SELECT(password_hash) ON users FROM runtime_provision_peer; DROP ROLE runtime_provision_peer;').returncode, 0)
             self.assertEqual(self.sql(general).returncode, 0)
+        # ARCH-04/12: rotation must refuse every schema/object ownership
+        # configuration that the application's connection guard rejects.
+        def connection_guard(role):
+            result = self.command('exec', '-i', '--env', 'PGPASSWORD', self.name, 'psql', '-X', '-qAt',
+                '-v', 'ON_ERROR_STOP=1', '-h', '127.0.0.1', '-U', role, '-d', 'role_fixture',
+                input=b'SELECT public.runtime_database_role_is_safe();',
+                environment={'PGPASSWORD': self.passwords['STRATAAI_API_DB_PASSWORD' if role == 'strataai_api_runtime' else 'STRATAAI_WORKER_DB_PASSWORD']})
+            self.assertEqual(result.returncode, 0, 'Connection guard query must succeed through an actual runtime login')
+            return result.stdout.strip()
+
+        for role in ('strataai_api_runtime', 'strataai_worker_runtime'):
+            self.assertEqual(connection_guard(role), b't')
+            for source in (role, 'PUBLIC'):
+                with self.subTest(schema_create=(role, source)):
+                    self.assertEqual(self.sql(f'GRANT CREATE ON SCHEMA public TO {source};').returncode, 0)
+                    try:
+                        self.assertEqual(connection_guard(role), b'f', 'Schema fixture must fail the real connection guard')
+                        before = self.sql(fingerprint).stdout
+                        result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
+                                                             'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
+                        self.assertNotEqual(result.returncode, 0, 'Provisioning accepted a schema-creation configuration rejected at connection time')
+                        self.assertEqual(self.sql(fingerprint).stdout, before, 'Refused schema provisioning changed protected state')
+                    finally:
+                        self.assertEqual(self.sql(f'REVOKE CREATE ON SCHEMA public FROM {source};').returncode, 0)
+                        self.assertEqual(self.sql(general).returncode, 0)
+                        self.assertEqual(connection_guard(role), b't', 'Schema remediation must restore runtime readiness')
+            for kind in ('function', 'sequence'):
+                with self.subTest(object_owner=(role, kind)):
+                    declaration = ("FUNCTION public.runtime_provision_owned_function() RETURNS integer LANGUAGE sql AS $$ SELECT 1 $$"
+                                   if kind == 'function' else 'SEQUENCE public.runtime_provision_owned_sequence')
+                    identifier = 'FUNCTION public.runtime_provision_owned_function()' if kind == 'function' else 'SEQUENCE public.runtime_provision_owned_sequence'
+                    self.assertEqual(self.sql(f'CREATE {declaration}; ALTER {identifier} OWNER TO {role};').returncode, 0)
+                    try:
+                        self.assertEqual(connection_guard(role), b'f', 'Owned object fixture must fail the real connection guard')
+                        before = self.sql(fingerprint).stdout
+                        result = self.sql(general, overrides={'STRATAAI_API_DB_PASSWORD': secrets.token_hex(24),
+                                                             'STRATAAI_WORKER_DB_PASSWORD': secrets.token_hex(24)})
+                        self.assertNotEqual(result.returncode, 0, 'Provisioning accepted object ownership rejected at connection time')
+                        self.assertEqual(self.sql(fingerprint).stdout, before, 'Refused object ownership changed protected state')
+                    finally:
+                        self.assertEqual(self.sql(f'DROP {identifier};').returncode, 0)
+                        self.assertEqual(self.sql(general).returncode, 0)
+                        self.assertEqual(connection_guard(role), b't', 'Ownership remediation must restore runtime readiness')
         # Ownership retains implicit grant options even after ordinary grants
-        # are revoked. This exercises that separate postcondition directly.
+        # are revoked. Provisioning must still refuse this unsafe owner.
         self.assertEqual(self.sql('CREATE TABLE runtime_provision_owned(id integer); '
                                  'ALTER TABLE runtime_provision_owned OWNER TO strataai_api_runtime;').returncode, 0)
         try:

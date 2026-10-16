@@ -120,6 +120,13 @@ See [policy configuration and verification](../architecture/release-auth-policy-
 
 ## Start and migrate
 
+Provisioning also [matches the runtime connection guard](../architecture/runtime-database-roles.md#provisioning-and-connection-guard-agreement--2026-10-16):
+API/Worker roles must lack effective public-schema `CREATE` and own no public
+relations (including sequences) or functions. Remove unintended schema grants
+or transfer object ownership to the reviewed migration identity before retrying.
+Refusal preserves credentials and grants; shared `PUBLIC` rights are not revoked
+automatically.
+
 The [runtime provisioner checks effective capabilities](../architecture/runtime-database-roles.md#atomic-effective-capability-validation--2026-10-16),
 including `PUBLIC` grants and database-role memberships. An unsafe configuration
 refuses atomically, preserving existing credentials/grants. Review and remove

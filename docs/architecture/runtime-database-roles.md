@@ -1,5 +1,39 @@
 # Runtime database roles
 
+## Provisioning and connection guard agreement — 2026-10-16
+
+The previous provisioning safeguard still accepted public-schema `CREATE` and
+public function ownership even though the application's existing connection
+guard returned false through actual API/Worker logins. Six native regression
+cases reproduce this mismatch: direct and `PUBLIC` schema creation for each
+role, plus each role owning a harmless function. Provisioning accepted the
+configuration and rotated passwords; the application would still refuse it.
+
+The [provisioner](../../db/provision-runtime-roles.sql) now rejects effective
+public-schema creation and ownership of any public relation or function before
+commit. Relation ownership includes sequences, which are outside ordinary
+table/column grant inspection. It preserves the existing connection guard and
+canonical grants. Operators must remove unintended schema grants or transfer
+object ownership to the reviewed migration identity before reprovisioning.
+Refusal rolls back credentials, ownership and grants; it does not automatically
+change shared `PUBLIC` permissions or transfer objects.
+
+The [maintained native provisioning test](../../tests/identity_role_provision_test.py)
+passes all eight new cases (four schema grants, two functions, two sequences)
+plus the previous nine relation/column `PUBLIC` probes, real Worker `SET ROLE`
+escape, owned-table grant options and restricted identity-mail/password tests.
+Actual API/Worker logins report unsafe before refusal and safe after remediation.
+Fingerprints now include schema ACLs/ownership and function ownership. The test
+passes in **73.582 seconds**; its wrapper takes 74.808 seconds, matches all 154
+captured inputs and restores original Docker inventory. No existing database,
+application host, provider, new image or large-load workload is used. Release
+payload tests pass 47/47. The complete RLS/runtime-role driver passes separately
+in 52.571 seconds with all 192 captured inputs matching. Its 114-table data
+fingerprint is unchanged through ten real runtime UPDATE refusals and ten
+injected-column guard refusals. Both disposable fixtures restore original
+Docker inventory and remove their owned directories. Current immutable-image
+CI and source-free release acceptance remain separate and outstanding.
+
 ## Atomic effective-capability validation — 2026-10-16
 
 [General role provisioning](../../db/provision-runtime-roles.sql) previously

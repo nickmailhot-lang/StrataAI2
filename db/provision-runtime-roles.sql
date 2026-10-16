@@ -164,6 +164,15 @@ BEGIN
   IF EXISTS(SELECT FROM pg_auth_members WHERE member=runtime.oid) THEN
    RAISE EXCEPTION 'Runtime role memberships exceed provisioning boundary; no changes applied.';
   END IF;
+  -- Match the runtime connection guard before rotating credentials: schema
+  -- creation and public object ownership make these identities unsafe.
+  IF has_schema_privilege(runtime.oid,'public','CREATE')
+   OR EXISTS(SELECT FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND c.relowner=runtime.oid)
+   OR EXISTS(SELECT FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+    WHERE n.nspname='public' AND p.proowner=runtime.oid) THEN
+   RAISE EXCEPTION 'Runtime schema privileges or object ownership exceed provisioning boundary; no changes applied.';
+  END IF;
   FOR relation IN
    SELECT c.oid,c.relacl,c.relowner FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
    WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f')
