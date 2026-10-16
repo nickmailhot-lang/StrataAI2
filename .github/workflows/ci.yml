@@ -149,6 +149,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'recovery_dump_test.py'
           python3 -m unittest discover -s tests -p 'postgres_backup_test.py'
           python3 -m unittest discover -s tests -p 'backup_record_test.py'
+          python3 -m unittest discover -s tests -p 'release_state_test.py'
           python3 -m unittest discover -s tests -p 'fake_identity_provider_test.py'
           python3 -m unittest discover -s tests -p 'core_mail_outage_admission_test.py'
           python3 -m unittest discover -s tests -p 'postgres_restore_test.py'
@@ -1590,6 +1591,7 @@ jobs:
           cp .env.release.example bundle/
           cp scripts/health-check.sh bundle/health-check.sh
           cp scripts/verify-release-runtime.sh bundle/verify-release-runtime.sh
+          cp scripts/record-release.py bundle/record-release.py
           cp scripts/verify-https-certificate.sh bundle/verify-https-certificate.sh
           cp scripts/backup-postgres.sh bundle/backup-postgres.sh
           cp scripts/verify-backup-record.py bundle/verify-backup-record.py

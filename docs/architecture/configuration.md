@@ -324,6 +324,13 @@ Promotion means moving the exact image tag/digest produced by green CI. Rollback
 redeploying the previous known-good tag/digest without recompilation. Irreversible database
 migrations require an explicit phased release plan before production.
 
+The bundled [atomic acceptance record](../release/promotion-and-rollback.md#record-the-current-known-good-release)
+performs the final runtime check and preserves the immediately prior accepted
+build/image reference in the same state update. Protected state lives outside
+the immutable bundle; initialization is explicit, environment/project identity
+is fixed and failed verification preserves both references. This does not
+replace CI/image verification, migration review or the deployment procedure.
+
 Attachment runtime is explicitly enabled with `STRATAAI_ATTACHMENT_STORAGE_ENABLED=true`
 in Production. Both API and Worker require `STRATAAI_ATTACHMENT_S3_BUCKET`, a
 12-digit expected `STRATAAI_ATTACHMENT_S3_OWNER`, and supported explicit

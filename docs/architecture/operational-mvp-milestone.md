@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [atomic acceptance record](../release/promotion-and-rollback.md#atomic-acceptance-record-verification--2026-10-15)
+adds an operator command for the final runtime check and atomic current/previous
+release record. All 22 state/command cases and five real CLI/Nginx cases pass,
+including wrong-upstream refusal, retained image IDs, unchanged repeated
+acceptance and operator rollback recording. Inputs match and owned cleanup
+restores Docker inventory. The native metadata is synthetic; current immutable
+CI, real application promotion/rollback and managed deployment acceptance remain
+required. This adds no application service and runs no large-load test.
+
 The [complete post-restart Work-event scenario](postgres-pool-recovery.md#complete-work-event-scenario-after-restart--2026-10-15)
 passes the unchanged driver against current `d635b54d` compiled API/Worker and
 fresh PostgreSQL/149 migrations. After 503 → 200 readiness, first registration,

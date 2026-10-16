@@ -49,6 +49,49 @@ The runtime environment file remains private and outside source control and uplo
 
 ## Record the current known-good release
 
+After completing the candidate's green-CI, original artifact/image verification,
+migration review, deployment and core workflow checks below, use the bundled
+Python 3.11-or-newer command for the final runtime check and acceptance record:
+
+```bash
+python3 record-release.py --bundle . \
+  --state /var/lib/strataai-deployments/production.json \
+  --environment production --project strataai-production
+```
+
+Use an existing protected state directory outside the release bundle and Git.
+Choose the deployment's actual stable Compose project name; the example is not
+a new project to introduce during an upgrade. The command needs Python 3.11 or newer and
+the Bash/curl/jq/GNU tools already required by `verify-release-runtime.sh`.
+Run it in that tool environment (Git Bash on Windows). Add `--initialize` only
+for the first accepted deployment, which explicitly records no prior release.
+Initialization refuses an existing record; normal acceptance refuses a missing
+record or a different environment/project identity.
+
+The command validates the selected build metadata and original image-provenance
+shape/identity, then invokes the real runtime verifier with a captured copy of
+the expected metadata. Only successful web/direct API/Worker/proxied API checks
+allow the state update. It rechecks the original inputs and prior record before
+publishing one atomic file containing both `current` and `previous`. The record
+contains the complete CI build identity, all three image IDs, input digests and
+acceptance time; it contains no credentials, configured URLs or response bodies.
+The previous entry preserves the entire immediately prior accepted reference.
+
+A failed runtime check leaves both entries unchanged. Reaccepting the same
+artifact rechecks runtime and preserves the record bytes and previous reference.
+A per-state OS lock refuses competing writers and releases on process exit. The
+one-byte `.lock` file intentionally persists; leave it in place. Keep this state
+on protected storage with supported local file locking and atomic rename, and
+retain the corresponding original bundles independently. Copy older records to
+the managed release inventory when retention requires more than one prior entry.
+
+This is the final record step in the procedure, not image deployment or CI/
+archive attestation. It does not query GitHub, verify image archive bytes, apply
+migrations, manage traffic or choose a database rollback. Complete those earlier
+checks before treating a recorded reference as known good. After a reviewed
+manual rollback and its workflow checks, run this same command against the
+selected older bundle; the replaced current release becomes `previous`.
+
 Before changing images, retain a non-secret deployment record in the operator's release inventory:
 
 | Field | Evidence to retain |
@@ -62,6 +105,33 @@ Before changing images, retain a non-secret deployment record in the operator's 
 | Deployment result | Time, health/readiness/build-identity results and core workflow checks |
 
 Keep the prior known-good record and bundle until the candidate is accepted and the deployment's retention policy permits removal. A candidate with unfinished or failed CI does not replace that record. The first deployment has no prior application release; record that explicitly and prepare a recovery procedure before exposing traffic.
+
+### Atomic acceptance record verification — 2026-10-15
+
+All **22 state/command cases** pass, including full prior-reference retention,
+failed runtime checks, idempotent acceptance, operator rollback recording,
+cross-environment refusal, explicit initialization, malformed/ambiguous/oversized
+inputs, provenance mismatch, candidate changes during verification, competing or
+noncooperating writers, failed file replacement and private CLI diagnostics.
+The immutable bundle cannot contain the mutable state. CI requires these tests
+and the bundled command; artifact validation refuses an omitted command even
+with regenerated checksums.
+
+The complete real CLI additionally passes **five native Nginx cases**: first
+acceptance, wrong-proxy refusal preserving prior bytes, next-release acceptance
+preserving the old image IDs, repeated acceptance preserving history, and
+recording the prior release after a simulated operator rollback. Actual runtime
+checks and file locks/writes run, with no injected verification callback. All
+four captured source inputs match; container/image/start identity is unchanged,
+private scratch files and 18,987 owned temporary bytes are removed and original
+Docker inventory is restored. No application database, existing local service,
+new image build/pull/import, external provider or load test is used.
+
+These native identities and health responses are synthetic. They prove the
+operator record/runtime boundary, not current application promotion or a real
+two-version deployment rollback. Current immutable-image/full CI, managed
+deployment, provider configuration and complete ARCH-12 acceptance remain
+required. Large load testing stays deferred until after the operational MVP.
 
 ## Promote the candidate
 

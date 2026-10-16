@@ -128,6 +128,12 @@ docker compose --env-file .env -f compose.release.yml up -d --wait
 bash verify-release-runtime.sh build-metadata.json
 ```
 
+After all [promotion and core workflow checks](promotion-and-rollback.md) pass,
+use the bundled `record-release.py` command (Python 3.11 or newer) to atomically retain the
+current and prior accepted build/image references outside this immutable bundle.
+It repeats runtime verification and refuses an acceptance update on failure.
+The promotion guide covers protected state, first deployment and rollback use.
+
 Release verification first requires HTTP 200 from all six web/API/Worker health and
 readiness checks; redirects and unavailable endpoints fail promotion. Requests
 use a five-second connection limit and a 30-second total limit each. Set
