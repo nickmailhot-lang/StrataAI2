@@ -9,7 +9,8 @@ function snapshot(): BoardSnapshot {
 }
 
 it('does not materialize or scan later Card collections after resolving the current location', () => {
-  const value = snapshot(); const readLater = vi.fn(() => Array.from({ length: 5000 }, (_, index) => ({ ...card, id: `later-${index}` })));
+  const value = snapshot();
+  const readLater = vi.fn((): WorkCard[] => { throw new Error('Unexpected later Card collection read'); });
   value.lists.push({ list: { id: 'later', name: 'Later', rank: 'rank', lifecycleState: 'active' }, get cards() { return readLater(); } });
   const location = boardCardLocation(value, card.id);
   expect(location?.card).toBe(card); expect(location?.list).toBe(value.lists[0].list);

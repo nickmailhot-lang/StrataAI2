@@ -1,5 +1,42 @@
 # Source test result artifacts — ARCH-11-FR-018/090
 
+## Current complete MVP frontend baseline — 2026-10-16
+
+The complete frontend at `25b618127cd1041c54d7718904834714ea07efba`
+passes **2,707 active cases, zero failed/todo, 24 deferred**: 2,731 collected cases
+across all 185 expected files (184 passed files and the deferred capacity file).
+Vitest and its independent wrapper exit 0; console, JSON totals and individual
+assertion counts agree. Two file workers, original deadlines and no retries are
+used with `STRATAAI_POST_MVP_LOAD_TESTS=0`. The run takes **694.298 seconds**
+including wrapper validation (Vitest reports 693.39 seconds).
+
+Every deferred assertion is in the reviewed Board window capacity suite; no
+capacity body runs. Its 24 original assertion bodies still match the pre-phase
+source. The normal 128-Card/32-List correctness counterparts remain active. All
+**381 captured frontend/config/package/lock/policy inputs** match before/after;
+all 185 collected files exactly match source discovery. The private raw JSON
+report's SHA-256 remains unchanged through audit:
+`a58a9629640829e16b6700d55aeaa62a30f00d4505cd55b9670b7afd6fd5ff9a`.
+
+This full baseline precedes a test-fixture-only follow-up: the normal
+[Card-location guard](../../apps/web/src/features/kanban/boardCardLocation.test.ts)
+replaces its unused 5,000-Card callback with an immediate failure if a later
+collection is read. The original successful case already proved the callback
+was never called; the new fixture cannot allocate that dataset even after a
+regression. Production lookup code and all three original behavior assertions
+remain unchanged. Those three cases pass after the edit, along with web types,
+zero-warning lint of the edited test and the exact required web architecture/
+phase command (seven passes). The full JSON remains evidence for the stated
+pre-fixture-edit source, not a claim that the entire suite reran afterward.
+
+The complete issue inventory also refreshes from 93 authoritative GitHub records:
+all 92 canonical requirement-body hashes match, 91 canonical tickets remain open,
+and seven dependency groups/three cycles are unchanged. See the [dependency
+audit](../ticket-dependencies.md). No issue is closed by these source results.
+Current immutable-image/full CI, browser/provider and original PRD acceptance
+remain required. No Docker/application-provider operations or large-load test
+runs are used for this source verification.
+
 ## Complete MVP-phase frontend baseline — 2026-10-16
 
 The complete frontend source at `ca541f8d` passes with two file workers and

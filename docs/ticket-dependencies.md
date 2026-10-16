@@ -1,8 +1,8 @@
 # Canonical ticket dependency audit
 
-Snapshot: 2026-10-15. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
+Snapshot: 2026-10-16. Source: GitHub issue bodies and states, fetched from the repository's issue API. This covers all 80 PRDs and 12 architecture tickets, excluding duplicate PRD-03 issue #4. There are 91 open canonical issues; ARCH-01 (#82) is closed. Issue state is inventory evidence, not a requirement-by-requirement completion audit.
 
-The complete issue snapshot was refreshed on 2026-10-15 and processed with `scripts/analyze-ticket-dependencies.mjs`; it resolves 92 canonical tickets into seven dependency groups, including three cycles. Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
+The complete issue snapshot was refreshed on 2026-10-16 and processed with `scripts/analyze-ticket-dependencies.mjs`; it resolves 92 canonical tickets into seven dependency groups, including three cycles. Every canonical issue has a Dependencies section. All extracted PRD/ARCH references resolve to canonical issues. No issue was closed by this audit.
 
 The [definition map](ticket-dependency-map.md) now counts both PRD criteria such
 as `AC-AUTH-02-01` and architecture criteria such as `ARCH-11-AC-001`. The earlier
@@ -15,6 +15,12 @@ metadata validation. All 92 requirement-body hashes still match the earlier
 tracked snapshot; corrected counts and refreshed issue timestamps do not prove
 implementation or justify closure. Existing PRD estimates and the full roadmap
 remain unchanged, with operational MVP work preceding new governance/AI work.
+
+The 2026-10-16 refresh fetches all 93 issue records, confirms 92 canonical
+PRD/architecture definitions with unchanged body hashes, 91 open canonical tickets
+and the same seven dependency groups/three cycles. Changed comment/update times
+are not changed requirements or implementation evidence. The operational MVP
+priority and all broader acceptance criteria remain intact.
 
 ## Dependency groups
 

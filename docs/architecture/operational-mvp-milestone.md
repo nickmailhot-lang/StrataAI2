@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [complete current frontend source baseline](source-test-results.md#current-complete-mvp-frontend-baseline--2026-10-16)
+passes 2,707 active cases with exactly 24 reviewed capacity deferrals across all 185
+expected files, 381 captured inputs unchanged and no retries. A subsequent
+three-case location-test edit removes an unused large-data callback; production
+code remains unchanged and its focused tests/types/lint/seven phase checks pass.
+The [complete dependency inventory refresh](../ticket-dependencies.md) confirms
+unchanged definitions for all 92 canonical tickets and 91 still open. Current
+immutable-image/full CI, browser/provider acceptance and the broader roadmap
+remain intact; large-load testing stays deferred.
+
 The [mail-enabled database recovery increment](database-recovery.md#recovery-with-the-separate-mail-identity--2026-10-16)
 adds the separate mail identity to the mandatory fresh-cluster gate. A source
 with reviewed mail ACLs reproduces restore failure under the old two-role setup.

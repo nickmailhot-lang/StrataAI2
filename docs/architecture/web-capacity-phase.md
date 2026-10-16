@@ -60,3 +60,22 @@ subsequently passes **2,689 cases** with exactly the reviewed **24 deferrals**,
 zero failures/todo, all 184 expected files and zero mismatches across 379 captured
 inputs. It takes695.105seconds with two file workers and no retry. The linked
 record explains the private audit's status-label correction without a test rerun.
+
+## Nonallocating Card-location guard and current baseline — 2026-10-16
+
+The normal [location regression](../../apps/web/src/features/kanban/boardCardLocation.test.ts)
+previously defined an unused callback that could create 5,000 Cards if a later
+collection was read. Successful execution asserted it was never called. The
+callback now fails immediately without allocating any collection; the same
+three current-parent, moved-parent and missing-selection cases pass. Production
+lookup code and the 24 deferred capacity cases remain unchanged. Web types,
+zero-warning edited-test lint and all seven required architecture/phase cases
+pass. This strengthens the no-load boundary without relaxing any assertion or
+moving normal correctness checks into the deferred phase.
+
+Before this test-only edit, the [complete current frontend baseline](source-test-results.md#current-complete-mvp-frontend-baseline--2026-10-16)
+passes 2,707 active cases with exactly 24 reviewed capacity deferrals across all 185
+expected files. All 381 captured inputs match. It uses two workers, unchanged
+per-case deadlines and no retries; no capacity body runs. The changed location
+file is checked separately after the edit. Current immutable/full CI and original
+acceptance remain required; PRD-06 stays open at **25% estimated work remaining**.
