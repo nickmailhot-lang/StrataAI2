@@ -4,6 +4,19 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [complete current backend source baseline](source-test-results.md#current-complete-mvp-backend-baseline--2026-10-16)
+passes 1,086 Domain and 1,399 API cases, with exactly three/two
+reviewed capacity deferrals and zero failures/errors/Not Run. Release build and
+independent console/XML comparison pass; 2,223 source inputs and 523
+binary files remain unchanged. Test resources retire. A separate audit reconciles
+the user's concurrent removal of three local Demo containers and its network;
+the wrapper's original inventory-equality assertion correctly fails for that
+authorized change, while all other Docker resources remain unchanged. Current
+immutable/full CI and deployment acceptance still govern the milestone. The
+[recovery guide](../release/README.md#restore-into-an-isolated-empty-docker-database)
+also clarifies separate target selection and cluster-global credential effects.
+No large-load test runs.
+
 The [complete current frontend source baseline](source-test-results.md#current-complete-mvp-frontend-baseline--2026-10-16)
 passes 2,707 active cases with exactly 24 reviewed capacity deferrals across all 185
 expected files, 381 captured inputs unchanged and no retries. A subsequent

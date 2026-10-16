@@ -570,8 +570,41 @@ expected digest from an untrusted archive and treat that as provenance.
 Recover the matching certificate/private key from their protected custody.
 Expired historical certificates can still decrypt their original backups.
 
-Create a new empty database from `template0` on the selected PostgreSQL service;
-do not connect the application or Workers to it yet. Replace the database/user
+For recovery onto a new cluster, prepare a separate deployment directory from
+the verified retained bundle. Set a unique `COMPOSE_PROJECT_NAME` in its `.env` and
+confirm that the resulting named PostgreSQL volume is new. Start only that
+target's PostgreSQL service, without applying application migrations before the
+schema restore. Keep API/Worker hosts stopped. Run the example below in that
+recovery deployment context, where `.env` selects the intended target, and verify
+the resolved container before continuing.
+
+A new database in an existing live cluster still shares PostgreSQL login roles.
+The canonical provisioners use fixed role names and change cluster-global login
+credentials. Reprovisioning them with new secrets in the source cluster would
+also change the credentials used by its existing application databases. For an
+isolated data-restore check in an existing cluster, leave its login roles alone;
+activate fresh recovery credentials only in the reviewed separate target cluster.
+Use the target's prepared environment and intended restored database for later
+provisioning, not the source deployment's `.env` or default database selection.
+
+For recovery into a new cluster, first recreate the reviewed owners and restricted
+identities referenced by the trusted archive's ACLs. Keep application hosts stopped
+and the target isolated. A database dump does not create cluster-global roles;
+missing roles make this transactional restore fail. Preserve least privilege and
+use fresh protected login credentials rather than copying global superusers or
+password hashes. The CI fixture recreates restricted non-login identities before
+restore, provisions API/Worker and separate mail credentials only after the
+schema/data/ACL checks, and verifies their actual authenticated sessions. If the
+trusted archive references `strataai_identity_mail_runtime`, recreate that
+reviewed restricted non-login identity before restoring, along with the API and
+Worker identities. Activate it with fresh protected credentials through the
+bundled mail provisioner after validation. See the [mail-enabled recovery
+contract](../architecture/database-recovery.md#recovery-with-the-separate-mail-identity--2026-10-16). Production ownership, roles,
+credentials and post-restore application checks require their own review before
+traffic or background deliveries resume.
+
+Create a new empty database from `template0` on the selected recovery PostgreSQL
+service; do not connect the application or Workers to it yet. Replace the database/user
 names and paths below with this recovery's actual values. `createdb` refuses an
 already-existing name, and the restore command never drops/cleans a database.
 
@@ -595,21 +628,12 @@ database creation is used. Temporary ciphertext, key copy, plaintext and private
 diagnostics are removed on success or failure. The command does not delete the
 operator's original archive or keys.
 
-For recovery into a new cluster, first recreate the reviewed owners and restricted
-identities referenced by the trusted archive's ACLs. Keep application hosts stopped
-and the target isolated. A database dump does not create cluster-global roles;
-missing roles make this transactional restore fail. Preserve least privilege and
-use fresh protected login credentials rather than copying global superusers or
-password hashes. The CI fixture recreates restricted non-login identities before
-restore, provisions API/Worker and separate mail credentials only after the
-schema/data/ACL checks, and verifies their actual authenticated sessions. If the
-trusted archive references `strataai_identity_mail_runtime`, recreate that
-reviewed restricted non-login identity before restoring, along with the API and
-Worker identities. Activate it with fresh protected credentials through the
-bundled mail provisioner after validation. See the [mail-enabled recovery
-contract](../architecture/database-recovery.md#recovery-with-the-separate-mail-identity--2026-10-16). Production ownership, roles,
-credentials and post-restore application checks require their own review before
-traffic or background deliveries resume.
+Before later runtime-role provisioning, ensure the target PostgreSQL container's
+`POSTGRES_DB` selects the restored database. The bundled provisioners read that
+container environment; editing only the host `.env` does not update a running
+container. In the separate recovery deployment, update `.env` and recreate only
+the PostgreSQL service with its existing recovery volume, keep API/Worker hosts
+stopped, and wait for PostgreSQL health before provisioning.
 
 For an encrypted private key, supply `STRATAAI_RESTORE_KEY_PASSPHRASE` through
 your secret provider. Its value is supplied only to the OpenSSL process through

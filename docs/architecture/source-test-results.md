@@ -1,5 +1,49 @@
 # Source test result artifacts — ARCH-11-FR-018/090
 
+## Current complete MVP backend baseline — 2026-10-16
+
+A fresh Release solution build at `c5545abf28ae14fcda8126f4f6d9e1ec65dc0775`, version
+`0.1.0-local`, succeeds in 54.00 seconds with zero warnings/errors. The complete
+unfiltered Domain and API assemblies then run with two test threads in the
+cached Linux .NET 10.0.13 runtime, with current source/binaries mounted read-only.
+`STRATAAI_POST_MVP_LOAD_TESTS=0` remains explicit; no test is retried.
+
+| Assembly | Reported cases | Passed | Deferred capacity | Test execution seconds |
+| --- | ---: | ---: | ---: | ---: |
+| Domain | 1,089 | 1,086 | 3 | 5.230 |
+| API | 1,401 | 1,399 | 2 | 4725.583 |
+
+Both assembly invocations exit 0 with zero failures, errors or Not Run cases.
+Independent JSON-console/XML comparisons agree on all totals and outcomes.
+Every discovered case finishes; parameterized rows are included in the reported
+case totals above.
+The only skips are the reviewed 100,000-reference label plan, the 200/5,000-entry
+rank theory and the two 100,000-Card API graph/publication cases. Their exact
+method identities and common explicit post-MVP deferral reason are verified;
+no capacity body executes. This full baseline includes the recent Worker backlog
+and recipient-observation changes previously covered by focused tests.
+
+All **2,223 captured repository inputs and 523 binary files** match
+afterward. The fixture takes **4,738.596 seconds**, removes its owned test
+containers and **1,721,911 bytes** of temporary result files, and uses
+no database, provider or image build/pull/import.
+
+During this live invocation the user explicitly requests removal of the local
+Demo. Its three containers and dedicated network are removed independently.
+The wrapper's original machine-wide inventory equality therefore reports false
+and its final cleanup assertion exits nonzero, after both assemblies succeed.
+A separate inventory reconciliation proves exactly those four authorized
+removals plus normal test-container retirement, with every other container,
+image, volume and network unchanged. This is a reconciled cleanup result, not
+a claim that the original inventory assertion passed; tests are not rerun to
+hide that intentional external change.
+
+These are complete compiled-source results in an existing runtime. They do not
+certify current immutable images, hosted CI, managed providers, release assembly
+or deployment acceptance. [CI for this tested revision](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38928075562)
+remains queued at inspection; unmet
+original issue criteria remain open, and large-load acceptance stays post-MVP.
+
 ## Current complete MVP frontend baseline — 2026-10-16
 
 The complete frontend at `25b618127cd1041c54d7718904834714ea07efba`
