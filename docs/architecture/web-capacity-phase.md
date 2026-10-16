@@ -31,6 +31,8 @@ All seven phase/HTTP-boundary checks pass. They verify exact opt-in, no large
 allocation during collection in either mode, active small cases in every mode,
 the original critical case names, and detection of eager allocation/default
 activation. Opt-in verification does not execute the capacity workload.
+All **289 CI coverage guards** pass; the existing required web architecture
+command includes the new phase checks.
 
 The first Windows launch incorrectly ran from the frontend folder: preparation
 failed to locate the edit helper, but the next command still executed the old
@@ -43,3 +45,18 @@ the original mock at module scope; the final focused report has no suite errors.
 Current immutable-image/full CI and each issue's original criteria still govern
 closure. PRD-06 remains open at **25% estimated work remaining**. Capacity
 deferral does not reduce its scope or certify the operational MVP.
+
+After the correction is pushed as `ca541f8d`, 41 older queued main runs are
+inspected individually. Cancellation is requested only for the 12 whose
+frontend job has not started; all 12 frontend jobs are subsequently confirmed
+completed/cancelled. The other 29 runs have already completed their frontend
+job and are preserved. Their original source contains the ungated component
+fixture. Run-level finalization remains separate from the cancelled frontend
+jobs; cancellation is not a passing CI/release result. The new candidate's
+required pipeline remains active, with the repository phase variable verified0.
+
+The [complete frontend invocation](source-test-results.md#complete-mvp-phase-frontend-baseline--2026-10-16)
+subsequently passes **2,689 cases** with exactly the reviewed **24 deferrals**,
+zero failures/todo, all 184 expected files and zero mismatches across 379 captured
+inputs. It takes695.105seconds with two file workers and no retry. The linked
+record explains the private audit's status-label correction without a test rerun.

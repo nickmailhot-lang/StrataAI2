@@ -1,5 +1,32 @@
 # Source test result artifacts — ARCH-11-FR-018/090
 
+## Complete MVP-phase frontend baseline — 2026-10-16
+
+The complete frontend source at `ca541f8d` passes with two file workers and
+`STRATAAI_POST_MVP_LOAD_TESTS=0`: **2,689 passed, zero failed/todo, 24 deferred**,
+2,713 collected cases across **all 184 expected test files**. The Vitest process
+exits0 in **695.105 seconds**, using the original per-case deadlines and no
+retry. Every deferred case belongs to the reviewed
+[Board window capacity suite](web-capacity-phase.md); its 24 original assertion
+bodies remain unchanged. The 24 smaller functional counterparts all execute.
+No capacity body executes during this complete invocation.
+
+All **379 captured source/config/lock/policy inputs** match before and after
+execution. Web types, zero-warning lint, all seven phase/HTTP-boundary checks
+and all 289 CI coverage guards also pass. The private JSON report's SHA256 is
+`6abe5584e3d8b9b49b304bb6219eef1cf5ecffa2bc1489cc9b903507914f29cd`.
+The private audit initially expects `pending` case statuses; Vitest actually
+uses `skipped` while aggregating them under `numPendingTests`. Re-audit of the
+unchanged report checks exactly those 24 skipped cases, the original successful
+process exit, full file coverage and zero input mismatches. Tests are not rerun
+to repair this audit-label error.
+
+The [phase record](web-capacity-phase.md) separately discloses the initial
+mistaken old-fixture launch, its correction and the subsequent cancellation of
+12 older frontend jobs before they start. This complete local correctness result
+does not certify current immutable-image CI, release artifacts, managed providers
+or post-MVP capacity. All original issue criteria remain in force.
+
 ## Complete schema-149 backend baseline — 2026-10-16
 
 A fresh zero-warning/error Release solution build at

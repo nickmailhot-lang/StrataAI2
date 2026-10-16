@@ -589,6 +589,11 @@ focus and measurement coverage. The focused run passes 24 cases and reports
 24 capacity deferrals; all seven phase/architecture checks, types and lint pass.
 The linked record discloses the initial mistaken old-fixture launch and collection
 repair. Neither focused correctness nor phase deferral completes the milestone.
+The [complete phase-disabled frontend suite](source-test-results.md#complete-mvp-phase-frontend-baseline--2026-10-16)
+also passes 2,689 cases with exactly 24 capacity deferrals, all 184 expected files
+and zero mismatches across 379 captured inputs. All 12 older frontend jobs whose
+cancellation is requested are confirmed cancelled; 29 runs already past that
+job remain intact. Current exact-commit immutable CI is still required.
 
 ## Documentation links
 

@@ -15,6 +15,7 @@ Use this index to find every document in `docs/`. Architecture documents describ
 ## Suggested starting points
 
 - [Frontend capacity sequencing and active MVP correctness checks](architecture/web-capacity-phase.md)
+  includes the [complete 2,689-case frontend baseline](architecture/source-test-results.md#complete-mvp-phase-frontend-baseline--2026-10-16), with 24 explicitly deferred capacity cases.
 
 - New contributor: [architecture overview](architecture/README.md), [runtime modes](architecture/runtime-modes.md), [configuration](architecture/configuration.md), and [API host testing](architecture/api-host-testing.md).
 - Implementing a ticket: [dependency audit](ticket-dependencies.md), [linked dependency map](ticket-dependency-map.md), the feature document below, then its shared contracts and acceptance records.
