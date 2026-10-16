@@ -9,6 +9,8 @@ export type ActivityAction = 'application_root_exception' | 'application_recover
   | 'organization_members_disclosure' | 'organization_members_read' | 'organization_member_review' | 'organization_member_remove'
   | 'organization_departure_disclosure' | 'organization_departure_read' | 'organization_departure_change'
   | 'organization_deletion_disclosure' | 'organization_deletion_read' | 'organization_deletion_change' | 'organization_deletion_status' | 'organization_deletion_completion'
+  | 'organization_invitation_disclosure' | 'organization_invitation_read' | 'organization_invitation_create'
+  | 'board_invitation_disclosure' | 'board_invitation_read' | 'board_invitation_create'
   | 'organization_configuration_disclosure' | 'organization_configuration_read' | 'organization_configuration_change'
   | 'organization_configuration_history' | 'organization_configuration_activity'
   | 'organization_lifecycle_disclosure' | 'organization_lifecycle_read' | 'organization_lifecycle_change';
@@ -24,7 +26,9 @@ for (const action of ['organization_configuration_disclosure', 'organization_con
   'organization_lifecycle_disclosure', 'organization_lifecycle_read', 'organization_lifecycle_change',
   'organization_members_disclosure', 'organization_members_read', 'organization_member_review', 'organization_member_remove',
   'organization_departure_disclosure', 'organization_departure_read', 'organization_departure_change',
-  'organization_deletion_disclosure', 'organization_deletion_read', 'organization_deletion_change', 'organization_deletion_status', 'organization_deletion_completion']) actions.add(action);
+  'organization_deletion_disclosure', 'organization_deletion_read', 'organization_deletion_change', 'organization_deletion_status', 'organization_deletion_completion',
+  'organization_invitation_disclosure', 'organization_invitation_read', 'organization_invitation_create',
+  'board_invitation_disclosure', 'board_invitation_read', 'board_invitation_create']) actions.add(action);
 let enabled = import.meta.env.PROD;
 let queue: Observation[] = []; let timer: ReturnType<typeof setTimeout> | undefined;
 let pending: AbortController | undefined; let generation = 0;

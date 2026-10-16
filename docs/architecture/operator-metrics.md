@@ -981,6 +981,84 @@ proof. Current immutable-image/Collector/full release acceptance, invitation
 observations, adoption/reconnect/dashboard requirements and full PRD acceptance
 remain open. Large-load tests remain deferred until after MVP.
 
+## Invitation issuer observations and transient permission recovery — 2026-10-16
+
+Organization invitation creation uses `organization_invitation_disclosure`,
+`organization_invitation_read` and `organization_invitation_create`. Board
+invitation creation uses `board_invitation_disclosure`, `board_invitation_read`
+and `board_invitation_create`.
+The existing bounded Activity queue and authenticated atomic parser retain
+only action/kind/count and optional bounded duration. Scope is a fixed category,
+never an Organization/Board ID. Names, accounts, recipient emails, requested
+roles/surfaces, token/receipt IDs, keys, request bodies/routes and error text
+are excluded. Unknown/private fields reject the whole batch before measurement.
+
+Disclosure occurs once per mounted scope after current permission and final
+account/epoch admission. Permission reads count attempts/results and explicit
+permission retries. Creation counts an attempted use or explicit same-intent
+recovery, caught technical uncertainty, current conflict and result/duration.
+Attempt counts do not imply a submitted or committed invitation. Success requires
+the existing token-free acknowledgment validation, final account and epoch checks.
+A retired epoch cannot promote success; a mounted current operation can still
+report its uncertain result. Local recovery-storage failure counts an exception/
+failed read without claiming command readiness. Reporting failures cannot create
+an invitation or change original actor/key/body, durable browser intent, consent,
+full-operation deadline, live permission withdrawal or reserved acknowledgment.
+
+The new permission-retry case exposes an existing Board behavior: HTTP 503 was
+classified as inaccessible, hiding retry. Non-200 transport/service failures
+now follow the existing temporary permission-failure path, clearing display
+authority and offering a fresh check. Confirmed 401/403/404 and invalid scoped
+200 responses retain their private-data withdrawal. Fresh successful admission
+remains required before any creation. The failing initial report is retained.
+
+All **81** focused issuer/component/queue cases pass, including 14 new
+Organization/Board cases covering admitted disclosure, transient permission retry,
+lost-response identical recovery, key conflict, denied scope, switched final
+account and failed optional reporting. All **27** API category/authentication/
+atomic-private-batch cases and **56** related API cases pass in cached Linux
+runtime, current read-only assemblies and no database/network; all 799 source
+and 415 binary inputs match and Docker inventories are restored. All **35**
+exporter-verifier cases and **285** CI guards pass; seven baseline assertions
+expose omitted issuer observations accepted by the previous verifier. Release
+solution build has zero warnings/errors; web/browser types, zero-warning lint,
+Bash syntax and two native-case collection checks pass.
+
+Both [desktop/phone issuer scenarios](../../tests/browser/invitation-issuer-telemetry.spec.ts)
+pass with no failures/flaky/skipped cases. Each exercises Organization and Board
+creation against fresh restricted PostgreSQL 17.11/all 149 migrations, current
+API/separate Worker assemblies and current Vite assets. The Board path receives
+one controlled initial HTTP 503, with no form fields or command, then requires
+an explicit permission retry and genuine scoped stream/head/current read before
+creation. This is a browser-network failure fixture, not a database outage.
+Both scopes commit a real first request whose response is lost, recover the
+identical actor/key/body with exactly two POSTs and retain one canonical invitation.
+Actual browser reports receive 204 with exact create/recovery counts and permitted
+wire fields; no invitation coordinates, requested access, content or credentials
+are present. Keyboard operation and zero WCAG 2.2 AA violations pass at each
+scope, with two deliberate document navigations and no extra creation.
+
+The final complete file passes in **107,172.078 ms**; the preceding version
+without the controlled permission failure also passes **2/2 in 106,626.592 ms**
+and is retained separately. Original scenario/admission/assertion budgets and
+single-attempt execution remain. All **1,274 source/fixture inputs, 71 binaries
+and four served assets** match during each run. API identity stays stable;
+the original scoped-Worker helper recreates/restores the Worker as designed,
+ending with the same cached image, healthy and unscoped. Private placeholder-only
+composition remains unchanged. Owned cleanup removes **3,329 temporary bytes**
+per invocation and restores original Docker inventory. Cached images provide
+the runtime with current read-only assemblies/assets; local metadata carries
+preceding `13d9d83c`/`1.0.0`. Optional email verification and controlled provider
+do not certify strict policy, managed delivery, Portal or recipient acceptance.
+No images/release archives are built, pulled or imported; no large-load tests run.
+
+The Collector fixture requires the fixed categories and read/create durations
+through synthetic ingestion, separately from actual browser-produced reports.
+Current immutable-image/Collector/full release acceptance and invitation history,
+revocation/recipient observations, adoption/reconnect/dashboard requirements and
+full PRD acceptance remain open. The earlier complete 2,602-test web run remains
+a baseline, not a full run of this later source. Large-load tests stay deferred.
+
 ## Organization creation client observations
 
 The creation dialog records one `organization_creation_disclosure/open` per

@@ -266,6 +266,13 @@ def verify(raw, revision, version, *, backlog_available=1):
             ("organization_deletion_read", "success"), ("organization_deletion_change", "failure"),
             ("organization_deletion_change", "success"), ("organization_deletion_status", "failure"),
             ("organization_deletion_status", "success")]],
+        *[observed("strataai_activity_client_events", {"action": prefix + "_" + suffix, "kind": kind})
+          for prefix in ("organization_invitation", "board_invitation")
+          for suffix, kind in [("disclosure", "open"), ("read", "retry"), ("read", "success"),
+              ("create", "use"), ("create", "retry"), ("create", "conflict"), ("create", "failure"), ("create", "success")]],
+        *[observed("strataai_activity_client_duration_count", {"action": prefix + "_" + suffix, "kind": kind})
+          for prefix in ("organization_invitation", "board_invitation")
+          for suffix, kind in [("read", "success"), ("create", "failure"), ("create", "success")]],
         observed("strataai_organization_requests", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_duration_count", {"operation": "create", "outcome": "success"}),
         observed("strataai_organization_requests", {"operation": "read", "outcome": "denied"}),

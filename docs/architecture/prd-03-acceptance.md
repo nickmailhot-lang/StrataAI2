@@ -12,6 +12,27 @@ authorization and later factory recovery. Controlled Demo persistence and
 compiled assemblies do not certify current Production images or full release
 acceptance. Estimated PRD-03 work remaining stays **8%**; the issue stays open.
 
+## Invitation issuer observations and permission retry — 2026-10-16
+
+The [issuer observation and recovery contract](operator-metrics.md#invitation-issuer-observations-and-transient-permission-recovery--2026-10-16)
+adds fixed Organization/Board creation observations through the existing private-
+data-free queue/parser. An existing Board 503 permission read now offers a fresh
+check with display authority withdrawn; confirmed denial and invalid scope still
+withdraw protected content. Original intent/key/body, final account/epoch and
+deadline rules remain. All 81 focused component/queue, 27 API category/HTTP,
+56 related API, 35 exporter-verifier and 285 CI guard cases pass, alongside
+build/typechecks/lint/syntax. Current immutable/full CI, history/revocation/
+recipient observations and remaining lifecycle/operational acceptance remain
+required. PRD-03 stays open at **8% estimated work remaining**.
+
+Both desktop/phone native scenarios pass actual Organization/Board creation and
+same-key/body recovery with canonical single invitations and accepted private-
+data-free reports. The extended file also proves an initial controlled Board
+permission 503 hides form data, sends no command and requires an explicit fresh
+permission check. Keyboard/WCAG, unchanged inputs, stable API, restored scoped
+Worker and owned cleanup pass. The linked record retains compiled-runtime,
+optional-email, controlled-provider and current immutable-CI boundaries.
+
 ## Deletion stage observations — 2026-10-16
 
 The [deletion observation contract](operator-metrics.md#organization-deletion-client-observations--2026-10-16)

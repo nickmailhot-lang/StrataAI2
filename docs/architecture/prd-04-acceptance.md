@@ -2,6 +2,17 @@
 
 This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 15%.
 
+The [Board invitation issuer recovery/observations](operator-metrics.md#invitation-issuer-observations-and-transient-permission-recovery--2026-10-16)
+keep temporary permission-read failures recoverable without admitting stale form
+authority and add fixed private-data-free observations. All 81 focused web,
+27 API category/HTTP, 56 related API, 35 exporter-verifier and 285 CI guard cases
+pass. Both desktop/phone native scenarios exercise Organization/Board same-key/body
+creation recovery and an explicit Board permission retry after controlled 503,
+with one canonical invitation per scope, accepted reports, keyboard/WCAG,
+unchanged inputs and owned cleanup. The linked source-runtime record retains
+full current immutable CI and remaining Board/role/Portal acceptance. Estimated
+PRD-04 work remaining stays **15%**; large-load testing remains deferred.
+
 The [business instrument failure repair](operator-metrics.md#organization-and-board-instrument-failure-isolation--2026-10-15)
 prevents optional meter factory/publication faults from blocking Board request
 execution and preserves independent latency observations. All 40 new diagnostic

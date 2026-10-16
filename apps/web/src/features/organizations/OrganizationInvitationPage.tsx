@@ -11,6 +11,7 @@ import { watchBoard } from '../../api/boardLive';
 import { watchIdentity } from '../auth/identityLive';
 import { isNotificationProfile } from '../notifications/notificationInbox';
 import { ownsRecoveryFocus } from '../kanban/focusRecovery';
+import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 
 type Ack = { id: string; organizationId: string; email: string; surface: string; targetRole: string; expiresAt: string; invitationToken: null; boardTarget?: { boardId: string; role: string } | null };
 const empty: InvitationInput = { email: '', surface: 'INTERNAL', targetRole: 'MEMBER' };
@@ -30,6 +31,10 @@ export function BoardInvitationPage() {
   return <Invitation key={`${organizationId}:${boardId}`} organizationId={organizationId ?? ''} boardId={boardId ?? ''} />;
 }
 function Invitation({ organizationId, boardId }: { organizationId: string; boardId?: string }) {
+  const observations = boardId === undefined
+    ? { disclosure: 'organization_invitation_disclosure', read: 'organization_invitation_read', create: 'organization_invitation_create' } as const
+    : { disclosure: 'board_invitation_disclosure', read: 'board_invitation_read', create: 'board_invitation_create' } as const;
+  const opened = useRef(false);
   const [boardName, setBoardName] = useState<string>();
   const navigate = useNavigate(); const [actorRole, setActorRole] = useState<number>(); const [storageKey, setStorageKey] = useState<string>();
   const [input, setInput] = useState<InvitationInput>(empty); const [intent, setIntent] = useState<InvitationIntent>();
@@ -131,8 +136,10 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
       throw reason;
     }
   }
-  async function load(preserveDisplay = false) {
+  async function load(preserveDisplay = false, retryRead = false) {
     const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent(observations.read, retryRead ? 'retry' : 'use');
     preferenceQueued.current = false;
     if (preserveDisplay && document.activeElement instanceof HTMLElement && container.current?.contains(document.activeElement)) focusOwner.current = document.activeElement;
     const started = epoch.current;
@@ -155,8 +162,9 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
           if (!validInvitationKey(boardId)) throw new Error('Invalid Board route');
           const result = await request(`/boards/${encodeURIComponent(boardId)}`, {}, signal); if (!valid(controller)) return;
           if ([401, 403, 404].includes(result.status)) { deny(result.status); return; }
+          if (result.status !== 200) throw new Error('Board admission unavailable');
           const data = result.body as { board?: { id: string; organizationId: string; name: string; lifecycleState: string }; access?: { canAdminister: boolean } } | undefined;
-          if (result.status !== 200 || data?.board?.id !== boardId || data.board.organizationId !== organizationId
+          if (data?.board?.id !== boardId || data.board.organizationId !== organizationId
             || data.board.lifecycleState !== 'active' || typeof data.board.name !== 'string' || !data.board.name.trim()
             || data.access?.canAdminister !== true) { deny(404); return; }
           admittedBoardName = data.board.name; admittedRole = 1;
@@ -176,6 +184,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
         setBoardName(admittedBoardName);
         setStorageKey(key); setActorRole(admittedRole); setDenied(false); setBlocked(false);
         setPreferences(currentDisplay);
+        if (!opened.current) { opened.current = true; activityEvent(observations.disclosure, 'open'); }
         try {
           const saved = readInvitationIntent(key);
           if (saved && boardId !== undefined && (saved.input.surface !== 'INTERNAL' || !['ADMIN', 'MEMBER'].includes(saved.input.targetRole))) throw new Error('Invalid Board intent');
@@ -195,18 +204,24 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
             confirmed.current = undefined; setAck(undefined); setIntent(undefined); currentIntent.current = undefined;
             if (hadIntent) setInput(empty);
           }
-        } catch { setBlocked(true); setError('The saved invitation request cannot be read. Review existing invitations before creating another request.'); }
+          succeeded = true;
+        } catch { activityEvent(observations.read, 'exception'); setBlocked(true); setError('The saved invitation request cannot be read. Review existing invitations before creating another request.'); }
       }, controller.signal);
-    } catch { if (mounted.current && pending.current === controller && started === epoch.current) {
+    } catch {
+      if (mounted.current && pending.current === controller) activityEvent(observations.read, 'exception');
+      if (mounted.current && pending.current === controller && started === epoch.current) {
       withdrawAccount(); setLiveActor(undefined);
       setError('Unable to verify current invitation permissions. Please retry.');
     } }
-    finally { finish(controller); }
+    finally {
+      if (mounted.current && pending.current === controller) activityResult(observations.read, succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   async function create(event: React.FormEvent) {
     event.preventDefault(); if (pending.current || actorRole === undefined || blocked || ack || !storageKey || !reviewedActor.current) return;
     if (!currentIntent.current && (!input.email.trim() || input.email.trim().length > 320)) { setError('Enter a valid invitation email of at most 320 characters.'); return; }
-    let command = currentIntent.current;
+    let command = currentIntent.current; const recovering = !!command;
     if (!command) {
       command = { key: crypto.randomUUID(), input: { ...input, email: input.email.trim() } };
       try { saveInvitationIntent(storageKey, command); }
@@ -216,6 +231,8 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     const original = command;
     const expected = reviewedActor.current;
     const controller = begin(); if (!controller) return;
+    const telemetryStarted = performance.now(); let succeeded = false;
+    activityEvent(observations.create, recovering ? 'retry' : 'use');
     const started = epoch.current;
     let operationSignal: AbortSignal | undefined;
     try {
@@ -238,6 +255,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
           && (boardId !== undefined ? data.targetRole === 'MEMBER' && data.boardTarget?.boardId === boardId && data.boardTarget.role === original.input.targetRole
             : data.targetRole === original.input.targetRole && data.boardTarget == null)
           && typeof data.expiresAt === 'string' && !!formatUserDateTime(data.expiresAt, currentDisplay)) {
+          succeeded = true;
           setPreferences(currentDisplay); setAck(data); setError(undefined);
           confirmed.current = { actor: expected, command: original, acknowledgment: data };
           // Keep the confirmed intent reserved until the person explicitly starts
@@ -245,6 +263,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
           return;
         }
         const code = (result.body as { code?: unknown } | undefined)?.code;
+        if (result.status === 409) activityEvent(observations.create, 'conflict');
         if (result.status === 400 && ['invalid_email', 'invalid_invitation_role', 'invalid_invitation_surface'].includes(code as string)) {
           try { sessionStorage.removeItem(storageKey); } catch { setBlocked(true); setError('Unable to clear the rejected request. Please retry with the same details.'); return; }
           currentIntent.current = undefined; setIntent(undefined); setError('Check the invitation email and access role, then try again.'); return;
@@ -254,11 +273,16 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
         }
         setError(result.status === 429 ? 'Too many requests. Please wait before retrying this same invitation.' : 'The invitation could not be confirmed. Retry the same request to recover its acknowledgment.');
       }, controller.signal);
-    } catch { if (mounted.current && pending.current === controller && started === epoch.current) {
+    } catch {
+      if (mounted.current && pending.current === controller) activityEvent(observations.create, 'exception');
+      if (mounted.current && pending.current === controller && started === epoch.current) {
       if (operationSignal?.aborted) { withdrawAccount(); setLiveActor(undefined); }
       setError('The invitation could not be confirmed. Retry the same request to recover its acknowledgment.');
     } }
-    finally { finish(controller); }
+    finally {
+      if (mounted.current && pending.current === controller) activityResult(observations.create, succeeded, telemetryStarted);
+      finish(controller);
+    }
   }
   function next() {
     if (busy || !ack || !storageKey) return;
@@ -279,7 +303,7 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
     {boardName && <Typography component="h2" variant="h6">{boardName}</Typography>}
     {error && <Alert severity="error">{error}</Alert>}
     {busy && <CircularProgress aria-label={`Loading ${boardId !== undefined ? 'Board' : 'Organization'} invitation`} />}
-    {actorRole === undefined && !denied && <Button disabled={busy} onClick={() => void load()}>Retry permission check</Button>}
+    {actorRole === undefined && !denied && <Button disabled={busy} onClick={() => void load(false, true)}>Retry permission check</Button>}
     {actorRole !== undefined && !denied && <>
       <Typography>{boardId !== undefined ? 'Invite an existing Organization member to this Board. Organization administrators can also invite people to join the Organization. Recipients must verify their email and explicitly accept.' : 'Internal membership and Portal relationships grant separate access. Recipients must verify their email and explicitly accept the invitation.'}</Typography>
       <Box component="form" onSubmit={event => void create(event)}><Stack spacing={2}>

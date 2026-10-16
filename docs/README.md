@@ -142,6 +142,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Durable Organization creation acknowledgments](architecture/organization-creation-retries.md)
 - [Confirmed membership departure and owner continuity](architecture/organization-departure.md)
 - [Departure observations, original recovery and privacy](architecture/operator-metrics.md#organization-departure-client-observations--2026-10-16)
+- [Invitation issuer observations and temporary permission recovery](architecture/operator-metrics.md#invitation-issuer-observations-and-transient-permission-recovery--2026-10-16)
 - [Organization routing integrity](architecture/organization-access-integrity.md)
 - [Organization command transactions](architecture/organization-command-transactions.md)
 - [Organization and board discovery](architecture/organization-discovery.md)

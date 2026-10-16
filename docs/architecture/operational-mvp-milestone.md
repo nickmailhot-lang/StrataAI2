@@ -4,6 +4,22 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [invitation issuer recovery/observation increment](operator-metrics.md#invitation-issuer-observations-and-transient-permission-recovery--2026-10-16)
+keeps temporary Board permission-read failures recoverable through a fresh check
+and adds fixed private-data-free Organization/Board invitation observations.
+Original request, authority, acknowledgment and deadline boundaries remain.
+All 81 focused web, 27 API category/HTTP, 56 related API, 35 exporter-verifier
+and 285 CI guard cases pass; build/typechecks/lint/syntax pass. Current immutable
+image/export/full release acceptance remains required; no large-load tests run.
+
+Both native desktop/phone issuer cases pass real Organization/Board original
+creation recovery, single canonical invitations, controlled initial permission
+503/fresh explicit retry, actual report privacy/counts and keyboard/WCAG checks.
+Captured sources/binaries/assets and private composition match, API is stable,
+the scoped Worker restores healthy/unscoped and cleanup restores Docker inventory.
+The linked record preserves optional-email/controlled-provider and local compiled
+runtime boundaries; these are small functional fixtures.
+
 The [profile retry clock audit](schema149-clock-inventory.md#mutable-profile-receipt-clocks--2026-10-16)
 verifies real publication/24-hour retention, immutable replay clocks and expired-key
 replacement without changing user creation provenance. The existing restricted

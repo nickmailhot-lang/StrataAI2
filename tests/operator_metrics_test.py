@@ -161,6 +161,13 @@ class OperatorEvidenceTests(unittest.TestCase):
                         ("strataai_activity_client_duration_count", 'action="comment_create",kind="success"'),
                         ("strataai_board_sharing_requests", 'operation="comment_create",outcome="success"'),
                         ("strataai_board_sharing_requests", 'operation="comment_read",outcome="success"')]
+        for prefix in ('organization_invitation', 'board_invitation'):
+            for suffix, kind in [('disclosure', 'open'), ('read', 'retry'), ('read', 'success'), ('create', 'use'),
+                                 ('create', 'retry'), ('create', 'conflict'), ('create', 'failure'), ('create', 'success')]:
+                labels = f'action="{prefix}_{suffix}",kind="{kind}"'
+                observations.append(('strataai_activity_client_events', labels))
+                if kind in ('success', 'failure'):
+                    observations.append(('strataai_activity_client_duration_count', labels))
         for operation in ["configuration_read", "configuration_change", "configuration_history",
                           "configuration_activity", "configuration_replay", "operational_lifecycle_review",
                           "operational_lifecycle_directory", "operational_lifecycle_replay", "operational_lifecycle_change"]:
@@ -411,6 +418,14 @@ class OperatorEvidenceTests(unittest.TestCase):
         escaped = r'path\\part\"quote\nnext'
         self.assertEqual({"job": escaped}, metrics.parse_labels('job="' + escaped + '"'))
         self.assertEqual({"job": "comma,inside"}, metrics.parse_labels('job="comma,inside",'))
+
+    def test_missing_invitation_issuer_observations_cannot_pass(self):
+        for prefix in ('organization_invitation', 'board_invitation'):
+            for suffix in ('disclosure', 'read', 'create'):
+                action = prefix + '_' + suffix
+                with self.subTest(action=action):
+                    rows = [row for row in self.fixture().splitlines() if f'action="{action}"' not in row]
+                    self.assertFalse(metrics.verify('\n'.join(rows), self.revision, self.version))
 
     def test_missing_deletion_observations_cannot_pass(self):
         for action in ('organization_deletion_disclosure', 'organization_deletion_read', 'organization_deletion_change', 'organization_deletion_status', 'organization_deletion_completion'):
