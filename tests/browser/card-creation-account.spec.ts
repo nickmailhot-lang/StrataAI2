@@ -77,6 +77,19 @@ for (const width of [1280, 390]) {
       expect(column.cards).toHaveLength(1);
       expect(column.cards[0]).toMatchObject({ id: attempts[0].id, title: 'Original account Card' });
       await expect(page.getByText('Original account Card', { exact: true })).toHaveCount(0);
+      const refusal = page.getByRole('alert').filter({ hasText: 'Sign in to continue.' });
+      await expect(refusal).toBeVisible();
+      await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+      const alertBox = await refusal.boundingBox(), headerBox = await page.getByRole('banner').boundingBox();
+      const viewport = await page.evaluate(() => ({ height: innerHeight, scrollY, alertFocused: document.activeElement?.getAttribute('role') === 'alert', activeTag: document.activeElement?.tagName }));
+      const geometryPath = test.info().outputPath('card-refusal-geometry.json');
+      await writeFile(geometryPath, JSON.stringify({ width, alertBox, headerBox, ...viewport }, null, 2));
+      await test.info().attach('card-refusal-geometry', { contentType: 'application/json', path: geometryPath });
+      await page.screenshot({ path: test.info().outputPath(`card-refusal-viewport-${width}.png`) });
+      if (!alertBox || !headerBox) throw new Error('Missing refusal/header geometry');
+      expect(alertBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);
+      expect(alertBox.y + alertBox.height).toBeLessThanOrEqual(viewport.height);
+      await expect(refusal).toBeFocused();
       await page.screenshot({ path: test.info().outputPath(`card-account-replacement-refused-${width}.png`), fullPage: true });
     } finally {
       holdReads = false; release(); await original?.close(); await member.close();

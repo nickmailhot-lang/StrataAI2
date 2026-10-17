@@ -48,6 +48,7 @@ for (const width of [1280, 768, 390, 320]) {
     expect(cards).toHaveLength(1); expect(cards[0]).toMatchObject({ id: attempts[0].id, title: 'Recover one canonical Card' }); expect(cards[0].rank).toBeTruthy();
     await link.focus(); await link.press('Enter'); await expect(page).toHaveURL(new RegExp(`/cards/${cards[0].id}$`));
     await page.reload(); await expect(page.getByLabel('Card title', { exact: false })).toHaveValue('Recover one canonical Card');
+    if (width === 768) expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px');
     const close = page.getByRole('button', { name: 'Close', exact: true }); await close.focus(); await close.press('Enter');
     await expect(page).toHaveURL(new RegExp(`${boardPath}$`)); await expect(page.getByRole('link', { name: 'Recover one canonical Card', exact: true })).toBeFocused();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
