@@ -98,7 +98,8 @@ for (const viewport of [
     // The server commits, but the first response is lost. An unchanged UI retry
     // must use the same intent key and recover exactly one persisted card.
     const retryKeys: (string | undefined)[] = [];
-    await page.route("**/lists/*/cards", async (route) => {
+    const cardCreationUrl = (url: URL) => /^\/lists\/[^/]+\/cards$/.test(url.pathname);
+    await page.route(cardCreationUrl, async (route) => {
       if (route.request().method() !== "POST") return route.continue();
       retryKeys.push(route.request().headers()["idempotency-key"]);
       const committed = await route.fetch();
@@ -118,7 +119,7 @@ for (const viewport of [
     expect(retryKeys).toHaveLength(2);
     expect(retryKeys[0]).toMatch(/^[0-9a-f-]{36}$/);
     expect(retryKeys[1]).toBe(retryKeys[0]);
-    await page.unroute("**/lists/*/cards");
+    await page.unroute(cardCreationUrl);
     const afterRetry = await (
       await context.request.get(`/boards/${boardId}`)
     ).json();

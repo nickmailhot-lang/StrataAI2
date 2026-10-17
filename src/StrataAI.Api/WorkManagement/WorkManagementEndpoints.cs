@@ -553,6 +553,7 @@ public static partial class WorkManagementEndpoints
                 async (
                     Guid listId,
                     CreateCardRequest request,
+                    Guid? expectedActorId,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -562,6 +563,11 @@ public static partial class WorkManagementEndpoints
                     {
                         return Results.Unauthorized();
                     }
+
+                    // A recovered browser command remains the original actor's
+                    // command, even if the replacement actor can edit this Board.
+                    if (expectedActorId is Guid expected && expected != userId.Value)
+                        return ErrorFor("session_unavailable");
 
                     var result = await service.CreateCardAsync(
                         listId,
