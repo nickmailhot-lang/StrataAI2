@@ -1,5 +1,13 @@
 # Consolidated PRD delivery report
 
+## 2026-10-17 — PRD-04-VS-05 independent recovery, scoped local verification
+
+The recovered creation capability is now an independent vertical slice, reusing PRD-04-VS-01-T-02/T-03/T-04 without moving or restarting them. At `de81270f`, **138/138 affected component cases** and **13/13 current compiled native scenarios** pass, with zero retries/skips. The complete affected files include all four preceding full-run failures; no assertion, timeout or test-isolation setting is changed. Web build/types, browser types and lint pass. The new native journey verifies current launcher focus/viewport visibility, empty reopening and a fresh explicit canonical creation at 320/390/768/1280px, including 200% tablet text.
+
+Developer review inspected all four current launcher-return captures plus current 320/768px dialogs. Keyboard Escape shows the current launcher ring at desktop/tablet; pointer Cancel restores active focus on mobile, where pointer modality does not show the keyboard ring. Native keyboard creation, responsive drawer return, canonical reload and applicable Axe checks pass. This remains scoped review, not full assistive-technology/device or product/release acceptance.
+
+The optional shared API-host diagnostic expanded beyond the intended Board checks and was interrupted; no aggregate result is claimed. Four explicitly selected Board/work key, receipt and revoked-disclosure cases pass separately, with zero skips, against unchanged backend source. Full server release CI remains required. The final whole-frontend run, account-replacement original-command audit, current immutable release, applicable PostgreSQL/RLS, review and origin/main integration stay open. No slice or PRD is Done. Evidence and interrupted/failed outcomes are retained in the delivery ledger.
+
 ## 2026-10-17 — PRD-04-VS-01-T-04 cancellation return, validation in progress
 
 The recovered dialog's original launcher is removed during access withdrawal. Both Cancel and Escape therefore tried to restore focus to a detached element. Two controlled regressions fail before the repair and pass after it. The four-line repair explicitly returns focus to the current permitted launcher after closing. Source is integrated locally at `b4728561`; the new native journey also checks that the launcher is in view and reopening begins empty before an explicit Board creation. Current compiled native execution is still pending.

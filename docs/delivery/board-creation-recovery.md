@@ -1,6 +1,6 @@
 # Board creation during access recovery
 
-Owner: PRD-04-VS-01. Diagnosis: PRD-04-VS-01-T-02. Repair: PRD-04-VS-01-T-03.
+Independent capability: PRD-04-VS-05. Reused work retains its original identifiers and parents: diagnosis PRD-04-VS-01-T-02, recovery PRD-04-VS-01-T-03 and cancellation focus PRD-04-VS-01-T-04. The broader PRD-04-VS-01 creation/edit scope and full PRD-04 remain open; no implementation is moved or restarted.
 
 An authorized member opens Organization home, starts a private Board, enters a name and description, survives a temporary access recheck, explicitly submits, and opens the canonical Board. The original draft and unchanged uncertain submission key survive transport recovery. No mutation is automatically replayed.
 
@@ -13,3 +13,5 @@ This is a focused recovery increment. It does not certify the rest of PRD-04, Po
 UXA-01–08 apply: existing Organization entry, shared MUI controls/theme, private default, no new routes; keyboard focus and explicit retry; 320/390/768/1280px and 200% text at tablet; accessible dialog and no page overflow; canonical Board read/reload and return to the Organization directory. Automated checks and developer visual review are separate from final product/release acceptance.
 
 Material assumption: an unsent draft may remain in memory while presentation is withdrawn for transport uncertainty. It confers no authority. Confirmed access refusal destroys it, even if later access returns. This matches the existing protected surface recovery policy.
+
+Cancel and Escape after recovery return focus to the current permitted launcher, replacing MUI's stale original-node restoration. Reopening starts an empty form. The native scenario checks that this launcher is visible in the viewport before a fresh keyboard opening and explicit creation. This is part of the independent recovery slice's UXA-06 acceptance, not completion of every Board-edit requirement.

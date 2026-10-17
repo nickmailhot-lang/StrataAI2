@@ -1,0 +1,11 @@
+  StrataAI.Domain -> C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle3-dotnet-artifacts\bin\StrataAI.Domain\release\StrataAI.Domain.dll
+  StrataAI.Application -> C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle3-dotnet-artifacts\bin\StrataAI.Application\release\StrataAI.Application.dll
+  StrataAI.Infrastructure -> C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle3-dotnet-artifacts\bin\StrataAI.Infrastructure\release\StrataAI.Infrastructure.dll
+  StrataAI.Api -> C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle3-dotnet-artifacts\bin\StrataAI.Api\release\StrataAI.Api.dll
+  StrataAI.Api.Tests -> C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle3-dotnet-artifacts\bin\StrataAI.Api.Tests\release\StrataAI.Api.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:42.77
