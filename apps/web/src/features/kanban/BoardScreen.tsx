@@ -10,6 +10,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  MenuItem,
   Stack,
   TextField,
   Typography,
@@ -204,9 +205,10 @@ function BoardContent() {
   const windowMemory = useRef(new Map<string, number>());
   const windowHeights = useRef<BoardWindowHeights>(new Map());
   const closeFocusCard = useRef<string | undefined>(undefined);
+  const closeFocusReady = useRef(false);
   // History Back closes the dialog without calling closeCard. Remember each
   // current detail route's return target before its exit transition can run.
-  useLayoutEffect(() => { if (cardId) closeFocusCard.current = cardId; }, [cardId]);
+  useLayoutEffect(() => { if (cardId) { closeFocusCard.current = cardId; closeFocusReady.current = false; } }, [cardId]);
   const cardClose = useRef<HTMLButtonElement>(null);
   const canvasFocus = useRef<{ scope: string; cardId: string } | undefined>(undefined);
   useEffect(() => {
@@ -330,6 +332,17 @@ function BoardContent() {
   const editable =
     snapshot?.access.canEdit && snapshot.board.lifecycleState === "active";
   const boardPath = `/app/${organizationId}/boards/${boardId}`;
+  useEffect(() => {
+    if (!closeFocusReady.current || cardId || !closeFocusCard.current || snapshotReading || busy
+      || canvasFilter && (canvasFilter.pending || canvasFilter.snapshot !== snapshot)) return;
+    const target = cardLinks.current.get(closeFocusCard.current);
+    // A late authorized filter read may remount the return Card after the
+    // dialog exits. Restore it only while focus is still on the fallback.
+    if (document.activeElement === boardRefresh.current || document.activeElement === document.body)
+      (target ?? boardRefresh.current)?.focus({ preventScroll: true });
+    closeFocusCard.current = undefined;
+    closeFocusReady.current = false;
+  }, [cardId, snapshotReading, busy, canvasFilter, snapshot]);
   function closeCard() {
     closeFocusCard.current = cardId;
     if (location.state?.cardOverlay) navigate(-1);
@@ -585,8 +598,16 @@ function BoardContent() {
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
           </SecondaryActions>
           {editable && (
+            <Button variant="contained" disabled={busy || snapshotReading || !!loadError || !snapshot.lists.some(column => column.list.lifecycleState === 'active')}
+              onClick={() => {
+                const listId = snapshot.lists.find(column => column.list.lifecycleState === 'active')?.list.id;
+                if (!listId) return;
+                setError(undefined); setCreationDirty(false); setCreation({ kind: 'card', listId });
+              }}>Add card</Button>
+          )}
+          {editable && (
             <Button
-              variant="contained"
+              variant={snapshot.lists.length ? 'text' : 'contained'}
               disabled={busy || snapshotReading || !!loadError}
               onClick={() => {
                 setError(undefined);
@@ -737,6 +758,10 @@ function BoardContent() {
           <DialogTitle>Add {creation?.kind}</DialogTitle>
           <DialogContent>
             {error && message(error)}
+            {creation?.kind === 'card' && <TextField select fullWidth margin="normal" label="List" value={creation.listId ?? ''}
+              disabled={busy} onChange={event => setCreation({ kind: 'card', listId: event.target.value })}>
+              {snapshot.lists.filter(column => column.list.lifecycleState === 'active').map(column => <MenuItem key={column.list.id} value={column.list.id}>{column.list.name}</MenuItem>)}
+            </TextField>}
             <TextField
               autoFocus
               required
@@ -774,8 +799,11 @@ function BoardContent() {
         slots={{ transition: ImmediateDialogTransition }}
         disableRestoreFocus
         slotProps={{ backdrop: { slots: { transition: ImmediateDialogTransition } }, paper: { sx: workExperienceEnabled ? { m: 0, height: '100dvh', maxHeight: '100dvh', width: { xs: '100%', sm: 720 }, maxWidth: '100%', borderRadius: 0 } : undefined }, transition: { onExited: () => {
+          closeFocusReady.current = true;
           (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus({ preventScroll: true });
-          closeFocusCard.current = undefined;
+          if (!snapshotReading && !(canvasFilter && (canvasFilter.pending || canvasFilter.snapshot !== snapshot))) {
+            closeFocusCard.current = undefined; closeFocusReady.current = false;
+          }
         } } }}
         onClose={() => {
           if (!busy) closeCard();
