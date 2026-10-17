@@ -1,5 +1,51 @@
 # Board member administration
 
+## Synchronous member consent retirement — 2026-10-16
+
+Cancel and Escape now retire an unsubmitted role/removal choice before the
+closing dialog finishes rendering. Confirmation reads that synchronous choice
+and requires its exact member row to remain in the currently admitted directory.
+A new review cannot open while a protected read or write is pending. Submitted
+work retains its pending dialog; queued cancellation cannot hide it or create
+another command. A later fresh review remains available after cancellation.
+
+The [page tests](../apps/web/src/features/kanban/BoardMembersPage.test.tsx)
+reproduce **six failures** against the prior component: four queued PATCH/DELETE
+requests after Cancel/Escape, and two stale reviews opened during live refresh.
+Four controls already pass for pending writes and fresh re-review. All **26 page
+cases** pass after the repair, with all original 16 cases unchanged. These
+confirmation and recovery checks support PRD-05-TC-01/06. Web TypeScript and
+zero-warning ESLint pass.
+
+An initial test prototype tries to reopen while the closing dialog still hides
+the page from accessibility queries. The corrected control waits for the original
+launcher to be accessible; those two setup failures are excluded from the six
+behavior failures. The repair preserves version headers, retry-key generation,
+acknowledgment validation, live paging and uncertain-write read-only recovery.
+It adds no server endpoint or permission and changes no account policy.
+
+The unchanged complete desktop/phone member workflow passes **2/2 in
+107,627.793 ms**, with one attempt each and no failed, flaky or skipped outcomes.
+Original version-conflict, request-count/key, lost-response recovery, withdrawn
+recipient access, unchanged Organization membership, keyboard/focus and layout
+assertions retain their **90-second** scenario deadlines.
+
+The fresh fixture uses PostgreSQL 17.11/pgvector and all 149 migrations, restricted
+API/Worker logins, current compiled assemblies and current production web assets
+through Nginx. All **1,286 source**, **71 binary** and **four served asset** hashes
+match. The API stays unchanged; the scoped Worker is recreated/restored with its
+same image and unscoped operation. Cleanup restores original Docker inventory,
+removes its **3,306-byte** temporary directory, and independent checks find no
+owned containers/network/folder. Complete setup/execution/cleanup takes
+**182.112 seconds**. No existing database, local Demo, image build/pull/import or
+large-load test is used.
+
+Runtime metadata remains e88c6514 and the fixture uses optional verification
+with a private test provider. This is compiled-source supporting proof, not
+current immutable-image release or managed-mail certification. Current full CI
+and the wider permission, continuity and accessibility matrices still govern
+closure. PRD-05 remains open at **14% estimated work remaining**.
+
 ## Executed desktop and phone member recovery
 
 Both unchanged `board-members.spec.ts` cases pass locally against Production

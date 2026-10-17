@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [Board-member consent repair](../board-members-ui.md#synchronous-member-consent-retirement--2026-10-16)
+retires queued role/removal confirmation after Cancel/Escape and requires a current
+directory row before opening review. Six controlled failures become 26 page
+passes, with types/lint passing. The unchanged native desktop/phone workflow
+passes 2/2 with original conflict, recovery, privacy, focus/layout and deadline
+assertions. Captured inputs match and owned cleanup restores Docker inventory.
+Current immutable/full CI still governs release; PRD-05 and the MVP remain open.
+Large-load tests stay deferred.
+
 The [preview ledger capability checks](schema149-clock-inventory.md#preview-ledger-capability-checks--2026-10-16)
 now detect column-only grants that evade their original table-only predicates.
 All twelve such probes and six table-grant controls are detected, preserving

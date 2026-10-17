@@ -4,6 +4,19 @@ This audit covers the complete [PRD-05 issue](https://github.com/nickmailhot-lan
 
 ## Functional traceability
 
+### Synchronous member consent retirement
+
+The [member consent repair](../board-members-ui.md#synchronous-member-consent-retirement--2026-10-16)
+fences queued role/removal confirmation after Cancel/Escape and stale review
+opening during live reads, while preserving pending writes and fresh consent.
+Six corrected component failures become passes; all 26 page cases, TypeScript
+and zero-warning lint pass. The unchanged complete native desktop/phone file
+passes 2/2 with its original version, receipt/recovery, recipient denial,
+Organization membership, focus/layout assertions and deadlines. Captured inputs
+match and owned cleanup restores Docker inventory. This compiled-source proof
+does not replace current immutable/full CI or managed-provider acceptance.
+Estimated remaining work stays **14%**; the issue remains open.
+
 ### Retired role consent and request admission
 
 The [Board-member verification](../board-members-ui.md#observe-a-request-before-leaving-reviewed-consent)

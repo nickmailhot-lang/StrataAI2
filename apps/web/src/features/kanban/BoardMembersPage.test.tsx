@@ -232,3 +232,66 @@ it('preserves a chosen confirmation control when the opening transition finishes
   await act(async () => { await vi.advanceTimersByTimeAsync(500); });
   expect(confirm).toHaveFocus();
 });
+
+it.each([
+  ['role', 'cancel'], ['remove', 'cancel'], ['role', 'escape'], ['remove', 'escape'],
+] as const)('synchronous member %s consent ends on %s before queued confirmation', async (action, dismissal) => {
+  const mock = mount(reply(scope), reply([row]));
+  mock.mockImplementation(async (path: string, init?: RequestInit) => init?.method === 'DELETE' ? reply(null, 204)
+    : init?.method === 'PATCH' ? reply({ ...row, role: 'ADMIN', version: 5 }) : reply(path.endsWith('/members') ? [row] : scope));
+  fireEvent.click(await screen.findByRole('button', { name: action === 'role' ? 'Make administrator: Jordan' : 'Remove from Board: Jordan' }));
+  const confirm = screen.getByRole('button', { name: 'Confirm member change' });
+  const cancel = screen.getByRole('button', { name: 'Cancel' });
+  const dialog = screen.getByRole('dialog');
+  await act(async () => {
+    if (dismissal === 'cancel') cancel.click(); else fireEvent.keyDown(dialog, { key: 'Escape' });
+    confirm.click(); await Promise.resolve(); await Promise.resolve();
+  });
+  expect(mock.mock.calls.filter(call => ['PATCH', 'DELETE'].includes(call[1]?.method))).toHaveLength(0);
+});
+
+it.each(['role', 'remove'] as const)('synchronous member %s pending submission survives queued cancellation', async action => {
+  const mock = mount(reply(scope), reply([row]));
+  fireEvent.click(await screen.findByRole('button', { name: action === 'role' ? 'Make administrator: Jordan' : 'Remove from Board: Jordan' }));
+  let release!: (value: Response) => void;
+  const next = { ...row, role: 'ADMIN', version: 5 };
+  mock.mockImplementationOnce(() => new Promise<Response>(resolve => { release = resolve; }))
+    .mockResolvedValueOnce(reply(scope)).mockResolvedValueOnce(reply(action === 'role' ? [next] : []));
+  const confirm = screen.getByRole('button', { name: 'Confirm member change' });
+  const cancel = screen.getByRole('button', { name: 'Cancel' });
+  await act(async () => { confirm.click(); cancel.click(); });
+  expect(mock.mock.calls.filter(call => ['PATCH', 'DELETE'].includes(call[1]?.method))).toHaveLength(1);
+  expect(screen.getByRole('dialog')).toBeInTheDocument(); expect(cancel).toBeDisabled();
+  await act(async () => release(action === 'role' ? reply(next) : reply(null, 204)));
+  await screen.findByText('Member change acknowledged. Review the current directory.');
+  expect(mock.mock.calls.filter(call => ['PATCH', 'DELETE'].includes(call[1]?.method))).toHaveLength(1);
+});
+
+it.each(['role', 'remove'] as const)('synchronous member %s review waits for live read admission', async action => {
+  let invalidate!: () => void; let release!: (value: Response) => void;
+  vi.mocked(watchBoard).mockImplementationOnce(options => { invalidate = options.invalidate; return () => {}; });
+  const mock = mount(reply(scope), reply([row]));
+  const launch = await screen.findByRole('button', { name: action === 'role' ? 'Make administrator: Jordan' : 'Remove from Board: Jordan' });
+  await waitFor(() => expect(invalidate).toBeDefined());
+  mock.mockImplementationOnce(() => new Promise<Response>(resolve => { release = resolve; })).mockResolvedValueOnce(reply([row]));
+  await act(async () => { invalidate(); launch.click(); });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  await act(async () => release(reply(scope)));
+  fireEvent.click(await screen.findByRole('button', { name: action === 'role' ? 'Make administrator: Jordan' : 'Remove from Board: Jordan' }));
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => ['PATCH', 'DELETE'].includes(call[1]?.method))).toHaveLength(0);
+});
+
+it.each(['role', 'remove'] as const)('synchronous member %s fresh review can submit after cancellation', async action => {
+  const next = { ...row, role: 'ADMIN', version: 5 };
+  const mock = mount(reply(scope), reply([row]), action === 'role' ? reply(next) : reply(null, 204),
+    reply(scope), reply(action === 'role' ? [next] : []));
+  const name = action === 'role' ? 'Make administrator: Jordan' : 'Remove from Board: Jordan';
+  fireEvent.click(await screen.findByRole('button', { name }));
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(mock.mock.calls.filter(call => ['PATCH', 'DELETE'].includes(call[1]?.method))).toHaveLength(0);
+  fireEvent.click(await screen.findByRole('button', { name }));
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm member change' }));
+  await screen.findByText('Member change acknowledged. Review the current directory.');
+  expect(mock.mock.calls.filter(call => ['PATCH', 'DELETE'].includes(call[1]?.method))).toHaveLength(1);
+});
