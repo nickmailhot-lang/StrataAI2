@@ -1,0 +1,14 @@
+{
+  "testRevision": "33e5c6d2176d6b8718fda2e19435c33dc40f4f91",
+  "web": {
+    "revision": "33e5c6d2176d6b8718fda2e19435c33dc40f4f91",
+    "version": "0.1.0"
+  },
+  "scope": "Currentcompiledweb/currentnative source33e5c6d2; explicitly unchangedcompiledDemoAPI389c70ab. No newAPI22at33e5c6d2/retained-image/Production/provider certification.",
+  "api": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  }
+}
