@@ -2,6 +2,41 @@
 
 This supports the [operational MVP milestone](operational-mvp-milestone.md) and PRD-10. It does not establish release acceptance.
 
+## Label-creation refusal-reference opening (2026-10-16)
+
+The retained phone [label-reference failure](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38882071137/job/117130626030)
+at `3dec9af2` never opens the creation dialog. The final enabled check completes
+at 3,215,301.289 ms; a foreground Board GET starts at 3,215,302.36 ms and lasts
+33.666 ms, overlapping Enter from 3,215,305.201 to 3,215,321.238 ms. No label POST
+occurs, the expected field remains absent, and the final Board still offers
+Create label. This establishes missing dialog admission, not a server creation
+or reference failure; it does not prove the exclusive interleaving cause.
+Artifact `12080889264` is 1,970,347 bytes, SHA-256
+`45b367aa80c09204282b835800747fd97341199f57ce77b83cfb4c7add85bf15`;
+its run/head identity, metadata and all 26 payload checksums are verified.
+
+Only the browser import and read-only dialog opening change, reusing the
+existing bounded helper. The actual invalid-input 400 and successful 201,
+actual 64-character response reference, preserved name, exact two writes with
+distinct keys/equal original UI bodies, unchanged rejected catalog, one final
+version-one label, viewport and Axe assertions remain intact. Both complete
+desktop/phone workflows pass **2/2 in 95,682.93 ms**, one attempt per case and no
+failures, flakes, skips or report errors, under their original 90-second
+deadlines. Browser type checks pass; product, provider, schema and shared helper
+are unchanged. Supporting helper/frontend inputs match completed results, so
+those long suites are not repeated for this browser-only change.
+
+The isolated run uses fresh PostgreSQL 17.11/pgvector, 149 migrations and
+restricted runtime roles, with current compiled apps/frontend mounted into
+cached runtimes (metadata `e88c6514`). Optional verification/mail fixtures do
+not establish managed-provider or current immutable-image acceptance. All 1,286
+source inputs, 71 binary inputs and four served frontend assets match. The API
+stays unchanged; the scoped Worker is restored unscoped on the same image.
+Owned cleanup removes 3,302 temporary bytes and restores Docker inventory. No
+original database, Demo, new image build/pull/import or large load is used.
+Full current immutable CI and original acceptance remain required. PRD-10 stays
+open at **35% estimated work remaining**.
+
 ## Hosted evidence and change
 
 The retained artifact for [CI run 38287805799](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38287805799) identifies commit `1d03b0c9ec56d50c336f319099fe37922a174739`. Its mobile Card-label scenario fails at the consent checked assertion. The trace shows the checkbox enabled immediately before Space and disabled during the keypress; the following checked assertion fails. This is evidence of admission withdrawal during activation, rather than evidence that deletion consent was accepted.

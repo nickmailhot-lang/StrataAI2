@@ -55,6 +55,15 @@ browser types and 289 CI guards pass. Captured inputs match and owned cleanup
 restores Docker inventory. Current immutable/full CI remains required; PRD-12
 and the MVP remain open, with large-load tests deferred.
 
+The [label-creation reference opening follow-up](label-keyboard-admission-verification.md#label-creation-refusal-reference-opening-2026-10-16)
+observes the actual read-only dialog after a retained phone Enter opens no form
+and sends no label write. Both complete desktop/phone workflows pass with their
+original 90-second deadlines, actual server reference/400/201 responses, distinct
+command keys, canonical label and keyboard/Axe assertions intact. Captured inputs
+match and owned cleanup restores Docker inventory. Current immutable/full CI and
+all original acceptance remain required; PRD-10 and the MVP stay open. No large
+load runs.
+
 The [Organization settings navigation follow-up](organization-settings.md#observe-keyboard-settings-navigation-2026-10-16)
 observes the read-only form after a retained phone Enter never leaves the home
 route. Both complete desktop/phone workflows pass under their original 30-second
