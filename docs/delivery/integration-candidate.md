@@ -1,5 +1,11 @@
 # Current incremental delivery integration candidate
 
+Draft [PR #99](https://github.com/nickmailhot-lang/StrataAI2/pull/99) now targets `main` as the current combined candidate. It preserves #96/#97/#98 history and adds independent original-account Card recovery plus visible refusal/persistent-zoom acceptance. Frozen UI/test source is `ccc424c8`; current local full frontend passes 2,835 / zero failed / 24 existing deferred skips, focused UI7, native21, builds/types/lint and source contracts372. Browser/integration registries preserve all444cases/162files and four groups/seven executions/130steps. The unchanged compiled API and its16-case pass retain source `3bf5c2ba` explicitly. Source hashes, runtime mapping and review evidence are in `progress.json`.
+
+The Card candidate's required current main-targeted CI, final review and integration remain pending. This post-retarget documentation push supplies the synchronization event for the main-only workflow. Record its exact head/run before claiming hosted success. The preceding #98 candidate may finish independently; its older product scope does not certify the Card changes. Normal merge ancestry and every current gate remain required. New bounded List investigation proceeds separately without modifying this tested candidate.
+
+The following checkpoint preserves the preceding Board integration context.
+
 Draft [PR #98](https://github.com/nickmailhot-lang/StrataAI2/pull/98) targets `main`. It preserves the commits from ledger PR #96, sign-in return PR #97 and independent Board recovery PRD-04-VS-05. Those earlier PRs remain historical review context. No parent requirement is closed or restarted.
 
 Frozen product/API/browser source: `d35f775e5e788c4e6670c0351743982a478e77ad`. Evidence checkpoint: `e85d8069ce2f9a83b735218b6e5057b23629bd5c`; subsequent candidate changes are delivery documentation only. Local complete frontend is 2,828 passed / zero failed / 24 existing deferred capacity skips; affected components 139/139, API 10/10, native 15/15. Builds/types/lint, 372 source contracts, ledger evolution, all 438 browser registrations and mandatory integration registry pass. Exact scope, logs and hashes are in `progress.json`.
