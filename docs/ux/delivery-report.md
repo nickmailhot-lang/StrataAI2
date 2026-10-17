@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-17 — PRD-04-VS-01 Board creation recovery checkpoint
+
+Implemented: `fc1d347dff2f890e5c8d16fbeb058836b58ac9cf` retains the original Board draft in a hidden local MUI portal during uncertain Board/metadata/lifecycle admission. A fresh same-actor authorized read restores presentation and keyboard focus. Definitive refusal, account loss and pending/completed deletion retire creation. No API/schema, shared shell/theme or automatic mutation replay changes.
+
+Tested locally: all **13 native scenarios pass** with zero retries/skips against compiled web assets and the unchanged compiled Demo API, with explicitly configured genuine SignalR origin. This includes four-width transport interruption, explicit original-key lost-response recovery, canonical private Board reload/directory return, all three unchanged 30-second Board-to-Card workflows, and four-width sign-in return plus outsider/Portal denial. Browser types, web build/types, lint and 372 source/tracking contracts pass. Compiled assets identify `89c36810`; their application Git tree is identical to `fc1d347d`. The first local topology omitted the required live origin and intentionally received 503 negotiation refusals; those development failures remain evidence.
+
+UXA-01–08: developer inspected the actual 320/390/768/1280px recovery captures, including 200% tablet text. The restored Create keyboard focus ring is visible, fields/actions fit, and long single-line input scrolls locally. Native keyboard, mobile drawer return, no page overflow and applicable Axe checks pass. This is separate from screen-reader/physical-device and full product/release acceptance.
+
+Awaiting validation: the complete current frontend run has three observed BoardScreen failures and is still being evaluated. Controlled development Organization/Surface checks passed 93/93 before a type-only test matcher correction. Current PostgreSQL/RLS, complete immutable-release CI, review and target integration remain open. Tasks are Testing; no Done or parent acceptance claim. Hashed logs and current state are in `docs/delivery/progress.json` and `docs/delivery/evidence/cycle-03-*`.
+
 ## 2026-10-17 — PRD-01-VS-04 incoming Card sign-in return
 
 The smallest demonstrated entry gap is implemented: the generic private/missing Board state offers Sign in, and a validated acknowledgment restores only a canonical Board/Card route. The existing MUI action, application shell, server admission, tenant/Portal boundaries, original-key retry, acknowledgment checks and invitation callback remain in place. No schema, API or permission contract changes. See [scoped acceptance and rollback](../delivery/card-link-signin.md) and [current machine ledger](../delivery/progress.json).

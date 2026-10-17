@@ -1,0 +1,103 @@
+
+Running 3 tests using 1 worker
+
+(node:22760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (31.8s)
+(node:3808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (33.9s)
+(node:5820) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (31.9s)
+
+
+  1) tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: apiRequestContext.patch: Test timeout of 30000ms exceeded.
+
+      191 |       0,
+      192 |     );
+    > 193 |     const publicResponse = await context.request.patch(
+          |                                                  ^
+      194 |       `/boards/${board.id}/visibility`,
+      195 |       { headers, data: { visibility: "PUBLIC", version: board.version } },
+      196 |     );
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board.spec.ts:193:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) 
+
+    Test timeout of 30000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) 
+
+    Test timeout of 30000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\test-failed-3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-lifecycle-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) 
+    tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) 
+    tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) 
