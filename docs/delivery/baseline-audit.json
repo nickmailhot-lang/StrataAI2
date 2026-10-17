@@ -17313,9 +17313,7 @@
       "longRunningSignal": false,
       "oversizedSignal": false,
       "signalMeaning": "Scope/age triage flag, not an effort or cycle-time estimate.",
-      "dependencies": [
-        "UX-002"
-      ],
+      "dependencies": [],
       "ux": null,
       "remainingAcceptance": [
         "UX-001/UX-001-AC-01",
@@ -17392,7 +17390,8 @@
       },
       "blockingGaps": [
         "Current revision acceptance and integration/release evidence not established by identifier audit"
-      ]
+      ],
+      "dependencyInterpretation": "Expanded slash-separated UX aliases into individual preserved dependency identifiers."
     },
     {
       "id": "UX-002",
@@ -17471,9 +17470,7 @@
       "longRunningSignal": false,
       "oversizedSignal": false,
       "signalMeaning": "Scope/age triage flag, not an effort or cycle-time estimate.",
-      "dependencies": [
-        "UX-001"
-      ],
+      "dependencies": [],
       "ux": null,
       "remainingAcceptance": [
         "UX-002/UX-002-AC-01",
@@ -17529,7 +17526,8 @@
       },
       "blockingGaps": [
         "Current revision acceptance and integration/release evidence not established by identifier audit"
-      ]
+      ],
+      "dependencyInterpretation": "Expanded slash-separated UX aliases into individual preserved dependency identifiers."
     },
     {
       "id": "UX-003",
@@ -17598,10 +17596,7 @@
       "longRunningSignal": false,
       "oversizedSignal": false,
       "signalMeaning": "Scope/age triage flag, not an effort or cycle-time estimate.",
-      "dependencies": [
-        "UX-001",
-        "UX-002"
-      ],
+      "dependencies": [],
       "ux": null,
       "remainingAcceptance": [
         "UX-003/UX-003-AC-01",
@@ -17652,7 +17647,8 @@
       },
       "blockingGaps": [
         "Current revision acceptance and integration/release evidence not established by identifier audit"
-      ]
+      ],
+      "dependencyInterpretation": "Expanded slash-separated UX aliases into individual preserved dependency identifiers."
     },
     {
       "id": "UX-004",
@@ -17690,9 +17686,7 @@
       "longRunningSignal": false,
       "oversizedSignal": false,
       "signalMeaning": "Scope/age triage flag, not an effort or cycle-time estimate.",
-      "dependencies": [
-        "UX-001"
-      ],
+      "dependencies": [],
       "ux": null,
       "remainingAcceptance": [
         "UX-004/UX-004-AC-01",
@@ -17728,7 +17722,8 @@
       },
       "blockingGaps": [
         "Current revision acceptance and integration/release evidence not established by identifier audit"
-      ]
+      ],
+      "dependencyInterpretation": "Expanded slash-separated UX aliases into individual preserved dependency identifiers."
     },
     {
       "id": "UX-005",
@@ -17766,10 +17761,7 @@
       "longRunningSignal": false,
       "oversizedSignal": false,
       "signalMeaning": "Scope/age triage flag, not an effort or cycle-time estimate.",
-      "dependencies": [
-        "UX-001",
-        "UX-003"
-      ],
+      "dependencies": [],
       "ux": null,
       "remainingAcceptance": [
         "UX-005/UX-005-AC-01",
@@ -17805,7 +17797,8 @@
       },
       "blockingGaps": [
         "Current revision acceptance and integration/release evidence not established by identifier audit"
-      ]
+      ],
+      "dependencyInterpretation": "Expanded slash-separated UX aliases into individual preserved dependency identifiers."
     },
     {
       "id": "UX-006",
@@ -17848,10 +17841,7 @@
       "longRunningSignal": false,
       "oversizedSignal": false,
       "signalMeaning": "Scope/age triage flag, not an effort or cycle-time estimate.",
-      "dependencies": [
-        "PRD-23",
-        "UX-001"
-      ],
+      "dependencies": [],
       "ux": null,
       "remainingAcceptance": [
         "UX-006/UX-006-AC-01",
@@ -17892,7 +17882,8 @@
       },
       "blockingGaps": [
         "Current revision acceptance and integration/release evidence not established by identifier audit"
-      ]
+      ],
+      "dependencyInterpretation": "Expanded slash-separated UX aliases into individual preserved dependency identifiers."
     },
     {
       "id": "UX-007",
@@ -17930,12 +17921,7 @@
       "longRunningSignal": false,
       "oversizedSignal": false,
       "signalMeaning": "Scope/age triage flag, not an effort or cycle-time estimate.",
-      "dependencies": [
-        "PRD-57",
-        "PRD-60",
-        "UX-001",
-        "UX-003"
-      ],
+      "dependencies": [],
       "ux": null,
       "remainingAcceptance": [
         "UX-007/UX-007-AC-01",
@@ -17971,7 +17957,8 @@
       },
       "blockingGaps": [
         "Current revision acceptance and integration/release evidence not established by identifier audit"
-      ]
+      ],
+      "dependencyInterpretation": "Expanded slash-separated UX aliases into individual preserved dependency identifiers."
     },
     {
       "id": "UX-008",
@@ -18019,10 +18006,7 @@
       "longRunningSignal": false,
       "oversizedSignal": false,
       "signalMeaning": "Scope/age triage flag, not an effort or cycle-time estimate.",
-      "dependencies": [
-        "UX-001",
-        "UX-006"
-      ],
+      "dependencies": [],
       "ux": null,
       "remainingAcceptance": [
         "UX-008/UX-008-AC-01",
@@ -18068,7 +18052,8 @@
       },
       "blockingGaps": [
         "Current revision acceptance and integration/release evidence not established by identifier audit"
-      ]
+      ],
+      "dependencyInterpretation": "Expanded slash-separated UX aliases into individual preserved dependency identifiers."
     }
   ]
 }
