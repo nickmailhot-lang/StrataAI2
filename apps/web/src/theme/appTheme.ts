@@ -1,22 +1,23 @@
 import { createTheme } from '@mui/material/styles';
+import { designTokens } from './designTokens';
 
 export const appTheme = createTheme({
   cssVariables: true,
   palette: {
     mode: 'light',
     primary: {
-      main: '#0f4c81',
+      main: designTokens.colors.primary,
     },
     secondary: {
-      main: '#3d6f8e',
+      main: designTokens.colors.secondary,
     },
     background: {
-      default: '#f5f7fa',
-      paper: '#ffffff',
+      default: designTokens.colors.canvas,
+      paper: designTokens.colors.surface,
     },
   },
   shape: {
-    borderRadius: 10,
+    borderRadius: designTokens.radius,
   },
   typography: {
     fontFamily:
@@ -26,6 +27,15 @@ export const appTheme = createTheme({
     },
   },
   components: {
+    MuiAlert: {
+      styleOverrides: {
+        // Keep message text and explicit recovery controls readable under
+        // narrow widths/text zoom instead of creating an unfocusable scroller.
+        root: { flexWrap: 'wrap' },
+        message: { minWidth: 0, flex: '1 1 60%', overflow: 'visible', overflowWrap: 'anywhere' },
+        action: { maxWidth: '100%', flexWrap: 'wrap' },
+      },
+    },
     MuiTypography: {
       styleOverrides: {
         // Preserve complete canonical names and account addresses at narrow

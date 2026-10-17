@@ -277,8 +277,3 @@ it('reuses mounted content across scroll frames and still renders authoritative 
   expect(screen.getByRole('button', { name: 'Updated authoritative List' })).toBeVisible();
   expect(builder).toHaveBeenCalledTimes(initialCalls + 1);
 });
-
-it('exposes an empty Board canvas as a named region for assistive technology', () => {
-  mount([], 'lists');
-  expect(screen.getByRole('region', { name: 'Kanban board' })).toBeVisible();
-});

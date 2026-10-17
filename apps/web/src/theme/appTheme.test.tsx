@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import { Button, CssBaseline, TextField, ThemeProvider } from '@mui/material';
+import { Alert, Button, CssBaseline, TextField, ThemeProvider } from '@mui/material';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { appTheme } from './appTheme';
 
@@ -51,4 +51,17 @@ it('applies interactive label and button colors without interpolating disabled c
   expect(getComputedStyle(label).transition).not.toMatch(/(?:^|[, ])(?:color|all) /);
   expect(getComputedStyle(button).transition).toContain('box-shadow');
   expect(getComputedStyle(button).transition).not.toMatch(/(?:^|[, ])(?:background-color|color|all) /);
+});
+
+
+it('UX-003: recoverable alerts wrap message and action without creating a hidden text scroller', () => {
+  render(<ThemeProvider theme={appTheme}><CssBaseline />
+    <Alert severity="info" action={<Button>Retry original confirmation</Button>}>
+      Navigation could not be confirmed. You can retry.
+    </Alert>
+  </ThemeProvider>);
+  const alert = screen.getByRole('alert');
+  expect(getComputedStyle(alert).flexWrap).toBe('wrap');
+  expect(getComputedStyle(screen.getByText('Navigation could not be confirmed. You can retry.')).overflow).toBe('visible');
+  expect(screen.getByRole('button', { name: 'Retry original confirmation' })).toBeEnabled();
 });

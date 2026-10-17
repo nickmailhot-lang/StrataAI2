@@ -15,6 +15,12 @@ This workstream evolves the existing React/TypeScript/Vite/MUI application. It p
 - [UX-007: Workflow Discoverability and Contextual Guidance](UX-007.md)
 - [UX-008: UX Regression Testing and Visual Validation](UX-008.md)
 
+## Current implementation slices
+
+- UX-002: [shared navigation contract](navigation-contract.md), explicit unavailable modules and current Organization Owner/Admin/Member discovery, using the page's existing admitted summary and live withdrawal. No new permission reads or subscriptions.
+- UX-003: [design system catalog](design-system.md), named existing tokens, shared PageHeader/ActionRow in Organization discovery/Search/Notifications, wrapping accessible alerts and header offsets that follow text reflow.
+- These are implemented slices, not full PRD/product acceptance. See the delivery report for current checks, retained failures and remaining gates. Independent feature/backend work continues outside these shared UI files.
+
 ## Current architecture and findings
 
 [Existing route/discovery inventory and protected recovery exceptions](route-inventory.md) records the current global, Organization, Board/Card and Portal route families.

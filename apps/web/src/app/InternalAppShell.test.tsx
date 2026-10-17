@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, within, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { AppThemeFixture } from '../test/AppThemeFixture';
 import { InternalAppShell } from './InternalAppShell';
@@ -47,4 +47,30 @@ it('UX-001-AC-02: closing navigation preserves the deep link', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Close navigation' }));
   await waitFor(() => expect(screen.queryByRole('navigation', { name: 'Mobile application navigation' })).toBeNull());
   expect(router.state.location.pathname).toBe('/app/demo/boards/board/cards/card');
+});
+
+
+it('UX-002: unavailable modules are explained without active or hidden destinations', () => {
+  mount();
+  expect(screen.queryByRole('link', { name: 'Meetings' })).not.toBeInTheDocument();
+  expect(screen.getAllByText('Not available yet')).toHaveLength(4);
+});
+
+
+it('UX-003: content offset follows the actual header after text or viewport reflow', () => {
+  let notify = () => {};
+  vi.stubGlobal('ResizeObserver', class {
+    constructor(callback: () => void) { notify = callback; }
+    observe() {}
+    disconnect() {}
+  });
+  mount();
+  const header = screen.getByRole('banner');
+  const measure = vi.spyOn(header, 'getBoundingClientRect');
+  measure.mockReturnValue({ height: 136 } as DOMRect);
+  act(() => notify());
+  expect(screen.getByRole('main').firstElementChild).toHaveStyle({ height: '136px' });
+  measure.mockReturnValue({ height: 208 } as DOMRect);
+  act(() => notify());
+  expect(screen.getByRole('main').firstElementChild).toHaveStyle({ height: '208px' });
 });

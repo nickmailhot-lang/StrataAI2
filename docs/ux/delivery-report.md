@@ -7,8 +7,8 @@ As of 2026-10-16 (America/Vancouver). Branch: `ux/ux-001-foundation`; baseline: 
 | Metric | Current result | Evidence needed to measure completion |
 | --- | --- | --- |
 | Functional completion | Not re-measured; existing capabilities preserved, 80 canonical feature PRDs open | Required business FRs implemented / agreed in-scope FR denominator, linked to source and canonical acceptance |
-| UX completion | UX-001 slice 1 implemented; UX-001–008 specified; 80 feature mappings documented; no full UX PRD accepted | Integrated, usable required journeys / agreed journey denominator, with role/viewport evidence |
-| Test completion | Full frontend run: 2,777 passed / 24 existing capacity deferrals; final-source 64 focused and 4 controlled browser cases passed; required real-service/release gates pending | Current required passing checks / full required-check denominator; report failures, skips, blockers separately |
+| UX completion | UX-001/002/003 implementation slices present; current role discovery and shared consumers added; no full UX PRD accepted | Integrated, usable required journeys / agreed journey denominator, with role/viewport evidence |
+| Test completion | Current slice: 155 focused cases and 8 controlled browser cases passed; current full/runtime checks in progress; hosted first-head web guard failure repaired locally; required release gates pending | Current required passing checks / full required-check denominator; report failures, skips, blockers separately |
 | MVP readiness | No new acceptance; current operational MVP release gate remains open | Priority workflows accepted end-to-end and required current immutable release gates |
 
 No aggregate “product percent complete” is calculated. Documentation coverage (8/8 UX specifications and 80/80 feature mappings) is not UX workflow completion. Historical planning percentages and older release test counts remain bound to their original scopes/revisions; this work does not convert them into current acceptance.
@@ -18,15 +18,33 @@ No aggregate “product percent complete” is calculated. Documentation coverag
 | PRD | Functional implementation | UX integration | Automated test status | Dependencies / blockers | MVP readiness |
 | --- | --- | --- | --- | --- | --- |
 | [UX-001 Application Shell and Responsive Navigation](UX-001.md) | Slice 1: shared mobile drawer, current section, skip focus; no business contract changes | Initial shell slice implemented; global pages/context refinements remain | Targeted component and controlled browser checks; see ledger | Real-service regression, text-zoom/human review, UX-002 route/capability review for subsequent slices | Implemented slice, not accepted PRD |
-| [UX-002 Information Architecture and Role-Based Menus](UX-002.md) | Specified; existing permission enforcement retained | Route inventory recorded; role menu implementation pending | Required matrix specified, not executed as a new implementation | UX-001 slots, existing server capabilities; PRD-05/24/35/80 | Not accepted |
-| [UX-003 Shared Design System and Component Library](UX-003.md) | Specified; existing appTheme/MUI retained | Component/token catalog and gradual extraction pending | Existing theme tests; new consumer/visual acceptance pending | UX-001 inventory, UX-002 naming; avoid parallel shared-file edits | Not accepted |
+| [UX-002 Information Architecture and Role-Based Menus](UX-002.md) | Current Organization-role discovery and shared menu model implemented; no new permission system | Verified summary and live withdrawal remain in existing feature owner; unavailable links removed | Pure role/scope tests and live Home downgrade test; real-service matrix in progress | UX-001 slots, existing server capabilities; PRD-05/24/35/80 | Not accepted |
+| [UX-003 Shared Design System and Component Library](UX-003.md) | Existing tokens named; PageHeader/ActionRow shared across real consumers | Organization/Search/Notifications migrated; alert wrapping and header text reflow repaired | Focused consumers and controlled four-width/zoom/Axe checks; production/runtime evidence in progress | UX-001 inventory, UX-002 naming; avoid parallel shared-file edits | Not accepted |
 | [UX-004 Actionable Dashboard and Personalized Work Queues](UX-004.md) | No duplicate dashboard; PRD-54/55 own capability | Specified | Planned source/count/queue tests | UX-001/002/003; authorized source readiness under existing owners | Not prerequisite to widening operational MVP scope |
 | [UX-005 Standardized Forms, Tables, Dialogs, and Feedback](UX-005.md) | Existing features preserved | Per-feature migrations specified | Planned consumer regression/recovery tests | UX-003 and current mutation/recovery contracts | Not accepted |
 | [UX-006 Mobile Responsiveness and Accessibility](UX-006.md) | Existing responsive/keyboard behavior preserved | Shell interaction increment; full workflow remediation pending | Four-width controlled shell/Axe checks; broader/manual validation pending | UX-001/003/005; PRD-23 remains owner | No WCAG or device acceptance claim |
 | [UX-007 Workflow Discoverability and Contextual Guidance](UX-007.md) | Existing onboarding retained | All 80 entry/role/test mappings recorded; guidance pending | Planned first-use/return/denial journeys | UX-001/002/003/005; PRD-57/60 owners | Mapping is not workflow acceptance |
 | [UX-008 UX Regression Testing and Visual Validation](UX-008.md) | Controlled shell tests added to existing Playwright collection | Gate/failure/report policy established; approved screenshot baselines pending | Registry/shard checks run; gate ledger below | PRD-25, ARCH-09/11, current release evidence and visual reviewer | Not accepted |
 
-## Current validation ledger
+## Current UX-002/003 validation ledger
+
+The implementation reuses existing admitted source data; it adds no schema/API/tenant-role changes, permission polling or extra realtime subscription. Shell/theme ownership remains on this branch. Original checkout changes and independent feature delivery are untouched.
+
+| Required gate | Current scope / evidence | Status |
+| --- | --- | --- |
+| Web/browser TypeScript and lint | Current compositions, menu model, consumers and browser fixtures | In progress after final fixture/style corrections |
+| Focused unit/component tests | Menu roles/scopes, shared patterns, Home live downgrade, shell/router/admission, theme/Search/Notifications | 155/155 passed before final alert/capacity-test-file corrections; final full run required |
+| Browser / responsive / automated accessibility | Controlled actual consumers at 1280/768/390/320px, long name, Owner/Admin/Member discovery, search error, empty inbox, keyboard, 200% root text and unobscured heading | 8/8 passed, no skipped/flaky/errors; production-CSP run planned |
+| HTTP/architecture/capacity phase guard | `node --test tests/web-architecture.test.mjs` | 7/7 passed; original 24-case small and 24-case deferred capacity suites preserved |
+| Current-source backend compilation | Locked restore and Release Api/Worker project builds | Passed: zero warnings/errors; 33.19s API and 5.33s Worker; no image build/pull |
+| Current full frontend regression | Full suite, two workers, existing capacity flag unchanged | Planned on frozen implementation revision |
+| Real-service integration/roles | Disposable PostgreSQL + restricted roles + newly compiled API/Worker + current frontend/Nginx/CSP | Prepared; selected intact role/surface/navigation/settings/search/notification/Board-member workflows plus controlled UX fixtures |
+| Visual / manual accessibility | Captured actual-consumer images for review; keyboard/Axe automated evidence separate | Approved visual baselines, manual assistive technology and physical-device review pending |
+| Hosted PR CI | Initial run [39005444854](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39005444854) on initial head | Metadata and PostgreSQL/tenant/RLS/runtime-role gates passed; web guard failed (evaluated below); .NET API tests still running at last observation. New-head rerun required |
+| Merge / MVP acceptance | All applicable current checks and review | Draft; do not merge; no new acceptance claimed |
+
+## Initial UX-001 validation ledger (historical, superseded by current slice)
+
 
 Production source is committed in `6cf4f494` after the final modal-layer repair. Local worktree byte fingerprints (including Windows line endings):
 
@@ -62,6 +80,11 @@ Commands run from the isolated repository. Dependency junctions reuse the existi
 | Second controlled browser run | 2/4 passed: phone Back assertion saw skip-link fragment | UX-001 owner: default anchor activation changed URL/history during skip focus | Prevent default anchor navigation and explicitly focus main; retain exact stable URL assertion |
 | Third controlled browser run | 3/4 passed: phone-to-desktop resize left transient aria-hidden focusable background while modal exited | UX-001 owner: CSS hid the drawer before modal cleanup, risking an invisible focus trap | Unmount temporary Drawer when leaving mobile breakpoint; clear open state on breakpoint/route changes; strengthen resize/reopen assertions; final 4-case rerun passed |
 | Visual inspection | Mobile drawer toolbar/close control sat beneath the fixed AppBar | UX-001 owner: temporary drawer inherited the permanent drawer layer; close control could be obscured | Raise temporary drawer to the modal layer; add unobstructed close-button actionability assertion; final 64 focused and 4 browser checks passed |
+| Initial PR #94 hosted web gate | Protected functional capacity file registered 25 instead of 24 cases after adding an accessibility regression; downstream unit/build steps did not run and summary correctly recorded missing evidence | UX branch owner: preserve the fixed phase contract rather than widen the guard | Move empty-canvas accessibility case into BoardWindow.accessibility.test.tsx; keep every original capacity/functional case and guard; local architecture/phase tests pass 7/7; hosted new-head rerun pending |
+| UX-002/003 source checks | Unsupported Testing Library role-query option; two lint issues in added test code | UX branch owner: fixture typing/formatting, no product policy issue | Correct query options, callback state holder and chained call formatting; final checks rerun |
+| First consumer browser run | 0/4: wrong controlled inbox endpoint and 320px 200% text heading obscured by fixed header | UX branch owner: one fixture contract error and a real responsive defect | Correct the existing endpoint; wrap header controls and measure actual fixed-header height; preserve exact no-overlap assertion |
+| Second consumer/shell run | 7/8: 320px text zoom creates an unfocusable MUI alert-message scroller for navigation-recovery feedback | UX branch owner: shared alert layout must preserve complete message and retry control | Wrap message/action through current appTheme; retain error/retry semantics and Axe assertions; complete controlled rerun passed 8/8 |
+
 
 Initial reports/logs and failed traces remain under this chat's `work/` outside tracked source. No retries, acceptance assertions, timeouts or security checks were relaxed. The 24 skipped cases belong to the pre-existing post-MVP Board capacity suite; this change added no skip or deferral and does not claim those cases passed. No required failure is waived. Do not merge until missing required gates are evaluated. The broad frontend run began during the final repair cycle; final frozen-source targeted checks are reported separately. Current combined-revision CI remains mandatory.
 

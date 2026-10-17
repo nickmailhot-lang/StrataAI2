@@ -27,36 +27,19 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useParams } from "react-router-dom";
 import { SurfaceAdmission } from './SurfaceAdmission';
 import { NavigationConfirmation } from './NavigationConfirmation';
+import { internalNavigation } from './navigationModel';
+import { designTokens } from '../theme/designTokens';
 
-const drawerWidth = 248;
-
-type NavigationItem = {
-  label: string;
-  icon: ReactNode;
-  destination?: "home" | "organization" | "notifications";
+const drawerWidth = designTokens.navigationWidth;
+const navigationIcons = {
+  organizations: <DashboardOutlinedIcon />, boards: <ViewKanbanOutlinedIcon />,
+  meetings: <MeetingRoomOutlinedIcon />, notifications: <NotificationsOutlinedIcon />,
+  correspondence: <EmailOutlinedIcon />, documents: <DescriptionOutlinedIcon />, units: <GroupsOutlinedIcon />,
 };
-
-const navigation: NavigationItem[] = [
-  {
-    label: "Organizations",
-    icon: <DashboardOutlinedIcon />,
-    destination: "home",
-  },
-  {
-    label: "Boards",
-    icon: <ViewKanbanOutlinedIcon />,
-    destination: "organization",
-  },
-  { label: "Meetings", icon: <MeetingRoomOutlinedIcon /> },
-  { label: "Notifications", icon: <NotificationsOutlinedIcon />, destination: "notifications" },
-  { label: "Correspondence", icon: <EmailOutlinedIcon /> },
-  { label: "Documents", icon: <DescriptionOutlinedIcon /> },
-  { label: "Owners & Units", icon: <GroupsOutlinedIcon /> },
-];
 
 export function InternalAppShell() {
   const { pathname } = useLocation();
@@ -73,21 +56,37 @@ function InternalLayout() {
   const { organizationId } = useParams();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const appBar = useRef<HTMLElement | null>(null);
+  const [headerHeight, setHeaderHeight] = useState<number>();
+  useLayoutEffect(() => {
+    const header = appBar.current;
+    if (!header) return;
+    const measure = () => {
+      const height = Math.ceil(header.getBoundingClientRect().height);
+      if (height > 0) setHeaderHeight(height);
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+  const headerOffset = <Box aria-hidden="true" sx={{ height: headerHeight ?? { xs: 56, sm: 64 }, flexShrink: 0 }} />;
   const mobile = useMediaQuery(useTheme().breakpoints.down("sm"));
   const closeNavigation = () => setMobileOpen(false);
   useEffect(() => { setMobileOpen(false); }, [mobile, pathname]);
   const navigationItems = <List aria-label="Internal application navigation">
-    {navigation.map(item => {
-      const destination = item.destination === "home" ? "/app"
-        : item.destination === "notifications" ? `/app/${organizationId}/notifications` : `/app/${organizationId}`;
-      const current = !!item.destination && (pathname === destination
-        || item.destination === "organization" && pathname.startsWith(`/app/${organizationId}/boards/`));
-      return <ListItem key={item.label} disablePadding>
-        <ListItemButton component={Link} to={destination} disabled={!item.destination}
-          selected={current} aria-current={current ? "page" : undefined} onClick={closeNavigation}>
-          <ListItemIcon>{item.icon}</ListItemIcon>
+    {internalNavigation('INTERNAL', organizationId ?? '', pathname).map(item => {
+      const unavailable = 'unavailable' in item;
+      return <ListItem key={item.id} disablePadding>
+        {unavailable ? <ListItemButton component="div" disabled>
+          <ListItemIcon>{navigationIcons[item.id as keyof typeof navigationIcons]}</ListItemIcon>
+          <ListItemText primary={item.label} secondary="Not available yet" />
+        </ListItemButton> : <ListItemButton component={Link} to={item.to}
+          selected={item.current} aria-current={item.current ? 'page' : undefined} onClick={closeNavigation}>
+          <ListItemIcon>{navigationIcons[item.id as keyof typeof navigationIcons]}</ListItemIcon>
           <ListItemText primary={item.label} />
-        </ListItemButton>
+        </ListItemButton>}
       </ListItem>;
     })}
   </List>;
@@ -100,17 +99,18 @@ function InternalLayout() {
           zIndex: theme => theme.zIndex.modal + 1, bgcolor: 'background.paper', color: 'primary.main', p: 2,
           '&:focus': { transform: 'translateY(0)' } }}>Skip to main content</Box>
       <AppBar
+        ref={appBar}
         position="fixed"
         elevation={0}
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
-        <Toolbar sx={{ gap: 0.5 }}>
+        <Toolbar sx={{ gap: 0.5, flexWrap: 'wrap' }}>
           <IconButton color="inherit" aria-label="Open navigation" aria-expanded={mobileOpen && mobile}
             aria-controls={mobileOpen && mobile ? 'internal-mobile-navigation' : undefined}
             onClick={() => setMobileOpen(true)} sx={{ display: { xs: 'inline-flex', sm: 'none' } }}>
             <MenuOutlinedIcon />
           </IconButton>
-          <Typography variant="h6" component="h1" sx={{ flexGrow: 1, minWidth: 0, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
+          <Typography variant="h6" component="h1" sx={{ flexGrow: 1, minWidth: 'max-content', flexShrink: 0, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
             StrataAI2
           </Typography>
           <Typography
@@ -155,7 +155,7 @@ function InternalLayout() {
           },
         }}
       >
-        <Toolbar />
+        {headerOffset}
         <DescriptionParserWarmup />
         {navigationItems}
         <Divider />
@@ -185,7 +185,7 @@ function InternalLayout() {
           p: { xs: 2, md: 3 },
         }}
       >
-        <Toolbar />
+        {headerOffset}
         {organizationId && <NavigationConfirmation key={`navigation-context-${organizationId}`}
           target={{ kind: 'context', organization: organizationId }} />}
         <Outlet />
