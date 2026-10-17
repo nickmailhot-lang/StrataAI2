@@ -55,6 +55,17 @@ browser types and 289 CI guards pass. Captured inputs match and owned cleanup
 restores Docker inventory. Current immutable/full CI remains required; PRD-12
 and the MVP remain open, with large-load tests deferred.
 
+The [image-backed copy review follow-up](../board-background-images.md#image-backed-copy-review-admission-2026-10-16)
+observes the read-only Copy Board dialog before proceeding after a retained
+phone click starts no review. The complete desktop/phone image file passes 2/2
+with its original 150-second deadlines, one-copy-write/201 receipt, independent
+image ownership, public/private consent, keyboard/Axe and session withdrawal
+assertions intact. Fresh restricted PostgreSQL, real scan/contained preview
+publication and disposable storage/scanner fixtures supplement current CI.
+Captured inputs match; both application processes stay unchanged and owned
+cleanup restores Docker inventory. Current immutable/full CI and managed
+providers remain required; PRD-04 and the MVP remain open. No large load runs.
+
 The [Board-background opening follow-up](../board-background-images.md#board-background-review-read-admission-2026-10-16)
 observes the actual read-only candidate before continuing after a retained phone
 opening that starts no review read. All original image consent, receipt, copy,

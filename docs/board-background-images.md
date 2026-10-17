@@ -1,5 +1,58 @@
 # Stored Board image ownership
 
+## Image-backed copy review admission (2026-10-16)
+
+The retained phone case at `7a9cea17` fails in
+[foundation job 117078411557](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38871174459/job/117078411557)
+before opening Copy Board. Its click runs from 71,609.823 to 71,653.682 ms;
+a foreground Board GET starts at 71,651.127 ms and completes after 31.461 ms.
+No copy review read follows the click, and the expected dialog remains absent.
+This establishes missing review admission, not failed copy persistence. It does
+not establish the exclusive source of the foreground-read interleaving.
+Authenticated diagnostic artifact `12070306194` is 11,202,063 bytes, SHA-256
+`19f082ab92afdad05b73d51cbf5d7250bb0ccbb116c518b30702e3b1184fb209`.
+
+The fixture now uses the existing bounded read-only opening helper and observes
+the actual Copy Board dialog. The subsequent original visibility assertion and
+all command assertions remain. Opening reads the actor and canonical Board;
+only Create Board copy can send its mutation. The separate request observer
+still requires exactly one copy POST, HTTP 201 and the matching private
+revision-one image acknowledgment. Independent image ownership/bytes, source
+retirement, public consent, logout/readmission, keyboard focus, Axe checks and
+the original 150-second case deadlines remain unchanged. No product code,
+provider implementation or server receipt handling changes.
+
+The complete revised desktop/phone file passes **2/2 in 105,865.668 ms**, with
+one attempt per case and no failures, flakes, skips or report errors. This also
+executes the earlier background-review admission follow-up below. Browser types
+pass; the shared helper and CI registry inputs remain unchanged from their
+completed 11-case and 289-case checks. Product/frontend suite inputs are unchanged
+from the completed 2,773-pass run with 24 explicitly deferred capacity cases;
+that long suite is not repeated for this browser-only change.
+
+The isolated fixture performs an actual upload (HTTP 200, Card version 2),
+restricted Worker scan and contained native preview publication (attachment
+version 3) before browser execution. A disposable scanner protocol simulator
+passes PING, clean and harmless-rejection probes. Fresh PostgreSQL 17.11/pgvector
+has all 149 migrations; local private object storage is enabled, with the Worker
+explicitly scoped to this fixture's Organization. Current compiled applications
+and built frontend run on cached images; runtime metadata identifies `e88c6514`.
+Optional verification/mail fixtures and simulated scanning are not managed
+provider or current immutable-release evidence. No original database is used,
+and no images are built, pulled or imported.
+
+All 1,286 captured source inputs, 71 binary inputs and four served frontend
+assets match. Both application processes remain unchanged during the browser
+file. The single 16,680-byte cached native launcher matches its unchanged source
+and is removed afterward; owned cleanup removes 449,201 temporary bytes and
+restores the original Docker inventory. Earlier setup attempts stop before any
+browser case for missing Worker scope, an unsupported nested read-only mount,
+localhost cookie handling and an incorrect upload-status expectation. The
+fixture is corrected while the application contracts and browser assertions
+remain intact. Current complete immutable-image CI and all original acceptance
+remain required. PRD-04 remains open at **15% estimated work remaining**;
+large-load tests stay deferred until after the operational MVP.
+
 ## Board-background review read admission (2026-10-16)
 
 The phone image-pipeline case at `d12a6f47` fails in

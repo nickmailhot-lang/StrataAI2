@@ -250,7 +250,8 @@ for (const width of [1280, 390]) {
     await page.getByRole('button', { name: 'Refresh board', exact: true }).click();
     await expect.poll(closedDetailReads).toBeGreaterThanOrEqual(1);
     await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
-    const copy = page.getByRole('button', { name: 'Copy Board', exact: true }); await copy.click();
+    const copy = page.getByRole('button', { name: 'Copy Board', exact: true });
+    await openAdmittedReview(copy, page.getByRole('dialog', { name: 'Copy Board', exact: true }));
     await expect(page.getByRole('dialog', { name: 'Copy Board', exact: true })).toBeVisible();
     let copyWrites = 0;
     page.on('request', request => { if (request.method() === 'POST'
