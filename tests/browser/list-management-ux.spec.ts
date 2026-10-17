@@ -41,6 +41,14 @@ for (const width of [1280, 768, 390, 320]) {
     await pressObservedRequest(page.getByRole('button', { name: 'Save list name', exact: true }), () => writes.length, 1);
     const currentRename = page.getByRole('button', { name: 'Rename Planning renamed list', exact: true });
     await expect(page.getByRole('dialog')).toHaveCount(0); await expect(currentRename).toBeFocused();
+    const heading = page.getByRole('heading', { name: 'Planning renamed', exact: true });
+    const readability = await heading.evaluate(element => {
+      const style = getComputedStyle(element), canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d'); if (!context) throw new Error('Missing text measurement context');
+      context.font = style.font;
+      return { available: element.getBoundingClientRect().width, word: Math.max(...element.textContent!.split(/\s+/).map(word => context.measureText(word).width)) };
+    });
+    expect(readability.available, 'Rename acknowledgment must not squeeze otherwise fitting List-name words into fragments').toBeGreaterThanOrEqual(readability.word);
     const move = page.getByRole('button', { name: 'Move Planning renamed list', exact: true });
     const position = page.getByRole('combobox', { name: 'Position for Planning renamed', exact: true });
     await openAdmittedReview(move, position);
@@ -61,6 +69,11 @@ for (const width of [1280, 768, 390, 320]) {
     expect(geometry.clipped, 'Focused List action must be fully visible inside local scroll containers').toEqual([]);
     expect(geometry.headerBottom).toBeDefined(); expect(geometry.top).toBeGreaterThanOrEqual(geometry.headerBottom!); expect(geometry.bottom).toBeLessThanOrEqual(geometry.height); expect(geometry.overflow).toBe(false);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    await expect(move).toBeFocused();
+    const focus = await move.evaluate(element => ({ focused: document.activeElement === element, visible: element.matches(':focus-visible'),
+      muiVisible: element.classList.contains('Mui-focusVisible'), outline: getComputedStyle(element).outlineStyle, width: getComputedStyle(element).outlineWidth }));
+    expect(focus).toMatchObject({ focused: true, visible: true, muiVisible: true, outline: 'solid', width: '2px' });
+    await test.info().attach(`list-order-focus-${width}.json`, { contentType: 'application/json', body: JSON.stringify(focus) });
     await page.screenshot({ path: test.info().outputPath(`list-order-return-${width}.png`) });
     const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200); const final = await canonical.json();
     expect(final.lists.map((column: { list: { id: string } }) => column.list.id)).toEqual([lists[1].id, lists[0].id, lists[2].id]);
