@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:37820) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\invitation-issuer-telemetry.spec.ts:8:7 › PRD-03/04-TC-06/07/11/12: Organization and Board invitation observations retain original requests and exclude private data at 1280px (18.8s)
+  ok 2 tests\browser\invitation-issuer-telemetry.spec.ts:8:7 › PRD-03/04-TC-06/07/11/12: Organization and Board invitation observations retain original requests and exclude private data at 390px (20.0s)
+
+  2 passed (1.5m)

@@ -1,0 +1,78 @@
+{
+  "nativeConfigSha256": "465EA597664251809CF68ADF8E548252C82D5640F145E29BB45327178105170C",
+  "apiBinarySha256": "7D68C79C44E300602CAE1345FAF5AD54800987AA77383253C2BBF5D1BA8AA6E4",
+  "apiReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "hosts": [
+    {
+      "kind": "api",
+      "parentPid": 21476,
+      "port": 18089,
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle8-dotnet-artifacts\\bin\\StrataAI.Api\\release\\StrataAI.Api.dll",
+      "createdAt": "2026-10-17T14:51:48.356537-07:00",
+      "pid": 28452
+    },
+    {
+      "kind": "worker",
+      "parentPid": 16220,
+      "port": 18093,
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle11-worker-artifacts\\bin\\StrataAI.Worker\\release\\StrataAI.Worker.dll",
+      "createdAt": "2026-10-17T14:54:19.775579-07:00",
+      "pid": 3492
+    }
+  ],
+  "at": "2026-10-17T21:54:31.4572863+00:00",
+  "existingWeb": {
+    "revision": "33e5c6d2176d6b8718fda2e19435c33dc40f4f91",
+    "version": "0.1.0"
+  },
+  "workerReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "worker": {
+    "service": "strataai-worker",
+    "mode": "production",
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "web": {
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "scope": "Compiled current web/Worker0f6ddc29 plus explicitly unchanged compiled API389c70ab, real restricted PostgreSQL149 and explicitly scoped real Worker. Actual API version1.0.0 and web/Worker0.1.0 are recorded, not relabeled. Local optional-verification browser phase; providers disabled. Not CI scoped-worker, immutable image, strict/provider or full product certification.",
+  "api": {
+    "service": "strataai-api",
+    "mode": "production",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "previewConfigSha256": "0A9BCD4BB468623202626B8E87C56CA46828ACE9C916C86A5998ABC876B7D783",
+  "database": {
+    "runtimeRoleFlags": [
+      "strataai_api_runtime|f|f|f|f|f|f",
+      "strataai_worker_runtime|f|f|f|f|f|f"
+    ],
+    "imageDigests": [
+      "[\"pgvector/pgvector@sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d\"]"
+    ],
+    "sourceRevision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "container": "70ba5208fe35d914eb6837e46cbad5201bee183570df1004a7719168600e6315",
+    "schemaMigrations": 149,
+    "scope": "Fresh approved local PostgreSQL provider, all existing migrations, restricted non-superuser/non-bypass/non-inheriting roles. No existing container/service changed. Not a native or immutable release certification.",
+    "at": "2026-10-17T14:43:06.8817053-07:00",
+    "imageId": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "databasePort": 33207,
+    "project": "strataai-c11-invite-9ed41294"
+  },
+  "existingApi": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "source": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+  "workerBinarySha256": "03F9039504BDC5F3066B12C0E9187F6CCD6C661F00B96E62928E5D916126CF60"
+}

@@ -1,0 +1,30 @@
+{
+  "mainWeb": {
+    "revision": "33e5c6d2176d6b8718fda2e19435c33dc40f4f91",
+    "version": "0.1.0"
+  },
+  "fixtureWorker": {
+    "service": "strataai-worker",
+    "mode": "production",
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "fixtureWeb": {
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "scope": "Read-only post-native identity check. Existing main app remains unchanged; scoped watcher has stopped and fixture is retained for next bounded validation.",
+  "at": "2026-10-17T22:06:59.5559505+00:00",
+  "mainApi": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "fixtureApi": {
+    "service": "strataai-api",
+    "mode": "production",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  }
+}
