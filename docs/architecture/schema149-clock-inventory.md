@@ -325,6 +325,60 @@ HTTP writer/history and immutable-image/full CI acceptance required. PRD-01
 stays open at **34%**, PRD-03 at **8% estimated work remaining** (unchanged planning
 estimates); no historical clock is manufactured and no issue is closed.
 
+## Preview ledger capability checks — 2026-10-16
+
+The attachment_previews relation records an immutable output declaration, rather
+than the mutable progress of its owning job.
+[Migration 045](../../db/migrations/045_attachment_preview_intents.sql)
+inserts its created_at from clock_timestamp() in the lease-fenced declaration
+transaction. An exact retry preserves the row; different output conflicts.
+The manifest guard rejects changed updates. The separate
+[publication receipt](../../db/migrations/046_attachment_preview_publication.sql)
+uses published_at for the accepted publication effect, linked to its audit and
+Work event. The Attachment and background job retain their separate mutable
+lifecycle. These source distinctions do not establish every historical writer.
+
+The provisioned API may read both ledgers; neither runtime may write them
+directly, and the Worker reads through its fenced functions. The required
+[runtime-role checks](../../scripts/ci/test-runtime-roles.sh) and
+[upgrade assertion](../../scripts/ci/test-migration-runner.sh) previously used
+table-only privilege predicates. PostgreSQL column grants can therefore violate
+their intended contract without failing those assertions.
+
+A fresh PostgreSQL 17/pgvector fixture with all 149 migrations confirms that
+**12 column-grant probes escape the original checks**, while all **six table-grant
+controls** are detected. The repaired assertions use has_any_column_privilege
+for denied INSERT, UPDATE and Worker SELECT access; DELETE remains a table-level
+check. They detect all **18/18** probes and controls. The positive API read
+assertions and existing Worker function capabilities remain unchanged.
+
+Each grant is independently revoked, the exact maintained assertions pass again,
+and fingerprints of all **114 public tables** remain unchanged throughout the
+probe phase. No business rows, application host, existing database, external
+provider, image build/pull/import or large-load test is needed. Both probe
+fixtures restore the original Docker inventory and remove their owned folders.
+
+An initial probe stops on a nonexistent publication clock column; the completed
+comparison uses a column present in both ledgers. A later full-driver transport
+attempt stops on Windows checkout line endings before driver execution; its
+disposable Linux copy requires normalized shell line endings. These setup
+failures are retained separately from the completed grant probes.
+
+The complete maintained migration driver passes. The runtime-role driver also
+passes after its original RLS driver seeds the two Organizations/Boards required
+by CI. An earlier standalone invocation omitted that prerequisite and stops at
+its unchanged Board-count assertion; it is not counted as acceptance. The final
+RLS/runtime invocation passes in **24.380 seconds**, preserves all **418 captured
+database/driver inputs**, and restores Docker inventory after owned cleanup.
+Its disposable shell copy uses Linux line endings; repository logic, assertions
+and deadlines are unchanged. Bash syntax and all **289 CI coverage checks** pass.
+
+This repair strengthens required CI admission checks. It does not change runtime
+grants, migrations, application services or historical clocks. Current
+immutable-image/full CI and the wider owning-writer
+audit still govern acceptance. PRD-01 remains open at **34% estimated work
+remaining**; PRD-14 remains open at **32%**. Large-load testing stays deferred.
+
 ## Nullable-clock review queue
 
 | Relation | Nullable conventional clock fields | Owning migration/source to inspect |

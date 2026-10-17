@@ -4,6 +4,16 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [preview ledger capability checks](schema149-clock-inventory.md#preview-ledger-capability-checks--2026-10-16)
+now detect column-only grants that evade their original table-only predicates.
+All twelve such probes and six table-grant controls are detected, preserving
+the positive API reads and fenced Worker functions. Probe rows and original
+Docker inventory remain unchanged. Complete maintained migration, RLS and
+runtime-role drivers, Bash syntax and 289 CI coverage checks pass. Captured
+inputs match and owned cleanup restores inventory. Current release acceptance
+remains required; no runtime grant or historical clock is changed.
+PRD-01/14 and the MVP stay open; large-load testing remains deferred.
+
 The [synchronous invitation admission repair](invitation-recipient-events.md#synchronous-invitation-admission-withdrawal-2026-10-16)
 blocks queued unsent acceptance immediately on live withdrawal. Separate canonical
 and account admission preserve supported original-receipt recovery through a

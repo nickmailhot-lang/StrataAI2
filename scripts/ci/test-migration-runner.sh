@@ -255,7 +255,8 @@ run
 run
 test "$(query 'SELECT count(*) FROM schema_migrations')" = 48
 test "$(query "SELECT has_table_privilege('strataai_api_runtime','attachment_previews','SELECT') AND has_table_privilege('strataai_api_runtime','attachment_preview_publications','SELECT')")" = t
-test "$(query "SELECT has_table_privilege('strataai_api_runtime','attachment_previews','INSERT') OR has_table_privilege('strataai_api_runtime','attachment_preview_publications','UPDATE')")" = f
+# Column-only grants also violate the read-only upgrade contract.
+test "$(query "SELECT has_any_column_privilege('strataai_api_runtime','attachment_previews','INSERT') OR has_any_column_privilege('strataai_api_runtime','attachment_preview_publications','UPDATE')")" = f
 cp db/migrations/049_attachment_preview_backfill.sql "$scratch/migrations/"
 run
 run

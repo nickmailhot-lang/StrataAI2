@@ -1,5 +1,15 @@
 # PRD-01 foundation acceptance and closure audit
 
+The [preview ledger capability review](schema149-clock-inventory.md#preview-ledger-capability-checks--2026-10-16)
+traces immutable declaration/publication facts and strengthens their required
+runtime/upgrade assertions. Twelve column-only grants escape the original
+checks; the repaired checks detect all twelve plus six table-grant controls.
+The grant probes preserve all 114 public-table fingerprints and restore Docker
+inventory. Complete maintained migration, RLS and runtime-role drivers pass,
+with 418 captured inputs unchanged and owned cleanup restoring Docker inventory.
+Current release evidence and the wider writer/history audit remain required.
+Estimated work remaining stays **34%**.
+
 The [Organization receipt review](schema149-clock-inventory.md#organization-command-receipt-classification-and-capability-checks--2026-10-16)
 traces five insert-only acknowledgment stores and their publication clocks.
 All 25 unsupported privilege probes escape the old checks and are detected by
