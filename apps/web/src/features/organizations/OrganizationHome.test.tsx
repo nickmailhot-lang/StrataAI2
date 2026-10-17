@@ -73,7 +73,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
     fireEvent.change(screen.getByLabelText(/Name/), { target: { value: 'Original planning draft' } });
     fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Original description' } });
-    const submit = screen.getByRole('button', { name: 'Create', exact: true }); submit.focus();
+    const submit = screen.getByRole('button', { name: /^Create$/ }); submit.focus();
     hold = true; act(() => stream === 'lifecycle' ? lifecycle.watch.mock.calls[0][0].unavailable()
       : (stream === 'boards' ? live : metadata).watch.mock.calls[0][0].reset());
     await waitFor(() => expect(finish).toBeDefined());
@@ -127,7 +127,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     await waitFor(() => expect(metadata.watch).toHaveBeenCalled());
     fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
     fireEvent.change(screen.getByLabelText(/Name/), { target: { value: 'Original submission' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Create', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: /^Create$/ }));
     await screen.findByText(/Unable to confirm the save/);
     unavailable = true; act(() => metadata.watch.mock.calls[0][0].unavailable());
     await screen.findByRole('button', { name: 'Retry' });
@@ -136,7 +136,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     unavailable = false; fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
     expect(await screen.findByRole('dialog')).toBeVisible();
     expect(screen.getByLabelText(/Name/)).toHaveValue('Original submission');
-    fireEvent.click(screen.getByRole('button', { name: 'Create', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: /^Create$/ }));
     await screen.findByRole('heading', { name: 'Created board destination' });
     expect(submissions).toHaveLength(2);
     expect(submissions[1]).toEqual(submissions[0]);
