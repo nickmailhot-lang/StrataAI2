@@ -36,7 +36,7 @@ for (const width of [1280, 768, 390, 320]) {
       const close = drawer.getByRole('button', { name: 'Close navigation', exact: true });
       await expect(close).toBeVisible();
       await close.click({ trial: true });
-      await expect(drawer.getByRole('link', { name: 'Boards', exact: true })).toHaveAttribute('aria-current', 'page');
+      await expect(drawer.getByRole('link', { name: 'Work', exact: true })).toHaveAttribute('aria-current', 'page');
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await page.keyboard.press('Escape');
       await expect(drawer).toBeHidden(); await expect(trigger).toBeFocused();

@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { commandOrderQuery } from './observedBoardCommandOrder';
@@ -70,7 +71,7 @@ test('PRD-17: desktop and phone recover personal watches for Board, List and mov
     }
     await page.goto(`${path}/cards/${card}`); await other.goto(`${path}/cards/${card}`);
     for (const target of [page, other]) {
-      const open = target.getByRole('button', { name: 'Card watching', exact: true }); await expect(open).toBeEnabled(); await open.focus(); await target.keyboard.press('Enter');
+      const open = (await disclosedWorkControl(target, 'Card actions', 'button', { name: 'Card watching', exact: true })); await expect(open).toBeEnabled(); await open.focus(); await target.keyboard.press('Enter');
       await expect(target.getByText('You are not watching this Card.', { exact: true })).toBeVisible();
     }
     let writes = 0; let key: string | undefined; let body: string | null = null;

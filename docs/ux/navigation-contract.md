@@ -4,9 +4,9 @@ UX-002 incremental implementation. `app/navigationModel.ts` supplies destination
 
 ## Scope and authority
 
-Internal shell links require existing INTERNAL SurfaceAdmission. They expose only the existing Organizations, Boards and Notifications destinations. Current Board/Card/admin subroutes select the Boards section. PORTAL input cannot construct an internal menu. The separately admitted public Board and terminal recovery fallbacks remain outside internal navigation.
+Internal shell links require existing INTERNAL SurfaceAdmission. They expose only the existing Organizations, Work (the existing Board directory) and Notifications destinations. Current Board/Card/admin subroutes select the Work section. PORTAL input cannot construct an internal menu. The separately admitted public Board and terminal recovery fallbacks remain outside internal navigation.
 
-Meetings, Correspondence, Documents and Owners & Units remain unavailable and now say “Not available yet.” They render no link destination. Future features must add a working, capability-reviewed route rather than repoint a placeholder to Organization home.
+Meetings, Correspondence, Documents and Owners & Units remain specified in the backlog but are omitted from primary navigation until implemented. They render no dead link or disabled primary entry. The Work label changes no route or canonical Board/Card entity name. Future features must add a working, capability-reviewed route rather than repoint a placeholder to Organization home.
 
 ## Organization-specific discovery
 
@@ -25,7 +25,7 @@ These are the current Organization membership values, not a governance hierarchy
 
 When OrganizationHome withdraws canonical data, privileged links disappear in the same render as the protected name/content. An aborted/late older read cannot restore those links through a separate navigation cache. A confirmed lower-role read yields only that role's existing links. No unresolved deletion/departure receipt is moved under ordinary shell admission.
 
-The action row retains existing labels, order and return paths. Shared shell menu, page-level Organization actions and Board-owned controls have distinct scopes; do not copy Board or Organization capabilities into a global role menu. The route inventory and the 80-feature backlog map define where future integrations belong.
+The Organization actions disclosure retains existing labels, order and return paths. Shared shell menu, page-level Organization actions and Board-owned controls have distinct scopes; do not copy Board or Organization capabilities into a global role menu. The route inventory and the 80-feature backlog map define where future integrations belong.
 
 ## Evidence and remaining scope
 

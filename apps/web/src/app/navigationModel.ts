@@ -7,12 +7,8 @@ export function internalNavigation(surface: 'INTERNAL' | 'PORTAL', organizationI
   const scope = `/app/${encodeURIComponent(organizationId)}`;
   return [
     { id: 'organizations', label: 'Organizations', to: '/app', current: pathname === '/app' },
-    { id: 'boards', label: 'Boards', to: scope, current: pathname === scope || pathname === `${scope}/` || pathname.startsWith(`${scope}/boards/`) },
-    { id: 'meetings', label: 'Meetings', unavailable: true },
+    { id: 'boards', label: 'Work', to: scope, current: pathname === scope || pathname === `${scope}/` || pathname.startsWith(`${scope}/boards/`) || pathname === `${scope}/search` },
     { id: 'notifications', label: 'Notifications', to: `${scope}/notifications`, current: pathname === `${scope}/notifications` },
-    { id: 'correspondence', label: 'Correspondence', unavailable: true },
-    { id: 'documents', label: 'Documents', unavailable: true },
-    { id: 'units', label: 'Owners & Units', unavailable: true },
   ];
 }
 

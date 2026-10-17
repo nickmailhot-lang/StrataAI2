@@ -5,6 +5,7 @@ import { createBuildIdentity } from './src/app/buildIdentity.ts';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', 'VITE_');
+  const apiTarget = env.VITE_STRATAAI_API_TARGET || 'http://localhost:8080';
   const buildIdentity = createBuildIdentity(env.VITE_STRATAAI_BUILD_REVISION, env.VITE_STRATAAI_BUILD_VERSION);
   return {
   plugins: [react(), {
@@ -18,36 +19,36 @@ export default defineConfig(({ mode }) => {
     port: 5173,
     proxy: {
       '/organizations/live': {
-        target: 'http://localhost:8080',
+        target: apiTarget,
         changeOrigin: true,
         ws: true,
       },
       '/notifications/live': {
-        target: 'http://localhost:8080',
+        target: apiTarget,
         changeOrigin: true,
         ws: true,
       },
       '/invitations/live': {
-        target: 'http://localhost:8080',
+        target: apiTarget,
         changeOrigin: true,
         ws: true,
       },
       '/me/live': {
-        target: 'http://localhost:8080',
+        target: apiTarget,
         changeOrigin: true,
         ws: true,
       },
       '/boards/live': {
-        target: 'http://localhost:8080',
+        target: apiTarget,
         changeOrigin: true,
         ws: true,
       },
       '/api': {
-        target: 'http://localhost:8080',
+        target: apiTarget,
         changeOrigin: true,
       },
       '^/(auth|me|organizations|boards|lists|cards|attachments|labels|watch|search|navigation|invitations)([/?]|$)': {
-        target: 'http://localhost:8080',
+        target: apiTarget,
         changeOrigin: true,
       },
     },

@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -52,7 +53,7 @@ for (const width of [1280, 390]) {
       });
       await page.bringToFront();
       await pressAdmittedAction(page.getByRole('link', { name: 'Original copy source', exact: true }));
-      const open = page.getByRole('button', { name: 'Copy Card', exact: true }); await pressAdmittedAction(open);
+      const open = (await disclosedWorkControl(page, 'Card actions', 'button', { name: 'Copy Card', exact: true })); await pressAdmittedAction(open);
       await expect(page.getByText(/attachments and covers are not copied/)).toBeVisible();
       const title = page.getByRole('textbox', { name: 'Copied Card title', exact: true });
       // Initial destination discovery disables the draft until its protected

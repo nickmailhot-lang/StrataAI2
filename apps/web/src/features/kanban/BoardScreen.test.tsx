@@ -157,7 +157,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       }
       return response(current);
     }));
-    mount(); const edit = await screen.findByRole('button', { name: 'Edit Board details' });
+    mount(); fireEvent.click(await screen.findByText('Board actions')); const edit = await screen.findByRole('button', { name: 'Edit Board details' });
     await waitFor(() => expect(edit).toBeEnabled()); fireEvent.click(edit);
     const dialog = screen.getByRole('dialog'); const controls = within(dialog);
     fireEvent.change(controls.getByLabelText('Board name'), { target: { value: 'Updated Board' } });
@@ -184,7 +184,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       }
       return response(current);
     }));
-    mount(); const archive = await screen.findByRole('button', { name: 'Archive Board' });
+    mount(); fireEvent.click(await screen.findByText('Board actions')); const archive = await screen.findByRole('button', { name: 'Archive Board' });
     await waitFor(() => expect(archive).toBeEnabled()); fireEvent.click(archive);
     fireEvent.click(screen.getByRole('button', { name: 'Confirm archive' }));
     const retry = await screen.findByRole('button', { name: 'Retry this archive' });

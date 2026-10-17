@@ -1,8 +1,8 @@
 import { memo } from 'react';
-import { Card, CardContent } from '@mui/material';
+import { Card, CardContent, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import type { BoardSnapshot, WorkCard } from '../../api/workManagement';
-import { CardDueBadge, cardDueDescriptionId } from './BoardDateBadges';
+import { CardDueBadge, CardDueDate, cardDueDescriptionId } from './BoardDateBadges';
 import { CardLabelIndicators } from './CardLabelIndicators';
 import { CardMemberIndicators } from './CardMemberIndicators';
 import { CardCoverImage } from './CardCoverImage';
@@ -20,8 +20,15 @@ export const BoardCardLink = memo(function BoardCardLink({ card, boardPath, link
     aria-describedby={card.dueAt ? cardDueDescriptionId(card.id) : undefined}
     ref={(node: HTMLAnchorElement | null) => { if (node) links.set(card.id, node); else links.delete(card.id); }}
     to={`${boardPath}/cards/${card.id}`} state={{ cardOverlay: true }}
-    sx={{ display: 'block', color: 'inherit', textDecoration: 'none', '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main' } }}>
+    sx={{ display: 'block', minWidth: 0, color: 'inherit', textDecoration: 'none', border: '1px solid', borderColor: 'divider', boxShadow: 'none',
+      '&:hover': { borderColor: 'primary.main' }, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main' } }}>
     {organizationId && boardId && <CardCoverImage organizationId={organizationId} boardId={boardId} card={card} unavailable={coverUnavailable !== false} />}
-    <CardContent>{card.title}<CardLabelIndicators preview={labels} /><CardMemberIndicators version={card.version} preview={members} /><CardDueBadge card={card} /></CardContent>
+    <CardContent>
+      <Typography component="span" title={card.title} sx={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3,
+        overflow: 'hidden', overflowWrap: 'anywhere', fontWeight: 600, lineHeight: 1.5 }}>{card.title}</Typography>
+      <CardLabelIndicators preview={labels} />
+      <CardMemberIndicators compact version={card.version} preview={members} />
+      <CardDueDate card={card} /><CardDueBadge card={card} />
+    </CardContent>
   </Card>;
 });

@@ -38,7 +38,7 @@ it.each(['/app/org-a/boards/board', '/app/org-a/boards/board/cards/card', '/app/
 it('UX-002: future modules have no misleading destination', () => {
   const menu = internalNavigation('INTERNAL', 'org-a', '/app/org-a/notifications');
   const unavailable = menu.filter(item => 'unavailable' in item);
-  expect(unavailable.map(item => item.id)).toEqual(['meetings', 'correspondence', 'documents', 'units']);
+  expect(unavailable.map(item => item.id)).toEqual([]);
   expect(unavailable.every(item => !('to' in item))).toBe(true);
   expect(menu.filter(item => 'current' in item && item.current).map(item => item.id)).toEqual(['notifications']);
 });

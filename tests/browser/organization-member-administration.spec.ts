@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
@@ -23,7 +24,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       // Initial live reconciliation can replace the home controls; activate only
       // after current access is checked, through the keyboard locator itself.
       await expect(page.getByRole('status')).toHaveText('Current Board access checked.');
-      const members = page.getByRole('link', { name: 'Organization members', exact: true });
+      const members = (await disclosedWorkControl(page, 'Organization actions', 'link', { name: 'Organization members', exact: true }));
       await members.focus(); await expect(members).toBeFocused(); await members.press('Enter');
       await expect(page).toHaveURL(new RegExp(`/app/${org}/members$`));
       if ((await (await context.request.get('/api/runtime')).json()).mode === 'production')

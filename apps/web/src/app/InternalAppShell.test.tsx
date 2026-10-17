@@ -19,18 +19,18 @@ function mount(path = '/app/demo/boards/board/cards/card') {
 
 it('UX-001-AC-02: shares destinations and current Board context in the mobile drawer', async () => {
   const router = mount();
-  expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Boards' })).toHaveAttribute('aria-current', 'page');
+  expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Work' })).toHaveAttribute('aria-current', 'page');
   const trigger = screen.getByRole('button', { name: 'Open navigation' });
   fireEvent.click(trigger);
   const mobile = screen.getByRole('navigation', { name: 'Mobile application navigation' });
   expect(trigger).toHaveAttribute('aria-expanded', 'true');
   expect(within(mobile).getByRole('link', { name: 'Organizations' })).toHaveAttribute('href', '/app');
-  expect(within(mobile).getByRole('link', { name: 'Boards' })).toHaveAttribute('href', '/app/demo');
+  expect(within(mobile).getByRole('link', { name: 'Work' })).toHaveAttribute('href', '/app/demo');
   fireEvent.click(within(mobile).getByRole('link', { name: 'Notifications' }));
   await waitFor(() => expect(router.state.location.pathname).toBe('/app/demo/notifications'));
   await waitFor(() => expect(screen.queryByRole('navigation', { name: 'Mobile application navigation' })).toBeNull());
   expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Notifications' })).toHaveAttribute('aria-current', 'page');
-  expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Boards' })).not.toHaveAttribute('aria-current');
+  expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Work' })).not.toHaveAttribute('aria-current');
 });
 
 it('UX-001-AC-03: skip navigation focuses the single main landmark', () => {
@@ -53,7 +53,7 @@ it('UX-001-AC-02: closing navigation preserves the deep link', async () => {
 it('UX-002: unavailable modules are explained without active or hidden destinations', () => {
   mount();
   expect(screen.queryByRole('link', { name: 'Meetings' })).not.toBeInTheDocument();
-  expect(screen.getAllByText('Not available yet')).toHaveLength(4);
+  expect(screen.queryByText('Not available yet')).not.toBeInTheDocument();
 });
 
 

@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { focusAdmittedControl, openAdmittedReview } from './keyboardAdmission';
@@ -39,7 +40,7 @@ for (const width of [1280, 390]) {
         if (archives.length === 1) await route.abort('failed'); else await route.fulfill({ response });
       });
       await page.getByRole('link', { name: 'Archived work', exact: true }).focus(); await page.keyboard.press('Enter');
-      await openAdmittedReview(page.getByRole('button', { name: 'Archive Card', exact: true }),
+      await openAdmittedReview((await disclosedWorkControl(page, 'Card actions', 'button', { name: 'Archive Card', exact: true })),
         page.getByText('Archive Archived work from Planning?', { exact: true }));
       await expect(page.getByText('Archive Archived work from Planning?', { exact: true })).toBeVisible();
       await page.getByRole('button', { name: 'Confirm Card archive', exact: true }).focus(); await page.keyboard.press('Enter');
@@ -50,7 +51,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'Refresh board', exact: true })).toBeFocused();
       expect(archives).toHaveLength(2); expect(archives[1]).toEqual(archives[0]); expect(JSON.parse(archives[0].body!)).toEqual({ version: 1 });
       expect(archives[0].key).toMatch(/^[0-9a-f-]{36}$/);
-      await page.getByRole('link', { name: 'Archived cards', exact: true }).click();
+      await (await disclosedWorkControl(page, 'Board actions', 'link', { name: 'Archived cards', exact: true })).click();
       await expect(page.getByRole('heading', { name: 'Archived cards', exact: true })).toBeVisible();
       await expect(page.getByText('Detail stays out of archive UI', { exact: true })).toHaveCount(0);
       await page.getByRole('button', { name: 'Restore Archived work card', exact: true }).focus(); await page.keyboard.press('Enter');

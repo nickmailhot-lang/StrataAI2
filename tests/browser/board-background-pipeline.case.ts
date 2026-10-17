@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
@@ -218,7 +219,7 @@ for (const width of [1280, 390]) {
       if (attempts.length === 1) await route.abort('failed');
       else { expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]); await route.fulfill({ response: result }); }
     });
-    const review = page.getByRole('button', { name: 'Review Board background images', exact: true });
+    const review = (await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Board background images', exact: true }));
     await openAdmittedReview(review, page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true }));
     await pressAdmittedAction(page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true }));
     const confirm = page.getByRole('button', { name: 'Confirm Board background image', exact: true });
