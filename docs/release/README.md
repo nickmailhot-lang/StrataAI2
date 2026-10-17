@@ -537,6 +537,8 @@ for the Enhanced one-hour limit. Old snapshots, future/reversed clocks and
 malformed records fail. Copying a file or finishing a slow dump does not renew
 the snapshot's age. Success prints only fixed status/age/length fields; failure
 returns nonzero without printing private input paths or a passing result.
+Nested records that exceed the JSON parser's recursion limit receive the same
+fixed refusal, including with the standard library's pure-Python parser fallback.
 
 Keep a separately protected authoritative copy of the completion record. The
 record is not signed: permission to rewrite both record and archive defeats its

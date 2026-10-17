@@ -685,6 +685,14 @@ inputs match and Docker inventory is restored. Current-image CI, managed
 provider/deployment outage acceptance and the remaining ticket scope stay open.
 Only tiny controlled transport samples run; large-load tests remain deferred.
 
+The [backup-record parser refusal follow-up](database-recovery.md#nested-record-parser-refusal--2026-10-16)
+normalizes malformed nested JSON to the fixed refusal under the pure-Python
+parser, where four baseline checks expose uncaught errors/tracebacks. Python
+3.12/3.14 each pass 13 verifier methods with one existing Windows symlink skip;
+47 artifact tests pass. Record limits, archive integrity and freshness rules
+remain intact. No Docker/database/load workload runs. Current immutable/Linux CI
+and actual backup/alert/recovery deployment acceptance remain required.
+
 The [backup completion and freshness contract](database-recovery.md#completion-records-and-freshness)
 adds protected completion records and a read-only archive integrity/age check.
 Freshness starts at the beginning of the dump; late completion or changed file

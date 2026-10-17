@@ -50,7 +50,10 @@ def verify(record, archive, maximum_age, clock=time.time):
         content = source.read(4097)
         if len(content) > 4096:
             raise ValueError("record_size")
-        value = json.loads(content, object_pairs_hook=unique_object)
+        try:
+            value = json.loads(content, object_pairs_hook=unique_object)
+        except RecursionError as error:
+            raise ValueError("record_shape") from error
         if not isinstance(value, dict) or set(value) != {
                 "schemaVersion", "startedAtUnixSeconds", "completedAtUnixSeconds", "archiveBytes", "sha256"}:
             raise ValueError("record_shape")

@@ -296,6 +296,27 @@ Hosted exact-commit checks, actual scheduled
 creation/freshness alerts, trusted off-host custody and recorded deployment
 restore drills remain required; ARCH-08 and MVP acceptance stay open.
 
+### Nested record parser refusal — 2026-10-16
+
+The byte limit alone does not guarantee that every JSON backend can parse a
+malformed record. Two 2,401/2,419-byte nested records already receive normal
+shape refusals with the tested Python 3.12/3.14 default accelerators, but the
+standard library's pure-Python fallback raises an uncaught parser recursion
+error. Baseline checks reproduce two library errors and two CLI traceback
+failures. The checker now converts only that parser error into its existing
+record-shape refusal. Allowed fields, the 4,096-byte limit, archive identity/
+length/SHA-256 and completion-time freshness checks remain unchanged.
+
+Both backend paths and both record forms are exercised through the library
+and actual CLI. Python 3.12.14 and 3.14 each run all 14 verifier methods:
+13 pass and the existing Windows symbolic-link case is skipped. Malformed
+inputs produce only the fixed failure message, with no success output or
+archive hashing; record/archive bytes remain unchanged. All 47 release-artifact
+tests pass. These small temporary-file tests create no Docker services, read no
+deployment database and perform no load testing. Linux/current immutable CI,
+scheduled backup/alert operation, off-host custody and deployment restore drills
+remain acceptance requirements; ARCH-08 and the operational MVP remain open.
+
 ## Operator restore path
 
 The [restore command](../release/README.md#restore-into-an-isolated-empty-docker-database)

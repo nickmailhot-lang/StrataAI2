@@ -89,6 +89,36 @@ class BackupRecordTests(unittest.TestCase):
             self.record.write_text(content, encoding='utf-8')
             with self.subTest(content=content[:8]), self.assertRaises(ValueError): self.verify()
 
+    def test_deep_records_within_byte_limit_are_refused_before_archive_hashing(self):
+        nested = '[' * 1200 + '0' + ']' * 1200
+        before = self.archive.read_bytes()
+        for fallback in [False, True]:
+            factory = json.scanner.py_make_scanner if fallback else json.scanner.make_scanner
+            for content in [nested, '{"schemaVersion":' + nested + '}']:
+                self.assertLess(len(content.encode('utf-8')), 4096)
+                self.record.write_text(content, encoding='utf-8')
+                with self.subTest(python_parser=fallback, object_field=content.startswith('{')):
+                    with patch.object(json.scanner, 'make_scanner', factory):
+                        with patch.object(record_check.hashlib, 'file_digest', side_effect=AssertionError('No archive hashing expected')):
+                            with self.assertRaises(ValueError): self.verify()
+                    self.assertEqual(self.record.read_text(encoding='utf-8'), content)
+                    self.assertEqual(self.archive.read_bytes(), before)
+
+    def test_cli_deep_record_refusal_has_only_the_fixed_failure_message(self):
+        nested = '[' * 1200 + '0' + ']' * 1200
+        for fallback in [False, True]:
+            # Exercise the standard library's supported pure-Python decoder as
+            # well as the default accelerator, whose nesting limits can differ.
+            driver = ['-c', "import runpy, sys; sys.modules['_json'] = None; sys.argv = sys.argv[1:]; runpy.run_path(sys.argv[0], run_name='__main__')"] if fallback else []
+            for content in [nested, '{"schemaVersion":' + nested + '}']:
+                self.record.write_text(content, encoding='utf-8')
+                result = subprocess.run([sys.executable, *driver, str(SCRIPT), str(self.record), str(self.archive), '60'],
+                                        capture_output=True, timeout=10)
+                with self.subTest(python_parser=fallback, object_field=content.startswith('{')):
+                    self.assertEqual(result.returncode, 1)
+                    self.assertEqual(result.stdout, b'')
+                    self.assertEqual(result.stderr.decode().splitlines(), ['Backup record, archive integrity or freshness verification failed.'])
+
     def test_missing_partial_or_modified_archive_is_refused(self):
         original = self.archive.read_bytes()
         for data in [b'', original[:-1], b'X'+original[1:]]:
