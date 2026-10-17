@@ -110,6 +110,8 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   // same-page admission recovery while private directory content is withdrawn.
   const [paging, setPaging] = useState<{ after?: string; next: string | null }>();
   const [creating, setCreating] = useState(false);
+  const [creationContainer, setCreationContainer] = useState<HTMLDivElement | null>(null);
+  const creationRecoveryFocus = useRef<HTMLElement | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
   const pageFocus = useRef(false);
@@ -171,6 +173,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       if (controller.signal.aborted) return;
       setPaging(undefined);
       setLiveActor(undefined); setData(undefined);
+      if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) {
+        setCreating(false); creationRecoveryFocus.current = undefined;
+      }
       if (reason instanceof WorkRequestError && reason.status === 401) {
         actor.current = undefined; setLifecycleActor(undefined); lifecycle.current = undefined; setLifecycleState(undefined);
         navigate("/login", { replace: true });
@@ -185,8 +190,11 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   }, [organizationId, cursor, reload, navigate, lifecycleState]);
   useEffect(() => {
     if (!organizationId || !lifecycleActor) return;
-    const withdraw = () => {
-      read.current?.abort(); setData(undefined); setPaging(undefined); setLoadError(undefined); setError(undefined); setCreating(false); setLiveActor(undefined);
+    const withdraw = (retireCreation = true) => {
+      if (!retireCreation && document.activeElement instanceof HTMLElement && creationContainer?.contains(document.activeElement))
+        creationRecoveryFocus.current = document.activeElement;
+      read.current?.abort(); setData(undefined); setPaging(undefined); setLoadError(undefined); setLiveActor(undefined);
+      if (retireCreation) { setError(undefined); setCreating(false); creationRecoveryFocus.current = undefined; }
     };
     return watchOrganizationLifecycle({ organizationId, userId: lifecycleActor,
       update: state => {
@@ -195,7 +203,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
         setLiveNotice(state === 'COMPLETED' ? 'Organization deletion confirmed complete.' : 'Organization deletion is being confirmed.');
       },
       unavailable: () => {
-        lifecycle.current = undefined; setLifecycleState(undefined); withdraw();
+        lifecycle.current = undefined; setLifecycleState(undefined); withdraw(false);
         setLiveNotice('Checking current Organization lifecycle and access.'); setReload(value => value + 1);
       },
       accountUnavailable: () => {
@@ -203,7 +211,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
         withdraw(); setLiveNotice(undefined); navigate('/login', { replace: true });
       },
     });
-  }, [organizationId, lifecycleActor, navigate]);
+  }, [organizationId, lifecycleActor, navigate, creationContainer]);
   useEffect(() => {
     if (!organizationId || !liveActor) return;
     const recover = (message: string) => {
@@ -211,8 +219,10 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       // lifecycle stream has withdrawn graph access. Keep that current fact
       // until the lifecycle stream itself rechecks it.
       if (lifecycle.current === 'PENDING' || lifecycle.current === 'COMPLETED') return;
+      if (document.activeElement instanceof HTMLElement && creationContainer?.contains(document.activeElement))
+        creationRecoveryFocus.current = document.activeElement;
       read.current?.abort(); setData(undefined); setLoadError(undefined);
-      setCreating(false); setLiveNotice(message); setReload(value => value + 1);
+      setLiveNotice(message); setReload(value => value + 1);
     };
     const stopBoards = watchOrganizationBoards({ organizationId, userId: liveActor, audience: 'discovery',
       invalidate: () => recover("Boards changed. Checking current access."),
@@ -223,7 +233,13 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       reset: () => recover('Checking current Organization metadata.'),
       unavailable: () => recover('Live Organization updates interrupted. Checking current access.') });
     return () => { stopBoards(); stopMetadata(); };
-  }, [organizationId, liveActor]);
+  }, [organizationId, liveActor, creationContainer]);
+  useLayoutEffect(() => {
+    if (!data) return;
+    const owner = creationRecoveryFocus.current; creationRecoveryFocus.current = undefined;
+    if (owner?.isConnected && !owner.matches(':disabled')
+      && (document.activeElement === document.body || document.activeElement === owner)) owner.focus({ preventScroll: true });
+  }, [data]);
   useLayoutEffect(() => {
     if (!data || !pageFocus.current) return;
     pageFocus.current = false;
@@ -239,7 +255,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const nextCursor = paging?.after === cursor ? paging?.next : undefined;
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || !data) return;
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") ?? "").trim();
     if (!name) {
@@ -397,7 +413,13 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
         {creating && !organizationId && liveActor && <OrganizationCreationDialog actorId={liveActor}
           onCancel={() => { creationFocus.current = true; setCreating(false); setData(undefined); setReload(value => value + 1); }}
           onCreated={id => { setCreating(false); navigate(`/app/${id}`); }} />}
-        {creating && organizationId && <Dialog
+        {/* Keep only the original draft mounted during uncertain admission. Its
+            portal and controls are hidden until the same actor is revalidated. */}
+        <Box ref={setCreationContainer} hidden={!data} sx={{ display: data ? 'contents' : 'none' }}>
+        {creating && organizationId && creationContainer && <Dialog
+          container={creationContainer}
+          disableAutoFocus={!data}
+          disableEnforceFocus={!data}
           open={creating}
           onClose={() => {
             if (!busy) setCreating(false);
@@ -456,6 +478,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             </DialogActions>
           </Box>
         </Dialog>}
+        </Box>
       </Stack>
     </Container>
   );
