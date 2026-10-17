@@ -3,23 +3,21 @@
 Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
 
 PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
-Work items: 0/1510 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2368. Unverified includes unknown and partially tested work; it does not assert code is absent.
+Work items: 0/1513 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2374. Unverified includes unknown and partially tested work; it does not assert code is absent.
 
 | Kind | Total | Done |
 | --- | ---: | ---: |
 | Epic | 8 | 0 |
 | PRD | 100 | 0 |
 | Vertical Slice | 463 | 0 |
-| Task | 469 | 0 |
-| Test | 470 | 0 |
+| Task | 470 | 0 |
+| Test | 472 | 0 |
 
-Implemented but unvalidated: 22. Blocked: 4. Known MVP-critical outstanding: 52; unclassified records: 1291. Weighted progress: not measured.
+Implemented but unvalidated: 22. Blocked: 4. Known MVP-critical outstanding: 55; unclassified records: 1291. Weighted progress: not measured.
 
 ## 1. Work completed
 
-Locally verified the recovered Board creation and cancellation increment: 138/138 affected component cases and 13/13 compiled native scenarios pass; all four prior broad failures are included in passing files.
-Verified current launcher return, viewport visibility and empty reopening at four widths, plus canonical Board persistence, original-key retry, unchanged Board-to-Card workflows and sign-in/outsider/Portal checks.
-Reconciled independent PRD-04-VS-05 without moving or restarting any prior work. No Done or parent PRD closure.
+Prior recovery/focus increment has current scoped 138/138 component and 13/13 compiled native passes; source/evidence retained in Cycle 04. No Done claim.
 
 ## 2. Implemented, awaiting validation
 
@@ -27,8 +25,7 @@ PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, P
 
 ## 3. Current work in progress
 
-Recovery/focus and independent-slice records are Review with scoped acceptance evidence; final whole-frontend and release/integration gates remain open.
-Audit account replacement during an uncertain Board creation retry before freezing the integration candidate.
+PRD-04-VS-05-T-02 original-account binding audit and controlled native counterfactual; no product fix yet.
 
 ## 4. Blockers and dependencies
 
@@ -36,26 +33,19 @@ PRD-25-VS-03: Current hosted required-ci, final acceptance review and target-bra
 PRD-25-VS-03-T-03: Current hosted required-ci, final acceptance review and target-branch integration are pending; local source/delivery checks passed. (owner: delivery-integration-owner)
 PRD-01-VS-04: Focused sign-in return is validated locally; unchanged broad Board creation tests fail on current and original Demo applications. Full root-cause resolution, current Production/immutable CI, review and origin/main integration remain pending. (owner: delivery-integration-owner)
 PRD-01-VS-04-T-01: Focused sign-in return is validated locally; unchanged broad Board creation tests fail on current and original Demo applications. Full root-cause resolution, current Production/immutable CI, review and origin/main integration remain pending. (owner: delivery-integration-owner)
-The prior complete frontend run failed four cases. Non-reproduction in the complete affected files is supporting evidence, not a full-suite waiver; final current full run remains required.
-The optional overbroad local API class run is Interrupted, with no aggregate pass. Four explicitly selected Board key/receipt/revoked-disclosure cases pass. Full server release CI is still required.
-Current target integration, immutable release, applicable PostgreSQL/RLS and final security/product review remain open.
+Current combined full frontend, final security acceptance, immutable release and target integration remain open. Earlier broad failed/interrupted checks remain retained, not waived.
 
 ## 5. Next highest-priority deliverable
 
-Reproduce whether replacing the signed-in account can execute an uncertain creation retry under the new actor. If confirmed, add a bounded account-bound creation task/test, fix it using existing API conventions, then run the final combined native/full frontend/release gates.
+Run the two native account-replacement probes against unchanged compiled de81270f / Demo API 16bf945. Inspect actual current actor, second POST result and replacement Board count; if the race is reproduced, add server/client binding and focused endpoint regressions.
 
 ## 6. PRD progress changes
 
-PRD-04 gains one bounded UXA-06 task/test. Original identifiers, earlier outcomes and parent scope remain intact.
-Add PRD-04-VS-05 as an independently acceptable recovery slice with reuse links; no original item is moved, discarded or restarted.
+Add required PRD-04-VS-05/AC-05 and a bounded account-bound command task with API/native tests. Keep the four previously scoped criteria and every original work ID/history intact.
 
 ## 7. Completion evidence
 
-de81270f: 138/138 sequential affected component cases, zero failures/skips; all four previous failures included.
-de81270f: 13/13 current compiled-native scenarios, zero retries/skips; web/browser types, lint and build pass.
-Current rendered return captures inspected at 320/390/768/1280px; tablet at 200% text. Exact scope and eight image hashes are retained.
-fc1d347d: four explicitly selected Board/work API cases pass, zero failures/skips; optional broader class run is Interrupted rather than Passed.
-No original assertion, timeout, isolation setting, capacity deferral or required release gate is weakened.
+Live PRD-04 and PRD-05 bodies were reread and exactly match the retained authoritative snapshot. Counterfactual source and raw native outcome pending.
 
 ## Recent verified completed increments
 
