@@ -1,0 +1,13 @@
+{
+  "topology": "Compiled Demo API and compiled Vite preview; explicit origin 5175; no immutable/Production/provider claim",
+  "api": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "3bf5c2ba7598f3348143b3b5083c8c7be3be1bc8",
+    "version": "1.0.0"
+  },
+  "web": {
+    "revision": "3bf5c2ba7598f3348143b3b5083c8c7be3be1bc8",
+    "version": "0.1.0"
+  }
+}
