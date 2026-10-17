@@ -4,6 +4,8 @@ import { WorkRequestError, type WorkCard } from "../../api/workManagement";
 import { CardDescriptionPreview } from './CardDescriptionPreview';
 
 type Props = {
+  externalSave?: boolean;
+  onDraftStateChange?: (state: { dirty: boolean; canSave: boolean }) => void;
   card: WorkCard;
   acknowledged?: WorkCard;
   editable: boolean;
@@ -27,6 +29,8 @@ const initial = (card: WorkCard) => ({
 // PRD-09 / PRD-22: incoming versions never silently replace a dirty draft.
 // The parent keys this editor by card identity, not by its mutable revision.
 export function CardDetailEditor({
+  externalSave,
+  onDraftStateChange,
   card,
   acknowledged,
   editable,
@@ -65,9 +69,13 @@ export function CardDetailEditor({
   const conflict =
     incomingConflict ||
     (error instanceof WorkRequestError && error.status === 409);
+  const canSave = editable && !busy && !conflict;
+  useLayoutEffect(() => { onDraftStateChange?.({ dirty, canSave }); }, [dirty, canSave, onDraftStateChange]);
+  useLayoutEffect(() => () => onDraftStateChange?.({ dirty: false, canSave: false }), [onDraftStateChange]);
   return (
     <Box
       component="form"
+      id={externalSave ? 'card-core-form' : undefined}
       onSubmit={(event) => {
         if (conflict || busy || !editable) {
           event.preventDefault();
@@ -148,7 +156,7 @@ export function CardDetailEditor({
         disabled={!editable || busy}
       />
       <CardDescriptionPreview description={draft.description} />
-      {editable && (
+      {editable && !externalSave && (
         <Button type="submit" disabled={busy || conflict}>
           Save card
         </Button>

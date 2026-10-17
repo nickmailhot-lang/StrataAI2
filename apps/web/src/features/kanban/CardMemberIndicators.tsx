@@ -10,6 +10,10 @@ export function CardMemberIndicators({ preview, version, compact = false }: { pr
       || (i > 0 && item.userId.toLowerCase() <= preview.items[i - 1].userId.toLowerCase()))) return compact ? <Typography variant="body2" sx={{ mt: 1 }}>Assignees unavailable</Typography> : null;
   if (preview.total === 0) return compact ? <Typography variant="body2" sx={{ mt: 1 }}>Unassigned</Typography> : null;
   if (compact) return <Box component="span" role="group" aria-label="Card assignee indicators" sx={{ display: 'block', mt: 1, overflowWrap: 'anywhere' }}>
+    <Box component="span" sx={{ display: 'flex', gap: 0.5, mb: 0.5 }}>{preview.items.slice(0, 2).map(member => <Avatar key={member.userId} component="span" role="img"
+      aria-label={`Assigned to ${member.displayName.trim() || 'Unnamed member'}`} sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
+      {member.displayName.trim().split(/\s+/).slice(0, 2).map(name => Array.from(name)[0] ?? '').join('').toUpperCase() || '?'}
+    </Avatar>)}</Box>
     <Typography component="span" variant="body2">Assigned to {preview.items.slice(0, 2).map(member => member.displayName.trim() || 'Unnamed member').join(', ')}
       {preview.total > 2 && ` +${preview.total - 2} more assignees`}</Typography>
   </Box>;
