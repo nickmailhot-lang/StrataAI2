@@ -1,0 +1,44 @@
+Developer visual inspection 2026-10-17T19:36:21.465Z; current web/test ad9e826f17548936bc8774f24f0c93f6d32d99b6, unchanged compiled DemoAPI 389c70abd820bf617c33bd9cfc18f5c04d7c9f07.
+Inspected all10 current actual viewport captures: four List draft dialogs, two generic account refusals, four canonical List-to-Card returns. Dialog names/fields/actions and keyboard focus rings are legible at320/390/768/1280; tablet200% remains readable. Refusal feedback is fully visible below fixed header, focused, and stale Board/form content is withdrawn. Current tablet long Card and complete focus ring are now visible inside its List after return; other three returns remain visible and unobscured. Local scroll check now passes all four widths. This repairs the separately retained initial visual failure and3pass/1fail stronger regression. Shared shells/capacity/deadlines/retries remain unchanged. Native Axe and geometry assertions are distinct from this rendered review. No screen-reader/device/full WCAG/immutable release or final product certification claimed.
+[
+  {
+    "file": "list-account-refusal-1280.png",
+    "sha256": "f3ee944937657770ce146ade01e699b79b8020115426448d79e8ec51b02d69a0"
+  },
+  {
+    "file": "list-account-refusal-390.png",
+    "sha256": "dfa6288fde03001207a334845b476755650f727112b389a792f5a8bc0fdb1e79"
+  },
+  {
+    "file": "list-creation-draft-390.png",
+    "sha256": "02f385c7e997f4890025f7ef5bfad12d6877f930064f926c1da26b4e0764e50e"
+  },
+  {
+    "file": "list-to-card-return-390.png",
+    "sha256": "a9eacbd02d46ede4a2ae6d45ca94eea3b310267ecc68ecf4f88425b9518c09c9"
+  },
+  {
+    "file": "list-creation-draft-768.png",
+    "sha256": "2499b3192317c42ca59fd3644f721c79371c5472cdec96d73d93c4a8ed190e94"
+  },
+  {
+    "file": "list-to-card-return-768.png",
+    "sha256": "b51b25445bcc7b830c26c9b631a62d8e50d916c7dd8fe7416981f27dca01a9a4"
+  },
+  {
+    "file": "list-creation-draft-1280.png",
+    "sha256": "0ee5e510c6adf669ad97a070aa1b114394c1bca9a834d5c8b380fade5041b41d"
+  },
+  {
+    "file": "list-to-card-return-1280.png",
+    "sha256": "6a2a8b00ab07f955c3e6ee296bc110e29f910b6eae37ab5c1503e40449e9416f"
+  },
+  {
+    "file": "list-creation-draft-320.png",
+    "sha256": "f27a5868a6f78f69c785f0bcae08942086d7bbd89c7981ac90d8cfb5615de8fe"
+  },
+  {
+    "file": "list-to-card-return-320.png",
+    "sha256": "3726967cc589bd3f56cab51a84851e353083b907031c393948e65f2a13705d96"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "api": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "topology": "Current compiled webad9e826f, explicitly unchanged compiled Demo API389c70ab. No newly executed API22 atad9e826f or immutable Production claim.",
+  "testRevision": "ad9e826f17548936bc8774f24f0c93f6d32d99b6",
+  "backendSourceUnchanged": true,
+  "web": {
+    "revision": "ad9e826f17548936bc8774f24f0c93f6d32d99b6",
+    "version": "0.1.0"
+  }
+}

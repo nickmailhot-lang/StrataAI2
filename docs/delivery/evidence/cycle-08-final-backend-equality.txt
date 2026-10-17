@@ -1,0 +1,18 @@
+{
+  "revision": "ad9e826f17548936bc8774f24f0c93f6d32d99b6",
+  "backend": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+  "trees": [
+    {
+      "path": "src",
+      "compiled": "ee421ed1a77c780f51f040b05910d883724385b9",
+      "current": "ee421ed1a77c780f51f040b05910d883724385b9"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests",
+      "compiled": "abae174f3ee4a809395ab896a42d6267143056a1",
+      "current": "abae174f3ee4a809395ab896a42d6267143056a1"
+    }
+  ],
+  "priorApiEvidence": "EVID-CYCLE-08-API-22",
+  "scope": "All22 API cases executed at389c70ab. Exact unchanged server/test Git trees support this UI-only return repair; current native27 uses that actual compiledAPI. No new API22 execution atad9e826f claimed."
+}

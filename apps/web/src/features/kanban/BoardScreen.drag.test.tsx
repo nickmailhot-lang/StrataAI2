@@ -72,7 +72,9 @@ it('opens cached Card detail and retires the modal with focus restored to its ca
 
 it('preserves canvas columns during dialog state changes and replaces them after an authoritative refresh', async () => {
   let current = snapshot;
-  vi.stubGlobal('fetch', vi.fn(async () => reply(current)));
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => reply(path === '/me'
+    ? { id: '11111111-1111-1111-1111-111111111111', status: 'ACTIVE', version: 1, locale: 'en', timezone: 'UTC', emailVerified: true }
+    : current)));
   const router = createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId', element: <BoardScreen /> }],
     { initialEntries: ['/app/org/boards/board'] });
   render(<RouterProvider router={router} />, { wrapper: AppThemeFixture });
@@ -80,7 +82,7 @@ it('preserves canvas columns during dialog state changes and replaces them after
   const original = canvas.items;
   vi.mocked(boardCardLocation).mockClear();
   act(() => screen.getByRole('button', { name: 'Add list' }).click());
-  expect(screen.getByRole('dialog')).toBeVisible();
+  expect(await screen.findByRole('dialog')).toBeVisible();
   expect(canvas.items).toBe(original);
   act(() => within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }).click());
   expect(canvas.items).toBe(original);
