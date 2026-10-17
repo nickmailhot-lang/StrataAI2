@@ -13,20 +13,21 @@ Work items: 0/1553 Done. Remaining canonical numbered acceptance criteria: 391; 
 | Task | 483 | 0 |
 | Test | 494 | 0 |
 
-Implemented but unvalidated: 59. Blocked: 3. Known MVP-critical outstanding: 101; unclassified records: 1285. Weighted progress: not measured.
+Implemented but unvalidated: 60. Blocked: 3. Known MVP-critical outstanding: 101; unclassified records: 1285. Weighted progress: not measured.
 
 ## 1. Work completed
 
 Reconciled live PRD01 original body and additive Work-navigation amendment; PRD02 body is unchanged. Added the three navigation obligations unverified under existing PRD01VS01, linked to the separate owner.
 Published/attached103 and retained current invitation18/109/native2/full2856/372 evidence, without parent completion.
+Controlled reproduction confirms4 new failures/50 passes across54 cases in15.65s. Both exclusion controls and all48 original controls pass; the four failures are missing return state after genuine fresh401 handling.
 
 ## 2. Implemented, awaiting validation
 
-PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01
+PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-01-VS-04-T-02-TEST-01
 
 ## 3. Current work in progress
 
-Freeze controlled outer session-refusal return tests before any product change.
+Apply a minimal SurfaceAdmission guard using the existing return allowlist and current route; preserve scope cleanup, privacy withdrawal, transport/membership distinctions and explicit authentication.
 
 ## 4. Blockers and dependencies
 
@@ -38,7 +39,7 @@ Separate draft100 Work-navigation obligations remain unverified; this cycle does
 
 ## 5. Next highest-priority deliverable
 
-Copy the prepared six-case SurfaceAdmission return regression into the isolated checkout, commit the test and entry record with unchanged product code, then run that whole file plus original SurfaceAdmission and AuthPage return controls red. Preserve actual counts and failure reasons before applying a minimal current-route guard.
+Add the current approved internal pathname to the existing fresh-session redirect, using a current-route reference so a held result cannot restore an obsolete Board. Preserve query/fragment and Portal exclusion. Add actual revoked-session responsive native cases to the unchanged original sign-in return file, freeze source, then rerun whole controlled scope and applicable quality checks.
 
 ## 6. PRD progress changes
 
@@ -48,6 +49,7 @@ Reconcile the live PRD01 Work-navigation amendment additively under existingVS01
 ## 7. Completion evidence
 
 EVID-CYCLE-12-ENTRY
+EVID-CYCLE-12-SESSION-RED
 
 ## Recent verified completed increments
 

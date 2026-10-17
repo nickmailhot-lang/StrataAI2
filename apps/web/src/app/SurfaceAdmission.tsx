@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Alert, Box, Button, CircularProgress, Stack } from '@mui/material';
 import { ThemeProvider, useTheme } from '@mui/material/styles';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { boundedWorkRead, workRequest, WorkRequestError } from '../api/workManagement';
 import { isNotificationProfile } from '../features/notifications/notificationInbox';
 import { lifecycleUuid } from '../features/organizations/operationalLifecycle';
@@ -9,6 +9,7 @@ import { watchOperationalLifecycle } from '../features/organizations/operational
 import { forgetOrganizationRetentionPolicyChanges } from '../features/records/retentionPolicyRecovery';
 import { forgetOrganizationRetentionSourceClassifications } from '../features/records/retentionSourceRecovery';
 import { forgetHoldIntents } from '../features/records/retentionHoldClient';
+import { signInReturnPath } from '../features/auth/signInReturnPath';
 
 type Result = { scope: string; status: 'admitted' | 'denied' | 'error'; previouslyAdmitted?: boolean };
 
@@ -18,6 +19,9 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
   surface: 'INTERNAL' | 'PORTAL'; children: ReactNode; deniedContent?: ReactNode;
 }) {
   const navigate=useNavigate();
+  const location=useLocation();
+  const sessionReturn=useRef<string | undefined>(undefined);
+  sessionReturn.current=surface==='INTERNAL' ? signInReturnPath(location.pathname) : undefined;
   // Fallback presentation can change during same-scope navigation. Only its
   // availability affects admission/session policy; React element identity does not.
   const hasDeniedContent=Boolean(deniedContent);
@@ -69,7 +73,7 @@ export function SurfaceAdmission({ surface, children, deniedContent }: {
       // denial and transport uncertainty do not become a sign-out decision.
       void boundedWorkRead(signal=>workRequest<unknown>('/me',{signal}),controller.signal).catch(reason=>{
         if (!retired && !controller.signal.aborted && reason instanceof WorkRequestError && reason.status===401)
-          navigate('/login',{replace:true});
+          navigate('/login',{replace:true,state:sessionReturn.current ? {returnTo:sessionReturn.current} : undefined});
       }).finally(()=>{if(sessionPending===controller)sessionPending=undefined;});
     };
     confirmSession.current=checkSession;

@@ -103,3 +103,69 @@ for (const surface of ['outsider', 'portal-only']) {
     } finally { await owner.close(); }
   });
 }
+
+const sessionReturns = [
+  { width: 1280, target: 'board' }, { width: 390, target: 'board' },
+  ...[1280, 768, 390, 320].map(width => ({ width, target: 'card' })),
+];
+for (const { width, target } of sessionReturns) {
+  test(`PRD-01-VS-04-T-02: revoked session → explicit sign-in → current ${target} → canonical Card → Board at ${width}px`, async ({ page, context }) => {
+    test.setTimeout(90_000); await page.setViewportSize({ width, height: 900 });
+    const data = await fixture(context.request);
+    const boardPath = `/app/${data.org}/boards/${data.board}`;
+    const destination = target === 'card' ? data.path : boardPath;
+    const writes: { key: string | undefined; body: string | null }[] = [];
+    page.on('request', request => {
+      if (new URL(request.url()).pathname === `/cards/${data.card}` && request.method() === 'PATCH')
+        writes.push({ key: request.headers()['idempotency-key'], body: request.postData() });
+    });
+    await page.goto(destination);
+    if (target === 'card') await expect(page.getByRole('dialog', { name: 'Card details', exact: true })
+      .getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
+    else await expect(page.getByRole('link', { name: 'Private return Card', exact: true })).toBeVisible();
+    if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    // Revoke this actual session. The outer boundary must withdraw private
+    // content, confirm a fresh anonymous session and retain only its safe route.
+    expect((await context.request.post('/auth/logout', { headers })).status()).toBe(204);
+    expect((await context.request.get('/me')).status()).toBe(401);
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByText('Private return Board', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('dialog', { name: 'Card details', exact: true })).toHaveCount(0);
+    expect(writes).toHaveLength(0);
+    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.getByLabel(/^Email/).fill(data.credentials.email);
+    await page.getByLabel(/^Password/).fill(data.credentials.password);
+    const submit = page.getByRole('button', { name: 'Sign in', exact: true });
+    await submit.focus(); await expect(submit).toBeFocused(); await submit.press('Enter');
+    await expect(page).toHaveURL(new RegExp(destination + '$'));
+    expect(writes).toHaveLength(0);
+    if (target === 'board') {
+      const card = page.getByRole('link', { name: 'Private return Card', exact: true });
+      await card.focus(); await card.press('Enter');
+    }
+    const dialog = page.getByRole('dialog', { name: 'Card details', exact: true });
+    const title = dialog.getByRole('textbox', { name: 'Card title', exact: true });
+    await expect(title).toHaveValue('Private return Card'); await expect(title).toBeEnabled();
+    await title.fill('Session-resumed canonical Card');
+    const save = dialog.getByRole('button', { name: 'Save card', exact: true });
+    await expect(save).toBeEnabled(); await save.focus(); await save.press('Enter');
+    await expect(dialog.getByRole('status').filter({ hasText: 'Changes saved.' })).toHaveText('Changes saved.');
+    expect(writes).toHaveLength(1); expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
+    const canonical = await context.request.get(`/boards/${data.board}`); expect(canonical.status()).toBe(200);
+    const lists = (await canonical.json()).lists as { cards: { id: string; title: string }[] }[];
+    expect(lists.flatMap(list => list.cards).find(card => card.id === data.card)?.title).toBe('Session-resumed canonical Card');
+    await page.reload(); await expect(title).toHaveValue('Session-resumed canonical Card');
+    if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await title.focus(); await expect(title).toBeFocused();
+    await page.screenshot({ path: test.info().outputPath(`revoked-${target}-return-${width}.png`), fullPage: true });
+    const close = dialog.getByRole('button', { name: 'Close', exact: true }); await close.focus(); await close.press('Enter');
+    await expect(page).toHaveURL(new RegExp(boardPath + '$'));
+    await expect(page.getByRole('link', { name: 'Session-resumed canonical Card', exact: true })).toBeVisible();
+    expect(writes).toHaveLength(1);
+    await page.goBack(); expect(new URL(page.url()).pathname).not.toBe('/login');
+  });
+}
