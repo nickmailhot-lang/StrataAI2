@@ -20,6 +20,7 @@ it('keeps the approved MUI focus indicator after an owned admission refresh reta
     view.rerender(draw(false, acknowledged));
     const action = screen.getByRole('button', { name: 'Move Planning list' });
     await waitFor(() => expect(action).toHaveFocus());
+    const scroll = vi.fn(); action.scrollIntoView = scroll;
     view.rerender(draw(true, acknowledged));
     // Native browsers may retain activeElement while MUI clears focusVisible
     // for disabled admission. Refocusing that same node emits no new focus event.
@@ -27,8 +28,10 @@ it('keeps the approved MUI focus indicator after an owned admission refresh reta
     view.rerender(draw(false, acknowledged));
     await waitFor(() => expect(action).toHaveClass('Mui-focusVisible'));
     expect(action).toHaveFocus(); expect(fetcher).toHaveBeenCalledOnce();
+    expect(scroll).toHaveBeenCalled(); const ownedScrolls = scroll.mock.calls.length;
     const outside = screen.getByRole('button', { name: 'Outside navigation' });
     act(() => outside.focus()); view.rerender(draw(true, acknowledged)); view.rerender(draw(false, acknowledged));
     expect(outside).toHaveFocus(); expect(action).not.toHaveClass('Mui-focusVisible');
+    expect(scroll).toHaveBeenCalledTimes(ownedScrolls);
   } finally { vi.unstubAllGlobals(); }
 });

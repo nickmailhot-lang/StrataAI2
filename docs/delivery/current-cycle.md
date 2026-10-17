@@ -3,7 +3,7 @@
 Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
 
 PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
-Work items: 0/1542 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2379. Unverified includes unknown and partially tested work; it does not assert code is absent.
+Work items: 0/1542 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2380. Unverified includes unknown and partially tested work; it does not assert code is absent.
 
 | Kind | Total | Done |
 | --- | ---: | ---: |
@@ -22,6 +22,9 @@ Original unchanged List rename/position native4/4pass in16.1s; no reimplementati
 Initialfourwidthnative4/4pass22.7s; eightactualcaptures expose headingfragments and missingoutline. Strongerwholefile1pass/3fail22.2s and deterministicfocusunit1fail6.28s retained before repair.
 Minimal currentrepairad6385a7 wraps confirmationbelowheading and uses supported MUI action.focusVisible() at existingownership-gated return. Same sharedthemeoutline; no authorization/key/order/recovery change.
 Atad6385a7 deterministicfocusregression nowpasses within actualUI96/96plus24existingcapacitydeferrals. Browsertypes/lint0; buildfails2 on3unsupportednewunitByRole exact options. No currentnewcompiled/nativepass claimed.
+Source0c146329 fixesonly3TestingLibraryunsupportedqueryoptions with exact string role/names/assertions retained. Productiontrees unchangedfromad6385a7.
+Current0c146329 correctedwhole11files111pass/24existingdeferrals136.44s,types/lintpass. Runtimeguardcaughtmissingbuildidentitybeforeanynative; identifiedrebuildnowpassesandactualnewpreview51972identifies0c146329. Priorbuild/type/native/visualfailuresretained.
+Current0c146329whole12file42native:41pass/1tablet200%viewportfail,3.2m/0retries. ExistingheadingfragmentandlostMUIindicatorrepairs nowpassrespectiveassertions; focusedactionbottom1000.1875>1000. Failedcaptureinspected andstrictboundsretained.
 
 ## 2. Implemented, awaiting validation
 
@@ -29,7 +32,7 @@ PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, P
 
 ## 3. Current work in progress
 
-Correctthreeunsupportedunitqueryoptions; exact role/string/assertions unchanged. Run corrected11file scope including actualActor filenames, build/types/lint, then current8Listnativecases.
+Ownedreturnscrollrepair plus strongercompleteoutlinebounds. NewAC02additivewithinT03, originalacceptance preserved.
 
 ## 4. Blockers and dependencies
 
@@ -43,13 +46,14 @@ Independently owned broaderUXdraft100 acceptance remains unverified.
 
 ## 5. Next highest-priority deliverable
 
-Removeonly3unsupportedexactoptionsfromnewunitqueries, commitsource, run corrected11file controlledscope/build/types/lint serially. Ifgreen switchverifiedownedpreview and execute current8Listnative/inspect8captures, thenfullregression once atfrozencurrentcomposite.
+Aftercurrentnativefinished, addcenteredownedscrollafterMUI focusVisible, keepownershipguard, strengthennativeboundsbyactualoutlineextentandunitoutside-navigationnoscrollassertion. Commitnewsource, currentcorrect11filequality/buildwithexplicitVITEidentity/types/lint, thenwhole42nativeandmanualcaptures. Runfullaloneonlyafterallcurrentgatesgreen.
 
 ## 6. PRD progress changes
 
 Original IDs/source/history preserved. No new child required until evidence establishes an actual gap.
 Add only PRD07VS01T01TEST03 and measuredTRACE acceptance for the discovered coverage gap; originalcanonical/childIDs and requiredEXIT remain unchanged.
 Add boundedT02/T03 and tracedtestchildren from reproduced actualUX failures; no canonicalFR/AC/baseline change.
+AddT03AC02fullfocusoutlineboundsfromactualcurrenttabletclipping; preserveAC01/originalbounds/IDs andallfailurehistory.
 
 ## 7. Completion evidence
 
@@ -61,6 +65,11 @@ EVID-CYCLE-10-FOCUS-UNIT-RED
 EVID-CYCLE-10-VISUAL-FAILED
 EVID-CYCLE-10-PARTIAL-UI-96
 EVID-CYCLE-10-BUILD-FAILED
+EVID-CYCLE-10-CURRENT-UI-111
+EVID-CYCLE-10-IDENTIFIED-WEB-BUILD
+EVID-CYCLE-10-CURRENT-RUNTIME
+EVID-CYCLE-10-BUILD-IDENTITY-REFUSED
+EVID-CYCLE-10-NATIVE-42-FAILED
 
 ## Recent verified completed increments
 

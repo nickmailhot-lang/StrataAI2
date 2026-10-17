@@ -58,13 +58,15 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(move).toBeEnabled(); await expect(move).toBeFocused();
     const geometry = await move.evaluate(control => {
       const target = control.getBoundingClientRect(), header = document.querySelector('header')?.getBoundingClientRect();
+      const outline = getComputedStyle(control);
+      const focusMargin = parseFloat(outline.outlineWidth) + Math.max(0, parseFloat(outline.outlineOffset));
       const clipped: string[] = [];
       for (let parent = control.parentElement; parent; parent = parent.parentElement) {
         const style = getComputedStyle(parent), box = parent.getBoundingClientRect();
-        if (['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowY) && (target.top < box.top + parent.clientTop - 1 || target.bottom > box.top + parent.clientTop + parent.clientHeight + 1)) clipped.push('vertical:' + parent.tagName);
-        if (['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowX) && (target.left < box.left + parent.clientLeft - 1 || target.right > box.left + parent.clientLeft + parent.clientWidth + 1)) clipped.push('horizontal:' + parent.tagName);
+        if (['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowY) && (target.top - focusMargin < box.top + parent.clientTop - 1 || target.bottom + focusMargin > box.top + parent.clientTop + parent.clientHeight + 1)) clipped.push('vertical:' + parent.tagName);
+        if (['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowX) && (target.left - focusMargin < box.left + parent.clientLeft - 1 || target.right + focusMargin > box.left + parent.clientLeft + parent.clientWidth + 1)) clipped.push('horizontal:' + parent.tagName);
       }
-      return { clipped, top: target.top, bottom: target.bottom, headerBottom: header?.bottom, height: innerHeight, overflow: document.documentElement.scrollWidth > innerWidth };
+      return { clipped, focusMargin, top: target.top - focusMargin, bottom: target.bottom + focusMargin, headerBottom: header?.bottom, height: innerHeight, overflow: document.documentElement.scrollWidth > innerWidth };
     });
     expect(geometry.clipped, 'Focused List action must be fully visible inside local scroll containers').toEqual([]);
     expect(geometry.headerBottom).toBeDefined(); expect(geometry.top).toBeGreaterThanOrEqual(geometry.headerBottom!); expect(geometry.bottom).toBeLessThanOrEqual(geometry.height); expect(geometry.overflow).toBe(false);
