@@ -38,7 +38,16 @@ it.each(['/app/org-a/boards/board', '/app/org-a/boards/board/cards/card', '/app/
 it('UX-002: future modules have no misleading destination', () => {
   const menu = internalNavigation('INTERNAL', 'org-a', '/app/org-a/notifications');
   const unavailable = menu.filter(item => 'unavailable' in item);
-  expect(unavailable.map(item => item.id)).toEqual(['meetings', 'correspondence', 'documents', 'units']);
-  expect(unavailable.every(item => !('to' in item))).toBe(true);
+  expect(unavailable.map(item => item.id)).toEqual([]);
+  expect(menu.map(item => item.id)).toEqual(['organizations', 'boards', 'notifications']);
   expect(menu.filter(item => 'current' in item && item.current).map(item => item.id)).toEqual(['notifications']);
+});
+
+it.each(['/app/org-a', '/app/org-a/', '/app/org-a/boards/board', '/app/org-a/boards/board/cards/card', '/app/org-a/search'])('PRD-03-VS-06: Work identifies authorized work context at %s', path => {
+  const work = internalNavigation('INTERNAL', 'org-a', path).find(item => item.id === 'boards');
+  expect(work).toEqual({ id: 'boards', label: 'Work', to: '/app/org-a', current: true });
+});
+
+it.each(['/app/org-b/boards/board', '/app/org-a/notifications', '/app/org-a/profile'])('PRD-03-VS-06: unrelated context does not select Work at %s', path => {
+  expect(internalNavigation('INTERNAL', 'org-a', path).find(item => item.id === 'boards')).toMatchObject({ current: false });
 });

@@ -4,9 +4,9 @@ UX-002 incremental implementation. `app/navigationModel.ts` supplies destination
 
 ## Scope and authority
 
-Internal shell links require existing INTERNAL SurfaceAdmission. They expose only the existing Organizations, Boards and Notifications destinations. Current Board/Card/admin subroutes select the Boards section. PORTAL input cannot construct an internal menu. The separately admitted public Board and terminal recovery fallbacks remain outside internal navigation.
+Internal shell links require existing INTERNAL SurfaceAdmission. They expose only the existing Organizations, Work and Notifications destinations. Work retains the existing Organization Board-directory route; current directory, Board/Card/admin descendants and Card search select it. PORTAL input cannot construct an internal menu. The separately admitted public Board and terminal recovery fallbacks remain outside internal navigation.
 
-Meetings, Correspondence, Documents and Owners & Units remain unavailable and now say “Not available yet.” They render no link destination. Future features must add a working, capability-reviewed route rather than repoint a placeholder to Organization home.
+The live 2026-10-17 Work-navigation amendment omits unavailable Meetings, Correspondence, Documents and Owners & Units entries, replacing the earlier disabled “Not available yet” hints. Future features must add a working, capability-reviewed route; no placeholder is repointed to Organization home. This focused adoption reuses the existing UX draft's navigation model while its broader action disclosures and Card presentation remain separate work.
 
 ## Organization-specific discovery
 

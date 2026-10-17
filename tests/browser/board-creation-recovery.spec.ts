@@ -89,7 +89,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(page.getByRole('heading', { name: 'Recovered planning Board', exact: true })).toBeVisible();
     const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
     if (await menu.isVisible()) await menu.click();
-    await page.getByRole('link', { name: 'Boards', exact: true }).click();
+    await page.getByRole('link', { name: 'Work', exact: true }).click();
     await expect(page.getByRole('link', { name: 'Recovered planning Board', exact: true })).toBeVisible();
     const directory = await context.request.get(`/organizations/${org}/boards/directory`);
     expect(directory.status()).toBe(200);
