@@ -3,27 +3,22 @@
 Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
 
 PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
-Work items: 0/1550 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2376. Unverified includes unknown and partially tested work; it does not assert code is absent.
+Work items: 0/1553 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2384. Unverified includes unknown and partially tested work; it does not assert code is absent.
 
 | Kind | Total | Done |
 | --- | ---: | ---: |
 | Epic | 8 | 0 |
 | PRD | 100 | 0 |
 | Vertical Slice | 468 | 0 |
-| Task | 482 | 0 |
-| Test | 492 | 0 |
+| Task | 483 | 0 |
+| Test | 494 | 0 |
 
-Implemented but unvalidated: 59. Blocked: 4. Known MVP-critical outstanding: 98; unclassified records: 1285. Weighted progress: not measured.
+Implemented but unvalidated: 59. Blocked: 3. Known MVP-critical outstanding: 101; unclassified records: 1285. Weighted progress: not measured.
 
 ## 1. Work completed
 
-Reconciled canonical live PRD03 issue3 and its additive Work UX amendment. Closed duplicate issue4 is retained as a diagnostic read, not used as authority. Known PRD04 amendment is unchanged.
-Published/attached focused draft102 and preserved its exact source/results. Existing invitation page, telemetry, original native workflow and checksum-verified failure trace audited.
-Controlled baseline confirms the defect:4new failures/14original passes across18cases in7.89s,0retries. Both surfaces report a false failure for an obsolete healthy read and false exception for an obsolete rejected read; current error/retry/privacy/original-command controls pass.
-Minimal two-line observation guard passes18/18 in7.45s and all109 affected page/telemetry/stream cases in21.53s, with identified build/browser types/lint0. Complete server/API-test/migration trees exactly equal compiled API389c70ab.
-Whole unchanged desktop/phone invitation consumer passes2/2 on current compiled web and real local Production API, restricted PostgreSQL149 and explicitly scoped Worker. Both setup failures are preserved; original Production, telemetry privacy/count, command/canonical, keyboard and Axe assertions unchanged.
-Inspected both current real Production viewport captures and recorded observation-only UX applicability. Desktop/phone retain the shared shell, navigation and acknowledgment feedback; lower receipt details use normal vertical scrolling.
-Complete current frontend passes2856/0/24 retained deferrals in733.21s, with final source/delivery contracts and complete browser/integration registries passing. Scoped invitation items advance to Review, preserving both setup failures and original release obligations.
+Reconciled live PRD01 original body and additive Work-navigation amendment; PRD02 body is unchanged. Added the three navigation obligations unverified under existing PRD01VS01, linked to the separate owner.
+Published/attached103 and retained current invitation18/109/native2/full2856/372 evidence, without parent completion.
 
 ## 2. Implemented, awaiting validation
 
@@ -31,49 +26,28 @@ PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25
 
 ## 3. Current work in progress
 
-Publish the focused invitation increment with current exact evidence; preserve frozen101/102 and establish the next bounded session-return counterexample before a combined integration checkpoint.
+Freeze controlled outer session-refusal return tests before any product change.
 
 ## 4. Blockers and dependencies
 
 PRD-25-VS-03: Current hosted required-ci, final acceptance review and target-branch integration are pending; local source/delivery checks passed. (owner: delivery-integration-owner)
 PRD-25-VS-03-T-03: Current hosted required-ci, final acceptance review and target-branch integration are pending; local source/delivery checks passed. (owner: delivery-integration-owner)
-PRD-01-VS-04: Current combined source4135a777 complete frontend and affected native regressions pass. Current required immutable release, remaining AC03/cross-Organization Production reconciliation, final review and target integration remain pending. Preserve original failed records separately. (owner: delivery-integration-owner)
 PRD-01-VS-04-T-01: Current combined source4135a777 complete frontend and affected native regressions pass. Current required immutable release, remaining AC03/cross-Organization Production reconciliation, final review and target integration remain pending. Preserve original failed records separately. (owner: delivery-integration-owner)
-Current immutable release/review/main integration remains pending; no Done.
-The separate Work UX amendment in draft100 remains unverified and independently owned.
+Exact combined immutable required CI and main integration remain pending.
+Separate draft100 Work-navigation obligations remain unverified; this cycle does not modify its branch or shared navigation.
 
 ## 5. Next highest-priority deliverable
 
-Commit the current evidence checkpoint, publish and attach the focused stacked invitation draft based on delivery/list-acceptance-audit-20261017, then create an isolated session-return checkout from that checkpoint. Reconcile live PRD01/02 and the known Work UX amendment; add controlled mid-session Board/Card return tests before changing SurfaceAdmission.
+Copy the prepared six-case SurfaceAdmission return regression into the isolated checkout, commit the test and entry record with unchanged product code, then run that whole file plus original SurfaceAdmission and AuthPage return controls red. Preserve actual counts and failure reasons before applying a minimal current-route guard.
 
 ## 6. PRD progress changes
 
-Add PRD03VS05 with two focused tasks/test children for the demonstrated release-blocking consumer defect.
-Record three live UX navigation obligations under unverified PRD03VS06 and child verification work; frozen canonical baseline and all original criteria/history remain intact.
+Add PRD01VS04T02 and two traced Test children for the newly identified mid-session path; preserve existing implementation, original criteria and historical failures.
+Reconcile the live PRD01 Work-navigation amendment additively under existingVS01, unverified and linked to independently owned PRD03VS06.
 
 ## 7. Completion evidence
 
-EVID-CYCLE-11-ENTRY
-EVID-CYCLE-10-PR98-INVITATION-TRACE
-EVID-CYCLE-11-TELEMETRY-RED
-EVID-CYCLE-11-TELEMETRY-18
-EVID-CYCLE-11-UI-109
-EVID-CYCLE-11-WEB-BUILD
-EVID-CYCLE-11-SERVER-EQUALITY
-EVID-CYCLE-11-NATIVE-LOOPBACK-FAILED
-EVID-CYCLE-11-NATIVE-SCOPE-FAILED
-EVID-CYCLE-11-PRODUCTION-IDENTITY
-EVID-CYCLE-11-WORKER-SCOPES
-EVID-CYCLE-11-NATIVE-2
-EVID-CYCLE-11-VISUAL
-EVID-CYCLE-11-FULL
-EVID-CYCLE-11-CONTRACTS
-EVID-CYCLE-11-BROWSER-REGISTRY
-EVID-CYCLE-11-INTEGRATION-REGISTRY
-EVID-CYCLE-11-LEDGER
-EVID-CYCLE-11-SERVICES
-EVID-CYCLE-11-PR101-BACKEND
-EVID-CYCLE-11-REVIEW
+EVID-CYCLE-12-ENTRY
 
 ## Recent verified completed increments
 
