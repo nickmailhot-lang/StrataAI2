@@ -1,5 +1,7 @@
 # Authentication acceptance map — PRD-02
 
+UX delivery addendum: apply [UXA-01–08](../ux/feature-acceptance.md), this PRD's [dependency/discovery mapping](../ux/backlog-map.md) and the [separate functional/UX/test/MVP report](../ux/delivery-report.md). Existing acceptance below remains authoritative; historical evidence is not re-certified by this addendum.
+
 The [recipient observation contract](operator-metrics.md#recipient-invitation-observations--2026-10-16)
 preserves final original-account checks and actual Worker proof handling while
 adding bounded private-data-free outcomes. All146 focused web cases and all four

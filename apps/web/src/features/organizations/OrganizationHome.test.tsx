@@ -535,3 +535,24 @@ it.each([403, 404])('uses neutral Organization denial on an independently admitt
   expect(screen.queryByRole('button', { name: 'Create board' })).not.toBeInTheDocument();
   expect(screen.queryByText('This board or action is unavailable.')).not.toBeInTheDocument();
 });
+
+
+it('UX-002: withdraws admin discovery synchronously while a live role downgrade is confirmed', async () => {
+  let role = 0;
+  const held: { pending?: Promise<Response> } = {};
+  let resolvePending: (value: Response) => void = () => {};
+  stubFetch(async path => {
+    if (path === '/organizations/org-1') return held.pending ?? response({ ...organizations[0], role });
+    return response({ organizationId: 'org-1', items: [], nextCursor: null });
+  });
+  mount('/app/org-1');
+  await screen.findByRole('link', { name: 'Organization settings' });
+  await waitFor(() => expect(metadata.watch).toHaveBeenCalled());
+  role = 2; held.pending = new Promise<Response>(resolve => { resolvePending = resolve; });
+  act(() => metadata.watch.mock.calls.at(-1)![0].reset());
+  expect(screen.queryByRole('link', { name: 'Organization settings' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Request Organization deletion' })).not.toBeInTheDocument();
+  await act(async () => { resolvePending(response({ ...organizations[0], role })); });
+  await screen.findByRole('link', { name: 'Leave Organization' });
+  expect(screen.queryByRole('link', { name: 'Organization settings' })).not.toBeInTheDocument();
+});

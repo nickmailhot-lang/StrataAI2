@@ -1,5 +1,7 @@
 # PRD-01 foundation acceptance and closure audit
 
+UX delivery addendum: apply [UXA-01–08](../ux/feature-acceptance.md), this PRD's [dependency/discovery mapping](../ux/backlog-map.md) and the [separate functional/UX/test/MVP report](../ux/delivery-report.md). Existing acceptance below remains authoritative; historical evidence is not re-certified by this addendum.
+
 The [preview ledger capability review](schema149-clock-inventory.md#preview-ledger-capability-checks--2026-10-16)
 traces immutable declaration/publication facts and strengthens their required
 runtime/upgrade assertions. Twelve column-only grants escape the original

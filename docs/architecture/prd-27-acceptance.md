@@ -1,5 +1,7 @@
 # Organization Types and configuration acceptance — PRD-27
 
+UX delivery addendum: apply [UXA-01–08](../ux/feature-acceptance.md), this PRD's [dependency/discovery mapping](../ux/backlog-map.md) and the [separate functional/UX/test/MVP report](../ux/delivery-report.md). Existing acceptance below remains authoritative; historical evidence is not re-certified by this addendum.
+
 PRD-27 remains open, with **24% estimated work remaining**. The sections below are evidence snapshots for their recorded increments; earlier percentages and test counts do not describe current release acceptance. The latest terminal-history, distinct-account realtime, accessibility, configuration telemetry and scoped latency results are recorded at the end. Complete exact-image CI, retention/reference consistency, UX and observability requirements are still required.
 
 Recipient-security components now include an owning-transaction coordinator with

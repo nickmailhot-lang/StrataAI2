@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/PageHeader';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Button, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
@@ -66,8 +67,7 @@ export function GlobalSearchPage() {
       window.removeEventListener('focus', refresh); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', refresh); };
   }, [load]);
   return <Stack spacing={2} component="section" aria-label="Global Card search">
-    <Typography variant="h5" component="h2">Search Cards</Typography>
-    <Typography>Search across your accessible Organizations and Boards.</Typography>
+    <PageHeader title="Search Cards" variant="h5" description="Search across your accessible Organizations and Boards." />
     <Stack component="form" spacing={2} onSubmit={event => { event.preventDefault(); actor.current = undefined;
       void load({ ...draft, q: draft.q.trim(), label: draft.label.trim(), member: draft.member.trim() }); }}>
       <TextField label="Card text" value={draft.q} onChange={e => setDraft({ ...draft, q: e.target.value })} slotProps={{ htmlInput: { maxLength: 160 } }} />

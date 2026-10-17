@@ -1,5 +1,7 @@
 # PRD-05 acceptance and closure audit
 
+UX delivery addendum: apply [UXA-01–08](../ux/feature-acceptance.md), this PRD's [dependency/discovery mapping](../ux/backlog-map.md) and the [separate functional/UX/test/MVP report](../ux/delivery-report.md). Existing acceptance below remains authoritative; historical evidence is not re-certified by this addendum.
+
 This audit covers the complete [PRD-05 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/6), including all ten functional requirements, three acceptance criteria, thirteen test scenarios and the definition of done. PRD-05 remains open. Estimated work remaining is **14%**, a planning estimate rather than a measured completion fraction.
 
 ## Functional traceability

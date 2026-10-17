@@ -1,3 +1,5 @@
+import { organizationNavigation } from '../../app/navigationModel';
+import { ActionRow } from '../../components/ActionRow';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -233,7 +235,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const organization = data?.organizations.find(
     (item) => item.organization.id === organizationId,
   )?.organization;
-  const ownRole = data?.organizations.find(item => item.organization.id === organizationId)?.role;
+  const currentOrganization = data?.organizations.find(item => item.organization.id === organizationId);
   const nextCursor = paging?.after === cursor ? paging?.next : undefined;
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -331,26 +333,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             {organization?.description && (
               <Typography>{organization.description}</Typography>
             )}
-            <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
-              {organizationId && organization?.status === 0 && <Button component={Link} to={`/app/${organizationId}/archived-boards`}>Archived boards</Button>}
-              {organizationId && organization?.status === 0 && ownRole !== undefined && <Button component={Link} to={`/app/${organizationId}/leave`}>Leave Organization</Button>}
-              {organizationId && organization?.status === 0 && ownRole === 0 && <Button component={Link} to={`/app/${organizationId}/delete`}>Request Organization deletion</Button>}
-              {organizationId && organization?.status === 0 && (ownRole === 0 || ownRole === 1) && <Button component={Link} to={`/app/${organizationId}/operational-lifecycle`}>Organization lifecycle</Button>}
-              {organizationId && organization?.status === 0 && ownRole !== undefined && ownRole <= 1 && (
-                <Button component={Link} to={`/app/${organizationId}/settings`}>Organization settings</Button>
-              )}
-              {organizationId && organization?.status === 0 && ownRole !== undefined && ownRole <= 1 && (
-                <Button component={Link} to={`/app/${organizationId}/configuration`}>Organization configuration</Button>
-              )}
-              {organizationId && organization?.status === 0 && ownRole !== undefined && ownRole <= 1 && (
-                <Button component={Link} to={`/app/${organizationId}/retention-policies`}>Retention policies</Button>
-              )}
-              {organizationId && organization?.status === 0 && ownRole !== undefined && ownRole <= 1 && (
-                <Button component={Link} to={`/app/${organizationId}/retention-holds`}>Retention holds</Button>
-              )}
-              {data.organizations.some(item => item.organization.id === organizationId && item.organization.status === 0 && item.role <= 1) && (
-                <Button component={Link} to={`/app/${organizationId}/members`}>Organization members</Button>
-              )}
+            <ActionRow sx={{ gap: 2 }}>
+              {organizationNavigation(organizationId, currentOrganization).map(item =>
+                <Button key={item.id} component={Link} to={item.to}>{item.label}</Button>)}
               <Button disabled={creating && !organizationId}
                 onClick={() => {
                   setData(undefined);
@@ -370,7 +355,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
                   Create {organizationId ? "board" : "organization"}
                 </Button>
               )}
-            </Stack>
+            </ActionRow>
             {organizationId ? (
               data.boards.length === 0 ? (
                 <Typography>{cursor ? "No accessible boards on this page. Return to the first page to check earlier boards." : "No accessible boards yet."}</Typography>

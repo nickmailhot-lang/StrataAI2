@@ -1,3 +1,5 @@
+import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import { DescriptionParserWarmup } from '../features/kanban/CardDescriptionPreview';
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
@@ -22,37 +24,22 @@ import {
   Toolbar,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import type { ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useParams } from "react-router-dom";
 import { SurfaceAdmission } from './SurfaceAdmission';
 import { NavigationConfirmation } from './NavigationConfirmation';
+import { internalNavigation } from './navigationModel';
+import { designTokens } from '../theme/designTokens';
 
-const drawerWidth = 248;
-
-type NavigationItem = {
-  label: string;
-  icon: ReactNode;
-  destination?: "home" | "organization" | "notifications";
+const drawerWidth = designTokens.navigationWidth;
+const navigationIcons = {
+  organizations: <DashboardOutlinedIcon />, boards: <ViewKanbanOutlinedIcon />,
+  meetings: <MeetingRoomOutlinedIcon />, notifications: <NotificationsOutlinedIcon />,
+  correspondence: <EmailOutlinedIcon />, documents: <DescriptionOutlinedIcon />, units: <GroupsOutlinedIcon />,
 };
-
-const navigation: NavigationItem[] = [
-  {
-    label: "Organizations",
-    icon: <DashboardOutlinedIcon />,
-    destination: "home",
-  },
-  {
-    label: "Boards",
-    icon: <ViewKanbanOutlinedIcon />,
-    destination: "organization",
-  },
-  { label: "Meetings", icon: <MeetingRoomOutlinedIcon /> },
-  { label: "Notifications", icon: <NotificationsOutlinedIcon />, destination: "notifications" },
-  { label: "Correspondence", icon: <EmailOutlinedIcon /> },
-  { label: "Documents", icon: <DescriptionOutlinedIcon /> },
-  { label: "Owners & Units", icon: <GroupsOutlinedIcon /> },
-];
 
 export function InternalAppShell() {
   const { pathname } = useLocation();
@@ -67,16 +54,63 @@ export function InternalAppShell() {
 
 function InternalLayout() {
   const { organizationId } = useParams();
+  const { pathname } = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const appBar = useRef<HTMLElement | null>(null);
+  const [headerHeight, setHeaderHeight] = useState<number>();
+  useLayoutEffect(() => {
+    const header = appBar.current;
+    if (!header) return;
+    const measure = () => {
+      const height = Math.ceil(header.getBoundingClientRect().height);
+      if (height > 0) setHeaderHeight(height);
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+  const headerOffset = <Box aria-hidden="true" sx={{ height: headerHeight ?? { xs: 56, sm: 64 }, flexShrink: 0 }} />;
+  const mobile = useMediaQuery(useTheme().breakpoints.down("sm"));
+  const closeNavigation = () => setMobileOpen(false);
+  useEffect(() => { setMobileOpen(false); }, [mobile, pathname]);
+  const navigationItems = <List aria-label="Internal application navigation">
+    {internalNavigation('INTERNAL', organizationId ?? '', pathname).map(item => {
+      const unavailable = 'unavailable' in item;
+      return <ListItem key={item.id} disablePadding>
+        {unavailable ? <ListItemButton component="div" disabled>
+          <ListItemIcon>{navigationIcons[item.id as keyof typeof navigationIcons]}</ListItemIcon>
+          <ListItemText primary={item.label} secondary="Not available yet" />
+        </ListItemButton> : <ListItemButton component={Link} to={item.to}
+          selected={item.current} aria-current={item.current ? 'page' : undefined} onClick={closeNavigation}>
+          <ListItemIcon>{navigationIcons[item.id as keyof typeof navigationIcons]}</ListItemIcon>
+          <ListItemText primary={item.label} />
+        </ListItemButton>}
+      </ListItem>;
+    })}
+  </List>;
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      <Box component="a" href="#internal-main-content"
+        onClick={event => { event.preventDefault(); document.getElementById('internal-main-content')?.focus(); }}
+        sx={{ position: 'fixed', top: 0, left: 0, transform: 'translateY(-150%)',
+          zIndex: theme => theme.zIndex.modal + 1, bgcolor: 'background.paper', color: 'primary.main', p: 2,
+          '&:focus': { transform: 'translateY(0)' } }}>Skip to main content</Box>
       <AppBar
+        ref={appBar}
         position="fixed"
         elevation={0}
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
-        <Toolbar>
-          <Typography variant="h6" component="h1" sx={{ flexGrow: 1 }}>
+        <Toolbar sx={{ gap: 0.5, flexWrap: 'wrap' }}>
+          <IconButton color="inherit" aria-label="Open navigation" aria-expanded={mobileOpen && mobile}
+            aria-controls={mobileOpen && mobile ? 'internal-mobile-navigation' : undefined}
+            onClick={() => setMobileOpen(true)} sx={{ display: { xs: 'inline-flex', sm: 'none' } }}>
+            <MenuOutlinedIcon />
+          </IconButton>
+          <Typography variant="h6" component="h1" sx={{ flexGrow: 1, minWidth: 'max-content', flexShrink: 0, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
             StrataAI2
           </Typography>
           <Typography
@@ -85,28 +119,6 @@ function InternalLayout() {
           >
             Organization: {organizationId ?? "Unknown"}
           </Typography>
-          <Tooltip title="Organizations">
-            <IconButton
-              component={Link}
-              to="/app"
-              color="inherit"
-              aria-label="Open organizations"
-              sx={{ display: { xs: "inline-flex", sm: "none" } }}
-            >
-              <GroupsOutlinedIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Boards">
-            <IconButton
-              component={Link}
-              to={`/app/${organizationId}`}
-              color="inherit"
-              aria-label="Open boards"
-              sx={{ display: { xs: "inline-flex", sm: "none" } }}
-            >
-              <ViewKanbanOutlinedIcon />
-            </IconButton>
-          </Tooltip>
           <Tooltip title="Search Cards">
             <IconButton component={Link} to={`/app/${organizationId}/search`} color="inherit" aria-label="Search Cards">
               <SearchOutlinedIcon />
@@ -143,29 +155,29 @@ function InternalLayout() {
           },
         }}
       >
-        <Toolbar />
+        {headerOffset}
         <DescriptionParserWarmup />
-        <List aria-label="Internal application navigation">
-          {navigation.map((item) => (
-            <ListItem key={item.label} disablePadding>
-            <ListItemButton
-              component={Link}
-              to={
-                item.destination === "home" ? "/app" : item.destination === "notifications" ? `/app/${organizationId}/notifications` : `/app/${organizationId}`
-              }
-              disabled={!item.destination}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
-            </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        {navigationItems}
         <Divider />
       </Drawer>
 
+      {mobile && <Drawer variant="temporary" open={mobileOpen} onClose={closeNavigation}
+        sx={{ zIndex: theme => theme.zIndex.modal }}
+        slotProps={{ paper: { id: 'internal-mobile-navigation',
+          'aria-label': 'Application navigation dialog', sx: { width: drawerWidth, maxWidth: '100vw' } } }}>
+        <Box component="nav" aria-label="Mobile application navigation">
+        <Toolbar>
+          <Typography sx={{ flexGrow: 1 }}>Navigation</Typography>
+          <IconButton aria-label="Close navigation" onClick={closeNavigation}><CloseOutlinedIcon /></IconButton>
+        </Toolbar>
+        {navigationItems}
+        </Box>
+      </Drawer>}
+
       <Box
         component="main"
+        id="internal-main-content"
+        tabIndex={-1}
         sx={{
           flexGrow: 1,
           minWidth: 0,
@@ -173,7 +185,7 @@ function InternalLayout() {
           p: { xs: 2, md: 3 },
         }}
       >
-        <Toolbar />
+        {headerOffset}
         {organizationId && <NavigationConfirmation key={`navigation-context-${organizationId}`}
           target={{ kind: 'context', organization: organizationId }} />}
         <Outlet />

@@ -1,3 +1,6 @@
+import { ActionRow } from '../../components/ActionRow';
+import { PageHeader } from '../../components/PageHeader';
+import { designTokens } from '../../theme/designTokens';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, Checkbox, Paper, Stack, Typography } from '@mui/material';
 import { Link, useParams } from 'react-router-dom';
@@ -164,16 +167,15 @@ function NotificationCenter({ organizationId }: { organizationId: string }) {
     }
   }
   const unread = page?.items.filter(n => n.readAt === null) ?? [];
-  return <Stack spacing={2} sx={{ maxWidth: 900, overflowWrap: 'anywhere' }}>
-    <Typography component="h2" variant="h4">Notifications</Typography>
-    <Typography>Updates automatically while this page is open. New notifications appear on the first page.</Typography>
-    <Stack direction="row" useFlexGap sx={{ gap: 1, flexWrap: 'wrap' }}>
+  return <Stack spacing={2} sx={{ maxWidth: designTokens.contentMaxWidth, overflowWrap: 'anywhere' }}>
+    <PageHeader title="Notifications" description="Updates automatically while this page is open. New notifications appear on the first page." />
+    <ActionRow>
       <Button ref={refresh} disabled={busy} onFocus={() => { focusTarget.current = 'refresh'; }}
         onBlur={event => { if (event.relatedTarget !== null) focusTarget.current = undefined; }}
         onClick={() => { setSelected([]); void load(undefined, 'retry'); }}>{denied ? 'Check notifications again' : 'Refresh notifications'}</Button>
       <Button component={Link} to={`/app/${organizationId}`}>Open boards</Button>
       {denied && <Button component={Link} to="/login">Sign in</Button>}
-    </Stack>
+    </ActionRow>
     {busy && <Typography role="status">Checking current notifications…</Typography>}
     {notice && <Alert severity={recovery ? 'warning' : 'info'}>{notice}</Alert>}
     {recovery && <Button ref={retry} disabled={busy} onFocus={() => { focusTarget.current = 'retry'; }}
