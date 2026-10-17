@@ -3,17 +3,17 @@
 Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
 
 PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
-Work items: 0/1535 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2379. Unverified includes unknown and partially tested work; it does not assert code is absent.
+Work items: 0/1537 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2381. Unverified includes unknown and partially tested work; it does not assert code is absent.
 
 | Kind | Total | Done |
 | --- | ---: | ---: |
 | Epic | 8 | 0 |
 | PRD | 100 | 0 |
 | Vertical Slice | 466 | 0 |
-| Task | 476 | 0 |
-| Test | 485 | 0 |
+| Task | 477 | 0 |
+| Test | 486 | 0 |
 
-Implemented but unvalidated: 43. Blocked: 4. Known MVP-critical outstanding: 83; unclassified records: 1285. Weighted progress: not measured.
+Implemented but unvalidated: 44. Blocked: 4. Known MVP-critical outstanding: 85; unclassified records: 1285. Weighted progress: not measured.
 
 ## 1. Work completed
 
@@ -22,14 +22,16 @@ Corrected focused UI58 pass at01772d8d. Original unchanged Organization-director
 Read currentPRD04 additive amendment and preserve frozen baseline; retain three new navigation criteria as Unverified linked child acceptance. Separate draft100 has no overlapping reset/helper repair.
 Controlled authority86 before fix:5fail/81pass in19.04s; pending original-command positive control and all80existing cases pass. Minimal readonly-intent/phase-aware reset/focus repair now makes86/86 pass on unchanged soon-to-be-committed inputs,19.69s; this is working-tree scoped evidence, not full acceptance.
 Downloaded hosted diagnostic ZIP checksum matchesf678c224...; actual build metadata2c747cd0 and two captures inspected.
+Frozen broader166-case scope reports165pass/1held-Card-admission-launcher failure,138.15s; build/types/lint pass. No aggregate scope pass.
 
 ## 2. Implemented, awaiting validation
 
-PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02
+PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02
 
 ## 3. Current work in progress
 
-Freeze minimal3-file authority repair plus stronger four-width native consent/focus/Axe checks, then current build/types/lint and broader unit regression.
+Add two controlled List/Card pending-admission cases with transparent capture of an existing toolbar busy callback. Preserve original Card7 test unchanged; then bind computed busy to the existing checkingCreation state.
+Authority repair86pass remains scoped evidence; current native34/full and release/review/integration are pending.
 
 ## 4. Blockers and dependencies
 
@@ -41,13 +43,14 @@ Current release/review/main integration remains pending; earlier98 has a real re
 
 ## 5. Next highest-priority deliverable
 
-Commit current minimal repair/native assertions; record exact implementation revision. Build/typecheck/lint and run current List/Card/Board/canvas58 plus OrganizationHome/protocol86/focus/WorkMutationIntent tests. Then current compiled native34 and rendered four-width authority screens before one combined full frontend run alone.
+Run new controlled sibling-busy release cases plus originalCard7 before the minimal guard. Preserve actual red result, then include checkingCreation in computed busy, rerun full affected scope/build/types/lint. Do not increase timeouts/retries or weaken the original held-admission assertion.
 
 ## 6. PRD progress changes
 
 Rework existingVS05/T01/UI Test via lifecycle; no original criteria/IDs/tests removed, no new feature scope.
 Append BoardVS05AC06 and focusedT03/twoTests; preserve every prior child/source/criterion/history. Add livePRD04UX-NAV01/02/03 as Unverified and map affectedUX-NAV03; broader draft100 navigation remains separate.
 Baseline validation correctly refuses unknown canonical source obligations. Preserve frozen original PRD04 list; represent live UX-NAV01/02/03 additively under separateVS06/auditTask/manualTest, owned by existing UX draft100. No validation rule or baseline is weakened.
+Add required focused ListVS05T03 and Test for owned admission busy guard; shared List/Card consumer trace links existing AC03 criteria. No new feature, wire/API/schema/dependency or receipt-algorithm scope.
 
 ## 7. Completion evidence
 
@@ -58,6 +61,7 @@ EVID-CYCLE-09-AUTHORITY-BEFORE
 EVID-CYCLE-09-PRD04-RECONCILIATION
 EVID-CYCLE-09-AUTHORITY-COMPONENTS-RED
 EVID-CYCLE-09-HOSTED-ARTIFACT-INTEGRITY
+EVID-CYCLE-09-BROADER-COMPONENTS-FAILED
 
 ## Recent verified completed increments
 
