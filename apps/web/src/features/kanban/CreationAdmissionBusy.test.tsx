@@ -26,14 +26,14 @@ it.each(['List', 'Card'] as const)('PRD-07-VS-05-T-03 keeps %s admission pending
   const router = createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId', element: <BoardScreen /> }], { initialEntries: ['/app/org/boards/board'] });
   render(<RouterProvider router={router} />, { wrapper: AppThemeFixture });
   const name = kind === 'List' ? 'Add list' : 'Add card to Planning';
-  const launcher = await screen.findByRole('button', { name, exact: true });
+  const launcher = await screen.findByRole('button', { name });
   await waitFor(() => expect(launcher).toBeEnabled()); fireEvent.click(launcher);
   await waitFor(() => expect(finish).toBeDefined()); expect(sibling.release).toBeDefined();
   act(() => sibling.release!());
-  expect(screen.getByRole('button', { name, exact: true })).toBeDisabled();
+  expect(screen.getByRole('button', { name })).toBeDisabled();
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(fetcher.mock.calls.filter(([, options]) => options?.method === 'POST')).toHaveLength(0);
   await act(async () => finish(reply(profile)));
-  expect(await screen.findByRole('dialog', { name: `Add ${kind.toLowerCase()}`, exact: true })).toBeVisible();
+  expect(await screen.findByRole('dialog', { name: `Add ${kind.toLowerCase()}` })).toBeVisible();
   expect(fetcher.mock.calls.filter(([path]) => path === '/me')).toHaveLength(1);
 });
