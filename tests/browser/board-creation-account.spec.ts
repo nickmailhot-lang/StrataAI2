@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 
@@ -33,7 +34,7 @@ for (const width of [1280, 390]) {
       });
       await page.route(/\/me\/?(?:\?|$)/, async route => {
         if (holdReads) await reads;
-        if (!page.isClosed()) await route.continue();
+        if (!page.isClosed() && !route.request().failure()) await route.continue();
       });
       await page.goto(`/app/${org}`);
       await expect(page.getByRole('heading', { name: 'Account-bound Organization', exact: true })).toBeVisible();
@@ -64,11 +65,13 @@ for (const width of [1280, 390]) {
       await expect.poll(() => attempts.length).toBe(2);
       const directory = await context.request.get(`/organizations/${org}/boards/directory`);
       expect(directory.status()).toBe(200); const remaining = (await directory.json()).items as { id: string }[];
-      await test.info().attach('original-command-account-evidence', { contentType: 'application/json', body: JSON.stringify({
+      const evidencePath = test.info().outputPath('original-command-account-evidence.json');
+      await writeFile(evidencePath, JSON.stringify({
         originalActor: original.id, replacementActor: replacement.id, statuses: attempts.map(x => x.status),
         createdIds: attempts.map(x => x.id), sameKey: attempts[0].key === attempts[1].key,
         sameBody: attempts[0].body === attempts[1].body, replacementBoardCount: remaining.length,
-      }, null, 2) });
+      }, null, 2));
+      await test.info().attach('original-command-account-evidence', { contentType: 'application/json', path: evidencePath });
       expect(attempts[1].status).toBe(401);
       expect(attempts[1].key).toBe(attempts[0].key); expect(attempts[1].body).toBe(attempts[0].body);
       expect(new URL(attempts[1].url).searchParams.get('expectedActorId')).toBe(original.id);

@@ -92,6 +92,7 @@ public static partial class WorkManagementEndpoints
                 "/boards",
                 async (
                     CreateBoardRequest request,
+                    Guid? expectedActorId,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -101,6 +102,10 @@ public static partial class WorkManagementEndpoints
                     {
                         return Results.Unauthorized();
                     }
+                    // Existing clients may omit this context. Browser creation
+                    // and original retries stay bound to the admitted account.
+                    if (expectedActorId is Guid expected && expected != userId.Value)
+                        return ErrorFor("session_unavailable");
 
                     if (!TryParseVisibility(
                             request.Visibility,

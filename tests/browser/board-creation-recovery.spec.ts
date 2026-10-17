@@ -53,7 +53,10 @@ for (const width of [1280, 768, 390, 320]) {
     // Closing a recovered unsent form must target the replacement launcher,
     // rather than the original button removed by access withdrawal.
     if (width >= 768) await page.keyboard.press('Escape');
-    else await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+    else {
+      const cancel = dialog.getByRole('button', { name: 'Cancel', exact: true });
+      await cancel.focus(); await cancel.press('Enter');
+    }
     await expect(dialog).toBeHidden();
     const launcher = page.getByRole('button', { name: 'Create board', exact: true });
     await expect(launcher).toBeFocused();
@@ -64,7 +67,7 @@ for (const width of [1280, 768, 390, 320]) {
     await dialog.getByLabel('Name', { exact: false }).fill('Recovered planning Board');
     await dialog.getByLabel('Description', { exact: true }).fill('Keep this unsent draft');
     const attempts: { body: string | null; key: string | undefined }[] = [];
-    await page.route('**/boards', async route => {
+    await page.route(url => url.pathname === '/boards', async route => {
       if (route.request().method() !== 'POST') return route.continue();
       attempts.push({ body: route.request().postData(), key: route.request().headers()['idempotency-key'] });
       const canonical = await route.fetch(); expect(canonical.status()).toBe(201);

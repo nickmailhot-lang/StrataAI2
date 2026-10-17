@@ -255,7 +255,8 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const nextCursor = paging?.after === cursor ? paging?.next : undefined;
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy || !data) return;
+    const originalActor = actor.current;
+    if (busy || !data || !originalActor || liveActor !== originalActor) return;
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") ?? "").trim();
     if (!name) {
@@ -267,7 +268,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
     try {
       if (organizationId) {
         const board = await mutation.current.send<{ id: string }>(
-          "/boards",
+          `/boards?expectedActorId=${encodeURIComponent(originalActor)}`,
           "POST",
           {
             organizationId,

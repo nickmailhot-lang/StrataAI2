@@ -12,6 +12,7 @@ const lifecycle = vi.hoisted(() => ({ watch: vi.fn<(options: {
   unavailable(): void; accountUnavailable(): void }) => () => void>(() => vi.fn()) }));
 vi.mock('./organizationLifecycleLive', () => ({ watchOrganizationLifecycle: lifecycle.watch }));
 const profile = { id: '22222222-2222-4222-8222-222222222222', version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' };
+const boardCreationPath = `/boards?expectedActorId=${profile.id}`;
 function stubFetch(delegate: (path: string, options?: RequestInit) => unknown) {
   vi.stubGlobal('fetch', (path: string, options?: RequestInit) => {
     if (path === '/me') return Promise.resolve(response(profile));
@@ -166,7 +167,7 @@ describe("PRD-01/03/04 organization discovery", () => {
   });
   it('does not navigate to a Board whose acknowledgment arrives after deletion starts', async () => {
     let finish!: (value: Response) => void;
-    stubFetch(async (path: string) => path === '/boards' ? new Promise<Response>(resolve => { finish = resolve; })
+    stubFetch(async (path: string) => path === boardCreationPath ? new Promise<Response>(resolve => { finish = resolve; })
       : response(path === '/organizations/org-1' ? organizations[0] : { organizationId: 'org-1', items: [], nextCursor: null }));
     const router = mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
     fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
@@ -548,6 +549,7 @@ describe("PRD-01/03/04 organization discovery", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Create$/ }));
     await screen.findByText("Created board destination");
     expect(router.state.location.pathname).toBe("/app/org-1/boards/new-board");
+    expect(fetcher.mock.calls[2][0]).toBe(boardCreationPath);
     expect(JSON.parse(fetcher.mock.calls[2][1].body)).toMatchObject({
       name: "Planning",
       organizationId: "org-1",
@@ -560,6 +562,22 @@ describe("PRD-01/03/04 organization discovery", () => {
     stubFetch(vi.fn().mockResolvedValue(response({}, 401)));
     mount();
     expect(await screen.findByText("Sign in destination")).toBeVisible();
+  });
+  it('withdraws the Board form when the server refuses its original account context', async () => {
+    const writes: string[] = [];
+    stubFetch(async (path, options) => {
+      if (options?.method === 'POST') { writes.push(path); return response({ code: 'session_unavailable' }, 401); }
+      return response(path === '/organizations/org-1' ? organizations[0] : { organizationId: 'org-1', items: [], nextCursor: null });
+    });
+    const router = mount('/app/org-1');
+    fireEvent.click(await screen.findByRole('button', { name: 'Create board' }));
+    fireEvent.change(screen.getByLabelText(/Name/), { target: { value: 'Original account draft' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Create$/ }));
+    await screen.findByRole('heading', { name: 'Sign in destination' });
+    expect(router.state.location.pathname).toBe('/login');
+    expect(writes).toEqual([boardCreationPath]);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByText('Original account draft')).not.toBeInTheDocument();
   });
   it("does not request or expose boards for an organization outside active membership", async () => {
     const fetcher = vi.fn().mockResolvedValue(response({}, 404));
