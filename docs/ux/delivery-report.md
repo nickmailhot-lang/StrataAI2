@@ -1,5 +1,7 @@
 # Consolidated PRD delivery report
 
+2026-10-17 reconciliation: the current machine-readable work-item ledger is [delivery/progress.json](../delivery/progress.json), with [generated reporting and lifecycle controls](../delivery/README.md). PR [#94](https://github.com/nickmailhot-lang/StrataAI2/pull/94) merged into `main` as `e90c6442` on 2026-10-17. The frozen report below preserves its original scope, results and pending acceptance; its draft/merge statements describe that historical snapshot. Merge does not certify all UX PRDs or the operational MVP. Continue recording feature-specific UX evidence here and link current cycle/state evidence from the ledger.
+
 As of 2026-10-16 (America/Vancouver). Branch: `ux/ux-001-foundation`; baseline: `ca2e45d852e67407ef429973d07fb604fd8833b5`. This is the single UX-integrated delivery ledger. Update this file for subsequent PRD milestones; historical specialized acceptance documents remain evidence, not alternate current completion dashboards.
 
 ## Four independent measurements
