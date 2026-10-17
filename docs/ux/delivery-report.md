@@ -1,6 +1,8 @@
 # Consolidated PRD delivery report
 
-As of 2026-10-16 (America/Vancouver). Branch: `ux/ux-001-foundation`; baseline: `ca2e45d852e67407ef429973d07fb604fd8833b5`. This is the single UX-integrated delivery ledger. Update this file for subsequent PRD milestones; historical specialized acceptance documents remain evidence, not alternate current completion dashboards.
+Current continuation: 2026-10-17 (America/Vancouver), branch `ux/strata-workflows-20261017`, draft [PR #100](https://github.com/nickmailhot-lang/StrataAI2/pull/100). See the final section for current implementation and evidence. The 2026-10-16 foundation sections below are retained historical evidence, not certification of this continuation.
+
+Historical foundation branch: `ux/ux-001-foundation`; baseline: `ca2e45d852e67407ef429973d07fb604fd8833b5`. This is the single UX-integrated delivery ledger. Update this file for subsequent PRD milestones; historical specialized acceptance documents remain evidence, not alternate current completion dashboards.
 
 ## Four independent measurements
 
@@ -8,7 +10,7 @@ As of 2026-10-16 (America/Vancouver). Branch: `ux/ux-001-foundation`; baseline: 
 | --- | --- | --- |
 | Functional completion | Not re-measured; existing capabilities preserved, 80 canonical feature PRDs open | Required business FRs implemented / agreed in-scope FR denominator, linked to source and canonical acceptance |
 | UX completion | UX-001/002/003 implementation slices present; current role discovery and shared consumers added; no full UX PRD accepted | Integrated, usable required journeys / agreed journey denominator, with role/viewport evidence |
-| Test completion | Current frozen slice: 2,800 unit/component cases passed, 24 existing deferred cases skipped; types/lint passed; 8 controlled browser cases passed; 24/24 production-runtime browser cases passed; hosted current-head and release gates pending | Current required passing checks / full required-check denominator; report failures, skips, blockers separately |
+| Test completion (historical foundation only; current results below) | Foundation frozen slice: 2,800 unit/component cases passed, 24 existing deferred cases skipped; types/lint passed; 8 controlled browser cases passed; 24/24 production-runtime browser cases passed; hosted current-head and release gates pending | Current required passing checks / full required-check denominator; report failures, skips, blockers separately |
 | MVP readiness | No new acceptance; current operational MVP release gate remains open | Priority workflows accepted end-to-end and required current immutable release gates |
 
 No aggregate “product percent complete” is calculated. Documentation coverage (8/8 UX specifications and 80/80 feature mappings) is not UX workflow completion. Historical planning percentages and older release test counts remain bound to their original scopes/revisions; this work does not convert them into current acceptance.
@@ -183,7 +185,7 @@ All rows inherit [UXA-01–08](feature-acceptance.md); exact discovery, role, UX
 | [PRD-79: Shared Mailbox, Outbound Email and Correspondence Delivery](https://github.com/nickmailhot-lang/StrataAI2/issues/80) | Full FR evidence review pending | [Mapped; owning workflow acceptance pending](backlog-map.md#prd-79) | Current full PRD gates not re-certified | UX-001, UX-002, UX-003, UX-004, UX-005, UX-006, UX-007, UX-008; existing business dependencies retained | No new acceptance; PRD open |
 | [PRD-80: Owner and Resident Portal](https://github.com/nickmailhot-lang/StrataAI2/issues/81) | Existing slices; full FR acceptance open | [Mapped; owning workflow acceptance pending](backlog-map.md#prd-80) | Current full PRD gates not re-certified | UX-001, UX-002, UX-003, UX-005, UX-006, UX-007, UX-008; existing business dependencies retained | No new acceptance; PRD open |
 
-## Integration and next handoff
+## Historical foundation integration and handoff (2026-10-16)
 
 Keep this branch/PR isolated from active changes in the original main checkout, including attachment pipeline/CI/browser work. The UX branch starts from the recorded committed baseline and does not include or discard those uncommitted changes. Review/rebase on the eventual combined revision and rerun affected checks. This report does not pause or replace that work. Current implementation is recorded in commit `0da8dcbc7797899a0f3541a4e2da324dd48c0111`; subsequent evidence/ownership updates change documentation only. All current application/browser sources match that implementation. Backend/schema/build source trees are unchanged from `2c8e4cbb`, the revision embedded in the newly compiled API/Worker DLLs; frontend assets identify `0da8dcbc`. This is current-source local runtime evidence, not a new immutable image release certification.
 
@@ -191,29 +193,77 @@ Next sequence: finish current UX-001/002/003 checks and review → one global co
 
 ## Strata Work continuation (2026-10-17)
 
-Branch: `ux/strata-workflows-20261017`; current integration base `e90c6442` (merged PR #94). The primary local checkout was 843 commits behind. Its initial `c0943c3b` audit/checks were superseded after rebasing; its uncommitted backend edit remains untouched. This continuation builds on the existing shell/navigationModel/designTokens and retains independently admitted lifecycle/Portal recovery, safe Markdown, retained-source controls, current identity/date invalidation and original command recovery.
+Draft [PR #100](https://github.com/nickmailhot-lang/StrataAI2/pull/100), branch `ux/strata-workflows-20261017`; source implementation `b04e24ca`, browser fixture revision `f4a598a6`, integration base `e90c6442` (merged PR #94). The primary checkout was 843 commits behind. Its initial `c0943c3b` audit/checks were superseded after rebasing; its uncommitted backend edit remains untouched. This work retains the current shared shell/navigationModel/designTokens, independently admitted lifecycle/Portal recovery, safe Markdown, retained-source controls, current identity/date invalidation and original-command recovery. No server/schema changes.
 
-Implemented (not accepted): Work label/current section, omission of unavailable daily destinations, role-aware Organization and Board action disclosures, bounded title/assignee/date card summaries, a right-side/full-screen Card panel, fixed save/close actions, core/create draft confirmation and unload protection, preserved filtered canvas and delayed return-focus recovery. All ordered Lists, stable Card IDs, permissions, archive/audit and existing API/schema meanings remain. Multi-step command entry points use native named disclosures so their independently focused recovery dialogs remain mounted; this is an explicit adaptation of contextual menus. `VITE_STRATAAI_WORK_UX=0` restores inline actions and centered details on rebuild. Rollback validation and removal policy are in [the amendments](prd-amendments.md).
+### Delivery state
 
-Current scope and traceability: [repository inventory](current-state.md), [per-PRD amendments/slices/design-rule mapping](prd-amendments.md), existing [UXA-01 through UXA-08](feature-acceptance.md). New domain workflows are still owned by their original PRDs, with local dependencies rather than a global redesign gate. No parent is closed and no completion percentage is inferred.
+| Slice | Implemented | Tested | Accepted |
+| --- | --- | --- | --- |
+| S1 navigation and action hierarchy | Work label/current section; omit unavailable daily destinations; role-aware Organization and Board disclosures; primary Add card/List picker | Four-width shell/role/zoom browser cases passed; full regression passed (2,804 cases) | No human or release acceptance |
+| S2 scannable cards | Bounded title/assignee summaries and concrete timezone-aware due date with textual status | Full source regression and current four-width browser journeys passed | Not accepted; unit/priority/count aggregate producers absent |
+| S3 detail and editing | Right-side desktop/full-screen phone Card URL; fixed Save/Close; organized detail; dirty core/create confirmation, unload protection, lifecycle action protection | Real save failure/same-key recovery, Back/close, keyboard move; layout rollback 390px passed | No full PRD acceptance |
+| S4 filter context | Keep filtered canvas/scroll while inspecting; restore focus through late filter/live remounts until next deliberate interaction | Current four-width journeys passed with final live-focus repair; missing views/dimensions remain planned | Not accepted; new views, sorting, strata dimensions and shareable criteria remain separate |
+| S5 email; S6 governance | No implementation; exact service prerequisites in inventory/amendments | Not run: missing domain workflows | Blocked on domain services, not a confirmation request |
+| S7 cross-workflow verification | Dedicated real API journey plus existing matrices and disclosure-aware fixture entry points | Current gate ledger below | Full WCAG/device/release acceptance pending |
 
-| Evidence | Status on this continuation |
+All ordered Lists, stable Card IDs, permissions, archive/audit and existing API meanings remain. Named native disclosures keep multi-step command owners and recovery dialogs mounted; this is an explicit adaptation of contextual menus. `VITE_STRATAAI_WORK_UX=0` restores inline actions and centered details on rebuild. The complete 390px create/assign/edit/filter/move/retry/denial journey passed with the flag off against an independent Demo API/origin. No security policy was weakened for rollback.
+
+[Repository inventory](current-state.md), [per-PRD amendments/slices/design-rule mapping](prd-amendments.md) and [UXA-01 through UXA-08](feature-acceptance.md) define scope. All 80 canonical PRD bodies were reviewed. Additive observable UX sections were applied directly to 43 canonical issues: PRD-01, 03, 04, 06, 08–12, 14–19, 23–26, 28, 34, 36–37, 39, 41–45, 48–49, 54–55, 57–58, 65–66, 71–73, 77–79. Readback of all 43 verified the complete original body is preserved as a prefix and the new section appears exactly once. IDs, labels, state and original functional requirements are retained. No parent is closed and no completion percentage is inferred.
+
+### Current verification ledger
+
+| Gate | Current evidence / limitations |
 | --- | --- |
-| API build with locked dependencies | Passed at the rebased current-main source; zero warnings/errors. No backend changes. |
-| Focused source regression | 137 cases passed in 8 files after rebase: shell/router/menu, core draft guard/editor, card summaries, Organization Home and Board recovery. Subsequent delayed-filter focus change requires its final rerun. |
-| Work browser journey at 1280px | Passed after fixing delayed filtered-card focus (21.2s). Includes actual Demo API creation, assignment, date, filtering, dirty close/Back protection, injected save failure/same-key retry, keyboard List move, clear, anonymous private-board refusal and Axe. Subsequent primary creation action is included in the final rerun. |
-| Current full web regression | Running on implementation `8d0d1a29`; the earlier run was deliberately interrupted when the browser exposed a new focus defect. Interrupted execution is not a pass. |
-| Required desktop/tablet/phone and wider browser checks | Running; current results retained below before final report. Production PostgreSQL/RLS/Worker/immutable-image release and human acceptance remain unverified. |
+| API locked build | Passed at rebased current-main source, zero warnings/errors; backend unchanged |
+| Focused source regression | 137 passed in 8 files after rebase; full final regression below now supersedes it |
+| Full frontend regression | **Passed:** 2,804 cases in 190 files; 24 existing deferred capacity cases / one file skipped, unchanged. Source `b04e24ca`, two workers, 747.00s; `artifacts/ux-work/full-web-final.log`. Earlier interrupted runs are not passes |
+| Web/browser types, lint, production build | Passed: browser TypeScript, lint (zero warnings) and production build including web TypeScript. Build identity `f4a598a6`; 1,628.77 kB JS / 453.42 kB gzip. Existing >500 kB chunk advisory retained; no new performance certification |
+| Architecture/shards | 16 Node checks passed after disclosure fixture migration; collection remains 430 cases/158 intact files, 109/108/119/94 across four shards |
+| Combined browser matrix | **29 distinct default-presentation cases passed across scoped runs on unchanged application source:** existing board 3 + controlled shell/role/zoom 8; metadata 2 + long-label reflow 4 + copy 2 + cross-Board move 2 + departure 2 + URL attachments 2; current Work journey 4. Of these, 21 use the real Demo API and 8 controlled fixtures. Work at `f4a598a6`: 18.2/17.9/17.9/17.4s, 4/4 passed with retries=0. Earlier 13/15 and 17/18 runs remain evaluated failures below, not aggregate passes. Logs: `combined-first`, `final-browser.log`, `final-work-browser.log` |
+| Rollback | Current fixture `f4a598a6`: full 390px real Demo journey passed (19.8s, retries=0), including centered detail geometry and create/assign/edit/filter/move/retry/denial; independent API/origin. `artifacts/ux-work/final-rollback.log` and `rollback-final/` |
+| Visual/manual inspection | Actual application keyboard create/open; current desktop board/panel and 390px detail captures visually inspected. Full-height/right-edge geometry, Axe WCAG tags and page overflow assertions passed at all four widths. Screenshots: `artifacts/ux-work/final-work-current/test-results/work-usability-…/board.png` and `detail.png` (local task evidence, ignored by Git) |
+| Hosted CI / release | Final-HEAD hosted CI/release acceptance pending; earlier push runs were superseded/cancelled and are not passes. Production PostgreSQL/RLS/Worker, immutable release topology, all 430 browser cases and human acceptance are not certified here; PR stays draft |
 
-Evaluated failures retained as history:
+### Six requested demonstration outcomes
 
-- Initial isolated restore/build had no assets; locked restore repaired setup. An old running service occupied 8080/5173; isolated API/Vite use 8091/5174. Existing services were left intact.
-- A pre-rebase dev proxy query-route failure was already fixed upstream; the duplicate patch was dropped during rebase. The API target remains configurable for isolated development.
-- Dependency refresh initially failed with EPERM on a loaded native module. Stopping only this worktree's Vite process allowed locked installation; no elevation or broad process termination was used.
-- Pre-rebase draft-footer tests found asynchronous conflict/identity cleanup ordering; the state publication/cleanup now both use layout effects. Current focused regression passed.
-- Rebase source lint detected an omitted retained-source consumer in a moved region. SourceRetentionEntry was restored with its original authorization/version props; required final lint/regression remain in the ledger.
-- New browser fixture initially pressed a disabled create button during legitimate revalidation; it now explicitly waits for enabled state before its keyboard activation. No assertion or retry policy was relaxed.
-- Actual filtered-card movement revealed return focus could run before authorized filtered results remounted the Card. The filter now publishes pending state, and close focus waits for settled current results without stealing focus from another action. An initial repair cleared the target before dialog exit; it was corrected with an explicit exit-ready ref. The complete 1280px work journey then passed.
-- Existing 30-second Board tablet/mobile workflows timed out in the combined resource-contended run after reaching the final anonymous read-only detail. These are retained failures, not converted to passes; unchanged-case rerun and exact diagnostics are required before integration. No timeout increase, retries, skip or assertion removal is authorized to certify them.
+| Demonstration | Outcome / limit |
+| --- | --- |
+| Find Work from primary navigation | Passed desktop and phone navigation/current section; keyboard phone close restores trigger |
+| Create and assign a Card | Passed against real Demo API through primary Add card/List picker and assignee control; canonical Card retained |
+| Identify affected units and due date | Due date and textual overdue passed. **Affected units blocked**: no typed CardStrataLot/scope producer or authorized unit query under PRD-28/34; assignment is never treated as unit data |
+| Open/close without losing place | Passed: filter membership, horizontal Board scroll and return focus; real delayed filtered/live remount defect repaired. New browser assertions do not separately certify nonzero vertical scroll across every workflow |
+| Change status without dragging | Passed keyboard List selection/move with canonical API placement assertion. Existing user-named Lists remain the workflow; due completion is independent |
+| Recover from failed save | Passed injected first PATCH 503, retained draft and second save with same idempotency key; no duplicate command |
 
-Six requested demonstration outcomes are evaluated independently in final evidence: find Work; create/assign; affected units plus due date; open/close preserving context; status/List change without dragging; failed-save input recovery. Affected units remain blocked on PRD-28/34 typed relations and authorized queries; showing an assignee never satisfies that requirement. Email, agenda/vote, project/calendar and document-domain additions remain planned behind the exact services/authorization/audit prerequisites in the inventory. Those absent workflows and current release gates prevent accepted MVP claims.
+### Modified file inventory
+
+[Complete 62-file review diff](https://github.com/nickmailhot-lang/StrataAI2/pull/100/files); grouped ownership below.
+
+| Files / area | Reason |
+| --- | --- |
+| `apps/web/src/app/navigationModel.ts`, `SecondaryActions.tsx`, `UnsavedChangesGuard.tsx`, `workExperience.ts` and focused tests | Existing navigation model, reversible action disclosure and draft protection |
+| `apps/web/src/features/organizations/OrganizationHome.tsx` | Disclose existing admitted role navigation without a second role cache |
+| `apps/web/src/features/kanban/BoardScreen.tsx`, `CardDetailEditor.tsx` and tests | Primary creation, responsive detail, visible save, dirty protection and focus recovery; original command owners preserved |
+| `BoardCardLink.tsx`, `CardMemberIndicators.tsx`, `BoardDateBadges.tsx`, dedicated Card summary tests | Bounded title/assignee/date contract; unknown data remains unknown |
+| `BoardFilterControl.tsx`, `boardFilterCanvas.ts` | Preserve qualified filter state and publish pending reads for focus recovery |
+| `apps/web/vite.config.ts` | Configurable isolated API development target; original default retained |
+| `tests/browser/work-usability.spec.ts`, `workActionDisclosure.ts`, affected existing workflow fixtures | Four-width real API demonstration, unchanged original recovery/security assertions entered through visible action disclosures; exact per-file diff in PR |
+| `docs/README.md`, `docs/ux/current-state.md`, `prd-amendments.md`, `navigation-contract.md`, UX-001/002/005/006/008 and this ledger | Audit, decisions, traceability, PRD addenda, independently demonstrable commits and current evidence |
+
+### Evaluated failure history
+
+- Initial isolated restore/build had no assets; locked restore repaired setup. Existing services occupied 8080/5173, so own API/Vite use 8091/5174; original services and checkouts were left intact. Owner: this UX branch.
+- Initial stale local checkout was corrected by fetching/rebasing onto `e90c6442`; all old-checkout evidence is historical. Upstream's query-route proxy fix replaced the duplicate local fix. Owner: this UX branch.
+- Dependency refresh initially failed EPERM on a loaded module. Stopping only this worktree's Vite allowed locked installation. No elevation/broad process termination. Owner: this UX branch.
+- Draft-footer tests exposed async conflict/identity cleanup ordering; publication and cleanup both use layout effects. Focused regression passed. Rebase lint caught an omitted SourceRetentionEntry consumer; restored its original authorization/version props. Owner: this UX branch.
+- First Work fixture activated during legitimate disabled/modal entrance states. It now waits for actual admission, modal entrance and assignee return focus. Keyword value and one-result assertion remain intact. Keyboard option selection asserts the chosen List before confirming. Owner: this fixture.
+- Product defect: filtered Card focus ran before authorized results remounted after movement. Added pending/exit readiness and retained the target through subsequent live remounts, releasing it on the next deliberate key/pointer interaction. Final default four-width journeys and current rollback journey passed on unchanged application source `b04e24ca`. Owner: this UX branch.
+- Existing 30s Board tablet/mobile cases timed out late in an earlier combined, resource-contended run. Unchanged serialized rerun passed all three (20.7/21.0/20.5s), and current combined source rerun passed all three again (26.9/26.5/26.0s). No timeout increase, retries, skips or assertion removal.
+- A focused 76-case run had one 5s archive timeout; that unchanged case passed in the later full run before interruption. Two full runs were intentionally interrupted for newly discovered source fixes and do not certify regression. Final uninterrupted run passed all 2,804 cases, including the archive case; no source assertion was relaxed.
+- Combined current 15-case matrix passed 13; two mobile activation focus checks failed during live admission, before a mutation. Replaced the new fixture's one-shot focus setup with the repository's existing focusAdmittedControl protocol; mutation activation remains single. Original failures retained under `artifacts/ux-work/combined-first/`.
+- Selected 18-case run at `94798b96`: 17 passed; tablet Work timed out waiting for Due date because a live admission retired the read-only Edit dates activation. Reused existing openAdmittedReview for read-only panel openings only (no write replay). All four affected Work cases then passed at `f4a598a6`; all 14 other selected cases retain their passes. Failure trace remains in `artifacts/ux-work/selected-browser/`. Owner: this fixture.
+- The root npm forwarding form rejected maxWorkers as configuration; no tests executed. Correct workspace command started the full suite with two workers. No product defect.
+
+Existing file attachments, source-retention consumers and role/Portal/lifecycle behavior are retained, but moving a control is not certification of every affected release journey. Broader disclosure-entry fixture migrations preserve their original assertions and require their owning real-service gates. New document-domain workflows, Project/calendar, email intake/merge/approval, meetings/agenda/motions/votes and visit-baseline dashboards remain planned behind the exact persistence, authorization, provenance and audit services in the inventory. No voting authority or thresholds are invented. These absent workflows and release gates prevent an accepted MVP claim.
+
+Shared global strata-name/context refinements and remaining form/consumer migrations stay under UX-001/003/005; the established sidebar/top bar were reused, not newly invented. The local Demo checks above are not production authorization or full WCAG certification. The same application source passed full regression, final Work checks and rollback; later commits change browser fixtures or documentation only.
