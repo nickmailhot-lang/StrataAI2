@@ -1,0 +1,18 @@
+{
+  "revision": "ccc424c8d3cef6407268f428c6af87e7c5c45531",
+  "backend": "3bf5c2ba7598f3348143b3b5083c8c7be3be1bc8",
+  "trees": [
+    {
+      "path": "src",
+      "compiled": "4680ed94029cc325c822686e5f841f08c9cbf4c7",
+      "current": "4680ed94029cc325c822686e5f841f08c9cbf4c7"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests",
+      "compiled": "b5b612c6c78939adff80e2d6692f77ba4407504e",
+      "current": "b5b612c6c78939adff80e2d6692f77ba4407504e"
+    }
+  ],
+  "priorApiEvidence": "EVID-CYCLE-06-FINAL-API",
+  "scope": "All16 server cases passed at explicitly prior compiled3bf5c2ba. Server/test inputs are unchanged for this UI-only repair; current native21 exercises that actual API with current web. No newly executed API16 pass at ccc424c8 is claimed."
+}

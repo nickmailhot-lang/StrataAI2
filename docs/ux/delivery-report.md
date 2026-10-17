@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-17 — PRD-08-VS-04-T-02 visible Card recovery, current scoped UX verified
+
+At `ccc424c8`, an explicitly refused Card creation returns focus to its generic error and centers it below the fixed header, while preserving deliberate independent navigation focus. The native fixture now retains 200% text across reload and verifies both the actual root size and unobscured canonical Card return. The existing MUI Alert, shell and route model are preserved. Server, authorization, schemas, events and command semantics are unchanged.
+
+Current scoped checks pass: **7/7 controlled UI cases and 21/21 native workflows**, zero failures/skips/retries, plus web build/types, browser types and lint. Native execution uses current compiled web `ccc424c8` and the explicitly prior compiled Demo API `3bf5c2ba`; exact backend/test Git trees are unchanged, and the 16/16 server result retains its actual `3bf5c2ba` identity. All original actor/key/body/privacy checks and the unchanged 30-second Board workflows pass. The complete prior `3bf5c2ba` frontend also passed **2,834/0/24 existing deferred skips**; the complete **current** frontend is running alone and is not inferred from that result.
+
+Developer inspected all six new actual viewport captures separately: both refusal messages are fully visible and focused, with mobile y72 below header56 and desktop y88 below header64. Every returned Card focus ring is unobscured at 320/390/768/1280px, including persistent 200% tablet text after reload. Native geometry, text-size, keyboard, canonical persistence/return, overflow and applicable Axe assertions pass. The off-viewport skip link visible in scrolled full-page captures is absent in actual viewport captures; no shell repair was needed. This is scoped feature UX evidence, not screen-reader/device/full WCAG or release certification.
+
+The three native and one controlled pre-repair failures remain hashed evidence, including actual mobile alert y8/header56 and focus on BODY. All five scoped Card criteria are now verified; current full regression, required current immutable release/tenant/security checks, final review and main integration remain open. No slice or PRD is Done. The following entries preserve their historical checkpoint scopes and pending statements.
+
 ## 2026-10-17 — PRD-08-VS-04 original-account Card recovery, UX acceptance open
 
 Implemented at `3bf5c2ba`: Card form entry confirms its actor in a bounded authenticated read, keeps presentation unavailable while that check is pending, and preserves the actor on explicit original-key retries. The endpoint rejects a different authenticated actor before mutation; legacy clients remain supported. Existing MUI, shells, Board/Card routes, body/schema/events, service authorization and receipt namespaces remain in place. [Draft PR #99](https://github.com/nickmailhot-lang/StrataAI2/pull/99) is stacked on main-targeted #98.

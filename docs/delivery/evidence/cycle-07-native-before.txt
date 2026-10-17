@@ -1,0 +1,133 @@
+
+Running 3 tests using 1 worker
+
+(node:13560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px (7.8s)
+(node:11776) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px (2.6s)
+(node:12740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px (5.4s)
+
+
+  1) tests\browser\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('alert').filter({ hasText: 'Sign in to continue.' })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('alert').filter({ hasText: 'Sign in to continue.' }) with timeout 5000ms
+      - waiting for getByRole('alert').filter({ hasText: 'Sign in to continue.' })
+        14 × locator resolved to <div role="alert" class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-3tr75x">…</div>
+           - unexpected value "inactive"
+
+
+      90 |       expect(alertBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);
+      91 |       expect(alertBox.y + alertBox.height).toBeLessThanOrEqual(viewport.height);
+    > 92 |       await expect(refusal).toBeFocused();
+         |                             ^
+      93 |       await page.screenshot({ path: test.info().outputPath(`card-account-replacement-refused-${width}.png`), fullPage: true });
+      94 |     } finally {
+      95 |       holdReads = false; release(); await original?.close(); await member.close();
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\tests\browser\card-creation-account.spec.ts:92:29
+
+    attachment #1: card-command-account-evidence (application/json) ────────────────────────────────
+    ..\cycle6-ux-before\card-creation-account-PRD--f6077-placement-account-at-1280px\attachments\card-command-account-evidence-cc6bcb228b8ef265491d83599c332ed6c0e40cfa.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: card-refusal-geometry (application/json) ────────────────────────────────────────
+    ..\cycle6-ux-before\card-creation-account-PRD--f6077-placement-account-at-1280px\attachments\card-refusal-geometry-bd3538ddaec11b4f8c36e56c08ec6c38cf7ff7e9.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle6-ux-before\card-creation-account-PRD--f6077-placement-account-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle6-ux-before\card-creation-account-PRD--f6077-placement-account-at-1280px\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle6-ux-before\card-creation-account-PRD--f6077-placement-account-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle6-ux-before\card-creation-account-PRD--f6077-placement-account-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 56
+    Received:    8
+
+      88 |       await page.screenshot({ path: test.info().outputPath(`card-refusal-viewport-${width}.png`) });
+      89 |       if (!alertBox || !headerBox) throw new Error('Missing refusal/header geometry');
+    > 90 |       expect(alertBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);
+         |                          ^
+      91 |       expect(alertBox.y + alertBox.height).toBeLessThanOrEqual(viewport.height);
+      92 |       await expect(refusal).toBeFocused();
+      93 |       await page.screenshot({ path: test.info().outputPath(`card-account-replacement-refused-${width}.png`), fullPage: true });
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\tests\browser\card-creation-account.spec.ts:90:26
+
+    attachment #1: card-command-account-evidence (application/json) ────────────────────────────────
+    ..\cycle6-ux-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\attachments\card-command-account-evidence-6142b9d85d918d1c6ff4fcc7f5e48c8177615506.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: card-refusal-geometry (application/json) ────────────────────────────────────────
+    ..\cycle6-ux-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\attachments\card-refusal-geometry-d35a78ac09a01ea027be74dbdeb5ee64f3bbe0fb.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle6-ux-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle6-ux-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle6-ux-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle6-ux-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests\browser\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "32px"
+    Received: "16px"
+
+      49 |     await link.focus(); await link.press('Enter'); await expect(page).toHaveURL(new RegExp(`/cards/${cards[0].id}$`));
+      50 |     await page.reload(); await expect(page.getByLabel('Card title', { exact: false })).toHaveValue('Recover one canonical Card');
+    > 51 |     if (width === 768) expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px');
+         |                                                                                                               ^
+      52 |     const close = page.getByRole('button', { name: 'Close', exact: true }); await close.focus(); await close.press('Enter');
+      53 |     await expect(page).toHaveURL(new RegExp(`${boardPath}$`)); await expect(page.getByRole('link', { name: 'Recover one canonical Card', exact: true })).toBeFocused();
+      54 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\tests\browser\card-creation-recovery.spec.ts:51:111
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle6-ux-before\card-creation-recovery-PRD-5ba9e-turns-to-its-Board-at-768px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle6-ux-before\card-creation-recovery-PRD-5ba9e-turns-to-its-Board-at-768px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle6-ux-before\card-creation-recovery-PRD-5ba9e-turns-to-its-Board-at-768px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle6-ux-before\card-creation-recovery-PRD-5ba9e-turns-to-its-Board-at-768px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    tests\browser\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px 
+    tests\browser\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px 
+    tests\browser\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px 

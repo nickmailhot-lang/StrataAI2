@@ -1,0 +1,116 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --run src/features/kanban/CardCreationActor.test.tsx --maxWorkers=1
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle6-creation-actor/apps/web
+
+ ❯ src/features/kanban/CardCreationActor.test.tsx (6 tests | 1 failed) 4585ms
+   ❯ PRD-08-VS-04 Card creation identity (6)
+     × retains original actor, key and body through explicit retry and withdraws on server account refusal 1014ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/CardCreationActor.test.tsx > PRD-08-VS-04 Card creation identity > retains original actor, key and body through explicit retry and withdraws on server account refusal
+Error: expect(element).toHaveFocus()
+
+Expected element with focus:
+  <div
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-jseicq-MuiPaper-root-MuiAlert-root"
+  role="alert"
+  style="--Paper-shadow: var(--mui-shadows-0);"
+>
+  <div
+    class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+  >
+    <svg
+      aria-hidden="true"
+      class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-8hoymy-MuiSvgIcon-root"
+      data-testid="ErrorOutlineIcon"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+      />
+    </svg>
+  </div>
+  <div
+    class="MuiAlert-message css-137t94f-MuiAlert-message"
+  >
+    Sign in to continue.
+  </div>
+</div>
+Received element with focus:
+  <body
+  style=""
+>
+  <div>
+    <div
+      class="MuiStack-root css-n46lgt-MuiStack-root"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-jseicq-MuiPaper-root-MuiAlert-root"
+        role="alert"
+        style="--Paper-shadow: var(--mui-shadows-0);"
+      >
+        <div
+          class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-8hoymy-MuiSvgIcon-root"
+            data-testid="ErrorOutlineIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
+        </div>
+        <div
+          class="MuiAlert-message css-137t94f-MuiAlert-message"
+        >
+          Sign in to continue.
+        </div>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Retry
+      </button>
+      <a
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        data-discover="true"
+        href="/login"
+        tabindex="0"
+      >
+        Sign in
+      </a>
+    </div>
+  </div>
+</body>
+ ❯ src/features/kanban/CardCreationActor.test.tsx:55:39
+     53|     expect(writes[1]).toEqual(writes[0]); expect(writes[0].key).toMatc…
+     54|     expect(fetcher.mock.calls.filter(([path]) => path === '/me')).toHa…
+     55|     expect(screen.getByRole('alert')).toHaveFocus();
+       |                                       ^
+     56|   });
+     57|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  11:30:42
+   Duration  47.18s (import 80%, tests 10%, transform 6%, environment 4%, setup 1%)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --run src/features/kanban/CardCreationActor.test.tsx --maxWorkers=1
