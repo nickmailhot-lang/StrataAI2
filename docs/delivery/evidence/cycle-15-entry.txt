@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-17T23:16:09.453Z",
+  "revision": "d6ec2c68dd6b9d1d73d0f967689157afc7bb8367",
+  "base": "e90c6442ccc0b928a38db8793853ef03abe1bf3d",
+  "requirements": [
+    {
+      "number": 26,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/26",
+      "updatedAt": "2026-10-17T19:32:44Z",
+      "bodySha256": "0a92c58aa3ebfd4575f58f5b2166fe10bd18646d679f72f795b10635086f478e"
+    },
+    {
+      "number": 27,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/27",
+      "updatedAt": "2026-10-17T19:32:45Z",
+      "bodySha256": "a554af5b2e32fcc8c864d83a46b67b0792564607544a54b5cf5d31f11d253cdb"
+    },
+    {
+      "number": 92,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/92",
+      "updatedAt": "2026-10-17T03:56:14Z",
+      "bodySha256": "2ec01e5ed8f9d79b33a3f4416787e7e9acdfbe281af1d87abbb15ac04a510818"
+    }
+  ],
+  "decision": "One isolated combined main-target candidate containing all locally verified increments, preserving focused drafts and primary dirty/local main. Exact mandatory source/container/security/RLS/browser/release and source-free bundle checks remain required. Do not push further UI iterations into this frozen candidate. Continue independent MVP work in another owned branch while CI runs.",
+  "scope": "Current operational task-management milestone, preserving the broader PRD26 roadmap. No production deployment or managed-provider readiness implied. Product/build inputs equal actual fbbe942c; existing full2862/0/24 evidence stays at that source. Current candidate CI has not yet run.",
+  "ux": "UXA01–08 and owning backlog rows read. Additive live PRD25/26 UX-VERIFY01/02 remain Unverified; documentation/source checks cannot close parents.",
+  "publication": {
+    "number": 106,
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/106",
+    "head": "d6ec2c68dd6b9d1d73d0f967689157afc7bb8367",
+    "base": "delivery/archive-confirm-admission-20261017",
+    "draft": true
+  }
+}
