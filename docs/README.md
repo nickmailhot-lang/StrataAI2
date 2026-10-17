@@ -61,6 +61,10 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Planning and dependency order
 
+- [UX Foundation PRDs, incremental sequence and architecture audit](ux/README.md)
+- [Consolidated functional / UX / test / MVP delivery report](ux/delivery-report.md)
+- [Feature backlog UX mappings and additive acceptance criteria](ux/backlog-map.md)
+
 - [Operational task-management MVP release milestone](architecture/operational-mvp-milestone.md)
 - [API contract acceptance and remaining evidence](architecture/prd-21-acceptance.md)
 - [Canonical ticket dependency audit](ticket-dependencies.md)

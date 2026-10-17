@@ -1,5 +1,7 @@
 # PRD-04 acceptance and closure audit
 
+UX delivery addendum: apply [UXA-01–08](../ux/feature-acceptance.md), this PRD's [dependency/discovery mapping](../ux/backlog-map.md) and the [separate functional/UX/test/MVP report](../ux/delivery-report.md). Existing acceptance below remains authoritative; historical evidence is not re-certified by this addendum.
+
 This audit follows the complete [PRD-04 issue](https://github.com/nickmailhot-lang/StrataAI2/issues/5), including its functional requirements, cross-cutting requirements, test scenarios and definition of done. Implementation coverage is not proof of acceptance. The ticket remains open; the current remaining-work estimate is 15%.
 
 The [recipient observation contract](operator-metrics.md#recipient-invitation-observations--2026-10-16)

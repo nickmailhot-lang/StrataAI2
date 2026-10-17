@@ -1,5 +1,7 @@
 # Organization acceptance map — PRD-03
 
+UX delivery addendum: apply [UXA-01–08](../ux/feature-acceptance.md), this PRD's [dependency/discovery mapping](../ux/backlog-map.md) and the [separate functional/UX/test/MVP report](../ux/delivery-report.md). Existing acceptance below remains authoritative; historical evidence is not re-certified by this addendum.
+
 The [settings navigation follow-up](organization-settings.md#observe-keyboard-settings-navigation-2026-10-16)
 observes the read-only form after a retained phone Enter leaves the home route
 open. Both complete desktop/phone workflows pass with their original 30-second

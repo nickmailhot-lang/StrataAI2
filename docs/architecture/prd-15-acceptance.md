@@ -1,5 +1,7 @@
 # PRD-15 acceptance map — open
 
+UX delivery addendum: apply [UXA-01–08](../ux/feature-acceptance.md), this PRD's [dependency/discovery mapping](../ux/backlog-map.md) and the [separate functional/UX/test/MVP report](../ux/delivery-report.md). Existing acceptance below remains authoritative; historical evidence is not re-certified by this addendum.
+
 The [cross-Board Card activity admission follow-up](cross-board-card-movement.md#admitted-card-activity-review-after-cross-board-recovery--2026-10-16)
 verifies the original hosted diagnostic archive and observes its still-closed
 activity review/no Card-activity HTTP request. Both read-only openings now use

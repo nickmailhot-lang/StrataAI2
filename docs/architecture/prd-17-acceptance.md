@@ -1,5 +1,7 @@
 # Notification and watching acceptance map — PRD-17
 
+UX delivery addendum: apply [UXA-01–08](../ux/feature-acceptance.md), this PRD's [dependency/discovery mapping](../ux/backlog-map.md) and the [separate functional/UX/test/MVP report](../ux/delivery-report.md). Existing acceptance below remains authoritative; historical evidence is not re-certified by this addendum.
+
 [PRD-17](https://github.com/nickmailhot-lang/StrataAI2/issues/18) remains open at
 **15% estimated work remaining** (planning estimate). Earlier estimates below
 record their evidence scope. This maps all twelve

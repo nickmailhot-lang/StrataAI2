@@ -1,5 +1,7 @@
 # PRD-21 API contract acceptance map
 
+UX delivery addendum: apply [UXA-01–08](../ux/feature-acceptance.md), this PRD's [dependency/discovery mapping](../ux/backlog-map.md) and the [separate functional/UX/test/MVP report](../ux/delivery-report.md). Existing acceptance below remains authoritative; historical evidence is not re-certified by this addendum.
+
 The [core Work diagnostic repair](api-error-contract-verification.md#core-work-synchronization-diagnostics--2026-10-15)
 keeps synchronization failures at their private, correlated HTTP 503 and closes
 failed Work streams when logging also fails. Five new regressions fail before

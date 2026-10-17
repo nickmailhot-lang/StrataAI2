@@ -1,0 +1,2309 @@
+{
+  "auditDate": "2026-10-16",
+  "baseRevision": "ca2e45d852e67407ef429973d07fb604fd8833b5",
+  "features": [
+    {
+      "id": "PRD-01",
+      "description": "Product Foundation and Information Architecture",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/1",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-02",
+        "PRD-03",
+        "PRD-04",
+        "PRD-06",
+        "PRD-08",
+        "PRD-09"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Shell → Organization → Board → Card",
+      "roles": "Internal member / Viewer",
+      "remediation": "Partial; mobile drawer/current section/skip focus in this slice; account pages remain separate",
+      "additionalUsabilityTests": "Deep link, Back, cross-scope focus and access withdrawal",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Slice 1 implemented; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-02",
+      "description": "Authentication and User Accounts",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/2",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "/login, recovery, verification; profile header",
+      "roles": "Account holder",
+      "remediation": "Existing forms; standardize field/error/retry and account return paths",
+      "additionalUsabilityTests": "Register/login/reset/profile, keyboard, lost response and session expiry",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-03",
+      "description": "Organizations and Organization Membership",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/3",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-02",
+        "PRD-05",
+        "PRD-18"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "/app → Organization → members/settings",
+      "roles": "Owner/Admin / Member",
+      "remediation": "Existing Organization UI; align shared slots without changing lifecycle recovery",
+      "additionalUsabilityTests": "Create/select/switch, admin discovery, membership loss and long names",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-04",
+      "description": "Board Creation and Board Management",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/5",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-03",
+        "PRD-05",
+        "PRD-18"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Organization home → Board / Board actions",
+      "roles": "Board Admin / Contributor",
+      "remediation": "Existing Board UI; align creation/header/actions",
+      "additionalUsabilityTests": "Create/open Board, mobile actions, denied Board and current section",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-05",
+      "description": "Board Sharing, Visibility, Roles and Permissions",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/6",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-02",
+        "PRD-03",
+        "PRD-04",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Board → visibility/members/invitations",
+      "roles": "Owner/Admin / Board Admin / Viewer",
+      "remediation": "Existing permission controls; standardize discoverability and safe consent",
+      "additionalUsabilityTests": "Role downgrade, public/private transitions, Portal-only denial, focus",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-06",
+      "description": "Kanban Board Interface and Drag-and-Drop Interaction",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/7",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-07",
+        "PRD-08",
+        "PRD-22",
+        "PRD-23"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-008"
+      ],
+      "discovery": "Organization → Board canvas",
+      "roles": "Contributor / Viewer",
+      "remediation": "Existing dnd-kit canvas; preserve local scroll and keyboard equivalents",
+      "additionalUsabilityTests": "Touch and keyboard movement, scroll, optimistic rollback and Axe",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-07",
+      "description": "List Management",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/8",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-04",
+        "PRD-06",
+        "PRD-08",
+        "PRD-17",
+        "PRD-18"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Board → List actions",
+      "roles": "Contributor / Board Admin",
+      "remediation": "Existing List controls; align action placement and feedback",
+      "additionalUsabilityTests": "Create/rename/reorder/archive, keyboard and conflict recovery",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-08",
+      "description": "Card Creation, Movement and Lifecycle",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/9",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-06",
+        "PRD-09",
+        "PRD-18",
+        "PRD-22"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Board/List → Card creation/detail",
+      "roles": "Contributor",
+      "remediation": "Existing lifecycle controls; preserve original commands and Board context",
+      "additionalUsabilityTests": "Create/move/copy/archive/restore, deep-link Back and permission loss",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-09",
+      "description": "Card Detail Experience",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/10",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-08",
+        "PRD-10",
+        "PRD-11",
+        "PRD-12",
+        "PRD-13",
+        "PRD-14",
+        "PRD-15",
+        "PRD-17"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Card link → detail overlay",
+      "roles": "Contributor / Viewer",
+      "remediation": "Existing overlay; align details and focus behavior",
+      "additionalUsabilityTests": "Open/close/reload, return focus/scroll, keyboard and inaccessible Card",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-10",
+      "description": "Labels and Categorization",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/11",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-04",
+        "PRD-08",
+        "PRD-16"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Board/Card → Labels",
+      "roles": "Board Admin / Contributor",
+      "remediation": "Existing labels; align editor/confirmation/status",
+      "additionalUsabilityTests": "Create/reorder/delete, non-color labels, focus and live permission loss",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-11",
+      "description": "Members and Card Assignment",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/12",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-05",
+        "PRD-08",
+        "PRD-16",
+        "PRD-17"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Card → assignees; Board → members",
+      "roles": "Contributor / Board Admin",
+      "remediation": "Existing assignment; standardize selection and capability feedback",
+      "additionalUsabilityTests": "Assign/remove, missing former member, keyboard and role withdrawal",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-12",
+      "description": "Start Dates, Due Dates, Reminders and Completion",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/13",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-08",
+        "PRD-17",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Card → dates/reminders; future work queues",
+      "roles": "Contributor",
+      "remediation": "Existing date controls; preserve timezone and retry rules",
+      "additionalUsabilityTests": "Timezone/date validation, reminder/completion, mobile and lost response",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-13",
+      "description": "Checklists and Checklist Items",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/14",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-08",
+        "PRD-22"
+      ],
+      "uxDependencies": [
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Card → Checklists",
+      "roles": "Contributor / Viewer",
+      "remediation": "Existing checklist controls; align completion/status",
+      "additionalUsabilityTests": "Add/reorder/complete, keyboard, exact writes and reconnect",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-14",
+      "description": "Attachments and Card Covers",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/15",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-08",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Card → attachments/cover",
+      "roles": "Contributor / Viewer",
+      "remediation": "Existing pipeline UI; align processing/error states",
+      "additionalUsabilityTests": "Upload/scan/preview/download, denied file, retries and accessible progress",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-15",
+      "description": "Comments, Mentions and Activity History",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/16",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-08",
+        "PRD-17",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Card → comments/activity",
+      "roles": "Contributor / Viewer",
+      "remediation": "Existing history; align pagination/mention guidance",
+      "additionalUsabilityTests": "Comment/mention, historical attribution, paging/focus and deleted author",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-16",
+      "description": "Search and Board Filtering",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/17",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-10",
+        "PRD-11",
+        "PRD-12",
+        "PRD-18",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Header Search Cards; Board filters",
+      "roles": "Internal member / Viewer",
+      "remediation": "Existing Card search; keep distinct from broader PRD-56 scope",
+      "additionalUsabilityTests": "Query/filter/clear/return, empty/error, confidentiality and keyboard",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-17",
+      "description": "Notifications and Watching",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/18",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-11",
+        "PRD-12",
+        "PRD-15",
+        "PRD-22"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Header/drawer → Notifications; watch control",
+      "roles": "Internal member",
+      "remediation": "Existing inbox; align read/action/recovery cues",
+      "additionalUsabilityTests": "Open notification → authorized source → Back, unread/live withdrawal",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-18",
+      "description": "Archiving, Restoration, Permanent Deletion and Audit Integrity",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/19",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-04",
+        "PRD-07",
+        "PRD-08",
+        "PRD-15",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Organization/Board archived directories; lifecycle actions",
+      "roles": "Admin / Contributor / authorized reader",
+      "remediation": "Existing consent/recovery UI; preserve terminal exceptions",
+      "additionalUsabilityTests": "Cancel/Escape, archive/restore/delete and unknown original outcomes",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-19",
+      "description": "Cross-Cutting Non-Functional Requirements",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/20",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-01",
+        "PRD-22",
+        "PRD-25"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-003",
+        "UX-006",
+        "UX-008"
+      ],
+      "discovery": "All affected journeys; no standalone page",
+      "roles": "All supported users",
+      "remediation": "Cross-cutting; responsive/correctness evidence needed per consumer",
+      "additionalUsabilityTests": "Latency/long content/reconnect and release support matrix; capacity stays deferred",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-20",
+      "description": "Application Data Model",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/21",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-01",
+        "PRD-18"
+      ],
+      "uxDependencies": [
+        "UX-008"
+      ],
+      "discovery": "No UI; canonical model contracts consumed by features",
+      "roles": "Service / authorized caller",
+      "remediation": "No standalone UI; consumer error/tenant states mapped separately",
+      "additionalUsabilityTests": "Schema/tenant integrity and unchanged consumer contracts",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-21",
+      "description": "API Contract and Service Architecture",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/22",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-20",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-005",
+        "UX-008"
+      ],
+      "discovery": "No UI; shared API/Problem clients",
+      "roles": "Service / authorized caller",
+      "remediation": "No standalone UI; preserve envelopes and support references",
+      "additionalUsabilityTests": "Contracts, idempotency/denial, consumer retry/error presentation",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-22",
+      "description": "Real-Time Collaboration and Concurrency",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/23",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-06",
+        "PRD-08",
+        "PRD-21",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-008"
+      ],
+      "discovery": "Existing shared Board/Card/inbox consumers",
+      "roles": "Collaborating internal members",
+      "remediation": "Cross-cutting realtime states; preserve canonical admission",
+      "additionalUsabilityTests": "Two clients, reconnect/conflict, late response and stale-scope withdrawal",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-23",
+      "description": "Accessibility and Keyboard Interaction",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/24",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-06",
+        "PRD-09",
+        "PRD-25"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-008"
+      ],
+      "discovery": "Every interactive surface",
+      "roles": "Keyboard / assistive technology user",
+      "remediation": "Existing accessibility owner; UX-006 is rollout detail",
+      "additionalUsabilityTests": "Keyboard alternatives, dialog focus, contrast/reflow and manual review",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-24",
+      "description": "Security, Privacy and Authorization",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/25",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-02",
+        "PRD-05",
+        "PRD-14",
+        "PRD-21",
+        "PRD-22",
+        "PRD-25"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-005",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Permission/identity states within owning journey",
+      "roles": "Every role / anonymous visitor",
+      "remediation": "Existing security owner; no UI-derived authorization",
+      "additionalUsabilityTests": "Direct API/URL denials, tenant/Portal boundaries and no metadata leaks",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-25",
+      "description": "Testing and Definition of Done",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/26",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-01",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-008"
+      ],
+      "discovery": "Delivery pipeline; no standalone page",
+      "roles": "Developer / reviewer",
+      "remediation": "Existing quality owner; UX-008 extends coverage",
+      "additionalUsabilityTests": "Required-gate completeness, omitted/swallowed failure negative tests",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-26",
+      "description": "MVP Release and Implementation Plan",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/27",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-01",
+        "PRD-25",
+        "PRD-27",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Release acceptance of operational MVP",
+      "roles": "Product owner / operator",
+      "remediation": "Preserve operational MVP scope; no wider governance prerequisite",
+      "additionalUsabilityTests": "Current immutable release plus accepted priority workflows",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-27",
+      "description": "Organization Types and Strata Organization Configuration",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/28",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-01",
+        "PRD-03",
+        "PRD-20",
+        "PRD-24"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Organization → configuration",
+      "roles": "Owner/Admin",
+      "remediation": "Existing configuration page; align sections and feedback",
+      "additionalUsabilityTests": "Organization type/configuration, denied editor, keyboard and conflict",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-28",
+      "description": "Strata Lots / Units and Common Property",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/29",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-27",
+        "PRD-34",
+        "PRD-61",
+        "PRD-62"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → property → units/common property",
+      "roles": "Manager / authorized Council",
+      "remediation": "No frontend route; use approved property slot when delivered",
+      "additionalUsabilityTests": "Find unit → review property context; cross-unit visibility and mobile directory",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-29",
+      "description": "Organization Membership and Unit Associations",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/30",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-03",
+        "PRD-24",
+        "PRD-60",
+        "PRD-61",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → membership → unit associations",
+      "roles": "Owner/Admin / Manager",
+      "remediation": "No association frontend; extend existing membership journey",
+      "additionalUsabilityTests": "Associate/change/end relationship, role boundaries and history",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-30",
+      "description": "Council Terms and Historical Governance",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/31",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-27",
+        "PRD-31",
+        "PRD-37",
+        "PRD-43"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → governance → Council terms",
+      "roles": "Council administrator / historical reader",
+      "remediation": "No frontend route; no duplicate governance shell",
+      "additionalUsabilityTests": "Current/historical term discovery, date context and denied edits",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-31",
+      "description": "President, Vice-President and Council Governance Roles",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/32",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-30",
+        "PRD-35",
+        "PRD-38",
+        "PRD-43"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned governance → role assignments",
+      "roles": "Authorized Council administrator",
+      "remediation": "No frontend route; preserve scoped governance roles",
+      "additionalUsabilityTests": "Assign/end role, multiple roles, current capacity and disclosure",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-32",
+      "description": "Strata Manager and Acting-on-Behalf-of-Strata",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/33",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-31",
+        "PRD-33",
+        "PRD-35",
+        "PRD-53",
+        "PRD-67"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned manager context/capacity selector → work",
+      "roles": "Strata Manager acting with granted capacity",
+      "remediation": "No frontend route; explicit acting context required",
+      "additionalUsabilityTests": "Select/withdraw capacity, Organization switching and attribution",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-33",
+      "description": "Property Management Companies and Manager Assignments",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/34",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-32",
+        "PRD-48",
+        "PRD-67"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned portfolio → company → assignments",
+      "roles": "Company administrator / Manager",
+      "remediation": "No frontend route; use PRD-67 portfolio context",
+      "additionalUsabilityTests": "Assignment discovery, termination and cross-Organization denial",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-34",
+      "description": "Strata Card Metadata: Priority, Category, Scope and Source",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/35",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-08",
+        "PRD-10",
+        "PRD-28",
+        "PRD-35"
+      ],
+      "uxDependencies": [
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned fields in existing Card detail",
+      "roles": "Contributor / authorized Council",
+      "remediation": "No strata metadata UI; extend Card detail slots",
+      "additionalUsabilityTests": "Priority/category/unit/source editing and restricted field visibility",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-35",
+      "description": "Card Confidentiality and Object-Level Permissions",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/36",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-05",
+        "PRD-24",
+        "PRD-53",
+        "PRD-56",
+        "PRD-72",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Card confidentiality control; source access states",
+      "roles": "Authorized Council / Manager / Viewer",
+      "remediation": "No confidentiality editor; integrate existing permission pattern",
+      "additionalUsabilityTests": "Restricted content/counts/links, role loss and original consent",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-36",
+      "description": "Projects and Project Work Management",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/37",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-34",
+        "PRD-44",
+        "PRD-45",
+        "PRD-69",
+        "PRD-77"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → projects → linked work",
+      "roles": "Project lead / Manager / Council",
+      "remediation": "No frontend route; shared page and relationship slots",
+      "additionalUsabilityTests": "Create/find project → linked Card → return; blocked/empty states",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-37",
+      "description": "Meetings and Meeting Lifecycle",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/38",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-31",
+        "PRD-38",
+        "PRD-39",
+        "PRD-40",
+        "PRD-66"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → Meetings → meeting detail",
+      "roles": "Council / Manager",
+      "remediation": "Disabled shell placeholder; enable only with working route/capability",
+      "additionalUsabilityTests": "Discover/create/schedule/close, keyboard and lifecycle refusal",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-38",
+      "description": "Meeting Attendance and Roles",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/39",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-31",
+        "PRD-37",
+        "PRD-40",
+        "PRD-43",
+        "PRD-66"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned meeting detail → attendance/roles",
+      "roles": "Chair / authorized attendee",
+      "remediation": "No frontend route; meeting subflow",
+      "additionalUsabilityTests": "Record attendance/role, readonly history and confidential fields",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-39",
+      "description": "Agendas and Agenda Items",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/40",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-37",
+        "PRD-41",
+        "PRD-48",
+        "PRD-65"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned meeting → agenda → source work",
+      "roles": "Agenda editor / Council",
+      "remediation": "No frontend route; meeting subflow",
+      "additionalUsabilityTests": "Order agenda, link source, mobile review and keyboard movement",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-40",
+      "description": "Meeting Minutes, Minute Sections and Approval",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/41",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-37",
+        "PRD-38",
+        "PRD-39",
+        "PRD-41",
+        "PRD-74",
+        "PRD-77",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned meeting → minutes → approval",
+      "roles": "Minute taker / reviewer / approver",
+      "remediation": "No frontend route; reuse review/dialog patterns",
+      "additionalUsabilityTests": "Draft/review/approve/publish, versions, denial and focus",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-41",
+      "description": "Card / Meeting / Agenda / Minutes Relationships",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/42",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-08",
+        "PRD-39",
+        "PRD-40",
+        "PRD-44",
+        "PRD-57",
+        "PRD-78"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Card/meeting/agenda/minutes related-record links",
+      "roles": "Authorized Council / Contributor",
+      "remediation": "No relationship UI; PRD-57 pattern, no duplicate navigation",
+      "additionalUsabilityTests": "Bidirectional source links, denied target and return context",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-42",
+      "description": "Motions",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/43",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-37",
+        "PRD-39",
+        "PRD-43",
+        "PRD-44",
+        "PRD-72"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned meeting → Motions",
+      "roles": "Mover / Chair / Council",
+      "remediation": "No frontend route; meeting subflow",
+      "additionalUsabilityTests": "Draft/propose/amend/withdraw, role checks and accessible status",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-43",
+      "description": "Voting and Voting Thresholds",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/44",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-31",
+        "PRD-38",
+        "PRD-42",
+        "PRD-44",
+        "PRD-66"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned motion/meeting → vote review",
+      "roles": "Eligible voter / Chair",
+      "remediation": "No frontend route; preserve business thresholds",
+      "additionalUsabilityTests": "Eligibility/abstention/submit/result, explicit consent and no duplicate vote",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-44",
+      "description": "Resolutions and Decision Follow-Up",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/45",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-42",
+        "PRD-43",
+        "PRD-36",
+        "PRD-69",
+        "PRD-77"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned decision → resolution → follow-up work",
+      "roles": "Council / Manager / assignee",
+      "remediation": "No frontend route; link authoritative source and Card",
+      "additionalUsabilityTests": "Decision to actionable follow-up, status/return and role loss",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-45",
+      "description": "Vendors and Vendor Contacts",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/46",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-36",
+        "PRD-46",
+        "PRD-47",
+        "PRD-58",
+        "PRD-71"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → vendors → contact",
+      "roles": "Manager / procurement-authorized user",
+      "remediation": "No frontend route; common directory/detail pattern",
+      "additionalUsabilityTests": "Find/contact/select vendor, restricted contact and responsive rows",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-46",
+      "description": "Quotes and Procurement Records",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/47",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-45",
+        "PRD-48",
+        "PRD-69",
+        "PRD-76",
+        "PRD-77"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned project/vendor/Card → quotes",
+      "roles": "Manager / authorized reviewer",
+      "remediation": "No frontend route; related procurement workflow",
+      "additionalUsabilityTests": "Compare/review/expire quote, permissions and source return",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-47",
+      "description": "Invoices and Cost Records",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/48",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-45",
+        "PRD-46",
+        "PRD-69",
+        "PRD-76",
+        "PRD-77"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned project/vendor/Card → invoices/costs",
+      "roles": "Authorized finance/Manager",
+      "remediation": "No frontend route; shared finance record pattern",
+      "additionalUsabilityTests": "Review cost/invoice, attachment access and unauthorized amounts",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-48",
+      "description": "Strata Document Management",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/49",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-14",
+        "PRD-35",
+        "PRD-49",
+        "PRD-70",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → Documents; separate Portal publication",
+      "roles": "Manager / authorized reader / published Portal reader",
+      "remediation": "Disabled internal placeholder and Portal Browse placeholder; preserve separation",
+      "additionalUsabilityTests": "Find/upload/read document, publication/denial and mobile paging",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-49",
+      "description": "Document Relationships and Versioning",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/50",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-48",
+        "PRD-50",
+        "PRD-70",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned document → versions/related sources",
+      "roles": "Document editor / authorized reader",
+      "remediation": "No frontend route; PRD-48 detail composition",
+      "additionalUsabilityTests": "Select/version/return, previous version visibility and conflict",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-50",
+      "description": "Bylaws, Bylaw Versions and Rules",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/51",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-44",
+        "PRD-48",
+        "PRD-49",
+        "PRD-64",
+        "PRD-75"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Documents → bylaws/rules/version",
+      "roles": "Council / authorized resident reader",
+      "remediation": "No frontend route; domain rules remain PRD-50",
+      "additionalUsabilityTests": "Current/historical version discovery and publication boundaries",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-51",
+      "description": "Owner / Resident Issue Intake",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/52",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-28",
+        "PRD-52",
+        "PRD-64",
+        "PRD-65",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Portal → submit/track issue",
+      "roles": "Owner/resident within Portal grants",
+      "remediation": "No issue frontend; separate Portal composition",
+      "additionalUsabilityTests": "Submit/correct/track own issue, status and other-resident denial",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-52",
+      "description": "Issue-to-Card and Issue Escalation Workflow",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/53",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-08",
+        "PRD-41",
+        "PRD-51",
+        "PRD-64",
+        "PRD-78",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned issue → triage → linked Card",
+      "roles": "Manager / authorized internal triager",
+      "remediation": "No frontend route; no internal workflow in Portal",
+      "additionalUsabilityTests": "Review/escalate issue to Card, source link and confidentiality",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-53",
+      "description": "Strata Audit Trail and Historical Attribution",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/54",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-15",
+        "PRD-24",
+        "PRD-32",
+        "PRD-70",
+        "PRD-72"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned authorized entity → audit history",
+      "roles": "Authorized auditor / Manager / Council",
+      "remediation": "Cross-cutting existing history; no broad audit frontend",
+      "additionalUsabilityTests": "Historical actor/context, paging, redaction and no secret disclosure",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-54",
+      "description": "StrataAI Operational Dashboard",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/55",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-34",
+        "PRD-36",
+        "PRD-37",
+        "PRD-58",
+        "PRD-72"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → operational dashboard → source",
+      "roles": "Authorized internal member",
+      "remediation": "No dashboard route; UX-004 refines this owner",
+      "additionalUsabilityTests": "Overdue/unassigned/review queues, filtered counts, empty/stale state",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-55",
+      "description": "Role-Specific Dashboards",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/56",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-31",
+        "PRD-54",
+        "PRD-67"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned dashboard → permitted role perspective",
+      "roles": "President / Manager / Council / multi-role user",
+      "remediation": "No dashboard route; reuse PRD-54 source data",
+      "additionalUsabilityTests": "Role switch/personalize/deduplicate; inaccessible widgets/counts absent",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-56",
+      "description": "StrataAI Global Search",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/57",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-16",
+        "PRD-24",
+        "PRD-35",
+        "PRD-75",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned expansion of existing scoped Search Cards",
+      "roles": "Authorized internal reader; separate published Portal search",
+      "remediation": "Existing Card search only; do not claim full domain search",
+      "additionalUsabilityTests": "Entity filters/source links, restricted snippets/counts and scope switch",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-57",
+      "description": "Related Records and Relationship Navigation",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/58",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-20",
+        "PRD-41",
+        "PRD-49",
+        "PRD-78"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned source detail → related records → return",
+      "roles": "Authorized reader",
+      "remediation": "No broad relationship UI; canonical pattern for domain consumers",
+      "additionalUsabilityTests": "Missing/denied/archived related target, return and no existence leak",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-58",
+      "description": "StrataAI Notifications and Watching",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/59",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-17",
+        "PRD-35",
+        "PRD-54",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned expansion of existing Notifications inbox/watch",
+      "roles": "Authorized recipient",
+      "remediation": "Existing core inbox; broader domain notification integration pending",
+      "additionalUsabilityTests": "Domain event → inbox → permitted source; dedup and withdrawn access",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-59",
+      "description": "StrataAI Operational Reporting",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/60",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-53",
+        "PRD-54",
+        "PRD-56",
+        "PRD-67",
+        "PRD-70"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → reports → source records",
+      "roles": "Authorized Council / Manager",
+      "remediation": "No frontend route; common filters/table pattern",
+      "additionalUsabilityTests": "Filter/drill down/export, mobile rows and confidential totals",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-60",
+      "description": "User Onboarding, Invitations and Account Lifecycle",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/61",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-02",
+        "PRD-03",
+        "PRD-24",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "/app/invitations or invitation link → explicit acceptance",
+      "roles": "Invitee / issuing administrator",
+      "remediation": "Existing onboarding/invitation UI; preserve body proof and original receipt",
+      "additionalUsabilityTests": "Discover/review/accept/return, issuer loss, expired link and account switch",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-61",
+      "description": "Owners, Residents, Occupants and Strata-Lot Relationship History",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/62",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-28",
+        "PRD-29",
+        "PRD-35",
+        "PRD-70",
+        "PRD-80"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned unit → current/historical relationships",
+      "roles": "Manager / authorized relationship administrator",
+      "remediation": "No frontend route; PRD-28/29 unit composition",
+      "additionalUsabilityTests": "Current/history attribution, end relationship and private contact denial",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-62",
+      "description": "Property, Buildings, Common Areas and Asset Registry",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/63",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-27",
+        "PRD-28",
+        "PRD-57",
+        "PRD-63",
+        "PRD-68"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → property/assets → service context",
+      "roles": "Manager / authorized maintenance user",
+      "remediation": "No frontend route; shared directory/detail composition",
+      "additionalUsabilityTests": "Locate building/area/asset, links and scoped access",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-63",
+      "description": "Maintenance, Inspections, Recurring Work and Asset Service History",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/64",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-12",
+        "PRD-34",
+        "PRD-45",
+        "PRD-62",
+        "PRD-71"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned asset/calendar → maintenance/inspection work",
+      "roles": "Manager / maintenance assignee",
+      "remediation": "No frontend route; reuse Card/task/asset context",
+      "additionalUsabilityTests": "Due queue → inspection → service history; recurrence and keyboard",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-64",
+      "description": "Bylaw Enforcement and Compliance Cases",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/65",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-35",
+        "PRD-50",
+        "PRD-51",
+        "PRD-65",
+        "PRD-77"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned authorized issue/unit → compliance case",
+      "roles": "Authorized Council / Manager",
+      "remediation": "No frontend route; restricted record pattern",
+      "additionalUsabilityTests": "Open/review/escalate/close, denied evidence and safe status",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-65",
+      "description": "Correspondence, Notices and Delivery Tracking",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/66",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-35",
+        "PRD-48",
+        "PRD-58",
+        "PRD-70",
+        "PRD-77",
+        "PRD-79"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → Correspondence → source/delivery",
+      "roles": "Manager / authorized sender",
+      "remediation": "Disabled shell placeholder; no correspondence route",
+      "additionalUsabilityTests": "Compose/review/send/delivery failure, mobile and recipient privacy",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-66",
+      "description": "AGM / SGM Notice, Quorum, Proxies and General-Meeting Voting",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/67",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-37",
+        "PRD-38",
+        "PRD-42",
+        "PRD-43",
+        "PRD-70"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned meeting → notice/proxy/quorum/vote",
+      "roles": "Eligible owner / Chair / authorized administrator",
+      "remediation": "No frontend route; internal/Portal scopes explicitly separate",
+      "additionalUsabilityTests": "Notice receipt, proxy/quorum/eligibility, duplicate vote and private totals",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-67",
+      "description": "Multi-Strata Portfolio Management",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/68",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-24",
+        "PRD-32",
+        "PRD-33",
+        "PRD-55",
+        "PRD-56"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned authorized portfolio → selected Organization",
+      "roles": "Multi-Strata Manager",
+      "remediation": "No portfolio frontend; never widen current tenant scope",
+      "additionalUsabilityTests": "Switch scope, scoped aggregates, acting capacity and retired responses",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-68",
+      "description": "Incident, Damage and Insurance Claim Management",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/69",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-28",
+        "PRD-34",
+        "PRD-36",
+        "PRD-45",
+        "PRD-69"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → incidents → claim/work",
+      "roles": "Manager / authorized incident reviewer",
+      "remediation": "No frontend route; confidentiality and related work patterns",
+      "additionalUsabilityTests": "Report/triage/claim, evidence links and private claimant denial",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-69",
+      "description": "Financial Authorization, Budgets and Funding Context",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/70",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-36",
+        "PRD-44",
+        "PRD-46",
+        "PRD-47",
+        "PRD-77"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned cost/project/quote → funding/authorization",
+      "roles": "Authorized approver / Manager",
+      "remediation": "No frontend route; review/consent composition",
+      "additionalUsabilityTests": "Review threshold/funding/approve, role limits and replay safety",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-70",
+      "description": "Records Retention, Privacy, Redaction, Legal Hold and Data Export",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/71",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-18",
+        "PRD-24",
+        "PRD-48",
+        "PRD-53",
+        "PRD-59"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Organization → retention policies/holds; source controls",
+      "roles": "Owner/Admin / authorized records user",
+      "remediation": "Existing partial policy/hold/classification UI; broader export/redaction pending",
+      "additionalUsabilityTests": "Create/review hold/policy, scope loss, original recovery and restricted export",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-71",
+      "description": "Calendar, Recurrence and Operational Deadlines",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/72",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-12",
+        "PRD-37",
+        "PRD-58",
+        "PRD-63"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Organization → calendar → deadline source",
+      "roles": "Authorized internal user",
+      "remediation": "No calendar frontend; dates remain in existing Card controls",
+      "additionalUsabilityTests": "Due/recurring/calendar navigation, timezone and accessible list alternative",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-72",
+      "description": "StrataAI AI Platform, Permissions and Human-in-the-Loop Governance",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/73",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-24",
+        "PRD-35",
+        "PRD-53",
+        "PRD-70"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned source workflow → AI review",
+      "roles": "Authorized requester / human reviewer",
+      "remediation": "No AI frontend; shared pending/review/error patterns",
+      "additionalUsabilityTests": "Permission-filtered context, review/decline, no autonomous write",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-73",
+      "description": "AI Email Intake, Triage, Card Routing and Response Drafting",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/74",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-34",
+        "PRD-35",
+        "PRD-65",
+        "PRD-72",
+        "PRD-77",
+        "PRD-78",
+        "PRD-79"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned correspondence → AI triage/draft → review",
+      "roles": "Authorized mailbox triager / reviewer",
+      "remediation": "No frontend route; PRD-65/79 correspondence composition",
+      "additionalUsabilityTests": "Review route/draft/correct/approve, source privacy and provider failure",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-74",
+      "description": "AI Meeting, Agenda and Minutes Assistant",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/75",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-37",
+        "PRD-39",
+        "PRD-40",
+        "PRD-41",
+        "PRD-72",
+        "PRD-77"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned meeting/agenda/minutes → AI assistance → review",
+      "roles": "Authorized minute taker / Council reviewer",
+      "remediation": "No frontend route; meeting subflow",
+      "additionalUsabilityTests": "Suggestion/source review, correction/approval and restricted transcript",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-75",
+      "description": "AI Search, Question Answering and Source Citation",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/76",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-35",
+        "PRD-50",
+        "PRD-56",
+        "PRD-72"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned scoped search → answer → cited source",
+      "roles": "Authorized internal or separately scoped Portal reader",
+      "remediation": "No AI frontend; extend PRD-56 search composition",
+      "additionalUsabilityTests": "Cited-source open/return, inaccessible citation and uncertainty",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-76",
+      "description": "AI Document Intelligence",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/77",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-48",
+        "PRD-49",
+        "PRD-72"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned document → analysis → sources/review",
+      "roles": "Authorized document reader / reviewer",
+      "remediation": "No frontend route; document subflow",
+      "additionalUsabilityTests": "Pending/failed analysis, source verification and document permission loss",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-77",
+      "description": "Approval Workflows, Review and Sign-Off",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/78",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-24",
+        "PRD-53",
+        "PRD-65",
+        "PRD-69",
+        "PRD-72"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned source record → review queue → sign-off",
+      "roles": "Designated reviewer / approver",
+      "remediation": "No frontend route; use shared queue and consent patterns",
+      "additionalUsabilityTests": "Assign/review/return/approve, changed source and retired approval rights",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-78",
+      "description": "Duplicate Detection, Card Merge, Split and Reconciliation",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/79",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-08",
+        "PRD-41",
+        "PRD-53",
+        "PRD-57",
+        "PRD-73"
+      ],
+      "uxDependencies": [
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Card → duplicate/merge/split review",
+      "roles": "Contributor with all required source/target rights",
+      "remediation": "No frontend route; existing Card actions are owners",
+      "additionalUsabilityTests": "Compare/review/confirm, source loss, exact writes and source return",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-79",
+      "description": "Shared Mailbox, Outbound Email and Correspondence Delivery",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/80",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-65",
+        "PRD-72",
+        "PRD-73",
+        "PRD-77"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-004",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "Planned Correspondence → shared mailbox/outbound review",
+      "roles": "Authorized mailbox sender / reviewer",
+      "remediation": "No frontend route; do not duplicate existing infrastructure email UI",
+      "additionalUsabilityTests": "Draft/review/send/recover, duplicate delivery and recipient privacy",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Not accepted; see remediation",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    },
+    {
+      "id": "PRD-80",
+      "description": "Owner and Resident Portal",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/81",
+      "issueState": "open",
+      "businessDependencies": [
+        "PRD-24",
+        "PRD-29",
+        "PRD-48",
+        "PRD-51",
+        "PRD-58",
+        "PRD-60",
+        "PRD-70"
+      ],
+      "uxDependencies": [
+        "UX-001",
+        "UX-002",
+        "UX-003",
+        "UX-005",
+        "UX-006",
+        "UX-007",
+        "UX-008"
+      ],
+      "discovery": "/portal/:organizationId; future published documents/issues",
+      "roles": "Granted Owner/resident Portal identity",
+      "remediation": "Existing separate protected shell/placeholder only; no full Portal claim",
+      "additionalUsabilityTests": "Published-only navigation/data, internal URL/API refusal and live grant loss",
+      "functionalCompletion": "Not re-certified; full FR/AC evidence audit pending",
+      "uxCompletion": "Existing partial UI; integration acceptance pending",
+      "testCompletion": "Current full PRD gates not established by this slice",
+      "mvpReadiness": "Not accepted by this change"
+    }
+  ],
+  "sourceMetadataNote": "Live issue search returned titles, bodies and issue numbers; update timestamps were unavailable. Business dependencies come from inspected bodies; existing dependency inventory retains its separately dated hashes."
+}
