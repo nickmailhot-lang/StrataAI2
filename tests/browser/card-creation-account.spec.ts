@@ -59,7 +59,7 @@ for (const width of [1280, 390]) {
       pauseFrames = true;
       const submit = dialog.getByRole('button', { name: 'Create', exact: true });
       await submit.focus(); await submit.press('Enter');
-      await expect(dialog.getByRole('alert')).toContainText('Unable to save.');
+      await expect(dialog.getByRole('alert')).toContainText('Unable to confirm the save.');
       expect(attempts).toHaveLength(1); expect(attempts[0].status).toBe(201);
       await expect(submit).toBeEnabled();
       holdReads = true;
