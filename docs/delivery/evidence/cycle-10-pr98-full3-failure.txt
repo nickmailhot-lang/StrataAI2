@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-17T20:50:22.665Z",
+  "runId": 39055149611,
+  "headRevision": "aa64e0a2a6e5f8e7bd680a89bc3f89ad0d40b0de",
+  "job": {
+    "id": 117471072922,
+    "head_sha": "aa64e0a2a6e5f8e7bd680a89bc3f89ad0d40b0de",
+    "name": "container-integration (browser-full, 3/4)",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "logTruncated": true,
+  "excerpt": "2026-10-17T20:35:17.7192336Z     Error: expect(locator).toHaveCount(expected) failed\n2026-10-17T20:35:17.7192801Z     Locator:  getByRole('dialog')\n2026-10-17T20:35:17.7193182Z     Expected: 0\n2026-10-17T20:35:17.7193486Z     Received: 1\n2026-10-17T20:35:17.7200278Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/organization-board-live.spec.ts:78:48\n2026-10-17T20:35:17.7208921Z     Error: expect(locator).toHaveCount(expected) failed\n2026-10-17T20:35:17.7209275Z     Locator:  getByRole('dialog')\n2026-10-17T20:35:17.7209516Z     Expected: 0\n2026-10-17T20:35:17.7209779Z     Received: 1\n2026-10-17T20:35:17.7215020Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/organization-board-live.spec.ts:78:48\n2026-10-17T20:35:17.7222489Z   2 failed\n2026-10-17T20:35:17.7225592Z   119 passed (1.2h)",
+  "interpretation": "Full3/4 repeats the same two authority-dialog-retirement assertions seen in notifications, not a distinct newly diagnosed defect. Current candidate101 contains locally reproduced/verified repair, but its exact immutable full check remains Pending. Older98 required-ci Failed and release-bundle Skipped; never accept as current or merge."
+}

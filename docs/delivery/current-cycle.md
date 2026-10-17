@@ -25,6 +25,7 @@ Atad6385a7 deterministicfocusregression nowpasses within actualUI96/96plus24exis
 Source0c146329 fixesonly3TestingLibraryunsupportedqueryoptions with exact string role/names/assertions retained. Productiontrees unchangedfromad6385a7.
 Current0c146329 correctedwhole11files111pass/24existingdeferrals136.44s,types/lintpass. Runtimeguardcaughtmissingbuildidentitybeforeanynative; identifiedrebuildnowpassesandactualnewpreview51972identifies0c146329. Priorbuild/type/native/visualfailuresretained.
 Current0c146329whole12file42native:41pass/1tablet200%viewportfail,3.2m/0retries. ExistingheadingfragmentandlostMUIindicatorrepairs nowpassrespectiveassertions; focusedactionbottom1000.1875>1000. Failedcaptureinspected andstrictboundsretained.
+Strongerownedscrollunit1fails5.33sat78947bd0; fulloutlineboundsaddedwithoutrelaxingoriginalstrictnativebounds. Olderhostedtracehashverified: invitationextraobservationkind=failure2,notexception/retry; likelyobsoleteepochsourceisinferenceuntilcontrolledtest.
 
 ## 2. Implemented, awaiting validation
 
@@ -70,6 +71,9 @@ EVID-CYCLE-10-IDENTIFIED-WEB-BUILD
 EVID-CYCLE-10-CURRENT-RUNTIME
 EVID-CYCLE-10-BUILD-IDENTITY-REFUSED
 EVID-CYCLE-10-NATIVE-42-FAILED
+EVID-CYCLE-10-SCROLL-UNIT-RED
+EVID-CYCLE-10-PR98-INVITATION-TRACE
+EVID-CYCLE-10-PR98-FULL3-FAILED
 
 ## Recent verified completed increments
 

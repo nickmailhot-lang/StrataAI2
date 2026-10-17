@@ -1,0 +1,164 @@
+{
+  "pullRequestHead": "aa64e0a2a6e5f8e7bd680a89bc3f89ad0d40b0de",
+  "readObservations": {
+    "use": 6,
+    "success": 5,
+    "failure": 2,
+    "exception": 1,
+    "retry": 1
+  },
+  "next": "After currentListUX acceptance checkpoint, add a bounded issuer telemetry child and controlled stale-read regression; reproduce before minimal telemetry-only source fix. Production/immutable current candidate checks remain required.",
+  "zipSha256": "19f3a92a5ddf465f2cea2a75cb5a01276d42b98285787b0a458a1b560ac4015e",
+  "at": "2026-10-17T20:59:35.5774481+00:00",
+  "batches": [
+    {
+      "time": 3163595.254,
+      "events": [],
+      "resource": "resources/0242e0826ccf67314f0d2fae22c3804aec0dd78e.json",
+      "response": 204
+    },
+    {
+      "time": 3169737.691,
+      "events": [
+        {
+          "action": "board_invitation_read",
+          "kind": "use",
+          "count": 6,
+          "durationMs": null
+        },
+        {
+          "action": "board_invitation_read",
+          "kind": "exception",
+          "count": 1,
+          "durationMs": null
+        },
+        {
+          "action": "board_invitation_read",
+          "kind": "failure",
+          "count": 1,
+          "durationMs": 26.5
+        },
+        {
+          "action": "board_invitation_read",
+          "kind": "retry",
+          "count": 1,
+          "durationMs": null
+        },
+        {
+          "action": "board_invitation_disclosure",
+          "kind": "open",
+          "count": 1,
+          "durationMs": null
+        },
+        {
+          "action": "board_invitation_read",
+          "kind": "success",
+          "count": 1,
+          "durationMs": 127.29999999981374
+        },
+        {
+          "action": "board_invitation_read",
+          "kind": "failure",
+          "count": 1,
+          "durationMs": 180.8000000002794
+        },
+        {
+          "action": "board_invitation_read",
+          "kind": "success",
+          "count": 1,
+          "durationMs": 45.299999999813735
+        },
+        {
+          "action": "board_invitation_create",
+          "kind": "use",
+          "count": 1,
+          "durationMs": null
+        },
+        {
+          "action": "board_invitation_create",
+          "kind": "exception",
+          "count": 1,
+          "durationMs": null
+        },
+        {
+          "action": "board_invitation_create",
+          "kind": "failure",
+          "count": 1,
+          "durationMs": 46.89999999990687
+        },
+        {
+          "action": "board_invitation_create",
+          "kind": "retry",
+          "count": 1,
+          "durationMs": null
+        },
+        {
+          "action": "board_invitation_create",
+          "kind": "success",
+          "count": 1,
+          "durationMs": 50.799999999813735
+        },
+        {
+          "action": "board_invitation_read",
+          "kind": "success",
+          "count": 1,
+          "durationMs": 45
+        },
+        {
+          "action": "board_invitation_read",
+          "kind": "success",
+          "count": 1,
+          "durationMs": 47.3000000002794
+        },
+        {
+          "action": "board_invitation_read",
+          "kind": "success",
+          "count": 1,
+          "durationMs": 45.5
+        }
+      ],
+      "resource": "resources/f658a95fe042e5b7e70337d6f339add7a4a115ce.json",
+      "response": 204
+    }
+  ],
+  "artifactId": 12113452686,
+  "fact": "Retained exact failed phone trace proves board_invitation_read failure2, exception1, retry1. One simulated503 and successful200 Board reads occur before the second telemetry batch. The extra failure lasts180.8ms without a matching exception; source always records activityResult even when its epoch became obsolete.",
+  "embeddedImageRevision": "2c747cd01da4fbdbbd0ab6df75067042043f3d05",
+  "boardReadResponses": [
+    {
+      "status": 503,
+      "time": 3164760.594
+    },
+    {
+      "status": 200,
+      "time": 3164891.668
+    },
+    {
+      "status": 200,
+      "time": 3165116.788
+    },
+    {
+      "status": 200,
+      "time": 3165163.444
+    },
+    {
+      "status": 200,
+      "time": 3165458.839
+    },
+    {
+      "status": 200,
+      "time": 3166103.089
+    },
+    {
+      "status": 200,
+      "time": 3167155.954
+    },
+    {
+      "status": -1,
+      "time": 3176330.738
+    }
+  ],
+  "artifactUrl": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39055149611/artifacts/12113452686",
+  "inference": "Likely obsolete healthy admission read reported as failure after actual authority invalidation. This is an inference until deterministic controlled reproduction holds a read across epoch invalidation and proves the exact observation count. Do not weaken original hosted loop or privacy/key/canonical assertions.",
+  "privacy": "Only whitelisted action/kind/count/duration and status/time are retained. No headers, cookies, identities, scopeIDs, email/token/body content or temporary download URL."
+}

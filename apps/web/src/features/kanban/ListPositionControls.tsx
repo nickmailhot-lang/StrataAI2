@@ -24,6 +24,8 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
       || !snapshot.access.canMove || snapshot.board.lifecycleState !== 'active' || list.lifecycleState !== 'active'
       || !action.current || action.current.disabled) return;
     focusAction.current?.focusVisible();
+    // Leave room for the approved outline inside the viewport and local canvas.
+    action.current.scrollIntoView?.({ block: 'center', inline: 'nearest' });
     // Keep ownership through later admission refreshes that disable the button.
     // An explicit focus move to another control releases it in onBlur.
   }, [disabled, busy, review, list.version, list.lifecycleState, snapshot.access.canMove, snapshot.board.lifecycleState]);
