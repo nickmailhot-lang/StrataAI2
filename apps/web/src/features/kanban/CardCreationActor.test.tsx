@@ -44,9 +44,9 @@ describe('PRD-08-VS-04 Card creation identity', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Add card to Planning' }));
     fireEvent.change(await screen.findByLabelText(/Card title/), { target: { value: 'Original Card draft' } });
     const form = screen.getByRole('dialog', { name: 'Add card' });
-    fireEvent.click(within(form).getByRole('button', { name: 'Create', exact: true }));
+    fireEvent.click(within(form).getByRole('button', { name: /^Create$/ }));
     expect(await within(form).findByRole('alert')).toHaveTextContent('Unable to confirm the save');
-    fireEvent.click(within(form).getByRole('button', { name: 'Create', exact: true }));
+    fireEvent.click(within(form).getByRole('button', { name: /^Create$/ }));
     await waitFor(() => expect(screen.queryByLabelText(/Card title/)).not.toBeInTheDocument());
     expect(screen.queryByText('Private work')).not.toBeInTheDocument();
     expect(writes).toHaveLength(2); expect(writes[0].path).toBe(`/lists/list/cards?expectedActorId=${actor}`);
