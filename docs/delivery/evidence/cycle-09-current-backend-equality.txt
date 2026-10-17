@@ -1,0 +1,18 @@
+{
+  "revision": "4135a77798afed3636946468df1b0944f1c20f8f",
+  "backend": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+  "trees": [
+    {
+      "path": "src",
+      "compiled": "ee421ed1a77c780f51f040b05910d883724385b9",
+      "current": "ee421ed1a77c780f51f040b05910d883724385b9"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests",
+      "compiled": "abae174f3ee4a809395ab896a42d6267143056a1",
+      "current": "abae174f3ee4a809395ab896a42d6267143056a1"
+    }
+  ],
+  "priorApiEvidence": "EVID-CYCLE-08-API-22",
+  "scope": "Server and API tests unchanged. API22 execution remains explicitly389c70ab, no new API22 run at4135. Current native uses that actual compiled Demo API; no Production/provider/immutable release certification."
+}

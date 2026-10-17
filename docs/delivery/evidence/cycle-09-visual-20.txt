@@ -1,0 +1,104 @@
+Developer inspection 2026-10-17T20:31:21.480Z; actual compiled web 4135a77798afed3636946468df1b0944f1c20f8f; actual unchanged compiled DemoAPI389c70ab.
+Inspected20current viewport captures:8primary Board authority draft/return,4supplemental keyboard authority returns,4List-to-Card returns,2List refusals, and representative Card200% return/mobile refusal. All new Board fields/actions are readable at320/390/768/1280; tablet text remains200%. After actual membership withdrawal, old review/draft/private Board rows are absent, current permitted launcher is unobscured; explicit fresh review is empty and Escape returns focus without automatic Board writes. Pointer-origin captures correctly differ from keyboard modality. Supplemental keyboard captures visibly show approved solid2px outline at all4widths, separately verified by computed styles. List long Card is fully visible inside its local viewport at persistent200%, all four returns have unobscured focus, and generic List/Card refusals are visible below the fixed header without protected content. Current native Axe, geometry, role/privacy and canonical persistence checks remain distinct from this manual inspection. Earlier same-layout List draft review atad9 remains historical, not relabeled as current captures. No screen-reader/device/full WCAG or immutable-release/product acceptance claim.
+[
+  {
+    "name": "card-refusal-viewport-390.png",
+    "kind": "permanent-native",
+    "sha256": "cff20677689bae26a2dad0538c0d1afd3651b70a88b3932caa35fef541007267"
+  },
+  {
+    "name": "card-creation-return-viewport-768.png",
+    "kind": "permanent-native",
+    "sha256": "fe009795eb10f1e41f554829f83c5d15ffbf43a2b38f9ee0a5f99631ca51bc81"
+  },
+  {
+    "name": "list-account-refusal-1280.png",
+    "kind": "permanent-native",
+    "sha256": "5e8315565c3f93333700e517f02ebd62cf3589dd40b406edef670d37b33a5155"
+  },
+  {
+    "name": "list-account-refusal-390.png",
+    "kind": "permanent-native",
+    "sha256": "8a845800b7b58751498629a157cda1c75b00806008c542bbed14dedd6dab0bfa"
+  },
+  {
+    "name": "list-to-card-return-390.png",
+    "kind": "permanent-native",
+    "sha256": "a9eacbd02d46ede4a2ae6d45ca94eea3b310267ecc68ecf4f88425b9518c09c9"
+  },
+  {
+    "name": "list-to-card-return-768.png",
+    "kind": "permanent-native",
+    "sha256": "004cc50ef9ddc4025ff408c14388a8cbb5b907539dd514b06777776e13eec7a8"
+  },
+  {
+    "name": "list-to-card-return-1280.png",
+    "kind": "permanent-native",
+    "sha256": "8d357aa7f1a904d4e9b8103543fef85a06791263fbfd3771f6836fc201ece2b4"
+  },
+  {
+    "name": "list-to-card-return-320.png",
+    "kind": "permanent-native",
+    "sha256": "3726967cc589bd3f56cab51a84851e353083b907031c393948e65f2a13705d96"
+  },
+  {
+    "name": "board-authority-draft-390.png",
+    "kind": "permanent-native",
+    "sha256": "99f5b0271c950f0da2db917f1e928a78e25edc05f9de6159f7cb6c0c7ff9bf7c"
+  },
+  {
+    "name": "board-authority-return-390.png",
+    "kind": "permanent-native",
+    "sha256": "12f458daeaa83f87310741cc400c96c6be851a85443db20641e65362986f4e27"
+  },
+  {
+    "name": "board-authority-draft-320.png",
+    "kind": "permanent-native",
+    "sha256": "78d523fe0baac81e7ecfdece80d57051c20b241846ecb404712f1e7a60b149a8"
+  },
+  {
+    "name": "board-authority-return-320.png",
+    "kind": "permanent-native",
+    "sha256": "3f4e091dd1c0766d31ce9cc37bf485f13e8ac443ef266818edbee3683b3fab83"
+  },
+  {
+    "name": "board-authority-draft-768.png",
+    "kind": "permanent-native",
+    "sha256": "10106f83c7afe77344216162b604c426cb2a151e9d51a26305410788f505a7da"
+  },
+  {
+    "name": "board-authority-return-768.png",
+    "kind": "permanent-native",
+    "sha256": "dd6a63182f8e74f6c79aa2971fc1c0e514f707d64ebe9c662a90205d4b95ee61"
+  },
+  {
+    "name": "board-authority-draft-1280.png",
+    "kind": "permanent-native",
+    "sha256": "b9d53dc6b7b1daf17b6d51ae58417e7cfa7f0ffd1f75f7a6c322b966d9f473d6"
+  },
+  {
+    "name": "board-authority-return-1280.png",
+    "kind": "permanent-native",
+    "sha256": "372f68c13b7b320032b9ff4889afd5c9d9b54734e2aee3e1d8b574582d7cf456"
+  },
+  {
+    "name": "board-authority-return-390.png",
+    "kind": "supplemental-keyboard",
+    "sha256": "419893a883cc66d40ee3410df41745317c3a0850f5e2a2ec09039850004cdc9f"
+  },
+  {
+    "name": "board-authority-return-1280.png",
+    "kind": "supplemental-keyboard",
+    "sha256": "0cd1e0f1308baf7fdf6a80e9195f4b3e89f3743d4c2f006cbdc66c9cdc26d39f"
+  },
+  {
+    "name": "board-authority-return-768.png",
+    "kind": "supplemental-keyboard",
+    "sha256": "fa6a0f29219436e903856e060d288279a3996b6754aa3780a72564209f1a1db3"
+  },
+  {
+    "name": "board-authority-return-320.png",
+    "kind": "supplemental-keyboard",
+    "sha256": "0c104e8df5b085da284056014c528761b60c7b6c91a2b15b2b4caf16b9e5b57c"
+  }
+]
