@@ -123,7 +123,7 @@ for (const width of [1280, 390]) {
       if (coverWrites.length === 1) await route.abort('failed');
       else await route.fulfill({ response: result });
     });
-    const coverReview = page.getByRole('button', { name: 'Review Card cover', exact: true });
+    const coverReview = (await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Card cover', exact: true }));
     let coverReviewReads = 0;
     page.on('request', request => {
       if (request.method() === 'GET' && new URL(request.url()).pathname === coverPath) coverReviewReads++;

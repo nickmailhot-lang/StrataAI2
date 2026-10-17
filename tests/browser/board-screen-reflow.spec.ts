@@ -6,7 +6,8 @@ import { pressAdmittedAction } from './keyboardAdmission';
 import { trackBoardReads } from './boardReadTracker';
 
 // FOUND-FR-008 / PRD-01-TC-12 / PRD-04: intentional canvas scrolling must not
-// conceal a clipped canonical Card title or an oversized List action.
+// hide the complete accessible Card name/detail or an oversized List action.
+// The collapsed title intentionally clamps; metadata stays inside the Card.
 for (const width of [1280, 768, 390, 320]) {
   test(`PRD-01/04: Board and Card reflow with long canonical labels at ${width}px`, async ({ page, context }) => {
     test.setTimeout(90_000); await page.setViewportSize({ width, height: 844 });
