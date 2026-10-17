@@ -28,7 +28,8 @@ for (const width of [1280, 768, 390, 320]) {
     await dialog.getByLabel('Name', { exact: false }).fill('Recovered planning Board');
     await dialog.getByLabel('Description', { exact: true }).fill('Keep this unsent draft');
     const submit = dialog.getByRole('button', { name: 'Create', exact: true });
-    await submit.focus(); await expect(submit).toBeFocused();
+    await submit.focus(); await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab');
+    await expect(submit).toBeFocused();
     let release!: () => void;
     const held = new Promise<void>(resolve => { release = resolve; });
     let checking = false;
@@ -70,6 +71,8 @@ for (const width of [1280, 768, 390, 320]) {
     expect((await canonical.json()).board).toMatchObject({ organizationId: org, name: 'Recovered planning Board', description: 'Keep this unsent draft', visibility: 'PRIVATE' });
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Recovered planning Board', exact: true })).toBeVisible();
+    const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
+    if (await menu.isVisible()) await menu.click();
     await page.getByRole('link', { name: 'Boards', exact: true }).click();
     await expect(page.getByRole('link', { name: 'Recovered planning Board', exact: true })).toBeVisible();
     const directory = await context.request.get(`/organizations/${org}/boards/directory`);
