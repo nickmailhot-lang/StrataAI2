@@ -17,8 +17,11 @@ for (const width of [1280, 768, 390, 320]) {
     const listResponse = await context.request.post(`/boards/${board}/lists`, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() }, data: { name: 'Planning' } });
     expect(listResponse.status()).toBe(201); const list = (await listResponse.json()).id as string;
     const boardPath = `/app/${org}/boards/${board}`;
+    if (width === 768) await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.fontSize = '200%'; }, { once: true });
+    });
     await page.goto(boardPath);
-    if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    if (width === 768) expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px');
     await expect(page.getByRole('heading', { name: 'Card recovery Board', exact: true })).toBeVisible();
     const dialog = await openCardCreation(page, 'Planning');
     const title = dialog.getByLabel('Card title', { exact: false }); await expect(title).toBeFocused();
@@ -51,7 +54,13 @@ for (const width of [1280, 768, 390, 320]) {
     if (width === 768) expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px');
     const close = page.getByRole('button', { name: 'Close', exact: true }); await close.focus(); await close.press('Enter');
     await expect(page).toHaveURL(new RegExp(`${boardPath}$`)); await expect(page.getByRole('link', { name: 'Recover one canonical Card', exact: true })).toBeFocused();
+    const returnBox = await page.getByRole('link', { name: 'Recover one canonical Card', exact: true }).boundingBox();
+    const headerBox = await page.getByRole('banner').boundingBox();
+    if (!returnBox || !headerBox) throw new Error('Missing Card return/header geometry');
+    expect(returnBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);
+    expect(returnBox.y + returnBox.height).toBeLessThanOrEqual(1000);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.screenshot({ path: test.info().outputPath(`card-creation-return-viewport-${width}.png`) });
     await page.screenshot({ path: test.info().outputPath(`card-creation-return-${width}.png`), fullPage: true });
   });
 }

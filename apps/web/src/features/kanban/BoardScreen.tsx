@@ -126,6 +126,8 @@ function BoardContent() {
   const [creation, setCreation] = useState<Creation>();
   const [checkingCardCreation, setCheckingCardCreation] = useState(false);
   const creationRead = useRef<{ controller: AbortController; listId: string } | undefined>(undefined);
+  const cardRefusal = useRef<HTMLDivElement>(null);
+  const cardRefusalOwner = useRef<Element | null | undefined>(undefined);
   const [operationBusy, setBusy] = useState(false);
   const [listArchiveRecovery, setArchiveRecovery] = useState(false);
   const [boardArchiveRecovery, setBoardArchiveRecovery] = useState(false);
@@ -226,7 +228,8 @@ function BoardContent() {
   function setSaved(next: boolean) {
     setSavedFor(next ? { cardId } : undefined);
   }
-  function clearDeniedScope(failure: Error) {
+  function clearDeniedScope(failure: Error, recoveryOwner?: Element | null) {
+    if (recoveryOwner !== undefined) cardRefusalOwner.current = recoveryOwner;
     accessEpoch.current += 1;
     creationRead.current?.controller.abort();
     activeRead.current?.abort();
@@ -295,6 +298,16 @@ function BoardContent() {
       : previewListMove(previewCardMove(snapshot, movePreview), listPreview)).lists.map(column => ({ ...column, id: column.list.id }))
     : [], [snapshot, canvasFilter, movePreview, listPreview]);
   const loadError = loaded?.key === key ? loaded.error : undefined;
+  useEffect(() => {
+    const owner = cardRefusalOwner.current;
+    if (owner === undefined || !loadError || snapshot) return;
+    cardRefusalOwner.current = undefined;
+    // Recover the retired command's focus, preserving deliberate navigation
+    // elsewhere. Centering also clears a retained Board scroll under the header.
+    if (document.activeElement !== owner && document.activeElement !== document.body) return;
+    cardRefusal.current?.focus({ preventScroll: true });
+    cardRefusal.current?.scrollIntoView?.({ block: 'center' });
+  }, [loadError, snapshot]);
   const subscribed = Boolean(snapshot);
   const invalidate = useEffectEvent(() => {
     if (reading.current) queuedRefresh.current = true;
@@ -329,7 +342,7 @@ function BoardContent() {
   }, [editable, snapshot]);
   async function openCardCreation(listId: string) {
     if (busy || !editable || snapshotReading || loadError || creationRead.current) return;
-    const controller = new AbortController(), epoch = accessEpoch.current;
+    const controller = new AbortController(), epoch = accessEpoch.current, focusOwner = document.activeElement;
     creationRead.current = { controller, listId };
     setBusy(true); setCheckingCardCreation(true); setError(undefined);
     try {
@@ -342,7 +355,8 @@ function BoardContent() {
     } catch (reason) {
       if (controller.signal.aborted || epoch !== accessEpoch.current) return;
       const failure = reason instanceof WorkRequestError ? reason : new WorkRequestError(503, null);
-      if ([401, 403, 404].includes(failure.status)) clearDeniedScope(failure);
+      if ([401, 403, 404].includes(failure.status)) clearDeniedScope(failure,
+        document.activeElement === focusOwner || document.activeElement === document.body ? document.activeElement : undefined);
       setFailure({ cardId, error: failure, cardCreation: true });
     } finally {
       if (creationRead.current?.controller === controller) creationRead.current = undefined;
@@ -363,6 +377,7 @@ function BoardContent() {
     event.preventDefault();
     if (busy || !editable) return;
     if (!edit && creation?.kind === 'card' && !creation.actorId) return;
+    const formElement = event.currentTarget;
     const form = new FormData(event.currentTarget);
     const title = String(form.get("title") ?? "").trim();
     if (!title) {
@@ -439,7 +454,8 @@ function BoardContent() {
         reason instanceof WorkRequestError &&
         [401, 403, 404].includes(reason.status)
       ) {
-        clearDeniedScope(reason);
+        clearDeniedScope(reason, !edit && creation?.kind === 'card' &&
+          (formElement.contains(document.activeElement) || document.activeElement === document.body) ? document.activeElement : undefined);
       }
       setError(
         reason instanceof WorkRequestError
@@ -488,8 +504,8 @@ function BoardContent() {
       setBusy(false);
     }
   }
-  const message = (failure: Error) => (
-    <Alert severity="error">
+  const message = (failure: Error, recovery = false) => (
+    <Alert severity="error" ref={recovery ? cardRefusal : undefined} tabIndex={recovery ? -1 : undefined}>
       {failure instanceof WorkRequestError || failure instanceof WorkInputError
         ? failure.message
         : "Unable to load or save this board. Please try again."}
@@ -501,7 +517,7 @@ function BoardContent() {
   if (loadError && !snapshot)
     return (
       <Stack spacing={2}>
-        {message(loadError)}
+        {message(loadError, true)}
         <Button onClick={() => setReload((value) => value + 1)}>Retry</Button>
         {loadError instanceof WorkRequestError && [401, 404].includes(loadError.status) && (
           // Private and missing Boards share the same unavailable response.

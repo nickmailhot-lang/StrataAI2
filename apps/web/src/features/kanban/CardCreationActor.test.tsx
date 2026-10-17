@@ -10,9 +10,9 @@ const snapshot = { board: { id: 'board', organizationId: 'org', name: 'Private w
   access: { canView: true, canEdit: true, canMove: true, canAdminister: false },
   lists: [{ list: { id: 'list', name: 'Planning', rank: 'a', lifecycleState: 'active' }, cards: [] }] };
 const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
-function mount() {
+function mount(outsideAction = false) {
   const router = createMemoryRouter([{ path: '/app/:organizationId/boards/:boardId', element: <BoardScreen /> }, { path: '/elsewhere', element: <p>Elsewhere</p> }], { initialEntries: ['/app/org/boards/board'] });
-  render(<RouterProvider router={router} />, { wrapper: AppThemeFixture }); return router;
+  render(<>{outsideAction && <button>Independent navigation</button>}<RouterProvider router={router} /></>, { wrapper: AppThemeFixture }); return router;
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.mocked(watchBoard).mockReset(); });
 describe('PRD-08-VS-04 Card creation identity', () => {
@@ -89,5 +89,18 @@ describe('PRD-08-VS-04 Card creation identity', () => {
     const router = mount(); fireEvent.click(await screen.findByRole('button', { name: 'Add card to Planning' }));
     await waitFor(() => expect(signal).toBeDefined()); await act(async () => { await router.navigate('/elsewhere'); });
     expect(signal?.aborted).toBe(true); expect(screen.getByText('Elsewhere')).toBeVisible();
+  });
+
+  it('preserves deliberate independent navigation focus when a pending Card admission is refused', async () => {
+    let finish!: (value: Response) => void;
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me'
+      ? new Promise<Response>(resolve => { finish = resolve; }) : reply(snapshot)));
+    mount(true); fireEvent.click(await screen.findByRole('button', { name: 'Add card to Planning' }));
+    await waitFor(() => expect(finish).toBeDefined());
+    const navigation = screen.getByRole('button', { name: 'Independent navigation' }); navigation.focus();
+    await act(async () => finish(reply({}, 401)));
+    await waitFor(() => expect(screen.queryByText('Private work')).not.toBeInTheDocument());
+    expect(screen.getByRole('alert')).toHaveTextContent('Sign in to continue');
+    expect(navigation).toHaveFocus(); expect(screen.queryByLabelText(/Card title/)).not.toBeInTheDocument();
   });
 });
