@@ -895,3 +895,41 @@ does not establish the hosted Checklist failure's exclusive cause. Native input
 and cleanup audits pass; current immutable/full CI remains required. PRD-12 stays
 open at **24% estimated work remaining**, with large-load tests deferred until
 after the operational MVP.
+
+## Observe explicit date retry admission — 2026-10-16
+
+The retained [phone date failure](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38871174459/job/117078411354)
+on `7a9cea17` loses the first successful date-save response as intended, but
+never sends its explicit retry. The trace records a foreground Board GET from
+3,069,662.496 ms for 24.847 ms, overlapping Enter at 3,069,663.766 ms. The final
+view retains the unconfirmed save, frozen draft and retry action. This proves
+missing retry admission; it does not establish server receipt rejection or the
+exclusive cause of the interleaving. The authenticated diagnostic artifact
+`12071918822` is 2,672,975 bytes with SHA-256
+`2a1b5ed7c3f07623da7ec83bbdcab14aa62f40b6820cf4f21a937aff41a5bca0`.
+
+The browser case now uses the existing bounded request-admission helper for
+this explicit retry and stops activating once the date route observer advances
+from one attempt to two. The original exact two-request count, identical
+idempotency key/body, original version, successful response and saved notice
+remain required. Both viewport scenarios retain the original 90-second deadline,
+peer-session completion and live timezone-preference assertions. No product
+command, retry policy, receipt handling or server implementation changes.
+
+Both complete revised desktop/phone workflows pass **2/2 in 113,409.2 ms**,
+with one attempt per case and no failures, flakes, skips or report errors.
+Browser types, all 11 shared admission checks and 289 CI coverage guards pass.
+Independent inspection confirms only the intended import and retry activation
+change in the browser file, and unchanged original 90-second deadlines.
+
+The focused run uses freshly migrated PostgreSQL 17.11/pgvector (149 migrations)
+and restricted API/Worker roles, current compiled assemblies and built frontend
+mounted into cached runtime images. Its optional verification/mail fixture is
+not managed-provider or current immutable-release evidence. All 1,286 captured
+source inputs, 71 binary inputs and four served frontend assets match. The API
+process remains unchanged; the scoped Worker returns unscoped on the same image.
+Owned cleanup removes 3,290 temporary bytes and restores the original Docker
+inventory. No original database is used and no images are built, pulled or
+imported. Current immutable-image/full CI and all original acceptance remain
+required. PRD-12 stays open at **24% estimated work remaining**; large-load tests
+remain disabled until after the operational MVP.

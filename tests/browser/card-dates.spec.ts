@@ -1,7 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
-import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-12: persisted dates, viewing timezone and completion display across two sessions at ${width}px`, async ({ page, context, browser }) => {
@@ -43,7 +43,7 @@ for (const width of [1280, 390]) {
     await pressAdmittedAction(page.getByRole('button', { name: 'Save dates', exact: true }));
     const retry = page.getByRole('button', { name: 'Retry date save' }); await expect(retry).toBeEnabled();
     await expect(page.getByLabel('Due date', { exact: true })).toBeDisabled();
-    await retry.focus(); await expect(retry).toBeFocused(); await page.keyboard.press('Enter');
+    await pressObservedRequest(retry, () => attempts.length, 2);
     await expect(page.getByText('Dates saved.', { exact: true })).toBeVisible();
     expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]);
     expect(JSON.parse(attempts[0].body!)).toMatchObject({ dueAt: '2040-01-02', dueTimezone: 'Pacific/Honolulu', version: 1 });

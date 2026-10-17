@@ -46,6 +46,15 @@ Current immutable-image/full CI and managed-provider acceptance remain pending.
 No automatic acceptance replay or stale link retention is introduced. PRD-60 and
 the milestone stay open, and large-load tests remain deferred.
 
+The [explicit date retry admission follow-up](card-dates.md#observe-explicit-date-retry-admission--2026-10-16)
+observes the retry request after a retained phone trace shows no retry write
+during an overlapping foreground read. Both complete desktop/phone scenarios
+pass with their original exact request identity/count, saved state, peer-session
+and live timezone assertions and 90-second deadlines. All 11 helper cases,
+browser types and 289 CI guards pass. Captured inputs match and owned cleanup
+restores Docker inventory. Current immutable/full CI remains required; PRD-12
+and the MVP remain open, with large-load tests deferred.
+
 The [Board-background opening follow-up](../board-background-images.md#board-background-review-read-admission-2026-10-16)
 observes the actual read-only candidate before continuing after a retained phone
 opening that starts no review read. All original image consent, receipt, copy,
