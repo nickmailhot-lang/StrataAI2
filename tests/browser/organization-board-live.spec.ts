@@ -1,8 +1,9 @@
+import AxeBuilder from '@axe-core/playwright';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
-for (const width of [1280, 390]) {
+for (const width of [1280, 768, 390, 320]) {
   test(`PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at ${width}px`, async ({ browser, context }) => {
     test.setTimeout(150_000);
     const headers = { 'X-StrataAI-Request': '1' };
@@ -31,6 +32,7 @@ for (const width of [1280, 390]) {
       const version = (await state.json()).board.version;
       restoreWorker = scopedBoardWorker(org);
       for (const board of boards) await waitForBoardDelivery(context.request, board.id);
+      if (width === 768) await reader.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.fontSize = '200%'; }, { once: true }); });
       const pages = [await reader.newPage(), await reader.newPage()];
       const frames: { resets: number; ids: string[] }[] = [{ resets: 0, ids: [] }, { resets: 0, ids: [] }];
       for (const [index, page] of pages.entries()) {
@@ -70,6 +72,14 @@ for (const width of [1280, 390]) {
       for (const page of pages) await expect(page.getByRole('link', { name: boards[0].name, exact: true })).toBeVisible();
       await pages[1].getByRole('button', { name: 'Create board', exact: true }).click();
       await expect(pages[1].getByRole('dialog')).toBeVisible();
+      const review = pages[1].getByRole('dialog'), draft = review.getByLabel('Name', { exact: false });
+      await expect(draft).toBeFocused(); await draft.fill('Unsubmitted Board review');
+      await review.getByLabel('Description', { exact: true }).fill('Retire this unsubmitted draft'); await draft.focus();
+      let creations = 0;
+      pages[1].on('request', request => { if (request.method() === 'POST' && new URL(request.url()).pathname === '/boards') creations++; });
+      expect((await new AxeBuilder({ page: pages[1] }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      expect(await pages[1].evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await pages[1].screenshot({ path: test.info().outputPath(`board-authority-draft-${width}.png`) });
       const resetCounts = frames.map(frame => frame.resets);
       expect((await context.request.delete(`/boards/${boards[0].id}/members/${user}`, { headers })).status()).toBe(204);
       for (const [index, page] of pages.entries()) {
@@ -79,6 +89,20 @@ for (const width of [1280, 390]) {
         await expect(page.getByText(boards[1].name, { exact: true })).toHaveCount(0);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       }
+      const launcher = pages[1].getByRole('button', { name: 'Create board', exact: true });
+      await expect(launcher).toBeFocused();
+      const launcherBox = await launcher.boundingBox(), headerBox = await pages[1].getByRole('banner').boundingBox();
+      if (!launcherBox || !headerBox) throw new Error('Missing authority-reset return geometry');
+      expect(launcherBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);
+      expect(launcherBox.y + launcherBox.height).toBeLessThanOrEqual(844);
+      if (width === 768) expect(await pages[1].evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px');
+      expect((await new AxeBuilder({ page: pages[1] }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      await pages[1].screenshot({ path: test.info().outputPath(`board-authority-return-${width}.png`) });
+      await launcher.press('Enter'); await expect(pages[1].getByRole('dialog')).toBeVisible();
+      await expect(pages[1].getByLabel('Name', { exact: false })).toHaveValue('');
+      await expect(pages[1].getByLabel('Description', { exact: true })).toHaveValue('');
+      await pages[1].keyboard.press('Escape'); await expect(pages[1].getByRole('dialog')).toHaveCount(0);
+      await expect(launcher).toBeFocused(); expect(creations).toBe(0);
       expect((await reader.request.get('/me')).status()).toBe(200);
       const withheld = await reader.request.get(`/boards/${boards[0].id}`); expect(withheld.status()).toBe(404);
       expect(await withheld.text()).not.toContain(boards[0].name);

@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-17T20:04:05.156Z",
+  "artifactId": 12111908938,
+  "runId": 39055149611,
+  "headRevision": "aa64e0a2a6e5f8e7bd680a89bc3f89ad0d40b0de",
+  "artifactSha256": "f678c224e80254f49f9677c220439ed2f668b9487fd3923600fbbe73edb25538",
+  "metadata": {
+    "repository": "nickmailhot-lang/StrataAI2",
+    "commitSha": "2c747cd01da4fbdbbd0ab6df75067042043f3d05",
+    "shortSha": "2c747cd01da4",
+    "workflowRunId": "39055149611",
+    "workflowRunNumber": "1907",
+    "workflowRunAttempt": "1",
+    "version": "0.1.0-1907",
+    "releaseVersion": null,
+    "imageTag": "2c747cd01da4fbdbbd0ab6df75067042043f3d05",
+    "createdAt": "2026-10-17T17:45:45.909Z",
+    "images": {
+      "web": "strataai-web:2c747cd01da4fbdbbd0ab6df75067042043f3d05",
+      "api": "strataai-api:2c747cd01da4fbdbbd0ab6df75067042043f3d05",
+      "worker": "strataai-worker:2c747cd01da4fbdbbd0ab6df75067042043f3d05"
+    }
+  },
+  "inspected": [
+    "organization-board-live-PR-78fbb-vate-MEMBER-access-at-390px/test-failed-2.png",
+    "organization-board-live-PR-d409b-ate-MEMBER-access-at-1280px/test-failed-2.png"
+  ],
+  "finding": "Downloaded ZIP matches actual GitHub reported SHA256. Metadata embeds mergecandidate2c747cd0. Mobile inspected capture shows surviving empty CreateBoard form; desktop inspected capture shows withdrawn private Board listing. This is diagnostic evidence, not an accepted release or source equivalence claim."
+}

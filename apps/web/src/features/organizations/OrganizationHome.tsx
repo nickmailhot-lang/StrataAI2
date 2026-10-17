@@ -112,6 +112,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const [creating, setCreating] = useState(false);
   const [creationContainer, setCreationContainer] = useState<HTMLDivElement | null>(null);
   const creationRecoveryFocus = useRef<HTMLElement | undefined>(undefined);
+  const creationRetirementFocus = useRef<HTMLElement | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
   const pageFocus = useRef(false);
@@ -214,19 +215,25 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   }, [organizationId, lifecycleActor, navigate, creationContainer]);
   useEffect(() => {
     if (!organizationId || !liveActor) return;
-    const recover = (message: string) => {
+    const recover = (message: string, retireUnsubmitted = false) => {
       // Ordinary stream teardown may report a queued disconnect after the
       // lifecycle stream has withdrawn graph access. Keep that current fact
       // until the lifecycle stream itself rechecks it.
       if (lifecycle.current === 'PENDING' || lifecycle.current === 'COMPLETED') return;
-      if (document.activeElement instanceof HTMLElement && creationContainer?.contains(document.activeElement))
+      if (retireUnsubmitted && !mutation.current.hasPending) {
+        const owner = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
+        creationRetirementFocus.current = owner && creationContainer?.contains(owner) ? owner
+          : owner === document.body ? creationRecoveryFocus.current : undefined;
+        creationRecoveryFocus.current = undefined; creationFocus.current = false;
+        setCreating(false); setError(undefined);
+      } else if (document.activeElement instanceof HTMLElement && creationContainer?.contains(document.activeElement))
         creationRecoveryFocus.current = document.activeElement;
       read.current?.abort(); setData(undefined); setLoadError(undefined);
       setLiveNotice(message); setReload(value => value + 1);
     };
     const stopBoards = watchOrganizationBoards({ organizationId, userId: liveActor, audience: 'discovery',
       invalidate: () => recover("Boards changed. Checking current access."),
-      reset: () => recover("Checking current Board access."),
+      reset: established => recover("Checking current Board access.", established === true),
       unavailable: () => recover("Live updates interrupted. Checking current access.") });
     const stopMetadata = watchOrganizationMetadata({ organizationId, userId: liveActor,
       invalidate: () => recover('Organization changed. Checking current access.'),
@@ -236,6 +243,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   }, [organizationId, liveActor, creationContainer]);
   useLayoutEffect(() => {
     if (!data) return;
+    const retiringOwner = creationRetirementFocus.current; creationRetirementFocus.current = undefined;
+    if (retiringOwner && (document.activeElement === document.body || document.activeElement === retiringOwner))
+      createButton.current?.focus();
     const owner = creationRecoveryFocus.current; creationRecoveryFocus.current = undefined;
     if (owner?.isConnected && !owner.matches(':disabled')
       && (document.activeElement === document.body || document.activeElement === owner)) owner.focus({ preventScroll: true });
