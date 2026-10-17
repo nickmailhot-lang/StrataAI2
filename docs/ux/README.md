@@ -21,6 +21,8 @@ This workstream evolves the existing React/TypeScript/Vite/MUI application. It p
 - UX-003: [design system catalog](design-system.md), named existing tokens, shared PageHeader/ActionRow in Organization discovery/Search/Notifications, wrapping accessible alerts and header offsets that follow text reflow.
 - These are implemented slices, not full PRD/product acceptance. See the delivery report for current checks, retained failures and remaining gates. Independent feature/backend work continues outside these shared UI files.
 
+- UX-005: Organization settings adopts the shared header/actions and adds described, focused field errors while preserving its existing command recovery. Its own current-head gates are recorded separately.
+
 ## Current architecture and findings
 
 [Existing route/discovery inventory and protected recovery exceptions](route-inventory.md) records the current global, Organization, Board/Card and Portal route families.
@@ -35,7 +37,7 @@ The new mobile drawer shares the existing navigation definitions and remains ins
 
 ## Smallest safe implementation sequence
 
-1. **UX-001 slice 1 (this branch):** additive mobile drawer/current section/skip focus and minimal semantic accessibility fix. Keep existing route composition and business actions. Validate shell/component/controlled browser checks, then real-service regression before integration.
+1. **UX-001 foundation (merged in PR #94):** additive mobile drawer/current section/skip focus and minimal semantic accessibility fix. Keep existing route composition and business actions. Validate shell/component/controlled browser checks, then real-service regression before integration.
 2. **UX-002 route/capability contract:** review current global/Organization/Board/Portal entry points and recovery exceptions. Approve role menus from existing authoritative capabilities. Do not block independent API/Worker/persistence work.
 3. **UX-003 reuse baseline:** document appTheme/tokens and current working primitives. Establish representative fixtures; extract only proven duplicated compositions. UX-002 and UX-003 design work may proceed independently, but shared-file edits integrate sequentially.
 4. **UX-001 next slices:** integrate approved context labels, breadcrumbs and global account-page composition one route family at a time. A migration flag is required if relocating a working workflow could interrupt discovery, state or recovery. Specify default, both-path checks, rollback and removal criteria before rollout.
@@ -45,7 +47,7 @@ The new mobile drawer shares the existing navigation definitions and remains ins
 
 ## Continuous delivery and file ownership
 
-Use `ux/ux-001-foundation` in this isolated worktree. The existing main checkout and its active CI/browser changes remain untouched. Shell owner has exclusive write ownership of `app/App.tsx`, `app/InternalAppShell.tsx`, `portal/PortalShell.tsx`, `app/navigationModel.ts`, `theme/appTheme.ts`, `theme/designTokens.ts` and shared `components/PageHeader.tsx` / `ActionRow.tsx` for an integration window. Feature owners change their own modules/tests and consume approved slots; request a sequential shell PR for a new menu item. This is an ownership rule, not authorization to start agents or send messages.
+PR #94 merged the foundation after all 22 reported checks passed. Continue in isolated branches from current main; the current UX-005 Organization settings slice uses `ux/ux-005-organization-forms`. The existing main checkout and its active CI/browser changes remain untouched. Shell owner has exclusive write ownership of `app/App.tsx`, `app/InternalAppShell.tsx`, `portal/PortalShell.tsx`, `app/navigationModel.ts`, `theme/appTheme.ts`, `theme/designTokens.ts` and shared `components/PageHeader.tsx` / `ActionRow.tsx` for an integration window. Feature owners change their own modules/tests and consume approved slots; request a sequential shell PR for a new menu item. This is an ownership rule, not authorization to start agents or send messages.
 
 Independent backend/schema/Worker/security repairs, existing feature modules without shared-layout edits and feature contract tests continue. A UI feature may implement against approved slots while waiting for menu integration; it cannot ship standalone navigation. Rebase/cherry-pick only reviewed changes, preserve other active work, and run the required checks on the combined revision. Keep source changes reviewable in a draft PR until applicable gates pass.
 

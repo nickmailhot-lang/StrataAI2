@@ -21,6 +21,8 @@ UX-003 implementation baseline. React, MUI and Emotion remain the component/styl
 
 `components/ActionRow.tsx` provides a wrapping MUI Stack with flex gap. Organization discovery and Notifications use it. Existing Button/Link/TextField refs, accessible names, native form submission, disabled/pending state, pagination and original-command recovery remain owned by their features. Do not put automatic retries, authorization or consent into this layout component.
 
+Organization settings now consumes the same PageHeader (retaining its h1) and ActionRow for save and explicit draft-review choices. Its field error mapping/focus stays in the feature: the existing name validation and server logo refusal supply static linked help; page-level error/support references, drafts and original-command recovery remain intact. This follow-up requires its own current-source evidence.
+
 Before extracting another pattern, identify actual duplication and at least two real consumers. Prefer MUI controls directly where a wrapper adds no useful shared behavior. Form validation, canonical read admission, error support references and destructive confirmation remain in the working feature modules until a separately tested migration justifies extraction.
 
 ## Responsive safeguards added

@@ -321,3 +321,52 @@ it('reports the actual final actor-check failure instead of an unadmitted save r
   expect(screen.queryByText(/unadmitted-save-reference/)).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Retry original save' })).toBeVisible();
 });
+
+
+describe('UX-005 accessible Organization field feedback', () => {
+  it('focuses and describes the invalid name without sending or losing the draft', async () => {
+    let writes = 0;
+    stubFetch((_path, init) => {
+      if (init?.method === 'PATCH') writes++;
+      return Promise.resolve(reply(summary));
+    });
+    mount();
+    const name = await screen.findByLabelText(/^Organization name/);
+    fireEvent.change(name, { target: { value: '   ' } });
+    fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Retained legal draft' } });
+    fireEvent.submit(name.closest('form')!);
+    expect(name).toHaveFocus();
+    expect(name).toHaveAttribute('aria-invalid', 'true');
+    expect(name).toHaveAccessibleDescription('Use 1–160 characters; spaces alone are not a name.');
+    expect(screen.getByLabelText('Description')).toHaveValue('Retained legal draft');
+    expect(writes).toBe(0);
+    expect(screen.queryByRole('button', { name: 'Retry original save' })).not.toBeInTheDocument();
+  });
+  it('links a server logo refusal to the editable field and clears feedback after a deliberate corrected save', async () => {
+    let writes = 0;
+    stubFetch((_path, init) => {
+      if (init?.method === 'PATCH') {
+        writes++;
+        return Promise.resolve(writes === 1 ? reply({ code: 'invalid_organization_logo_url' }, 400)
+          : reply({ ...org, logoUrl: 'https://example.test/logo.png', version: 2 }));
+      }
+      return Promise.resolve(reply(summary));
+    });
+    mount(); await screen.findByLabelText(/^Organization name/);
+    const logo = screen.getByLabelText('Logo URL');
+    fireEvent.change(logo, { target: { value: 'http://example.test/logo.png' } });
+    fireEvent.click(save());
+    await waitFor(() => expect(logo).toHaveFocus());
+    expect(logo).toHaveAttribute('aria-invalid', 'true');
+    expect(logo).toHaveAccessibleDescription('Enter an HTTPS URL without a username or password.');
+    expect(logo).toHaveValue('http://example.test/logo.png');
+    expect(screen.getByLabelText('Description')).toHaveValue(org.description);
+    expect(writes).toBe(1);
+    fireEvent.change(logo, { target: { value: 'https://example.test/logo.png' } });
+    fireEvent.submit(logo.closest('form')!);
+    await screen.findByText('Organization settings saved.');
+    expect(logo).toHaveAttribute('aria-invalid', 'false');
+    expect(logo).toHaveAccessibleDescription('Optional secure HTTPS URL, or leave empty.');
+    expect(writes).toBe(2);
+  });
+});
