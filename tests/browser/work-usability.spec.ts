@@ -77,6 +77,9 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(page.locator('[data-card-drag-id]').filter({ hasText: 'Replace lobby lamp' })).toHaveCount(0);
     const title = detail.getByRole('textbox', { name: 'Card title', exact: false });
     await title.fill('Inspect roof and gutters');
+    await detail.getByText('Card actions', { exact: true }).press('Enter');
+    await expect(detail.getByRole('button', { name: 'Archive Card', exact: true })).toBeDisabled();
+    await expect(detail.getByRole('button', { name: 'Move to another Board', exact: true })).toBeDisabled();
     await activate('Close', detail);
     await activate('Keep editing', page.locator('body'));
     await expect(title).toHaveValue('Inspect roof and gutters');
@@ -95,6 +98,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(title).toHaveValue('Inspect roof and gutters');
     await activate('Save card', detail);
     await expect(detail.getByText('Changes saved.', { exact: true })).toBeVisible();
+    await expect(detail.getByRole('button', { name: 'Archive Card', exact: true })).toBeEnabled();
     expect(attempts).toHaveLength(2); expect(attempts[0]).toBe(attempts[1]);
     await page.unroute(`**/cards/${cardId}`);
     await activate('Move card', detail);

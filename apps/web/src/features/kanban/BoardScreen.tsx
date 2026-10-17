@@ -951,13 +951,14 @@ function BoardContent() {
             </>
           )}
           <SecondaryActions label="Card actions">
+          {draftState.dirty && <Typography variant="body2">Save your title and description changes before moving to another Board, copying or archiving this Card.</Typography>}
           {cardId && <CrossBoardCardMoveControl key={`cross-move-${cardId}`} card={card} selectedCardId={cardId}
-            snapshot={snapshot} disabled={otherBusy || dateRecovery || cardRecovery || cardCopyRecovery} unavailable={snapshotReading || !!loadError}
+            snapshot={snapshot} disabled={draftState.dirty || otherBusy || dateRecovery || cardRecovery || cardCopyRecovery} unavailable={snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCrossBoardMoveRecovery}
             onAcknowledged={(movedCardId, movedBoardId) => setCrossBoardMoved({ cardId: movedCardId, boardId: movedBoardId })}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
           {cardId && <CardCopyControl key={`card-copy-${cardId}`} card={card} selectedCardId={cardId}
-            snapshot={snapshot} disabled={otherBusy || dateRecovery || cardRecovery || crossBoardMoveRecovery} unavailable={snapshotReading || !!loadError}
+            snapshot={snapshot} disabled={draftState.dirty || otherBusy || dateRecovery || cardRecovery || crossBoardMoveRecovery} unavailable={snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardCopyRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
           {cardId && <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="CARD" entityId={cardId}
@@ -965,7 +966,7 @@ function BoardContent() {
               activeCard}
             disabled={busy || !!loadError} refreshing={snapshotReading} onReturnFocus={() => cardClose.current?.focus({ preventScroll: true })} />}
           {cardId && <CardArchiveControl key={`archive-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={cardCommandRecovery || operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
+            disabled={draftState.dirty || cardCommandRecovery || operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardArchiveRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onAcknowledged={() => { canvasFocus.current = { scope: key, cardId };
