@@ -1,0 +1,20 @@
+Developer inspection 2026-10-17T16:25:06.139Z; test source fc1d347dff2f890e5c8d16fbeb058836b58ac9cf; compiled web 89c36810d3779254e1a8b32ea87874c5a7173ac6.
+All four actual-runtime Board creation captures inspected at 320/390/768/1280px; 768 uses 200% root text. Original fields and private visibility survive genuine lifecycle socket interruption. Keyboard Create focus ring is visible and unobscured; actions fit; long 320px single-line name scrolls locally. No horizontal page overflow. Applicable Axe and native keyboard submission, canonical reload and responsive drawer return pass in the complete tests. Not a screen-reader/physical-device/full WCAG certification.
+[
+  {
+    "file": "recovered-board-draft-768.png",
+    "sha256": "e5def9a589c6ba092f746d58fa74fe15ff322223c166afbf135946f74ef7ffb7"
+  },
+  {
+    "file": "recovered-board-draft-390.png",
+    "sha256": "a628ebbb888a979ccec1a6a553902b247e5327ebb5acfa53bf6dfb10700ab649"
+  },
+  {
+    "file": "recovered-board-draft-320.png",
+    "sha256": "8432b3a230316daabd48974087b1bbd7e436789fc6f07c19470daee092703d4c"
+  },
+  {
+    "file": "recovered-board-draft-1280.png",
+    "sha256": "6d04e2896439e80de065b480a48fb01b1e5a6e97fad6490f453d9108e3a42cd1"
+  }
+]

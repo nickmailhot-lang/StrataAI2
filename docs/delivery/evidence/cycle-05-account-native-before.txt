@@ -1,0 +1,74 @@
+
+Running 2 tests using 1 worker
+
+(node:36552) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\board-creation-account.spec.ts:6:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px (2.1s)
+(node:30888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\board-creation-account.spec.ts:6:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px (2.1s)
+
+
+  1) tests\browser\board-creation-account.spec.ts:6:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 201
+
+      70 |         sameBody: attempts[0].body === attempts[1].body, replacementBoardCount: remaining.length,
+      71 |       }, null, 2) });
+    > 72 |       expect(attempts[1].status).toBe(401);
+         |                                  ^
+      73 |       expect(attempts[1].key).toBe(attempts[0].key); expect(attempts[1].body).toBe(attempts[0].body);
+      74 |       expect(new URL(attempts[1].url).searchParams.get('expectedActorId')).toBe(original.id);
+      75 |       expect(remaining).toHaveLength(0);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board-creation-account.spec.ts:72:34
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle5-account-before\board-creation-account-PRD-62f06--actor-s-creation-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle5-account-before\board-creation-account-PRD-62f06--actor-s-creation-at-1280px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle5-account-before\board-creation-account-PRD-62f06--actor-s-creation-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle5-account-before\board-creation-account-PRD-62f06--actor-s-creation-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\board-creation-account.spec.ts:6:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 201
+
+      70 |         sameBody: attempts[0].body === attempts[1].body, replacementBoardCount: remaining.length,
+      71 |       }, null, 2) });
+    > 72 |       expect(attempts[1].status).toBe(401);
+         |                                  ^
+      73 |       expect(attempts[1].key).toBe(attempts[0].key); expect(attempts[1].body).toBe(attempts[0].body);
+      74 |       expect(new URL(attempts[1].url).searchParams.get('expectedActorId')).toBe(original.id);
+      75 |       expect(remaining).toHaveLength(0);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board-creation-account.spec.ts:72:34
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle5-account-before\board-creation-account-PRD-88957-r-actor-s-creation-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle5-account-before\board-creation-account-PRD-88957-r-actor-s-creation-at-390px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle5-account-before\board-creation-account-PRD-88957-r-actor-s-creation-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle5-account-before\board-creation-account-PRD-88957-r-actor-s-creation-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\board-creation-account.spec.ts:6:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px 
+    tests\browser\board-creation-account.spec.ts:6:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px 

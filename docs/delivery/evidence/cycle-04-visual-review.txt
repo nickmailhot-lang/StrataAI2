@@ -1,0 +1,36 @@
+Developer inspection 2026-10-17T16:58:43.148Z; current compiled/test source de81270ff2932ef599de0b8e1b167134534f59b9.
+Inspected all four current launcher-return captures and current creation dialogs at 320px and 768px/200% text; the earlier four creation captures cover the unchanged layout. Escape returns a visible keyboard focus ring at desktop/tablet; pointer Cancel returns active focus on mobile (pointer modality does not display a keyboard ring). The native assertions verify current launcher focus and viewport visibility at all four widths, then empty reopening and canonical creation. The 200% full-page screenshot retains a sticky-header position corresponding to the scrolled viewport; the active launcher is below that header and in view. No horizontal overflow observed. This is developer/scoped automated UX review, not screen-reader/device/full WCAG acceptance.
+[
+  {
+    "file": "recovered-board-draft-768.png",
+    "sha256": "45ffc17d093c6837aeaa511301bfc9dcf00c521daa16c63f7f69a94c1ddd615d"
+  },
+  {
+    "file": "recovered-board-return-768.png",
+    "sha256": "9dba3f04ce436aea8fed28e6ff9eed4643c9354a6e5d53521588f1c4555cff70"
+  },
+  {
+    "file": "recovered-board-draft-390.png",
+    "sha256": "e3369f592ccba73db85cd00093454f9d2b3be222b5f12ba6ef350e2ea30560fc"
+  },
+  {
+    "file": "recovered-board-return-390.png",
+    "sha256": "4835bfc939dbb217b0bfb9074010d95f36df94494178b1e51971562f3ef379e1"
+  },
+  {
+    "file": "recovered-board-draft-320.png",
+    "sha256": "10df3e88a279e39937b14c85d5af62fa04b0f70258d98aedd6108f8def43488e"
+  },
+  {
+    "file": "recovered-board-return-320.png",
+    "sha256": "e1531df040a21fbe0ba9af54e8a953f1aa9671885843f9a91481fa02360c1dd2"
+  },
+  {
+    "file": "recovered-board-draft-1280.png",
+    "sha256": "c3c2e11825db01fdc3901bf023cda2d1482f1d221aaf2888d9f9ca74397d9a7f"
+  },
+  {
+    "file": "recovered-board-return-1280.png",
+    "sha256": "307dd65fc7649f5de7945a7ddc73c4d94a400a23274040c37175a27a2eb847dc"
+  }
+]

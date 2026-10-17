@@ -1,0 +1,28 @@
+
+Running 21 tests using 1 worker
+
+(node:23356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\board-creation-account.spec.ts:7:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px (3.5s)
+  ok  2 tests\browser\board-creation-account.spec.ts:7:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px (2.4s)
+  ok  3 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (5.4s)
+  ok  4 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (5.0s)
+  ok  5 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (5.1s)
+  ok  6 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (4.6s)
+  ok  7 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (7.6s)
+  ok  8 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (8.7s)
+  ok  9 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (7.7s)
+  ok 10 tests\browser\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px (2.5s)
+  ok 11 tests\browser\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px (2.3s)
+  ok 12 tests\browser\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 1280px (4.9s)
+  ok 13 tests\browser\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px (4.5s)
+  ok 14 tests\browser\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 390px (4.9s)
+  ok 15 tests\browser\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 320px (4.6s)
+  ok 16 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px (4.6s)
+  ok 17 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 768px (5.2s)
+  ok 18 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 390px (5.2s)
+  ok 19 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 320px (4.6s)
+  ok 20 tests\browser\signin-card-return.spec.ts:78:7 › PRD-01-VS-04/AC-03: sign-in return does not grant outsider access to a private Card (1.7s)
+  ok 21 tests\browser\signin-card-return.spec.ts:78:7 › PRD-01-VS-04/AC-03: sign-in return does not grant portal-only access to a private Card (1.7s)
+
+  21 passed (1.7m)

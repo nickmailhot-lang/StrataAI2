@@ -14,6 +14,8 @@ Use this index to find every document in `docs/`. Architecture documents describ
 
 ## Suggested starting points
 
+- [Incremental delivery ledger, lifecycle and generated progress](delivery/README.md), with the [whole-inventory audit and proposed capability breakdown](delivery/baseline-audit.md).
+
 - [Latest completed 5b959b2f CI release and artifact boundaries](architecture/operational-mvp-milestone.md#completed-5b959b2f-ci-release--2026-10-16)
 
 - [Organization receipt clocks and runtime capability checks](architecture/schema149-clock-inventory.md#organization-command-receipt-classification-and-capability-checks--2026-10-16)

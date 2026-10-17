@@ -1,0 +1,16 @@
+{
+  "cases": [
+    {
+      "traceSha256": "03f242204499531032fbdb951bd68a200386eb6333e444bf699ce25f595b22f5",
+      "case": "card-creation-account-PRD--f6077-placement-account-at-1280px",
+      "cardCreationPosts": 0
+    },
+    {
+      "traceSha256": "8a26aea71958fe055690282b3eee26cd61cca707530445b6be58ae94d7b647ba",
+      "case": "card-creation-recovery-PRD-86fae-turns-to-its-Board-at-390px",
+      "cardCreationPosts": 0
+    }
+  ],
+  "source": "daf028e26a5e1ca7ab85016f0abf4948d60de690",
+  "result": "Both fail before form entry, no Card creation request; restore existing bounded non-writing entry fixture pattern. Do not repeat saves or alter deadlines/retries."
+}

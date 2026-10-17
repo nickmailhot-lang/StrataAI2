@@ -1,0 +1,100 @@
+
+Running 9 tests using 1 worker
+
+(node:31628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (27.2s)
+  x  2 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (11.2s)
+(node:7952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (12.1s)
+(node:31460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 tests\browser\signin-card-return.spec.ts:21:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px (14.4s)
+  ok 5 tests\browser\signin-card-return.spec.ts:21:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 768px (13.3s)
+  ok 6 tests\browser\signin-card-return.spec.ts:21:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 390px (12.8s)
+  ok 7 tests\browser\signin-card-return.spec.ts:21:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 320px (12.2s)
+  ok 8 tests\browser\signin-card-return.spec.ts:77:7 › PRD-01-VS-04/AC-03: sign-in return does not grant outsider access to a private Card (4.3s)
+  ok 9 tests\browser\signin-card-return.spec.ts:77:7 › PRD-01-VS-04/AC-03: sign-in return does not grant portal-only access to a private Card (4.2s)
+
+
+  1) tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet)
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: getByRole('button', { name: 'Create', exact: true })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: 'Create', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Create', exact: true })
+
+
+      20 |       if (viewport.name !== "desktop") {
+      21 |         await button.focus();
+    > 22 |         await expect(button).toBeFocused();
+         |                              ^
+      23 |         await button.press("Enter");
+      24 |       } else await button.click();
+      25 |     }
+        at activate (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board.spec.ts:22:30)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board.spec.ts:77:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle2-regression-browser\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle2-regression-browser\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle2-regression-browser\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle2-regression-browser\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile)
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: getByRole('button', { name: 'Create', exact: true })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: 'Create', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Create', exact: true })
+
+
+      20 |       if (viewport.name !== "desktop") {
+      21 |         await button.focus();
+    > 22 |         await expect(button).toBeFocused();
+         |                              ^
+      23 |         await button.press("Enter");
+      24 |       } else await button.click();
+      25 |     }
+        at activate (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board.spec.ts:22:30)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board.spec.ts:77:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle2-regression-browser\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle2-regression-browser\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle2-regression-browser\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle2-regression-browser\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet)
+    tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile)
+  7 passed (1.9m)

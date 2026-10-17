@@ -1,0 +1,22 @@
+{
+  "revision": "3bf5c2ba7598f3348143b3b5083c8c7be3be1bc8",
+  "prior": "daf028e26a5e1ca7ab85016f0abf4948d60de690",
+  "trees": [
+    {
+      "path": "apps/web/src",
+      "prior": "6dc34ac4f44aaf4c1a44c2107528c59e17d5b215",
+      "current": "6dc34ac4f44aaf4c1a44c2107528c59e17d5b215"
+    },
+    {
+      "path": "src",
+      "prior": "4680ed94029cc325c822686e5f841f08c9cbf4c7",
+      "current": "4680ed94029cc325c822686e5f841f08c9cbf4c7"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests",
+      "prior": "b5b612c6c78939adff80e2d6692f77ba4407504e",
+      "current": "b5b612c6c78939adff80e2d6692f77ba4407504e"
+    }
+  ],
+  "scope": "Exact source-tree equality supports the explicitly prior 145 component/web-type/lint results. Current API16 and native21 were independently re-executed on final same-revision compiled services. Complete final frontend is running separately, not inferred."
+}

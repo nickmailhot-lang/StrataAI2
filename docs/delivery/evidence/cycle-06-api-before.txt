@@ -1,0 +1,47 @@
+xUnit.net v3 In-Process Runner v4.0.1+8ed8aa354c (64-bit .NET 10.0.12)
+  Discovering: StrataAI.Api.Tests
+  Discovered:  StrataAI.Api.Tests
+  Starting:    StrataAI.Api.Tests
+    StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(scenario: "other", status: Unauthorized) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: Unauthorized
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(65,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(String scenario, HttpStatusCode status)
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(69,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(String scenario, HttpStatusCode status)
+        --- End of stack trace from previous location ---
+    StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(scenario: "empty", status: Unauthorized) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: Unauthorized
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(65,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(String scenario, HttpStatusCode status)
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(69,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(String scenario, HttpStatusCode status)
+        --- End of stack trace from previous location ---
+    StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(scenario: "malformed", status: BadRequest) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: BadRequest
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(65,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(String scenario, HttpStatusCode status)
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(69,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(String scenario, HttpStatusCode status)
+        --- End of stack trace from previous location ---
+    StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(scenario: "multiple", status: BadRequest) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: BadRequest
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(65,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(String scenario, HttpStatusCode status)
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(69,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation(String scenario, HttpStatusCode status)
+        --- End of stack trace from previous location ---
+    StrataAI.Api.Tests.ApiHostTests.PRD_08_original_Card_creation_actor_preserves_receipt_and_refuses_replacement [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: Unauthorized
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(28,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_original_Card_creation_actor_preserves_receipt_and_refuses_replacement()
+        tests\StrataAI.Api.Tests\CardCreationActorTests.cs(44,0): at StrataAI.Api.Tests.ApiHostTests.PRD_08_original_Card_creation_actor_preserves_receipt_and_refuses_replacement()
+        --- End of stack trace from previous location ---
+  Finished:    StrataAI.Api.Tests (ID = '6540869c9353170a065eb85891fa809f4f1d82c8478fd95fe00132160541cccb')
+=== TEST EXECUTION SUMMARY ===
+   StrataAI.Api.Tests  Total: 6, Errors: 0, Failed: 5, Skipped: 0, Not Run: 0, Time: 15.755s
