@@ -445,6 +445,7 @@ public static partial class WorkManagementEndpoints
                 async (
                     Guid boardId,
                     CreateListRequest request,
+                    Guid? expectedActorId,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -454,6 +455,9 @@ public static partial class WorkManagementEndpoints
                     {
                         return Results.Unauthorized();
                     }
+
+                    if (expectedActorId is Guid expected && expected != userId.Value)
+                        return ErrorFor("session_unavailable");
 
                     var result = await service.CreateListAsync(
                         boardId,

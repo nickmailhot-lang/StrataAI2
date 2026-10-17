@@ -61,6 +61,7 @@ describe('PRD-07-VS-05 List creation identity', () => {
     vi.stubGlobal('fetch', fetcher); mount();
     const launcher = await screen.findByRole('button', { name: /^Add list$/ }); fireEvent.click(launcher);
     expect(await screen.findByRole('alert')).toHaveTextContent('Service temporarily unavailable');
+    expect(screen.getByRole('alert')).toHaveFocus();
     expect(screen.queryByRole('dialog', { name: 'Add list' })).not.toBeInTheDocument();
     await waitFor(() => expect(launcher).toBeEnabled()); fireEvent.click(launcher);
     expect(await screen.findByLabelText(/List name/)).toBeVisible(); expect(reads).toBe(2);

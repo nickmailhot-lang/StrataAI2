@@ -1,0 +1,1778 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --run src/features/kanban/ListCreationActor.test.tsx --maxWorkers=1
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle8-list-actor/apps/web
+
+ ❯ src/features/kanban/ListCreationActor.test.tsx (8 tests | 7 failed) 8075ms
+   ❯ PRD-07-VS-05 List creation identity (8)
+     × keeps a List form unavailable until its authenticated actor is confirmed 1745ms
+     × retains original actor/key/body on retry and focuses safe feedback after refusal 371ms
+     × allows explicit entry retry after unavailable identity without exposing a List form 1164ms
+     × allows explicit entry retry after invalid identity without exposing a List form 1150ms
+     × does not open a late List form after a newer protected Board refusal 1188ms
+     × cancels a pending List admission on route departure 1195ms
+     × preserves independent navigation focus when pending List admission is refused 1179ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/ListCreationActor.test.tsx > PRD-07-VS-05 List creation identity > keeps a List form unavailable until its authenticated actor is confirmed
+AssertionError: expected undefined to be defined
+
+Ignored nodes: comments, script, style
+<html>
+  <head>
+    <meta
+      content=""
+      name="emotion-insertion-point"
+    />
+  </head>
+  <body
+    style="padding-right: 1024px; overflow: hidden;"
+  >
+    <div
+      aria-hidden="true"
+    >
+      <div
+        aria-busy="false"
+        aria-label="Board workspace"
+        class="MuiStack-root css-u91wg7-MuiStack-root"
+        role="region"
+      >
+        <p
+          aria-live="polite"
+          class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+          role="status"
+        >
+          Connecting live updates.
+        </p>
+        <div
+          class="MuiStack-root css-5r67bj-MuiStack-root"
+        >
+          <div
+            class="MuiBox-root css-14mf7e5"
+          >
+            <h2
+              class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+            >
+              Private List work
+            </h2>
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+            />
+          </div>
+          <div
+            class="MuiStack-root css-r3epm3-MuiStack-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Refresh board
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Board
+               watching
+            </button>
+            <a
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              data-discover="true"
+              href="/app/org/boards/board/archived-cards"
+              tabindex="0"
+            >
+              Archived cards
+            </a>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Board starring
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Create label
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Manage labels
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Add list
+            </button>
+          </div>
+        </div>
+        <div
+          class="MuiStack-root css-690f4r-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Review Board activity
+          </button>
+        </div>
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Filter Board Cards
+        </button>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-1m6jozi-MuiTypography-root"
+        >
+          No lists yet.
+           Add a list to begin.
+        </p>
+        <div
+          aria-label="Kanban board"
+          class="MuiBox-root css-18y1frb"
+          data-kanban-scroll="true"
+          data-kanban-scroll-axis="horizontal"
+          role="region"
+        >
+          <div
+            class="MuiBox-root css-cgp4i3"
+          >
+            Drop list at end
+          </div>
+        </div>
+        <div
+          id="DndDescribedBy-0"
+          style="display: none;"
+        >
+          To move a list or card, press Space or Enter. Use Left and Right for list positions, or the arrow keys for card positions. Press Space or Enter to drop, or Escape to cancel. Check the move status for confirmation.
+        </div>
+        <div
+     ...
+ ❯ src/features/kanban/ListCreationActor.test.tsx:23:40
+     21|     vi.stubGlobal('fetch', fetcher); mount();
+     22|     const launcher = await screen.findByRole('button', { name: /^Add l…
+     23|     await waitFor(() => expect(finish).toBeDefined());
+       |                                        ^
+     24|     expect(launcher).toBeDisabled(); expect(screen.queryByRole('dialog…
+     25|     await act(async () => finish(reply(profile)));
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/features/kanban/ListCreationActor.test.tsx > PRD-07-VS-05 List creation identity > retains original actor/key/body on retry and focuses safe feedback after refusal
+AssertionError: expected '/boards/board/lists' to be '/boards/board/lists?expectedActorId=1…' // Object.is equality
+
+Expected: "/boards/board/lists?expectedActorId=11111111-1111-1111-1111-111111111111"
+Received: "/boards/board/lists"
+
+ ❯ src/features/kanban/ListCreationActor.test.tsx:50:60
+     48|     await waitFor(() => expect(screen.queryByLabelText(/List name/)).n…
+     49|     expect(screen.queryByText('Private List work')).not.toBeInTheDocum…
+     50|     expect(writes).toHaveLength(2); expect(writes[0].path).toBe(`/boar…
+       |                                                            ^
+     51|     expect(writes[1]).toEqual(writes[0]); expect(writes[0].key).toMatc…
+     52|     expect(fetcher.mock.calls.filter(([path]) => path === '/me')).toHa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/features/kanban/ListCreationActor.test.tsx > PRD-07-VS-05 List creation identity > allows explicit entry retry after unavailable identity without exposing a List form
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+<body
+  style="padding-right: 1024px; overflow: hidden;"
+>
+  <div
+    aria-hidden="true"
+  >
+    <div
+      aria-busy="false"
+      aria-label="Board workspace"
+      class="MuiStack-root css-u91wg7-MuiStack-root"
+      role="region"
+    >
+      <p
+        aria-live="polite"
+        class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+        role="status"
+      >
+        Connecting live updates.
+      </p>
+      <div
+        class="MuiStack-root css-5r67bj-MuiStack-root"
+      >
+        <div
+          class="MuiBox-root css-14mf7e5"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+          >
+            Private List work
+          </h2>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+          />
+        </div>
+        <div
+          class="MuiStack-root css-r3epm3-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh board
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board
+             watching
+          </button>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org/boards/board/archived-cards"
+            tabindex="0"
+          >
+            Archived cards
+          </a>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board starring
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Create label
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Manage labels
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Add list
+          </button>
+        </div>
+      </div>
+      <div
+        class="MuiStack-root css-690f4r-MuiStack-root"
+      >
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Review Board activity
+        </button>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Filter Board Cards
+      </button>
+      <p
+        class="MuiTypography-root MuiTypography-body1 css-1m6jozi-MuiTypography-root"
+      >
+        No lists yet.
+         Add a list to begin.
+      </p>
+      <div
+        aria-label="Kanban board"
+        class="MuiBox-root css-18y1frb"
+        data-kanban-scroll="true"
+        data-kanban-scroll-axis="horizontal"
+        role="region"
+      >
+        <div
+          class="MuiBox-root css-cgp4i3"
+        >
+          Drop list at end
+        </div>
+      </div>
+      <div
+        id="DndDescribedBy-2"
+        style="display: none;"
+      >
+        To move a list or card, press Space or Enter. Use Left and Right for list positions, or the arrow keys for card positions. Press Space or Enter to drop, or Escape to cancel. Check the move status for confirmation.
+      </div>
+      <div
+        aria-atomic="true"
+        aria-live="assertive"
+        id="DndLiveRegion-2"
+        role="status"
+        style="position: fixed; top: 0px; left: 0px; width: 1px; height: 1px; margin: -1px; border: 0px; padding: 0px; overflow: hidden; clip: rect(0px); clip-path: inset(100%); white-space: nowrap;"
+      />
+    </div>
+  </div>
+  <div
+    class="MuiDialog-root MuiModal-root css-1ptug20-MuiModal-root-MuiDialog-root"
+    role="presentation"
+  >
+    <div
+      aria-hidden="true"
+      class="MuiBackdrop-root MuiModal-backdrop MuiDialog-backdrop css-1cennmq-MuiBackdrop-root-MuiDialog-backdrop"
+      style="opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+    />
+    <div
+      data-testid="sentinelStart"
+      tabindex="0"
+    />
+    <div
+      class="MuiDialog-container MuiDialog-scrollPaper css-19do60a-MuiDialog-container"
+      role="presentation"
+      style="opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+      tabindex="-1"
+    >
+      <div
+        aria-labelledby="_r_2e_"
+        aria-modal="true"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperWidthSm MuiDialog-paperFullWidth css-irctn1-MuiPaper-root-MuiDialog-paper"
+        data-mui-focusable=""
+        role="dialog"
+        style="--Paper-shadow: var(--mui-shadows-24);"
+        tabindex="-1"
+      >
+        <form
+          class="MuiBox-root css-0"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h6 MuiDialogTitle-root css-12hi93c-MuiTypography-root-MuiDialogTitle-root"
+            id="_r_2e_"
+          >
+            Add 
+            list
+          </h2>
+          <div
+            class="MuiDialogContent-root css-kw13he-MuiDialogContent-root"
+          >
+            <div
+              class="MuiFormControl-root MuiFormControl-marginNormal MuiFormControl-fullWidth MuiTextField-root css-16bevx5-MuiFormControl-root-MuiTextField-root"
+            >
+              <label
+                class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-focused Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-ogs5av-MuiFormLabel-root-MuiInputLabel-root"
+                data-shrink="true"
+                for="_r_2g_"
+                id="_r_2g_-label"
+              >
+                List name
+                <span
+                  aria-hidden="true"
+                  class="MuiFormLabel-asterisk MuiInputLabel-asterisk css-2sz6ty-MuiFormLabel-asterisk"
+                >
+                   
+                  *
+                </span>
+              </label>
+              <div
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl css-qjumsc-MuiInputBase-root-MuiOutlinedInput-root"
+              >
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiOutlinedInput-input css-1rnoyk7-MuiInputBase-input-MuiOutlinedInput-input"
+                  id="_r_2g_"
+                  maxlength="160"
+                  name="title"
+                  required=""
+                  type="text"
+                />
+                <fieldset
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-notchedOutline css-1ohs4y1-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+                >
+                  <legend
+                    class="css-ex8a5f-MuiNotchedOutlined-root"
+                  >
+                    <span>
+                      List name
+                       
+                      *
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+          <div
+            class="MuiDialogActions-root MuiDialogActions-spacing css-15fu35s-MuiDialogActions-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="submit"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      data-testid="sentinelEnd"
+      tabindex="0"
+    />
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body
+  style="padding-right: 1024px; overflow: hidden;"
+>
+  <div
+    aria-hidden="true"
+  >
+    <div
+      aria-busy="false"
+      aria-label="Board workspace"
+      class="MuiStack-root css-u91wg7-MuiStack-root"
+      role="region"
+    >
+      <p
+        aria-live="polite"
+        class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+        role="status"
+      >
+        Connecting live updates.
+      </p>
+      <div
+        class="MuiStack-root css-5r67bj-MuiStack-root"
+      >
+        <div
+          class="MuiBox-root css-14mf7e5"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+          >
+            Private List work
+          </h2>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+          />
+        </div>
+        <div
+          class="MuiStack-root css-r3epm3-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh board
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board
+             watching
+          </button>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org/boards/board/archived-cards"
+            tabindex="0"
+          >
+            Archived cards
+          </a>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board starring
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Create label
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Manage labels
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Add list
+          </button>
+        </div>
+      </div>
+      <div
+        class="MuiStack-root css-690f4r-MuiStack-root"
+      >
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Review Board activity
+        </button>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Filter Board Cards
+      </button>
+      <p
+        class="MuiTypography-root MuiTypography-body1 css-1m6jozi-MuiTypography-root"
+      >
+        No lists yet.
+         Add a list to begin.
+      </p>
+      <div
+        aria-label="Kanban board"
+        class="MuiBox-root css-18y1frb"
+        data-kanban-scroll="true"
+        data-kanban-scroll-axis="horizontal"
+        role="region"
+      >
+        <div
+          class="MuiBox-root css-cgp4i3"
+        >
+          Drop list at end
+        </div>
+      </div>
+      <div
+        id="DndDescribedBy-2"
+        style="display: none;"
+      >
+        To move a list or card, press Space or Enter. Use Left and Right for list positions, or the arrow keys for card positions. Press Space or Enter to drop, or Escape to cancel. Check the move status for confirmation.
+      </div>
+      <div
+        aria-atomic="true"
+        aria-live="assertive"
+        id="DndLiveRegion-2"
+        role="status"
+        style="position: fixed; top: 0px; left: 0px; width: 1px; height: 1px; margin: -1px; border: 0px; padding: 0px; overflow: hidden; clip: rect(0px); clip-path: inset(100%); white-space: nowrap;"
+      />
+    </div>
+  </div>
+  <div
+    class="MuiDialog-root MuiModal-root css-1ptug20-MuiModal-root-MuiDialog-root"
+    role="presentation"
+  >
+    <div
+      aria-hidden="true"
+      class="MuiBackdrop-root MuiModal-backdrop MuiDialog-backdrop css-1cennmq-MuiBackdrop-root-MuiDialog-backdrop"
+      style="opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+    />
+    <div
+      data-testid="sentinelStart"
+      tabindex="0"
+    />
+    <div
+      class="MuiDialog-container MuiDialog-scrollPaper css-19do60a-MuiDialog-container"
+      role="presentation"
+      style="opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+      tabindex="-1"
+    >
+      <div
+        aria-labelledby="_r_2e_"
+        aria-modal="true"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperWidthSm MuiDialog-paperFullWidth css-irctn1-MuiPaper-root-MuiDialog-paper"
+        data-mui-focusable=""
+        role="dialog"
+        style="--Paper-shadow: var(--mui-shadows-24);"
+        tabindex="-1"
+      >
+        <form
+          class="MuiBox-root css-0"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h6 MuiDialogTitle-root css-12hi93c-MuiTypography-root-MuiDialogTitle-root"
+            id="_r_2e_"
+          >
+            Add 
+            list
+          </h2>
+          <div
+            class="MuiDialogContent-root css-kw13he-MuiDialogContent-root"
+          >
+            <div
+              class="MuiFormControl-root MuiFormControl-marginNormal MuiFormControl-fullWidth MuiTextField-root css-16bevx5-MuiFormControl-root-MuiTextField-root"
+            >
+              <label
+                class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-focused Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-ogs5av-MuiFormLabel-root-MuiInputLabel-root"
+                data-shrink="true"
+                for="_r_2g_"
+                id="_r_2g_-label"
+              >
+                List name
+                <span
+                  aria-hidden="true"
+                  class="MuiFormLabel-asterisk MuiInputLabel-asterisk css-2sz6ty-MuiFormLabel-asterisk"
+                >
+                   
+                  *
+                </span>
+              </label>
+              <div
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl css-qjumsc-MuiInputBase-root-MuiOutlinedInput-root"
+              >
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiOutlinedInput-input css-1rnoyk7-MuiInputBase-input-MuiOutlinedInput-input"
+                  id="_r_2g_"
+                  maxlength="160"
+                  name="title"
+                  required=""
+                  type="text"
+                />
+                <fieldset
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-notchedOutline css-1ohs4y1-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+                >
+                  <legend
+                    class="css-ex8a5f-MuiNotchedOutlined-root"
+                  >
+                    <span>
+                      List name
+                       
+                      *
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+          <div
+            class="MuiDialogActions-root MuiDialogActions-spacing css-15fu35s-MuiDialogActions-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="submit"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      data-testid="sentinelEnd"
+      tabindex="0"
+    />
+  </div>
+</body>
+ ❯ waitForWrapper ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/features/kanban/ListCreationActor.test.tsx:63:25
+     61|     vi.stubGlobal('fetch', fetcher); mount();
+     62|     const launcher = await screen.findByRole('button', { name: /^Add l…
+     63|     expect(await screen.findByRole('alert')).toHaveTextContent('Servic…
+       |                         ^
+     64|     expect(screen.queryByRole('dialog', { name: 'Add list' })).not.toB…
+     65|     await waitFor(() => expect(launcher).toBeEnabled()); fireEvent.cli…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/features/kanban/ListCreationActor.test.tsx > PRD-07-VS-05 List creation identity > allows explicit entry retry after invalid identity without exposing a List form
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+<body
+  style="padding-right: 1024px; overflow: hidden;"
+>
+  <div
+    aria-hidden="true"
+  >
+    <div
+      aria-busy="false"
+      aria-label="Board workspace"
+      class="MuiStack-root css-u91wg7-MuiStack-root"
+      role="region"
+    >
+      <p
+        aria-live="polite"
+        class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+        role="status"
+      >
+        Connecting live updates.
+      </p>
+      <div
+        class="MuiStack-root css-5r67bj-MuiStack-root"
+      >
+        <div
+          class="MuiBox-root css-14mf7e5"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+          >
+            Private List work
+          </h2>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+          />
+        </div>
+        <div
+          class="MuiStack-root css-r3epm3-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh board
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board
+             watching
+          </button>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org/boards/board/archived-cards"
+            tabindex="0"
+          >
+            Archived cards
+          </a>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board starring
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Create label
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Manage labels
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Add list
+          </button>
+        </div>
+      </div>
+      <div
+        class="MuiStack-root css-690f4r-MuiStack-root"
+      >
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Review Board activity
+        </button>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Filter Board Cards
+      </button>
+      <p
+        class="MuiTypography-root MuiTypography-body1 css-1m6jozi-MuiTypography-root"
+      >
+        No lists yet.
+         Add a list to begin.
+      </p>
+      <div
+        aria-label="Kanban board"
+        class="MuiBox-root css-18y1frb"
+        data-kanban-scroll="true"
+        data-kanban-scroll-axis="horizontal"
+        role="region"
+      >
+        <div
+          class="MuiBox-root css-cgp4i3"
+        >
+          Drop list at end
+        </div>
+      </div>
+      <div
+        id="DndDescribedBy-3"
+        style="display: none;"
+      >
+        To move a list or card, press Space or Enter. Use Left and Right for list positions, or the arrow keys for card positions. Press Space or Enter to drop, or Escape to cancel. Check the move status for confirmation.
+      </div>
+      <div
+        aria-atomic="true"
+        aria-live="assertive"
+        id="DndLiveRegion-3"
+        role="status"
+        style="position: fixed; top: 0px; left: 0px; width: 1px; height: 1px; margin: -1px; border: 0px; padding: 0px; overflow: hidden; clip: rect(0px); clip-path: inset(100%); white-space: nowrap;"
+      />
+    </div>
+  </div>
+  <div
+    class="MuiDialog-root MuiModal-root css-1ptug20-MuiModal-root-MuiDialog-root"
+    role="presentation"
+  >
+    <div
+      aria-hidden="true"
+      class="MuiBackdrop-root MuiModal-backdrop MuiDialog-backdrop css-1cennmq-MuiBackdrop-root-MuiDialog-backdrop"
+      style="opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+    />
+    <div
+      data-testid="sentinelStart"
+      tabindex="0"
+    />
+    <div
+      class="MuiDialog-container MuiDialog-scrollPaper css-19do60a-MuiDialog-container"
+      role="presentation"
+      style="opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+      tabindex="-1"
+    >
+      <div
+        aria-labelledby="_r_39_"
+        aria-modal="true"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperWidthSm MuiDialog-paperFullWidth css-irctn1-MuiPaper-root-MuiDialog-paper"
+        data-mui-focusable=""
+        role="dialog"
+        style="--Paper-shadow: var(--mui-shadows-24);"
+        tabindex="-1"
+      >
+        <form
+          class="MuiBox-root css-0"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h6 MuiDialogTitle-root css-12hi93c-MuiTypography-root-MuiDialogTitle-root"
+            id="_r_39_"
+          >
+            Add 
+            list
+          </h2>
+          <div
+            class="MuiDialogContent-root css-kw13he-MuiDialogContent-root"
+          >
+            <div
+              class="MuiFormControl-root MuiFormControl-marginNormal MuiFormControl-fullWidth MuiTextField-root css-16bevx5-MuiFormControl-root-MuiTextField-root"
+            >
+              <label
+                class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-focused Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-ogs5av-MuiFormLabel-root-MuiInputLabel-root"
+                data-shrink="true"
+                for="_r_3b_"
+                id="_r_3b_-label"
+              >
+                List name
+                <span
+                  aria-hidden="true"
+                  class="MuiFormLabel-asterisk MuiInputLabel-asterisk css-2sz6ty-MuiFormLabel-asterisk"
+                >
+                   
+                  *
+                </span>
+              </label>
+              <div
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl css-qjumsc-MuiInputBase-root-MuiOutlinedInput-root"
+              >
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiOutlinedInput-input css-1rnoyk7-MuiInputBase-input-MuiOutlinedInput-input"
+                  id="_r_3b_"
+                  maxlength="160"
+                  name="title"
+                  required=""
+                  type="text"
+                />
+                <fieldset
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-notchedOutline css-1ohs4y1-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+                >
+                  <legend
+                    class="css-ex8a5f-MuiNotchedOutlined-root"
+                  >
+                    <span>
+                      List name
+                       
+                      *
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+          <div
+            class="MuiDialogActions-root MuiDialogActions-spacing css-15fu35s-MuiDialogActions-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="submit"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      data-testid="sentinelEnd"
+      tabindex="0"
+    />
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body
+  style="padding-right: 1024px; overflow: hidden;"
+>
+  <div
+    aria-hidden="true"
+  >
+    <div
+      aria-busy="false"
+      aria-label="Board workspace"
+      class="MuiStack-root css-u91wg7-MuiStack-root"
+      role="region"
+    >
+      <p
+        aria-live="polite"
+        class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+        role="status"
+      >
+        Connecting live updates.
+      </p>
+      <div
+        class="MuiStack-root css-5r67bj-MuiStack-root"
+      >
+        <div
+          class="MuiBox-root css-14mf7e5"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+          >
+            Private List work
+          </h2>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+          />
+        </div>
+        <div
+          class="MuiStack-root css-r3epm3-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh board
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board
+             watching
+          </button>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org/boards/board/archived-cards"
+            tabindex="0"
+          >
+            Archived cards
+          </a>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board starring
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Create label
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Manage labels
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Add list
+          </button>
+        </div>
+      </div>
+      <div
+        class="MuiStack-root css-690f4r-MuiStack-root"
+      >
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Review Board activity
+        </button>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Filter Board Cards
+      </button>
+      <p
+        class="MuiTypography-root MuiTypography-body1 css-1m6jozi-MuiTypography-root"
+      >
+        No lists yet.
+         Add a list to begin.
+      </p>
+      <div
+        aria-label="Kanban board"
+        class="MuiBox-root css-18y1frb"
+        data-kanban-scroll="true"
+        data-kanban-scroll-axis="horizontal"
+        role="region"
+      >
+        <div
+          class="MuiBox-root css-cgp4i3"
+        >
+          Drop list at end
+        </div>
+      </div>
+      <div
+        id="DndDescribedBy-3"
+        style="display: none;"
+      >
+        To move a list or card, press Space or Enter. Use Left and Right for list positions, or the arrow keys for card positions. Press Space or Enter to drop, or Escape to cancel. Check the move status for confirmation.
+      </div>
+      <div
+        aria-atomic="true"
+        aria-live="assertive"
+        id="DndLiveRegion-3"
+        role="status"
+        style="position: fixed; top: 0px; left: 0px; width: 1px; height: 1px; margin: -1px; border: 0px; padding: 0px; overflow: hidden; clip: rect(0px); clip-path: inset(100%); white-space: nowrap;"
+      />
+    </div>
+  </div>
+  <div
+    class="MuiDialog-root MuiModal-root css-1ptug20-MuiModal-root-MuiDialog-root"
+    role="presentation"
+  >
+    <div
+      aria-hidden="true"
+      class="MuiBackdrop-root MuiModal-backdrop MuiDialog-backdrop css-1cennmq-MuiBackdrop-root-MuiDialog-backdrop"
+      style="opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+    />
+    <div
+      data-testid="sentinelStart"
+      tabindex="0"
+    />
+    <div
+      class="MuiDialog-container MuiDialog-scrollPaper css-19do60a-MuiDialog-container"
+      role="presentation"
+      style="opacity: 1; transition: opacity 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;"
+      tabindex="-1"
+    >
+      <div
+        aria-labelledby="_r_39_"
+        aria-modal="true"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation24 MuiDialog-paper MuiDialog-paperWidthSm MuiDialog-paperFullWidth css-irctn1-MuiPaper-root-MuiDialog-paper"
+        data-mui-focusable=""
+        role="dialog"
+        style="--Paper-shadow: var(--mui-shadows-24);"
+        tabindex="-1"
+      >
+        <form
+          class="MuiBox-root css-0"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h6 MuiDialogTitle-root css-12hi93c-MuiTypography-root-MuiDialogTitle-root"
+            id="_r_39_"
+          >
+            Add 
+            list
+          </h2>
+          <div
+            class="MuiDialogContent-root css-kw13he-MuiDialogContent-root"
+          >
+            <div
+              class="MuiFormControl-root MuiFormControl-marginNormal MuiFormControl-fullWidth MuiTextField-root css-16bevx5-MuiFormControl-root-MuiTextField-root"
+            >
+              <label
+                class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-focused Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-ogs5av-MuiFormLabel-root-MuiInputLabel-root"
+                data-shrink="true"
+                for="_r_3b_"
+                id="_r_3b_-label"
+              >
+                List name
+                <span
+                  aria-hidden="true"
+                  class="MuiFormLabel-asterisk MuiInputLabel-asterisk css-2sz6ty-MuiFormLabel-asterisk"
+                >
+                   
+                  *
+                </span>
+              </label>
+              <div
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl css-qjumsc-MuiInputBase-root-MuiOutlinedInput-root"
+              >
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiOutlinedInput-input css-1rnoyk7-MuiInputBase-input-MuiOutlinedInput-input"
+                  id="_r_3b_"
+                  maxlength="160"
+                  name="title"
+                  required=""
+                  type="text"
+                />
+                <fieldset
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-notchedOutline css-1ohs4y1-MuiNotchedOutlined-root-MuiOutlinedInput-notchedOutline"
+                >
+                  <legend
+                    class="css-ex8a5f-MuiNotchedOutlined-root"
+                  >
+                    <span>
+                      List name
+                       
+                      *
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+          <div
+            class="MuiDialogActions-root MuiDialogActions-spacing css-15fu35s-MuiDialogActions-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="submit"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      data-testid="sentinelEnd"
+      tabindex="0"
+    />
+  </div>
+</body>
+ ❯ waitForWrapper ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/features/kanban/ListCreationActor.test.tsx:63:25
+     61|     vi.stubGlobal('fetch', fetcher); mount();
+     62|     const launcher = await screen.findByRole('button', { name: /^Add l…
+     63|     expect(await screen.findByRole('alert')).toHaveTextContent('Servic…
+       |                         ^
+     64|     expect(screen.queryByRole('dialog', { name: 'Add list' })).not.toB…
+     65|     await waitFor(() => expect(launcher).toBeEnabled()); fireEvent.cli…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  src/features/kanban/ListCreationActor.test.tsx > PRD-07-VS-05 List creation identity > does not open a late List form after a newer protected Board refusal
+AssertionError: expected undefined to be defined
+
+Ignored nodes: comments, script, style
+<html>
+  <head>
+    <meta
+      content=""
+      name="emotion-insertion-point"
+    />
+  </head>
+  <body
+    style="padding-right: 1024px; overflow: hidden;"
+  >
+    <div
+      aria-hidden="true"
+    >
+      <div
+        aria-busy="false"
+        aria-label="Board workspace"
+        class="MuiStack-root css-u91wg7-MuiStack-root"
+        role="region"
+      >
+        <p
+          aria-live="polite"
+          class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+          role="status"
+        >
+          Connecting live updates.
+        </p>
+        <div
+          class="MuiStack-root css-5r67bj-MuiStack-root"
+        >
+          <div
+            class="MuiBox-root css-14mf7e5"
+          >
+            <h2
+              class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+            >
+              Private List work
+            </h2>
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+            />
+          </div>
+          <div
+            class="MuiStack-root css-r3epm3-MuiStack-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Refresh board
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Board
+               watching
+            </button>
+            <a
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              data-discover="true"
+              href="/app/org/boards/board/archived-cards"
+              tabindex="0"
+            >
+              Archived cards
+            </a>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Board starring
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Create label
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Manage labels
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Add list
+            </button>
+          </div>
+        </div>
+        <div
+          class="MuiStack-root css-690f4r-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Review Board activity
+          </button>
+        </div>
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Filter Board Cards
+        </button>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-1m6jozi-MuiTypography-root"
+        >
+          No lists yet.
+           Add a list to begin.
+        </p>
+        <div
+          aria-label="Kanban board"
+          class="MuiBox-root css-18y1frb"
+          data-kanban-scroll="true"
+          data-kanban-scroll-axis="horizontal"
+          role="region"
+        >
+          <div
+            class="MuiBox-root css-cgp4i3"
+          >
+            Drop list at end
+          </div>
+        </div>
+        <div
+          id="DndDescribedBy-4"
+          style="display: none;"
+        >
+          To move a list or card, press Space or Enter. Use Left and Right for list positions, or the arrow keys for card positions. Press Space or Enter to drop, or Escape to cancel. Check the move status for confirmation.
+        </div>
+        <div
+     ...
+ ❯ src/features/kanban/ListCreationActor.test.tsx:75:40
+     73|       ? new Promise<Response>(resolve => { finish = resolve; }) : ++bo…
+     74|     mount(); fireEvent.click(await screen.findByRole('button', { name:…
+     75|     await waitFor(() => expect(finish).toBeDefined()); act(() => inval…
+       |                                        ^
+     76|     expect(await screen.findByRole('alert')).toHaveTextContent('unavai…
+     77|     await act(async () => finish(reply(profile)));
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  src/features/kanban/ListCreationActor.test.tsx > PRD-07-VS-05 List creation identity > cancels a pending List admission on route departure
+AssertionError: expected undefined to be defined
+
+Ignored nodes: comments, script, style
+<html>
+  <head>
+    <meta
+      content=""
+      name="emotion-insertion-point"
+    />
+  </head>
+  <body
+    style="padding-right: 1024px; overflow: hidden;"
+  >
+    <div
+      aria-hidden="true"
+    >
+      <div
+        aria-busy="false"
+        aria-label="Board workspace"
+        class="MuiStack-root css-u91wg7-MuiStack-root"
+        role="region"
+      >
+        <p
+          aria-live="polite"
+          class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+          role="status"
+        >
+          Connecting live updates.
+        </p>
+        <div
+          class="MuiStack-root css-5r67bj-MuiStack-root"
+        >
+          <div
+            class="MuiBox-root css-14mf7e5"
+          >
+            <h2
+              class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+            >
+              Private List work
+            </h2>
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+            />
+          </div>
+          <div
+            class="MuiStack-root css-r3epm3-MuiStack-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Refresh board
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Board
+               watching
+            </button>
+            <a
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              data-discover="true"
+              href="/app/org/boards/board/archived-cards"
+              tabindex="0"
+            >
+              Archived cards
+            </a>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Board starring
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Create label
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Manage labels
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Add list
+            </button>
+          </div>
+        </div>
+        <div
+          class="MuiStack-root css-690f4r-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Review Board activity
+          </button>
+        </div>
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Filter Board Cards
+        </button>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-1m6jozi-MuiTypography-root"
+        >
+          No lists yet.
+           Add a list to begin.
+        </p>
+        <div
+          aria-label="Kanban board"
+          class="MuiBox-root css-18y1frb"
+          data-kanban-scroll="true"
+          data-kanban-scroll-axis="horizontal"
+          role="region"
+        >
+          <div
+            class="MuiBox-root css-cgp4i3"
+          >
+            Drop list at end
+          </div>
+        </div>
+        <div
+          id="DndDescribedBy-5"
+          style="display: none;"
+        >
+          To move a list or card, press Space or Enter. Use Left and Right for list positions, or the arrow keys for card positions. Press Space or Enter to drop, or Escape to cancel. Check the move status for confirmation.
+        </div>
+        <div
+     ...
+ ❯ src/features/kanban/ListCreationActor.test.tsx:88:40
+     86|     }));
+     87|     const router = mount(); fireEvent.click(await screen.findByRole('b…
+     88|     await waitFor(() => expect(signal).toBeDefined()); await act(async…
+       |                                        ^
+     89|     expect(signal?.aborted).toBe(true); expect(screen.getByText('Elsew…
+     90|   });
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  src/features/kanban/ListCreationActor.test.tsx > PRD-07-VS-05 List creation identity > preserves independent navigation focus when pending List admission is refused
+AssertionError: expected undefined to be defined
+
+Ignored nodes: comments, script, style
+<html>
+  <head>
+    <meta
+      content=""
+      name="emotion-insertion-point"
+    />
+  </head>
+  <body
+    style="padding-right: 1024px; overflow: hidden;"
+  >
+    <div
+      aria-hidden="true"
+    >
+      <button>
+        Independent navigation
+      </button>
+      <div
+        aria-busy="false"
+        aria-label="Board workspace"
+        class="MuiStack-root css-u91wg7-MuiStack-root"
+        role="region"
+      >
+        <p
+          aria-live="polite"
+          class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+          role="status"
+        >
+          Connecting live updates.
+        </p>
+        <div
+          class="MuiStack-root css-5r67bj-MuiStack-root"
+        >
+          <div
+            class="MuiBox-root css-14mf7e5"
+          >
+            <h2
+              class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+            >
+              Private List work
+            </h2>
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+            />
+          </div>
+          <div
+            class="MuiStack-root css-r3epm3-MuiStack-root"
+          >
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Refresh board
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Board
+               watching
+            </button>
+            <a
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              data-discover="true"
+              href="/app/org/boards/board/archived-cards"
+              tabindex="0"
+            >
+              Archived cards
+            </a>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Board starring
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Create label
+            </button>
+            <button
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              disabled=""
+              tabindex="-1"
+              type="button"
+            >
+              Manage labels
+            </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              Add list
+            </button>
+          </div>
+        </div>
+        <div
+          class="MuiStack-root css-690f4r-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Review Board activity
+          </button>
+        </div>
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Filter Board Cards
+        </button>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-1m6jozi-MuiTypography-root"
+        >
+          No lists yet.
+           Add a list to begin.
+        </p>
+        <div
+          aria-label="Kanban board"
+          class="MuiBox-root css-18y1frb"
+          data-kanban-scroll="true"
+          data-kanban-scroll-axis="horizontal"
+          role="region"
+        >
+          <div
+            class="MuiBox-root css-cgp4i3"
+          >
+            Drop list at end
+          </div>
+        </div>
+        <div
+          id="DndDescribedBy-6"
+          style="display: none;"
+        >
+          To move a list or card, press Space or Enter. Use Left and Right for list positions, or the arrow keys for card positions. Press Space or Enter to drop, or Escape to cancel. Check t...
+ ❯ src/features/kanban/ListCreationActor.test.tsx:97:40
+     95|       ? new Promise<Response>(resolve => { finish = resolve; }) : repl…
+     96|     mount(true); fireEvent.click(await screen.findByRole('button', { n…
+     97|     await waitFor(() => expect(finish).toBeDefined());
+       |                                        ^
+     98|     const navigation = screen.getByRole('button', { name: 'Independent…
+     99|     await act(async () => finish(reply({}, 401)));
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed (8)
+   Start at  12:12:58
+   Duration  45.87s (import 70%, tests 18%, environment 6%, transform 5%, setup 1%)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --run src/features/kanban/ListCreationActor.test.tsx --maxWorkers=1

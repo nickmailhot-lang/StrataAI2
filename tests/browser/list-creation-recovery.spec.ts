@@ -56,6 +56,11 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(page.getByLabel('Card title', { exact: false })).toHaveValue('Continue from recovered List');
     const close = page.getByRole('button', { name: 'Close', exact: true }); await close.focus(); await close.press('Enter');
     await expect(page).toHaveURL(new RegExp(`${boardPath}$`)); await expect(page.getByRole('link', { name: 'Continue from recovered List', exact: true })).toBeFocused();
+    const returnBox = await page.getByRole('link', { name: 'Continue from recovered List', exact: true }).boundingBox();
+    const headerBox = await page.getByRole('banner').boundingBox();
+    if (!returnBox || !headerBox) throw new Error('Missing recovered List/Card return geometry');
+    expect(returnBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);
+    expect(returnBox.y + returnBox.height).toBeLessThanOrEqual(1000);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: test.info().outputPath(`list-to-card-return-${width}.png`) });
   });

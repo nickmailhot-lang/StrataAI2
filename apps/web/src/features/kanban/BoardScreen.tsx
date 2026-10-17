@@ -124,10 +124,10 @@ function BoardContent() {
   const [canvasFilter, setCanvasFilter] = useState<BoardCanvasFilter>();
   const refreshFilteredBoard = useCallback(() => { setSnapshotReading(true); setReload(value => value + 1); }, []);
   const [creation, setCreation] = useState<Creation>();
-  const [checkingCardCreation, setCheckingCardCreation] = useState(false);
-  const creationRead = useRef<{ controller: AbortController; listId: string } | undefined>(undefined);
-  const cardRefusal = useRef<HTMLDivElement>(null);
-  const cardRefusalOwner = useRef<Element | null | undefined>(undefined);
+  const [checkingCreation, setCheckingCreation] = useState(false);
+  const creationRead = useRef<{ controller: AbortController; kind: Creation['kind']; listId?: string } | undefined>(undefined);
+  const creationRefusal = useRef<HTMLDivElement>(null);
+  const creationRefusalOwner = useRef<Element | null | undefined>(undefined);
   const [operationBusy, setBusy] = useState(false);
   const [listArchiveRecovery, setArchiveRecovery] = useState(false);
   const [boardArchiveRecovery, setBoardArchiveRecovery] = useState(false);
@@ -216,7 +216,7 @@ function BoardContent() {
   const [liveStatus, setLiveStatus] = useState<LiveStatus>("connecting");
   const [reconnectSequence, setReconnectSequence] = useState(0);
   const accessEpoch = useRef(0);
-  const [failure, setFailure] = useState<{ cardId?: string; error: Error; cardCreation?: boolean }>();
+  const [failure, setFailure] = useState<{ cardId?: string; error: Error; creationEntry?: boolean }>();
   const [acknowledged, setAcknowledged] = useState<WorkCard>();
   const acknowledgedCard = useRef<AcknowledgedCard | undefined>(undefined);
   const [savedFor, setSavedFor] = useState<{ cardId?: string }>();
@@ -229,7 +229,7 @@ function BoardContent() {
     setSavedFor(next ? { cardId } : undefined);
   }
   function clearDeniedScope(failure: Error, recoveryOwner?: Element | null) {
-    if (recoveryOwner !== undefined) cardRefusalOwner.current = recoveryOwner;
+    if (recoveryOwner !== undefined) creationRefusalOwner.current = recoveryOwner;
     accessEpoch.current += 1;
     creationRead.current?.controller.abort();
     activeRead.current?.abort();
@@ -299,15 +299,15 @@ function BoardContent() {
     : [], [snapshot, canvasFilter, movePreview, listPreview]);
   const loadError = loaded?.key === key ? loaded.error : undefined;
   useEffect(() => {
-    const owner = cardRefusalOwner.current;
-    if (owner === undefined || !loadError || snapshot) return;
-    cardRefusalOwner.current = undefined;
+    const owner = creationRefusalOwner.current;
+    if (owner === undefined || !(loadError && !snapshot || error && failure?.creationEntry)) return;
+    creationRefusalOwner.current = undefined;
     // Recover the retired command's focus, preserving deliberate navigation
     // elsewhere. Centering also clears a retained Board scroll under the header.
     if (document.activeElement !== owner && document.activeElement !== document.body) return;
-    cardRefusal.current?.focus({ preventScroll: true });
-    cardRefusal.current?.scrollIntoView?.({ block: 'center' });
-  }, [loadError, snapshot]);
+    creationRefusal.current?.focus({ preventScroll: true });
+    creationRefusal.current?.scrollIntoView?.({ block: 'center' });
+  }, [loadError, snapshot, error, failure?.creationEntry]);
   const subscribed = Boolean(snapshot);
   const invalidate = useEffectEvent(() => {
     if (reading.current) queuedRefresh.current = true;
@@ -336,31 +336,32 @@ function BoardContent() {
   const editable =
     snapshot?.access.canEdit && snapshot.board.lifecycleState === "active";
   useEffect(() => {
-    const permitted = (listId?: string) => editable && snapshot?.lists.some(column => column.list.id === listId && column.list.lifecycleState === 'active');
-    if (creationRead.current && !permitted(creationRead.current.listId)) creationRead.current.controller.abort();
-    setCreation(current => current?.kind === 'card' && !permitted(current.listId) ? undefined : current);
+    const permitted = (kind: Creation['kind'], listId?: string) => editable && (kind === 'list' || snapshot?.lists.some(column => column.list.id === listId && column.list.lifecycleState === 'active'));
+    if (creationRead.current && !permitted(creationRead.current.kind, creationRead.current.listId)) creationRead.current.controller.abort();
+    setCreation(current => current && !permitted(current.kind, current.listId) ? undefined : current);
   }, [editable, snapshot]);
-  async function openCardCreation(listId: string) {
-    if (busy || !editable || snapshotReading || loadError || creationRead.current) return;
+  async function openCreation(kind: Creation['kind'], listId?: string) {
+    if (busy || !editable || snapshotReading || loadError || creationRead.current || kind === 'card' && !listId) return;
     const controller = new AbortController(), epoch = accessEpoch.current, focusOwner = document.activeElement;
-    creationRead.current = { controller, listId };
-    setBusy(true); setCheckingCardCreation(true); setError(undefined);
+    creationRead.current = { controller, kind, listId };
+    setBusy(true); setCheckingCreation(true); setError(undefined);
     try {
       // This explicit entry read binds the form, not only its first submission.
       // Retrying the original command never refreshes it to a replacement actor.
       const profile = await boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal);
       if (controller.signal.aborted || epoch !== accessEpoch.current) return;
       if (!isNotificationProfile(profile)) throw new WorkRequestError(503, null);
-      setCreation({ kind: 'card', listId, actorId: profile.id });
+      setCreation({ kind, listId, actorId: profile.id });
     } catch (reason) {
       if (controller.signal.aborted || epoch !== accessEpoch.current) return;
       const failure = reason instanceof WorkRequestError ? reason : new WorkRequestError(503, null);
-      if ([401, 403, 404].includes(failure.status)) clearDeniedScope(failure,
-        document.activeElement === focusOwner || document.activeElement === document.body ? document.activeElement : undefined);
-      setFailure({ cardId, error: failure, cardCreation: true });
+      const recoveryOwner = document.activeElement === focusOwner || document.activeElement === document.body ? document.activeElement : undefined;
+      if ([401, 403, 404].includes(failure.status)) clearDeniedScope(failure, recoveryOwner);
+      else if (recoveryOwner !== undefined) creationRefusalOwner.current = recoveryOwner;
+      setFailure({ cardId, error: failure, creationEntry: true });
     } finally {
       if (creationRead.current?.controller === controller) creationRead.current = undefined;
-      setBusy(false); setCheckingCardCreation(false);
+      setBusy(false); setCheckingCreation(false);
     }
   }
   const boardPath = `/app/${organizationId}/boards/${boardId}`;
@@ -376,7 +377,7 @@ function BoardContent() {
   ) {
     event.preventDefault();
     if (busy || !editable) return;
-    if (!edit && creation?.kind === 'card' && !creation.actorId) return;
+    if (!edit && !creation?.actorId) return;
     const formElement = event.currentTarget;
     const form = new FormData(event.currentTarget);
     const title = String(form.get("title") ?? "").trim();
@@ -436,8 +437,8 @@ function BoardContent() {
           );
         }
         setAcknowledged(updated);
-      } else if (creation?.kind === "list")
-        await mutation.current.send(`/boards/${boardId}/lists`, "POST", {
+      } else if (creation?.kind === "list" && creation.actorId)
+        await mutation.current.send(`/boards/${boardId}/lists?expectedActorId=${encodeURIComponent(creation.actorId)}`, "POST", {
           name: title,
         });
       else if (creation?.listId && creation.actorId)
@@ -454,7 +455,7 @@ function BoardContent() {
         reason instanceof WorkRequestError &&
         [401, 403, 404].includes(reason.status)
       ) {
-        clearDeniedScope(reason, !edit && creation?.kind === 'card' &&
+        clearDeniedScope(reason, !edit && creation &&
           (formElement.contains(document.activeElement) || document.activeElement === document.body) ? document.activeElement : undefined);
       }
       setError(
@@ -505,7 +506,7 @@ function BoardContent() {
     }
   }
   const message = (failure: Error, recovery = false) => (
-    <Alert severity="error" ref={recovery ? cardRefusal : undefined} tabIndex={recovery ? -1 : undefined}>
+    <Alert severity="error" ref={recovery ? creationRefusal : undefined} tabIndex={recovery ? -1 : undefined}>
       {failure instanceof WorkRequestError || failure instanceof WorkInputError
         ? failure.message
         : "Unable to load or save this board. Please try again."}
@@ -536,7 +537,7 @@ function BoardContent() {
         <NavigationConfirmation target={{ kind: 'board', organization: snapshot.board.organizationId, board: snapshot.board.id, version: snapshot.board.version }}
           admitted={!snapshotReading && !loadError} />}
       {loadError && message(loadError)}
-      {error && failure?.cardCreation && message(error)}
+      {error && failure?.creationEntry && message(error, true)}
       <Typography role="status" aria-live="polite" variant="body2">
         {liveStatus === "live"
           ? "Live updates connected."
@@ -623,10 +624,7 @@ function BoardContent() {
           {editable && (
             <Button
               disabled={busy || snapshotReading || !!loadError}
-              onClick={() => {
-                setError(undefined);
-                setCreation({ kind: "list" });
-              }}
+              onClick={() => void openCreation('list')}
             >
               Add list
             </Button>
@@ -738,7 +736,7 @@ function BoardContent() {
             {editable && column.list.lifecycleState === "active" && (
               <Button
                 disabled={busy || snapshotReading || !!loadError}
-                onClick={() => void openCardCreation(column.list.id)}
+                onClick={() => void openCreation('card', column.list.id)}
               >
                 Add card to {column.list.name}
               </Button>
@@ -755,7 +753,7 @@ function BoardContent() {
           onAcknowledged={() => { canvasFocus.current = { scope: key, cardId: moved.id }; setSnapshotReading(true); setReload(value => value + 1); }}
           onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />;
       })()}
-      {checkingCardCreation && <Typography role="status">Checking Card creation access…</Typography>}
+      {checkingCreation && <Typography role="status">Checking creation access…</Typography>}
       <Dialog
         open={Boolean(creation)}
         onClose={() => {
