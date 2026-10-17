@@ -300,6 +300,7 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 - [Kanban release evidence](kanban-release-evidence.md)
 - [Kanban command telemetry](kanban-telemetry.md)
 - [Phone touch movement](kanban-touch-evidence.md)
+- [Observed touch pickup admission and boundary-scrolling evidence](kanban-touch-evidence.md#observed-touch-pickup-admission--2026-10-16)
 - [Visibility browser readiness](visibility-browser-readiness.md)
 
 ## Shared architecture contracts

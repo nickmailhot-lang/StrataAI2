@@ -38,3 +38,50 @@ Browser type checking and collection of all three boundary cases pass locally.
 Execution against the immutable release images remains pending. This adds
 coverage for vertical touch scrolling and cancellation; it does not establish
 physical-device behavior, touch performance, or complete PRD-06 acceptance.
+
+## Observed touch pickup admission — 2026-10-16
+
+Run `38910209597` at `d236ae8f`, full-browser shard 2, fails the phone touch
+case at its original five-second destination-visible poll. The first reorder
+persists successfully. After reload, the handle passes its enabled check, but
+a protected Board GET begins before the second touch-down. Decoded retained
+snapshots show the handle disabled immediately before that input; later
+snapshots show no active drag. The GET runs at monotonic `3479339.833` for
+32.543 ms; touch-down is dispatched at `3479368.740–3479371.968`. Consequently,
+this trace does not establish a failure of scrolling during an active drag.
+The diagnostic archive `12088281005` has its advertised digest and all **26**
+payload checksums verified, with byte-identical canonical build metadata from
+artifact `12057722184`. Archive SHA-256:
+`fc3d967841d900d2ffbc0e25377d160efd84fa5203ca85dfe60719648392212b`.
+
+The [complete phone test](../tests/browser/kanban-touch.spec.ts) now observes
+`aria-pressed=true` after native touch pickup. Before pickup it establishes
+current enabled focus and reads current geometry. A bounded five-second
+admission loop cancels only an unadmitted held contact before another pickup;
+it stops once the drag is active. Admission never sends `touchEnd` or a move
+request. Both original twelve-step paths, the two original drops, exact write
+counts, acknowledgments, canonical neighbor/order/version checks, both reloads,
+real boundary scrolling and destination announcement remain. The original
+60-second case and five-second scrolling deadlines are unchanged. Application
+scrolling, sensors and permission checks are unchanged.
+
+The complete phone case passes on its first attempt in **9.754 seconds**
+(**36.491 seconds** for the full invocation with fixture pacing), with no
+failures, flakes, skips or report errors. Four controlled protocol checks using
+the actual extracted pickup implementation cover normal admission, an ignored
+first contact, an already-active drag and activation during focus. They verify
+no admission drop and no further input after pickup; the ignored contact is
+cancelled before the successful pickup. All **11** existing admission-helper
+checks, browser types and both browser/integration coverage verifiers pass.
+
+The native fixture uses fresh restricted PostgreSQL 17.11 with all **149**
+migrations, current mounted API/Worker assemblies and current Vite assets on
+cached runtime images. All **1,286 source inputs, 71 binaries and four served
+assets** match; the API and Worker identities remain unchanged. Owned cleanup
+restores the original Docker inventory and removes **3,739 bytes** of temporary
+configuration. No original database is used; no image is built, pulled or
+imported, and no load test runs. Preceding `e88c6514` assembly metadata,
+optional email verification and a controlled mail provider limit this to
+supporting local evidence. Current immutable-image CI, physical-device/assistive
+behavior, performance and full PRD-06 acceptance remain open. PRD-06 stays at
+**25% estimated work remaining**, an unchanged planning estimate.

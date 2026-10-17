@@ -1,5 +1,6 @@
 import { expect, test } from './releaseTest';
 import { trackBoardReads } from './boardReadTracker';
+import { focusAdmittedControl } from './keyboardAdmission';
 
 test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move persist', async ({ page, context }) => {
   test.setTimeout(60_000);
@@ -28,22 +29,41 @@ test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move pe
   const handle = page.getByRole('button', { name: 'Drag Touch moving card card', exact: true });
   await expect(handle).toBeEnabled();
   await page.getByRole('region', { name: 'Touch list', exact: true }).evaluate(node => node.scrollIntoView({ block: 'center' }));
-  const source = await handle.boundingBox();
-  const target = await page.getByRole('link', { name: 'Touch anchor', exact: true }).boundingBox();
-  expect(source).not.toBeNull(); expect(target).not.toBeNull();
   const touch = await context.newCDPSession(page);
   let touching = false;
+  // CDP dispatch does not establish dnd-kit pickup. A foreground Board read
+  // can withdraw admission after the prior enabled check. Retry pickup only;
+  // no touchEnd/drop or mutation occurs until the original assertions below.
+  const startDrag = async (destination: () => Promise<{ x: number; y: number }>) => {
+    await expect(async () => {
+      if (await handle.getAttribute('aria-pressed') === 'true') return;
+      if (touching) {
+        await touch.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+        touching = false;
+      }
+      await focusAdmittedControl(handle);
+      if (await handle.getAttribute('aria-pressed') === 'true') return;
+      const source = await handle.boundingBox(); expect(source).not.toBeNull();
+      const x = source!.x + source!.width / 2, y = source!.y + source!.height / 2;
+      const end = await destination();
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] });
+      touching = true;
+      for (let step = 1; step <= 12; step++) {
+        await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{
+          x: x + (end.x - x) * step / 12, y: y + (end.y - y) * step / 12, id: 1 }] });
+      }
+      await expect(handle).toHaveAttribute('aria-pressed', 'true', { timeout: 500 });
+    }).toPass({ timeout: 5_000 });
+  };
   let writes = 0;
   page.on('request', request => { if (request.method() === 'POST' && /\/cards\/[^/]+\/move$/.test(new URL(request.url()).pathname)) writes++; });
   try {
     await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
-    const x = source!.x + source!.width / 2; const y = source!.y + source!.height / 2;
-    const destinationX = target!.x + target!.width / 2; const destinationY = target!.y + target!.height / 2;
-    await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] });
-    touching = true;
-    for (let step = 1; step <= 12; step++) {
-      await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + (destinationX - x) * step / 12, y: y + (destinationY - y) * step / 12, id: 1 }] });
-    }
+    await startDrag(async () => {
+      const target = await page.getByRole('link', { name: 'Touch anchor', exact: true }).boundingBox();
+      expect(target).not.toBeNull();
+      return { x: target!.x + target!.width / 2, y: target!.y + target!.height / 2 };
+    });
     await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     touching = false;
     await expect(page.getByText('Move acknowledged. Current placement is being checked.', { exact: true })).toBeVisible();
@@ -60,15 +80,11 @@ test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move pe
     await expect(handle).toBeEnabled();
     const canvas = page.locator('[aria-label="Kanban board"]');
     await canvas.evaluate(node => node.scrollIntoView({ block: 'center' }));
-    const restart = await handle.boundingBox(); const boundary = await canvas.boundingBox();
-    expect(restart).not.toBeNull(); expect(boundary).not.toBeNull();
-    const startX = restart!.x + restart!.width / 2; const startY = restart!.y + restart!.height / 2;
-    const edgeX = boundary!.x + boundary!.width - 10;
-    await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: startX, y: startY, id: 1 }] });
-    touching = true;
-    for (let step = 1; step <= 12; step++) {
-      await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: startX + (edgeX - startX) * step / 12, y: startY, id: 1 }] });
-    }
+    await startDrag(async () => {
+      const source = await handle.boundingBox(); const boundary = await canvas.boundingBox();
+      expect(source).not.toBeNull(); expect(boundary).not.toBeNull();
+      return { x: boundary!.x + boundary!.width - 10, y: source!.y + source!.height / 2 };
+    });
     const destination = page.getByText('Drop card at end of Empty touch destination', { exact: true });
     // The trailing list-drop target is another column. Scrolling to the canvas
     // maximum would pass the intended card destination and hide it again.

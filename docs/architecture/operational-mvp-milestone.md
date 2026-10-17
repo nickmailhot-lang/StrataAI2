@@ -4,6 +4,15 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [phone touch pickup repair](../kanban-touch-evidence.md#observed-touch-pickup-admission--2026-10-16)
+observes native drag admission after retained snapshots show a protected Board
+read disabling the handle at touch-down. The complete phone workflow passes
+with both original drops, exact writes, persisted neighbor/version/order and
+reload/scroll assertions and deadlines. Four controlled pickup checks, 11
+existing helper checks, browser types and both coverage verifiers pass. Captured
+inputs match and owned cleanup restores Docker inventory. Current immutable CI,
+PRD-06 and the MVP remain open; large-load testing stays deferred.
+
 The [deletion telemetry Worker setup repair](operator-metrics.md#deletion-telemetry-scoped-worker-delivery--2026-10-16)
 explicitly delivers the test Organization while CI discovery remains paused.
 Both complete desktop/phone cases pass on their first attempt with the original
