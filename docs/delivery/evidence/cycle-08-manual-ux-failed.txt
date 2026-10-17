@@ -1,0 +1,43 @@
+Developer visual review 2026-10-17T19:29:47.214Z at frozen389c70ab. Inspected all10 actual viewport captures: List4drafts,2refusals,4Cardreturns. Forms/refusal focus/readability and phone/desktop returns are usable. Tablet persistent200% return is partly clipped at the bottom of its local List section: the focused long Card extends below the section viewport even though its DOM bounds fit the browser viewport. This is a real failed UXA05/06/VS05AC04; do not claim UX acceptance/full visibility from automated27pass. Add local-ancestor clipping regression and a focused return-visibility repair. No shell rewrite or capacity expansion.
+[
+  {
+    "file": "list-account-refusal-1280.png",
+    "sha256": "dca59341810c0a876e93391ac3c101b93db34f3d37f119ad5474f358d7b3a535"
+  },
+  {
+    "file": "list-account-refusal-390.png",
+    "sha256": "620788d3f8bc1bac2f3be34cf095a9c899f6bea7227cfc4b6b2814ca4187eac1"
+  },
+  {
+    "file": "list-creation-draft-390.png",
+    "sha256": "d91622339007e4374da3ac212de1dd3be256539f426009c637651c4cbfffaeb1"
+  },
+  {
+    "file": "list-to-card-return-390.png",
+    "sha256": "4c8e8e92068b736b45252dcf056052e369781519a38cba79d1c48fcf28775e7f"
+  },
+  {
+    "file": "list-creation-draft-768.png",
+    "sha256": "029405cc6433708751a695095534d20262274447b2520dcd9049556761bd940a"
+  },
+  {
+    "file": "list-to-card-return-768.png",
+    "sha256": "42d9684b8b9e2b690ae9fcbb334e2eb43a73f6bfce7607b718ac2ea0bd3a9580"
+  },
+  {
+    "file": "list-creation-draft-1280.png",
+    "sha256": "b68720b0f79c23ce51dacc2a2909db864e7a47640763bb44d7800213b80df759"
+  },
+  {
+    "file": "list-to-card-return-1280.png",
+    "sha256": "333d81c0541c7518b72bbe3eca1d28176c9b82fb2475ba580ddb67895be1e318"
+  },
+  {
+    "file": "list-creation-draft-320.png",
+    "sha256": "db85d519c45115e7779a3ed3800822d6f3746948e8e8c92d0a7c09f8697683e8"
+  },
+  {
+    "file": "list-to-card-return-320.png",
+    "sha256": "3726967cc589bd3f56cab51a84851e353083b907031c393948e65f2a13705d96"
+  }
+]

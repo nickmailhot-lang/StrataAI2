@@ -61,6 +61,19 @@ for (const width of [1280, 768, 390, 320]) {
     if (!returnBox || !headerBox) throw new Error('Missing recovered List/Card return geometry');
     expect(returnBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);
     expect(returnBox.y + returnBox.height).toBeLessThanOrEqual(1000);
+    const clipping = await page.getByRole('link', { name: 'Continue from recovered List', exact: true }).evaluate(link => {
+      const target = link.getBoundingClientRect(), clipped: { tag: string; axis: string; targetStart: number; targetEnd: number; visibleStart: number; visibleEnd: number }[] = [];
+      for (let parent = link.parentElement; parent; parent = parent.parentElement) {
+        const style = getComputedStyle(parent), box = parent.getBoundingClientRect();
+        for (const [axis, overflow, start, end, origin, size] of [
+          ['vertical', style.overflowY, target.top, target.bottom, box.top + parent.clientTop, parent.clientHeight],
+          ['horizontal', style.overflowX, target.left, target.right, box.left + parent.clientLeft, parent.clientWidth],
+        ] as const) if (['auto', 'scroll', 'hidden', 'clip'].includes(overflow) && (start < origin - 1 || end > origin + size + 1))
+          clipped.push({ tag: parent.tagName, axis, targetStart: start, targetEnd: end, visibleStart: origin, visibleEnd: origin + size });
+      }
+      return clipped;
+    });
+    expect(clipping, 'Focused Card must be fully visible inside every local scroll container').toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: test.info().outputPath(`list-to-card-return-${width}.png`) });
   });
