@@ -13,7 +13,7 @@ Work items: 0/1507 Done. Remaining canonical numbered acceptance criteria: 391; 
 | Task | 468 | 0 |
 | Test | 469 | 0 |
 
-Implemented but unvalidated: 17. Blocked: 4. Known MVP-critical outstanding: 49; unclassified records: 1291. Weighted progress: not measured.
+Implemented but unvalidated: 19. Blocked: 4. Known MVP-critical outstanding: 49; unclassified records: 1291. Weighted progress: not measured.
 
 ## 1. Work completed
 
@@ -21,12 +21,12 @@ Identified and reproduced stale launcher focus after recovered Board cancellatio
 
 ## 2. Implemented, awaiting validation
 
-PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01
+PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01
 
 ## 3. Current work in progress
 
-PRD-04-VS-01-T-04 and its Test are In Progress in work/cycle3-focus-repair; full source remains frozen in work/StrataAI2 for its ongoing regression run.
-Cycle 03 native scope remains 13/13 passed; the ongoing full frontend now has four observed BoardScreen/drag failures. API-host authorization/idempotency verification is running with platform/capacity skips reported separately.
+Focus repair is merged into the canonical isolated branch and is Testing. Actual running-app cancellation and final full frontend remain pending.
+API-host verification remains running; report platform and post-MVP capacity skips separately.
 
 ## 4. Blockers and dependencies
 
@@ -38,7 +38,7 @@ Full frontend/regression, current immutable release, review and target integrati
 
 ## 5. Next highest-priority deliverable
 
-Finish ongoing frozen frontend/API-host runs; inspect every failure. Integrate the isolated focus repair after that run completes, then run the affected tests and final full frontend sequentially without competing builds.
+Wait for API-host verification to finish, then run both failing BoardScreen files and the affected Organization/Surface tests in an uncontended focused invocation. Preserve all assertions/timeouts. Build and run the new cancellation journey, then final full frontend sequentially.
 
 ## 6. PRD progress changes
 
@@ -47,6 +47,7 @@ PRD-04 gains one bounded UXA-06 task/test. Original identifiers, earlier outcome
 ## 7. Completion evidence
 
 work/cycle4-focus-before.txt: 2 failed / 2 (intended red regression). work/cycle4-focus-after.txt: 2 passed / 2; source freeze and native rerun pending.
+fc1d347d complete frontend: 2821 passed / 4 failed / 24 existing deferred skips; all four failures remain a required gate.
 
 ## Recent verified completed increments
 

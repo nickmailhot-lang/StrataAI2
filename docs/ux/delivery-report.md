@@ -1,5 +1,11 @@
 # Consolidated PRD delivery report
 
+## 2026-10-17 — PRD-04-VS-01-T-04 cancellation return, validation in progress
+
+The recovered dialog's original launcher is removed during access withdrawal. Both Cancel and Escape therefore tried to restore focus to a detached element. Two controlled regressions fail before the repair and pass after it. The four-line repair explicitly returns focus to the current permitted launcher after closing. Source is integrated locally at `b4728561`; the new native journey also checks that the launcher is in view and reopening begins empty before an explicit Board creation. Current compiled native execution is still pending.
+
+The complete preceding frontend run at `fc1d347d` finished: **2,821 passed, four failed, 24 existing deferred skips**. Three failures hit unchanged 5-second deadlines; the fourth did not observe the acknowledged List heading. The failed BoardScreen/drag sources are unchanged by the Organization recovery repair. The run overlapped other local validation, but timing causality is unproven. Retain and investigate every failure, then run the current-source final checks without competing builds/suites. No timeout, assertion, isolation or retry policy is relaxed. The earlier 13 native passes remain scoped evidence, not a full regression waiver. Ledger and cycle reports preserve these outcomes separately.
+
 ## 2026-10-17 — PRD-04-VS-01 Board creation recovery checkpoint
 
 Implemented: `fc1d347dff2f890e5c8d16fbeb058836b58ac9cf` retains the original Board draft in a hidden local MUI portal during uncertain Board/metadata/lifecycle admission. A fresh same-actor authorized read restores presentation and keyboard focus. Definitive refusal, account loss and pending/completed deletion retire creation. No API/schema, shared shell/theme or automatic mutation replay changes.
@@ -8,7 +14,7 @@ Tested locally: all **13 native scenarios pass** with zero retries/skips against
 
 UXA-01–08: developer inspected the actual 320/390/768/1280px recovery captures, including 200% tablet text. The restored Create keyboard focus ring is visible, fields/actions fit, and long single-line input scrolls locally. Native keyboard, mobile drawer return, no page overflow and applicable Axe checks pass. This is separate from screen-reader/physical-device and full product/release acceptance.
 
-Awaiting validation: the complete current frontend run has three observed BoardScreen failures and is still being evaluated. Controlled development Organization/Surface checks passed 93/93 before a type-only test matcher correction. Current PostgreSQL/RLS, complete immutable-release CI, review and target integration remain open. Tasks are Testing; no Done or parent acceptance claim. Hashed logs and current state are in `docs/delivery/progress.json` and `docs/delivery/evidence/cycle-03-*`.
+Awaiting validation: the complete frontend outcome and follow-up are recorded above. Controlled development Organization/Surface checks passed 93/93 before a type-only test matcher correction. Current PostgreSQL/RLS, complete immutable-release CI, review and target integration remain open. Tasks are Testing; no Done or parent acceptance claim. Hashed logs and current state are in `docs/delivery/progress.json` and `docs/delivery/evidence/cycle-03-*`.
 
 ## 2026-10-17 — PRD-01-VS-04 incoming Card sign-in return
 
