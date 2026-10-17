@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-17T20:41:33.779Z",
+  "revision": "df638da3731a5043dd2388b0ace5b356bab2de89",
+  "productRevision": "4135a77798afed3636946468df1b0944f1c20f8f",
+  "pullRequest": 101,
+  "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/101",
+  "headRevision": "df638da3731a5043dd2388b0ace5b356bab2de89",
+  "baseRevision": "e90c6442ccc0b928a38db8793853ef03abe1bf3d",
+  "runId": 39067731383,
+  "state": "Draft; metadata started. Exact candidate release/review/main integration Pending. Prior frozen branches remain intact.",
+  "livePRD07": {
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/8",
+    "updatedAt": "2026-10-16T22:12:01Z",
+    "sha256": "3bd77f27fe2b820c3cde49cdc72cbc5a8083b134a51ab043e177d3eee029bfbf",
+    "matchesFrozenBody": true
+  },
+  "audit": "Original PRD07VS01/ListFR001-004. Existing controls and unchanged native rename/position cases; no restart. Current creationVS05 evidence retained; API22/backend389, web4135; exact application/native tree equality checked before execution. UXA01-08/backlog row read. Next: execute unchanged4native cases, then examine actual rendered four-width/200% and role/failure gaps before implementing only demonstrated missing behavior."
+}
