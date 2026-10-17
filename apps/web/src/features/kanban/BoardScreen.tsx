@@ -25,6 +25,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { boardCardLocation } from './boardCardLocation';
+import { SecondaryActions } from '../../app/SecondaryActions';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 import { ArchivedCardDetail } from './ArchivedCardDetail';
 import { CardChecklists } from './CardChecklists';
@@ -514,6 +515,7 @@ function BoardContent() {
           <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="BOARD" entityId={snapshot.board.id}
             admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active'} disabled={busy || !!loadError} refreshing={snapshotReading}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
+          <SecondaryActions label="Board actions">
           {snapshot.access.canAdminister && snapshot.board.lifecycleState === "active" && (
             <><Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invite`}>Invite to Board</Button>
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/visibility`}>Board visibility</Button>
@@ -567,8 +569,10 @@ function BoardContent() {
             onBusyChange={setBusy} onRecoveryChange={setLabelManageRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
+          </SecondaryActions>
           {editable && (
             <Button
+              variant="contained"
               disabled={busy || snapshotReading || !!loadError}
               onClick={() => {
                 setError(undefined);

@@ -30,6 +30,7 @@ import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchOrganizationLifecycle, type OrganizationLifecycleState } from './organizationLifecycleLive';
 import { OrganizationCreationDialog } from './OrganizationCreationDialog';
 import { organizationTypeLabel } from './organizationTypes';
+import { SecondaryActions } from '../../app/SecondaryActions';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 
 type OrganizationSummary = {
@@ -334,8 +335,10 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               <Typography>{organization.description}</Typography>
             )}
             <ActionRow sx={{ gap: 2 }}>
+              {organizationId && <SecondaryActions label="Organization actions">
               {organizationNavigation(organizationId, currentOrganization).map(item =>
                 <Button key={item.id} component={Link} to={item.to}>{item.label}</Button>)}
+              </SecondaryActions>}
               <Button disabled={creating && !organizationId}
                 onClick={() => {
                   setData(undefined);
