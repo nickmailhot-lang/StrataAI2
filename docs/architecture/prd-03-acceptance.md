@@ -1,5 +1,14 @@
 # Organization acceptance map — PRD-03
 
+The [settings navigation follow-up](organization-settings.md#observe-keyboard-settings-navigation-2026-10-16)
+observes the read-only form after a retained phone Enter leaves the home route
+open. Both complete desktop/phone workflows pass with their original 30-second
+deadlines, conflict/draft recovery, identical original retry and canonical later
+update assertions intact. Captured source/binary/served inputs match and owned
+cleanup restores Docker inventory. This focused compiled-host evidence does not
+certify current immutable images or managed providers. PRD-03 remains open at
+**8% estimated work remaining**; large-load tests remain deferred until after MVP.
+
 The [retained receipt review](schema149-clock-inventory.md#organization-command-receipt-classification-and-capability-checks--2026-10-16)
 classifies creation/metadata/departure/removal/deletion acknowledgments from
 their insert-only writers and publication clocks. The required command fixture

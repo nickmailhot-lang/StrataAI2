@@ -1,7 +1,7 @@
 import { expect, test } from './releaseTest';
 import type { Request } from '@playwright/test';
 import { scopedBoardWorker } from './scopedBoardWorker';
-import { pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview } from './keyboardAdmission';
 import AxeBuilder from '@axe-core/playwright';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
@@ -54,7 +54,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     page.on('requestfailed', request => pendingReads.delete(request));
     const settled = (version: number) => observedVersion >= version && readVersion === observedVersion;
     await page.goto(`/app/${org.id}`);
-    await pressAdmittedAction(page.getByRole('link', { name: 'Organization settings', exact: true }));
+    await openAdmittedReview(page.getByRole('link', { name: 'Organization settings', exact: true }), page.getByLabel(/^Organization name/));
     await expect(page.getByLabel(/^Organization name/)).toHaveValue('Organization metadata');
     const runtime = await context.request.get('/api/runtime'); expect(runtime.status()).toBe(200);
     if ((await runtime.json()).mode === 'production')

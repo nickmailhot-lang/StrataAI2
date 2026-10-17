@@ -1,5 +1,41 @@
 # Organization metadata settings
 
+## Observe keyboard settings navigation (2026-10-16)
+
+The retained phone [browser-shard failure](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/38874264310/job/117115257558)
+at `e0774a83` never reaches the opening Organization name field. All 17 frame
+snapshots remain on the Organization home route (or its initial blank page),
+and the final view still offers Organization settings. A protected surface-access
+GET starts at 3,402,520.034 ms for 33.086 ms, overlapping Enter from
+3,402,533.55 to 3,402,553.552 ms. This establishes missing navigation admission;
+it does not prove a failed settings-page read or the exclusive interleaving cause.
+Diagnostic artifact `12080522574` is 1,875,535 bytes, SHA-256
+`23f2a68ee47c021b2717e8c257ac59c81247cb8be0a6733ba6a75077ea31152f`;
+its run/head identity, all 26 payload checksums and internal metadata are verified.
+
+The browser case now uses the existing bounded read-only opening helper to
+observe the actual form before proceeding. Its original name-value assertion
+remains, as do URL rejection, concurrent conflict, preserved draft, lost successful
+reply, explicit same-key/body/version recovery, later administrator update,
+canonical version 4, keyboard and Axe checks. Both complete desktop/phone
+workflows pass **2/2 in 106,548.743 ms**, one attempt per case, no failures,
+flakes, skips or report errors, under the original 30-second scenario deadlines.
+Browser types pass. Product, provider, schema, shared-helper and frontend-suite
+inputs are unchanged; completed supporting suites are not needlessly repeated.
+
+Fresh PostgreSQL 17.11/pgvector has all 149 migrations and restricted runtime
+roles. Current compiled applications and built frontend run on cached images
+with runtime metadata `e88c6514`; optional verification/mail fixtures do not
+establish managed-provider or current immutable-release acceptance. All 1,286
+source inputs, 71 binary inputs and four served frontend assets match. The API
+process stays unchanged, and the scoped Worker is restored unscoped on the same
+image. Owned cleanup removes 3,324 temporary bytes and restores original Docker
+inventory. No original database, image build/pull/import or large load test is
+used. Full current-image CI and all original acceptance remain required;
+PRD-03 stays open at **8% estimated work remaining**.
+
+## Settings screen and command recovery
+
 PRD-03 WS-FR-002/003 now has an accessible MUI settings screen at `/app/{organizationId}/settings`, linked from an active Organization's board directory for internal Owners and Admins. Ordinary members, Portal-only accounts and inactive Organizations do not receive an editing form. The existing server membership, lifecycle, current-session and version checks remain authoritative for every save.
 
 The screen edits name, description and optional logo URL. HTTPS absolute URLs without embedded credentials, up to 2,048 characters, are accepted by the server; empty values clear the logo. Invalid URL validation follows permission admission, so unrelated accounts receive the usual protected not-found response. This stores URL metadata only; binary files still require the separate object-storage implementation. It introduces no new schema or authorization surface.

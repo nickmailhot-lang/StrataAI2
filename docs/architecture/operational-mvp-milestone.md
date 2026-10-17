@@ -55,6 +55,15 @@ browser types and 289 CI guards pass. Captured inputs match and owned cleanup
 restores Docker inventory. Current immutable/full CI remains required; PRD-12
 and the MVP remain open, with large-load tests deferred.
 
+The [Organization settings navigation follow-up](organization-settings.md#observe-keyboard-settings-navigation-2026-10-16)
+observes the read-only form after a retained phone Enter never leaves the home
+route. Both complete desktop/phone workflows pass under their original 30-second
+deadlines, retaining conflict/draft review, original-command recovery, later
+administrator state and keyboard/Axe checks. Captured inputs match, the scoped
+Worker is restored and owned cleanup restores Docker inventory. Full current
+immutable-image CI and all original acceptance remain required; PRD-03 and the
+MVP remain open. Large-load tests stay deferred.
+
 The [image-backed copy review follow-up](../board-background-images.md#image-backed-copy-review-admission-2026-10-16)
 observes the read-only Copy Board dialog before proceeding after a retained
 phone click starts no review. The complete desktop/phone image file passes 2/2
