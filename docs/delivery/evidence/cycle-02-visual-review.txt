@@ -1,0 +1,21 @@
+Developer visual inspection, 2026-10-17T15:54:38.072Z
+Source: 9b26f63d4c1665b97f2b6d7950ea33c8c2be2d4d
+Actual resumed Card dialogs inspected at 320, 390, 768 (200% root text) and 1280px. Focused title is visible and unobscured; labels/actions remain usable with local dialog scrolling; no horizontal page overflow observed. Native Save/Close and applicable Axe checks pass in the complete browser cases. This is not a screen-reader, physical-device or full WCAG certification.
+[
+  {
+    "file": "resumed-card-768.png",
+    "sha256": "fe62559dff30c11f95774cd57eb0dd93bb36807dd6051b78d596589948d2e0b1"
+  },
+  {
+    "file": "resumed-card-1280.png",
+    "sha256": "a62e77f501b1943c635daf7716183c9e28f7e390ddca49edb1574a8c9577711e"
+  },
+  {
+    "file": "resumed-card-390.png",
+    "sha256": "babae3afe0913514118db17b667e0a250da126794e6e613eb52b8c602c092db0"
+  },
+  {
+    "file": "resumed-card-320.png",
+    "sha256": "cdf4fb23d57db2d2fafdf697cd142ae6c64f404688f41fc80b306e34c8674e7c"
+  }
+]

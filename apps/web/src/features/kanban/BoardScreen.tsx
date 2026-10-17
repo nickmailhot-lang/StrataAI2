@@ -469,8 +469,10 @@ function BoardContent() {
       <Stack spacing={2}>
         {message(loadError)}
         <Button onClick={() => setReload((value) => value + 1)}>Retry</Button>
-        {loadError instanceof WorkRequestError && loadError.status === 401 && (
-          <Button component={Link} to="/login">
+        {loadError instanceof WorkRequestError && [401, 404].includes(loadError.status) && (
+          // Private and missing Boards share the same unavailable response.
+          // Offer the same generic sign-in path without disclosing existence.
+          <Button component={Link} to="/login" replace state={{ returnTo: location.pathname }}>
             Sign in
           </Button>
         )}

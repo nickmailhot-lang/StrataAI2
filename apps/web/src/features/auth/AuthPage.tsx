@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { signInReturnPath } from './signInReturnPath';
 
 type AuthMode = 'login' | 'register';
 
@@ -127,7 +128,10 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
         || typeof login.sessionExpiresAt !== 'string' || !(Date.parse(login.sessionExpiresAt) > Date.now())) throw new Error('Invalid sign-in acknowledgment');
       attempt.current = undefined;
       if (onAuthenticated) onAuthenticated();
-      else navigate('/app');
+      else {
+        const returnTo = signInReturnPath(location.state?.returnTo);
+        navigate(returnTo ?? '/app', returnTo ? { replace: true } : undefined);
+      }
     } catch {
       if (pending.current === controller) setError(`${mode === 'login' ? 'Sign-in' : 'Registration'} could not be confirmed. Retry with the same details to confirm this attempt.`, reference);
     } finally {
