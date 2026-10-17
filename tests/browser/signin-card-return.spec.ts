@@ -18,6 +18,86 @@ async function fixture(request: import('@playwright/test').APIRequestContext) {
   return { credentials, org, board, card, path: `/app/${org}/boards/${board}/cards/${card}` };
 }
 
+test('PRD-01-VS-04-T-03/AC-01/02/03: another Organization owner remains denied after sign-in and returns to authorized work', async ({ page, context, browser }) => {
+  test.setTimeout(90_000); await page.setViewportSize({ width: 390, height: 844 });
+  const targetOwner = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+  try {
+    const target = await fixture(targetOwner.request);
+    const credentials = { email: `other-organization-${crypto.randomUUID()}@example.test`, password: 'other-organization-correct-horse', displayName: 'Original Organization owner' };
+    await registerNotificationAccount(context.request, credentials);
+    const mutationHeaders = () => ({ ...headers, 'Idempotency-Key': crypto.randomUUID() });
+    const organization = await context.request.post('/organizations', { headers: mutationHeaders(), data: { name: 'Original Organization A' } });
+    expect(organization.status()).toBe(201); const org = (await organization.json()).organization.id;
+    const createdBoard = await context.request.post('/boards', { headers: mutationHeaders(), data: { organizationId: org, name: 'Original authorized Board A', visibility: 'PRIVATE' } });
+    expect(createdBoard.status()).toBe(201); const board = (await createdBoard.json()).id;
+    const createdList = await context.request.post(`/boards/${board}/lists`, { headers: mutationHeaders(), data: { name: 'Original List A' } });
+    expect(createdList.status()).toBe(201); const list = (await createdList.json()).id;
+    const createdCard = await context.request.post(`/lists/${list}/cards`, { headers: mutationHeaders(), data: { title: 'Original authorized Card A' } });
+    expect(createdCard.status()).toBe(201); const card = (await createdCard.json()).id;
+    const me = await context.request.get('/me'); expect(me.status()).toBe(200); const actor = (await me.json()).id;
+    const membership = await context.request.get(`/organizations/${org}/members/${actor}`);
+    expect(membership.status()).toBe(200);
+    expect(await membership.json()).toMatchObject({ organizationId: org, actorRole: 0, member: { userId: actor, role: 0 } });
+    expect((await context.request.get(`/organizations/${org}/surface-access?surface=INTERNAL`)).status()).toBe(200);
+    async function canonical(request: import('@playwright/test').APIRequestContext, id: string) {
+      const response = await request.get(`/boards/${id}`); expect(response.status()).toBe(200);
+      const value = await response.json();
+      return { id: value.id, name: value.name, version: value.version, lists: value.lists };
+    }
+    const originalBefore = await canonical(context.request, board);
+    const targetBefore = await canonical(targetOwner.request, target.board);
+    const writes: string[] = [];
+    page.on('request', request => {
+      const path = new URL(request.url()).pathname;
+      if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method()) &&
+        [org, board, list, card, target.org, target.board, target.card].some(id => path.split('/').includes(id)))
+        writes.push(`${request.method()} ${path}`);
+    });
+    const originalPath = `/app/${org}/boards/${board}`;
+    await page.goto(originalPath);
+    await expect(page.getByRole('link', { name: 'Original authorized Card A', exact: true })).toBeVisible();
+    // Keep A authenticated: this must prove a real cross-Organization refusal,
+    // rather than an anonymous-session refusal or membership inferred from UI.
+    await page.goto(target.path);
+    async function denied() {
+      await expect(page).toHaveURL(new RegExp(target.path + '$'));
+      await expect(page.getByRole('alert')).toContainText('unavailable');
+      await expect(page.getByText('Private return Board', { exact: true })).toHaveCount(0);
+      await expect(page.getByText('Private return Card', { exact: true })).toHaveCount(0);
+      await expect(page.getByRole('dialog', { name: 'Card details', exact: true })).toHaveCount(0);
+      await expect(page.getByLabel('Internal application navigation')).toHaveCount(0);
+    }
+    await denied();
+    const signIn = page.getByRole('link', { name: 'Sign in', exact: true });
+    await signIn.focus(); await expect(signIn).toBeFocused(); await signIn.press('Enter');
+    await expect(page).toHaveURL(/\/login$/);
+    await page.getByLabel(/^Email/).fill(credentials.email); await page.getByLabel(/^Password/).fill(credentials.password);
+    const submit = page.getByRole('button', { name: 'Sign in', exact: true });
+    await submit.focus(); await expect(submit).toBeFocused(); await submit.press('Enter');
+    await denied();
+    for (const path of [`/boards/${target.board}`, ...['INTERNAL', 'PORTAL'].map(surface => `/organizations/${target.org}/surface-access?surface=${surface}`)]) {
+      const response = await context.request.get(path); expect(response.status()).toBe(404);
+      const body = await response.text(); expect(body).not.toContain('Private return Board'); expect(body).not.toContain('Private return Card');
+    }
+    expect((await (await context.request.get('/me')).json()).id).toBe(actor);
+    expect(writes).toEqual([]);
+    expect(await canonical(targetOwner.request, target.board)).toEqual(targetBefore);
+    expect(await canonical(context.request, board)).toEqual(originalBefore);
+    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.screenshot({ path: test.info().outputPath('cross-organization-denied-390.png'), fullPage: true });
+    await page.goBack(); await expect(page).toHaveURL(new RegExp(originalPath + '$'));
+    const originalCard = page.getByRole('link', { name: 'Original authorized Card A', exact: true });
+    await originalCard.focus(); await expect(originalCard).toBeFocused(); await originalCard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: 'Card details', exact: true });
+    await expect(dialog.getByRole('textbox', { name: 'Card title', exact: true })).toHaveValue('Original authorized Card A');
+    expect(await canonical(context.request, board)).toEqual(originalBefore);
+    expect(await canonical(targetOwner.request, target.board)).toEqual(targetBefore);
+    expect(writes).toEqual([]);
+    await page.screenshot({ path: test.info().outputPath('cross-organization-authorized-return-390.png'), fullPage: true });
+  } finally { await targetOwner.close(); }
+});
+
 for (const width of [1280, 768, 390, 320]) {
   test(`PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at ${width}px`, async ({ page, context }) => {
     test.setTimeout(90_000);
