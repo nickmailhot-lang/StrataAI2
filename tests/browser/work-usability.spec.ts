@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { focusAdmittedControl } from './keyboardAdmission';
+import { focusAdmittedControl, openAdmittedReview } from './keyboardAdmission';
 import { test, expect } from './releaseTest';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
@@ -40,7 +40,7 @@ for (const width of [1280, 768, 390, 320]) {
       await expect(nav.getByRole('link', { name: 'Work', exact: true })).toHaveAttribute('aria-current', 'page');
       await page.keyboard.press('Escape'); await expect(trigger).toBeFocused();
     } else await expect(page.getByRole('link', { name: 'Work', exact: true })).toHaveAttribute('aria-current', 'page');
-    await activate('Add card', page.locator('body'));
+    await openAdmittedReview(page.getByRole('button', { name: 'Add card', exact: true }), page.getByRole('dialog', { name: 'Add card', exact: true }));
     await expect.poll(() => page.getByRole('dialog', { name: 'Add card', exact: true }).evaluate(element =>
       getComputedStyle(element.closest('.MuiDialog-container')!).opacity)).toBe('1');
     await expect(page.getByRole('combobox', { name: 'List', exact: true })).toHaveText('Reported');
@@ -61,11 +61,11 @@ for (const width of [1280, 768, 390, 320]) {
     }
     const cardPath = new URL(page.url()).pathname;
     const cardId = cardPath.split('/').at(-1)!;
-    await activate('Edit Card assignees', detail);
+    await openAdmittedReview(detail.getByRole('button', { name: 'Edit Card assignees', exact: true }), detail.getByRole('button', { name: 'Assign Work reviewer', exact: true }));
     await activate('Assign Work reviewer', detail);
     await expect(detail.getByRole('button', { name: 'Edit Card assignees', exact: true })).toBeEnabled();
     await expect(detail.getByRole('button', { name: 'Edit Card assignees', exact: true })).toBeFocused();
-    await activate('Edit dates', detail);
+    await openAdmittedReview(detail.getByRole('button', { name: 'Edit dates', exact: true }), detail.getByLabel('Due date', { exact: true }));
     await detail.getByLabel('Due date', { exact: true }).fill('2026-10-01');
     await activate('Save dates', detail);
     await expect(detail.getByText('Dates saved.', { exact: true })).toBeVisible();
@@ -75,7 +75,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(face).toContainText('Oct 1, 2026'); await expect(face).toContainText('Overdue');
     await page.screenshot({ path: info.outputPath('board.png'), fullPage: true });
 
-    await activate('Filter Board Cards', page.locator('body'));
+    await openAdmittedReview(page.getByRole('button', { name: 'Filter Board Cards', exact: true }), page.getByRole('dialog', { name: 'Filter Board Cards', exact: true }));
     const filters = page.getByRole('dialog', { name: 'Filter Board Cards', exact: true });
     await expect.poll(() => filters.evaluate(element => getComputedStyle(element.closest('.MuiDialog-container')!).opacity)).toBe('1');
     await filters.getByRole('textbox', { name: 'Card keyword', exact: true }).fill('Inspect');
@@ -115,7 +115,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(detail.getByRole('button', { name: 'Archive Card', exact: true })).toBeEnabled();
     expect(attempts).toHaveLength(2); expect(attempts[0]).toBe(attempts[1]);
     await page.unroute(`**/cards/${cardId}`);
-    await activate('Move card', detail);
+    await openAdmittedReview(detail.getByRole('button', { name: 'Move card', exact: true }), detail.getByRole('combobox', { name: 'Destination list', exact: true }));
     const destination = detail.getByRole('combobox', { name: 'Destination list', exact: true });
     await destination.press('Enter');
     await page.getByRole('option', { name: 'Scheduled', exact: true }).press('Enter');
