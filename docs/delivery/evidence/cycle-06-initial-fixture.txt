@@ -1,0 +1,92 @@
+
+Running 2 tests using 1 worker
+
+(node:16560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px (6.9s)
+(node:36388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px (6.7s)
+
+
+  1) tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('dialog', { name: 'Add card', exact: true }).getByRole('alert')
+    Expected substring: "Unable to save."
+    Received string:    "Unable to confirm the save. Keep these fields unchanged and try again to recover this submission."
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" getByRole('dialog', { name: 'Add card', exact: true }).getByRole('alert') with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Add card', exact: true }).getByRole('alert')
+        14 × locator resolved to <div role="alert" class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-3tr75x">…</div>
+           - unexpected value "Unable to confirm the save. Keep these fields unchanged and try again to recover this submission."
+
+
+      60 |       const submit = dialog.getByRole('button', { name: 'Create', exact: true });
+      61 |       await submit.focus(); await submit.press('Enter');
+    > 62 |       await expect(dialog.getByRole('alert')).toContainText('Unable to save.');
+         |                                               ^
+      63 |       expect(attempts).toHaveLength(1); expect(attempts[0].status).toBe(201);
+      64 |       await expect(submit).toBeEnabled();
+      65 |       holdReads = true;
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\tests\browser\card-creation-account.spec.ts:62:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle6-card-before\card-creation-account-PRD--f6077-placement-account-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle6-card-before\card-creation-account-PRD--f6077-placement-account-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle6-card-before\card-creation-account-PRD--f6077-placement-account-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle6-card-before\card-creation-account-PRD--f6077-placement-account-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('dialog', { name: 'Add card', exact: true }).getByRole('alert')
+    Expected substring: "Unable to save."
+    Received string:    "Unable to confirm the save. Keep these fields unchanged and try again to recover this submission."
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" getByRole('dialog', { name: 'Add card', exact: true }).getByRole('alert') with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Add card', exact: true }).getByRole('alert')
+        14 × locator resolved to <div role="alert" class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-3tr75x">…</div>
+           - unexpected value "Unable to confirm the save. Keep these fields unchanged and try again to recover this submission."
+
+
+      60 |       const submit = dialog.getByRole('button', { name: 'Create', exact: true });
+      61 |       await submit.focus(); await submit.press('Enter');
+    > 62 |       await expect(dialog.getByRole('alert')).toContainText('Unable to save.');
+         |                                               ^
+      63 |       expect(attempts).toHaveLength(1); expect(attempts[0].status).toBe(201);
+      64 |       await expect(submit).toBeEnabled();
+      65 |       holdReads = true;
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\tests\browser\card-creation-account.spec.ts:62:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle6-card-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle6-card-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle6-card-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle6-card-before\card-creation-account-PRD--66ebe-eplacement-account-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px 
+    tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px 

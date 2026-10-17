@@ -1,0 +1,82 @@
+
+Running 2 tests using 1 worker
+
+(node:1516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px (2.3s)
+(node:35712) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px (1.8s)
+
+
+  1) tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 201
+
+      74 |       await writeFile(evidencePath, JSON.stringify({ originalActor, replacementActor, statuses: attempts.map(x => x.status), createdIds: attempts.map(x => x.id), sameKey: attempts[0].key === attempts[1].key, sameBody: attempts[0].body === attempts[1].body, canonicalCardCount: column.cards.length }, null, 2));
+      75 |       await test.info().attach('card-command-account-evidence', { contentType: 'application/json', path: evidencePath });
+    > 76 |       expect(attempts[1].status).toBe(401);
+         |                                  ^
+      77 |       expect(attempts[1].key).toBe(attempts[0].key); expect(attempts[1].body).toBe(attempts[0].body);
+      78 |       expect(column.cards).toHaveLength(1);
+      79 |       expect(column.cards[0]).toMatchObject({ id: attempts[0].id, title: 'Original account Card' });
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\tests\browser\card-creation-account.spec.ts:76:34
+
+    attachment #1: card-command-account-evidence (application/json) ────────────────────────────────
+    ..\cycle6-card-counterfactual\card-creation-account-PRD--f6077-placement-account-at-1280px\attachments\card-command-account-evidence-069c0c84ce58165f39247a3eabb80c7cbe9732e5.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle6-card-counterfactual\card-creation-account-PRD--f6077-placement-account-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle6-card-counterfactual\card-creation-account-PRD--f6077-placement-account-at-1280px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle6-card-counterfactual\card-creation-account-PRD--f6077-placement-account-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle6-card-counterfactual\card-creation-account-PRD--f6077-placement-account-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 201
+
+      74 |       await writeFile(evidencePath, JSON.stringify({ originalActor, replacementActor, statuses: attempts.map(x => x.status), createdIds: attempts.map(x => x.id), sameKey: attempts[0].key === attempts[1].key, sameBody: attempts[0].body === attempts[1].body, canonicalCardCount: column.cards.length }, null, 2));
+      75 |       await test.info().attach('card-command-account-evidence', { contentType: 'application/json', path: evidencePath });
+    > 76 |       expect(attempts[1].status).toBe(401);
+         |                                  ^
+      77 |       expect(attempts[1].key).toBe(attempts[0].key); expect(attempts[1].body).toBe(attempts[0].body);
+      78 |       expect(column.cards).toHaveLength(1);
+      79 |       expect(column.cards[0]).toMatchObject({ id: attempts[0].id, title: 'Original account Card' });
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\tests\browser\card-creation-account.spec.ts:76:34
+
+    attachment #1: card-command-account-evidence (application/json) ────────────────────────────────
+    ..\cycle6-card-counterfactual\card-creation-account-PRD--66ebe-eplacement-account-at-390px\attachments\card-command-account-evidence-8ae98478d42ea5a9c18dc228e21256f66e47104f.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle6-card-counterfactual\card-creation-account-PRD--66ebe-eplacement-account-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle6-card-counterfactual\card-creation-account-PRD--66ebe-eplacement-account-at-390px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle6-card-counterfactual\card-creation-account-PRD--66ebe-eplacement-account-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle6-card-counterfactual\card-creation-account-PRD--66ebe-eplacement-account-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px 
+    tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px 
