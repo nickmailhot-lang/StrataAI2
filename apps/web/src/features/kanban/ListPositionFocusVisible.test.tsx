@@ -14,11 +14,11 @@ it('keeps the approved MUI focus indicator after an owned admission refresh reta
     onRefresh={refresh} onBusyChange={busy} /><button>Outside navigation</button></>;
   try {
     const view = render(draw(false));
-    fireEvent.click(screen.getByRole('button', { name: 'Move Planning list', exact: true }));
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm list move', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Move Planning list' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm list move' }));
     await screen.findByText('List move acknowledged. Current ordering is being checked.');
     view.rerender(draw(false, acknowledged));
-    const action = screen.getByRole('button', { name: 'Move Planning list', exact: true });
+    const action = screen.getByRole('button', { name: 'Move Planning list' });
     await waitFor(() => expect(action).toHaveFocus());
     view.rerender(draw(true, acknowledged));
     // Native browsers may retain activeElement while MUI clears focusVisible
