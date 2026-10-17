@@ -63,6 +63,12 @@ for (const width of [1280, 768, 390, 320]) {
     const boardNavigation = await navigation(), work = boardNavigation.getByRole('link', { name: 'Work', exact: true });
     await expect(work).toHaveAttribute('href', directoryPath); await expect(work).toHaveAttribute('aria-current', 'page');
     await work.focus(); await expect(work).toBeFocused(); await accessibility();
+    expect(await work.evaluate(element => {
+      const box = element.getBoundingClientRect();
+      return box.x >= 0 && box.y >= 0 && box.right <= window.innerWidth && box.bottom <= window.innerHeight
+        && element.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2));
+    })).toBe(true);
+    await page.screenshot({ path: test.info().outputPath(`work-navigation-viewport-${width}.png`), fullPage: false });
     await page.screenshot({ path: test.info().outputPath(`work-navigation-${width}.png`), fullPage: true });
     await closeNavigation();
     await cardLink.focus(); await cardLink.press('Enter');

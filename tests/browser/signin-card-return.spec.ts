@@ -42,7 +42,8 @@ test('PRD-01-VS-04-T-03/AC-01/02/03: another Organization owner remains denied a
     async function canonical(request: import('@playwright/test').APIRequestContext, id: string) {
       const response = await request.get(`/boards/${id}`); expect(response.status()).toBe(200);
       const value = await response.json();
-      return { id: value.id, name: value.name, version: value.version, lists: value.lists };
+      expect(value.board).toMatchObject({ id });
+      return { board: value.board, lists: value.lists };
     }
     const originalBefore = await canonical(context.request, board);
     const targetBefore = await canonical(targetOwner.request, target.board);

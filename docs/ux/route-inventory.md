@@ -33,7 +33,7 @@ Source: `apps/web/src/app/App.tsx`, `InternalAppShell.tsx`, `OrganizationHome.ts
 
 ## Current menu contract
 
-The shared internal menu currently activates only Organizations (`/app`), Boards (`/app/:org`) and Notifications. Header shortcuts expose Card search and scoped profile. Meetings, Correspondence, Documents and Owners & Units remain disabled placeholders. UX-001/002 preserve their unavailable state; they now explain “Not available yet” and carry no link destination. UX-002 should decide whether unavailable modules are hidden or explained, with one reviewed rule across devices.
+The shared internal menu activates only Organizations (`/app`), Work (`/app/:org`) and Notifications. Work retains the Board-directory route and identifies current Board/Card descendants and Card search. Header shortcuts keep Card search and scoped profile separate. The live 2026-10-17 Work amendment omits unavailable Meetings, Correspondence, Documents and Owners & Units entries on all devices; this replaces the baseline's disabled “Not available yet” hints. No route, permission or role changes. Broader Organization-action and Card-presentation adoption remains separate work.
 
 Organization home already has role-gated administrative entry points; moving them into shared menus requires capability and live-withdrawal equivalence. BoardScreen already distinguishes admin/edit/read actions from its returned access capabilities. INTERNAL surface admission alone is not equivalent to Board administration or strata governance authority.
 
