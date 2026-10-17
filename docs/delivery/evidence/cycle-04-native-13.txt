@@ -1,0 +1,20 @@
+
+Running 13 tests using 1 worker
+
+(node:31432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (5.0s)
+  ok  2 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (4.8s)
+  ok  3 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (4.6s)
+  ok  4 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (4.0s)
+  ok  5 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (6.2s)
+  ok  6 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (7.3s)
+  ok  7 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (6.1s)
+  ok  8 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px (4.5s)
+  ok  9 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 768px (4.3s)
+  ok 10 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 390px (4.0s)
+  ok 11 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 320px (3.8s)
+  ok 12 tests\browser\signin-card-return.spec.ts:78:7 › PRD-01-VS-04/AC-03: sign-in return does not grant outsider access to a private Card (1.4s)
+  ok 13 tests\browser\signin-card-return.spec.ts:78:7 › PRD-01-VS-04/AC-03: sign-in return does not grant portal-only access to a private Card (1.5s)
+
+  13 passed (59.8s)

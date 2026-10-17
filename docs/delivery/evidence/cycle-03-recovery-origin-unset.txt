@@ -1,0 +1,154 @@
+
+Running 4 tests using 1 worker
+
+(node:10696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (9.3s)
+(node:33276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (9.1s)
+(node:3892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (9.5s)
+(node:5232) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (9.7s)
+
+
+  1) tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      23 |     if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      24 |     await expect(page.getByRole('heading', { name: 'Draft recovery Organization', exact: true })).toBeVisible();
+    > 25 |     await expect.poll(() => !!socket).toBe(true);
+         |                                       ^
+      26 |     await page.getByRole('button', { name: 'Create board', exact: true }).click();
+      27 |     const dialog = page.getByRole('dialog');
+      28 |     await dialog.getByLabel('Name', { exact: false }).fill('Recovered planning Board');
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board-creation-recovery.spec.ts:25:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-recovery-dev\board-creation-recovery-PR-db78d-riginal-key-retry-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-recovery-dev\board-creation-recovery-PR-db78d-riginal-key-retry-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-recovery-dev\board-creation-recovery-PR-db78d-riginal-key-retry-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-recovery-dev\board-creation-recovery-PR-db78d-riginal-key-retry-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      23 |     if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      24 |     await expect(page.getByRole('heading', { name: 'Draft recovery Organization', exact: true })).toBeVisible();
+    > 25 |     await expect.poll(() => !!socket).toBe(true);
+         |                                       ^
+      26 |     await page.getByRole('button', { name: 'Create board', exact: true }).click();
+      27 |     const dialog = page.getByRole('dialog');
+      28 |     await dialog.getByLabel('Name', { exact: false }).fill('Recovered planning Board');
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board-creation-recovery.spec.ts:25:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-recovery-dev\board-creation-recovery-PR-36e64-original-key-retry-at-768px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-recovery-dev\board-creation-recovery-PR-36e64-original-key-retry-at-768px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-recovery-dev\board-creation-recovery-PR-36e64-original-key-retry-at-768px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-recovery-dev\board-creation-recovery-PR-36e64-original-key-retry-at-768px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      23 |     if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      24 |     await expect(page.getByRole('heading', { name: 'Draft recovery Organization', exact: true })).toBeVisible();
+    > 25 |     await expect.poll(() => !!socket).toBe(true);
+         |                                       ^
+      26 |     await page.getByRole('button', { name: 'Create board', exact: true }).click();
+      27 |     const dialog = page.getByRole('dialog');
+      28 |     await dialog.getByLabel('Name', { exact: false }).fill('Recovered planning Board');
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board-creation-recovery.spec.ts:25:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-recovery-dev\board-creation-recovery-PR-3e317-original-key-retry-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-recovery-dev\board-creation-recovery-PR-3e317-original-key-retry-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-recovery-dev\board-creation-recovery-PR-3e317-original-key-retry-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-recovery-dev\board-creation-recovery-PR-3e317-original-key-retry-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      23 |     if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      24 |     await expect(page.getByRole('heading', { name: 'Draft recovery Organization', exact: true })).toBeVisible();
+    > 25 |     await expect.poll(() => !!socket).toBe(true);
+         |                                       ^
+      26 |     await page.getByRole('button', { name: 'Create board', exact: true }).click();
+      27 |     const dialog = page.getByRole('dialog');
+      28 |     await dialog.getByLabel('Name', { exact: false }).fill('Recovered planning Board');
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board-creation-recovery.spec.ts:25:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-recovery-dev\board-creation-recovery-PR-aefaf-original-key-retry-at-320px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-recovery-dev\board-creation-recovery-PR-aefaf-original-key-retry-at-320px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-recovery-dev\board-creation-recovery-PR-aefaf-original-key-retry-at-320px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-recovery-dev\board-creation-recovery-PR-aefaf-original-key-retry-at-320px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px 
+    tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px 
+    tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px 
+    tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px 

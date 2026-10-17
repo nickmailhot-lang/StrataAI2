@@ -1,0 +1,102 @@
+
+Running 3 tests using 1 worker
+
+(node:5964) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (30.6s)
+(node:31856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (11.3s)
+(node:16836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (28.7s)
+
+
+  1) tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop)
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Create', exact: true })
+        - locator resolved to <button tabindex="0" type="submit" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">Create</button>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+        - element is not visible
+      - retrying click action
+        - waiting for element to be visible, enabled and stable
+        - element is not stable
+      - retrying click action
+        - waiting 20ms
+        - waiting for element to be visible, enabled and stable
+      - element was detached from the DOM, retrying
+
+
+      22 |         await expect(button).toBeFocused();
+      23 |         await button.press("Enter");
+    > 24 |       } else await button.click();
+         |                           ^
+      25 |     }
+      26 |     // Opening a creation form has no write side effect. A protected foreground
+      27 |     // read can disable its launcher between focus and activation; confirm the
+        at activate (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle2-baseline-source\tests\browser\board.spec.ts:24:27)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle2-baseline-source\tests\browser\board.spec.ts:77:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle2-original-board\board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle2-original-board\board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle2-original-board\board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle2-original-board\board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet)
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: getByRole('button', { name: 'Create', exact: true })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: 'Create', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Create', exact: true })
+        - locator resolved to <button tabindex="0" type="submit" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">Create</button>
+        - unexpected value "inactive"
+
+
+      20 |       if (viewport.name !== "desktop") {
+      21 |         await button.focus();
+    > 22 |         await expect(button).toBeFocused();
+         |                              ^
+      23 |         await button.press("Enter");
+      24 |       } else await button.click();
+      25 |     }
+        at activate (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle2-baseline-source\tests\browser\board.spec.ts:22:30)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle2-baseline-source\tests\browser\board.spec.ts:77:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle2-original-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle2-original-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle2-original-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle2-original-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop)
+    tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet)
+  1 passed (1.2m)

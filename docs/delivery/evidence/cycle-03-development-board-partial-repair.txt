@@ -1,0 +1,89 @@
+
+Running 3 tests using 1 worker
+
+(node:22836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (29.0s)
+  x  2 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (12.1s)
+(node:18992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (30.7s)
+
+
+  1) tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: getByRole('button', { name: 'Create', exact: true })
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" getByRole('button', { name: 'Create', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Create', exact: true })
+        - locator resolved to <button tabindex="0" type="submit" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root">Create</button>
+        - unexpected value "inactive"
+
+
+      20 |       if (viewport.name !== "desktop") {
+      21 |         await button.focus();
+    > 22 |         await expect(button).toBeFocused();
+         |                              ^
+      23 |         await button.press("Enter");
+      24 |       } else await button.click();
+      25 |     }
+        at activate (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board.spec.ts:22:30)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board.spec.ts:77:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-after-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-after-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-after-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-after-board\board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.focus: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Create', exact: true })
+
+
+      19 |       const button = page.getByRole("button", { name, exact: true });
+      20 |       if (viewport.name !== "desktop") {
+    > 21 |         await button.focus();
+         |                      ^
+      22 |         await expect(button).toBeFocused();
+      23 |         await button.press("Enter");
+      24 |       } else await button.click();
+        at activate (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board.spec.ts:21:22)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board.spec.ts:77:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-after-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-after-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-after-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-after-board\board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) 
+    tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) 
+  1 passed (1.2m)

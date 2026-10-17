@@ -1,0 +1,34 @@
+[
+  {
+    "width": 390,
+    "originalActor": "f6ea6796-39d6-4a2e-b175-ffb620b312c8",
+    "replacementActor": "882e6b82-f9a8-47aa-8582-ac8b1226754b",
+    "statuses": [
+      201,
+      201
+    ],
+    "createdIds": [
+      "bf9c2590-1c1f-439b-90d4-5ded078f05cb",
+      "ac9357ca-b131-4ecf-9915-74a882a2f580"
+    ],
+    "sameKey": true,
+    "sameBody": true,
+    "replacementBoardCount": 1
+  },
+  {
+    "width": 1280,
+    "originalActor": "8fa9c543-571c-4098-b58c-6c800eb244f9",
+    "replacementActor": "e411ab14-19ee-41eb-b5bd-1f519631c2fc",
+    "statuses": [
+      201,
+      201
+    ],
+    "createdIds": [
+      "40fd4d22-6dcc-415f-87b0-bbd3c458dfc9",
+      "0fba2436-a437-4f52-b8f3-4e853ce36579"
+    ],
+    "sameKey": true,
+    "sameBody": true,
+    "replacementBoardCount": 1
+  }
+]

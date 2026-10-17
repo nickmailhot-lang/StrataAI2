@@ -1,0 +1,73 @@
+✔ PRD-25-VS-03/AC-01: complete real backlog retains all 100 definitions, obligations and parent links (134.707ms)
+✔ PRD-25-VS-03/AC-01: losing a PRD or architecture definition fails closed (103.743ms)
+✔ PRD-25-VS-03/AC-01: losing original FR or AC cannot shrink acceptance denominator (29.8624ms)
+✔ PRD-25-VS-03/AC-01: source mutation cannot inherit frozen audit (4.2289ms)
+✔ PRD-25-VS-03/AC-01: missing slice requirement mapping is rejected (31.9207ms)
+✔ PRD-25-VS-03/AC-02: duplicate item IDs, orphan items and acceptance are refused (1.4911ms)
+✔ PRD-25-VS-03/AC-02: untraced test and unknown dependencies are refused (0.4084ms)
+✔ PRD-25-VS-03/AC-02: lifecycle runs in order and does not skip validation (1.8955ms)
+✔ PRD-25-VS-03/AC-02: Blocked requires reason, owner and exact prior-state resume (1.091ms)
+✔ PRD-25-VS-03/AC-02: Implemented needs source identity, never just a state label (0.658ms)
+✔ PRD-25-VS-03/AC-02: state and append-only history must agree (0.6201ms)
+✔ PRD-25-VS-03/AC-03: complete synthetic evidence passes all gates (1.156ms)
+✔ PRD-25-VS-03/AC-03: missing tests blocks Done (0.7548ms)
+✔ PRD-25-VS-03/AC-03: missing acceptance blocks Done (0.3264ms)
+✔ PRD-25-VS-03/AC-03: missing security blocks Done (0.2908ms)
+✔ PRD-25-VS-03/AC-03: missing roles blocks Done (0.291ms)
+✔ PRD-25-VS-03/AC-03: missing regressions blocks Done (0.2804ms)
+✔ PRD-25-VS-03/AC-03: missing integration blocks Done (0.2453ms)
+✔ PRD-25-VS-03/AC-03: missing tracking blocks Done (0.2356ms)
+✔ PRD-25-VS-03/AC-03: missing review blocks Done (0.2344ms)
+✔ PRD-25-VS-03/AC-03: missing ux blocks Done (0.2614ms)
+✔ PRD-25-VS-03/AC-03: missing build blocks Done (0.2882ms)
+✖ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (1.067ms)
+✔ PRD-25-VS-03/AC-03: unverified, stale, failed or skipped evidence cannot satisfy acceptance (0.6235ms)
+✔ PRD-25-VS-03/AC-03: unknown critical regressions and unpassed test block completion (0.583ms)
+✔ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (0.612ms)
+✔ PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unvalidated work (1.6308ms)
+✔ PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done (7.6667ms)
+✔ PRD-25-VS-03/AC-05: prior states, criteria and failed evidence cannot be rewritten or deleted (2.697ms)
+✔ PRD-25-VS-03/AC-03: exact Git integration, evidence hashes and repository path boundaries (1618.2186ms)
+✔ PRD-25-VS-03/AC-04: real CLI reports machine-readable progress and exits nonzero for bad action (519.7646ms)
+✔ PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its refusal tests (1.0841ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 31
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2693.234
+
+✖ failing tests:
+
+test at tests\delivery-progress.test.mjs:86:1
+✖ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (1.067ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Required child/. Input:
+
+  'Error: Unpassed or stale criterion evidence ITEM-4/AC'
+
+      at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:87:64)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: Unpassed or stale criterion evidence ITEM-4/AC
+        at requireThat (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/scripts/delivery-progress.mjs:13:66)
+        at validateLedger (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/scripts/delivery-progress.mjs:62:7)
+        at file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:87:75
+        at getActual (node:assert:611:5)
+        at strict.throws (node:assert:759:24)
+        at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:87:64)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1382:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+        at Test.postRun (node:internal/test_runner/test:1522:19),
+    expected: /Required child/,
+    operator: 'throws',
+    diff: 'simple'
+  }
