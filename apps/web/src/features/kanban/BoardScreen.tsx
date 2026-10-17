@@ -27,6 +27,7 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { boardCardLocation } from './boardCardLocation';
+import { focusBoardReturn } from './focusBoardReturn';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 import { ArchivedCardDetail } from './ArchivedCardDetail';
 import { CardChecklists } from './CardChecklists';
@@ -796,9 +797,7 @@ function BoardContent() {
         disableRestoreFocus
         slotProps={{ backdrop: { slots: { transition: ImmediateDialogTransition } }, transition: { onExited: () => {
           const target = cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current;
-          target?.focus({ preventScroll: true });
-          // Reveal the focused Card inside local canvas scroll areas as well.
-          target?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+          focusBoardReturn(target);
           closeFocusCard.current = undefined;
         } } }}
         onClose={() => {
