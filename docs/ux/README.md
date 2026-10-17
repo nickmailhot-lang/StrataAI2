@@ -45,7 +45,7 @@ The new mobile drawer shares the existing navigation definitions and remains ins
 
 ## Continuous delivery and file ownership
 
-Use `ux/ux-001-foundation` in this isolated worktree. The existing main checkout and its active CI/browser changes remain untouched. Shell owner has exclusive write ownership of `app/App.tsx`, `app/InternalAppShell.tsx`, `portal/PortalShell.tsx` and `theme/appTheme.ts` for an integration window. Feature owners change their own modules/tests and consume approved slots; request a sequential shell PR for a new menu item. This is an ownership rule, not authorization to start agents or send messages.
+Use `ux/ux-001-foundation` in this isolated worktree. The existing main checkout and its active CI/browser changes remain untouched. Shell owner has exclusive write ownership of `app/App.tsx`, `app/InternalAppShell.tsx`, `portal/PortalShell.tsx`, `app/navigationModel.ts`, `theme/appTheme.ts`, `theme/designTokens.ts` and shared `components/PageHeader.tsx` / `ActionRow.tsx` for an integration window. Feature owners change their own modules/tests and consume approved slots; request a sequential shell PR for a new menu item. This is an ownership rule, not authorization to start agents or send messages.
 
 Independent backend/schema/Worker/security repairs, existing feature modules without shared-layout edits and feature contract tests continue. A UI feature may implement against approved slots while waiting for menu integration; it cannot ship standalone navigation. Rebase/cherry-pick only reviewed changes, preserve other active work, and run the required checks on the combined revision. Keep source changes reviewable in a draft PR until applicable gates pass.
 

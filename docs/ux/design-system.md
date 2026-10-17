@@ -23,6 +23,12 @@ UX-003 implementation baseline. React, MUI and Emotion remain the component/styl
 
 Before extracting another pattern, identify actual duplication and at least two real consumers. Prefer MUI controls directly where a wrapper adds no useful shared behavior. Form validation, canonical read admission, error support references and destructive confirmation remain in the working feature modules until a separately tested migration justifies extraction.
 
+## Responsive safeguards added
+
+The fixed shell header wraps controls and observes its actual height. Main content and permanent-drawer offsets follow that measurement, including user text zoom, rather than assuming every header stays 56/64px tall. The observer disconnects on unmount; it adds no network polling.
+
+Shared MUI alerts wrap message and recovery-action rows. Complete text stays readable instead of becoming an unfocusable scroll region; the feature still owns its original retry callback and consent state.
+
 ## Safeguards retained
 
 - Long text wraps through existing Typography/CardContent/Button overrides; do not truncate canonical names to conceal overflow.
