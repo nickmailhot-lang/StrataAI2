@@ -344,7 +344,8 @@ These are proposed increments, not promised one-cycle implementations. Each slic
 | PRD-02-VS-01 | PRD-02 | Register without account enumeration | AUTH-FR-001, AUTH-FR-002, AUTH-FR-005, AUTH-FR-009 |
 | PRD-02-VS-02 | PRD-02 | Sign in, sign out and expire sessions | AUTH-FR-003, AUTH-FR-006 |
 | PRD-02-VS-03 | PRD-02 | Edit profile and display dates in chosen timezone | AUTH-FR-007, AUTH-FR-010 |
-| PRD-02-VS-04 | PRD-02 | Deactivate account while preserving attribution | AUTH-FR-004, AUTH-FR-008 |
+| PRD-02-VS-04 | PRD-02 | Deactivate account while preserving attribution | AUTH-FR-008 |
+| PRD-02-VS-05 | PRD-02 | Reset forgotten password using an expiring single-use token | AUTH-FR-004 |
 | PRD-03-VS-01 | PRD-03 | Create Organization and discover authorized Boards | WS-FR-001, WS-FR-002, WS-FR-007, WS-FR-008 |
 | PRD-03-VS-02 | PRD-03 | Edit Organization metadata | WS-FR-003 |
 | PRD-03-VS-03 | PRD-03 | Invite and safely remove or leave membership | WS-FR-004, WS-FR-005, WS-FR-006 |
