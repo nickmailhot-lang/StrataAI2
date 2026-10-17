@@ -7,6 +7,9 @@
     "apps/web"
   ],
   "scripts": {
+    "delivery:validate": "node scripts/delivery-progress.mjs validate",
+    "delivery:report": "node scripts/delivery-progress.mjs report",
+    "delivery:test": "node --test tests/delivery-progress.test.mjs",
     "build": "npm --workspace @strataai/web run build",
     "test": "npm --workspace @strataai/web run test",
     "typecheck": "npm --workspace @strataai/web run typecheck",

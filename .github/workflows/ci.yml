@@ -42,6 +42,8 @@ jobs:
       created_at: ${{ steps.identity.outputs.created_at }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -49,6 +51,17 @@ jobs:
         run: node --test tests/build-metadata.test.mjs
       - name: Verify complete PRD and architecture dependency analysis
         run: node --test tests/ticket-dependencies.test.mjs
+      - name: Verify delivery ledger and completion refusal contracts
+        run: |
+          node scripts/delivery-progress.mjs validate
+          node --test tests/delivery-progress.test.mjs
+      - name: Preserve delivery history against the target branch
+        if: github.event_name == 'pull_request'
+        env:
+          DELIVERY_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --no-tags origin "$DELIVERY_BASE_SHA"
+          node scripts/delivery-progress.mjs validate --base-ref "$DELIVERY_BASE_SHA"
       - name: Calculate verified exact-commit metadata
         id: identity
         run: node scripts/ci/build-metadata.mjs

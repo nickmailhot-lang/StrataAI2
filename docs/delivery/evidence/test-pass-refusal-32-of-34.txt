@@ -1,0 +1,106 @@
+✔ PRD-25-VS-03/AC-01: complete real backlog retains all 100 definitions, obligations and parent links (130.0484ms)
+✔ PRD-25-VS-03/AC-01: losing a PRD or architecture definition fails closed (128.5476ms)
+✔ PRD-25-VS-03/AC-01: losing original FR or AC cannot shrink acceptance denominator (33.2105ms)
+✔ PRD-25-VS-03/AC-01: source mutation cannot inherit frozen audit (4.0649ms)
+✔ PRD-25-VS-03/AC-01: missing slice requirement mapping is rejected (38.8836ms)
+✔ PRD-25-VS-03/AC-02: duplicate item IDs, orphan items and acceptance are refused (1.9899ms)
+✔ PRD-25-VS-03/AC-02: untraced test and unknown dependencies are refused (0.7869ms)
+✔ PRD-25-VS-03/AC-02: lifecycle runs in order and does not skip validation (2.2956ms)
+✔ PRD-25-VS-03/AC-02: Blocked requires reason, owner and exact prior-state resume (0.8023ms)
+✔ PRD-25-VS-03/AC-02: Implemented needs source identity, never just a state label (0.5654ms)
+✔ PRD-25-VS-03/AC-02: state and append-only history must agree (0.3069ms)
+✔ PRD-25-VS-03/AC-02: a new item cannot start at Done to bypass lifecycle (0.694ms)
+✔ PRD-25-VS-03/AC-03: a Test cannot claim Passed without executed evidence (0.7586ms)
+✔ PRD-25-VS-03/AC-03: complete synthetic evidence passes all gates (0.6803ms)
+✖ PRD-25-VS-03/AC-03: missing tests blocks Done (1.1586ms)
+✔ PRD-25-VS-03/AC-03: missing acceptance blocks Done (0.4721ms)
+✔ PRD-25-VS-03/AC-03: missing security blocks Done (0.2919ms)
+✔ PRD-25-VS-03/AC-03: missing roles blocks Done (0.5705ms)
+✔ PRD-25-VS-03/AC-03: missing regressions blocks Done (0.3737ms)
+✔ PRD-25-VS-03/AC-03: missing integration blocks Done (0.5869ms)
+✔ PRD-25-VS-03/AC-03: missing tracking blocks Done (0.3065ms)
+✔ PRD-25-VS-03/AC-03: missing review blocks Done (0.2957ms)
+✔ PRD-25-VS-03/AC-03: missing ux blocks Done (0.3097ms)
+✔ PRD-25-VS-03/AC-03: missing build blocks Done (0.2536ms)
+✔ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (0.7506ms)
+✔ PRD-25-VS-03/AC-03: unverified, stale, failed or skipped evidence cannot satisfy acceptance (0.9564ms)
+✔ PRD-25-VS-03/AC-03: unknown critical regressions and unpassed test block completion (0.7954ms)
+✖ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (1.045ms)
+✔ PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unvalidated work (1.6059ms)
+✔ PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done (8.2183ms)
+✔ PRD-25-VS-03/AC-05: prior states, criteria and failed evidence cannot be rewritten or deleted (3.1838ms)
+✔ PRD-25-VS-03/AC-03: exact Git integration, evidence hashes and repository path boundaries (2002.9697ms)
+✔ PRD-25-VS-03/AC-04: real CLI reports machine-readable progress and exits nonzero for bad action (547.1779ms)
+✔ PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its refusal tests (0.7617ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 32
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3162.4892
+
+✖ failing tests:
+
+test at tests\delivery-progress.test.mjs:90:31
+✖ PRD-25-VS-03/AC-03: missing tests blocks Done (1.1586ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /gate/. Input:
+  
+  'Error: Unsubstantiated test pass ITEM-4'
+  
+      at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:91:64)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: Unsubstantiated test pass ITEM-4
+        at requireThat (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/scripts/delivery-progress.mjs:13:66)
+        at validateLedger (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/scripts/delivery-progress.mjs:97:7)
+        at file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:91:75
+        at getActual (node:assert:611:5)
+        at strict.throws (node:assert:759:24)
+        at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:91:64)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1382:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+        at Test.postRun (node:internal/test_runner/test:1522:19),
+    expected: /gate/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at tests\delivery-progress.test.mjs:105:1
+✖ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (1.045ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /gate tests/. Input:
+  
+  'Error: Unsubstantiated test pass ITEM-4'
+  
+      at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:107:112)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: Unsubstantiated test pass ITEM-4
+        at requireThat (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/scripts/delivery-progress.mjs:13:66)
+        at validateLedger (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/scripts/delivery-progress.mjs:97:7)
+        at file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:107:123
+        at getActual (node:assert:611:5)
+        at strict.throws (node:assert:759:24)
+        at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:107:112)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1382:25)
+        at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+        at Test.postRun (node:internal/test_runner/test:1522:19),
+    expected: /gate tests/,
+    operator: 'throws',
+    diff: 'simple'
+  }
