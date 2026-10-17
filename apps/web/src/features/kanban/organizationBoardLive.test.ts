@@ -72,3 +72,19 @@ it('rejects reused canonical identity with changed attribution-free envelope', (
   expect(validateOrganizationBoardSync({ ...delivered, page: { ...delivered.page, events: [{ ...event, version: 3 }] } },
     org, user, new Map(valid.eventIds))).toBeNull();
 });
+
+
+it('PRD-04-VS-05/AC-06 distinguishes initial admission from a later validated directory reset', async () => {
+  const f = fixture('discovery'); await Promise.resolve();
+  f.next(head); expect(f.reset).toHaveBeenNthCalledWith(1, false);
+  f.next({ ...head, page: { ...head.page, cursor: 'fresh_authority_cursor' } });
+  expect(f.reset).toHaveBeenNthCalledWith(2, true);
+  f.cleanup();
+});
+it('PRD-04-VS-05/AC-06 ignores obsolete reset callbacks while preserving established state on reconnect', async () => {
+  const f = fixture('discovery'); await Promise.resolve(); f.next(head);
+  const previous = f.previous(); f.reconnect(); previous.next(head);
+  expect(f.reset).toHaveBeenCalledTimes(1);
+  f.next(head); expect(f.reset).toHaveBeenNthCalledWith(2, true);
+  f.cleanup();
+});

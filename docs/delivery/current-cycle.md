@@ -3,21 +3,23 @@
 Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
 
 PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
-Work items: 0/1529 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2371. Unverified includes unknown and partially tested work; it does not assert code is absent.
+Work items: 0/1535 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2379. Unverified includes unknown and partially tested work; it does not assert code is absent.
 
 | Kind | Total | Done |
 | --- | ---: | ---: |
 | Epic | 8 | 0 |
 | PRD | 100 | 0 |
-| Vertical Slice | 465 | 0 |
-| Task | 474 | 0 |
-| Test | 482 | 0 |
+| Vertical Slice | 466 | 0 |
+| Task | 476 | 0 |
+| Test | 485 | 0 |
 
-Implemented but unvalidated: 41. Blocked: 4. Known MVP-critical outstanding: 77; unclassified records: 1285. Weighted progress: not measured.
+Implemented but unvalidated: 41. Blocked: 4. Known MVP-critical outstanding: 83; unclassified records: 1285. Weighted progress: not measured.
 
 ## 1. Work completed
 
 Retain complete current regression failure and earlier hosted notification withdrawal failure, with exact separate source scopes.
+Corrected focused UI58 pass at01772d8d. Original unchanged Organization-directory native5 reproduces2ordinary-dialog failures/3archive-withdrawal passes in48.3s.
+Read currentPRD04 additive amendment and preserve frozen baseline; retain three new navigation criteria as Unverified linked child acceptance. Separate draft100 has no overlapping reset/helper repair.
 
 ## 2. Implemented, awaiting validation
 
@@ -25,7 +27,7 @@ PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, P
 
 ## 3. Current work in progress
 
-Fix existing canvas fixture only: valid authenticated profile and awaited List dialog. Original canvas identity/memoization/authoritative refresh assertions remain unchanged.
+Required BoardT03: distinguish established authority reset from initial/transport admission; retire unsubmitted review while preserving submitted original-key recovery and actor guards. Add red controlled tests before source repair.
 
 ## 4. Blockers and dependencies
 
@@ -37,16 +39,21 @@ Current release/review/main integration remains pending; earlier98 has a real re
 
 ## 5. Next highest-priority deliverable
 
-Apply prepared valid-profile/awaited-dialog canvas fixture correction; verify58focused cases. Then reproduce original unchanged organization-board-live native2 against current running app, trace the observed authority-reset failure and add only a bounded demonstrated repair before final combined regression.
+Add protocol and OrganizationHome red tests for established-reset retirement, fresh empty reopen, and preserved submitted uncertain receipt; keep existing bootstrap/transport tests. Run reds, then minimal readonly pending-intent state plus phase-aware reset callback/retirement. Validate affected suites and unchanged native5 before four-width UX/current combined full regression.
 
 ## 6. PRD progress changes
 
 Rework existingVS05/T01/UI Test via lifecycle; no original criteria/IDs/tests removed, no new feature scope.
+Append BoardVS05AC06 and focusedT03/twoTests; preserve every prior child/source/criterion/history. Add livePRD04UX-NAV01/02/03 as Unverified and map affectedUX-NAV03; broader draft100 navigation remains separate.
+Baseline validation correctly refuses unknown canonical source obligations. Preserve frozen original PRD04 list; represent live UX-NAV01/02/03 additively under separateVS06/auditTask/manualTest, owned by existing UX draft100. No validation rule or baseline is weakened.
 
 ## 7. Completion evidence
 
 EVID-CYCLE-08-FULL-FAILED
 EVID-CYCLE-08-PR98-NOTIFICATION-FAILED
+EVID-CYCLE-09-UI-58
+EVID-CYCLE-09-AUTHORITY-BEFORE
+EVID-CYCLE-09-PRD04-RECONCILIATION
 
 ## Recent verified completed increments
 

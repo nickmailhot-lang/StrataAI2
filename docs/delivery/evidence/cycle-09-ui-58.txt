@@ -1,0 +1,15 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --run src/features/kanban/ListCreationActor.test.tsx src/features/kanban/CardCreationActor.test.tsx src/features/kanban/BoardScreen.test.tsx src/features/kanban/BoardScreen.drag.test.tsx --maxWorkers=2
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle8-list-actor/apps/web
+
+
+ Test Files  4 passed (4)
+      Tests  58 passed (58)
+   Start at  12:50:32
+   Duration  121.62s (import 64%, tests 29%, environment 4%, transform 2%, setup 1%)
+
+     Import  131 modules were evaluated 481 times · 134.96s total, 64% of tracked time
+             ~31.42s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

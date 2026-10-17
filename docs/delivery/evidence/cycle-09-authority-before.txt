@@ -1,0 +1,106 @@
+
+Running 5 tests using 1 worker
+
+(node:10564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\organization-board-live.spec.ts:6:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 1280px (11.6s)
+(node:18128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\organization-board-live.spec.ts:6:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 390px (11.4s)
+(node:33788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 tests\browser\organization-board-live.spec.ts:107:7 › PRD-04/18: archive directory consumes original Worker events and recovers private scope at 1280px (7.6s)
+  ok 4 tests\browser\organization-board-live.spec.ts:107:7 › PRD-04/18: archive directory consumes original Worker events and recovers private scope at 390px (7.5s)
+  ok 5 tests\browser\organization-board-live.spec.ts:195:5 › PRD-04/05: phone archive scope excludes other Boards and withdraws review after Organization membership removal (6.0s)
+
+
+  1) tests\browser\organization-board-live.spec.ts:6:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 1280px 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('dialog')
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('dialog') with timeout 5000ms
+      - waiting for getByRole('dialog')
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      76 |         await expect.poll(() => frames[index].resets).toBeGreaterThan(resetCounts[index]);
+      77 |         await expect(page.getByRole('link', { name: boards[0].name, exact: true })).toHaveCount(0);
+    > 78 |         await expect(page.getByRole('dialog')).toHaveCount(0);
+         |                                                ^
+      79 |         await expect(page.getByText(boards[1].name, { exact: true })).toHaveCount(0);
+      80 |         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      81 |       }
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\tests\browser\organization-board-live.spec.ts:78:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle9-authority-before\organization-board-live-PR-d409b-ate-MEMBER-access-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle9-authority-before\organization-board-live-PR-d409b-ate-MEMBER-access-at-1280px\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle9-authority-before\organization-board-live-PR-d409b-ate-MEMBER-access-at-1280px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle9-authority-before\organization-board-live-PR-d409b-ate-MEMBER-access-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle9-authority-before\organization-board-live-PR-d409b-ate-MEMBER-access-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\organization-board-live.spec.ts:6:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 390px 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('dialog')
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('dialog') with timeout 5000ms
+      - waiting for getByRole('dialog')
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      76 |         await expect.poll(() => frames[index].resets).toBeGreaterThan(resetCounts[index]);
+      77 |         await expect(page.getByRole('link', { name: boards[0].name, exact: true })).toHaveCount(0);
+    > 78 |         await expect(page.getByRole('dialog')).toHaveCount(0);
+         |                                                ^
+      79 |         await expect(page.getByText(boards[1].name, { exact: true })).toHaveCount(0);
+      80 |         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      81 |       }
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\tests\browser\organization-board-live.spec.ts:78:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle9-authority-before\organization-board-live-PR-78fbb-vate-MEMBER-access-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle9-authority-before\organization-board-live-PR-78fbb-vate-MEMBER-access-at-390px\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle9-authority-before\organization-board-live-PR-78fbb-vate-MEMBER-access-at-390px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle9-authority-before\organization-board-live-PR-78fbb-vate-MEMBER-access-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle9-authority-before\organization-board-live-PR-78fbb-vate-MEMBER-access-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\organization-board-live.spec.ts:6:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 1280px 
+    tests\browser\organization-board-live.spec.ts:6:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 390px 
+  3 passed (48.3s)

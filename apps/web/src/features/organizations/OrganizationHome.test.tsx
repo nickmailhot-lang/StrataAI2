@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { OrganizationHome } from "./OrganizationHome";
 const live = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string; audience: string;
-  invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
+  invalidate(): void; reset(established?: boolean): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
 vi.mock('../kanban/organizationBoardLive', () => ({ watchOrganizationBoards: live.watch }));
 const metadata = vi.hoisted(() => ({ watch: vi.fn<(options: { organizationId: string; userId: string;
   invalidate(): void; reset(): void; unavailable(): void }) => () => void>(() => vi.fn()) }));
@@ -58,6 +58,65 @@ function mount(path = "/app") {
 beforeEach(() => sessionStorage.clear());
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 describe("PRD-01/03/04 organization discovery", () => {
+  it.each(['empty', 'draft', 'navigation'] as const)('PRD-04-VS-05/AC-06 retires an unsubmitted %s review on established authority reset', async scenario => {
+    let hold = false, finish!: (value: Response) => void;
+    const writes = vi.fn(), independent = document.createElement('button');
+    independent.textContent = 'Independent navigation';
+    stubFetch(async (path, options) => {
+      if (options?.method === 'POST') writes();
+      if (path === '/organizations/org-1') return hold ? new Promise<Response>(resolve => { finish = resolve; }) : response(organizations[0]);
+      return response({ organizationId: 'org-1', items: [], nextCursor: null });
+    });
+    try {
+      mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+      await waitFor(() => expect(live.watch).toHaveBeenCalled());
+      fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
+      const name = screen.getByLabelText(/Name/);
+      if (scenario !== 'empty') {
+        fireEvent.change(name, { target: { value: 'Retired review draft' } });
+        fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Retired description' } });
+      }
+      name.focus(); hold = true; act(() => live.watch.mock.calls.at(-1)![0].reset(true));
+      await waitFor(() => expect(finish).toBeDefined());
+      expect(screen.queryByRole('dialog', { hidden: true })).not.toBeInTheDocument();
+      expect(name).not.toBeInTheDocument(); expect(writes).not.toHaveBeenCalled();
+      if (scenario === 'navigation') { document.body.appendChild(independent); independent.focus(); }
+      await act(async () => finish(response(organizations[0])));
+      const launcher = await screen.findByRole('button', { name: 'Create board' });
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(scenario === 'navigation' ? independent : launcher).toHaveFocus();
+      fireEvent.click(launcher);
+      expect(screen.getByLabelText(/Name/)).toHaveValue(''); expect(screen.getByLabelText('Description')).toHaveValue('');
+      expect(writes).not.toHaveBeenCalled();
+    } finally { independent.remove(); }
+  });
+  it('PRD-04-VS-05/AC-06 preserves a submitted uncertain original command through established reset', async () => {
+    let hold = false, finish!: (value: Response) => void;
+    const submissions: { body: BodyInit | null | undefined; key: string | null; path: string }[] = [];
+    stubFetch(async (path, options) => {
+      if (options?.method === 'POST') {
+        submissions.push({ body: options.body, key: new Headers(options.headers).get('Idempotency-Key'), path });
+        return submissions.length === 1 ? response({}, 503) : response({ id: 'new-board' }, 201);
+      }
+      if (path === '/organizations/org-1') return hold ? new Promise<Response>(resolve => { finish = resolve; }) : response(organizations[0]);
+      return response({ organizationId: 'org-1', items: [], nextCursor: null });
+    });
+    mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+    await waitFor(() => expect(live.watch).toHaveBeenCalled());
+    fireEvent.click(screen.getByRole('button', { name: 'Create board' }));
+    const name = screen.getByLabelText(/Name/); fireEvent.change(name, { target: { value: 'Original receipt recovery' } });
+    const submit = screen.getByRole('button', { name: /^Create$/ }); fireEvent.click(submit);
+    await screen.findByText(/Unable to confirm the save/); hold = true;
+    act(() => live.watch.mock.calls.at(-1)![0].reset(true)); await waitFor(() => expect(finish).toBeDefined());
+    expect(name).toBeInTheDocument(); expect(screen.queryByRole('dialog')).not.toBeInTheDocument(); expect(submissions).toHaveLength(1);
+    await act(async () => finish(response(organizations[0])));
+    expect(await screen.findByRole('dialog')).toBeVisible(); expect(screen.getByLabelText(/Name/)).toBe(name);
+    expect(name).toHaveValue('Original receipt recovery'); expect(submissions).toHaveLength(1);
+    fireEvent.click(submit); await screen.findByRole('heading', { name: 'Created board destination' });
+    expect(submissions).toHaveLength(2); expect(submissions[1]).toEqual(submissions[0]);
+    expect(submissions[0].key).toMatch(/^[0-9a-f-]{36}$/); expect(submissions[0].path).toBe(boardCreationPath);
+  });
+
   it.each(['boards', 'metadata', 'lifecycle'] as const)('suspends and restores the original Board draft after %s admission reset', async stream => {
     let hold = false, finish!: (value: Response) => void;
     const writes = vi.fn();
