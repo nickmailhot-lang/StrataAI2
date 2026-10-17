@@ -1,0 +1,15 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/apps/web
+
+
+ Test Files  190 passed | 1 skipped (191)
+      Tests  2828 passed | 24 skipped (2852)
+   Start at  10:29:56
+   Duration  739.73s (import 39%, tests 36%, environment 21%, setup 4%, transform 1%)
+
+     Import  409 modules were evaluated 2392 times · 553.74s total, 39% of tracked time
+             ~207.77s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

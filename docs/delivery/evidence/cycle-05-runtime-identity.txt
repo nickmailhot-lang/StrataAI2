@@ -1,0 +1,13 @@
+{
+  "api": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "d35f775e5e788c4e6670c0351743982a478e77ad",
+    "version": "1.0.0"
+  },
+  "web": {
+    "revision": "d35f775e5e788c4e6670c0351743982a478e77ad",
+    "version": "0.1.0"
+  },
+  "topology": "Compiled Demo API + compiled web preview; explicit live origin http://127.0.0.1:5175; no Production/immutable/provider claim"
+}
