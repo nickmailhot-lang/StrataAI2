@@ -46,9 +46,9 @@
 test at tests\delivery-progress.test.mjs:90:31
 ✖ PRD-25-VS-03/AC-03: missing tests blocks Done (1.1586ms)
   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /gate/. Input:
-  
+
   'Error: Unsubstantiated test pass ITEM-4'
-  
+
       at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:91:64)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)
@@ -77,9 +77,9 @@ test at tests\delivery-progress.test.mjs:90:31
 test at tests\delivery-progress.test.mjs:105:1
 ✖ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (1.045ms)
   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /gate tests/. Input:
-  
+
   'Error: Unsubstantiated test pass ITEM-4'
-  
+
       at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:107:112)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)

@@ -197,6 +197,14 @@ export function transition(ledger, id, state, reason, at = new Date().toISOStrin
   return copy;
 }
 
+export function serializeLedger(ledger) {
+  // Keep each work item/criterion on one line so an agent's cycle changes stay reviewable.
+  return '{\n' + Object.entries(ledger).map(([key,value]) =>
+    '  ' + JSON.stringify(key) + ': ' + (Array.isArray(value) && value.length
+      ? '[\n' + value.map(row => '    ' + JSON.stringify(row)).join(',\n') + '\n  ]'
+      : JSON.stringify(value))).join(',\n') + '\n}\n';
+}
+
 export function markdownReport(report) {
   const cycle = report.lastCycle;
   const lines = ['# Incremental delivery progress', '', `Baseline: \`${report.baselineRevision}\`. Counts describe the ledger, not product completion percentages.`, '',
@@ -213,7 +221,7 @@ export function markdownReport(report) {
     '## 7. Completion evidence', '', ...(cycle?.evidence ?? ['See baseline-audit.json for candidate references; these are not current passing results.']), '',
     '## Recent verified completed increments', '', ...report.recentCompletedIncrements.map(x => `${x.id}: ${x.title} (${x.completedAt})`), ...(report.recentCompletedIncrements.length ? [] : ['None recorded under the new acceptance gates.']), '',
     '## Preserved historical evidence', '', ...report.historicalEvidence.map(x => `${x.id}: ${x.recordedResults} Source: ${x.source}. ${x.acceptance}`), ''];
-  return lines.join('\n');
+  return lines.join('\n').trimEnd() + '\n';
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -240,7 +248,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       const lock = path + '.lock'; writeFileSync(lock, '', { flag: 'wx' });
       try {
         requireThat(readFileSync(path,'utf8') === raw, 'Ledger changed during transition; reload and retry');
-        writeFileSync(path + '.tmp', JSON.stringify(changed, null, 2) + '\n'); renameSync(path + '.tmp', path);
+        writeFileSync(path + '.tmp', serializeLedger(changed)); renameSync(path + '.tmp', path);
       } finally { unlinkSync(lock); }
       console.log(`${id}: ${state}`);
     } else throw new Error('Usage: node scripts/delivery-progress.mjs validate|report [--json]|transition ID "STATE" "REASON"');

@@ -52,4 +52,3 @@ None recorded under the new acceptance gates.
 ## Preserved historical evidence
 
 HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
-

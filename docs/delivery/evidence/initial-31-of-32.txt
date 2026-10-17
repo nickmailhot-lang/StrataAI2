@@ -44,9 +44,9 @@
 test at tests\delivery-progress.test.mjs:86:1
 ✖ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (1.067ms)
   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Required child/. Input:
-  
+
   'Error: Unpassed or stale criterion evidence ITEM-4/AC'
-  
+
       at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/tests/delivery-progress.test.mjs:87:64)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)
