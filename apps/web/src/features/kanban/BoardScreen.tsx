@@ -128,7 +128,8 @@ function BoardContent() {
   const creationRead = useRef<{ controller: AbortController; kind: Creation['kind']; listId?: string } | undefined>(undefined);
   const creationRefusal = useRef<HTMLDivElement>(null);
   const creationRefusalOwner = useRef<Element | null | undefined>(undefined);
-  const [operationBusy, setBusy] = useState(false);
+  const [operationBusyState, setBusy] = useState(false);
+  const operationBusy = operationBusyState || checkingCreation;
   const [listArchiveRecovery, setArchiveRecovery] = useState(false);
   const [boardArchiveRecovery, setBoardArchiveRecovery] = useState(false);
   const [boardMetadataRecovery, setBoardMetadataRecovery] = useState(false);
