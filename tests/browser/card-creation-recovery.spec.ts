@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
+import { openCardCreation } from './cardCreationEntry';
 
 const headers = { 'X-StrataAI-Request': '1' };
 for (const width of [1280, 768, 390, 320]) {
@@ -19,9 +20,7 @@ for (const width of [1280, 768, 390, 320]) {
     await page.goto(boardPath);
     if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     await expect(page.getByRole('heading', { name: 'Card recovery Board', exact: true })).toBeVisible();
-    const launcher = page.getByRole('button', { name: 'Add card to Planning', exact: true });
-    await expect(launcher).toBeEnabled(); await launcher.focus(); await launcher.press('Enter');
-    const dialog = page.getByRole('dialog', { name: 'Add card', exact: true });
+    const dialog = await openCardCreation(page, 'Planning');
     const title = dialog.getByLabel('Card title', { exact: false }); await expect(title).toBeFocused();
     await title.fill('Recover one canonical Card');
     const submit = dialog.getByRole('button', { name: 'Create', exact: true });

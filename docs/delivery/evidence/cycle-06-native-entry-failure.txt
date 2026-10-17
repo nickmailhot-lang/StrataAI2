@@ -1,0 +1,105 @@
+
+Running 21 tests using 1 worker
+
+(node:5904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\board-creation-account.spec.ts:7:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px (3.4s)
+  ok  2 tests\browser\board-creation-account.spec.ts:7:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px (2.3s)
+  ok  3 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (5.6s)
+  ok  4 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (4.8s)
+  ok  5 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (5.2s)
+  ok  6 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (4.7s)
+  ok  7 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (7.2s)
+  ok  8 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (7.3s)
+  ok  9 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (7.6s)
+  x  10 tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px (1.5m)
+(node:34764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 11 tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px (2.5s)
+  ok 12 tests\browser\card-creation-recovery.spec.ts:7:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 1280px (4.4s)
+  ok 13 tests\browser\card-creation-recovery.spec.ts:7:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px (5.2s)
+  x  14 tests\browser\card-creation-recovery.spec.ts:7:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 390px (6.7s)
+(node:7996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 15 tests\browser\card-creation-recovery.spec.ts:7:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 320px (4.3s)
+  ok 16 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px (6.7s)
+  ok 17 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 768px (5.6s)
+  ok 18 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 390px (4.9s)
+  ok 19 tests\browser\signin-card-return.spec.ts:22:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 320px (4.4s)
+  ok 20 tests\browser\signin-card-return.spec.ts:78:7 › PRD-01-VS-04/AC-03: sign-in return does not grant outsider access to a private Card (1.9s)
+  ok 21 tests\browser\signin-card-return.spec.ts:78:7 › PRD-01-VS-04/AC-03: sign-in return does not grant portal-only access to a private Card (2.4s)
+
+
+  1) tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: locator.fill: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByRole('dialog', { name: 'Add card', exact: true }).getByLabel('Card title')
+
+
+      48 |       await expect(launcher).toBeEnabled(); await launcher.focus(); await launcher.press('Enter');
+      49 |       const dialog = page.getByRole('dialog', { name: 'Add card', exact: true });
+    > 50 |       await dialog.getByLabel('Card title', { exact: false }).fill('Original account Card');
+         |                                                               ^
+      51 |       const attempts: { key: string | undefined; body: string | null; status: number; id?: string; url: string }[] = [];
+      52 |       await page.route(url => url.pathname === `/lists/${list}/cards`, async route => {
+      53 |         if (route.request().method() !== 'POST') return route.continue();
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\tests\browser\card-creation-account.spec.ts:50:63
+
+    Error: browserContext._wrapApiCall: Target page, context or browser has been closed
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle6-current-browser\card-creation-account-PRD--f6077-placement-account-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle6-current-browser\card-creation-account-PRD--f6077-placement-account-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle6-current-browser\card-creation-account-PRD--f6077-placement-account-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\card-creation-recovery.spec.ts:7:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 390px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator: getByRole('dialog', { name: 'Add card', exact: true }).getByLabel('Card title')
+    Expected: focused
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeFocused" getByRole('dialog', { name: 'Add card', exact: true }).getByLabel('Card title') with timeout 5000ms
+      - waiting for getByRole('dialog', { name: 'Add card', exact: true }).getByLabel('Card title')
+
+
+      23 |     await expect(launcher).toBeEnabled(); await launcher.focus(); await launcher.press('Enter');
+      24 |     const dialog = page.getByRole('dialog', { name: 'Add card', exact: true });
+    > 25 |     const title = dialog.getByLabel('Card title', { exact: false }); await expect(title).toBeFocused();
+         |                                                                                          ^
+      26 |     await title.fill('Recover one canonical Card');
+      27 |     const submit = dialog.getByRole('button', { name: 'Create', exact: true });
+      28 |     await submit.focus(); await submit.press('Shift+Tab'); await page.keyboard.press('Tab'); await expect(submit).toBeFocused();
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle6-creation-actor\tests\browser\card-creation-recovery.spec.ts:25:90
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle6-current-browser\card-creation-recovery-PRD-86fae-turns-to-its-Board-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle6-current-browser\card-creation-recovery-PRD-86fae-turns-to-its-Board-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle6-current-browser\card-creation-recovery-PRD-86fae-turns-to-its-Board-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle6-current-browser\card-creation-recovery-PRD-86fae-turns-to-its-Board-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\card-creation-account.spec.ts:7:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px 
+    tests\browser\card-creation-recovery.spec.ts:7:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 390px 
+  19 passed (3.2m)

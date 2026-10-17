@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
+import { openCardCreation } from './cardCreationEntry';
 
 const headers = { 'X-StrataAI-Request': '1' };
 for (const width of [1280, 390]) {
@@ -44,9 +45,7 @@ for (const width of [1280, 390]) {
       });
       await page.goto(`/app/${org}/boards/${board}`);
       await expect(page.getByRole('heading', { name: 'Card command Board', exact: true })).toBeVisible();
-      const launcher = page.getByRole('button', { name: 'Add card to Planning', exact: true });
-      await expect(launcher).toBeEnabled(); await launcher.focus(); await launcher.press('Enter');
-      const dialog = page.getByRole('dialog', { name: 'Add card', exact: true });
+      const dialog = await openCardCreation(page, 'Planning');
       await dialog.getByLabel('Card title', { exact: false }).fill('Original account Card');
       const attempts: { key: string | undefined; body: string | null; status: number; id?: string; url: string }[] = [];
       await page.route(url => url.pathname === `/lists/${list}/cards`, async route => {
