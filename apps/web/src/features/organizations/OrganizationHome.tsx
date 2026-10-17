@@ -246,8 +246,8 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
     (cursor ? firstPage.current : nextPage.current ?? heading.current)?.focus();
   }, [data, cursor]);
   useEffect(() => {
-    if (data && creationFocus.current) { creationFocus.current = false; createButton.current?.focus(); }
-  }, [data]);
+    if (data && !creating && creationFocus.current) { creationFocus.current = false; createButton.current?.focus(); }
+  }, [data, creating]);
   const organization = data?.organizations.find(
     (item) => item.organization.id === organizationId,
   )?.organization;
@@ -422,7 +422,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
           disableEnforceFocus={!data}
           open={creating}
           onClose={() => {
-            if (!busy) setCreating(false);
+            if (!busy) { creationFocus.current = true; setCreating(false); }
           }}
           fullWidth
           maxWidth="sm"
@@ -469,7 +469,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               )}
             </DialogContent>
             <DialogActions>
-              <Button disabled={busy} onClick={() => setCreating(false)}>
+              <Button disabled={busy} onClick={() => { creationFocus.current = true; setCreating(false); }}>
                 Cancel
               </Button>
               <Button disabled={busy} type="submit">

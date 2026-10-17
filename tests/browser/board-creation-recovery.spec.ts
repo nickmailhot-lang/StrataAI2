@@ -50,6 +50,17 @@ for (const width of [1280, 768, 390, 320]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     await page.screenshot({ path: test.info().outputPath(`recovered-board-draft-${width}.png`), fullPage: true });
+    // Closing a recovered unsent form must target the replacement launcher,
+    // rather than the original button removed by access withdrawal.
+    if (width >= 768) await page.keyboard.press('Escape');
+    else await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(dialog).toBeHidden();
+    const launcher = page.getByRole('button', { name: 'Create board', exact: true });
+    await expect(launcher).toBeFocused();
+    await launcher.press('Enter');
+    await expect(dialog.getByLabel('Name', { exact: false })).toHaveValue('');
+    await dialog.getByLabel('Name', { exact: false }).fill('Recovered planning Board');
+    await dialog.getByLabel('Description', { exact: true }).fill('Keep this unsent draft');
     const attempts: { body: string | null; key: string | undefined }[] = [];
     await page.route('**/boards', async route => {
       if (route.request().method() !== 'POST') return route.continue();
