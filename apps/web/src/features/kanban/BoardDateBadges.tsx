@@ -4,7 +4,7 @@ import { CalendarToday, CheckCircle, Schedule, Warning } from '@mui/icons-materi
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot, type WorkCard } from '../../api/workManagement';
 import { watchIdentity } from '../auth/identityLive';
 import { isNotificationProfile } from '../notifications/notificationInbox';
-import { cardDates, cardDueState, dateTimezone, nextCardDateWake, type DueState } from './cardDates';
+import { cardDates, cardDueState, dateTimezone, formatCardDate, nextCardDateWake, type DueState } from './cardDates';
 
 type DateView = { timezone?: string; now: number; failed: boolean };
 const DateContext = createContext<DateView>({ now: 0, failed: true });
@@ -76,6 +76,17 @@ export function BoardDateProvider({ snapshot, unavailable, onRevalidate, childre
 }
 
 export function cardDueDescriptionId(cardId: string): string { return `card-due-${cardId}`; }
+export function CardDueDate({ card }: { card: WorkCard }) {
+  const view = useContext(DateContext);
+  if (!card.dueAt) return <Typography variant="body2" sx={{ mt: 1 }}>No due date</Typography>;
+  if (!view.timezone) return <Typography variant="body2" sx={{ mt: 1 }}>{view.failed ? 'Due date unavailable' : 'Loading due date…'}</Typography>;
+  try {
+    const dates = cardDates(card);
+    return <Typography component="span" variant="body2" sx={{ display: 'block', mt: 1 }}>
+      Due <time dateTime={dates.dueAt!}>{formatCardDate(dates.dueAt!, dates.dueHasTime, 'en-CA', view.timezone)}</time>
+    </Typography>;
+  } catch { return <Typography variant="body2" sx={{ mt: 1 }}>Due date unavailable</Typography>; }
+}
 export function CardDueBadge({ card }: { card: WorkCard }) {
   const view = useContext(DateContext);
   if (!card.dueAt) return null;
