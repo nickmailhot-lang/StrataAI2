@@ -1,0 +1,17 @@
+{
+  "frontendRevision": "9b26f63d4c1665b97f2b6d7950ea33c8c2be2d4d",
+  "frontendTree": "5a358d2bfa2eb280a0cb8ec229eaadcba9c43a0b",
+  "currentFrontendTree": "5a358d2bfa2eb280a0cb8ec229eaadcba9c43a0b",
+  "browserSpecBlob": "d4ff31628c5ac3de151cdb1141193e4713fbedcc",
+  "currentBrowserSpecBlob": "d4ff31628c5ac3de151cdb1141193e4713fbedcc",
+  "trackingRevision": "d8ef877cd991eb2a2e64df98e825556dfd613734",
+  "apiBuiltFrom": "16bf945d8b01e61f46d973b2d01a92918d5e24f4",
+  "apiSourceTree": "d9265176879fb35bd84817e3889529361e0de55c",
+  "frozenApiSourceTree": "d9265176879fb35bd84817e3889529361e0de55c",
+  "apiAssemblySha256": "F0EB1DE466A7A1C6AD5F9D6175755BC03158CFD8AAF5E76DAD6E4770299E55F7",
+  "runtime": "Compiled Demo API + Vite",
+  "webBuildMetadata": {
+    "revision": "9b26f63d4c1665b97f2b6d7950ea33c8c2be2d4d",
+    "version": "0.1.0"
+  }
+}

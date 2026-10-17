@@ -1,0 +1,42 @@
+
+Running 1 test using 1 worker
+
+(node:31764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\signin-card-return.spec.ts:21:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px (1.5m)
+
+
+  1) tests\browser\signin-card-return.spec.ts:21:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px
+
+    Test timeout of 90000ms exceeded.
+
+    Error: locator.focus: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByRole('link', { name: 'Sign in', exact: true })
+
+
+      27 |     await expect(page.getByText('Private return Card', { exact: true })).toHaveCount(0);
+      28 |     const signIn = page.getByRole('link', { name: 'Sign in', exact: true });
+    > 29 |     await signIn.focus(); await expect(signIn).toBeFocused(); await signIn.press('Enter');
+         |                  ^
+      30 |     await expect(page).toHaveURL(/\/login$/);
+      31 |     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      32 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\signin-card-return.spec.ts:29:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle2-baseline-browser\signin-card-return-PRD-01--72301-ical-Card-→-Board-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle2-baseline-browser\signin-card-return-PRD-01--72301-ical-Card-→-Board-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle2-baseline-browser\signin-card-return-PRD-01--72301-ical-Card-→-Board-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle2-baseline-browser\signin-card-return-PRD-01--72301-ical-Card-→-Board-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\browser\signin-card-return.spec.ts:21:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px
