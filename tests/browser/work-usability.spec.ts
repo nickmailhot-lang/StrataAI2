@@ -33,12 +33,21 @@ for (const width of [1280, 768, 390, 320]) {
       await expect(nav.getByRole('link', { name: 'Work', exact: true })).toHaveAttribute('aria-current', 'page');
       await page.keyboard.press('Escape'); await expect(trigger).toBeFocused();
     } else await expect(page.getByRole('link', { name: 'Work', exact: true })).toHaveAttribute('aria-current', 'page');
-    await activate('Add card to Reported', page.locator('body'));
+    await activate('Add card', page.locator('body'));
+    await expect(page.getByRole('combobox', { name: 'List', exact: true })).toHaveText('Reported');
     await page.getByRole('textbox', { name: 'Card title', exact: false }).fill('Inspect roof');
     await activate('Create', page.locator('body'));
     await page.getByRole('link', { name: 'Inspect roof', exact: true }).press('Enter');
     const detail = page.getByRole('dialog', { name: 'Card details', exact: true });
     await expect(detail).toBeVisible();
+    const panel = await detail.boundingBox();
+    if (process.env.STRATAAI_E2E_WORK_UX === '0') {
+      expect(Math.abs(panel!.x - (width - panel!.width) / 2)).toBeLessThan(2);
+      expect(panel!.width).toBeLessThan(width);
+    } else {
+      expect(Math.round(panel!.x + panel!.width)).toBe(width);
+      if (width < 600) { expect(Math.round(panel!.x)).toBe(0); expect(Math.round(panel!.width)).toBe(width); }
+    }
     const cardPath = new URL(page.url()).pathname;
     const cardId = cardPath.split('/').at(-1)!;
     await activate('Edit Card assignees', detail);
