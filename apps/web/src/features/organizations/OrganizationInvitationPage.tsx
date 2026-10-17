@@ -208,13 +208,13 @@ function Invitation({ organizationId, boardId }: { organizationId: string; board
         } catch { activityEvent(observations.read, 'exception'); setBlocked(true); setError('The saved invitation request cannot be read. Review existing invitations before creating another request.'); }
       }, controller.signal);
     } catch {
-      if (mounted.current && pending.current === controller) activityEvent(observations.read, 'exception');
+      if (mounted.current && pending.current === controller && started === epoch.current) activityEvent(observations.read, 'exception');
       if (mounted.current && pending.current === controller && started === epoch.current) {
       withdrawAccount(); setLiveActor(undefined);
       setError('Unable to verify current invitation permissions. Please retry.');
     } }
     finally {
-      if (mounted.current && pending.current === controller) activityResult(observations.read, succeeded, telemetryStarted);
+      if (mounted.current && pending.current === controller && started === epoch.current) activityResult(observations.read, succeeded, telemetryStarted);
       finish(controller);
     }
   }

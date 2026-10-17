@@ -13,20 +13,21 @@ Work items: 0/1550 Done. Remaining canonical numbered acceptance criteria: 391; 
 | Task | 482 | 0 |
 | Test | 492 | 0 |
 
-Implemented but unvalidated: 54. Blocked: 4. Known MVP-critical outstanding: 98; unclassified records: 1285. Weighted progress: not measured.
+Implemented but unvalidated: 55. Blocked: 4. Known MVP-critical outstanding: 98; unclassified records: 1285. Weighted progress: not measured.
 
 ## 1. Work completed
 
 Reconciled canonical live PRD03 issue3 and its additive Work UX amendment. Closed duplicate issue4 is retained as a diagnostic read, not used as authority. Known PRD04 amendment is unchanged.
 Published/attached focused draft102 and preserved its exact source/results. Existing invitation page, telemetry, original native workflow and checksum-verified failure trace audited.
+Controlled baseline confirms the defect:4new failures/14original passes across18cases in7.89s,0retries. Both surfaces report a false failure for an obsolete healthy read and false exception for an obsolete rejected read; current error/retry/privacy/original-command controls pass.
 
 ## 2. Implemented, awaiting validation
 
-PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01
+PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-05-T-01-TEST-01
 
 ## 3. Current work in progress
 
-Add controlled held-read counterexamples across authority generation changes for both invitation surfaces before any production fix.
+Minimal existing-generation guard for observation-only catch/finally paths; admission/UI/mutation behavior remains unchanged.
 
 ## 4. Blockers and dependencies
 
@@ -39,7 +40,7 @@ The separate Work UX amendment in draft100 remains unverified and independently 
 
 ## 5. Next highest-priority deliverable
 
-Add a dedicated controlled test file for stale healthy/rejected admission reads and real current-error controls, commit its exact source and run it red against unchanged OrganizationInvitationPage. Only after reproducing the failure apply the smallest observation-only guard; preserve original native Production and privacy/key/canonical assertions.
+Guard only the read exception/result observations with started === epoch.current, commit exact source, rerun the whole18case scope and then broader invitation permission/account/recovery/privacy checks plus identified build/types/lint. Preserve original native Production assertions for the real API/Worker consumer validation.
 
 ## 6. PRD progress changes
 
@@ -50,6 +51,7 @@ Record three live UX navigation obligations under unverified PRD03VS06 and child
 
 EVID-CYCLE-11-ENTRY
 EVID-CYCLE-10-PR98-INVITATION-TRACE
+EVID-CYCLE-11-TELEMETRY-RED
 
 ## Recent verified completed increments
 
