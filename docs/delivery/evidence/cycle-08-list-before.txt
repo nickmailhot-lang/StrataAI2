@@ -1,0 +1,82 @@
+
+Running 2 tests using 1 worker
+
+(node:22404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\list-creation-account.spec.ts:9:7 › PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 1280px (3.3s)
+(node:27772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\list-creation-account.spec.ts:9:7 › PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 390px (2.6s)
+
+
+  1) tests\browser\list-creation-account.spec.ts:9:7 › PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 1280px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 201
+
+      61 |       await writeFile(evidencePath, JSON.stringify({ originalActor, replacementActor, statuses: attempts.map(x => x.status), createdIds: attempts.map(x => x.id), sameKey: attempts[0].key === attempts[1].key, sameBody: attempts[0].body === attempts[1].body, canonicalListCount: snapshot.lists.length }, null, 2));
+      62 |       await test.info().attach('list-command-account-evidence', { contentType: 'application/json', path: evidencePath });
+    > 63 |       expect(attempts[1].status).toBe(401); expect(attempts[1].key).toBe(attempts[0].key); expect(attempts[1].body).toBe(attempts[0].body);
+         |                                  ^
+      64 |       expect(snapshot.lists).toHaveLength(1); expect(snapshot.lists[0].list).toMatchObject({ id: attempts[0].id, name: 'Original account List', lifecycleState: 'active' });
+      65 |       await expect(page.getByLabel('List name', { exact: false })).toHaveCount(0); await expect(page.getByText('List command Board', { exact: true })).toHaveCount(0);
+      66 |     } finally { holdReads = false; release(); await original?.close(); await member.close(); }
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\tests\browser\list-creation-account.spec.ts:63:34
+
+    attachment #1: list-command-account-evidence (application/json) ────────────────────────────────
+    ..\cycle8-list-before\list-creation-account-PRD--a2ac6-placement-account-at-1280px\attachments\list-command-account-evidence-0946e9c83afe02dc78a91a5a358cf1a2e86d4942.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle8-list-before\list-creation-account-PRD--a2ac6-placement-account-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle8-list-before\list-creation-account-PRD--a2ac6-placement-account-at-1280px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle8-list-before\list-creation-account-PRD--a2ac6-placement-account-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle8-list-before\list-creation-account-PRD--a2ac6-placement-account-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\list-creation-account.spec.ts:9:7 › PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 390px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 201
+
+      61 |       await writeFile(evidencePath, JSON.stringify({ originalActor, replacementActor, statuses: attempts.map(x => x.status), createdIds: attempts.map(x => x.id), sameKey: attempts[0].key === attempts[1].key, sameBody: attempts[0].body === attempts[1].body, canonicalListCount: snapshot.lists.length }, null, 2));
+      62 |       await test.info().attach('list-command-account-evidence', { contentType: 'application/json', path: evidencePath });
+    > 63 |       expect(attempts[1].status).toBe(401); expect(attempts[1].key).toBe(attempts[0].key); expect(attempts[1].body).toBe(attempts[0].body);
+         |                                  ^
+      64 |       expect(snapshot.lists).toHaveLength(1); expect(snapshot.lists[0].list).toMatchObject({ id: attempts[0].id, name: 'Original account List', lifecycleState: 'active' });
+      65 |       await expect(page.getByLabel('List name', { exact: false })).toHaveCount(0); await expect(page.getByText('List command Board', { exact: true })).toHaveCount(0);
+      66 |     } finally { holdReads = false; release(); await original?.close(); await member.close(); }
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\tests\browser\list-creation-account.spec.ts:63:34
+
+    attachment #1: list-command-account-evidence (application/json) ────────────────────────────────
+    ..\cycle8-list-before\list-creation-account-PRD--f63f8-eplacement-account-at-390px\attachments\list-command-account-evidence-2ad36d55ccfc12f002c689fb9d8a82b0930cda34.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle8-list-before\list-creation-account-PRD--f63f8-eplacement-account-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle8-list-before\list-creation-account-PRD--f63f8-eplacement-account-at-390px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle8-list-before\list-creation-account-PRD--f63f8-eplacement-account-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle8-list-before\list-creation-account-PRD--f63f8-eplacement-account-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\list-creation-account.spec.ts:9:7 › PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 1280px 
+    tests\browser\list-creation-account.spec.ts:9:7 › PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 390px 
