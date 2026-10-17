@@ -700,8 +700,8 @@ function BoardContent() {
             disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id) || renameRecovery.has(column.list.id)}
             available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(column.list.version) && Number(column.list.version) > 0}
           >
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3" sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
               {column.list.name}
             </Typography>
             <ListRenameControl list={column.list} snapshot={snapshot}

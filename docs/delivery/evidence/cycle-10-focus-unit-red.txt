@@ -1,0 +1,99 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/kanban/ListPositionFocusVisible.test.tsx
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle10-list-audit/apps/web
+
+ ❯ src/features/kanban/ListPositionFocusVisible.test.tsx (1 test | 1 failed) 1399ms
+   × keeps the approved MUI focus indicator after an owned admission refresh retains DOM focus 1396ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/ListPositionFocusVisible.test.tsx > keeps the approved MUI focus indicator after an owned admission refresh retains DOM focus
+Error: expect(element).toHaveClass("Mui-focusVisible")
+
+Expected the element to have class:
+  Mui-focusVisible
+Received:
+  MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root
+
+Ignored nodes: comments, script, style
+<html>
+  <head>
+    <meta
+      content=""
+      name="emotion-insertion-point"
+    />
+  </head>
+  <body>
+    <div>
+      <div
+        class="MuiStack-root css-3p59tv-MuiStack-root"
+      >
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorInfo MuiAlert-standard css-k1p3sh-MuiPaper-root-MuiAlert-root"
+          role="alert"
+          style="--Paper-shadow: none;"
+        >
+          <div
+            class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-1ckov0h-MuiSvgIcon-root"
+              data-testid="InfoOutlinedIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20, 12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10, 10 0 0,0 12,2M11,17H13V11H11V17Z"
+              />
+            </svg>
+          </div>
+          <div
+            class="MuiAlert-message css-zioonp-MuiAlert-message"
+          >
+            List move acknowledged. Current ordering is being checked.
+          </div>
+        </div>
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Move 
+          Planning
+           list
+        </button>
+      </div>
+      <button>
+        Outside navigation
+      </button>
+    </div>
+  </body>
+</html>...
+ ❯ src/features/kanban/ListPositionFocusVisible.test.tsx:28:40
+     26|     expect(action).toHaveFocus();
+     27|     view.rerender(draw(false, acknowledged));
+     28|     await waitFor(() => expect(action).toHaveClass('Mui-focusVisible')…
+       |                                        ^
+     29|     expect(action).toHaveFocus(); expect(fetcher).toHaveBeenCalledOnce…
+     30|     const outside = screen.getByRole('button', { name: 'Outside naviga…
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  13:47:20
+   Duration  6.28s (import 46%, environment 25%, tests 23%, setup 4%, transform 2%)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle10-list-audit\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle10-list-audit\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --maxWorkers=2 src/features/kanban/ListPositionFocusVisible.test.tsx
