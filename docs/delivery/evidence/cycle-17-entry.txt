@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-17T23:49:39.888Z",
+  "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+  "requirements": [
+    {
+      "number": 7,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/7",
+      "updatedAt": "2026-10-17T19:29:28Z",
+      "bodySha256": "7d823d7c8e0caa08eef80e737cd944b4dda225178c6582ce1d11d4ffc3eefc71"
+    },
+    {
+      "number": 10,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/10",
+      "updatedAt": "2026-10-17T19:29:33Z",
+      "bodySha256": "9bf5a08932584589537c991c7987b811fe71272d1c0f63d3675c38fff41a1778"
+    }
+  ],
+  "source": "Current BoardScreen onExited retains focus({preventScroll:true}) followed by unconditional scrollIntoView({block:nearest,inline:nearest}). This can change local scroll ancestors; current List layout differs from older CI, so execute unchanged current consumers before asserting reproduction.",
+  "decisions": [
+    "Preserve current navigation25/160/build/types/lint/source372/coverage467 passes and the corrected full Board canonical evidence. The final complete frontend remains Not Run until affected shared-scroll behavior is assessed and final product stable; no gate is waived.",
+    "Run the complete unchanged three-case kanban-scroll file against current actual real Production productd5253673. Preserve original drag/cancel/zero-write/canonical/exact scroll assertions and deadlines. If reproduced, add a focused controlled counterexample before the smallest product repair.",
+    "The unchanged two-case checklist context file requires a genuinely verified fixture account. Use an appropriately owned supported Demo or strict fixture for its entire consumer; do not remove verification, narrow assertions or pretend Demo proves Production/RLS. Keep real Production and Demo evidence distinct.",
+    "No broad Card-panel, dirty-draft, filter or secondary-action migration in this repair. Existing independent UX source and all original acceptance remain."
+  ],
+  "ux": "UXA01–08 and PRD06/09 backlog rows and live amendments read. Scope is exact Board canvas/List continuity and visible focus on Card return; preserve desktop/phone, current safe access, stable routes, original commands, roles and canonical data. No API/schema/dependency/new design system."
+}

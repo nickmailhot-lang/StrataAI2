@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-17T23:19:09.264Z",
+  "revision": "6c42c51a537299c3dd8b9b5521290577036def75",
+  "publication": {
+    "number": 107,
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/107",
+    "head": "6c42c51a537299c3dd8b9b5521290577036def75",
+    "base": "main",
+    "runId": 39078410829,
+    "state": "Queued; no exact candidate gate passed yet"
+  },
+  "requirements": [
+    {
+      "number": 1,
+      "updatedAt": "2026-10-17T19:29:24Z",
+      "bodySha256": "315dd4c0e56ceca755d804a7b3fcca0704eaf59cedadc1af0b5891efd641eeed"
+    },
+    {
+      "number": 2,
+      "updatedAt": "2026-10-16T18:03:14Z",
+      "bodySha256": "35e2061b75d7385cfd6f6943497a98801d13d25485a4e2c29aa3468622bb202e"
+    },
+    {
+      "number": 3,
+      "updatedAt": "2026-10-17T19:29:25Z",
+      "bodySha256": "5faf6ef1cd872b5d9ba5677a7d7708639ea4cc84839f51e29e133f886273c632"
+    },
+    {
+      "number": 5,
+      "updatedAt": "2026-10-17T19:29:26Z",
+      "bodySha256": "806b9c835ef7c0f51f24b4b55e62c1c9ded335f17310ee3e6e951a3150f64ead"
+    },
+    {
+      "number": 9,
+      "updatedAt": "2026-10-17T19:29:29Z",
+      "bodySha256": "1dbcc353052674d4603094a9c5fe32fb6e0c3eb31a0b7f17b2c18a8b96ef24a3"
+    },
+    {
+      "number": 10,
+      "updatedAt": "2026-10-17T19:29:33Z",
+      "bodySha256": "9bf5a08932584589537c991c7987b811fe71272d1c0f63d3675c38fff41a1778"
+    }
+  ],
+  "reuse": {
+    "source": "da98fc0e5567a45f87a529564a55ded515563f63",
+    "pullRequest": 100,
+    "files": [
+      "apps/web/src/app/navigationModel.ts",
+      "apps/web/src/app/navigationModel.test.ts",
+      "apps/web/src/app/App.test.tsx",
+      "apps/web/src/app/InternalAppShell.test.tsx"
+    ],
+    "scope": "Reuse only the existing bounded Work navigation increment; preserve all remaining independent implementation and its source history. Do not merge all63 files in a single task."
+  },
+  "decision": "The next deliverable is authorized Organization directory → Board → Card with current Work navigation and keyboard phone return. Adopt the existing label/omit-unavailable navigation model without altering paths, source admission or role controls. Add missing real-service acceptance at all four widths; keep original shell and13 sign-in cases intact. Organization actions disclosure, scan previews, dirty detail/panel/filter and broader amendments stay queued.",
+  "ux": "UXA01–08, PRD01/03/04 backlog rows, UX002 existing menu contract and live Work amendment read. The live additive no-placeholder requirement replaces prior disabled future-module hints; active destinations/security/Portal boundaries remain unchanged. No disruptive route/layout migration, new dependency, schema, API, permission or command behavior.",
+  "validation": "Shared navigation changes require current relevant unit/type/lint, real-service responsive/keyboard/Axe/canonical return, preserved controlled shell/security matrix, full frontend regression and identified build. Prior fbbe942c executions are historical supporting evidence after product inputs change; do not reuse them as current tests."
+}

@@ -1,0 +1,28 @@
+
+Running 21 tests using 1 worker
+
+(node:7920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (5.7s)
+  ok  2 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (5.3s)
+  ok  3 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (6.6s)
+  ok  4 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (6.3s)
+  ok  5 tests\browser\signin-card-return.spec.ts:21:5 › PRD-01-VS-04-T-03/AC-01/02/03: another Organization owner remains denied after sign-in and returns to authorized work (7.0s)
+  ok  6 tests\browser\signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px (5.6s)
+  ok  7 tests\browser\signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 768px (5.1s)
+  ok  8 tests\browser\signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 390px (4.8s)
+  ok  9 tests\browser\signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 320px (4.5s)
+  ok 10 tests\browser\signin-card-return.spec.ts:159:7 › PRD-01-VS-04/AC-03: sign-in return does not grant outsider access to a private Card (2.0s)
+  ok 11 tests\browser\signin-card-return.spec.ts:159:7 › PRD-01-VS-04/AC-03: sign-in return does not grant portal-only access to a private Card (2.2s)
+  ok 12 tests\browser\signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current board → canonical Card → Board at 1280px (4.8s)
+  ok 13 tests\browser\signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current board → canonical Card → Board at 390px (4.9s)
+  ok 14 tests\browser\signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 1280px (5.0s)
+  ok 15 tests\browser\signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 768px (5.2s)
+  ok 16 tests\browser\signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 390px (5.3s)
+  ok 17 tests\browser\signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 320px (4.6s)
+  ok 18 tests\browser\ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 1280px (1.3s)
+  ok 19 tests\browser\ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 768px (1.4s)
+  ok 20 tests\browser\ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 390px (3.1s)
+  ok 21 tests\browser\ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 320px (3.0s)
+
+  21 passed (10.4m)
