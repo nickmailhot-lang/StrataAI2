@@ -57,6 +57,8 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(dialog).toBeHidden();
     const launcher = page.getByRole('button', { name: 'Create board', exact: true });
     await expect(launcher).toBeFocused();
+    await expect(launcher).toBeInViewport();
+    await page.screenshot({ path: test.info().outputPath(`recovered-board-return-${width}.png`), fullPage: true });
     await launcher.press('Enter');
     await expect(dialog.getByLabel('Name', { exact: false })).toHaveValue('');
     await dialog.getByLabel('Name', { exact: false }).fill('Recovered planning Board');
