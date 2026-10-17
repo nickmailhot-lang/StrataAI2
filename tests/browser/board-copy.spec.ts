@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
@@ -45,7 +46,7 @@ for (const width of [1280,390]) {
           await route.abort('failed');
         } else await route.fulfill({response});
       });
-      const entry = page.getByRole('button',{name:'Copy Board',exact:true}); await expect(entry).toBeEnabled(); await entry.focus(); await page.keyboard.press('Enter');
+      const entry = (await disclosedWorkControl(page, 'Board actions', 'button', {name:'Copy Board',exact:true})); await expect(entry).toBeEnabled(); await entry.focus(); await page.keyboard.press('Enter');
       const name = 'W'.repeat(160); const input = page.getByRole('textbox',{name:'Copied Board name',exact:true});
       await expect(page.getByRole('button',{name:'Create Board copy',exact:true})).toBeEnabled();
       await input.focus(); await page.keyboard.press('ControlOrMeta+A'); await page.keyboard.insertText(name);
@@ -54,7 +55,7 @@ for (const width of [1280,390]) {
       const retry = page.getByRole('button',{name:'Retry same Board copy',exact:true}); await expect(retry).toBeEnabled();
       await expect(input).toHaveValue(name); await expect(input).toBeDisabled();
       await expect(page.getByRole('button',{name:'Cancel Board copy',exact:true})).toHaveCount(0);
-      await expect(page.getByRole('button',{name:'Edit Board details',exact:true,includeHidden:true})).toBeDisabled();
+      await expect((await disclosedWorkControl(page, 'Board actions', 'button', {name:'Edit Board details',exact:true,includeHidden:true}))).toBeDisabled();
       await expect(other.getByRole('heading',{name:'Later source',exact:true})).toBeVisible();
       await expect(async () => {
         if (copyDispatches === 1) await pressAdmittedAction(retry);

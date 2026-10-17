@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { randomUUID } from 'node:crypto';
@@ -50,7 +51,7 @@ for (const width of [1280, 390]) {
       await waitForBoardDelivery(context.request, board);
       const path = `/app/${org}/boards/${board}/cards/${card}`; const tracked = trackBoardReads(page, board, path);
       await page.goto(path); await expect.poll(tracked).toBeGreaterThanOrEqual(2); expect(reads).toBe(0);
-      const review = page.getByRole('button', { name: 'Review Board background images', exact: true });
+      const review = (await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Board background images', exact: true }));
       const candidate = page.getByRole('button', { name: 'Use Checked background.png as Board background', exact: true });
       await expect(review).toBeEnabled(); await openAdmittedReview(review, candidate);
       await candidate.press('Enter');

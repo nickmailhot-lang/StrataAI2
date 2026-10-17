@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -42,7 +43,7 @@ for (const width of [1280, 390]) {
       await expect(dates).toContainText('Due Jan 3, 2040');
       await expect(datesPeer.getByText('Live updates connected.', { exact: true })).toBeVisible();
       await page.goto(boardPath);
-      const policyLink = page.getByRole('link', { name: 'Board timezone', exact: true }); await expect(policyLink).toBeVisible();
+      const policyLink = (await disclosedWorkControl(page, 'Board actions', 'link', { name: 'Board timezone', exact: true })); await expect(policyLink).toBeVisible();
       await policyLink.press('Enter'); await expect(page).toHaveURL(new RegExp('/date-policy$'));
       const input = page.getByRole('textbox', { name: 'Board timezone override', exact: true }); await expect(input).toBeEnabled();
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);

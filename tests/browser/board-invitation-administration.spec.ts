@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
 import { focusAdmittedControl, pressAdmittedAction } from './keyboardAdmission';
@@ -26,7 +27,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       const historyChanges = trackBoardHistoryChanges(page, org, board, `/app/${org}/boards/${board}/invitations`);
       await page.goto(`/app/${org}/boards/${board}`);
       const admittedReads = trackBoardReads(page, board, `/app/${org}/boards/${board}/invite`);
-      await pressAdmittedAction(page.getByRole('link', { name: 'Invite to Board', exact: true }));
+      await pressAdmittedAction((await disclosedWorkControl(page, 'Board actions', 'link', { name: 'Invite to Board', exact: true })));
       await expect(page.getByRole('heading', { name: 'Create Board invitation' })).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Keyboard private Board' })).toBeVisible();
       // Complete the initial live-head permission refresh before composing. A

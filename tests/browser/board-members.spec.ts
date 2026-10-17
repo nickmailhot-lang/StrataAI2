@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 import type { Locator } from '@playwright/test';
@@ -58,7 +59,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       page.on('response', response => {
         if (new URL(response.url()).pathname === `/boards/${board}/members` && response.request().method() === 'GET' && response.status() === 200) directoryReads++;
       });
-      await page.getByRole('link', { name: 'Board members', exact: true }).focus(); await page.keyboard.press('Enter');
+      await (await disclosedWorkControl(page, 'Board actions', 'link', { name: 'Board members', exact: true })).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('Live member updates connected.')).toBeVisible();
       await expect.poll(() => directoryReads).toBeGreaterThanOrEqual(2);
       await expect(page.getByRole('progressbar', { name: 'Loading Board members' })).toHaveCount(0);

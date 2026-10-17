@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 
@@ -64,7 +65,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       adminPage.on('request', request => { if (request.isNavigationRequest() && request.frame() === adminPage.mainFrame()) administratorReloads++; });
       await page.goto(`/app/${org}`);
       await expect(page.getByRole('status').filter({ hasText: /^Current Board access checked\.$/ })).toBeVisible();
-      const link = page.getByRole('link', { name: 'Request Organization deletion', exact: true });
+      const link = (await disclosedWorkControl(page, 'Organization actions', 'link', { name: 'Request Organization deletion', exact: true }));
       await link.focus(); await expect(link).toBeFocused(); await link.press('Enter');
       await expect(page).toHaveURL(new RegExp(`/app/${org}/delete$`));
       const launcher = page.getByRole('button', { name: 'Review deletion request', exact: true });

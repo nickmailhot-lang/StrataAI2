@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -47,7 +48,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         }
       });
       await page.getByRole('link', { name: 'Stable cross Board Card', exact: true }).focus(); await page.keyboard.press('Enter');
-      const start = page.getByRole('button', { name: 'Move to another Board', exact: true }); await expect(start).toBeEnabled();
+      const start = (await disclosedWorkControl(page, 'Card actions', 'button', { name: 'Move to another Board', exact: true })); await expect(start).toBeEnabled();
       await start.focus(); await page.keyboard.press('Enter');
       const boardChoice = page.getByRole('combobox', { name: 'Destination Board', exact: true }); await expect(boardChoice).toBeEnabled();
       await boardChoice.press('ArrowDown'); await page.getByRole('option', { name: 'Destination Board', exact: true }).focus(); await page.keyboard.press('Enter');

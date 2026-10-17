@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import { focusAdmittedControl } from './keyboardAdmission';
 import { test, expect } from './releaseTest';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
@@ -12,8 +13,7 @@ for (const width of [1280, 768, 390, 320]) {
         const container = element.closest('.MuiDialog-container');
         return container ? getComputedStyle(container).opacity : '1';
       })).toBe('1');
-      await expect(control).toBeEnabled(); await control.focus();
-      await expect(control).toBeFocused(); await expect(control).toBeEnabled(); await control.press('Enter');
+      await focusAdmittedControl(control); await control.press('Enter');
     }
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `work-ux-${width}-${Date.now()}@example.test`, password: 'work-ux-correct-horse-battery', displayName: 'Work reviewer' };

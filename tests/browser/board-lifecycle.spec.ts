@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
@@ -50,7 +51,7 @@ for (const width of [1280, 390]) {
         const result = await route.fetch(); expect(result.status()).toBe(200);
         if (archives.length === 1) await route.abort('failed'); else await route.fulfill({ response: result });
       });
-      const archiveEntry = page.getByRole('button', { name: 'Archive Board', exact: true });
+      const archiveEntry = (await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Archive Board', exact: true }));
       await expect(archiveEntry).toBeEnabled();
       await archiveEntry.focus(); await expect(archiveEntry).toBeFocused(); await archiveEntry.press('Enter');
       await expect(page.getByText(/Its Lists and Cards remain associated with it/)).toBeVisible();
