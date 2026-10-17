@@ -17,6 +17,8 @@ This workstream evolves the existing React/TypeScript/Vite/MUI application. It p
 
 ## Current architecture and findings
 
+[Existing route/discovery inventory and protected recovery exceptions](route-inventory.md) records the current global, Organization, Board/Card and Portal route families.
+
 `apps/web/src/app/App.tsx` owns React Router composition. `InternalAppShell.tsx` wraps Organization-scoped routes in `SurfaceAdmission`, renders the fixed MUI AppBar/permanent drawer and protected Outlet, and runs NavigationConfirmation. Before this slice, phones received shortcut icons and no complete drawer; navigation had no selected/current-section state. Desktop navigation includes disabled future Meetings, Correspondence, Documents and Owners & Units entries. They must remain unavailable until real destinations and current capabilities exist.
 
 `/app`, global profile/invitations/lifecycle, authentication and independently admitted deletion/departure/operational-lifecycle routes live outside the shell. Do not move these blindly under ordinary surface admission: unresolved original receipts and terminal lifecycle recovery can outlive normal membership. The denied public Board and Organization-home fallbacks also authorize themselves.
@@ -42,4 +44,3 @@ Use `ux/ux-001-foundation` in this isolated worktree. The existing main checkout
 Independent backend/schema/Worker/security repairs, existing feature modules without shared-layout edits and feature contract tests continue. A UI feature may implement against approved slots while waiting for menu integration; it cannot ship standalone navigation. Rebase/cherry-pick only reviewed changes, preserve other active work, and run the required checks on the combined revision. Keep source changes reviewable in a draft PR until applicable gates pass.
 
 This small additive change needs no runtime migration flag. Reverting its commit restores the previous shell without touching persisted data. Route consolidation, role-policy changes or wider token migration must separately assess flag requirements. Do not merge while current gate failures or missing evidence remain.
-

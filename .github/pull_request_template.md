@@ -26,4 +26,3 @@ Problem, resulting behavior, owning PRD/ARCH and linked UX PRDs. Preserve approv
 Record failure cause, impact, owner, resolution and rerun evidence. Pending required checks keep the PR in draft; do not bypass failures.
 
 Update the single `docs/ux/delivery-report.md`: functional implementation, UX integration, automated tests, dependencies/blockers and MVP acceptance remain separate. Link product/UX acceptance reviewer/date when applicable.
-

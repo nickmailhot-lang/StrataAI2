@@ -35,4 +35,3 @@ Test completion = required passing checks / all required checks for the recorded
 MVP readiness = accepted priority end-to-end workflows / agreed priority workflows, plus required release gates.
 
 Freeze denominators and weights before reporting a percentage. Unknown scope/evidence means “not measured”, never zero or an invented estimate. Do not average these four metrics into a product-complete percentage. Legacy remaining-work estimates stay historical planning estimates.
-

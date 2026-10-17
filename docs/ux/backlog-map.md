@@ -94,4 +94,3 @@ All rows incorporate [the shared UX acceptance addendum](feature-acceptance.md).
 ## Architecture constraints
 
 ARCH-02 owns SPA composition and Portal separation; ARCH-06 owns server security. ARCH-04 owns persistence/tenant isolation. ARCH-09/11 own test and immutable release execution. ARCH-03/05/07/08/10/12 can continue independent server/runtime work while preserving those contracts. UX-001/002/003 supply shared UI integration guidance and UX-008 extends their evidence; no architecture ticket is duplicated.
-

@@ -8,7 +8,7 @@ As of 2026-10-16 (America/Vancouver). Branch: `ux/ux-001-foundation`; baseline: 
 | --- | --- | --- |
 | Functional completion | Not re-measured; existing capabilities preserved, 80 canonical feature PRDs open | Required business FRs implemented / agreed in-scope FR denominator, linked to source and canonical acceptance |
 | UX completion | UX-001 slice 1 implemented; UX-001–008 specified; 80 feature mappings documented; no full UX PRD accepted | Integrated, usable required journeys / agreed journey denominator, with role/viewport evidence |
-| Test completion | 64 focused cases and 4 controlled browser cases passed before final modal-layer visual correction; final checks in progress | Current required passing checks / full required-check denominator; report failures, skips, blockers separately |
+| Test completion | Full frontend run: 2,777 passed / 24 existing capacity deferrals; final-source 64 focused and 4 controlled browser cases passed; required real-service/release gates pending | Current required passing checks / full required-check denominator; report failures, skips, blockers separately |
 | MVP readiness | No new acceptance; current operational MVP release gate remains open | Priority workflows accepted end-to-end and required current immutable release gates |
 
 No aggregate “product percent complete” is calculated. Documentation coverage (8/8 UX specifications and 80/80 feature mappings) is not UX workflow completion. Historical planning percentages and older release test counts remain bound to their original scopes/revisions; this work does not convert them into current acceptance.
@@ -28,27 +28,29 @@ No aggregate “product percent complete” is calculated. Documentation coverag
 
 ## Current validation ledger
 
-Production source fingerprints after the final modal-layer repair:
+Production source is committed in `6cf4f494` after the final modal-layer repair. Local worktree byte fingerprints (including Windows line endings):
 
 - `apps/web/src/app/InternalAppShell.tsx`: SHA-256 `d958a2acc49e5e9a50d212e1e54ba3017355a388c7d11ccb991c3d3801aff4f9`
 - `apps/web/src/features/kanban/BoardWindow.tsx`: SHA-256 `3a82cd42923f9e1d6f72db7eb52ec33649e10e36e6271cd84aa38b0d8cd36f48`
 
+Portable Git blob identities are `9dc714294e6e95e33d2de1ae5346a8c075573c6e` (InternalAppShell) and `7914fe4eada71cda7d369560da706c95901566d0` (BoardWindow).
 
 Commands run from the isolated repository. Dependency junctions reuse the existing locked installation; no new packages were installed. Browser tests serve this worktree through Vite with controlled HTTP responses and installed Chromium; they are not real-API authorization or production-image evidence.
 
 | Required gate | Command / scope | Result at this milestone |
 | --- | --- | --- |
-| Web TypeScript | `npm run typecheck` | Pending final verification |
-| Browser TypeScript | `npm run typecheck:browser` | Pending final verification |
-| Lint | `npm run lint` | Pending final verification |
-| Focused unit/component integration | InternalAppShell, App, SurfaceAdmission, BoardWindow | Intermediate repaired run: 61/61 passed; final source rerun pending |
-| Full frontend regression | `npm --workspace @strataai/web run test -- --maxWorkers=2` | In progress; not yet acceptance evidence |
-| Affected Playwright / responsive / automated accessibility | `ux-shell.spec.ts`: 1280/768/390/320px, keyboard/Back/resize/withdrawal/Axe | Final repaired run in progress |
+| Web TypeScript | `npm run typecheck` | Passed |
+| Browser TypeScript | `npm run typecheck:browser` | Passed |
+| Lint | `npm run lint` | Passed |
+| Focused unit/component integration | InternalAppShell, App, SurfaceAdmission, BoardWindow, appTheme | Final source: 64/64 passed across 5 files in 78.44s; no skips/failures |
+| Full frontend regression | `npm --workspace @strataai/web run test -- --maxWorkers=2` | Supplementary run passed: 2,777 tests / 185 files; 24 existing deferred capacity cases / 1 file skipped; zero failures, exit 0, 1,161.37s. Run overlapped final shell repairs; final-source 64-case checks passed separately |
+| Affected Playwright / responsive / automated accessibility | `ux-shell.spec.ts`: 1280/768/390/320px, keyboard/Back/resize/withdrawal/Axe | Final source: 4/4 passed in 39.26s; zero skipped/flaky/errors; close control is unobstructed |
 | Browser coverage registration | `node scripts/ci/verify-browser-shards.mjs` | Passed: 422 cases, 156 intact files, all four shards covered |
 | Integration registration | `node scripts/ci/verify-integration-suites.mjs` | Passed: 4 groups / 7 isolated executions / 130 steps; this validates registration, not test execution |
 | Relevant real-service integration and role checks | Existing surface-admission, navigation-observations, hierarchy/Card/public/Portal/lifecycle suites | Not run in this worktree; current exact-source CI/runtime evidence required before merge |
 | Text zoom / manual assistive-technology / physical devices | PRD-23 and UX-006 review matrix | Not run; no acceptance claim |
-| Visual comparison | UX-008 approved deterministic baselines | Not established; human visual review required |
+| Visual comparison | UX-008 approved deterministic baselines | Developer screenshot inspection completed and repaired modal layering; approved baselines/product visual acceptance remain pending |
+| Frontend production build | `npm run build` | Passed before final modal-layer style correction; final static checks passed. Existing >500 kB chunk warning retained; no repeated product/image build |
 | Current production/immutable full regression | ARCH-11 required pipeline on combined revision | Pending; older successful release is not a substitute |
 
 ## Failed checks and evaluation
@@ -58,11 +60,10 @@ Commands run from the isolated repository. Dependency junctions reuse the existi
 | Initial focused component run | 1 failed / 36 passed: test expected a nav role on MUI temporary Drawer paper | UX-001 owner: MUI correctly supplies a modal dialog; provide a nested named navigation landmark | Dialog semantics retained; nav landmark added. Repaired 61-case run passed |
 | Initial controlled browser run | 0/4 passed: phone nav-role selector; desktop/tablet Axe prohibited label on empty Board canvas | UX-001 owner: selector/landmark issue plus existing semantic accessibility defect, not a tenant/API failure | Nested nav and named Board region repaired; existing BoardWindow regressions retained; add empty-canvas regression |
 | Second controlled browser run | 2/4 passed: phone Back assertion saw skip-link fragment | UX-001 owner: default anchor activation changed URL/history during skip focus | Prevent default anchor navigation and explicitly focus main; retain exact stable URL assertion |
-| Third controlled browser run | 3/4 passed: phone-to-desktop resize left transient aria-hidden focusable background while modal exited | UX-001 owner: CSS hid the drawer before modal cleanup, risking an invisible focus trap | Unmount temporary Drawer when leaving mobile breakpoint; clear open state on breakpoint/route changes; strengthen resize/reopen assertions; final rerun pending |
+| Third controlled browser run | 3/4 passed: phone-to-desktop resize left transient aria-hidden focusable background while modal exited | UX-001 owner: CSS hid the drawer before modal cleanup, risking an invisible focus trap | Unmount temporary Drawer when leaving mobile breakpoint; clear open state on breakpoint/route changes; strengthen resize/reopen assertions; final 4-case rerun passed |
+| Visual inspection | Mobile drawer toolbar/close control sat beneath the fixed AppBar | UX-001 owner: temporary drawer inherited the permanent drawer layer; close control could be obscured | Raise temporary drawer to the modal layer; add unobstructed close-button actionability assertion; final 64 focused and 4 browser checks passed |
 
-| Visual inspection | Mobile drawer toolbar/close control sat beneath the fixed AppBar | UX-001 owner: temporary drawer inherited the permanent drawer layer; close control could be obscured | Raise temporary drawer to the modal layer; add unobstructed close-button actionability assertion; rerun affected checks |
-
-Initial reports/logs and failed traces remain under this chat's `work/` outside tracked source. No retries, acceptance assertions, timeouts or security checks were relaxed. No required failure is waived. Do not merge until final reruns and missing required gates are evaluated.
+Initial reports/logs and failed traces remain under this chat's `work/` outside tracked source. No retries, acceptance assertions, timeouts or security checks were relaxed. The 24 skipped cases belong to the pre-existing post-MVP Board capacity suite; this change added no skip or deferral and does not claim those cases passed. No required failure is waived. Do not merge until missing required gates are evaluated. The broad frontend run began during the final repair cycle; final frozen-source targeted checks are reported separately. Current combined-revision CI remains mandatory.
 
 ## Feature PRDs
 
@@ -153,7 +154,6 @@ All rows inherit [UXA-01–08](feature-acceptance.md); exact discovery, role, UX
 
 ## Integration and next handoff
 
-Keep this branch/PR isolated from active changes in the original main checkout, including attachment pipeline/CI/browser work. The UX branch starts from the recorded committed baseline and does not include or discard those uncommitted changes. Review/rebase on the eventual combined revision and rerun affected checks. This report does not pause or replace that work.
+Keep this branch/PR isolated from active changes in the original main checkout, including attachment pipeline/CI/browser work. The UX branch starts from the recorded committed baseline and does not include or discard those uncommitted changes. Review/rebase on the eventual combined revision and rerun affected checks. This report does not pause or replace that work. The implementation is recorded in commit `6cf4f494`; this evidence update changes documentation only.
 
 Next sequence: close the current shell slice's evidence gaps → UX-002 route/capability contract and UX-003 reuse baseline → one route/component migration per PR → operational MVP form/responsive/discovery fixes → PRD-54/55 dashboard presentation when its source requirements are ready. UX-008 verification accompanies every slice. See [ownership, flag and rollback policy](README.md).
-

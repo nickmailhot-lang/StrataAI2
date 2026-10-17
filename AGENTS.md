@@ -9,4 +9,3 @@ Reuse current MUI/appTheme, shared shells and stable routes. Do not create stand
 Use isolated branches/worktrees. Assign one integration owner to shared App/InternalAppShell/PortalShell/appTheme files; feature work in independent modules continues. Do not modify another checkout's uncommitted work. Any disruptive UX migration needs a reversible flag and tested rollback.
 
 Record implemented, tested and accepted separately in `docs/ux/delivery-report.md`. No combined product-completion percentage. Run targeted checks during development and all applicable required gates before merge. A failed check must be retained and evaluated; never skip, relax or bypass it to close a PRD. A current draft PR with pending evidence is not accepted MVP functionality. Avoid redundant dependency installation, rebuilds, logs and scratch artifacts.
-
