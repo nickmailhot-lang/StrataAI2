@@ -1,0 +1,2 @@
+npm notice run strataai2@0.1.0 typecheck:browser
+npm notice run tsc -p tsconfig.browser.json

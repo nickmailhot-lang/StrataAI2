@@ -3,7 +3,7 @@
 Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
 
 PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
-Work items: 0/1556 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2388. Unverified includes unknown and partially tested work; it does not assert code is absent.
+Work items: 0/1556 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2383. Unverified includes unknown and partially tested work; it does not assert code is absent.
 
 | Kind | Total | Done |
 | --- | ---: | ---: |
@@ -13,7 +13,7 @@ Work items: 0/1556 Done. Remaining canonical numbered acceptance criteria: 391; 
 | Task | 484 | 0 |
 | Test | 496 | 0 |
 
-Implemented but unvalidated: 63. Blocked: 3. Known MVP-critical outstanding: 105; unclassified records: 1284. Weighted progress: not measured.
+Implemented but unvalidated: 65. Blocked: 3. Known MVP-critical outstanding: 105; unclassified records: 1284. Weighted progress: not measured.
 
 ## 1. Work completed
 
@@ -21,14 +21,17 @@ Reconciled live PRD18 original body and additive detail UX amendment; four new o
 Published/attached draft104 and preserved current full2862/native12/source372 session-return evidence. The exact older archive trace proves disabled confirmation at Enter and zero archive requests; no current archive reproduction is claimed.
 Verified unchanged product/build/backend Git trees and actual Production runtime identities, restricted roles, all149 migrations and owned processes. The compiled product is reused at its real source, without relabeling or rebuilding.
 The whole unchanged current baseline reproduces the phone failure: one desktop pass/one phone failure in1.3m. Current trace proves no archive request and a disabled confirmation at Enter; exact source/runtime and all failed evidence are retained before edits.
+Frozen two-line controller repair passes all11 existing input-helper controls and58 archive controls, browser types and lint. Complete product/build/backend and sign-in/helper blobs exactly match the actual fbbe942c product; prior full2862/native12 remain at their original source.
+Both full final archive cases pass in1.3minutes with zero retries/skips; the phone input failure is resolved without changing product code or any original assertion. Two post-reload rendered captures inspected separately from earlier native focus checks.
+Final372 repository/delivery contracts, complete462-case browser coverage and4group/7execution/130step integration registry pass. The task/tests advance to Review; actual productfbbe942c build/full/native12 evidence is retained through exact input equality, without redundant rebuild or full rerun.
 
 ## 2. Implemented, awaiting validation
 
-PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-01-VS-04-T-02, PRD-01-VS-04-T-02-TEST-01, PRD-01-VS-04-T-02-TEST-02, PRD-18-VS-01-T-02-TEST-02
+PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-01-VS-04-T-02, PRD-01-VS-04-T-02-TEST-01, PRD-01-VS-04-T-02-TEST-02, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02
 
 ## 3. Current work in progress
 
-Apply only the existing observed-request helper to first archive confirmation, preserving all original behavior assertions and product code.
+Publish the focused archive-input verification draft; establish a combined main integration checkpoint without changing frozen child branches.
 
 ## 4. Blockers and dependencies
 
@@ -41,7 +44,7 @@ Genuine cross-Organization sign-in return remains Unverified and queued after re
 
 ## 5. Next highest-priority deliverable
 
-Import pressObservedRequest from the existing keyboardAdmission helper and replace only the initial Confirm Card archive focus/page Enter with one observed archive dispatch (expected count1). Freeze this test-only change, run existing helper/Card-archive controls and browser types/lint, then execute the whole changed desktop/phone file. Keep all original120s deadlines, zero engine retries, two-request same-key/body receipts, peer/parent/rank/version/focus assertions and product trees unchanged.
+Commit the current evidence checkpoint, push delivery/archive-confirm-admission-20261017, and create/attach a focused stacked draft based on delivery/session-return-20261017. Then inspect fresh origin/main and establish the combined main candidate with the verified sign-in/Organization/Board/List/Card/invitation/archive increments and ledger. Preserve the primary dirty checkout and every frozen draft. Keep the genuine cross-Organization return acceptance and independent Work UX amendments explicit; complete ready acceptance work while exact candidate CI runs, without redundant per-UI image builds.
 
 ## 6. PRD progress changes
 
@@ -59,6 +62,19 @@ EVID-CYCLE-13-BASELINE-IDENTITY
 EVID-CYCLE-13-BASELINE-FAILED
 EVID-CYCLE-13-BASELINE-NETWORK
 EVID-CYCLE-13-BASELINE-DOM
+EVID-CYCLE-13-HELPER-11
+EVID-CYCLE-13-ARCHIVE-58
+EVID-CYCLE-13-BROWSER-TYPES
+EVID-CYCLE-13-LINT
+EVID-CYCLE-13-PRODUCT-EQUALITY
+EVID-CYCLE-13-NATIVE-2
+EVID-CYCLE-13-ADMITTED-IDENTITY
+EVID-CYCLE-13-WORKER-SCOPES
+EVID-CYCLE-13-CONTRACTS
+EVID-CYCLE-13-BROWSER-REGISTRY
+EVID-CYCLE-13-INTEGRATION-REGISTRY
+EVID-CYCLE-13-LEDGER
+EVID-CYCLE-13-REVIEW
 
 ## Recent verified completed increments
 
