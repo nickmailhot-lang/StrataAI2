@@ -110,7 +110,8 @@ test('PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unva
   const d=fixture(); d.items[3].mvpCritical=true;
   let report=progress(d); assert.equal(report.totalWorkItems,5); assert.equal(report.workItemsCompleted,0); assert.equal(report.byKind.Test.total,1);
   assert.equal(report.mvpClassificationUnknown,4); assert.deepEqual(report.mvpCriticalOutstanding,['ITEM-3']); assert.equal(report.weightedProgress,null);
-  d.items[3].state='Implemented'; assert.deepEqual(progress(d).implementedButUnvalidated,['ITEM-3']);
+  d.items[3].state='Implemented'; d.items[3].implementation={revision,paths:['app.txt']}; assert.deepEqual(progress(d).implementedButUnvalidated,['ITEM-3']);
+  d.items[3].state='Blocked';d.items[3].blocked={reason:'CI pending',owner:'delivery-owner'};assert.deepEqual(progress(d).implementedButUnvalidated,['ITEM-3']);
 });
 test('PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done', () => {
   const report=progress(ledger); assert.equal(report.prdsCompleted,0); assert.equal(report.workItemsCompleted,0);

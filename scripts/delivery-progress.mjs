@@ -174,7 +174,7 @@ export function progress(ledger) {
     uxPrds: specs.filter(x => x.category === 'ux').length,
     architectureTickets: specs.filter(x => x.category === 'architecture').length,
     totalWorkItems: ledger.items.length, workItemsCompleted: ledger.items.filter(x => x.state === 'Done').length, byKind,
-    implementedButUnvalidated: active.filter(x => ['Implemented', 'Testing', 'Review'].includes(x.state) && (x.acceptanceCriteria.some(id => remaining.some(c => c.id === id)) || Object.values(x.gates ?? {}).some(g => !['Passed', 'Not Applicable'].includes(g.status)) || !x.integration)).map(x => x.id),
+    implementedButUnvalidated: active.filter(x => x.implementation && (x.acceptanceCriteria.some(id => remaining.some(c => c.id === id)) || Object.values(x.gates ?? {}).some(g => !['Passed', 'Not Applicable'].includes(g.status)) || !x.integration)).map(x => x.id),
     blocked: active.filter(x => x.state === 'Blocked').map(x => ({ id: x.id, reason: x.blocked.reason, owner: x.blocked.owner })),
     remainingAcceptanceCriteria: { canonicalNumbered: canonical.filter(c => !c.sourceId.includes('-FR-')).length, canonicalFunctionalRequirements: canonical.filter(c => c.sourceId.includes('-FR-')).length, childCriteria: remaining.length - canonical.length },
     mvpCriticalOutstanding: ledger.items.filter(x => x.mvpCritical === true && x.state !== 'Done').map(x => x.id),

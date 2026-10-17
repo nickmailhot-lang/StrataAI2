@@ -2,6 +2,8 @@
 
 Owner: delivery implementation owner. All runs below occurred on uncommitted development inputs before the frozen implementation revision. They are historical diagnostic evidence, not passing results for the baseline commit or current release candidate. The later frozen-source results are recorded separately in progress.json.
 
+Retained text outputs normalize line endings and trailing whitespace for portable review. Their diagnostic content is preserved; recorded SHA-256 values refer to the retained artifact bytes. `.gitattributes` fixes evidence text to LF across operating systems.
+
 | Evidence | Cause and impact | Resolution |
 | --- | --- | --- |
 | initial-31-of-32.txt | The incomplete-child fixture reset the child item but retained its verified criterion. The validator correctly refused stale acceptance before reaching the intended required-child guard. Test fixture failure; no application/runtime change. | Reset the corresponding child criterion as well. Preserve the required-child assertion and every validator rule. |
