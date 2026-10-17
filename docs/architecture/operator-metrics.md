@@ -1305,3 +1305,47 @@ hosts, fresh PostgreSQL17.11/schema149, controlled optional-email accounts and
 cached runtimes. Runtime revision is the local build's `e6e1f4bb`, not a claim
 that the new commit's immutable release images passed. Current-image Collector
 export, strict/managed-provider and full release acceptance remain required.
+
+## Deletion telemetry scoped Worker delivery — 2026-10-16
+
+The retained `ca541f8d` full-browser shard 3 fails both deletion telemetry
+viewports: the original request is acknowledged, but its canonical state stays
+PENDING through the existing 30-second poll. The workflow deliberately disables
+automatic deletion discovery so other fixtures can inspect stable transaction
+snapshots. This scenario did not explicitly start delivery. Its retained traces
+contain 32 successful status reads per viewport; the failed assertions record
+PENDING. Diagnostic artifact `12087895602` has 32 verified payload checksums and
+canonical build metadata matching run `38906737178`; its archive SHA-256 is
+`1c0b58fea6b765b16e5d6a5c4509817002d390920b2e2f723f3d3edfbd5d0845`.
+
+The [complete deletion telemetry test](../../tests/browser/organization-deletion-telemetry.spec.ts)
+now uses the existing [scoped release Worker helper](../../tests/browser/scopedBoardWorker.ts)
+after acknowledgment and restores the unscoped Worker in `finally`. Only its
+fresh disposable Organization is admitted. CI still uses its already built
+Worker image, keeps global discovery paused, and creates terminal state through
+the leased PostgreSQL job handler. No privileged SQL fabricates completion.
+The original test body is otherwise identical: exact two writes and original
+actor/version/key recovery, acknowledgment versus verified completion, canonical
+version/event/timestamp, report privacy/counts/204 responses, Cancel/no-write,
+keyboard, ordinary-access withdrawal and WCAG checks remain unchanged. The
+90-second case and 30-second completion deadlines are unchanged; no retry or
+skip is added.
+
+Both full desktop/phone cases pass in one attempt: **28.621 / 26.162 seconds**
+(**106.676 seconds** for the full invocation including fixture pacing), with
+zero failures, flakes, skips or report errors. The fixture explicitly disables
+all four discovery loops, matching the CI boundary. It uses fresh PostgreSQL
+17.11, all 149 migrations, restricted runtime roles, separate API/Worker
+processes and the current built frontend. All **1,286 source inputs, 71 binaries
+and four served assets** match their captured hashes. The API stays unchanged;
+the scoped Worker returns running and unscoped with the same cached image.
+Owned cleanup restores the original Docker inventory and removes **3,778 bytes**
+of temporary configuration. No original database is used and no image is
+built, pulled or imported. No load test runs.
+
+Browser types, 302 focused integration/shard/helper checks and both coverage
+verifiers pass. This mounted-build fixture uses preceding `e88c6514` assemblies
+on cached runtime images, optional email verification and a controlled mail
+provider; it does not certify the new immutable release or managed delivery.
+The full current-commit CI, release milestone and full PRD-03 acceptance remain
+open. PRD-03 stays at **8% estimated work remaining**, a planning estimate.

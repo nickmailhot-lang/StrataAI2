@@ -4,6 +4,14 @@ The next release milestone is a deployable, stable operational task-management M
 
 ## Release scope
 
+The [deletion telemetry Worker setup repair](operator-metrics.md#deletion-telemetry-scoped-worker-delivery--2026-10-16)
+explicitly delivers the test Organization while CI discovery remains paused.
+Both complete desktop/phone cases pass on their first attempt with the original
+completion, receipt, telemetry/privacy, keyboard/Axe assertions and deadlines.
+All 302 focused checks, browser types and coverage verifiers pass. Captured
+inputs match; owned cleanup restores Docker inventory. Current immutable-image
+CI and the MVP remain open; large-load testing stays deferred.
+
 The [Board-member consent repair](../board-members-ui.md#synchronous-member-consent-retirement--2026-10-16)
 retires queued role/removal confirmation after Cancel/Escape and requires a current
 directory row before opening review. Six controlled failures become 26 page

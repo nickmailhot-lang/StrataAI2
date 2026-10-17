@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { pressAdmittedAction } from './keyboardAdmission';
+import { scopedBoardWorker } from './scopedBoardWorker';
 
 for (const width of [1280, 390]) {
   test(`PRD-03-TC-06/07/11/12: deletion observations distinguish original request acknowledgment and verified Worker completion at ${width}px`, async ({ page, context }) => {
@@ -47,6 +48,10 @@ for (const width of [1280, 390]) {
     expect(writeUrl.searchParams.get('version')).toBe(String(original.version)); expect(writeUrl.searchParams.get('expectedActorId')).toBe(actor);
     expect(writes[0].key).toMatch(/^[0-9a-f-]{36}$/);
     const observationPath = `/organizations/${org}/deletion-requests/${writes[0].key}?expectedActorId=${actor}`;
+    // CI pauses automatic discovery for transaction snapshots. Deliver only
+    // this disposable Organization with the already built release Worker.
+    const restoreWorker = scopedBoardWorker(org);
+    try {
     await expect.poll(async () => {
       const response = await context.request.get(observationPath); expect(response.status()).toBe(200); return (await response.json()).state;
     }, { timeout: 30_000 }).toBe('COMPLETED');
@@ -70,5 +75,6 @@ for (const width of [1280, 390]) {
       snapshot.eventId, snapshot.completedAt, 'requestId', 'eventId', 'expectedActorId', 'Idempotency-Key']) expect(text).not.toContain(value);
     expect((await context.request.get(`/organizations/${org}`)).status()).toBe(404); expect(documents).toBe(1);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+    } finally { restoreWorker(); }
   });
 }
