@@ -13,20 +13,22 @@ Work items: 0/1556 Done. Remaining canonical numbered acceptance criteria: 391; 
 | Task | 484 | 0 |
 | Test | 496 | 0 |
 
-Implemented but unvalidated: 62. Blocked: 3. Known MVP-critical outstanding: 105; unclassified records: 1284. Weighted progress: not measured.
+Implemented but unvalidated: 63. Blocked: 3. Known MVP-critical outstanding: 105; unclassified records: 1284. Weighted progress: not measured.
 
 ## 1. Work completed
 
 Reconciled live PRD18 original body and additive detail UX amendment; four new obligations are recorded Unverified under the existing lifecycle slice. Separate draft100 is untouched.
 Published/attached draft104 and preserved current full2862/native12/source372 session-return evidence. The exact older archive trace proves disabled confirmation at Enter and zero archive requests; no current archive reproduction is claimed.
+Verified unchanged product/build/backend Git trees and actual Production runtime identities, restricted roles, all149 migrations and owned processes. The compiled product is reused at its real source, without relabeling or rebuilding.
+The whole unchanged current baseline reproduces the phone failure: one desktop pass/one phone failure in1.3m. Current trace proves no archive request and a disabled confirmation at Enter; exact source/runtime and all failed evidence are retained before edits.
 
 ## 2. Implemented, awaiting validation
 
-PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-01-VS-04-T-02, PRD-01-VS-04-T-02-TEST-01, PRD-01-VS-04-T-02-TEST-02
+PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-01-VS-04-T-02, PRD-01-VS-04-T-02-TEST-01, PRD-01-VS-04-T-02-TEST-02, PRD-18-VS-01-T-02-TEST-02
 
 ## 3. Current work in progress
 
-Prepare the existing owned Production fixture for the complete unchanged desktop/phone Card archive baseline.
+Apply only the existing observed-request helper to first archive confirmation, preserving all original behavior assertions and product code.
 
 ## 4. Blockers and dependencies
 
@@ -39,7 +41,7 @@ Genuine cross-Organization sign-in return remains Unverified and queued after re
 
 ## 5. Next highest-priority deliverable
 
-Commit this entry checkpoint without changing product or browser source. Reuse the compiled fbbe942c web and source-identical API389c70ab/Worker0f6ddc29 with verified restricted149 database, prepare a new owned explicit-scope watcher starting after attempt17, and run the whole unchanged archived-cards.spec.ts at1280/390 with original120s deadlines and zero retries. Preserve actual baseline results before any helper edit.
+Import pressObservedRequest from the existing keyboardAdmission helper and replace only the initial Confirm Card archive focus/page Enter with one observed archive dispatch (expected count1). Freeze this test-only change, run existing helper/Card-archive controls and browser types/lint, then execute the whole changed desktop/phone file. Keep all original120s deadlines, zero engine retries, two-request same-key/body receipts, peer/parent/rank/version/focus assertions and product trees unchanged.
 
 ## 6. PRD progress changes
 
@@ -53,6 +55,10 @@ EVID-CYCLE-13-ENTRY
 EVID-CYCLE-12-PR99-ARCHIVE-FAILED
 EVID-CYCLE-12-PR99-ARCHIVE-TRACE
 EVID-CYCLE-12-PR99-ARCHIVE-DOM
+EVID-CYCLE-13-BASELINE-IDENTITY
+EVID-CYCLE-13-BASELINE-FAILED
+EVID-CYCLE-13-BASELINE-NETWORK
+EVID-CYCLE-13-BASELINE-DOM
 
 ## Recent verified completed increments
 

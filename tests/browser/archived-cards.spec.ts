@@ -1,6 +1,6 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { focusAdmittedControl, openAdmittedReview } from './keyboardAdmission';
+import { focusAdmittedControl, openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at ${width}px`, async ({ page, context }) => {
@@ -42,7 +42,7 @@ for (const width of [1280, 390]) {
       await openAdmittedReview(page.getByRole('button', { name: 'Archive Card', exact: true }),
         page.getByText('Archive Archived work from Planning?', { exact: true }));
       await expect(page.getByText('Archive Archived work from Planning?', { exact: true })).toBeVisible();
-      await page.getByRole('button', { name: 'Confirm Card archive', exact: true }).focus(); await page.keyboard.press('Enter');
+      await pressObservedRequest(page.getByRole('button', { name: 'Confirm Card archive', exact: true }), () => archives.length, 1);
       await expect(page.getByRole('button', { name: 'Retry this Card archive', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
       await expect(other.getByRole('link', { name: 'Archived work', exact: true })).toHaveCount(0);
