@@ -794,7 +794,10 @@ function BoardContent() {
         slots={{ transition: ImmediateDialogTransition }}
         disableRestoreFocus
         slotProps={{ backdrop: { slots: { transition: ImmediateDialogTransition } }, transition: { onExited: () => {
-          (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus({ preventScroll: true });
+          const target = cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current;
+          target?.focus({ preventScroll: true });
+          // Reveal the focused Card inside local canvas scroll areas as well.
+          target?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
           closeFocusCard.current = undefined;
         } } }}
         onClose={() => {
