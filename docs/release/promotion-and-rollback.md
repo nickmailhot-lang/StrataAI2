@@ -1,5 +1,31 @@
 # Promote and roll back an immutable release
 
+## Nested release-record refusal — 2026-10-16
+
+Candidate metadata, image provenance and saved deployment state have separate
+4,096/16,384/32,768-byte bounds. A malformed nested record can fit those bounds
+and still exceed the JSON parser's recursion limit. Python 3.12's default
+accelerator exposes this for 6,001-byte provenance/state inputs; the standard
+pure-Python fallback also exposes it for 2,401-byte candidate metadata. The old
+recorder emits tracebacks instead of its fixed refusal. Baseline tests reproduce
+five library errors and five CLI diagnostic failures across both parser paths.
+
+Only parser recursion is now normalized to the existing record-shape refusal.
+Strict schema/build/image validation, byte limits, lock handling, original OCI
+archive binding, runtime checks and atomic record publication remain unchanged.
+Malformed candidates preserve the last accepted state; malformed saved state
+remains byte-for-byte available for operator inspection. Refusal performs no
+runtime inspection and writes no acceptance marker or partial replacement.
+
+All **41 recorder tests pass on Python 3.12.14 and 3.14**, including three new
+methods covering all three inputs under both parser paths. Actual CLI checks
+require exit 1, empty stdout and the fixed failure message; external tools are
+absent from their PATH. All original 38 recorder methods remain unchanged.
+These are small temporary-file/mocked-runtime checks, not a new native promotion
+or rollback rehearsal. Current immutable-image/Linux CI, complete deployment
+acceptance and managed-provider evidence remain required; ARCH-12 and the MVP
+stay open, and large-load tests stay deferred.
+
 ## Archive-bound runtime identity and two-release rollback — 2026-10-16
 
 Docker Desktop can expose the saved manifest ID where CI records the image's

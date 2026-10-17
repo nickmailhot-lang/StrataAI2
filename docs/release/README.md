@@ -151,6 +151,8 @@ After all [promotion and core workflow checks](promotion-and-rollback.md) pass,
 use the bundled `record-release.py` command (Python 3.11 or newer) to atomically retain the
 current and prior accepted build/image references outside this immutable bundle.
 It repeats runtime verification and refuses an acceptance update on failure.
+Malformed nested metadata, provenance or prior state receives a fixed refusal
+without replacing the existing deployment record or inspecting the runtime.
 The promotion guide covers protected state, first deployment and rollback use.
 
 Release verification first requires HTTP 200 from all six web/API/Worker health and

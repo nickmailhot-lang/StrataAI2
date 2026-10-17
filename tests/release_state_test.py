@@ -311,6 +311,64 @@ class ReleaseStateTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1); self.assertNotIn("private-missing-path", result.stdout + result.stderr)
         self.assertNotIn("Traceback", result.stderr); self.assert_unchanged(before)
 
+    def test_nested_candidate_records_refuse_before_runtime_and_keep_prior_state(self):
+        before = self.seed(); self.checked.clear(); self.docker_calls.clear()
+        for name, limit, depth in [("build-metadata.json", 4096, 1200), ("images/image-provenance.json", 16384, 3000)]:
+            target = self.bundle / name; original = target.read_bytes()
+            content = ('[' * depth + '0' + ']' * depth).encode()
+            self.assertLess(len(content), limit)
+            for fallback in [False, True]:
+                factory = json.scanner.py_make_scanner if fallback else json.scanner.make_scanner
+                target.write_bytes(content)
+                try:
+                    with self.subTest(record=name, python_parser=fallback):
+                        with patch.object(json.scanner, 'make_scanner', factory):
+                            with self.assertRaises(ValueError): self.accept()
+                        self.assert_unchanged(before)
+                        self.assertEqual(target.read_bytes(), content)
+                        self.assertEqual(self.checked, []); self.assertEqual(self.docker_calls, [])
+                finally:
+                    target.write_bytes(original)
+
+    def test_nested_existing_state_refuses_before_runtime_without_replacement(self):
+        original = self.seed(); self.checked.clear(); self.docker_calls.clear()
+        content = ('[' * 3000 + '0' + ']' * 3000).encode()
+        self.assertLess(len(content), 32768)
+        for fallback in [False, True]:
+            factory = json.scanner.py_make_scanner if fallback else json.scanner.make_scanner
+            self.state.write_bytes(content)
+            try:
+                with self.subTest(python_parser=fallback):
+                    with patch.object(json.scanner, 'make_scanner', factory):
+                        with self.assertRaises(ValueError): self.accept()
+                    self.assert_unchanged(content)
+                    self.assertEqual(self.checked, []); self.assertEqual(self.docker_calls, [])
+            finally:
+                self.state.write_bytes(original)
+
+    def test_cli_nested_record_refusal_is_fixed_and_preserves_all_inputs(self):
+        self.seed()
+        targets = [(self.bundle / 'build-metadata.json', 1200),
+                   (self.bundle / 'images/image-provenance.json', 3000), (self.state, 3000)]
+        originals = {path: path.read_bytes() for path, _ in targets}
+        for target, depth in targets:
+            for fallback in [False, True]:
+                driver = ['-c', "import runpy, sys; sys.modules['_json'] = None; sys.argv = sys.argv[1:]; runpy.run_path(sys.argv[0], run_name='__main__')"] if fallback else []
+                content = ('[' * depth + '0' + ']' * depth).encode(); target.write_bytes(content)
+                try:
+                    result = subprocess.run([sys.executable, *driver, str(SCRIPT), '--bundle', str(self.bundle),
+                                             '--state', str(self.state), '--environment', 'staging', '--project', 'strataai-staging'],
+                                            env={**os.environ, 'PATH': str(self.root / 'no-external-tools')},
+                                            capture_output=True, text=True, timeout=10)
+                    with self.subTest(record=target.name, python_parser=fallback):
+                        self.assertEqual(result.returncode, 1); self.assertEqual(result.stdout, '')
+                        self.assertEqual(result.stderr.splitlines(), ['Release acceptance was not confirmed; retain and inspect the existing release record.'])
+                        for path, original in originals.items():
+                            self.assertEqual(path.read_bytes(), content if path == target else original)
+                        self.assertFalse(list(self.root.glob('.strataai-release-*')))
+                finally:
+                    target.write_bytes(originals[target])
+
     def archive_bound_images(self, reverse=False):
         self.loaded_images = {}; self.container_image_ids = {}
         for host in release.HOSTS:

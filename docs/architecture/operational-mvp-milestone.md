@@ -174,6 +174,14 @@ separate from mutable Organization/lifecycle clocks. No production schema/grant
 change or large-load test runs; current full HTTP/history and immutable CI
 acceptance remain required.
 
+The [release-record parser refusal](../release/promotion-and-rollback.md#nested-release-record-refusal--2026-10-16)
+normalizes nested metadata/provenance/state parsing to the fixed failure message
+after ten reproduced library/CLI failures. All 41 recorder tests pass on Python
+3.12/3.14; existing state/input bytes remain intact and refusal performs no
+runtime inspection or acceptance update. Original limits, archive binding,
+runtime checks and atomic publication remain. No Docker/database/load workload
+runs; current immutable CI and actual deployment acceptance remain required.
+
 The [archive-bound recorder and two-release rollback](../release/promotion-and-rollback.md#archive-bound-runtime-identity-and-two-release-rollback--2026-10-16)
 repair a native refusal of verified Docker Desktop images. Only original OCI
 archive proof permits alternate config/manifest IDs; records keep original CI

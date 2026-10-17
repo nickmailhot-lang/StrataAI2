@@ -45,7 +45,10 @@ def read_private(path, limit):
 
 
 def parse(content):
-    return json.loads(content, object_pairs_hook=unique_object)
+    try:
+        return json.loads(content, object_pairs_hook=unique_object)
+    except RecursionError as error:
+        raise ValueError("record_shape") from error
 
 
 def build(value):
