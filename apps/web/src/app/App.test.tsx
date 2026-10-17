@@ -41,7 +41,7 @@ describe("StrataAI2 application shell", () => {
     expect(screen.getByText(/Organization: demo/)).toBeInTheDocument();
     const navigation = screen.getByRole('navigation', { name: 'Internal application navigation' });
     expect(within(navigation).getByRole('link', { name: 'Organizations' })).toHaveAttribute('href', '/app');
-    expect(within(navigation).getByRole('link', { name: 'Boards' })).toHaveAttribute('href', '/app/demo');
+    expect(within(navigation).getByRole('link', { name: 'Work' })).toHaveAttribute('href', '/app/demo');
   });
 
   it("keeps the owner portal visually and navigationally separate", async () => {

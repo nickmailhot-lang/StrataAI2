@@ -29,6 +29,7 @@ import { CardDetailEditor } from "./CardDetailEditor";
 import { boardCardLocation } from './boardCardLocation';
 import { SecondaryActions } from '../../app/SecondaryActions';
 import { UnsavedChangesGuard } from '../../app/UnsavedChangesGuard';
+import { workExperienceEnabled } from '../../app/workExperience';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 import { ArchivedCardDetail } from './ArchivedCardDetail';
 import { CardChecklists } from './CardChecklists';
@@ -602,7 +603,7 @@ function BoardContent() {
       <ActivityHistoryControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
         kind="BOARD" targetId={snapshot.board.id} unavailable={snapshotReading || !!loadError}
         refreshSequence={`${reload}/${reconnectSequence}`} onDenied={clearDeniedScope} />
-      <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0 || !!cardId || !!creation}
+      <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0}
         onRefresh={refreshFilteredBoard} onCanvasChange={setCanvasFilter} />
       {snapshot.board.lifecycleState !== "active" && (
         <Alert severity="info">
@@ -772,7 +773,7 @@ function BoardContent() {
         transitionDuration={0}
         slots={{ transition: ImmediateDialogTransition }}
         disableRestoreFocus
-        slotProps={{ backdrop: { slots: { transition: ImmediateDialogTransition } }, paper: { sx: { m: 0, height: '100dvh', maxHeight: '100dvh', width: { xs: '100%', sm: 720 }, maxWidth: '100%', borderRadius: 0 } }, transition: { onExited: () => {
+        slotProps={{ backdrop: { slots: { transition: ImmediateDialogTransition } }, paper: { sx: workExperienceEnabled ? { m: 0, height: '100dvh', maxHeight: '100dvh', width: { xs: '100%', sm: 720 }, maxWidth: '100%', borderRadius: 0 } : undefined }, transition: { onExited: () => {
           (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus({ preventScroll: true });
           closeFocusCard.current = undefined;
         } } }}
@@ -780,9 +781,9 @@ function BoardContent() {
           if (!busy) closeCard();
         }}
         fullWidth
-        fullScreen={phone}
-        maxWidth={false}
-        sx={{ '& .MuiDialog-container': { justifyContent: 'flex-end' } }}
+        fullScreen={workExperienceEnabled && phone}
+        maxWidth={workExperienceEnabled ? false : 'sm'}
+        sx={workExperienceEnabled ? { '& .MuiDialog-container': { justifyContent: 'flex-end' } } : undefined}
         aria-labelledby="card-detail-title"
       >
         <DialogTitle id="card-detail-title">Card details</DialogTitle>
@@ -813,7 +814,7 @@ function BoardContent() {
             <CardCoverImage organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} card={card} detail
               unavailable={snapshotReading || !!loadError || snapshot.board.lifecycleState !== 'active' || !activeCard} />
             <CardDetailEditor
-              externalSave
+              externalSave={workExperienceEnabled}
               onDraftStateChange={setDraftState}
               key={card.id}
               card={card}
@@ -903,6 +904,10 @@ function BoardContent() {
               onBusyChange={setBusy} onRecoveryChange={setCoverRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             </SecondaryActions>
+            {cardId && <SourceRetentionEntry organizationId={snapshot.board.organizationId}
+              boardId={snapshot.board.id} cardId={card.id} cardVersion={card.version} kind="card" recordId={card.id}
+              sourceVersion={card.version} canAdminister={snapshot.access.canAdminister} unavailable={snapshotReading || !!loadError}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             <Typography variant="h6" component="h3" sx={{ mt: 3 }}>Discussion</Typography>
             {cardId && <CardCommentsControl reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               canAdminister={snapshot.access.canAdminister}
@@ -940,7 +945,7 @@ function BoardContent() {
           </SecondaryActions>
         </DialogContent>
         <DialogActions>
-          {card && editable && <Button variant="contained" type="submit" form="card-core-form" disabled={busy || !draftState.canSave}>{operationBusy ? 'Saving…' : 'Save card'}</Button>}
+          {workExperienceEnabled && card && editable && <Button variant="contained" type="submit" form="card-core-form" disabled={busy || !draftState.canSave}>{operationBusy ? 'Saving…' : 'Save card'}</Button>}
           <Button ref={cardClose} disabled={busy} onClick={closeCard}>
             Close
           </Button>
