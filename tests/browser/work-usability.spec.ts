@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { test, expect } from './releaseTest';
+import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 
 for (const width of [1280, 768, 390, 320]) {
   test(`UXA-02/04/05/06: real work create assign edit filter and return at ${width}px`, async ({ page, context, browser }, info) => {
@@ -7,12 +8,16 @@ for (const width of [1280, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     async function activate(name: string, scope = page.getByRole('main')) {
       const control = scope.getByRole('button', { name, exact: true });
-      await expect(control).toBeEnabled(); await control.press('Enter');
+      await expect.poll(() => control.evaluate(element => {
+        const container = element.closest('.MuiDialog-container');
+        return container ? getComputedStyle(container).opacity : '1';
+      })).toBe('1');
+      await expect(control).toBeEnabled(); await control.focus();
+      await expect(control).toBeFocused(); await expect(control).toBeEnabled(); await control.press('Enter');
     }
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `work-ux-${width}-${Date.now()}@example.test`, password: 'work-ux-correct-horse-battery', displayName: 'Work reviewer' };
-    expect((await context.request.post('/auth/register', { headers, data: account })).status()).toBe(201);
-    expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+    await registerVerifiedAccountFixture(context.request, account);
     const orgReply = await context.request.post('/organizations', { headers, data: { name: `Cedar Court ${width}` } });
     expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
     const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Maintenance work', visibility: 'PRIVATE' } });
@@ -26,6 +31,8 @@ for (const width of [1280, 768, 390, 320]) {
     const boardPath = `/app/${org}/boards/${board}`;
     await page.goto(boardPath);
     await expect(page.getByRole('heading', { name: 'Maintenance work', exact: true })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+    await expect(page.getByRole('status').filter({ hasText: 'Live updates connected.' })).toBeVisible();
     if (width < 600) {
       const trigger = page.getByRole('button', { name: 'Open navigation', exact: true });
       await trigger.press('Enter');
@@ -34,18 +41,22 @@ for (const width of [1280, 768, 390, 320]) {
       await page.keyboard.press('Escape'); await expect(trigger).toBeFocused();
     } else await expect(page.getByRole('link', { name: 'Work', exact: true })).toHaveAttribute('aria-current', 'page');
     await activate('Add card', page.locator('body'));
+    await expect.poll(() => page.getByRole('dialog', { name: 'Add card', exact: true }).evaluate(element =>
+      getComputedStyle(element.closest('.MuiDialog-container')!).opacity)).toBe('1');
     await expect(page.getByRole('combobox', { name: 'List', exact: true })).toHaveText('Reported');
     await page.getByRole('textbox', { name: 'Card title', exact: false }).fill('Inspect roof');
     await activate('Create', page.locator('body'));
     await page.getByRole('link', { name: 'Inspect roof', exact: true }).press('Enter');
     const detail = page.getByRole('dialog', { name: 'Card details', exact: true });
     await expect(detail).toBeVisible();
+    await expect(detail.getByRole('textbox', { name: 'Card title', exact: false })).toBeFocused();
     const panel = await detail.boundingBox();
     if (process.env.STRATAAI_E2E_WORK_UX === '0') {
       expect(Math.abs(panel!.x - (width - panel!.width) / 2)).toBeLessThan(2);
       expect(panel!.width).toBeLessThan(width);
     } else {
       expect(Math.round(panel!.x + panel!.width)).toBe(width);
+      expect(Math.round(panel!.y)).toBe(0); expect(Math.round(panel!.height)).toBe(900);
       if (width < 600) { expect(Math.round(panel!.x)).toBe(0); expect(Math.round(panel!.width)).toBe(width); }
     }
     const cardPath = new URL(page.url()).pathname;
@@ -53,6 +64,7 @@ for (const width of [1280, 768, 390, 320]) {
     await activate('Edit Card assignees', detail);
     await activate('Assign Work reviewer', detail);
     await expect(detail.getByRole('button', { name: 'Edit Card assignees', exact: true })).toBeEnabled();
+    await expect(detail.getByRole('button', { name: 'Edit Card assignees', exact: true })).toBeFocused();
     await activate('Edit dates', detail);
     await detail.getByLabel('Due date', { exact: true }).fill('2026-10-01');
     await activate('Save dates', detail);
@@ -65,7 +77,9 @@ for (const width of [1280, 768, 390, 320]) {
 
     await activate('Filter Board Cards', page.locator('body'));
     const filters = page.getByRole('dialog', { name: 'Filter Board Cards', exact: true });
+    await expect.poll(() => filters.evaluate(element => getComputedStyle(element.closest('.MuiDialog-container')!).opacity)).toBe('1');
     await filters.getByRole('textbox', { name: 'Card keyword', exact: true }).fill('Inspect');
+    await expect(filters.getByRole('textbox', { name: 'Card keyword', exact: true })).toHaveValue('Inspect');
     await activate('Apply filters', filters);
     await expect(filters.getByRole('link', { name: 'Inspect roof — Reported', exact: true })).toBeVisible();
     await activate('Show this page on Board', filters);
@@ -77,7 +91,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(page.locator('[data-card-drag-id]').filter({ hasText: 'Replace lobby lamp' })).toHaveCount(0);
     const title = detail.getByRole('textbox', { name: 'Card title', exact: false });
     await title.fill('Inspect roof and gutters');
-    await detail.getByText('Card actions', { exact: true }).press('Enter');
+    if (process.env.STRATAAI_E2E_WORK_UX !== '0') await detail.getByText('Card actions', { exact: true }).press('Enter');
     await expect(detail.getByRole('button', { name: 'Archive Card', exact: true })).toBeDisabled();
     await expect(detail.getByRole('button', { name: 'Move to another Board', exact: true })).toBeDisabled();
     await activate('Close', detail);
@@ -102,8 +116,10 @@ for (const width of [1280, 768, 390, 320]) {
     expect(attempts).toHaveLength(2); expect(attempts[0]).toBe(attempts[1]);
     await page.unroute(`**/cards/${cardId}`);
     await activate('Move card', detail);
-    await detail.getByRole('combobox', { name: 'Destination list', exact: true }).click();
-    await page.getByRole('option', { name: 'Scheduled', exact: true }).click();
+    const destination = detail.getByRole('combobox', { name: 'Destination list', exact: true });
+    await destination.press('Enter');
+    await page.getByRole('option', { name: 'Scheduled', exact: true }).press('Enter');
+    await expect(destination).toHaveText('Scheduled');
     await activate('Confirm card move', detail);
     await expect(detail.getByText('Move acknowledged. Current placement is being checked.', { exact: true })).toBeVisible();
     await activate('Close', detail);
@@ -117,7 +133,7 @@ for (const width of [1280, 768, 390, 320]) {
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     await page.getByRole('link', { name: 'Inspect roof and gutters', exact: true }).press('Enter');
     await expect(detail).toBeVisible();
-    await page.screenshot({ path: info.outputPath('detail.png'), fullPage: true });
+    await page.screenshot({ path: info.outputPath('detail.png'), fullPage: false });
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     const outsider = await browser.newContext();
     try {

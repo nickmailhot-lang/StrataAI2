@@ -340,9 +340,23 @@ function BoardContent() {
     // dialog exits. Restore it only while focus is still on the fallback.
     if (document.activeElement === boardRefresh.current || document.activeElement === document.body)
       (target ?? boardRefresh.current)?.focus({ preventScroll: true });
-    closeFocusCard.current = undefined;
-    closeFocusReady.current = false;
   }, [cardId, snapshotReading, busy, canvasFilter, snapshot]);
+  useEffect(() => {
+    if (cardId) return;
+    // A restored Card can remount again after a live/filter admission. Keep the
+    // return target until the next deliberate interaction, then never reclaim
+    // focus from the user's new task.
+    const releaseReturnFocus = () => {
+      closeFocusCard.current = undefined;
+      closeFocusReady.current = false;
+    };
+    document.addEventListener('pointerdown', releaseReturnFocus, true);
+    document.addEventListener('keydown', releaseReturnFocus, true);
+    return () => {
+      document.removeEventListener('pointerdown', releaseReturnFocus, true);
+      document.removeEventListener('keydown', releaseReturnFocus, true);
+    };
+  }, [cardId]);
   function closeCard() {
     closeFocusCard.current = cardId;
     if (location.state?.cardOverlay) navigate(-1);
@@ -801,9 +815,6 @@ function BoardContent() {
         slotProps={{ backdrop: { slots: { transition: ImmediateDialogTransition } }, paper: { sx: workExperienceEnabled ? { m: 0, height: '100dvh', maxHeight: '100dvh', width: { xs: '100%', sm: 720 }, maxWidth: '100%', borderRadius: 0 } : undefined }, transition: { onExited: () => {
           closeFocusReady.current = true;
           (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus({ preventScroll: true });
-          if (!snapshotReading && !(canvasFilter && (canvasFilter.pending || canvasFilter.snapshot !== snapshot))) {
-            closeFocusCard.current = undefined; closeFocusReady.current = false;
-          }
         } } }}
         onClose={() => {
           if (!busy) closeCard();
