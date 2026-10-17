@@ -22,6 +22,9 @@ Reproduced all three UX gaps against the compiled app, retaining exact geometry,
 Implemented Card-specific error focus/centering when the original operation still owns focus, preserving deliberate independent navigation. Persist200% root text through navigations/reload in the native fixture and assert unobscured canonical return. Focused UI7/7 passes at ccc424c8d3cef6407268f428c6af87e7c5c45531.
 Current native21/21 passes with all new viewport/focus/persistent-zoom assertions. Mobile refusal is now y72/header56, focused and fully visible; both original-key account probes preserve one canonical Card.
 Inspected all six actual current viewport captures. Persistent200% tablet reload/return and every focused Card are unobscured; no shell change was needed. Builds/types/lint and focused UI7 pass; unchanged API16 remains explicitly bound to its prior3bf5c2ba source.
+Final current ccc424c8 complete frontend passes 2,835 tests / zero failures / 24 existing deferred capacity skips across 192 files, exit0 in920.68 seconds. Source stayed frozen and validation ran alone.
+Final source/delivery contracts372/372 pass with zero skips/failures; ledger validates1521items/3766criteria. Browser registry retains444cases/162intact files across four shards; mandatory integration registry retains4groups/7executions/130steps.
+Independent Card recovery slice and its UX task/tests advance to Review. All scoped acceptance is verified with current evidence; required release/review/target integration stays pending, so no Done or parent PRD closure.
 
 ## 2. Implemented, awaiting validation
 
@@ -29,8 +32,7 @@ PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, P
 
 ## 3. Current work in progress
 
-Complete frontend runs alone at frozenccc424c8, session12590; no app/backend/browser edits or competing broad validation. All scoped Card criteria are verified, but the slice and TaskT02 remainTesting until current full/release/review/integration gates pass.
-Draft99 remains the independent Card candidate; main-targeted #98 requiredCI39055149611 has passed source/build/security and is executing immutable container workflows. Older ledger-only CI39044307940 completed successfully at16bf945d and remains historical, not current feature evidence.
+Push the final Card review checkpoint and update draft99. Continue the next isolated PRD-07 evidence audit while required main-targeted integration work proceeds.
 
 ## 4. Blockers and dependencies
 
@@ -42,17 +44,20 @@ Required current main-targeted releaseCI, final review and target integration re
 
 ## 5. Next highest-priority deliverable
 
-Read current full frontend session12590 and preserve exact counts/outcome. If it passes, run final source/delivery/browser/integration registry checks, commit/push final evidence and update draft99. Continue the next ready core MVP audit (List creation original-account binding) while current required integration work proceeds.
+Create a new isolated List audit branch from this final Card checkpoint, preserve the existing PRD-07-VS-01 audit IDs, and execute the prepared genuine two-account List creation retry probe. Add bounded gap work only if repository/test evidence demonstrates it. Keep current Card preview deployable and preserve every prior result.
 
 ## 6. PRD progress changes
 
-Required TaskT-02 and its two tests are Implemented→Testing. The original identity work, failed evidence and scoped criteria are preserved. AC-04/05 and complete slice remain unverified pending current UX/release evidence.
+All five scoped PRD-08-VS-04 criteria are Verified at ccc424c8. The independent slice and required UX task/tests are Review after passing current complete regression and source/registry checks.
+Original PRD-08, its broader create/rename/lifecycle obligations and all previous IDs/history remain open. No acceptance or integration percentage is invented.
 
 ## 7. Completion evidence
 
 EVID-CYCLE-07-NATIVE-BEFORE:3/3 fail; COMPONENT-BEFORE:5pass/1fail; BEFORE-GEOMETRY:both focusBODY, mobilealerty8/header56.
 EVID-CYCLE-07-COMPONENT-AFTER:7/7 pass at ccc424c8d3cef6407268f428c6af87e7c5c45531; no assertion/deadline/retry relaxation.
 EVID-CYCLE-07-NATIVE-21, VIEWPORT-ACTOR-PROOF and VISUAL: current sourceccc424c8; explicit compiled API3bf5c2ba/backend equality; no new server-pass claim or UX waiver.
+EVID-CYCLE-07-FULL-FRONTEND: 2,835 passed /0 failed /24 existing skips,920.68s at frozen ccc424c8.
+Current final full2835/0/24 existing skips, UI7/native21/source372, scoped actual viewport review and complete444-case browser/mandatory integration registries. Server16 remains explicitly prior3bf5c2ba with unchanged source.
 
 ## Recent verified completed increments
 
