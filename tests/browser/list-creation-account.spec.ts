@@ -2,8 +2,8 @@ import { writeFile } from 'node:fs/promises';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 
-// Draft for the next isolated PRD-07 audit. Do not collect or execute while
-// the current frozen Card full-regression run is in flight.
+// PRD-07 audit and regression: delay genuine delivery after admission, then
+// preserve the original command while a real authorized account is replaced.
 const headers = { 'X-StrataAI-Request': '1' };
 for (const width of [1280, 390]) {
   test(`PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at ${width}px`, async ({ page, context, browser }) => {
@@ -63,6 +63,11 @@ for (const width of [1280, 390]) {
       expect(attempts[1].status).toBe(401); expect(attempts[1].key).toBe(attempts[0].key); expect(attempts[1].body).toBe(attempts[0].body);
       expect(snapshot.lists).toHaveLength(1); expect(snapshot.lists[0].list).toMatchObject({ id: attempts[0].id, name: 'Original account List', lifecycleState: 'active' });
       await expect(page.getByLabel('List name', { exact: false })).toHaveCount(0); await expect(page.getByText('List command Board', { exact: true })).toHaveCount(0);
+      const refusal = page.getByRole('alert').filter({ hasText: 'Sign in to continue.' }); await expect(refusal).toBeFocused();
+      const alertBox = await refusal.boundingBox(), headerBox = await page.getByRole('banner').boundingBox();
+      if (!alertBox || !headerBox) throw new Error('Missing refusal/header geometry');
+      expect(alertBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height); expect(alertBox.y + alertBox.height).toBeLessThanOrEqual(900);
+      await page.screenshot({ path: test.info().outputPath(`list-account-refusal-${width}.png`) });
     } finally { holdReads = false; release(); await original?.close(); await member.close(); }
   });
 }
