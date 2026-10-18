@@ -37,6 +37,11 @@ var organization = Guid.NewGuid(); var foreignOrganization = Guid.NewGuid(); var
 var board = Guid.NewGuid(); var foreignBoard = Guid.NewGuid(); var list = Guid.NewGuid(); var foreignList = Guid.NewGuid();
 var card = Guid.NewGuid(); var foreignCard = Guid.NewGuid();
 await using var admin = new NpgsqlConnection(adminConnection); await admin.OpenAsync(ct);
+if (args.SequenceEqual(["--navigation-initial-row-queue-only"], StringComparer.Ordinal))
+{
+    await NavigationInitialRowQueueContract.RunAsync(admin, apiConnection, ct);
+    return;
+}
 if (args.SequenceEqual(["--identity-backlog-only"], StringComparer.Ordinal))
 {
     await IdentityBacklogContract.RunAsync(admin,
@@ -238,6 +243,7 @@ if (args.Length == 0 || args.Contains("--navigation-lock-order-only", StringComp
 {
     await NavigationActorBoardLockContract.RunAsync(admin, apiConnection, ct);
     await NavigationParentWithdrawalContract.RunAsync(admin, apiConnection, ct);
+    await NavigationInitialRowQueueContract.RunAsync(admin, apiConnection, ct);
     if (args.Contains("--navigation-lock-order-only", StringComparer.Ordinal)) return;
 }
 var previewLifecycleOnly = args.Contains("--attachment-preview-lifecycle-only", StringComparer.Ordinal);
