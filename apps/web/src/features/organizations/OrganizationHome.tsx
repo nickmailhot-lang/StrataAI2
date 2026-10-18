@@ -1,7 +1,7 @@
 import { organizationNavigation } from '../../app/navigationModel';
 import { ActionRow } from '../../components/ActionRow';
 import { SecondaryActions } from '../../app/SecondaryActions';
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -103,6 +103,15 @@ export function OrganizationHome() {
   );
 }
 function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
+  const actionsOpen = useRef(false);
+  const actionsElement = useRef<HTMLDetailsElement | null>(null);
+  // Admission recovery removes every old action. Retain only the user's public
+  // expansion choice, then apply it to the newly authorized disclosure.
+  const rememberActions = useCallback((element: HTMLDetailsElement | null) => {
+    if (actionsElement.current) actionsOpen.current = actionsElement.current.open;
+    actionsElement.current = element;
+    if (element) element.open = actionsOpen.current;
+  }, []);
   const [data, setData] = useState<Discovery>();
   const [loadError, setLoadError] = useState<Error>();
   const [reload, setReload] = useState(0);
@@ -382,7 +391,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               >
                 Refresh
               </Button>
-              {organizationId && <SecondaryActions label="Organization actions">
+              {organizationId && <SecondaryActions label="Organization actions" detailsRef={rememberActions}>
                 {organizationNavigation(organizationId, currentOrganization).map(item =>
                   <Button key={item.id} component={Link} to={item.to}>{item.label}</Button>)}
               </SecondaryActions>}

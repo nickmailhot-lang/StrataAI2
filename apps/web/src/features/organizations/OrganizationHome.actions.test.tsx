@@ -46,10 +46,11 @@ it('PRD-03-VS-06-T-03: Create Board precedes secondary operations in keyboard/re
   expect(create.parentElement?.firstElementChild).toBe(create);
 });
 
-it('PRD-03-VS-06-T-03: admission withdrawal removes the entire old disclosure before a fresh downgraded role is confirmed', async () => {
+it.each([true, false])('PRD-03-VS-06-T-03: admission withdrawal removes old permissions and restores only expansion choice %s after a fresh downgraded role', async expanded => {
   let held = false, finish!: (value: Response) => void;
   mount(() => held ? new Promise<Response>(resolve => { finish = resolve; }) : response({ organization, role: 0 }));
   const original = await openActions(); expect(names(original)).toEqual(expected(0));
+  if (!expanded) fireEvent.click(screen.getByText('Organization actions', { selector: 'summary' }));
   await waitFor(() => expect(metadata.watch).toHaveBeenCalled());
   held = true; act(() => metadata.watch.mock.calls.at(-1)![0].reset());
   expect(screen.queryByText('Organization actions', { selector: 'summary' })).not.toBeInTheDocument();
@@ -59,7 +60,7 @@ it('PRD-03-VS-06-T-03: admission withdrawal removes the entire old disclosure be
   await act(async () => finish(response({ organization, role: 2 })));
   await screen.findByRole('button', { name: 'Create board' });
   const current = (await screen.findByText('Organization actions', { selector: 'summary' })).parentElement!;
-  expect(current).not.toBe(original); expect(current).toHaveProperty('open', true); expect(names(current)).toEqual(expected(2));
+  expect(current).not.toBe(original); expect(current).toHaveProperty('open', expanded); expect(names(current)).toEqual(expected(2));
 });
 
 it('PRD-03-VS-06-T-03: rollback retains inline role-permitted actions and the existing Board creation/cancel workflow', async () => {
