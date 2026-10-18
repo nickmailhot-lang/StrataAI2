@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
+import { openOrganizationActions } from './organizationActionAdmission';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-03-TC-04/05/08/11/12: keyboard member review and missing removal acknowledgment at ${viewport.width}px`, async ({ page, context, browser }) => {
@@ -24,6 +25,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       // after current access is checked, through the keyboard locator itself.
       await expect(page.getByRole('status')).toHaveText('Current Board access checked.');
       const members = page.getByRole('link', { name: 'Organization members', exact: true });
+      await openOrganizationActions(page, members);
       await members.focus(); await expect(members).toBeFocused(); await members.press('Enter');
       await expect(page).toHaveURL(new RegExp(`/app/${org}/members$`));
       if ((await (await context.request.get('/api/runtime')).json()).mode === 'production')

@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { openOrganizationActions } from './organizationActionAdmission';
 
 for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
   test(`PRD-03-WS-FR-009/010/TC-04/05/06/07/08/10/11/12: Owner request recovery and other-client withdrawal at ${viewport.width}px`, async ({ page, context, browser }) => {
@@ -65,6 +66,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await page.goto(`/app/${org}`);
       await expect(page.getByRole('status').filter({ hasText: /^Current Board access checked\.$/ })).toBeVisible();
       const link = page.getByRole('link', { name: 'Request Organization deletion', exact: true });
+      await openOrganizationActions(page, link);
       await link.focus(); await expect(link).toBeFocused(); await link.press('Enter');
       await expect(page).toHaveURL(new RegExp(`/app/${org}/delete$`));
       const launcher = page.getByRole('button', { name: 'Review deletion request', exact: true });

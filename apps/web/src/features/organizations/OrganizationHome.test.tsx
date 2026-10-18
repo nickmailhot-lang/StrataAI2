@@ -685,6 +685,7 @@ it.each([0, 1, 2])('offers the deletion operation link only to a current Owner, 
   stubFetch(vi.fn(async (path: string) => path === '/organizations/org-1'
     ? response({ ...organizations[0], role }) : response({ organizationId: 'org-1', items: [], nextCursor: null })));
   mount('/app/org-1'); await screen.findByRole('heading', { name: 'Council' });
+  fireEvent.click(screen.getByText('Organization actions', { selector: 'summary' }));
   const link = screen.queryByRole('link', { name: 'Request Organization deletion' });
   if (role === 0) expect(link).toHaveAttribute('href', '/app/org-1/delete'); else expect(link).not.toBeInTheDocument();
 });
@@ -708,6 +709,7 @@ it('UX-002: withdraws admin discovery synchronously while a live role downgrade 
     return response({ organizationId: 'org-1', items: [], nextCursor: null });
   });
   mount('/app/org-1');
+  fireEvent.click(await screen.findByText('Organization actions', { selector: 'summary' }));
   await screen.findByRole('link', { name: 'Organization settings' });
   await waitFor(() => expect(metadata.watch).toHaveBeenCalled());
   role = 2; held.pending = new Promise<Response>(resolve => { resolvePending = resolve; });
@@ -715,6 +717,7 @@ it('UX-002: withdraws admin discovery synchronously while a live role downgrade 
   expect(screen.queryByRole('link', { name: 'Organization settings' })).not.toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'Request Organization deletion' })).not.toBeInTheDocument();
   await act(async () => { resolvePending(response({ ...organizations[0], role })); });
+  fireEvent.click(await screen.findByText('Organization actions', { selector: 'summary' }));
   await screen.findByRole('link', { name: 'Leave Organization' });
   expect(screen.queryByRole('link', { name: 'Organization settings' })).not.toBeInTheDocument();
 });

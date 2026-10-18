@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { openOrganizationActions } from './organizationActionAdmission';
 
 const org = '11111111-1111-4111-8111-111111111111';
 const actor = '22222222-2222-4222-8222-222222222222';
@@ -27,14 +28,16 @@ for (const width of [1280, 768, 390, 320]) {
     });
     await page.goto(`/app/${org}`);
     const settings = page.getByRole('link', { name: 'Organization settings', exact: true });
+    await openOrganizationActions(page, settings);
     await expect(settings).toBeVisible();
     await expect(page.getByRole('link', { name: 'Request Organization deletion', exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     // Re-admit a lower role from authoritative HTTP; navigation never owns a
     // cached capability copy or starts another polling/SignalR subscription.
-    role = 1; await page.reload(); await expect(settings).toBeVisible();
+    role = 1; await page.reload(); await openOrganizationActions(page, settings); await expect(settings).toBeVisible();
     await expect(page.getByRole('link', { name: 'Request Organization deletion', exact: true })).toHaveCount(0);
     role = 2; await page.reload();
+    await openOrganizationActions(page, page.getByRole('link', { name: 'Leave Organization', exact: true }));
     await expect(page.getByRole('link', { name: 'Leave Organization', exact: true })).toBeVisible();
     await expect(settings).toHaveCount(0);
     await page.goto(`/app/${org}/search`);
