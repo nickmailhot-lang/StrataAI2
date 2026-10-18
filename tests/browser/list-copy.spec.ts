@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
@@ -36,7 +37,7 @@ for (const width of [1280, 390]) {
         const response = await route.fetch(); expect(response.status()).toBe(201);
         if (attempts.length === 1) await route.abort('failed'); else await route.fulfill({ response });
       });
-      const copyButton = page.getByRole('button', { name: 'Copy list', exact: true });
+      const copyButton = (await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Copy list', exact: true }));
       // A connected stream can invalidate the snapshot before its read settles.
       // Focusing a disabled button silently does nothing, so admit the keyboard
       // action only after the canonical Board read enables this control.

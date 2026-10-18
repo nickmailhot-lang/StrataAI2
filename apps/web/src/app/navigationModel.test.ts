@@ -40,6 +40,7 @@ it('UX-002: future modules have no misleading destination', () => {
   const unavailable = menu.filter(item => 'unavailable' in item);
   expect(unavailable.map(item => item.id)).toEqual([]);
   expect(menu.map(item => item.id)).toEqual(['organizations', 'boards', 'notifications']);
+  expect(unavailable.every(item => !('to' in item))).toBe(true);
   expect(menu.filter(item => 'current' in item && item.current).map(item => item.id)).toEqual(['notifications']);
 });
 

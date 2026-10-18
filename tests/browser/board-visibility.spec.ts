@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -37,7 +38,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
         });
       });
       await page.goto(`/app/${org}/boards/${board}`);
-      await page.getByRole('link', { name: 'Board visibility', exact: true }).focus(); await page.keyboard.press('Enter');
+      await (await disclosedWorkControl(page, 'Board actions', 'link', { name: 'Board visibility', exact: true })).focus(); await page.keyboard.press('Enter');
       await expect(page.getByText('Live visibility updates connected.')).toBeVisible();
       await expect.poll(visibilityReads).toBeGreaterThanOrEqual(2);
       await expect(page.getByRole('progressbar', { name: 'Checking Board visibility' })).toHaveCount(0);
@@ -98,8 +99,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       await visitor.goto(await publicLink.inputValue());
       await expect(visitor.getByRole('heading', { name: 'Visibility review', exact: true })).toBeVisible();
       await expect(visitor.getByRole('button', { name: 'Add list', exact: true })).toHaveCount(0);
-      await expect(visitor.getByRole('link', { name: 'Board visibility', exact: true })).toHaveCount(0);
-      await expect(visitor.getByRole('link', { name: 'Board members', exact: true })).toHaveCount(0);
+      await expect((await disclosedWorkControl(visitor, 'Board actions', 'link', { name: 'Board visibility', exact: true }))).toHaveCount(0);
+      await expect((await disclosedWorkControl(visitor, 'Board actions', 'link', { name: 'Board members', exact: true }))).toHaveCount(0);
       expect(await visitor.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       await visitor.close();
       const publicRead = await anonymous.request.get(`/boards/${board}`); expect(publicRead.status()).toBe(200);

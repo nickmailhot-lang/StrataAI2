@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import type { Request } from '@playwright/test';
 import { scopedBoardWorker } from './scopedBoardWorker';

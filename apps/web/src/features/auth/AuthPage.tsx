@@ -152,8 +152,6 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
               Sign in to council and property operations.
             </Typography>
           </Box>
-          <Button component={Link} to="/forgot-password">Forgot password?</Button>
-
           <Tabs
             value={mode}
             onChange={(_, next: AuthMode) => setMode(next)}
@@ -220,6 +218,7 @@ export function AuthPage({ onAuthenticated, invitationToken }: { onAuthenticated
                     ? 'Sign in'
                     : 'Create account'}
               </Button>
+              <Button component={Link} to="/forgot-password">Forgot password?</Button>
             </Stack>
           </Box>
         </Stack>

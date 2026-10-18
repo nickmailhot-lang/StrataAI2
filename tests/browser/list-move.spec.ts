@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
@@ -42,7 +43,7 @@ for (const width of [1280,390]) {
         const response = await route.fetch(); expect(response.status()).toBe(200);
         if (attempts.length===1) await route.abort('failed'); else await route.fulfill({ response });
       });
-      const entry = page.getByRole('button',{ name:'Move list',exact:true });
+      const entry = (await disclosedWorkControl(page, 'Board actions', 'button', { name:'Move list',exact:true }));
       await openAdmittedReview(entry,page.getByRole('button',{ name:'Reload move destinations' }));
       await expect(page.getByRole('button',{ name:'Reload move destinations' })).toBeEnabled();
       async function choose(label:string,name:string) {

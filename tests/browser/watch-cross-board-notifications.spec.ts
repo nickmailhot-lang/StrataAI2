@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -233,7 +234,7 @@ test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships
       expect(await inboxRows()).toEqual(rows); expect(privateHistory()).toBe(history);
       for (const client of [desktop, mobile]) await expect(client.getByRole('article')).toHaveCount(4, { timeout: 25_000 });
       await page.bringToFront(); await page.goto(`/app/${org}/boards/${boards[1]}/cards/${card}`);
-      await activate(page.getByRole('button', { name: 'Card watching', exact: true }));
+      await activate((await disclosedWorkControl(page, 'Card actions', 'button', { name: 'Card watching', exact: true })));
       const restoredDialog = page.getByRole('dialog', { name: 'Card watching', exact: true });
       await expect(restoredDialog.getByText('You are watching this Card.', { exact: true })).toBeVisible();
       await activate(restoredDialog.getByRole('button', { name: 'Check current watching', exact: true }));

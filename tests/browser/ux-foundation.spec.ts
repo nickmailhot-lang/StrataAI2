@@ -27,6 +27,7 @@ for (const width of [1280, 768, 390, 320]) {
       return route.fulfill({ status: 503, json: {} });
     });
     await page.goto(`/app/${org}`);
+    await page.getByText('Organization actions', { exact: true }).press('Enter');
     const settings = page.getByRole('link', { name: 'Organization settings', exact: true });
     await openOrganizationActions(page, settings);
     await expect(settings).toBeVisible();

@@ -8,6 +8,12 @@ Internal shell links require existing INTERNAL SurfaceAdmission. They expose onl
 
 The live 2026-10-17 Work-navigation amendment omits unavailable Meetings, Correspondence, Documents and Owners & Units entries, replacing the earlier disabled “Not available yet” hints. Future features must add a working, capability-reviewed route; no placeholder is repointed to Organization home. This focused adoption reuses the existing UX draft's navigation model while its broader action disclosures and Card presentation remain separate work.
 
+Historical PR #100 navigation wording, retained during integration:
+
+Internal shell links require existing INTERNAL SurfaceAdmission. They expose only the existing Organizations, Work (the existing Board directory) and Notifications destinations. Current Board/Card/admin subroutes select the Work section. PORTAL input cannot construct an internal menu. The separately admitted public Board and terminal recovery fallbacks remain outside internal navigation.
+
+Meetings, Correspondence, Documents and Owners & Units remain specified in the backlog but are omitted from primary navigation until implemented. They render no dead link or disabled primary entry. The Work label changes no route or canonical Board/Card entity name. Future features must add a working, capability-reviewed route rather than repoint a placeholder to Organization home.
+
 ## Organization-specific discovery
 
 OrganizationHome passes only its currently admitted summary to `organizationNavigation`. The existing before/after account check, summary validation, scope match, directory admission, live reset/withdrawal and lifecycle rules remain the authority. The menu model keeps no cached role and performs no HTTP request or subscription.
@@ -25,7 +31,7 @@ These are the current Organization membership values, not a governance hierarchy
 
 When OrganizationHome withdraws canonical data, privileged links disappear in the same render as the protected name/content. An aborted/late older read cannot restore those links through a separate navigation cache. A confirmed lower-role read yields only that role's existing links. No unresolved deletion/departure receipt is moved under ordinary shell admission.
 
-The action row retains existing labels, order and return paths. Shared shell menu, page-level Organization actions and Board-owned controls have distinct scopes; do not copy Board or Organization capabilities into a global role menu. The route inventory and the 80-feature backlog map define where future integrations belong.
+The Organization actions disclosure retains existing labels, order and return paths. Shared shell menu, page-level Organization actions and Board-owned controls have distinct scopes; do not copy Board or Organization capabilities into a global role menu. The route inventory and the 80-feature backlog map define where future integrations belong.
 
 ## Evidence and remaining scope
 

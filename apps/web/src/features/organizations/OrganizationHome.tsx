@@ -31,6 +31,7 @@ import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchOrganizationLifecycle, type OrganizationLifecycleState } from './organizationLifecycleLive';
 import { OrganizationCreationDialog } from './OrganizationCreationDialog';
 import { organizationTypeLabel } from './organizationTypes';
+import { SecondaryActions } from '../../app/SecondaryActions';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 
 type OrganizationSummary = {

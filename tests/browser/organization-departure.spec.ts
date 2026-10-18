@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';

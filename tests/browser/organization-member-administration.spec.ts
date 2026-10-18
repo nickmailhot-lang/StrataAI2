@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';

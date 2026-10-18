@@ -189,6 +189,9 @@ To search the entire folder from the repository root, use `rg -n "search term" d
 
 ## Boards and collaboration
 
+- [Strata workflow audit and navigation decisions](ux/current-state.md)
+- [Usability PRD amendments, acceptance traceability and delivery slices](ux/prd-amendments.md)
+
 - [Navigation observations and recovery (PRD-01; implementation in progress)](navigation-observations.md)
 
 - [Persisted board interface](architecture/board-interface.md)

@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -5,7 +6,8 @@ import { pressAdmittedAction } from './keyboardAdmission';
 import { trackBoardReads } from './boardReadTracker';
 
 // FOUND-FR-008 / PRD-01-TC-12 / PRD-04: intentional canvas scrolling must not
-// conceal a clipped canonical Card title or an oversized List action.
+// hide the complete accessible Card name/detail or an oversized List action.
+// The collapsed title intentionally clamps; metadata stays inside the Card.
 for (const width of [1280, 768, 390, 320]) {
   test(`PRD-01/04: Board and Card reflow with long canonical labels at ${width}px`, async ({ page, context }) => {
     test.setTimeout(90_000); await page.setViewportSize({ width, height: 844 });
@@ -36,7 +38,7 @@ for (const width of [1280, 768, 390, 320]) {
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
       await expect(page.getByRole('heading', { name: boardName, exact: true })).toBeVisible();
       const title = page.getByRole('link', { name: cardTitle, exact: true });
-      await expect(title).toBeVisible(); await expect(title.locator('.MuiCardContent-root')).toHaveText(cardTitle); await reflow();
+      await expect(title).toBeVisible(); await expect(title.getByText(cardTitle, { exact: true })).toHaveText(cardTitle); await expect(title).toHaveAccessibleName(cardTitle); await reflow();
       expect(await title.locator('.MuiCardContent-root').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
       const column = page.getByRole('region', { name: listName, exact: true });
       const endTarget = column.locator('[data-card-list-end]');
@@ -52,7 +54,7 @@ for (const width of [1280, 768, 390, 320]) {
         expect(actionBox).not.toBeNull(); expect(columnBox).not.toBeNull();
         expect(actionBox!.width).toBeLessThanOrEqual(columnBox!.width);
       }
-      await pressAdmittedAction(page.getByRole('button', { name: 'Edit Board details', exact: true }));
+      await pressAdmittedAction((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Edit Board details', exact: true })));
       await expect(page.getByLabel('Board name', { exact: true })).toHaveValue(boardName); await reflow();
       await pressAdmittedAction(page.getByRole('button', { name: 'Cancel Board changes', exact: true }));
       await expect(page.getByRole('dialog')).toHaveCount(0);

@@ -123,8 +123,9 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     };
   }, [identity, available, open, canvasMode, org, board]);
   useEffect(() => {
-    onCanvasChange?.(canvasMode && applied && available ? { snapshot, items: !disabled && result ? result.items : [] } : undefined);
-  }, [canvasMode, applied, available, disabled, result, snapshot, onCanvasChange]);
+    onCanvasChange?.(canvasMode && applied && available ? { snapshot, items: !disabled && result ? result.items : [],
+      ...(!result && !notice ? { pending: true } : {}) } : undefined);
+  }, [canvasMode, applied, available, disabled, result, notice, snapshot, onCanvasChange]);
   useEffect(() => () => onCanvasChange?.(undefined), [onCanvasChange]);
   useEffect(() => () => { epoch.current++; pending.current?.abort(); memberPending.current?.abort(); changePending.current?.abort(); }, []);
   useEffect(() => {

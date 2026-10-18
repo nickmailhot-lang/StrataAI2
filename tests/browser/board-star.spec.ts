@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -45,7 +46,7 @@ for (const width of [1280, 390]) {
         // admission. Require its protected follow-up read before keyboard use.
         await expect.poll(admissionReads.get(client)!).toBeGreaterThanOrEqual(2);
         await openAdmittedReview(
-          client.getByRole('button', { name: 'Board starring', exact: true }),
+          (await disclosedWorkControl(client, 'Board actions', 'button', { name: 'Board starring', exact: true })),
           client.getByRole('dialog', { name: 'Board starring', exact: true }),
         );
         await expect(client.getByText('You have not starred this Board.', { exact: true })).toBeVisible();
@@ -138,12 +139,12 @@ for (const width of [1280, 390]) {
         expect(await client.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
         await expect(client.getByRole('button', { name: 'Done', exact: true })).toBeEnabled();
         await client.getByRole('button', { name: 'Done', exact: true }).focus(); await client.keyboard.press('Enter');
-        await expect(client.getByRole('button', { name: 'Board starring', exact: true })).toBeFocused();
+        await expect((await disclosedWorkControl(client, 'Board actions', 'button', { name: 'Board starring', exact: true }))).toBeFocused();
       }
       await mirror.close();
       await page.reload();
       await openAdmittedReview(
-        page.getByRole('button', { name: 'Board starring', exact: true }),
+        (await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Board starring', exact: true })),
         page.getByRole('dialog', { name: 'Board starring', exact: true }),
       );
       await expect(page.getByText('You have not starred this Board.', { exact: true })).toBeVisible();
