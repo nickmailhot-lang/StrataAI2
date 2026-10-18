@@ -81,12 +81,19 @@ for (const width of [1280, 768, 390, 320]) {
           await expect(details).toHaveJSProperty('open', true); await expect(permitted).toBeVisible();
         }
         const focusTarget = rollback ? permitted : summary;
-        await client.keyboard.press('Tab'); await focusTarget.focus(); await expect(focusTarget).toBeFocused();
-        expect(await focusTarget.evaluate(element => {
+        await client.keyboard.press('Tab');
+        // A foreground admission read can retire the focused control. Establish
+        // only current read-only focus, then measure that same connected node.
+        await expect(async () => {
+          await focusTarget.focus({ timeout: 500 }); await expect(focusTarget).toBeFocused({ timeout: 500 });
+          expect(await focusTarget.evaluateAll(elements => {
+            const element = elements.length === 1 ? elements[0] : undefined;
+            if (!element?.isConnected || element !== document.activeElement) return false;
             const box = element.getBoundingClientRect(), header = document.querySelector('header')?.getBoundingClientRect();
             return box.height >= 44 && box.top >= (header?.bottom ?? 0) && box.bottom <= window.innerHeight
               && element.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2));
-        })).toBe(true);
+          })).toBe(true);
+        }).toPass({ timeout: 5_000 });
         await layout(client);
         await client.screenshot({ path: test.info().outputPath(`organization-actions-${rollback ? 'rollback' : 'default'}-${role.toLowerCase()}-viewport-${width}.png`), fullPage: false });
       }
