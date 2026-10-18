@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { registerNotificationAccount } from './notificationAccountFixture';
+import { openAdmittedReview } from './keyboardAdmission';
 import { expect, test, type WebSocketRoute } from './releaseTest';
 
 const headers = { 'X-StrataAI-Request': '1' };
@@ -23,8 +24,8 @@ for (const width of [1280, 768, 390, 320]) {
     if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     await expect(page.getByRole('heading', { name: 'Draft recovery Organization', exact: true })).toBeVisible();
     await expect.poll(() => !!socket).toBe(true);
-    await page.getByRole('button', { name: 'Create board', exact: true }).click();
     const dialog = page.getByRole('dialog');
+    await openAdmittedReview(page.getByRole('button', { name: 'Create board', exact: true }), dialog);
     await dialog.getByLabel('Name', { exact: false }).fill('Recovered planning Board');
     await dialog.getByLabel('Description', { exact: true }).fill('Keep this unsent draft');
     const submit = dialog.getByRole('button', { name: 'Create', exact: true });
