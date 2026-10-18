@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { focusAdmittedControl, openAdmittedReview } from './keyboardAdmission';
 import { test, expect } from './releaseTest';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 for (const width of [1280, 768, 390, 320]) {
   test(`UXA-02/04/05/06: real work create assign edit filter and return at ${width}px`, async ({ page, context, browser }, info) => {
@@ -17,7 +18,7 @@ for (const width of [1280, 768, 390, 320]) {
     }
     const headers = { 'X-StrataAI-Request': '1' };
     const account = { email: `work-ux-${width}-${Date.now()}@example.test`, password: 'work-ux-correct-horse-battery', displayName: 'Work reviewer' };
-    await registerVerifiedAccountFixture(context.request, account);
+    await registerVerifiedAccountFixture(context.request, account, true);
     const orgReply = await context.request.post('/organizations', { headers, data: { name: `Cedar Court ${width}` } });
     expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
     const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Maintenance work', visibility: 'PRIVATE' } });
@@ -29,6 +30,9 @@ for (const width of [1280, 768, 390, 320]) {
     }
     expect((await context.request.post(`/lists/${listIds[0]}/cards`, { headers, data: { title: 'Replace lobby lamp' } })).status()).toBe(201);
     const boardPath = `/app/${org}/boards/${board}`;
+    const restoreWorker = scopedBoardWorker(org);
+    try {
+    await waitForBoardDelivery(context.request, board);
     await page.goto(boardPath);
     await expect(page.getByRole('heading', { name: 'Maintenance work', exact: true })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
@@ -140,5 +144,6 @@ for (const width of [1280, 768, 390, 320]) {
       const denied = await outsider.request.get(`${new URL(page.url()).origin}/boards/${board}`);
       expect([401, 403, 404]).toContain(denied.status()); expect(await denied.text()).not.toContain('Maintenance work');
     } finally { await outsider.close(); }
+    } finally { restoreWorker(); }
   });
 }

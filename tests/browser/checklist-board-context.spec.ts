@@ -3,6 +3,7 @@ import { expect, test } from './releaseTest';
 import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { focusVisibleBoardCard } from './visibleBoardCard';
 import { trackBoardReads } from './boardReadTracker';
 
 for (const width of [1280, 390]) {
@@ -56,7 +57,7 @@ for (const width of [1280, 390]) {
       await canvas.evaluate(node => { node.scrollLeft = 20; });
       await column.evaluate(node => { node.scrollTop = 100; });
       const cardLink = page.getByRole('link', { name: 'Context Card 4', exact: true });
-      await cardLink.evaluate(node => (node as HTMLElement).focus({ preventScroll: true }));
+      await focusVisibleBoardCard(cardLink);
       await expect(cardLink).toBeFocused();
       const left = await canvas.evaluate(node => node.scrollLeft), top = await column.evaluate(node => node.scrollTop);
       expect(left).toBeGreaterThan(0); expect(top).toBeGreaterThan(0);

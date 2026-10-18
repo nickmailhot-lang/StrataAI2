@@ -5,14 +5,13 @@ export function focusBoardReturn(target: HTMLElement | null | undefined) {
   if (!original.width || !original.height) return;
 
   // Native nearest also pans a partly visible horizontal context. Keep that
-  // context; a wholly hidden or relocated Card still needs its native reveal.
+  // context; a wholly hidden horizontal target still needs its native reveal.
+  // Vertical hiding is handled independently below so it cannot pan that X.
   for (let parent = target.parentElement; parent && parent !== document.body; parent = parent.parentElement) {
     const style = getComputedStyle(parent), bounds = parent.getBoundingClientRect();
     if (!bounds.width || !bounds.height) continue;
     const clippedX = /^(auto|scroll|hidden|clip)$/.test(style.overflowX);
-    const clippedY = /^(auto|scroll|hidden|clip)$/.test(style.overflowY);
-    if (clippedX && (original.right <= bounds.left || original.left >= bounds.right)
-      || clippedY && (original.bottom <= bounds.top || original.top >= bounds.bottom)) {
+    if (clippedX && (original.right <= bounds.left || original.left >= bounds.right)) {
       target.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
       break;
     }
