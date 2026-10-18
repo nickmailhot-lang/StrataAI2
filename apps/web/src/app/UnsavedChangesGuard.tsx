@@ -15,7 +15,8 @@ export function UnsavedChangesGuard({ dirty }: { dirty: boolean }) {
   }, [dirty]);
   // Only generic choices leave the admission container. Private draft content
   // stays withdrawn while the user can still cancel or leave a hidden surface.
-  return <Dialog container={() => document.body} open={dirty && blocker.state === 'blocked'} aria-labelledby="unsaved-title" aria-describedby="unsaved-description"
+  return <Dialog container={() => document.body} disableAutoFocus={false} disableEnforceFocus={false}
+    open={dirty && blocker.state === 'blocked'} aria-labelledby="unsaved-title" aria-describedby="unsaved-description"
     onClose={() => blocker.reset?.()}>
     <DialogTitle id="unsaved-title">Discard unsaved changes?</DialogTitle>
     <DialogContent id="unsaved-description">Your changes have not been saved. Keep editing to preserve them, or discard them to leave.</DialogContent>
