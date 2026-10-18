@@ -25,17 +25,18 @@ internal static class NavigationActorBoardLockContract
     public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
     {
         var failures = new List<string>();
-        foreach (var twoProfiles in new[] { false, true })
-        foreach (var direct in new[] { false, true })
+        foreach (var (direct, twoProfiles, pauseActor) in new[] {
+            (false, false, false), (true, false, false),
+            (false, true, false), (true, true, false), (false, true, true) })
         {
-            var mode = (direct ? "restricted-function" : "owning-adapter") + (twoProfiles ? "/two-profiles" : "/single-profile");
-            try { await RunCase(admin, apiConnection, direct, twoProfiles, ct); Console.WriteLine($"PASS navigation/account/Board lock order: {mode}."); }
+            var mode = (direct ? "restricted-function" : "owning-adapter") + (twoProfiles ? "/two-profiles" : "/single-profile") + (pauseActor ? "/account-held" : "/parent-held");
+            try { await RunCase(admin, apiConnection, direct, twoProfiles, pauseActor, ct); Console.WriteLine($"PASS navigation/account/Board lock order: {mode}."); }
             catch (InvalidOperationException error) { failures.Add(mode); Console.WriteLine($"FAIL navigation/account/Board lock order: {mode}: {error.Message}"); }
         }
-        Require(failures.Count == 0, $"Navigation/account/Board admission failed in {failures.Count}/4 controlled modes: {string.Join(", ", failures)}.");
+        Require(failures.Count == 0, $"Navigation/account/Board admission failed in {failures.Count}/5 controlled modes: {string.Join(", ", failures)}.");
     }
 
-    private static async Task RunCase(NpgsqlConnection admin, string apiConnection, bool direct, bool twoProfiles, CancellationToken ct)
+    private static async Task RunCase(NpgsqlConnection admin, string apiConnection, bool direct, bool twoProfiles, bool pauseActor, CancellationToken ct)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct); deadline.CancelAfter(TimeSpan.FromSeconds(30));
         var token = deadline.Token;
@@ -69,8 +70,9 @@ internal static class NavigationActorBoardLockContract
         var names = new[] { $"nav-lock-work-{actor:N}", $"nav-lock-observation-{actor:N}", $"nav-lock-profile-{actor:N}", $"nav-lock-peer-profile-{actor:N}" };
         var context = new Context(actor, sessionHash);
         var logs = new DatabaseCodes();
+        var pause = pauseActor ? new ActorPause() : null;
         await using var workProvider = Provider(apiConnection, names[0], context, logs);
-        await using var observationProvider = Provider(apiConnection, names[1], context, logs);
+        await using var observationProvider = Provider(apiConnection, names[1], context, logs, pause);
         await using var profileProvider = Provider(apiConnection, names[2], context, logs);
         await using var peerProfileProvider = Provider(apiConnection, names[3], context, logs);
         var work = workProvider.GetRequiredService<IWorkManagementService>();
@@ -78,8 +80,9 @@ internal static class NavigationActorBoardLockContract
         var profile = profileProvider.GetRequiredService<IIdentityService>();
         var peerProfile = peerProfileProvider.GetRequiredService<IIdentityService>();
         await using var gate = await admin.BeginTransactionAsync(token);
-        await using (var held = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@organization AND id=@board FOR UPDATE;", admin, gate))
+        if (!pauseActor)
         {
+            await using var held = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@organization AND id=@board FOR UPDATE;", admin, gate);
             held.Parameters.AddWithValue("organization", organization); held.Parameters.AddWithValue("board", board);
             Require(await held.ExecuteScalarAsync(token) is Guid, "Controlled Board gate missing.");
         }
@@ -91,19 +94,31 @@ internal static class NavigationActorBoardLockContract
         var released = false;
         try
         {
-            read = Task.Run(() => work.GetBoardAsync(board, actor, token), token); running.Add(read);
-            await Waiting(names[0], read);
-            observed = Task.Run(() => Observe(), token); running.Add(observed);
-            await Waiting(names[1], observed);
-            admitted = Task.Run(() => profile.ReadProfileAsync(actor, token), token); running.Add(admitted);
-            await Waiting(names[2], admitted, allowCompleted: true);
-            if (twoProfiles)
+            if (pause is not null)
             {
-                // The exact CI cycle has TWO exclusive account admissions.
-                // A second queued profile read preserves that four-way order;
-                // the original single-profile cases remain positive controls.
+                observed = Task.Run(() => Observe(), token); running.Add(observed);
+                await pause.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10), token);
+                admitted = Task.Run(() => profile.ReadProfileAsync(actor, token), token); running.Add(admitted);
+                await Waiting(names[2], admitted);
                 peerAdmitted = Task.Run(() => peerProfile.ReadProfileAsync(actor, token), token); running.Add(peerAdmitted);
-                await Waiting(names[3], peerAdmitted, allowCompleted: true);
+                await Waiting(names[3], peerAdmitted);
+                read = Task.Run(() => work.GetBoardAsync(board, actor, token), token); running.Add(read);
+                await Waiting(names[0], read);
+                pause.Resume.TrySetResult(true);
+            }
+            else
+            {
+                read = Task.Run(() => work.GetBoardAsync(board, actor, token), token); running.Add(read);
+                await Waiting(names[0], read);
+                observed = Task.Run(() => Observe(), token); running.Add(observed);
+                await Waiting(names[1], observed);
+                admitted = Task.Run(() => profile.ReadProfileAsync(actor, token), token); running.Add(admitted);
+                await Waiting(names[2], admitted, allowCompleted: true);
+                if (twoProfiles)
+                {
+                    peerAdmitted = Task.Run(() => peerProfile.ReadProfileAsync(actor, token), token); running.Add(peerAdmitted);
+                    await Waiting(names[3], peerAdmitted, allowCompleted: true);
+                }
             }
             await gate.CommitAsync(token); released = true;
             await Task.WhenAll(running).WaitAsync(TimeSpan.FromSeconds(15), token);
@@ -128,6 +143,7 @@ internal static class NavigationActorBoardLockContract
         }
         finally
         {
+            pause?.Resume.TrySetResult(true);
             if (!released) await gate.RollbackAsync(CancellationToken.None);
             if (running.Count > 0)
             {
@@ -203,13 +219,15 @@ internal static class NavigationActorBoardLockContract
         }
     }
 
-    private static ServiceProvider Provider(string connection, string name, Context context, DatabaseCodes logs)
+    private static ServiceProvider Provider(string connection, string name, Context context, DatabaseCodes logs, ActorPause? pause = null)
     {
         var services = new ServiceCollection(); services.AddLogging(builder => builder.AddProvider(logs));
         services.AddSingleton(new PostgresConnectionFactory(new NpgsqlConnectionStringBuilder(connection) { ApplicationName = name }.ConnectionString));
         services.AddSingleton<IClock, SystemClock>(); services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
         services.AddSingleton<ICommandActorContext>(context); services.AddSingleton<IIdentityCommandContext>(context); services.AddSingleton<IWorkCommandContext>(context);
-        services.AddSingleton<ICommandActorAuthorization, CommandActorAuthorization>(); services.AddSingleton<PostgresBackgroundJobStore>();
+        services.AddSingleton<CommandActorAuthorization>();
+        services.AddSingleton<ICommandActorAuthorization>(provider => pause is null ? provider.GetRequiredService<CommandActorAuthorization>() : new PausedAuthorization(provider.GetRequiredService<CommandActorAuthorization>(), pause));
+        services.AddSingleton<PostgresBackgroundJobStore>();
         services.AddSingleton<IBackgroundJobStore>(provider => provider.GetRequiredService<PostgresBackgroundJobStore>());
         var runtime = new RuntimeDescriptor(RuntimeMode.Production, "contract", "contract");
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> {
@@ -226,6 +244,24 @@ internal static class NavigationActorBoardLockContract
         public string? SessionTokenHash => hash;
         public string? RevocationSessionTokenHash => hash;
         public Guid? IdempotencyKey => null;
+    }
+    private sealed class ActorPause
+    {
+        public TaskCompletionSource<bool> Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<bool> Resume { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+    // Only scheduling is controlled: every account/session check delegates to
+    // the actual production authorization adapter with its restricted queries.
+    private sealed class PausedAuthorization(CommandActorAuthorization actual, ActorPause pause) : ICommandActorAuthorization
+    {
+        private int paused;
+        public async Task<bool> VerifyAsync(Guid actor, CancellationToken ct = default)
+        {
+            var result = await actual.VerifyAsync(actor, ct);
+            if (result && Interlocked.Exchange(ref paused, 1) == 0)
+            { pause.Entered.TrySetResult(true); await pause.Resume.Task.WaitAsync(ct); }
+            return result;
+        }
     }
     private sealed class DatabaseCodes : ILoggerProvider
     {
