@@ -37,6 +37,11 @@ Current135ee Clear correction passes54filter cases, a135 consumer94 with identic
 Prior A5 immutable foundation run completes28 Organization/lifecycle cases and2 reminders, then2 image-backed copy failures. Both fail with Board actions collapsed; desktop screenshot and both error contexts inspected. Original private archive retained.
 Only two alternate image-case entry points now use existing keyboard Board actions disclosure, including after reload. All original outcome, consent, receipt, withdrawal, independent image, role and Axe assertions/deadlines remain. Exact source5f016235; no UI/build/backend change.
 Whole existing ordinary Board copy desktop/phone2 passes1.6min on actual135ee/644, zero retries/skips; both final screenshots inspected. Browser types and all298 immutable browser/integration refusal contracts pass. This is not an image-pipeline pass.
+Actual730/synthetic04f complete hosted frontend2906/24existingdeferrals, Domain1086/3existing skips, API1429/2existing capacity skips, PostgreSQL56steps, images and configured security pass. All actual identities retained.
+Actual730 whole foundation passes50browser executions:28Organization/lifecycle,2reminders,2image-backed copy and18attachment lifecycle, plus original private-image HTTP race/receipts/sanitization/anonymous denial. Both previous image-copy failures resolved without reducing original assertions.
+Current required command failure is stale observation of append-function wait after the existing C# fix moved waiting to Board parent. Independent whole navigation HTTP consumer29requests passes, old predicate0/current scoped parent1/wrong blocker0; exclusive account NOWAIT and original shared read succeed before pendingBoardOpen200.
+Only CI fixture changed at7edefeed: exact actual parent query and fixture blockerPID, samecount1/100poll/0.1s, original actor read/reply/receipt/privacy conditions plus stronger exclusive actor probe. Bash syntax/298refusal controls/integration registry/whitespace pass. All production inputs unchanged.
+Eight stacked PR targets aligned to main with original bases/heads retained. Only96 actually merged; other16stillpending.
 
 ## 2. Implemented, awaiting validation
 
@@ -44,7 +49,7 @@ PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25
 
 ## 3. Current work in progress
 
-PRD-25-VS-02-T-03 Testing: publish current5f016235 plus evidence and require complete current hosted source, image pipeline, security and release gates. T04 main integration remains Ready; only96 merged.
+PRD-25-VS-02-T-03 Testing: publish current CI-observer correction and require complete new-head global source/security/original command/full browser/release qualification. Earlier730 full1partial55 is not a partition pass. T04 Ready; only96 merged.
 
 ## 4. Blockers and dependencies
 
@@ -52,7 +57,7 @@ Remaining16PRshave historicalfailedormissingrequiredCI andmustnotbe mergedwithou
 
 ## 5. Next highest-priority deliverable
 
-Validate ledger/history and indexed evidence hashes, commit metadata only, normal fast-forward existing111 from3efd after fresh remote guard. Record exact published head/synthetic merge/run IDs, keep Draft. Await all complete new-head required image/attachment, source, PostgreSQL, security, four browser shards and release gates; inspect/fix failures without relaxing assertions. Then recheck reviews/main/head, normal expected-head merge, verify all17 actual receipts/main ancestry and update progress.
+Validate ledger/history and indexed evidence hashes, commit metadata only over7edefeed, normal fast-forward existing111 after fresh remote730/main guard. Record new exact head/synthetic merge/run IDs, retain Draft. Require every current22gate including whole original navigation Bash driver and all7runtime groups/releasebundle. Inspect actual failures without assertion/deadline relaxation. Then fresh reviews/main/head, normal expected-head merge and verify actual all17main receipts/ancestry; update ledger, no parent PRD/MVP completion.
 
 ## 6. PRD progress changes
 
@@ -141,6 +146,19 @@ EVID-CYCLE-21-COPY-DISCOVERY-TYPES
 EVID-CYCLE-21-COPY-IMMUTABLE-CONTRACTS
 EVID-CYCLE-21-COPY-REAL-CONSUMER2
 EVID-CYCLE-21-COPY-SOURCE-RECONCILIATION
+EVID-CYCLE-21-STACKED-MAIN-TARGETS
+EVID-CYCLE-21-HOSTED730-WEB
+EVID-CYCLE-21-HOSTED730-DOTNET
+EVID-CYCLE-21-HOSTED730-POSTGRES
+EVID-CYCLE-21-HOSTED730-IMAGES
+EVID-CYCLE-21-HOSTED730-SECURITY
+EVID-CYCLE-21-HOSTED730-FOUNDATION
+EVID-CYCLE-21-HOSTED730-FULL1-PARTIAL55
+EVID-CYCLE-21-HOSTED730-NAV-WAIT-FAILURE
+EVID-CYCLE-21-NAV-WAIT-ACTUAL-CONSUMER
+EVID-CYCLE-21-NAV-WAIT-298-CONTROLS
+EVID-CYCLE-21-NAV-WAIT-QUALITY
+EVID-CYCLE-21-NAV-WAIT-SOURCE
 
 ## Recent verified completed increments
 

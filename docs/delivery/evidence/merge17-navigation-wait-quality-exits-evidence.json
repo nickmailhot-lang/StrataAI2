@@ -1,0 +1,7 @@
+{
+  "revision": "7edefeedf69301621b41237a3fa768d091b69604",
+  "rawArtifact": "merge17-navigation-wait-quality-exits.json",
+  "rawSha256": "f7d9d25b9ce6fa45cc7bded965eb30fbc7d9a88546f5af3403c3dd1b486d853a",
+  "scope": "Bash syntax, all298 immutable refusal checks, integration registry and strict whitespace pass on exact precommit7edefeed inputs. Full original driver still requires new hosted execution.",
+  "rawUtf8Text": "{\r\n  \"contracts\": 0,\r\n  \"syntax\": 0,\r\n  \"scope\": \"Only the actual Board parent wait/blocker observation changes; exclusive account NOWAIT control added. All original HTTP statuses, receipts, concurrent replay, permission, archive and pending observation assertions,100poll/0.1s budget retained. Whole original Bash gate still required in final hosted CI.\",\r\n  \"at\": \"2026-10-18T10:56:26.3361944+00:00\",\r\n  \"whitespace\": 0,\r\n  \"base\": \"73042946d24ea669cd084c16c22536aed24dcb85\",\r\n  \"registry\": 0\r\n}\r\n"
+}

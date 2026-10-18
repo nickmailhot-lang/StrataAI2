@@ -1,0 +1,7 @@
+{
+  "revision": "04f261b89cfcb96db22e5bea044e1de6951937e7",
+  "rawArtifact": "merge17-final730-full1-partial55-projection.json",
+  "rawSha256": "7ef427025448ca56c9c730469509e845d41ec1d9dad59e400d13767bf4e16188",
+  "scope": "Live refreshed UI shows55first browser cases passed, zero failed rows observed, but remaining partition cases were not complete. Partial observation only; never a whole121case or final-head gate pass.",
+  "rawUtf8Text": "{\n  \"at\": \"2026-10-18T10:59:54.293Z\",\n  \"publishedHead\": \"73042946d24ea669cd084c16c22536aed24dcb85\",\n  \"actualSyntheticMerge\": \"04f261b89cfcb96db22e5bea044e1de6951937e7\",\n  \"run\": 39115407244,\n  \"job\": 117649077774,\n  \"result\": \"Not Run\",\n  \"observedThroughCase\": 55,\n  \"scope\": \"Refreshed authenticated GitHub live UI shows first55 case results passing through desktop Board member directory. In-progress partition still required its remaining cases; this is not a whole partition pass. Full original group is not narrowed or substituted; new published-head full matrix remains mandatory.\"\n}\n"
+}
