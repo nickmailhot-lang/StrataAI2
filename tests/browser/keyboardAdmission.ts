@@ -20,6 +20,35 @@ export async function pressAdmittedAction(button: Locator, key: 'Enter' | 'Space
   await button.press(key);
 }
 
+// A live read can disable a field between Playwright's actionability check and
+// native insertion. Retry only an insertion that dispatched no input event.
+// Once text reaches the field, callers' value assertions must detect any loss;
+// never refill a cleared draft or carry it into a replacement control.
+export async function fillAdmittedInput(input: Locator, value: string) {
+  const observation = await input.evaluateHandle(node => {
+    const state = { count: 0 };
+    const onInput = () => { state.count++; };
+    node.addEventListener('input', onInput);
+    return { node, state, onInput };
+  });
+  try {
+    await expect(async () => {
+      if (await observation.evaluate(o => o.state.count) === 0) {
+        expect(await observation.evaluate(o => o.node.isConnected)).toBe(true);
+        await focusAdmittedControl(input);
+        if (await observation.evaluate(o => o.state.count) === 0) {
+          expect(await observation.evaluate(o => o.node.isConnected)).toBe(true);
+          await input.fill(value, { timeout: 500 });
+        }
+      }
+      await expect.poll(() => observation.evaluate(o => o.state.count), { timeout: 500 }).toBe(1);
+    }).toPass({ timeout: 5_000 });
+  } finally {
+    await observation.evaluate(o => o.node.removeEventListener('input', o.onInput));
+    await observation.dispose();
+  }
+}
+
 // A live read can disable the control after focus and send Enter to the body.
 // Retry keyboard admission only until this one request starts. Never activate
 // again once the route observer advances, even while its response is pending.

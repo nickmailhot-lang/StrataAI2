@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission.ts';
+import { expect } from '@playwright/test';
+import { fillAdmittedInput, openAdmittedReview, pressObservedRequest } from './keyboardAdmission.ts';
 
 // The real Playwright expectations/polling drive this isolated Locator protocol
 // fixture. Product browser cases separately prove native UI and HTTP behavior.
@@ -120,4 +121,57 @@ test('an unopened review remains a failure within the original admission budget'
   const region = new ReviewRegion(); const launcher = new ReviewLauncher(region, 'never-opens');
   await assert.rejects(openAdmittedReview(launcher, region));
   assert.equal(region.visible, false); assert.ok(launcher.presses > 0);
+});
+
+class InputLocator extends Locator {
+  fills = 0;
+  node = Object.assign(new EventTarget(), { value: '', isConnected: true });
+  observation;
+  async evaluateHandle(callback) {
+    const observation = callback(this.node); this.observation = observation;
+    return { evaluate: async fn => fn(observation), dispose: async () => {} };
+  }
+  async focus() {
+    this.focuses++;
+    if (this.mode === 'replaced') this.node.isConnected = false;
+  }
+  async fill(value) {
+    this.fills++;
+    if (this.mode === 'unadmitted-input' && this.fills === 1) return;
+    this.node.value = value; this.node.dispatchEvent(new Event('input'));
+    if (this.mode === 'cleared-after-input') this.node.value = '';
+    if (this.mode === 'excess-input') this.node.dispatchEvent(new Event('input'));
+  }
+  async _expect(expression, options) {
+    if (expression !== 'to.have.value') return super._expect(expression, options);
+    const matches = this.node.value === options.expectedText[0].string;
+    return { matches, received: this.node.value, log: [], timedOut: !matches };
+  }
+}
+
+test('admitted text dispatches one native input event and one insertion', async () => {
+  const input = new InputLocator('normal');
+  await fillAdmittedInput(input, 'Inspect'); await expect(input).toHaveValue('Inspect');
+  assert.equal(input.fills, 1); assert.equal(input.observation.state.count, 1);
+});
+test('only an ignored insertion with no input event can be attempted again', { timeout: 10_000 }, async () => {
+  const input = new InputLocator('unadmitted-input');
+  await fillAdmittedInput(input, 'Inspect'); await expect(input).toHaveValue('Inspect');
+  assert.equal(input.fills, 2); assert.equal(input.observation.state.count, 1);
+});
+test('a draft cleared after native input still fails its value assertion without refilling', async () => {
+  const input = new InputLocator('cleared-after-input');
+  await fillAdmittedInput(input, 'Inspect');
+  await assert.rejects(expect(input).toHaveValue('Inspect', { timeout: 100 }));
+  assert.equal(input.fills, 1); assert.equal(input.observation.state.count, 1);
+});
+test('a replacement control cannot receive the earlier input intent', { timeout: 10_000 }, async () => {
+  const input = new InputLocator('replaced');
+  await assert.rejects(fillAdmittedInput(input, 'Inspect'));
+  assert.equal(input.fills, 0); assert.equal(input.observation.state.count, 0);
+});
+test('extra native input remains a failure and cannot trigger another insertion', { timeout: 10_000 }, async () => {
+  const input = new InputLocator('excess-input');
+  await assert.rejects(fillAdmittedInput(input, 'Inspect'));
+  assert.equal(input.fills, 1); assert.equal(input.observation.state.count, 2);
 });

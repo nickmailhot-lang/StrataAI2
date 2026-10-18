@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { focusAdmittedControl, openAdmittedReview } from './keyboardAdmission';
+import { fillAdmittedInput, focusAdmittedControl, openAdmittedReview } from './keyboardAdmission';
 import { test, expect } from './releaseTest';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -82,7 +82,7 @@ for (const width of [1280, 768, 390, 320]) {
     await openAdmittedReview(page.getByRole('button', { name: 'Filter Board Cards', exact: true }), page.getByRole('dialog', { name: 'Filter Board Cards', exact: true }));
     const filters = page.getByRole('dialog', { name: 'Filter Board Cards', exact: true });
     await expect.poll(() => filters.evaluate(element => getComputedStyle(element.closest('.MuiDialog-container')!).opacity)).toBe('1');
-    await filters.getByRole('textbox', { name: 'Card keyword', exact: true }).fill('Inspect');
+    await fillAdmittedInput(filters.getByRole('textbox', { name: 'Card keyword', exact: true }), 'Inspect');
     await expect(filters.getByRole('textbox', { name: 'Card keyword', exact: true })).toHaveValue('Inspect');
     await activate('Apply filters', filters);
     await expect(filters.getByRole('link', { name: 'Inspect roof — Reported', exact: true })).toBeVisible();
