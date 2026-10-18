@@ -176,14 +176,22 @@ internal static class NavigationActorBoardLockContract
             while (DateTimeOffset.UtcNow < until)
             {
                 if (operation.IsCompleted)
-                { Require(allowCompleted, "Contender completed before its controlled parent wait was observed."); return; }
+                { Require(allowCompleted, $"Contender phase {Array.IndexOf(names, name)} completed before its controlled wait; state={operation.Status}."); return; }
                 await using (var clear = new NpgsqlCommand("SELECT pg_stat_clear_snapshot();", admin, gate)) await clear.ExecuteNonQueryAsync(token);
                 await using var wait = new NpgsqlCommand("""
                     SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE application_name=@name
                      AND state='active' AND wait_event_type='Lock' AND cardinality(pg_blocking_pids(pid))>0);
                     """, admin, gate);
                 wait.Parameters.AddWithValue("name", name);
-                if (await wait.ExecuteScalarAsync(token) is true) return;
+                if (await wait.ExecuteScalarAsync(token) is true)
+                {
+                    await using var shape = new NpgsqlCommand("SELECT query FROM pg_stat_activity WHERE application_name=@name AND state='active' AND wait_event_type='Lock';", admin, gate);
+                    shape.Parameters.AddWithValue("name", name);
+                    var sql = (string?)await shape.ExecuteScalarAsync(token) ?? "";
+                    var kind = sql.Contains("runtime_database_role_is_safe", StringComparison.Ordinal) ? "runtime-role-admission" : sql.Contains("append_or_replay_navigation", StringComparison.Ordinal) ? "navigation-function" : sql.Contains("users", StringComparison.Ordinal) ? "account-row" : sql.Contains("boards", StringComparison.Ordinal) ? "Board-row" : "other";
+                    Console.WriteLine($"Actual wait: accountFirst={actorFirst}; direct={direct}; phase={Array.IndexOf(names, name)}; queryKind={kind}.");
+                    return;
+                }
                 await Task.Delay(20, token);
             }
             throw new InvalidOperationException("Actual controlled PostgreSQL wait was not observed.");
