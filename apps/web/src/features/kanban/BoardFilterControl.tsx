@@ -337,7 +337,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
       <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
         {result?.next && <Button disabled={disabled || loading} onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
         {cursor && <Button disabled={disabled || loading} onClick={() => setCursor(undefined)}>First filtered Cards</Button>}
-        <Button disabled={disabled || changeBusy || !!changeIntent} onClick={clear}>Clear Board filters</Button>
+        <Button disabled={disabled || labelLoading || memberLoading || !identity || !available || changeBusy || !!changeIntent} onClick={clear}>Clear Board filters</Button>
         {notice && <Button disabled={disabled || loading} onClick={() => setRetry(n => n + 1)}>Retry filtered Cards</Button>}
       </Stack>
     </Stack>}
@@ -390,7 +390,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
           <Button disabled={disabled || labelLoading} onClick={() => void loadLabels()}>Reload label choices</Button>
           {labelCursor && <Button disabled={disabled || labelLoading} onClick={() => void loadLabels(labelCursor!)}>Next label choices</Button>}
           <Button ref={applyAction} disabled={disabled || labelLoading || memberLoading || !identity || changeBusy || !!changeIntent} onClick={apply}>Apply filters</Button>
-          <Button ref={clearAction} disabled={disabled || labelLoading || !identity || changeBusy || !!changeIntent} onClick={clear}>Clear filters</Button>
+          <Button ref={clearAction} disabled={disabled || labelLoading || memberLoading || !identity || changeBusy || !!changeIntent} onClick={clear}>Clear filters</Button>
         </Stack>
         {changeBusy && <Typography role="status">Checking filter change…</Typography>}
         {changeNotice && <Typography role="status">{changeNotice}</Typography>}
