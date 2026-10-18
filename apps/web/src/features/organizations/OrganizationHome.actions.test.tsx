@@ -36,7 +36,10 @@ it.each([0, 1, 2])('PRD-03-VS-06-T-03: current role %s discloses exactly permitt
   const summary = await screen.findByText('Organization actions', { selector: 'summary' });
   expect(summary.parentElement).toHaveProperty('open', false);
   const disclosure = await openActions(); expect(names(disclosure)).toEqual(expected(role));
-  for (const link of disclosure.querySelectorAll('a')) expect(link.getAttribute('href')).toMatch(new RegExp(`^/app/${org}/`));
+  for (const link of disclosure.querySelectorAll('a')) {
+    expect(link.getAttribute('href')).toMatch(new RegExp(`^/app/${org}/`));
+    expect(link).toHaveStyle({ minHeight: '44px' });
+  }
   fireEvent.click(summary); expect(disclosure).toHaveProperty('open', false);
 });
 
@@ -68,6 +71,7 @@ it('PRD-03-VS-06-T-03: rollback retains inline role-permitted actions and the ex
   const create = await screen.findByRole('button', { name: 'Create board' });
   expect(screen.queryByText('Organization actions', { selector: 'summary' })).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Organization settings' })).toHaveAttribute('href', `/app/${org}/settings`);
+  expect(screen.getByRole('link', { name: 'Organization settings' })).toHaveStyle({ minHeight: '44px' });
   fireEvent.click(create); fireEvent.change(await screen.findByLabelText(/Name/), { target: { value: 'Unsent original draft' } });
   fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
