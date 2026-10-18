@@ -283,7 +283,13 @@ for (const width of [1280, 390]) for (const audience of ['organization-reader', 
       await expect(preview.locator('em')).toHaveText('read-only emphasis');
       const reference = preview.getByRole('link', { name: 'Reference', exact: true });
       await expect(reference).toHaveAttribute('href', 'https://example.test/reference');
-      await reference.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
+      // Foreground admission can replace the next disclosure's Tab stop.
+      // Settle that read before checking an uninterrupted keyboard round trip.
+      await page.bringToFront();
+      await expect.poll(() => page.evaluate(() => document.hasFocus())).toBe(true);
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
+      await reference.focus(); await expect(reference).toBeFocused();
+      await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
       await expect(reference).toBeFocused();
       expect(await reference.evaluate(node => Number.parseFloat(getComputedStyle(node).outlineWidth))).toBeGreaterThan(0);
       await expect(preview.getByRole('link', { name: 'Unsafe', exact: true })).toHaveCount(0);
