@@ -71,7 +71,7 @@ it('PRD-25-VS-02-T-03/AC-01: dialog Clear cannot appear available while assignee
   const { state } = setup(); await open();
   fireEvent.click(screen.getByRole('button', { name: 'Choose assignees' }));
   await waitFor(() => expect(state.memberPaused).toBeTypeOf('function'));
-  const clear = screen.getByRole('button', { name: 'Clear filters', exact: true });
+  const clear = screen.getByRole('button', { name: 'Clear filters' });
   try {
     expect(clear).toBeDisabled(); fireEvent.click(clear); expect(state.writes).toBe(0);
   } finally { await act(async () => { state.memberPaused?.(); }); }
