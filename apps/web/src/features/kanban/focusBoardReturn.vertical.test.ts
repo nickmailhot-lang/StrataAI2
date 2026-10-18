@@ -51,3 +51,12 @@ it('PRD-09-VS-01-T-03/AC-02: remeasure after inner scrolling so every nested ver
   expect(card).toHaveFocus(); expect(column.scrollTop).toBe(136); expect(canvas.scrollTop).toBe(50); expect(canvas.scrollLeft).toBe(20);
   insideClient(card, column); insideClient(card, canvas); expect(window.scrollBy).not.toHaveBeenCalled();
 });
+
+it('PRD-09-VS-01-T-03/AC-02: a wholly hidden vertical target must not pan a partly visible horizontal context', () => {
+  const { card, canvas, column } = fixture({ y: 900 });
+  card.scrollIntoView = vi.fn(() => { canvas.scrollLeft = 16; });
+  focusBoardReturn(card);
+  expect(card).toHaveFocus(); expect(canvas.scrollLeft).toBe(20);
+  expect(column.scrollTop).toBe(288); insideClient(card, column); insideClient(card, canvas);
+  expect(card.scrollIntoView).not.toHaveBeenCalled();
+});
