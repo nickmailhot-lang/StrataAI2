@@ -94,7 +94,10 @@ test(`PRD-17-TC-01/07/08/11/12: ${recipientRole} cross-Board watch relationships
     for (const board of boards) await waitForBoardDelivery(context.request, board);
     async function watch(kind: 'Board' | 'List' | 'Card', board: string, watching: boolean) {
       await page.bringToFront(); await page.goto(`/app/${org}/boards/${board}${kind === 'Card' ? `/cards/${card}` : ''}`);
-      await activate(page.getByRole('button', { name: `${kind} watching`, exact: true }));
+      const launcher = kind === 'Card'
+        ? await disclosedWorkControl(page, 'Card actions', 'button', { name: `${kind} watching`, exact: true })
+        : page.getByRole('button', { name: `${kind} watching`, exact: true });
+      await activate(launcher);
       const dialog = page.getByRole('dialog', { name: `${kind} watching`, exact: true });
       await expect(dialog.getByText(`You are ${watching ? 'not ' : ''}watching this ${kind}.`, { exact: true })).toBeVisible();
       await activate(dialog.getByRole('button', { name: 'Check current watching', exact: true }));

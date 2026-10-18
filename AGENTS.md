@@ -12,6 +12,8 @@ Record implemented, tested and accepted separately in `docs/ux/delivery-report.m
 
 The BoardWindow capacity phase preserves a fixed 24-case functional counterpart in `BoardWindow.test.tsx` and 24 deferred large cases. Put unrelated new UX/accessibility regressions in dedicated test files; do not widen an expected count merely to accommodate a new test.
 
+Production browser scenarios that wait for a new Board's delivery must own that Organization's existing `scopedBoardWorker` fixture and restore it in `finally`. A local external scope controller does not prove the immutable CI fixture is configured. Preserve the original delivery predicate, bounded authority, roles and deadlines; do not enable global discovery or relax assertions to make setup pass.
+
 ## Incremental delivery contract
 
 Use `docs/delivery/progress.json` as the machine-readable work-item ledger and `docs/delivery/README.md` for the operating procedure. Retain existing PRD/ARCH/UX/FR/AC/TC identifiers and historical records. Every new work item has a unique ID and one parent: Epic → PRD → Vertical Slice → Task → Test. Link tests to specific acceptance IDs. Do not restart implementation because an audit has not yet verified it.

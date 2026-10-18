@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
 import { expect, test } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
-import { waitForBoardDelivery } from './scopedBoardWorker';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { openOrganizationActions } from './organizationActionAdmission';
 import { openAdmittedReview } from './keyboardAdmission';
 
@@ -13,6 +13,7 @@ for (const width of [1280, 768, 390, 320]) {
     const participant = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: { width, height: 900 } });
     const headers = { 'X-StrataAI-Request': '1' }, mutationHeaders = () => ({ ...headers, 'Idempotency-Key': crypto.randomUUID() });
     let releaseReads = () => {}, holding = false, gate = Promise.resolve(), heldReads = 0;
+    let restoreWorker = () => {};
     try {
       const account = { email: `organization-actions-${crypto.randomUUID()}@example.test`, password: 'organization-actions-correct-horse', displayName: 'Organization action owner' };
       const invited = { ...account, email: `organization-actions-participant-${crypto.randomUUID()}@example.test`, displayName: 'Current action participant' };
@@ -26,6 +27,7 @@ for (const width of [1280, 768, 390, 320]) {
       expect(createdList.status()).toBe(201); const list = (await createdList.json()).id;
       const createdCard = await context.request.post(`/lists/${list}/cards`, { headers: mutationHeaders(), data: { title: 'Permitted action Card' } });
       expect(createdCard.status()).toBe(201); const card = (await createdCard.json()).id;
+      restoreWorker = scopedBoardWorker(org);
       await waitForBoardDelivery(context.request, board);
       const directoryPath = `/app/${org}`, organizationPath = `/organizations/${org}`, boardPath = `${directoryPath}/boards/${board}`;
       async function canonical() {
@@ -151,6 +153,9 @@ for (const width of [1280, 768, 390, 320]) {
       await expect(participantPage.getByText('Permitted action Card', { exact: true })).toHaveCount(0);
       await expect(participantPage.getByRole('navigation', { name: 'Internal application navigation', exact: true })).toHaveCount(0);
       expect(graphWrites).toEqual([]);
-    } finally { holding = false; releaseReads(); await participant.close(); }
+    } finally {
+      holding = false; releaseReads();
+      try { restoreWorker(); } finally { await participant.close(); }
+    }
   });
 }
