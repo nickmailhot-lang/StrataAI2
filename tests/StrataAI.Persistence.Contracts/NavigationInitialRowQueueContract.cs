@@ -80,8 +80,9 @@ internal static class NavigationInitialRowQueueContract
         var navigation = observationProvider.GetRequiredService<NavigationInteractionReplayProducer>();
         var profile = profileProvider.GetRequiredService<IIdentityService>();
         var peerProfile = peerProfileProvider.GetRequiredService<IIdentityService>();
-        await using var boardConnection = new NpgsqlConnection(Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_ADMIN_CONNECTION")
-            ?? throw new InvalidOperationException("Original private fixture admin configuration is required."));
+        await using var boardConnection = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(
+            Environment.GetEnvironmentVariable("STRATAAI_CONTRACT_ADMIN_CONNECTION")
+            ?? throw new InvalidOperationException("Original private fixture admin configuration is required.")) { Pooling = false }.ConnectionString);
         await boardConnection.OpenAsync(token);
         await using var boardGate = await boardConnection.BeginTransactionAsync(token);
         await using (var heldBoard = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@organization AND id=@board FOR UPDATE;", boardConnection, boardGate))
@@ -160,7 +161,7 @@ internal static class NavigationInitialRowQueueContract
 
         async Task<bool> AccountAdmissionAvailable()
         {
-            await using var connection = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(apiConnection) { ApplicationName = $"nav-rowqueue-order-probe-{actor:N}" }.ConnectionString);
+            await using var connection = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(apiConnection) { ApplicationName = $"nav-rowqueue-order-probe-{actor:N}", Pooling = false }.ConnectionString);
             await connection.OpenAsync(token); await using var transaction = await connection.BeginTransactionAsync(token);
             await using var probe = new NpgsqlCommand("SELECT id FROM users WHERE id=@actor AND status='ACTIVE' FOR UPDATE NOWAIT;", connection, transaction);
             probe.Parameters.AddWithValue("actor", actor);
@@ -171,7 +172,7 @@ internal static class NavigationInitialRowQueueContract
         async Task<IdentityOperation<NavigationInteractionEvent>> Observe()
         {
             if (!direct) return await navigation.BoardAsync(actor, organization, board, 1, request, new string('a', 64), token);
-            await using var connection = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(apiConnection) { ApplicationName = names[1] }.ConnectionString);
+            await using var connection = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(apiConnection) { ApplicationName = names[1], Pooling = false }.ConnectionString);
             await connection.OpenAsync(token); await using var tx = await connection.BeginTransactionAsync(token);
             await using (var subject = new NpgsqlCommand("SELECT set_config('app.identity_subject',@actor,true);", connection, tx))
             { subject.Parameters.AddWithValue("actor", actor.ToString("D")); await subject.ExecuteNonQueryAsync(token); }
