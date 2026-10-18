@@ -69,7 +69,7 @@ test(`PRD-06: normal Board readiness, cached detail and mutation latency meet bu
     if (width === 1280) await page.getByRole('link', { name: 'Performance card 4', exact: true }).scrollIntoViewIfNeeded();
     // Set up the intended destination away from the vertical auto-scroll edge
     // before the real cross-List gesture and timed release.
-    await page.getByRole('link', { name: 'Performance card 4', exact: true }).evaluate(anchor => {
+    if (width === 390) await page.getByRole('link', { name: 'Performance card 4', exact: true }).evaluate(anchor => {
       const section = anchor.closest('section')!;
       const rect = anchor.getBoundingClientRect(), bounds = section.getBoundingClientRect();
       const top = Math.max(0, bounds.top), bottom = Math.min(innerHeight, bounds.bottom);
