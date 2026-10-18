@@ -5,12 +5,17 @@ import { useBlocker } from 'react-router-dom';
 export function UnsavedChangesGuard({ dirty }: { dirty: boolean }) {
   const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && currentLocation.pathname !== nextLocation.pathname);
   useEffect(() => {
+    if (!dirty && blocker.state === 'blocked') blocker.proceed();
+  }, [dirty, blocker]);
+  useEffect(() => {
     if (!dirty) return;
     const protect = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
     window.addEventListener('beforeunload', protect);
     return () => window.removeEventListener('beforeunload', protect);
   }, [dirty]);
-  return <Dialog open={blocker.state === 'blocked'} aria-labelledby="unsaved-title" aria-describedby="unsaved-description"
+  // Only generic choices leave the admission container. Private draft content
+  // stays withdrawn while the user can still cancel or leave a hidden surface.
+  return <Dialog container={() => document.body} open={dirty && blocker.state === 'blocked'} aria-labelledby="unsaved-title" aria-describedby="unsaved-description"
     onClose={() => blocker.reset?.()}>
     <DialogTitle id="unsaved-title">Discard unsaved changes?</DialogTitle>
     <DialogContent id="unsaved-description">Your changes have not been saved. Keep editing to preserve them, or discard them to leave.</DialogContent>
