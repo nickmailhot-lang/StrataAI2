@@ -1,5 +1,6 @@
 import { organizationNavigation } from '../../app/navigationModel';
 import { ActionRow } from '../../components/ActionRow';
+import { SecondaryActions } from '../../app/SecondaryActions';
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -361,18 +362,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               <Typography>{organization.description}</Typography>
             )}
             <ActionRow sx={{ gap: 2 }}>
-              {organizationNavigation(organizationId, currentOrganization).map(item =>
-                <Button key={item.id} component={Link} to={item.to}>{item.label}</Button>)}
-              <Button disabled={creating && !organizationId}
-                onClick={() => {
-                  setData(undefined);
-                  setReload((value) => value + 1);
-                }}
-              >
-                Refresh
-              </Button>
               {(!organizationId || organization?.status === 0) && (
                 <Button
+                  variant="contained"
                   ref={createButton} disabled={creating}
                   onClick={() => {
                     setError(undefined);
@@ -382,6 +374,18 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
                   Create {organizationId ? "board" : "organization"}
                 </Button>
               )}
+              <Button disabled={creating && !organizationId}
+                onClick={() => {
+                  setData(undefined);
+                  setReload((value) => value + 1);
+                }}
+              >
+                Refresh
+              </Button>
+              {organizationId && <SecondaryActions label="Organization actions">
+                {organizationNavigation(organizationId, currentOrganization).map(item =>
+                  <Button key={item.id} component={Link} to={item.to}>{item.label}</Button>)}
+              </SecondaryActions>}
             </ActionRow>
             {organizationId ? (
               data.boards.length === 0 ? (
