@@ -50,9 +50,13 @@ for (const width of [1280, 768, 390, 320]) {
         if (rollback) await expect(summary).toHaveCount(0);
         else {
           await expect(summary).toBeVisible();
-          expect(await create.evaluate(element => {
-            const summary = document.querySelector('summary');
-            return !!summary && Boolean(element.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING);
+          // Admission may withdraw both controls after visibility was observed.
+          // Compare contemporaneous admitted nodes, never an obsolete handle.
+          await expect.poll(() => create.evaluateAll(elements => {
+            const current = elements.length === 1 ? elements[0] : undefined;
+            const summary = Array.from(document.querySelectorAll('summary')).find(element => element.textContent?.trim() === 'Organization actions');
+            return !!current && !!summary && current.isConnected && summary.isConnected
+              && Boolean(current.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING);
           })).toBe(true);
         }
         const permitted = client.getByRole('link', { name: role === 'Member' ? 'Leave Organization' : 'Organization settings', exact: true });
