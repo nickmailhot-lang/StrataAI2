@@ -316,16 +316,22 @@ function BoardContent() {
       : previewListMove(previewCardMove(snapshot, movePreview), listPreview)).lists.map(column => ({ ...column, id: column.list.id }))
     : [], [snapshot, canvasFilter, movePreview, listPreview]);
   const loadError = loaded?.key === key ? loaded.error : undefined;
-  useEffect(() => {
+  const focusCreationRefusal = useCallback(() => {
     const owner = creationRefusalOwner.current;
     if (owner === undefined || !(loadError && !snapshot || error && failure?.creationEntry)) return;
-    creationRefusalOwner.current = undefined;
     // Recover the retired command's focus, preserving deliberate navigation
     // elsewhere. Centering also clears a retained Board scroll under the header.
     if (document.activeElement !== owner && document.activeElement !== document.body) return;
     creationRefusal.current?.focus({ preventScroll: true });
     creationRefusal.current?.scrollIntoView?.({ block: 'center' });
   }, [loadError, snapshot, error, failure?.creationEntry]);
+  // Present a focused refusal before paint, then account for a retired modal's
+  // passive focus cleanup. Both phases preserve deliberate outside navigation.
+  useLayoutEffect(focusCreationRefusal, [focusCreationRefusal]);
+  useEffect(() => {
+    focusCreationRefusal();
+    creationRefusalOwner.current = undefined;
+  }, [focusCreationRefusal]);
   const subscribed = Boolean(snapshot);
   const invalidate = useEffectEvent(() => {
     if (reading.current) queuedRefresh.current = true;
