@@ -186,7 +186,16 @@ internal static class NavigationActorBoardLockContract
             while (DateTimeOffset.UtcNow < until)
             {
                 if (operation.IsCompleted)
-                { Require(allowCompleted, $"Contender phase {Array.IndexOf(names, name)} completed before its controlled wait; state={operation.Status}."); return; }
+                {
+                    var code = operation switch {
+                        Task<WorkOperation<BoardSnapshot>> workTask when workTask.IsCompletedSuccessfully => workTask.Result.ErrorCode ?? "success",
+                        Task<IdentityOperation<UserProfile>> profileTask when profileTask.IsCompletedSuccessfully => profileTask.Result.ErrorCode ?? "success",
+                        Task<IdentityOperation<NavigationInteractionEvent>> navTask when navTask.IsCompletedSuccessfully => navTask.Result.ErrorCode ?? "success",
+                        _ => operation.Status.ToString()
+                    };
+                    Require(allowCompleted, $"Contender phase {Array.IndexOf(names, name)} completed before its controlled wait; result={code}; database={string.Join(",", logs.Codes)}.");
+                    return;
+                }
                 await using (var clear = new NpgsqlCommand("SELECT pg_stat_clear_snapshot();", admin, gate)) await clear.ExecuteNonQueryAsync(token);
                 await using var wait = new NpgsqlCommand("""
                     SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE application_name=@name
