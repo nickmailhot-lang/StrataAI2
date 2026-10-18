@@ -1,0 +1,7 @@
+{
+  "revision": "51f95e6e1231affd328dbc23a278efcdf8b9e850",
+  "rawArtifact": "merge17-hosted-first-migration-failure.json",
+  "rawSha256": "1e35626587e9d5130c41774bd7e2987d9176f6016431909bf9b08cb513ca029a",
+  "scope": "Actual complete-manifest guard refused omitted150 forward-upgrade stage. LaterPGstepsskipped; no manifest assertion/grant/production migration weakened.",
+  "rawUtf8Text": "{\n  \"at\": \"2026-10-18T08:02:31.766Z\",\n  \"pr\": 111,\n  \"head\": \"c233d44f9173c51358710e827bd7b160a767ac01\",\n  \"actualMergeSource\": \"51f95e6e1231affd328dbc23a278efcdf8b9e850\",\n  \"runId\": 39108585320,\n  \"jobId\": 117619707677,\n  \"result\": \"Failed\",\n  \"failedStage\": \"Verify migration repeat, upgrade, failure rollback and serialization\",\n  \"diagnostic\": \"Staged upgrades do not cover the complete production migration manifest.\",\n  \"cause\": \"Production migration150 was present, but the original populated forward-upgrade runner stopped at149 before its unchanged complete-manifest assertion.\",\n  \"remediationSource\": \"4ab35b3d297f13b866b27eb8a6d14df6e287d1be\",\n  \"scope\": \"Actual first hosted failure retained; later PostgreSQL steps were skipped after this failure and are not counted as passing. Existing same-source dedicated Linux backend gates are separate.\"\n}\n"
+}

@@ -1,0 +1,7 @@
+{
+  "revision": "4ab35b3d297f13b866b27eb8a6d14df6e287d1be",
+  "rawArtifact": "merge17-migration-upgrade.txt",
+  "rawSha256": "48b7dee19b14bb0e08f98184aaff230ed5beabdadf77a79835d6d3844f9f4b1a",
+  "scope": "First isolated local setup refused Windows CRLF before suite execution; zero migration cases counted. Original archive/log/cluster retained. Second Git archive uses core.autocrlf=false matching Linux checkout bytes.",
+  "rawUtf8Text": "scripts/ci/test-migration-runner.sh: line 2: set: pipefail\r\n: invalid option name\r\n"
+}
