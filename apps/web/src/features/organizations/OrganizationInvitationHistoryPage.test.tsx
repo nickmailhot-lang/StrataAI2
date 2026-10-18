@@ -43,6 +43,32 @@ async function invalidate() {
   await act(async () => { live.watch.mock.calls.at(-1)![0].invalidate(); });
 }
 
+it.each(['Organization', 'Board'])('preserves unconfirmed revocation across a failed live history refresh (%s)', async surface => {
+  let revoked = false, unavailable = false, unavailableChecks = 0;
+  const mock = vi.fn(async (path: string, options?: RequestInit) => {
+    if (options?.method === 'DELETE') { revoked = true; unavailable = true; return reply(null, 204); }
+    if (path === '/me' && unavailable) { unavailableChecks++; return reply({}, 503); }
+    return reply(path === '/me' ? profile : path === `/boards/${board}` ? boardScope
+      : { items: [{ ...(surface === 'Board' ? boardRow : row), revokedAt: revoked ? '2034-01-02T00:00:00Z' : null }], nextCursor: null });
+  });
+  vi.stubGlobal('fetch', mock); if (surface === 'Board') boardMount(); else mount(); await review();
+  await waitFor(() => expect((surface === 'Board' ? boardLive : live).watch).toHaveBeenCalled());
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm revocation' }));
+  await screen.findByText('Revocation could not be confirmed. Check the current invitation state before another action.');
+  await act(async () => { (surface === 'Board' ? boardLive : live).watch.mock.calls.at(-1)![0].invalidate(); });
+  await waitFor(() => expect(unavailableChecks).toBeGreaterThanOrEqual(2));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Check revocation' })).toBeEnabled());
+  expect(screen.getByText('Revocation could not be confirmed. Check the current invitation state before another action.')).toBeVisible();
+  expect(screen.queryByRole('heading', { name: row.email })).not.toBeInTheDocument();
+  if (surface === 'Board') expect(screen.queryByRole('heading', { name: 'Private maintenance' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(screen.queryByText('Invitation revocation confirmed.')).not.toBeInTheDocument();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
+  unavailable = false; fireEvent.click(screen.getByRole('button', { name: 'Check revocation' }));
+  await screen.findByText('Invitation revocation confirmed.'); expect(screen.getByText('Revoked')).toBeVisible();
+  expect(mock.mock.calls.filter(call => call[1]?.method === 'DELETE')).toHaveLength(1);
+});
+
 it.each([
   ['Organization', 'source', false], ['Board', 'source', false], ['Organization', 'cancel', false], ['Board', 'cancel', false],
   ['Organization', 'source', true], ['Board', 'source', true], ['Organization', 'cancel', true], ['Board', 'cancel', true],

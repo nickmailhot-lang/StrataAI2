@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-18 21:26:13 UTC",
+  "head": "903572e3290b06b35651a43da428c562f3f468d6",
+  "synthetic": "94dadc24d4baa28ecc98dd2bfc6ae6b61506e44a",
+  "run": 39155430904,
+  "job": 117766015085,
+  "name": "container-integration (browser-full, 2/4)",
+  "result": "Failed",
+  "passed": 117,
+  "failed": 1,
+  "skipped": 2,
+  "total": 120,
+  "duration": "1.2h",
+  "footers": [
+    "2026-10-18T21:19:54.7626923Z   1 failed",
+    "2026-10-18T21:19:54.7628165Z   2 skipped",
+    "2026-10-18T21:19:54.7628389Z   117 passed (1.2h)"
+  ],
+  "skipRows": [
+    "2026-10-18T20:37:37.9346002Z   -   43 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 1280px",
+    "2026-10-18T20:38:03.0206326Z   -   44 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 390px"
+  ],
+  "failure": {
+    "file": "tests/browser/invitation-history-account.spec.ts",
+    "line": 67,
+    "board": true,
+    "width": 1280,
+    "assertion": "Revocation could not be confirmed. Check the current invitation state before another action.",
+    "observed": "Expected uncertainty message absent; final screen shows generic history-read error, live checking/recovery-preserved notice and Check revocation.",
+    "trace": {
+      "pageDeleteRequests": 1,
+      "deleteStatus": 204,
+      "deleteStart": 2256451.116,
+      "postDeleteProfile": {
+        "status": 503,
+        "start": 2256495.86
+      },
+      "laterProfile": {
+        "status": 503,
+        "start": 2256693.07
+      },
+      "diagnosis": "Pending recovery survives, but a later failed background history read overwrites the specific uncertainty message with a generic read error. Reproduced deterministically for Organization and Board by two new regression cases."
+    }
+  },
+  "artifact": {
+    "id": 12151356138,
+    "sha256": "a42f094936ff4d37ea25d99e7f0d1de1ffbb705cd146965e397695bc802bc348",
+    "hashVerified": true,
+    "privateZip": "work/merge17-903-full2-browser-diagnostics.zip",
+    "privateSelection": "work/merge17-903-full2-selected"
+  },
+  "scope": "Actual whole current903 full2 Failed, not the working product correction. Original identity-mail environment skips remain distinct; dedicated notification identity-mail cases passed earlier on903. Full3/full4 still executing. No release/main/PRD/MVP acceptance.",
+  "recordedAt": "2026-10-18T21:27:05.922Z",
+  "diagnosisBoundary": "One real revocation204 is followed by account503. Recovery ID/action survives; a failed background history load replaces the command uncertainty message. New deterministic Organization/Board regressions fail at that same message against unchanged365 product code; a bounded product feedback correction is being validated. No write replay, role or private-data assertion is removed."
+}

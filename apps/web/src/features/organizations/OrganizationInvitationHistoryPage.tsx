@@ -30,6 +30,7 @@ function page(value: unknown, boardId?: string): value is Page {
     && (result.nextCursor === null || validInvitationKey(result.nextCursor) && result.items.length === 50
       && result.nextCursor === result.items.at(-1)?.id);
 }
+const unconfirmedRevocationMessage = 'Revocation could not be confirmed. Check the current invitation state before another action.';
 const delivery = (state: string | null) => ({ PENDING: 'Email pending', SENT: 'Email sent',
   CANCELLED: 'Email cancelled', FAILED: 'Email delivery failed', RETRY_EXHAUSTED: 'Email retries exhausted' }[state ?? ''] ?? 'No email delivery recorded');
 async function request(path: string, options: RequestInit, signal: AbortSignal) {
@@ -200,7 +201,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     const telemetryStarted = performance.now(); let succeeded = false;
     activityEvent(observations.read, retryRead ? 'retry' : 'use');
     const started = epoch.current;
-    if (!quiet) { setBoardName(undefined); setError(undefined); setRows(undefined); selectReview(undefined); }
+    if (!quiet) { setBoardName(undefined); setError(recoveryId.current ? unconfirmedRevocationMessage : undefined); setRows(undefined); selectReview(undefined); }
     try {
       await boundedWorkRead(async signal => {
         if (!validInvitationKey(organizationId)) { deny(404); return; }
@@ -251,7 +252,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     } catch { if (mounted.current && pending.current === controller) {
       activityEvent(observations.read, 'exception');
       setBoardName(undefined); setRows(undefined); selectReview(undefined); setPreferences(undefined); setNotice(undefined);
-      setError('Unable to confirm invitation history. Please retry.');
+      setError(recoveryId.current ? unconfirmedRevocationMessage : 'Unable to confirm invitation history. Please retry.');
     } }
     finally {
       if (mounted.current && pending.current === controller) activityResult(observations.read, succeeded, telemetryStarted);
@@ -280,7 +281,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
         else {
           if (result.status === 409) activityEvent(observations.revoke, 'conflict');
           recoveryId.current = target.id; setUnconfirmed(target.id); setBoardName(undefined); setRows(undefined);
-          setError('Revocation could not be confirmed. Check the current invitation state before another action.');
+          setError(unconfirmedRevocationMessage);
         }
       }, controller.signal);
     } catch { if (mounted.current && pending.current === controller) {
@@ -288,7 +289,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
       setBoardName(undefined); setRows(undefined); setPreferences(undefined); setNotice(undefined);
       if (submitted) {
         recoveryId.current = target.id; setUnconfirmed(target.id);
-        setError('Revocation could not be confirmed. Check the current invitation state before another action.');
+        setError(unconfirmedRevocationMessage);
       } else setError('Your account could not be confirmed. No revocation was sent. Refresh invitations before reviewing again.');
     } } finally {
       if (mounted.current && pending.current === controller) activityResult(observations.revoke, succeeded, telemetryStarted);

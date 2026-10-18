@@ -1,5 +1,22 @@
 # Incremental delivery progress
 
+Completed current903 full2 diagnostics (2026-10-18T21:27:05.922Z):117passed/1failed/2existing identity-mail profile skips. Verified trace/screenshot show one DELETE204, then account503 and a failed background history refresh overwriting the specific command-uncertainty message. Check revocation remains. EVID-CYCLE-28-903-FULL2-COMPLETE-FAILURE retains this actual failure; bounded product feedback rework and deterministic Organization/Board regression validation are active. Full3/full4 continue; no source-publication or merge acceptance.
+
+Additional current903 observation: full2 job117766015085 shows a failed invitation-history-account Board=true/1280px case61 (19.8s). Its detailed assertion/trace and whole totals await completion. EVID-CYCLE-28-903-FULL2-INVITATION-PARTIAL-FAILURE preserves this separately; the local365 Markdown readiness fix does not claim to address it. Complete diagnosis is required before publication.
+
+## Card Markdown keyboard admission follow-up — 2026-10-18
+
+1. Completed evidence: published903 CI39155430904 has a failed notification group:57passed/1failed; four later scopes did not run. Actual verified trace/screenshot show initial Reference-link Tab/Shift+Tab focus failure before live update/withdrawal. The same anonymous case passed in current whole full1 (121passed), which does not waive the failing profile. Foundation50,commands and source/PostgreSQL/images/security/CodeQL Passed; full2/3/4 are still running.
+2. Implemented awaiting validation: local 365bfdb44f1690cb64f78c7bf1bf112fe2c284ff foregrounds the page, observes document focus and settled Board admission (including the modal-hidden background state), then retains the original keyboard round trip and visible-focus assertion. Browser types and all4 verified-Demo reader/anonymous desktop/phone cases Passed. No application/backend/helper/pipeline,deadline,retry,security or original downstream oracle changed.
+3. Current work: qualification rework is active; integration remains Ready. Supporting current135 web/existing389 Demo backend and polling fallback are explicitly distinct from immutable Production/Worker acceptance. Failed setup/probe attempts and previous implementation/gate history remain.
+4. Dependencies and exact next action: Finish current903 full2/3/4 and complete22 evidence. Retain all results, address only actual failures, finalize one metadata checkpoint/push to existing PR111, and require every22 check at that frozen new head. Then fresh main/head/all17reviews, normal expected-head merge and actual17receipt/original-ancestry verification.
+5. PRD progress: only96confirmedmerged;16pending; no Done,parent PRD or MVP claim.
+6. Evidence: EVID-CYCLE-28-903-NOTIFICATION-FOCUS-FAILURE and EVID-CYCLE-28-CARD-KEYBOARD-READINESS-QUALITY; actual Reference focus outlines at1280/390 were inspected after successful original keyboard assertions. All17 original heads are retained; unsafead7/held0438 remain excluded.
+
+Earlier checkpoint records below retain their original revisions and results.
+
+---
+
 ## Current integration checkpoint — 2026-10-18
 
 1. **Completed validation.** Published bbf21db5, CI 39137769087, is fully collected: 19 checks succeeded, two failed, and one was skipped. The four full browser scopes account for 476 passed, one failed, and two existing identity-mail environment skips out of 479 cases. Foundation: 50 passed. Notifications: 93 passed across nine scopes. The command group passed. Both mail cases passed in the dedicated notification environment. All twelve previous 1c3f83ae full-browser failures now pass.

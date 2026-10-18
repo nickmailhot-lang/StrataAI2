@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-18 20:58:01 UTC",
+  "head": "903572e3290b06b35651a43da428c562f3f468d6",
+  "synthetic": "94dadc24d4baa28ecc98dd2bfc6ae6b61506e44a",
+  "run": 39155430904,
+  "job": 117766015085,
+  "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39155430904/job/117766015085",
+  "result": "Failed",
+  "scope": "Observed individual failed case in an in-progress full2 group. Whole-job result/counts and exact failure stack/trace are not yet available. No exclusive cause or repair inferred.",
+  "case": {
+    "index": 61,
+    "file": "tests/browser/invitation-history-account.spec.ts",
+    "line": 7,
+    "name": "PRD-03/05/60: account uncertainty before and after revocation (Board=true, 1280px)",
+    "durationSeconds": 19.8
+  },
+  "method": "Read-only live GitHub job UI; later visible passing rows78–80 show the group continues.",
+  "next": "Collect complete full2 log/artifact after the group finishes; diagnose exact assertion before modifying code. Continue full3/full4 diagnostics. Keep published903 unchanged and failed; local365 only addresses separate Markdown readiness failure.",
+  "recordedAt": "2026-10-18T21:01:21.039Z",
+  "needsCompletionDiagnostics": true,
+  "interpretation": "One actual failed live row is known. Do not infer the error assertion, root cause, final count or a correction before the completed job log and retained trace become available. Local365 only addresses the separate Markdown readiness issue."
+}
