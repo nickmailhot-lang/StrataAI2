@@ -25,16 +25,17 @@ internal static class NavigationActorBoardLockContract
     public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
     {
         var failures = new List<string>();
+        foreach (var actorFirst in new[] { false, true })
         foreach (var direct in new[] { false, true })
         {
-            var mode = direct ? "restricted-function" : "owning-adapter";
-            try { await RunCase(admin, apiConnection, direct, ct); Console.WriteLine($"PASS navigation/account/Board lock order: {mode}."); }
+            var mode = (direct ? "restricted-function" : "owning-adapter") + (actorFirst ? "/account-first" : "/parent-first");
+            try { await RunCase(admin, apiConnection, direct, actorFirst, ct); Console.WriteLine($"PASS navigation/account/Board lock order: {mode}."); }
             catch (InvalidOperationException error) { failures.Add(mode); Console.WriteLine($"FAIL navigation/account/Board lock order: {mode}: {error.Message}"); }
         }
-        Require(failures.Count == 0, $"Navigation/account/Board admission failed in {failures.Count}/2 controlled modes: {string.Join(", ", failures)}.");
+        Require(failures.Count == 0, $"Navigation/account/Board admission failed in {failures.Count}/4 controlled modes: {string.Join(", ", failures)}.");
     }
 
-    private static async Task RunCase(NpgsqlConnection admin, string apiConnection, bool direct, CancellationToken ct)
+    private static async Task RunCase(NpgsqlConnection admin, string apiConnection, bool direct, bool actorFirst, CancellationToken ct)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct); deadline.CancelAfter(TimeSpan.FromSeconds(30));
         var token = deadline.Token;
@@ -75,10 +76,15 @@ internal static class NavigationActorBoardLockContract
         var navigation = observationProvider.GetRequiredService<NavigationInteractionReplayProducer>();
         var profile = profileProvider.GetRequiredService<IIdentityService>();
         await using var gate = await admin.BeginTransactionAsync(token);
-        await using (var held = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@organization AND id=@board FOR UPDATE;", admin, gate))
+        // The table gate pauses actual navigation SQL after account admission,
+        // before its Board lock. It is used only in this isolated fixture.
+        await using (var held = new NpgsqlCommand(actorFirst
+            ? "LOCK TABLE navigation_interaction_events IN ACCESS EXCLUSIVE MODE;"
+            : "SELECT id FROM boards WHERE tenant_id=@organization AND id=@board FOR UPDATE;", admin, gate))
         {
             held.Parameters.AddWithValue("organization", organization); held.Parameters.AddWithValue("board", board);
-            Require(await held.ExecuteScalarAsync(token) is Guid, "Controlled Board gate missing.");
+            var heldResult = await held.ExecuteScalarAsync(token);
+            Require(actorFirst || heldResult is Guid, "Controlled Board gate missing.");
         }
         Task<WorkOperation<BoardSnapshot>>? read = null;
         Task<IdentityOperation<NavigationInteractionEvent>>? observed = null;
@@ -86,14 +92,26 @@ internal static class NavigationActorBoardLockContract
         var released = false;
         try
         {
-            read = Task.Run(() => work.GetBoardAsync(board, actor, token), token);
-            await Waiting(names[0], read);
-            observed = Task.Run(() => Observe(), token);
-            await Waiting(names[1], observed);
-            // Both operations are actually queued behind the held parent. A
-            // profile read may finish or wait, depending on account admission.
-            admitted = Task.Run(() => profile.ReadProfileAsync(actor, token), token);
-            await Waiting(names[2], admitted, allowCompleted: true);
+            if (actorFirst)
+            {
+                observed = Task.Run(() => Observe(), token);
+                await Waiting(names[1], observed);
+                admitted = Task.Run(() => profile.ReadProfileAsync(actor, token), token);
+                await Waiting(names[2], admitted);
+                read = Task.Run(() => work.GetBoardAsync(board, actor, token), token);
+                await Waiting(names[0], read);
+            }
+            else
+            {
+                read = Task.Run(() => work.GetBoardAsync(board, actor, token), token);
+                await Waiting(names[0], read);
+                observed = Task.Run(() => Observe(), token);
+                await Waiting(names[1], observed);
+                // Both operations are queued behind the held parent. A profile
+                // read may finish or wait, depending on account admission.
+                admitted = Task.Run(() => profile.ReadProfileAsync(actor, token), token);
+                await Waiting(names[2], admitted, allowCompleted: true);
+            }
             await gate.CommitAsync(token); released = true;
             await Task.WhenAll(read, observed, admitted).WaitAsync(TimeSpan.FromSeconds(15), token);
             var result = await read; var eventResult = await observed; var accountResult = await admitted;
