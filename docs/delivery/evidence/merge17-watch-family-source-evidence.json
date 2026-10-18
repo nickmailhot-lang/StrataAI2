@@ -1,0 +1,34 @@
+{
+  "at": "2026-10-18T14:25:51.326Z",
+  "revision": "c95e26583055eb22920ffefd2d34419b257433ee",
+  "types": {
+    "revision": "c95e26583055eb22920ffefd2d34419b257433ee",
+    "exit": 0,
+    "at": "2026-10-18T14:24:13.4473311+00:00",
+    "scope": "Only existing Card disclosure in dynamic native watch-overlap launcher; all original assertions/deadlines retained"
+  },
+  "originalOverlapBodyOtherwiseByteIdentical": true,
+  "originalBodySha256": "ef94eb048aaf7dff4f83dd8f7f2b4f7d9f6a1d57df08082336d50a1847a8b3c2",
+  "entries": [
+    {
+      "file": "watch-notifications.spec.ts",
+      "protectedCardEntrySites": 1,
+      "sha256": "3623e5086c536cc5ae56c6a15381e47726a86f8b39bdba77ab5c82d3e42b3425"
+    },
+    {
+      "file": "watch-cross-board-notifications.spec.ts",
+      "protectedCardEntrySites": 2,
+      "sha256": "d3d8221c655d499deefe1c77e103dffb413430c79cc84c2f001bba7ef6c2022e"
+    },
+    {
+      "file": "watch-subscriptions.spec.ts",
+      "protectedCardEntrySites": 1,
+      "sha256": "89aaaddb063db53468bf32c1502a012f56cd31dc3c2747eb2c0df39e758b9815"
+    }
+  ],
+  "totalProtectedCardEntrySites": 4,
+  "productionDeliveryWaitSpecs": 66,
+  "missingWorkerScopes": [],
+  "unchangedProductBackendPipelineAndHelperInputs": true,
+  "scope": "Source/type audit only, no corrected immutable positive execution. Oldfull4 overlap failure observed, exact final stack pending. Currentbc9 local phone performance failure preserved separately."
+}

@@ -1,0 +1,506 @@
+{
+  "at": "2026-10-18T14:42:24.999Z",
+  "publishedHead": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+  "synthetic": "577e80591fac1ddb5f6b60ea89d3ab0dd3c6cf02",
+  "result": "Failed",
+  "checks": {
+    "headRevision": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+    "hasMore": false,
+    "checks": [
+      {
+        "id": 117702255849,
+        "name": "release-bundle",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "skipped",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117702255849"
+      },
+      {
+        "id": 117702231766,
+        "name": "required-ci",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "failure",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117702231766"
+      },
+      {
+        "id": 117668178439,
+        "name": "container-integration (browser-foundation, 1/1)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117668178439"
+      },
+      {
+        "id": 117668178438,
+        "name": "container-integration (browser-full, 4/4)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "failure",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117668178438"
+      },
+      {
+        "id": 117668178425,
+        "name": "container-integration (browser-notifications, 1/1)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "failure",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117668178425"
+      },
+      {
+        "id": 117668178408,
+        "name": "container-integration (browser-full, 2/4)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117668178408"
+      },
+      {
+        "id": 117668178399,
+        "name": "container-integration (browser-full, 1/4)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117668178399"
+      },
+      {
+        "id": 117668178387,
+        "name": "container-integration (commands, 1/1)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117668178387"
+      },
+      {
+        "id": 117668178379,
+        "name": "container-integration (browser-full, 3/4)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "failure",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117668178379"
+      },
+      {
+        "id": 117668178348,
+        "name": "security",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117668178348"
+      },
+      {
+        "id": 117667630787,
+        "name": "build-images-once",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117667630787"
+      },
+      {
+        "id": 117667609310,
+        "name": "source-quality-gate",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117667609310"
+      },
+      {
+        "id": 117658666348,
+        "name": "postgres-integration",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117658666348"
+      },
+      {
+        "id": 117658666326,
+        "name": "web-quality",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117658666326"
+      },
+      {
+        "id": 117658666288,
+        "name": "dotnet-quality",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117658666288"
+      },
+      {
+        "id": 117658592171,
+        "name": "metadata",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121650532/job/117658592171"
+      },
+      {
+        "id": 117658392449,
+        "name": "CodeQL",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/117658392449"
+      },
+      {
+        "id": 117658291378,
+        "name": "Analyze (javascript-typescript)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121648690/job/117658291378"
+      },
+      {
+        "id": 117658291341,
+        "name": "Analyze (python)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121648690/job/117658291341"
+      },
+      {
+        "id": 117658291335,
+        "name": "Analyze (actions)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121648690/job/117658291335"
+      },
+      {
+        "id": 117658291291,
+        "name": "Analyze (c-cpp)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121648690/job/117658291291"
+      },
+      {
+        "id": 117658291193,
+        "name": "Analyze (csharp)",
+        "head_sha": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39121648690/job/117658291193"
+      }
+    ],
+    "statuses": []
+  },
+  "checkCounts": {
+    "success": 17,
+    "failure": 4,
+    "skipped": 1
+  },
+  "full4": {
+    "at": "2026-10-18T14:40:44.856Z",
+    "publishedHead": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+    "synthetic": "577e80591fac1ddb5f6b60ea89d3ab0dd3c6cf02",
+    "run": 39121650532,
+    "job": 117668178438,
+    "status": "failure",
+    "passed": 107,
+    "failed": 8,
+    "failures": [
+      {
+        "scope": "normal phone Kanban",
+        "count": 1,
+        "assertion": "Expected pre-drop announcement beforeCard4 absent at kanban-performance.spec.ts118. Retained screenshot/status shows eventual beforeCard49 under continuing edge scroll. Failure occurs before release, canonical receipt and all timing samples; no hosted phone Kanban timing evidence."
+      },
+      {
+        "scope": "crossBoard watch five roles",
+        "count": 5,
+        "assertion": "Card watching locator absent at keyboardAdmission.ts15 / dynamic watch helper97; same disclosure omission as strict notification cohort."
+      },
+      {
+        "scope": "native watch overlap",
+        "count": 1,
+        "assertion": "Card watching locator absent, watch-notifications.spec.ts69; original remaining assertions not reached."
+      },
+      {
+        "scope": "real work usability320px",
+        "count": 1,
+        "assertion": "Expected Inspect roof result absent atwork-usability.spec.ts90; retained trace completed Applyfocus/Enter, zero filter-change requests, keywordInspect and enabledApply remain. Existing request-observed admission correction, original exactcount/result/valueoracles unchanged."
+      }
+    ],
+    "passingRelevantScopes": [
+      "Worknavigation all1280/768/390/320",
+      "Realtime persisted delivery/cursor recovery/logout revocation",
+      "Workusability create/assign/edit/filter/return1280/768/390;320notpassed",
+      "Dates/checklist/desktopKanban and desktop/phoneListfeedback metrics passed; normalphoneKanban measurement absent"
+    ],
+    "requiredCi": "Failed",
+    "releaseBundle": "Skipped",
+    "artifactReceipts": [
+      {
+        "id": 12140311019,
+        "sha256": "4de88c5073d4e76defe4c62bce9de9ab1f29c27b23b4880e04e3e66953175eac"
+      },
+      {
+        "id": 12139912312,
+        "sha256": "86bca4abf2c24466ff1e2566e8a78879b2817025e98e960ae46ad25d24620b9e"
+      }
+    ],
+    "safeFooter": [
+      "2026-10-18T14:34:07.6361941Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/kanban-performance.spec.ts:118:120",
+      "2026-10-18T14:34:07.6524075Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/watch-notifications.spec.ts:69:7",
+      "2026-10-18T14:34:07.6549826Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/work-usability.spec.ts:90:95",
+      "2026-10-18T14:34:07.6562240Z   8 failed",
+      "2026-10-18T14:34:07.6581715Z   107 passed (1.1h)"
+    ]
+  },
+  "filterAdmission": {
+    "publishedHead": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+    "synthetic": "577e80591fac1ddb5f6b60ea89d3ab0dd3c6cf02",
+    "traceSha256": "3add9a1458dbdc2962db8af64357a5f8187355d2e7acc701a74c4fd1a851a851",
+    "observedApplyCalls": [
+      {
+        "method": "focus",
+        "key": null,
+        "start": 4024271.634,
+        "end": 4024278.627,
+        "error": false
+      },
+      {
+        "method": "press",
+        "key": "Enter",
+        "start": 4024302.171,
+        "end": 4024341.681,
+        "error": false
+      }
+    ],
+    "recordedFilterChangeRequests": 0,
+    "failureSnapshot": {
+      "keyword": "Inspect",
+      "applyEnabled": true,
+      "resultLinkAbsent": true
+    },
+    "inference": "Completed Enter with no recorded filter command and retained field supports a lost pre-request admission. It does not prove an exclusive cause. Use existing observer helper only until first request starts; retain exact one-request and result assertions."
+  },
+  "performance": {
+    "schemaVersion": 1,
+    "revision": "577e80591fac1ddb5f6b60ea89d3ab0dd3c6cf02",
+    "topology": "exact release images through Nginx",
+    "measurements": [
+      {
+        "metric": "normal-desktop-card-dates",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "datedCards": 50,
+          "samples": 20,
+          "viewport": "1280x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable"
+        },
+        "usableMs": 907.3307239999995,
+        "detailMs": 101.09999999997672,
+        "detailObserved": true,
+        "detailAutomationMs": 169.17607999999746,
+        "mutationP95Ms": 50.12217399999645,
+        "mutationSamplesMs": [
+          62.63204599999881,
+          47.525040000000445,
+          47.269203999996535,
+          41.035080999994534,
+          42.16733999999997,
+          39.91481400000339,
+          39.497282000003906,
+          40.6617200000037,
+          44.5470989999958,
+          46.718683999999485,
+          50.12217399999645,
+          41.16301499999827,
+          35.76150800000323,
+          40.477882999999565,
+          39.63195600000472,
+          41.32844699999987,
+          47.33716999999888,
+          38.36020499999722,
+          40.36235300000408,
+          41.130199999999604
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "normal-desktop-checklist",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "samples": 20,
+          "viewport": "1280x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable",
+          "checklists": 2,
+          "items": 63,
+          "pageSize": 50
+        },
+        "itemPageMs": 113.84585199999856,
+        "nextItemPageMs": 114.69737200000964,
+        "usableMs": 613.479278999992,
+        "detailMs": 142.10000000009313,
+        "detailObserved": true,
+        "detailAutomationMs": 277.52331999999296,
+        "feedbackObserved": true,
+        "feedbackMs": 59,
+        "mutationP95Ms": 67.25809699999809,
+        "mutationSamplesMs": [
+          67.25809699999809,
+          49.322362999999314,
+          49.5109439999942,
+          70.5882089999941,
+          33.157105000005686,
+          32.03964200000337,
+          33.01221400000213,
+          32.265041999999085,
+          32.9206370000029,
+          37.71315099998901,
+          35.604598999998416,
+          38.93424400000367,
+          38.12110200000461,
+          41.0858409999928,
+          46.85770899998897,
+          39.65439599999809,
+          33.725273999996716,
+          29.153088999999454,
+          33.182666000007885,
+          34.784548000010545
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "feedback": 100,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "normal-desktop-kanban",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "samples": 20,
+          "viewport": "1280x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable"
+        },
+        "usableMs": 524.3026170000085,
+        "detailMs": 108,
+        "detailObserved": true,
+        "detailAutomationMs": 166.2498510000005,
+        "feedbackObserved": true,
+        "feedbackMs": 57.59999999997672,
+        "mutationP95Ms": 72.61286599999585,
+        "mutationSamplesMs": [
+          91.25923099998909,
+          58.90459999999439,
+          55.06074400000216,
+          50.00246000000334,
+          56.443341999998665,
+          54.22165799999493,
+          51.30907400000433,
+          55.19559200000367,
+          58.62618200000725,
+          57.628576000002795,
+          55.76390700000047,
+          57.365566000007675,
+          51.41928299999563,
+          57.060373000000254,
+          56.0978710000054,
+          55.556638000009116,
+          60.870953999998164,
+          58.04890099998738,
+          72.61286599999585,
+          67.50905599999533
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "feedback": 100,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "desktop-list-feedback",
+        "status": "passed",
+        "fixture": {
+          "lists": 2,
+          "cards": 0,
+          "viewport": "1280x844",
+          "tracing": "commands-and-network"
+        },
+        "feedbackObserved": true,
+        "feedbackMs": 40.199999999953434,
+        "budgetsMs": {
+          "feedback": 100
+        }
+      },
+      {
+        "metric": "phone-list-feedback",
+        "status": "passed",
+        "fixture": {
+          "lists": 2,
+          "cards": 0,
+          "viewport": "390x844",
+          "tracing": "commands-and-network",
+          "input": "chromium-touch"
+        },
+        "feedbackObserved": true,
+        "feedbackMs": 33.699999999953434,
+        "budgetsMs": {
+          "feedback": 100
+        }
+      }
+    ]
+  },
+  "wholeFullBrowserScopes": [
+    {
+      "shard": 1,
+      "passed": 121,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "shard": 2,
+      "passed": 118,
+      "failed": 0,
+      "skipped": 2
+    },
+    {
+      "shard": 3,
+      "passed": 119,
+      "failed": 4,
+      "skipped": 0
+    },
+    {
+      "shard": 4,
+      "passed": 107,
+      "failed": 8,
+      "skipped": 0
+    }
+  ],
+  "wholeFullBrowserTotals": {
+    "passed": 465,
+    "failed": 12,
+    "skipped": 2,
+    "total": 479
+  },
+  "separateScopes": {
+    "foundation": "50case executions pass",
+    "notifications": "74case executions pass,5fail across7whole scopes; overlapping cases remain separate"
+  },
+  "rawArtifacts": {
+    "browserZipSha256": "86bca4abf2c24466ff1e2566e8a78879b2817025e98e960ae46ad25d24620b9e",
+    "performanceZipSha256": "4de88c5073d4e76defe4c62bce9de9ab1f29c27b23b4880e04e3e66953175eac",
+    "privateOnly": true
+  },
+  "interpretation": "Whole old release Failed:required-ci Failed, release-bundle Skipped. Original phone fails pre-drop announcement at target49, before all timing/receipt checks; normalphoneKanban metric absent. Six Card-watch failures share concealedCard entry.320Applycompleted Enter/no recorded command supports lost pre-request admission; exclusive cause not inferred. Localbc9 timing failure remains distinct and retained. No unchanged rerun/waiver."
+}
