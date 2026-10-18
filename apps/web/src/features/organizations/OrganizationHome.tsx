@@ -393,7 +393,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               </Button>
               {organizationId && <SecondaryActions label="Organization actions" detailsRef={rememberActions}>
                 {organizationNavigation(organizationId, currentOrganization).map(item =>
-                  <Button key={item.id} component={Link} to={item.to}>{item.label}</Button>)}
+                  <Button key={item.id} component={Link} to={item.to} sx={{ minHeight: 44 }}>{item.label}</Button>)}
               </SecondaryActions>}
             </ActionRow>
             {organizationId ? (
