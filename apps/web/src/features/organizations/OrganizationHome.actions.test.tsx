@@ -58,7 +58,8 @@ it('PRD-03-VS-06-T-03: admission withdrawal removes the entire old disclosure be
   await waitFor(() => expect(finish).toBeDefined());
   await act(async () => finish(response({ organization, role: 2 })));
   await screen.findByRole('button', { name: 'Create board' });
-  const current = await openActions(); expect(current).not.toBe(original); expect(names(current)).toEqual(expected(2));
+  const current = (await screen.findByText('Organization actions', { selector: 'summary' })).parentElement!;
+  expect(current).not.toBe(original); expect(current).toHaveProperty('open', true); expect(names(current)).toEqual(expected(2));
 });
 
 it('PRD-03-VS-06-T-03: rollback retains inline role-permitted actions and the existing Board creation/cancel workflow', async () => {
