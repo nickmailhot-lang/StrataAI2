@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-18T03:38:47.647Z",
+  "revision": "bd52595669cd23c07d52b7f65fce95d21d1cefdc",
+  "result": "Passed",
+  "scope": "Actual adapter/direct function single-profile andtwo-profile parent-first controls all pass. Held Board gate does not force Board owner to precede navigation after release; do not claim fixed or reproduced CI failure.",
+  "rawSha256": "39ba3154624b54d5fe714c632d7c4eafba071cdb9e23731d748559ff374c3028",
+  "lines": [
+    "Actual wait: twoProfiles=False; direct=False; phase=0; queryKind=Board-row.",
+    "Actual wait: twoProfiles=False; direct=False; phase=1; queryKind=navigation-function.",
+    "Actual wait: twoProfiles=False; direct=False; phase=2; queryKind=account-row.",
+    "Observed ordered contenders: direct=False; twoProfiles=False; Board=success; navigation=success; profile=success; peerProfile=success; database=.",
+    "PASS navigation/account/Board lock order: owning-adapter/single-profile.",
+    "Actual wait: twoProfiles=False; direct=True; phase=0; queryKind=Board-row.",
+    "Actual wait: twoProfiles=False; direct=True; phase=1; queryKind=navigation-function.",
+    "Actual wait: twoProfiles=False; direct=True; phase=2; queryKind=account-row.",
+    "Observed ordered contenders: direct=True; twoProfiles=False; Board=success; navigation=success; profile=success; peerProfile=success; database=.",
+    "PASS navigation/account/Board lock order: restricted-function/single-profile.",
+    "Actual wait: twoProfiles=True; direct=False; phase=0; queryKind=Board-row.",
+    "Actual wait: twoProfiles=True; direct=False; phase=1; queryKind=navigation-function.",
+    "Actual wait: twoProfiles=True; direct=False; phase=2; queryKind=account-row.",
+    "Actual wait: twoProfiles=True; direct=False; phase=3; queryKind=account-row.",
+    "Observed ordered contenders: direct=False; twoProfiles=True; Board=success; navigation=success; profile=success; peerProfile=success; database=.",
+    "PASS navigation/account/Board lock order: owning-adapter/two-profiles.",
+    "Actual wait: twoProfiles=True; direct=True; phase=0; queryKind=Board-row.",
+    "Actual wait: twoProfiles=True; direct=True; phase=1; queryKind=navigation-function.",
+    "Actual wait: twoProfiles=True; direct=True; phase=2; queryKind=account-row.",
+    "Actual wait: twoProfiles=True; direct=True; phase=3; queryKind=account-row.",
+    "Observed ordered contenders: direct=True; twoProfiles=True; Board=success; navigation=success; profile=success; peerProfile=success; database=.",
+    "PASS navigation/account/Board lock order: restricted-function/two-profiles.",
+    ""
+  ]
+}

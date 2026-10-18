@@ -1,0 +1,26 @@
+{
+  "sourceRevision": "608549254397bfc9669e27defc23fbabc7fa2abc",
+  "rawArtifact": "cycle19-postgres-ready.json",
+  "rawSha256": "e06b578b108c868d73abf8b83f0f31cf67dca9b895859ba8bcd29d4bad18eb89",
+  "lines": [
+    "{",
+    "  \"project\": \"strataai-c19-lock-c22f61d3\",",
+    "  \"databasePort\": 33208,",
+    "  \"scope\": \"New owned baseline provider/restricted roles only; no existing service/schema/data altered. Not HTTP/native/immutable/release acceptance.\",",
+    "  \"imageId\": \"sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d\",",
+    "  \"imageDigests\": [",
+    "    \"[\\\"pgvector/pgvector@sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d\\\"]\"",
+    "  ],",
+    "  \"sourceRevision\": \"608549254397bfc9669e27defc23fbabc7fa2abc\",",
+    "  \"runtimeRoleFlags\": [",
+    "    \"strataai_api_runtime|f|f|f|f|f|f\",",
+    "    \"strataai_worker_runtime|f|f|f|f|f|f\"",
+    "  ],",
+    "  \"container\": \"a64e36aa47a7c98a71dfa018d8bb7a6bb48b6e1bfd62f121b772a9726f5c7dea\",",
+    "  \"schemaMigrations\": 149,",
+    "  \"at\": \"2026-10-18T03:28:16.9537642+00:00\"",
+    "}",
+    ""
+  ],
+  "preservation": "Original external work artifact unchanged; lossless line strings preserve terminal whitespace without treating it as source formatting."
+}

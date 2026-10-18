@@ -1,0 +1,30 @@
+{
+  "revision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "rawArtifact": "cycle19-linux-validation/domain.txt",
+  "rawSha256": "cd0e140257329bae5f8afea73a47a24446ab061ba894d0d69f1a38485feffa30",
+  "scope": "Whole unfiltered unchanged Linux Domain suite:1086passed/0failed/3existing skips,1089total,9.341s. Normal locked restore/audit/signature validation retained.",
+  "lines": [
+    "Running tests from /validation/artifacts/bin/StrataAI.Domain.Tests/release/StrataAI.Domain.Tests.dll (net10.0|x64)",
+    "skipped StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity(count: 200)",
+    "  Large-load acceptance is deferred until after the operational MVP.",
+    "  from /validation/artifacts/bin/StrataAI.Domain.Tests/release/StrataAI.Domain.Tests.dll (net10.0|x64)",
+    "skipped StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity(count: 5000)",
+    "  Large-load acceptance is deferred until after the operational MVP.",
+    "  from /validation/artifacts/bin/StrataAI.Domain.Tests/release/StrataAI.Domain.Tests.dll (net10.0|x64)",
+    "skipped StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+    "  Large-load acceptance is deferred until after the operational MVP.",
+    "  from /validation/artifacts/bin/StrataAI.Domain.Tests/release/StrataAI.Domain.Tests.dll (net10.0|x64)",
+    "/validation/artifacts/bin/StrataAI.Domain.Tests/release/StrataAI.Domain.Tests.dll (net10.0|x64) passed (8s 065ms)",
+    "",
+    "  In process file artifacts produced:",
+    "    - /validation/results/domain.trx",
+    "",
+    "Test run summary: Passed!",
+    "  total: 1089",
+    "  failed: 0",
+    "  succeeded: 1086",
+    "  skipped: 3",
+    "  duration: 9s 341ms",
+    ""
+  ]
+}

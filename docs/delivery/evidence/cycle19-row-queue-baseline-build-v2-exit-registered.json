@@ -1,0 +1,13 @@
+{
+  "revision": "92e3b70f427c3d836fa3a7add249951a3c88c899",
+  "rawArtifact": "cycle19-row-queue-baseline-build-v2-exit.json",
+  "rawSha256": "af6de3f95dbaeec7472c4ec600cbc70057452e52cfdd51f30c002b5d7c25a41f",
+  "scope": "Actual baseline diagnostic92e3 compile20.15s/0warnings/errors; productsrc/db remains original149/a929. Initiala67compile46.13s retained, no execution; pre-execution private connection setup corrected. No deadlock reproduction claimed by compile.",
+  "lines": [
+    "{",
+    "  \"exit\": 0,",
+    "  \"revision\": \"92e3b70f427c3d836fa3a7add249951a3c88c899\"",
+    "}",
+    ""
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "revision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "rawArtifact": "cycle19-full-persistence-launch.json",
+  "rawSha256": "ce775ee622c9b17b2da52d99b08060630d6ae18c4fbec54eb2816d17cbdd87b8",
+  "representation": "Original Windows UTF8 bytes preserved losslessly in rawUtf8Text; LF outer JSON permits unchanged strict staged whitespace gate. Original source, result and content are unmodified.",
+  "original": {
+    "at": "2026-10-18T04:45:50.1460165+00:00",
+    "project": "strataai-c19-full-cc6cdf93",
+    "sdkImage": "sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa",
+    "runner": "a9d284405d2e96e3e4fa9d56e10dd0d9ea5e6daf12995eeadb8f520b602e194f",
+    "identity": "62712b0e89339333a0c175fb11e1cf37",
+    "scope": "New isolated full no-argument original restricted persistence suite, compiled verified Linux source644/whole warning-free build. Original150migrations and approved runtime/identity provisioners; no changes to current native DB or user resources. Separate process with read-only identified compiled artifacts, no restore or source rebuild.",
+    "dllSha256": "40472e1c28e506c5bf4ece0ca74839d6e58e77714452ab6928b8131537e21bce",
+    "roleFlags": [
+      "strataai_api_runtime|t|f|f|f|f|f|f",
+      "strataai_identity_mail_runtime|t|f|f|f|f|f|f",
+      "strataai_worker_runtime|t|f|f|f|f|f|f"
+    ],
+    "migrations": 150,
+    "provider": "7d8ad6e7d6794c1df7cfed4d63b658df2d4669f2f78af67c0406f45aada7a16e",
+    "providerPort": 33209,
+    "revision": "64411b5b74d8b3a3648f46158f235eab14406495"
+  },
+  "rawUtf8Text": "{\r\n  \"at\": \"2026-10-18T04:45:50.1460165+00:00\",\r\n  \"project\": \"strataai-c19-full-cc6cdf93\",\r\n  \"sdkImage\": \"sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa\",\r\n  \"runner\": \"a9d284405d2e96e3e4fa9d56e10dd0d9ea5e6daf12995eeadb8f520b602e194f\",\r\n  \"identity\": \"62712b0e89339333a0c175fb11e1cf37\",\r\n  \"scope\": \"New isolated full no-argument original restricted persistence suite, compiled verified Linux source644/whole warning-free build. Original150migrations and approved runtime/identity provisioners; no changes to current native DB or user resources. Separate process with read-only identified compiled artifacts, no restore or source rebuild.\",\r\n  \"dllSha256\": \"40472e1c28e506c5bf4ece0ca74839d6e58e77714452ab6928b8131537e21bce\",\r\n  \"roleFlags\": [\r\n    \"strataai_api_runtime|t|f|f|f|f|f|f\",\r\n    \"strataai_identity_mail_runtime|t|f|f|f|f|f|f\",\r\n    \"strataai_worker_runtime|t|f|f|f|f|f|f\"\r\n  ],\r\n  \"migrations\": 150,\r\n  \"provider\": \"7d8ad6e7d6794c1df7cfed4d63b658df2d4669f2f78af67c0406f45aada7a16e\",\r\n  \"providerPort\": 33209,\r\n  \"revision\": \"64411b5b74d8b3a3648f46158f235eab14406495\"\r\n}\r\n"
+}

@@ -1,0 +1,16 @@
+{
+  "revision": "ce3313e7fd9b43cb4df216d85bf5d8a59fb10923",
+  "rawArtifact": "cycle19-current-v3-persistence-exit.json",
+  "rawSha256": "be5c4669f7e56de50fdee902b661d2690e615fb8d73210b8fa761b25598f845d",
+  "scope": "Exact currentce wholeLinuxdefault exit0; previousf4/3a failed53300/139 retained, allassertions/deadlines originalmax100 unchanged.",
+  "lines": [
+    "{",
+    "  \"at\": \"2026-10-18T05:28:24.6540223+00:00\",",
+    "  \"runner\": \"d5b09764b94ec0e2eefc85bb0d5a037e87aabf72e6269193dcd378c078b547b7\",",
+    "  \"exit\": 0,",
+    "  \"revision\": \"ce3313e7fd9b43cb4df216d85bf5d8a59fb10923\",",
+    "  \"scope\": \"Whole unchanged no-argument Linux persistence executable, actual currentce, original150migrations/restrictedAPI/Worker/privateIdentity role, no filters/assertion changes. Logs/footer provide actual scope; not HTTP/native/immutable/main acceptance. New fixtures retained for audit.\"",
+    "}",
+    ""
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "revision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "rawArtifact": "cycle19-windows-api-interruption.json",
+  "rawSha256": "168fe4025819c753d64f3b884c32c10d2934719c52e7ef65a702046d54760579",
+  "scope": "Windows API run interrupted after actual platform failures; no complete passing suite or counts. Only verified exact owned test hosts stopped. Whole unchanged Linux API still running.",
+  "lines": [
+    "{",
+    "  \"testChild\": 200,",
+    "  \"testHost\": 20440,",
+    "  \"revision\": \"64411b5b74d8b3a3648f46158f235eab14406495\",",
+    "  \"cli\": 30240,",
+    "  \"state\": \"Interrupting Windows API source test run after known Windows-only socket/private-staging constraints; whole Linux same-source unfiltered API suite is running separately.\",",
+    "  \"testExecutable\": \"C:\\\\Users\\\\nickm\\\\Documents\\\\Codex\\\\2026-10-17\\\\strataai2-incremental-prd-delivery-and-progress\\\\work\\\\cycle19-green-contract-artifacts\\\\bin\\\\StrataAI.Api.Tests\\\\release\\\\StrataAI.Api.Tests.exe\",",
+    "  \"scope\": \"Only exact proven owned C19 test hosts; no local application/API/Worker/user process is stopped. Partial Windows API results remain incomplete/failed, never a passing whole suite. All original tests/assertions remain active in full Linux runner.\",",
+    "  \"wrapper\": 37608,",
+    "  \"at\": \"2026-10-18T04:17:53.0638951+00:00\",",
+    "  \"testExecutableSha256\": \"672110913cd1fa129d2aa9ef837979360de542b98d06ce1a35df44e717e774ae\"",
+    "}",
+    ""
+  ]
+}

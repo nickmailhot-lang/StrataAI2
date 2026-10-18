@@ -1,0 +1,16 @@
+{
+  "revision": "f4ce3729f9c841ffc0c48b8ec61381535c8b8ec6",
+  "rawArtifact": "cycle19-current-persistence-exit.json",
+  "rawSha256": "d7e997a81fe49c5156a304da3289367ad9e89acc230b658a65b76f534fb11837",
+  "scope": "Exact currentf4 full executable exit139 retained; not a passing full suite.",
+  "lines": [
+    "{",
+    "  \"runner\": \"0c8e615820beceabfb7fd267d8f305417a120d7e96bc65a8053ce777d9f50f3a\",",
+    "  \"at\": \"2026-10-18T05:07:29.2653577+00:00\",",
+    "  \"scope\": \"Whole unchanged no-argument Linux persistence executable, actual currentf4, original150migrations/restrictedAPI/Worker/privateIdentity role, no filters/assertion changes. Logs/footer provide actual scope; not HTTP/native/immutable/main acceptance. New fixtures retained for audit.\",",
+    "  \"revision\": \"f4ce3729f9c841ffc0c48b8ec61381535c8b8ec6\",",
+    "  \"exit\": 139",
+    "}",
+    ""
+  ]
+}

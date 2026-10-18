@@ -1,0 +1,10 @@
+{
+  "revision": "ce3313e7fd9b43cb4df216d85bf5d8a59fb10923",
+  "rawArtifact": "cycle19-current-browser-registry-v4.txt",
+  "rawSha256": "f4361de663ac5f525fdb9eb89de66f8221a2af13317aaa8cb1bc33fbdc53fae9",
+  "scope": "Current471cases/167intactfiles/4shards119-118-127-107 coverage only; actualC19native37 reportedseparately.",
+  "lines": [
+    "Browser shard coverage: 471 cases in 167 intact files; 119/118/127/107 cases across all four shards.",
+    ""
+  ]
+}

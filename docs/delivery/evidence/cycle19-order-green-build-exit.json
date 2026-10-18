@@ -1,0 +1,13 @@
+{
+  "revision": "0dd1689c80ad2139dcbc46a6a06c666575c757ff",
+  "rawArtifact": "cycle19-order-green-build-exit.json",
+  "rawSha256": "049dc84aa2530c90f29036fcf2c18ee12b98c3e34232a2cd60e326c6b392e608",
+  "lines": [
+    "{",
+    "  \"scope\": \"Actual new parent-before-account product0dd; original six-case a929 guard identical.150 required readiness/restricted fixture.\",",
+    "  \"revision\": \"0dd1689c80ad2139dcbc46a6a06c666575c757ff\",",
+    "  \"exit\": 0",
+    "}",
+    ""
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "at": "2026-10-18T04:43:18.355Z",
+  "testRevision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "actualApiWorker": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "actualFrontend": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "reviewedCaptureCount": 11,
+  "scope": "These exact11 final viewport captures manually inspected, not full accessibility/screen-reader/entire pending native scope acceptance. Backend-only lock order repair, no new UI layout. Additional captures remain unreviewed.",
+  "captures": [
+    {
+      "path": "cycle19-native-dates/card-dates-PRD-12-persiste-074d8-cross-two-sessions-at-390px/test-finished-1.png",
+      "sha256": "fcfb6604a9dbb0fad95d91c22637b41418a84bd6aa32cec7e81c66fe9902c833",
+      "review": "Inspected actual pixels",
+      "notes": "390px returned Card detail: readable title/description/date/reminder/attachment/Close controls, visible title focus, dialog contained. Earlier dates form and canonical changes established by original native assertions, not this final capture."
+    },
+    {
+      "path": "cycle19-native-dates/card-dates-PRD-12-persiste-074d8-cross-two-sessions-at-390px/test-finished-2.png",
+      "sha256": "c2678a78c17fe9bbbd8e7a11fd03daabe4a000dec4d6156132200589cfc48831",
+      "review": "Inspected actual pixels",
+      "notes": "390px returned Card detail: readable title/description/date/reminder/attachment/Close controls, visible title focus, dialog contained. Earlier dates form and canonical changes established by original native assertions, not this final capture."
+    },
+    {
+      "path": "cycle19-native-dates/card-dates-PRD-12-persiste-b218e-ross-two-sessions-at-1280px/test-finished-1.png",
+      "sha256": "b44b41d836b7b240c4daceb36474efea5497ca1af3ddc2046005f9752c01363a",
+      "review": "Inspected actual pixels",
+      "notes": "1280px returned Card detail: readable labelled fields, title focus, actions and Close. Original dates assertions separate; no screenshot proof of intermediate date form."
+    },
+    {
+      "path": "cycle19-native-dates/card-dates-PRD-12-persiste-b218e-ross-two-sessions-at-1280px/test-finished-2.png",
+      "sha256": "3fc201c2976c3dec1d2ac0d5cfba1d7f57725cdecdd3ef1450720c949d2c8cab",
+      "review": "Inspected actual pixels",
+      "notes": "1280px returned Card detail: readable labelled fields, title focus, actions and Close. Original dates assertions separate; no screenshot proof of intermediate date form."
+    },
+    {
+      "path": "cycle19-native-remainder/board-date-policy-PRD-12-k-91ba2-and-accessibility-at-1280px/test-finished-1.png",
+      "sha256": "a1312180b5ac29fe92bbf0986cc058e2dd2e50685c5dc7ba7f33a0c8a5652162",
+      "review": "Inspected actual pixels",
+      "notes": "1280px shared shell, Board timezone heading/instructions/current-policy feedback/input/return and focused Save visible and contained."
+    },
+    {
+      "path": "cycle19-native-remainder/board-date-policy-PRD-12-k-cb988--and-accessibility-at-390px/test-finished-1.png",
+      "sha256": "c5bdd5a28600f03f7d6c3a0bf8b7e7ec6a6ca238376f7d95cefe53b37ff0d6c1",
+      "review": "Inspected actual pixels",
+      "notes": "390px policy text wraps, return/input/status/Save/check action fit, visible focus. No horizontal viewport clipping."
+    },
+    {
+      "path": "cycle19-native-remainder/board-filter-account-PRD-1-47aba-able-PUBLIC-Board-at-1280px/test-finished-1.png",
+      "sha256": "eec7681df1bc4ff1bf631145d16728c06e45150ac1db8649a60456228f45cc7c",
+      "review": "Inspected actual pixels",
+      "notes": "1280px public Board remains readable after account withdrawal; protected actions absent in this final public capture. Native hidden-DOM/permission assertions separate."
+    },
+    {
+      "path": "cycle19-native-remainder/board-filter-account-PRD-1-dc24b-wable-PUBLIC-Board-at-390px/test-finished-1.png",
+      "sha256": "bca53154741a322493ab454c5f360a5230515c4b173a6b15db4787bb21ff54b4",
+      "review": "Inspected actual pixels",
+      "notes": "390px public Board controls/filtered Card and wrapped build footer fit after account withdrawal; public shell intentionally has no internal sidebar/header."
+    },
+    {
+      "path": "cycle19-native-remainder/deadline-filter-live-PRD-1-eb2a6-nd-missed-updates-at-1280px/test-finished-1.png",
+      "sha256": "8bc6fd612f4940af7801c31794a62f46ceb8edcb63b96b45708a9ca912133827",
+      "review": "Inspected actual pixels",
+      "notes": "1280px recovery feedback, filter action/zero-match message and local List surface visible. Lower content continues beyond viewport."
+    },
+    {
+      "path": "cycle19-native-remainder/deadline-filter-live-PRD-1-25a7c-and-missed-updates-at-390px/test-finished-1.png",
+      "sha256": "c2b53bda2fbc71071f51525a004acbebde384bf07ae905057c26c12a0aaa7908",
+      "review": "Inspected actual pixels",
+      "notes": "390px recovery feedback and long wrapped Board action list; filter controls and zero-match message visible, Card/List area below viewport requires natural vertical scroll. No claim that one capture shows entire workflow."
+    },
+    {
+      "path": "cycle19-native-remainder/filter-scroll-recovery-PRD-c2d46-ng-Board-recovery-at-1280px/test-finished-1.png",
+      "sha256": "c1071d12325866bb642e126ec8db051021ac8faa8318868e3f48c8eecbc36312",
+      "review": "Inspected actual pixels",
+      "notes": "1280px recovered Board filter launcher has visible unobscured focus; empty Board guidance and local drop target readable."
+    }
+  ]
+}

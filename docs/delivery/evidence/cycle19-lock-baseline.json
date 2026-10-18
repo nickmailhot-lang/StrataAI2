@@ -1,0 +1,13 @@
+{
+  "sourceRevision": "991be52910ef3c871ecf2e270b3e231d7f9a47b2",
+  "rawArtifact": "cycle19-lock-baseline.txt",
+  "rawSha256": "00ade81bbf4c97151d37806160ad723902c3b6c36f65ad832ab3eb7b18d4c93d",
+  "lines": [
+    "Observed ordered contenders: direct=False; Board=success; navigation=success; profile=success; database=.",
+    "PASS navigation/account/Board lock order: owning-adapter.",
+    "Observed ordered contenders: direct=True; Board=success; navigation=success; profile=success; database=.",
+    "PASS navigation/account/Board lock order: restricted-function.",
+    ""
+  ],
+  "preservation": "Original external work artifact unchanged; lossless line strings preserve terminal whitespace without treating it as source formatting."
+}

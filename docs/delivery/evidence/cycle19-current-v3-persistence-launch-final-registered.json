@@ -1,0 +1,27 @@
+{
+  "revision": "ce3313e7fd9b43cb4df216d85bf5d8a59fb10923",
+  "rawArtifact": "cycle19-current-v3-persistence-launch.json",
+  "rawSha256": "86ca8e8ccbe0b2c57b85b383b8cf1a262a8cede8cfd322e19027700f815f6848",
+  "scope": "Exact read-only currentce portableassembly/hash, pinnedLinuxSDK, separatefresh150provider/roleflags/loopback, originalmax100 preflight inrunner. Not a newLinuxcompile orreleaseimage claim.",
+  "lines": [
+    "{",
+    "  \"sdkImage\": \"sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa\",",
+    "  \"migrations\": 150,",
+    "  \"roleFlags\": [",
+    "    \"strataai_api_runtime|t|f|f|f|f|f|f\",",
+    "    \"strataai_identity_mail_runtime|t|f|f|f|f|f|f\",",
+    "    \"strataai_worker_runtime|t|f|f|f|f|f|f\"",
+    "  ],",
+    "  \"project\": \"strataai-c19-current-v3-40389a94\",",
+    "  \"runner\": \"d5b09764b94ec0e2eefc85bb0d5a037e87aabf72e6269193dcd378c078b547b7\",",
+    "  \"identity\": \"e29e0454b63373315eb2c5c6eca1e118\",",
+    "  \"revision\": \"ce3313e7fd9b43cb4df216d85bf5d8a59fb10923\",",
+    "  \"scope\": \"New isolated full no-argument original restricted persistence suite, portable framework-dependent net10 assembly built atce with warnings as errors; actual whole Linux runtime execution, not a claimed Linux compilation atce. Complete src/db/API/Domain inputs equal actual Linux644 warning-free build. Original150migrations and approved runtime/identity provisioners; no changes to current native DB or user resources. Separate process with read-only identified compiled artifacts, no restore or source rebuild.\",",
+    "  \"at\": \"2026-10-18T05:24:20.3046324+00:00\",",
+    "  \"providerPort\": 33213,",
+    "  \"dllSha256\": \"feb1e0f969b024044a3d6ad099f7dae478d15899b71c8416c718e5c9095b219d\",",
+    "  \"provider\": \"3c50810eaf02468c874bb5d93544f161a2d26ac1e610eb838cd4ab31a71c810c\"",
+    "}",
+    ""
+  ]
+}

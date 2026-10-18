@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-18T03:38:47.647Z",
+  "revision": "5302d4518b875595d9c72b1ea05f07146462410d",
+  "result": "Failed",
+  "scope": "Table-gate scheduling fails to establish a required contender wait. This is a test-fixture failure, not established40P01 reproduction or a new product failure. Original parent-first2 pass.",
+  "rawSha256": "61629272377de6306bcfc0933a789003f12fb34c451d7dad0ae7e5f2af5994d8",
+  "lines": [
+    "Observed ordered contenders: direct=False; Board=success; navigation=success; profile=success; database=.",
+    "PASS navigation/account/Board lock order: owning-adapter/parent-first.",
+    "Observed ordered contenders: direct=True; Board=success; navigation=success; profile=success; database=.",
+    "PASS navigation/account/Board lock order: restricted-function/parent-first.",
+    "FAIL navigation/account/Board lock order: owning-adapter/account-first: Contender completed before its controlled parent wait was observed.",
+    "FAIL navigation/account/Board lock order: restricted-function/account-first: Contender completed before its controlled parent wait was observed.",
+    "Unhandled exception. System.InvalidOperationException: Navigation/account/Board admission failed in 2/4 controlled modes: owning-adapter/account-first, restricted-function/account-first.",
+    "   at NavigationActorBoardLockContract.Require(Boolean value, String message) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-navigation-lock-order\\tests\\StrataAI.Persistence.Contracts\\NavigationActorBoardLockContract.cs:line 244",
+    "   at NavigationActorBoardLockContract.RunAsync(NpgsqlConnection admin, String apiConnection, CancellationToken ct) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-navigation-lock-order\\tests\\StrataAI.Persistence.Contracts\\NavigationActorBoardLockContract.cs:line 35",
+    "   at Program.<Main>$(String[] args) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-navigation-lock-order\\tests\\StrataAI.Persistence.Contracts\\Program.cs:line 239",
+    "   at Program.<Main>$(String[] args) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-navigation-lock-order\\tests\\StrataAI.Persistence.Contracts\\Program.cs:line 468",
+    "   at Program.<Main>(String[] args)",
+    ""
+  ]
+}

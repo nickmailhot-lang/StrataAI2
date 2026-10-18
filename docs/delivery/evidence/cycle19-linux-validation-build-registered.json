@@ -1,0 +1,23 @@
+{
+  "revision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "rawArtifact": "cycle19-linux-validation/build.txt",
+  "rawSha256": "0055ad400dde8996679df7a5e3f41fe5276773d5467239b00bcd7710d83dc5ad",
+  "scope": "Whole verified archive644 Linux Release solution build, warnings as errors,2m20.08s/0warnings/errors; full API suite still pending.",
+  "lines": [
+    "  StrataAI.Domain -> /validation/artifacts/bin/StrataAI.Domain/release/StrataAI.Domain.dll",
+    "  StrataAI.Application -> /validation/artifacts/bin/StrataAI.Application/release/StrataAI.Application.dll",
+    "  StrataAI.Infrastructure -> /validation/artifacts/bin/StrataAI.Infrastructure/release/StrataAI.Infrastructure.dll",
+    "  StrataAI.Persistence.Contracts -> /validation/artifacts/bin/StrataAI.Persistence.Contracts/release/StrataAI.Persistence.Contracts.dll",
+    "  StrataAI.Domain.Tests -> /validation/artifacts/bin/StrataAI.Domain.Tests/release/StrataAI.Domain.Tests.dll",
+    "  StrataAI.Worker -> /validation/artifacts/bin/StrataAI.Worker/release/StrataAI.Worker.dll",
+    "  StrataAI.Api -> /validation/artifacts/bin/StrataAI.Api/release/StrataAI.Api.dll",
+    "  StrataAI.Api.Tests -> /validation/artifacts/bin/StrataAI.Api.Tests/release/StrataAI.Api.Tests.dll",
+    "",
+    "Build succeeded.",
+    "    0 Warning(s)",
+    "    0 Error(s)",
+    "",
+    "Time Elapsed 00:02:20.08",
+    ""
+  ]
+}

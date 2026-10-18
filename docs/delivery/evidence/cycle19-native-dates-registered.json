@@ -1,0 +1,18 @@
+{
+  "revision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "rawArtifact": "cycle19-native-dates.txt",
+  "rawSha256": "30252fcf4e16091675b6776b874dae29ab56d02313825c6cf1e43688561bfa50",
+  "scope": "Whole original two-session Card dates file at 1280/390px, unchanged assertions/deadlines, zero retries. Actual Linux API/Worker644, unchanged frontend e14, restricted150 PostgreSQL. Additional local evidence; no immutable/main acceptance.",
+  "lines": [
+    "",
+    "Running 2 tests using 1 worker",
+    "",
+    "(node:4676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.",
+    "(Use `node --trace-warnings ...` to show where the warning was created)",
+    "  ok 1 tests\\browser\\card-dates.spec.ts:7:7 › PRD-12: persisted dates, viewing timezone and completion display across two sessions at 1280px (28.4s)",
+    "  ok 2 tests\\browser\\card-dates.spec.ts:7:7 › PRD-12: persisted dates, viewing timezone and completion display across two sessions at 390px (22.7s)",
+    "",
+    "  2 passed (1.7m)",
+    ""
+  ]
+}

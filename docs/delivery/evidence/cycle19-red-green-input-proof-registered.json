@@ -1,0 +1,25 @@
+{
+  "revision": "f4ce3729f9c841ffc0c48b8ec61381535c8b8ec6",
+  "rawArtifact": "cycle19-red-green-input-proof.json",
+  "rawSha256": "d64ed4a0dd2b27955522c091b304c22021512f4ec8414b29a4cc694cbffbb943",
+  "scope": "Complete current input equality/byte-identical guard and mandatory original default registration proof, actual source identities retained.",
+  "lines": [
+    "{",
+    "  \"at\": \"2026-10-18T05:04:31.203Z\",",
+    "  \"revision\": \"f4ce3729f9c841ffc0c48b8ec61381535c8b8ec6\",",
+    "  \"previousActualSource\": \"64411b5b74d8b3a3648f46158f235eab14406495\",",
+    "  \"baselineSource\": \"92e3b70f427c3d836fa3a7add249951a3c88c899\",",
+    "  \"onlyChangedPaths\": [",
+    "    \"tests/StrataAI.Persistence.Contracts/NavigationInitialRowQueueContract.cs\",",
+    "    \"tests/StrataAI.Persistence.Contracts/Program.cs\"",
+    "  ],",
+    "  \"byteIdenticalCounterexampleSha256\": \"bac3f73cda6fe8f0cf7282460cd41b352a36fa9b4784c657872f7b9e9f16efbb\",",
+    "  \"completeInputEquality\": \"All src/db, frontend/browser fixtures, Domain/API tests, package/build/configuration inputs identical644→f4. Only the two listed persistence files differ. Current15 actually executedf4; prior actual full Linux build/Domain/full persistence/native37 at644 remain exact source-specific executions, no runtime/result relabel.\",",
+    "  \"defaultCoverage\": \"Program default and --navigation-lock-order-only now run all original6+7 and the unchanged new2. No existing assertion, query, lock strength, callback or deadline weakened.\",",
+    "  \"red\": \"Original149/a929 product exactly608 actual Board/profile40P01 in both entry paths;4serverdetections/14graphedges retained. Initial held account row establishes genuine tuple queue before original Board-first/navigation/profile release.\",",
+    "  \"green\": \"Actual repaired150/f4: both former full-cycle failures all4operations success/no40P01, unchanged canonical graph/exactoriginalreceipt; all13existingcontrols also pass.\",",
+    "  \"limitations\": \"Actual admitted-context DB/adapter proof, not direct HTTP execution of controlled withdrawal. Real HTTP/browser37 separately passed at exact API/Worker644/frontende14; current fullLinux API644 and full persistencef4 remain running; release/main pending.\"",
+    "}",
+    ""
+  ]
+}
