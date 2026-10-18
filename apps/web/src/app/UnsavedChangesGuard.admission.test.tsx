@@ -60,7 +60,10 @@ it('PRD-25-VS-02-T-02/AC-02: generic choices keep modal keyboard focus under the
     const review = await screen.findByRole('dialog', { name: 'Discard unsaved changes?' });
     expect(review).toBeVisible(); expect(screen.getByLabelText('Withheld draft')).not.toBeVisible();
     act(() => outside.focus());
-    await waitFor(() => expect(review.contains(document.activeElement)).toBe(true));
+    await waitFor(() => expect(review.contains(document.activeElement), JSON.stringify({
+      tag: document.activeElement?.tagName, role: document.activeElement?.getAttribute('role'),
+      className: document.activeElement?.className,
+    })).toBe(true));
     expect(review).not.toHaveTextContent('Private unsaved title');
   } finally { foreground.mockRestore(); outside.remove(); withheld.remove(); }
 });
