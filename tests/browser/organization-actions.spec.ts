@@ -65,6 +65,21 @@ for (const width of [1280, 768, 390, 320]) {
         else await expect(client.getByRole('link', { name: 'Organization settings', exact: true })).toHaveAttribute('href', `${directoryPath}/settings`);
         if (role === 'Owner') await expect(client.getByRole('link', { name: 'Request Organization deletion', exact: true })).toBeVisible();
         else await expect(client.getByRole('link', { name: 'Request Organization deletion', exact: true, includeHidden: true })).toHaveCount(0);
+        if (!rollback) {
+          // Collapsed actions stay mounted but leave keyboard/accessibility navigation.
+          const details = summary.locator('..');
+          const permittedName = role === 'Member' ? 'Leave Organization' : 'Organization settings';
+          await summary.focus(); await client.keyboard.press('Enter');
+          await expect(details).toHaveJSProperty('open', false);
+          await expect(client.getByRole('link', { name: permittedName, exact: true, includeHidden: true })).toHaveCount(1);
+          await expect(permitted).toHaveCount(0);
+          await summary.focus(); await expect(summary).toBeFocused();
+          await client.keyboard.press('Tab');
+          await expect(client.getByRole('link', { name: 'Permitted action Board', exact: true })).toBeFocused();
+          await client.keyboard.press('Shift+Tab'); await expect(summary).toBeFocused();
+          await client.keyboard.press('Enter');
+          await expect(details).toHaveJSProperty('open', true); await expect(permitted).toBeVisible();
+        }
         const focusTarget = rollback ? permitted : summary;
         await client.keyboard.press('Tab'); await focusTarget.focus(); await expect(focusTarget).toBeFocused();
         expect(await focusTarget.evaluate(element => {
