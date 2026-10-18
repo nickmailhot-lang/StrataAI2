@@ -1,0 +1,7 @@
+{
+  "revision": "5bc7919168654491b2e5a1ec1e867ecbd9b923c2",
+  "rawArtifact": "merge17-v5-native-usability.txt",
+  "rawSha256": "f544962fa16f6cf59e48d634041a103479ad9808fb168ee8d9fbcf6aab12eefa",
+  "scope": "Actual identifiedUI135ee flag1/backend644 at test5bc:all4 whole real-service editing workflows pass3.6min,zero failure/retry/skip. Exact one ApplyPOST and one ClearPOST; original save/recovery/same-key, canonical movement, dirty-navigation, role denial, keyboard, panel geometry, no-overflow and Axe assertions retained.",
+  "rawUtf8Text": "\r\nRunning 4 tests using 1 worker\r\n\r\n(node:5104) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 1280px (31.3s)\r\n  ok 2 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 768px (27.6s)\r\n  ok 3 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 390px (30.2s)\r\n  ok 4 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 320px (26.8s)\r\n\r\n  4 passed (3.6m)\r\n"
+}

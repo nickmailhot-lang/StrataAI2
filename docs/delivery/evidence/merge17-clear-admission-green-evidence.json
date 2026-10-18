@@ -1,0 +1,7 @@
+{
+  "revision": "a135e0be66454accc8635b7bb3134fdc4a936ab7",
+  "rawArtifact": "merge17-clear-admission-green.txt",
+  "rawSha256": "6f70ddcc643b5d8c73e7b03f5f5f6e53c021479b09011b86e4d533296f66d441",
+  "scope": "All3whole filter files54pass33.03s after two-expression availability repair. Actual precommit working-tree product bytes then committeda135; clean later94/54 executions recorded separately.",
+  "rawUtf8Text": "\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-main/apps/web\r\n\r\n\r\n Test Files  3 passed (3)\r\n      Tests  54 passed (54)\r\n   Start at  01:48:30\r\n   Duration  33.03s (tests 63%, import 22%, environment 11%, setup 2%, transform 1%)\r\n\r\n"
+}

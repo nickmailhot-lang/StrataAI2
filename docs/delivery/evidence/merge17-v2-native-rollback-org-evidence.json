@@ -1,0 +1,7 @@
+{
+  "revision": "a5aa4e52da254744d90e955acabe9786c7442e07",
+  "rawArtifact": "merge17-v2-native-rollback-org.txt",
+  "rawSha256": "265a910e3cad68fb1ee72fde5b2e8283809fda90d6a6d2c9abfa935d03ece210",
+  "scope": "ActualUI170 flag0/backend644, whole Organization4 repeats,3.4min,zero retries/skips; do not add repeats to unique default29.",
+  "rawUtf8Text": "\r\nRunning 4 tests using 1 worker\r\n\r\n(node:34116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 tests\\browser\\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 1280px (27.3s)\r\n  ok 2 tests\\browser\\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 768px (29.4s)\r\n  ok 3 tests\\browser\\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 390px (23.9s)\r\n  ok 4 tests\\browser\\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 320px (23.1s)\r\n\r\n  4 passed (3.4m)\r\n"
+}

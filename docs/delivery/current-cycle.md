@@ -13,7 +13,7 @@ Work items: 0/1581 Done. Remaining canonical numbered acceptance criteria: 391; 
 | Task | 493 | 0 |
 | Test | 511 | 0 |
 
-Implemented but unvalidated: 87. Blocked: 0. Known MVP-critical outstanding: 130; unclassified records: 1284. Weighted progress: not measured.
+Implemented but unvalidated: 88. Blocked: 0. Known MVP-critical outstanding: 130; unclassified records: 1284. Weighted progress: not measured.
 
 ## 1. Work completed
 
@@ -31,15 +31,18 @@ Current086all39consumercontrols/ninewholefilespass111.80s, web/browsertypes/lint
 All17originalheads/16distinctheadcommits andactualmainbe0 verifiedancestors, prior111descriptionarchivedbeforeconsolidation. Original implementation, failures and historical identities preserved.
 First published candidate hostedweb-quality passes2903/0fail/24existingdeferrals atactualsynthetic51f95e6, not current170. Security analyses passed. Complete original populated150upgrade suite now passes at4ab without weakeningmanifest, rollback, history or runtime grants.
 Actual current170 source49/types/lint/bothidentifiedbuilds/372contracts pass; axis counterexample and first7nativefailures retained. No final native/currenthosted or main integration claim.
+Prior A5 synthetic11bebe complete hosted frontend2904/24existingdeferrals, Domain1086/3skips, API1429/2skips and PostgreSQL/security/images pass with actual identities retained; not later new-head release acceptance.
+Actual baselineUI170 local29unique default scenarios pass (21real+8controlled), baseline rollbackOrg4 pass. Later rollback Clear failure exposed a real availability mismatch and remains recorded.
+Current135ee Clear correction passes54filter cases, a135 consumer94 with identical product code, types/lint/both builds; observed-input/exact-route24 controls and all8affected current real-service default/fallback workflows pass. Eight current viewport captures inspected; no current global/main completion inferred.
 
 ## 2. Implemented, awaiting validation
 
-PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-01-VS-04-T-02, PRD-01-VS-04-T-02-TEST-01, PRD-01-VS-04-T-02-TEST-02, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-01-VS-04-T-03, PRD-01-VS-04-T-03-TEST-01, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-25-VS-02-T-03
+PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-01-VS-04-T-02, PRD-01-VS-04-T-02-TEST-01, PRD-01-VS-04-T-02-TEST-02, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-01-VS-04-T-03, PRD-01-VS-04-T-03-TEST-01, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-25-VS-02-T-03, PRD-25-VS-02-T-03-TEST-01
 
 ## 3. Current work in progress
 
-QualificationT03Task/Test remain In Progress; testResultFailed retains first required native/PGfailures pending complete reruns. Source reconciliationT02Review; mainintegrationT04Ready. Only96merged.
-Existing111 nowmain-targeted/Draft atc233. Publish metadata-only checkpoint over tested170 then require current exact-head hostedfull/PG/release/security and all29default/8rollback native gates.
+T03 Task/Test are Testing; complete new-head hosted qualification is Not Run until publication. T02 source reconciliation remains Review; T04 main integration remains Ready. Only PR96 actually merged.
+Freeze actual UI135ee/test5bc/backend644. Older170/A5/1152 results retain their actual sources, including incomplete/failed runs. All original17heads and149 counterexample separation verified.
 
 ## 4. Blockers and dependencies
 
@@ -47,7 +50,7 @@ Remaining16PRshave historicalfailedormissingrequiredCI andmustnotbe mergedwithou
 
 ## 5. Next highest-priority deliverable
 
-Validate updated ledger/history/staged evidence hashes, commit tracking only over170 app/build/test inputs, normal fast-forward existing111. Collect whole29default and8rollback repeats at newhead: core15+controlled8+rollbackOrg4 under bounded externalcontroller; stopcontroller then scoped-compose usability4+checklist2+rollbackusability4. Inspect rendered captures, require exact current hosted mandatory/release gates, then expected-head normal merge and verify actual all17merged states/main ancestry. No parentMVPDone.
+Validate final ledger/history and all newly indexed evidence hashes/strict whitespace; commit tracking metadata only over frozen5bc. Normal fast-forward existing111 after fresh remoteA5/base-main guard, retain Draft and rewrite final description. Record actual head/synthetic merge/run IDs. Require all current applicable source/.NET/Postgres/security/build-once/commands/foundation/notifications/four browser shards/releasebundle gates and fresh reviews/main state. Then normal expected-head merge, verify actual all17 merged receipts and original heads in remote main, update tracking and continue agreed MVP; no parent PRD/MVP completion inferred.
 
 ## 6. PRD progress changes
 
@@ -101,6 +104,35 @@ EVID-CYCLE-21-BUILD-V2-DEFAULT
 EVID-CYCLE-21-BUILD-V2-ROLLBACK
 EVID-CYCLE-21-SOURCE-372-V2
 EVID-CYCLE-21-COHORT-V2
+EVID-CYCLE-21-PUBLISHED-SECOND
+EVID-CYCLE-21-HOSTED-FIRST-WEB-IDENTITY-V2
+EVID-CYCLE-21-HOSTED-SECOND-WEB
+EVID-CYCLE-21-HOSTED-SECOND-DOTNET
+EVID-CYCLE-21-BASELINE-CORE15
+EVID-CYCLE-21-BASELINE-CONTROLLED8
+EVID-CYCLE-21-BASELINE-ROLLBACK-ORG4
+EVID-CYCLE-21-USABILITY-INPUT-RACE
+EVID-CYCLE-21-INPUT-16-CONTROLS
+EVID-CYCLE-21-BASELINE-USABILITY4
+EVID-CYCLE-21-BASELINE-CHECKLIST2
+EVID-CYCLE-21-CLEAR-ROLLBACK-FAILURE
+EVID-CYCLE-21-CLEAR-RED-INITIAL
+EVID-CYCLE-21-CLEAR-RED-TWO
+EVID-CYCLE-21-CLEAR-GREEN-54-FIRST
+EVID-CYCLE-21-CLEAR-CONSUMER-94
+EVID-CYCLE-21-CLEAR-TYPE-FAILURE
+EVID-CYCLE-21-CLEAR-FINAL54
+EVID-CYCLE-21-CLEAR-FINAL-TYPES-LINT
+EVID-CYCLE-21-CURRENT-SOURCE-372-V6
+EVID-CYCLE-21-OBSERVER-WRONG-ROUTE-FAILURE
+EVID-CYCLE-21-FINAL-INPUT-REQUEST-24
+EVID-CYCLE-21-FINAL-OBSERVER-TYPES
+EVID-CYCLE-21-FINAL-DEFAULT4
+EVID-CYCLE-21-FINAL-ROLLBACK4
+EVID-CYCLE-21-CLEAR-BUILD-DEFAULT
+EVID-CYCLE-21-CLEAR-BUILD-ROLLBACK
+EVID-CYCLE-21-FINAL-LOCAL-RECONCILIATION
+EVID-CYCLE-21-FINAL-CURRENT-VISUALS
 
 ## Recent verified completed increments
 

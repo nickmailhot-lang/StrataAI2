@@ -1,0 +1,7 @@
+{
+  "revision": "1152a767225599aad560c04f0e73eb0e05b00319",
+  "rawArtifact": "merge17-v3-native-checklist.txt",
+  "rawSha256": "6d637dda1883e77a70104fca8621ed5c9940c0e1814a07db686b3dff3e3b886f",
+  "scope": "ActualUI170/backend644:whole2 original checklist consumers pass1.6min/0retry/skip, real canonical effect and exact focused-Card/local-scroll preservation. Fresh verified-account/scoped Worker fixture only.",
+  "rawUtf8Text": "\r\nRunning 2 tests using 1 worker\r\n\r\n(node:19676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 ..\\merge17-main\\tests\\browser\\checklist-board-context.spec.ts:10:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 1280px (21.3s)\r\n  ok 2 ..\\merge17-main\\tests\\browser\\checklist-board-context.spec.ts:10:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 390px (21.0s)\r\n\r\n  2 passed (1.6m)\r\n"
+}

@@ -1,0 +1,7 @@
+{
+  "revision": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b",
+  "rawArtifact": "merge17-v4-final-quality-exits.json",
+  "rawSha256": "29512cbca255d7d7bfd143d8c93186a5b7710dd6e22a9c6fe2b373936a0e489a",
+  "scope": "Actual current web/browser types andlint all0 after typed fixture correction. No dependencies, assertion or deadline changes.",
+  "rawUtf8Text": "{\r\n  \"at\": \"2026-10-18T08:53:57.2229364+00:00\",\r\n  \"exits\": {\r\n    \"typecheck\": 0,\r\n    \"typecheck:browser\": 0,\r\n    \"lint\": 0\r\n  },\r\n  \"revision\": \"135ee4b8629f1a12bd041b1982ccc19246cb5d4b\"\r\n}\r\n"
+}

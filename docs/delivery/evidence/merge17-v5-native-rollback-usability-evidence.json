@@ -1,0 +1,7 @@
+{
+  "revision": "5bc7919168654491b2e5a1ec1e867ecbd9b923c2",
+  "rawArtifact": "merge17-v5-native-rollback-usability.txt",
+  "rawSha256": "b775caab5ccf0624b819386c39cf0fc4c58c51c6c243ac0af741fd5ff4841bc1",
+  "scope": "Actual identifiedUI135ee flag0/backend644 at test5bc:all4 whole real-service editing repeats pass3.6min,zero failure/retry/skip, same complete operation and exact request counts, centered fallback geometry and Axe. Repeats are not additional unique default scenarios.",
+  "rawUtf8Text": "\r\nRunning 4 tests using 1 worker\r\n\r\n(node:17412) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 1280px (29.0s)\r\n  ok 2 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 768px (28.3s)\r\n  ok 3 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 390px (28.5s)\r\n  ok 4 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 320px (27.6s)\r\n\r\n  4 passed (3.6m)\r\n"
+}
