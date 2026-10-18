@@ -1,0 +1,2 @@
+# Hashed delivery evidence must have identical bytes on Windows and Linux.
+docs/delivery/evidence/*.txt text eol=lf

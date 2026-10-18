@@ -1,0 +1,8 @@
+{
+  "tests": 0,
+  "integrationCoverage": 0,
+  "ledger": 0,
+  "syntax": 0,
+  "revision": "a94612b1798146c625ce129a1135b027b2482116",
+  "browserCoverage": 0
+}
