@@ -1,5 +1,19 @@
 # Incremental delivery progress
 
+## Current integration checkpoint — 2026-10-18
+
+1. **Completed validation.** Published bbf21db5, CI 39137769087, is fully collected: 19 checks succeeded, two failed, and one was skipped. The four full browser scopes account for 476 passed, one failed, and two existing identity-mail environment skips out of 479 cases. Foundation: 50 passed. Notifications: 93 passed across nine scopes. The command group passed. Both mail cases passed in the dedicated notification environment. All twelve previous 1c3f83ae full-browser failures now pass.
+2. **Implemented, awaiting validation.** Local ddfca867f4049024c625059028cc680b39a31665 changes only the initial empty Board-review opening to the existing bounded openAdmittedReview helper. The rest of the recovery file is byte-identical. All four local recovery widths, including 200% tablet text, browser types, and 349 existing guards passed. The actual local UI build 135ee4b8 and API build 64411b5b remain supporting evidence. All 22 checks on the final new head are still required.
+3. **In progress.** PRD-25-VS-02-T-03 and its Test are Testing. Integration task T-04 is Ready. The original Name-field timeout and earlier implementation and failure histories remain retained.
+4. **Dependencies.** Qualify the final new head, refresh main/head/reviews, and merge normally with the expected head. Only PR #96 is actually merged; 16 remain. Every original PR head is retained. The unsafe ad7 counterexample and held 0438 experiment remain excluded.
+5. **Exact next action.** Validate the ledger against origin/main and verify staged evidence hashes. Commit one metadata checkpoint and push the existing PR #111 branch. Freeze that head until every required check passes. Then refresh all 17 PR states and reviews, merge normally, and verify actual merged receipts and original-head ancestry in fetched main.
+6. **PRD progress.** No parent PRD or MVP completion is claimed. All 1,581 items and the 88 feature/UX PRDs remain traced to their original obligations. No new item is marked Done before integration and verified acceptance.
+7. **Evidence.** EVID-CYCLE-27-BBF-COMPLETE-HOSTED-FAILURE, the preceding cycle-27 partial-failure and scoped-quality records, and all prior evidence. All six retained immutable performance records meet their original limits. Phone Kanban feedback measured 30.3 ms and detail painting 81.1 ms; previous failed supporting-local measurements remain separate.
+
+Earlier cycle records below retain their original revisions and context.
+
+---
+
 Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
 
 PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.

@@ -1,0 +1,60 @@
+{
+  "at": "2026-10-18T17:26:30.169Z",
+  "revision": "ddfca867f4049024c625059028cc680b39a31665",
+  "types": {
+    "at": "2026-10-18 17:25:08 UTC",
+    "revision": "ddfca867f4049024c625059028cc680b39a31665",
+    "exit": 0,
+    "command": "npm run typecheck:browser",
+    "method": "Actual completed local exec session20561 exit0; no warnings/errors reported by TypeScript",
+    "scope": "Browser types after initial review admission correction; no hosted release claim"
+  },
+  "guards": {
+    "command": "node --test tests/browser-shards.test.mjs tests/browser/keyboardAdmission.test.mjs tests/delivery-progress.test.mjs tests/integration-suites.test.mjs",
+    "revision": "ddfca867f4049024c625059028cc680b39a31665",
+    "at": "2026-10-18T17:23:43.1600148+00:00",
+    "scope": "Existing coverage, admission/refusal and delivery lifecycle controls after bounded initial Board review opening correction; no assertions or controls changed.",
+    "exit": 0,
+    "passed": 349,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 97568.8235,
+    "rawSha256": "011a8f4c6d172de67420e659bbcedad5b80ca0b41efa3d64c42e6d5d91ff005b"
+  },
+  "native": {
+    "at": "2026-10-18T17:21:42.0932897+00:00",
+    "head": "ddfca867f4049024c625059028cc680b39a31665",
+    "scope": "Whole original four-width recovery file; initial read-only opening correction only. Supporting local result, no Worker/container replacement, global discovery, SQL fixture change, retries or assertion/deadline change.",
+    "exit": 0,
+    "workerUnchanged": true,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "caseSeconds": [
+      12.5,
+      14.8,
+      11.5,
+      11
+    ],
+    "invocation": "2.5m",
+    "rawSha256": "2014f0c3dcfc0de13a76739c831f987762c536cbb5a0c250d77e69f0d374937e",
+    "actualRuntime": {
+      "testSource": "ddfca867f4049024c625059028cc680b39a31665",
+      "scope": "All four original Board-creation recovery cases after bounded initial review-opening correction. Original draft/lifecycle/receipt/canonical/keyboard/Axe oracles, 90-second case limit, zero retries, 200% tablet text; stock Worker and environment unchanged. Supporting local proxy/compiled Linux runtime, not exact hosted release.",
+      "api": "64411b5b74d8b3a3648f46158f235eab14406495",
+      "worker": "d892a40b08190562efb3f061084c5eb0dac69a192d3985b1a8415ac822232bbd",
+      "web": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b",
+      "at": "2026-10-18T17:19:07.0696387+00:00"
+    },
+    "visualReview": "Inspected current320px recovered draft and launcher return: controls/focus visible, native phone navigation and retained draft; automated four-width Axe/overflow/canonical/focus checks passed. Supporting proxy/compiled Linux runtime, not immutable hosted release."
+  },
+  "sourceProof": {
+    "onlyInitialReadOnlyOpeningChanged": true,
+    "originalBodyOtherwiseByteIdentical": true,
+    "originalSha256": "7eec610a8b7709a5a684802bdf8de4f3ecc548ee79133f30a8b5a49c660d4059",
+    "currentSha256": "a786daa5e7934b81fd8492d1e07907dabd3466d880e0672949c44cc86e62ccdc",
+    "appBackendHelperPipelineUnchanged": true,
+    "scope": "Existing openAdmittedReview only before first field input. Original5s opening bound,90s case budget,zero retries,all four widths/200%tablet/draft/lifecycle/receipt-count/key/canonical/return/Axe/overflow oracles unchanged."
+  },
+  "limits": "Single original baseline local case passed separately; no exclusive product cause inferred. New exact-head hosted22 gate execution is NotRun. Old failures and local phone timing failures remain retained."
+}

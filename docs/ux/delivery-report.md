@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-18 — Seventeen-PR integration and bounded Board-review follow-up
+
+Published bbf21db5853d95fcf6a20ff7ad5175b923b931cb, actual immutable merge 0443965e27bd157e3af679efdfbacde016a5dc0b, completed all 22 checks: 19 succeeded, two failed, and one was skipped. The four full browser scopes report 476 passed, one failed, and two existing identity-mail profile skips. Foundation (50 cases), notifications (93 executions), and commands passed. The complete sign-in return, Organization actions, Work navigation, Work usability, watch-role/overlap, and normal-performance cases pass within those scope totals. Controlled UX fixtures remain distinguished from real-service scenarios.
+
+The single full-browser failure happens before draft input or a Board write: the initial Create board click completed during foreground revalidation, then the Name field never appeared. Local ddfca867f4049024c625059028cc680b39a31665 changes only this initial read-only opening to the existing five-second openAdmittedReview protocol. All later draft, receipt, permission, persistence, and return assertions remain unchanged, as do the 90-second case budget and zero retries. Application, backend, helper, pipeline, and dependency inputs are unchanged.
+
+All four original recovery widths, including 200% tablet text, browser types, and 349 existing guard tests passed locally. The actual 320-pixel recovered-draft and launcher-return screens were inspected. Local UI build 135ee4b8 and API build 64411b5b provide supporting evidence; they do not establish final-head immutable qualification.
+
+Both qualification items are Testing, with original failures and source history retained. EVID-CYCLE-27-BBF-COMPLETE-HOSTED-FAILURE records the completed failed run and verified performance artifacts. Publish the metadata checkpoint and require all 22 checks on that new head, fresh main/review state, and normal integration. Only PR #96 is merged; 16 remain. No parent PRD, MVP, managed-provider readiness, or production-deployment completion is claimed.
+
 ## 2026-10-17 — PRD-08-VS-04-T-02 visible Card recovery, current scoped UX verified
 
 At `ccc424c8`, an explicitly refused Card creation returns focus to its generic error and centers it below the fixed header, while preserving deliberate independent navigation focus. The native fixture now retains 200% text across reload and verifies both the actual root size and unobscured canonical Card return. The existing MUI Alert, shell and route model are preserved. Server, authorization, schemas, events and command semantics are unchanged.
