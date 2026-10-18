@@ -1,0 +1,105 @@
+{
+  "at": "2026-10-18T03:14:54.752Z",
+  "testRevision": "6c86174268df15b10dab114d7f524c56098fab59",
+  "actualProductRevision": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "reviewer": "delivery-agent",
+  "captures": [
+    {
+      "role": "admin",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-final-admin-1280.png",
+      "sha256": "8bae49b2df66daae876fca6977d06c0d4890b55c347e4458018370bef72e11a1",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "member",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-final-member-1280.png",
+      "sha256": "ce80720a132e446a94ecdf37941e953fe307ce77f10a7d44bb6c41a929f64e35",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "owner",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-final-owner-1280.png",
+      "sha256": "bd2d7c3d0b3bac24fc8b7d8a2d6e696442573d79cf2f7c7e4252435b64a1aa8d",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "admin",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-final-admin-768.png",
+      "sha256": "6e019d64d16b23d73c4014cc6da3cb54b35db8ab7fc5eaeb38b3e3b0f6424398",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "member",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-final-member-768.png",
+      "sha256": "5d5dc7677ab55ac0ab78897bc7a9157f440988028b87f8979aed7f863847f99a",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "owner",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-final-owner-768.png",
+      "sha256": "1a80b7a55ad0b8d89bed06c1e03fefc7ff153f1472d1c5d9b60fbcaa172828d0",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-final-admin-390.png",
+      "sha256": "562e0ece6b45ae43ebb5b051e2875a9aaeff949e8b071630d34ee2fb57b58476",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "member",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-final-member-390.png",
+      "sha256": "fca06a2fd005da12a7c97e13c5a57159930ede823ca121b8673b94508d831a57",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "owner",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-final-owner-390.png",
+      "sha256": "6830d1a4e594f9b9713a0674c104c5fab4750b31c7f72e72cbb2cc9e3514e312",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "admin",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-final-admin-320.png",
+      "sha256": "554673adf69d0424e3d94892862379adecf8deecb6c67ef328a73820ae0f7d34",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "member",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-final-member-320.png",
+      "sha256": "4f691f993ad6e3b6e71626f637e11ebc104739bf3089f4c877c437a610192129",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    },
+    {
+      "role": "owner",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-final-owner-320.png",
+      "sha256": "eb6404c487b14166618ab2b388df4ab889c57ac84b9bb5562f7d3452d27bf2f5",
+      "observation": "Current role-permitted expanded Organization actions and visible focused summary; Create Board remains prominent. Natural vertical document scroll at narrow/zoomed widths."
+    }
+  ],
+  "review": "All12 current default role/width viewport captures inspected. Owner and Member4 each inspected in prior context, Admin4 inspected again after context truncation. All show current admitted menu and focused summary, primary Create Board, wrapping44px actions. Native simultaneous geometry and Axe separately pass; snapshots do not prove complete all-screen-reader/WCAG certification. Existing fixed header can cover earlier noninteractive scroll content at200%; tested controls remain visible. Fallback footer limitation remains separately explicit."
+}

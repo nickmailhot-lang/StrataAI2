@@ -1,0 +1,6 @@
+{
+  "scope": "Actual whole current frontend execution at6c861742 test source. App/unit/build inputs equal actuale14 bundle, new browser assertion is only changed repository input. Native engines stopped, no build overlap. Existing24 capacity deferrals preserved.",
+  "exit": 0,
+  "productRevision": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "revision": "6c86174268df15b10dab114d7f524c56098fab59"
+}

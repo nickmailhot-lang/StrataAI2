@@ -1,0 +1,101 @@
+{
+  "worker": {
+    "service": "strataai-worker",
+    "mode": "production",
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "servedVariantAssets": [
+    {
+      "path": "build-metadata.json",
+      "length": 73,
+      "sha256": "9d9980ef575a6c6dc157843b54e59fd00d85172771860db04a8a0adee0470c23"
+    },
+    {
+      "path": "index.html",
+      "length": 578,
+      "sha256": "0110d757e4cc2212962a6bccfc4064f25c248279961eb921a1bb7cb51f7c190b"
+    },
+    {
+      "path": "assets/index-Bw_GsyDn.css",
+      "length": 561,
+      "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+    },
+    {
+      "path": "assets/index-PY6XBRev.js",
+      "length": 1627237,
+      "sha256": "a638bcffa09927e152c6ea6fcc4343d1a9d0ab0bc576bed0b9901caec25f4950"
+    }
+  ],
+  "previewConfigSha256": "722b05929611ba58436cf406a59755ef2a9394b14a4fee51c0c9566845368765",
+  "stage": "new",
+  "productRevision": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "wholeDefault": "Total: 41 tests in 11 files",
+  "apiReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "hosts": [
+    {
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle8-dotnet-artifacts\\bin\\StrataAI.Api\\release\\StrataAI.Api.dll",
+      "createdAt": "2026-10-17T14:51:48.356537-07:00",
+      "kind": "api",
+      "port": 18089,
+      "pid": 28452,
+      "parentPid": 21476
+    },
+    {
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle11-worker-artifacts\\bin\\StrataAI.Worker\\release\\StrataAI.Worker.dll",
+      "createdAt": "2026-10-17T19:15:49.702985-07:00",
+      "kind": "worker",
+      "port": 18093,
+      "pid": 25368,
+      "parentPid": 15768
+    },
+    {
+      "command": "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vite/bin/vite.js preview --config C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle18-targets-fixture\\preview-default.config.mjs",
+      "createdAt": "2026-10-17T19:21:21.830698-07:00",
+      "kind": "preview",
+      "port": 15185,
+      "pid": 10704,
+      "parentPid": 18660
+    }
+  ],
+  "web": {
+    "revision": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+    "version": "0.1.0"
+  },
+  "testRevision": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "actualDatabaseConnectionRoles": [
+    "strataai_api_runtime|1",
+    "strataai_worker_runtime|6"
+  ],
+  "runtimeRoles": [
+    "strataai_api_runtime|t|f|f|f|f|f|f",
+    "strataai_worker_runtime|t|f|f|f|f|f|f"
+  ],
+  "workerReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "api": {
+    "service": "strataai-api",
+    "mode": "production",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "schemaMigrations": 149,
+  "policy": {
+    "allowSelfRegistration": true,
+    "requireVerifiedEmail": false,
+    "minimumPasswordLength": 12
+  },
+  "at": "2026-10-18T02:21:48.7480292+00:00",
+  "mode": "default",
+  "files": [
+    "organization-actions.spec.ts"
+  ],
+  "scope": "Current complete default41 manifest executes as new4 plus intact original37, with no omitted or narrowed file. Rollback8 repeats under separately hashed0 bundle at identical trusted15185 origin. Real services and controlledUX cases remain distinct. Actual API389/Worker0f and149 restricted roles retained, not relabeled. Local optional-verification fixture support, not hosted helper parity/immutable/provider/HTTPS acceptance.",
+  "collection": "Total: 4 tests in 1 file",
+  "databaseProject": "strataai-c11-invite-9ed41294"
+}

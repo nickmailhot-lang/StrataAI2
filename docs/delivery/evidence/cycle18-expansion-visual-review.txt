@@ -1,0 +1,93 @@
+{
+  "at": "2026-10-18T01:47:13.136Z",
+  "revision": "c2b79f4f3c00ced49af58f1f3249a5a9425a3bce",
+  "captures": [
+    {
+      "role": "admin",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-admin-1280.png",
+      "sha256": "fd908030344abea3b601fadb99e66e297bb3cc0c6dd902295d264371fc0faf46"
+    },
+    {
+      "role": "member",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-member-1280.png",
+      "sha256": "ac1e4fced83e64d31018461ecb684b335af098eb1ae5f9bbc66d5a80bc9e457d"
+    },
+    {
+      "role": "owner",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-owner-1280.png",
+      "sha256": "3389082c060c9943cae35ebfd7b319374ac6025684a89f1f6681532a8091e381"
+    },
+    {
+      "role": "admin",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-admin-768.png",
+      "sha256": "76343105380c7a0451e2be0d1b0cb201d4598557d61701844c2698af16fb7450"
+    },
+    {
+      "role": "member",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-member-768.png",
+      "sha256": "d4562a33016229e468d212b239efb85fbc3fe0e9de5a78aad264c0f27b3d5f44"
+    },
+    {
+      "role": "owner",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-owner-768.png",
+      "sha256": "24d8204e509af871d1e48aed9a68fc76d5f0198adc4c2dd4541da998c13ba93e"
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-admin-390.png",
+      "sha256": "b4055391b52b9b28ca59077852b5c9175fe44ee552687e3ab26228271cb4a062"
+    },
+    {
+      "role": "member",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-member-390.png",
+      "sha256": "20c8b41202bbce2aea5b1cb652e0f64108e217df972bd4ff6ff80c805d86199b"
+    },
+    {
+      "role": "owner",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-owner-390.png",
+      "sha256": "668e6ce68a4d76f3a1e5018ed8c35e111030dfd80182c53adf0ae51f8bcca7c0"
+    },
+    {
+      "role": "admin",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-admin-320.png",
+      "sha256": "7b2a71db10e2109a72cd85d1d7f22a9b8669d9a2395034209a1c78459ea04f82"
+    },
+    {
+      "role": "member",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-member-320.png",
+      "sha256": "aa2dee53e111bdb7d2c4f84c9250c6679c64f2edb6f40616faa0fdd5bf5ae258"
+    },
+    {
+      "role": "owner",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-owner-320.png",
+      "sha256": "fe4d4891c8ea964dd03476b9039bc5a59a98955d13e9d7469ab77babd10cf264"
+    }
+  ],
+  "reviewer": "delivery-agent",
+  "inspection": "All12 actual viewport Owner/Admin/Member images inspected at1280,768200%,390,320. Primary Create Board stays before disclosure; visible summary focus ring, role-permitted links, natural vertical wrapping and no page-horizontal overflow. Member has only archived/leave. Tablet captures have natural document scroll, not full-page geometry proof; small Owner screens continue below viewport. Automated summary focus/header hit-testing and Axe assertions are separate from image review.",
+  "limits": "No new broad-sidebar/panel redesign or all original PRD UX acceptance claimed. Images prove current rendered snapshots; current whole original37/rollback8/full/release/main remain required."
+}

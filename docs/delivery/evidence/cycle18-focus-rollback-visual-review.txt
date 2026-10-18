@@ -1,0 +1,106 @@
+{
+  "at": "2026-10-18T03:06:11.784Z",
+  "testRevision": "6c86174268df15b10dab114d7f524c56098fab59",
+  "actualProductRevision": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "captures": [
+    {
+      "role": "admin",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-admin-768.png",
+      "sha256": "72e071e24ff5906a9433a18edff2b2c8c3eae638c2ef61f39a88ecf37778f718",
+      "observation": "Inline permitted actions visible; captured frame has no focus outline, so native contemporaneous focus/geometry assertions are the focus evidence."
+    },
+    {
+      "role": "member",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-member-768.png",
+      "sha256": "75e9149aeaffdd74b1c4568d130ad49eb8eb53c79805e360a7a1dd0db015411d",
+      "observation": "Inline permitted actions and focused target visible."
+    },
+    {
+      "role": "owner",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-owner-768.png",
+      "sha256": "d22b2ce1c78fec26fb1b5cf4c68ed5b1d9958c0864b087083759587675b1d41d",
+      "observation": "Inline permitted actions and focused target visible."
+    },
+    {
+      "role": "admin",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-admin-320.png",
+      "sha256": "f5738477f66f59f3a8d79174a1632a9e64c69bb8066f341a5719635dcbbf0bc5",
+      "observation": "Inline permitted actions and focused target visible."
+    },
+    {
+      "role": "member",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-member-320.png",
+      "sha256": "c10344d51ca8430535b5b220e90d37f00bc563661a5e72d765864969b245260b",
+      "observation": "Inline permitted actions and focused target visible."
+    },
+    {
+      "role": "owner",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-owner-320.png",
+      "sha256": "521d9a1ee8720543087fb4e0ebe0d94b590255d3982124f4a23ee586cf6934e3",
+      "observation": "Inline permitted actions and focused target visible."
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-admin-390.png",
+      "sha256": "b3e1885d1c7c261cac615f013250207e760148706807839f5db06a40df2b7b42",
+      "observation": "Inline permitted actions visible; captured frame has no focus outline, so native contemporaneous focus/geometry assertions are the focus evidence."
+    },
+    {
+      "role": "member",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-member-390.png",
+      "sha256": "e9fb72b79ff16d3b03aa1f2ea490b85265430473b4fd70b33f17a471fd7efe20",
+      "observation": "Inline permitted actions and focused target visible."
+    },
+    {
+      "role": "owner",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-owner-390.png",
+      "sha256": "377fa02802c32d66d36e4860eb4d618a3073a7fc0bfbc00b73b5773bfc72e3e9",
+      "observation": "Inline permitted actions and focused target visible."
+    },
+    {
+      "role": "admin",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-admin-1280.png",
+      "sha256": "176eff347c90e76b85c7fb019a4593435cf7db59c1045fc8a97b9973c00c278b",
+      "observation": "Inline permitted actions and focused target visible."
+    },
+    {
+      "role": "member",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-member-1280.png",
+      "sha256": "514b917e73f07f41c189f846e52b6dec622a2ff2b094e24434b411c9961673d5",
+      "observation": "Inline permitted actions and focused target visible."
+    },
+    {
+      "role": "owner",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-validated-rollback-owner-1280.png",
+      "sha256": "a038d0990ab3edb0b0e357ae1e7a21b8b3ef17c5bb658678f7e9c303ceed0854",
+      "observation": "Inline permitted actions and focused target visible."
+    }
+  ],
+  "reviewer": "delivery-agent",
+  "review": "All12 current fallback role/width viewport captures inspected. Native summary absent, all role-permitted routes inline,44px targets wrap naturally. Owner/Member focus examples and Admin1280/320 outline visible; Admin768/390 snapshots explicitly not treated as outline proof. All original simultaneous focused/current-node geometry assertions pass separately. Tablet captures show natural document scroll under fixed header.",
+  "remainingLimit": "An existing global build-identity footer is partly obscured/cropped by the desktop sidebar in Member768200% capture; core actions remain fully reachable and document horizontal-overflow test passes. Footer/shell layout is unchanged by this feature and not certified repaired here. No all-device/screen-reader/full WCAG or release/main acceptance inferred."
+}

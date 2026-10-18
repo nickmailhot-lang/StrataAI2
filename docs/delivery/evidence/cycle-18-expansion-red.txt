@@ -1,0 +1,42 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/organizations/OrganizationHome.actions.test.tsx
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle18-organization-actions/apps/web
+
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx (6 tests | 1 failed) 1066ms
+   × PRD-03-VS-06-T-03: admission withdrawal removes the entire old disclosure before a fresh downgraded role is confirmed 175ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: admission withdrawal removes the entire old disclosure before a fresh downgraded role is confirmed
+AssertionError: expected <details …(1)>…(2)</details> to have property "open" with value true
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx:62:55
+     60|   await screen.findByRole('button', { name: 'Create board' });
+     61|   const current = (await screen.findByText('Organization actions', { s…
+     62|   expect(current).not.toBe(original); expect(current).toHaveProperty('…
+       |                                                       ^
+     63| });
+     64|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  18:36:51
+   Duration  6.10s (import 46%, environment 26%, tests 18%, transform 5%, setup 5%)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --maxWorkers=2 src/features/organizations/OrganizationHome.actions.test.tsx

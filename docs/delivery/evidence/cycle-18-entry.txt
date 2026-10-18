@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-18T00:47:29.257Z",
+  "revision": "f7116b73d3c18058a59f444912426c7ab47eb795",
+  "requirement": {
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/3",
+    "updatedAt": "2026-10-17T19:29:25Z",
+    "sha256": "5faf6ef1cd872b5d9ba5677a7d7708639ea4cc84839f51e29e133f886273c632",
+    "unchangedOriginalPrefix": true,
+    "amendment": "UX-NAV-03; primary Create Board precedes secondary operations"
+  },
+  "ux": "Read unchanged AGENTS, UXA01–08 and PRD03 backlog row at frozen checkpoint. Existing MUI/theme/shell/routes/navigation permissions remain.",
+  "scope": "Reuse existing PR100 SecondaryActions.tsx/workExperience.ts. Wire only current OrganizationHome action placement and disclosure, using currentOrganization from its admitted data. Preserve all newer actor/key/body/draft/paging/focus/lifecycle/stream recovery; do not copy older whole OrganizationHome.",
+  "verificationPlan": "New current consumer counterexamples before wiring; retain old role/deletion/withdrawal and original creation/recovery assertions, add default/rollback controls. Entire intended29 native cases/6 files must pass exact collection before execution; current full frontend/build/type/lint/source/coverage and rendered review remain mandatory. No whole new-feature acceptance from prior97 passes.",
+  "priority": "Complete the queued bounded Organization disclosure. Separate read-only Card dirty-navigation follow-up audit remains under work/card-dirty-navigation-followup-audit.json; preserve existing refresh/conflict handling and evaluate before broader panel work.",
+  "sourceStatus": "Task/unit controls start In Progress. Native test stays Ready until implemented. No current disclosure behavior or failure claimed yet; parent NAV03 remains Unverified. Current older97 tasks Review with native36/full2875; exact frozen109 release/main still pending."
+}

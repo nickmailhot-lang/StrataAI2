@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-18T02:07:53.178Z",
+  "testRevision": "24b9b46b40bd489e570ea28c3a5f511f2bf0a28e",
+  "actualProductRevision": "c2b79f4f3c00ced49af58f1f3249a5a9425a3bce",
+  "method": "git diff --exit-code c2 HEAD -- . :(exclude)tests/browser/organization-actions.spec.ts",
+  "changedOnly": "Existing four-case browser file,14 additional assertion/input lines. No new scenarios or original assertions removed;120s/zero retries preserved.",
+  "addition": "For each current Owner/Admin/Member: native Enter close; details.open false; permitted link still mounted includeHidden but absent from accessible role query; Tab skips to Board; ShiftTab returns to summary; Enter reopens. New entire4 must pass before acceptance.",
+  "exactUnchanged": "Complete app/unit/build/backend/package/config and all10 original browser-file/helper inputs equal actualc2. Current default/rollback bundles,268 controlled cases/default build5.34s/rollback5.25s/types/lint and actual original37/19.4m stay attributed toc2. No app rebuild or old-test relabel.",
+  "collection": "Current actual default41/11, new4/1, intact original37/10 and rollback8/2 guards pass; registry coverage only.",
+  "limits": "Closed keyboard assertion still running in50053; rollback8 and actual whole frontend not run. Prior4c2 passes do not verify this newly explicit criterion."
+}

@@ -1,0 +1,9 @@
+{
+  "ledger": 0,
+  "mainHistory": 0,
+  "deliveryTests": 0,
+  "scope": "Final reconciled delivery structure, evidence SHA hashes, original requirements and append-only histories against frozenf711 and freshly fetched main. Scoped local review only; failed frozen109 release/main is not accepted.",
+  "revision": "6c86174268df15b10dab114d7f524c56098fab59",
+  "diffCheck": 0,
+  "mainRevision": "e90c6442ccc0b928a38db8793853ef03abe1bf3d"
+}

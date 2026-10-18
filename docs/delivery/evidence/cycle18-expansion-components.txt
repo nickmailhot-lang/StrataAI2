@@ -1,0 +1,15 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/organizations/OrganizationHome.actions.test.tsx src/app/SecondaryActions.test.tsx src/app/workExperience.test.ts src/features/organizations/OrganizationHome.test.tsx src/features/organizations/OrganizationHome.focus.test.tsx src/features/organizations/OrganizationCreationDialog.test.tsx src/features/organizations/OrganizationCreationTelemetry.test.tsx src/features/organizations/OrganizationSettingsPage.test.tsx src/features/organizations/OrganizationMembersPage.test.tsx src/app/SurfaceAdmission.test.tsx src/app/SurfaceAdmission.return.test.tsx src/features/auth/AuthPage.return.test.tsx src/app/App.test.tsx src/app/InternalAppShell.test.tsx src/app/navigationModel.test.ts
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle18-organization-actions/apps/web
+
+
+ Test Files  15 passed (15)
+      Tests  268 passed (268)
+   Start at  18:39:04
+   Duration  74.78s (import 46%, tests 31%, environment 16%, transform 3%, setup 3%)
+
+     Import  229 modules were evaluated 398 times · 67.37s total, 46% of tracked time
+             ~10.83s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

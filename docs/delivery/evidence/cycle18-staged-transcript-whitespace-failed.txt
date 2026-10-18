@@ -1,0 +1,80 @@
+docs/delivery/evidence/cycle-18-b055-native-4.txt:16: trailing whitespace.
++  1) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 1280px 
+docs/delivery/evidence/cycle-18-b055-native-4.txt:58: trailing whitespace.
++  2) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 390px 
+docs/delivery/evidence/cycle-18-b055-native-4.txt:101: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 1280px 
+docs/delivery/evidence/cycle-18-b055-native-4.txt:102: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 390px 
+docs/delivery/evidence/cycle-18-components-267.txt:15: new blank line at EOF.
+docs/delivery/evidence/cycle-18-controls-green.txt:15: new blank line at EOF.
+docs/delivery/evidence/cycle-18-controls-red.txt:149: trailing whitespace.
++            Create 
+docs/delivery/evidence/cycle-18-controls-red.txt:300: trailing whitespace.
++            Create 
+docs/delivery/evidence/cycle-18-controls-red.txt:457: trailing whitespace.
++            Create 
+docs/delivery/evidence/cycle-18-controls-red.txt:600: trailing whitespace.
++            Create 
+docs/delivery/evidence/cycle-18-controls-red.txt:709: trailing whitespace.
++            Create 
+docs/delivery/evidence/cycle-18-controls-red.txt:804: trailing whitespace.
++            Create 
+docs/delivery/evidence/cycle-18-controls-red.txt:849: trailing whitespace.
++-   Create 
+docs/delivery/evidence/cycle-18-controls-red.txt:999: trailing whitespace.
++            Create 
+docs/delivery/evidence/cycle-18-controls-red.txt:1150: trailing whitespace.
++            Create 
+docs/delivery/evidence/cycle-18-default-build.txt:15: trailing whitespace.
++[plugin builtin:vite-reporter] 
+docs/delivery/evidence/cycle-18-initial-native-4.txt:14: trailing whitespace.
++  1) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 768px 
+docs/delivery/evidence/cycle-18-initial-native-4.txt:45: trailing whitespace.
++  2) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 320px 
+docs/delivery/evidence/cycle-18-initial-native-4.txt:77: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 768px 
+docs/delivery/evidence/cycle-18-initial-native-4.txt:78: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 320px 
+docs/delivery/evidence/cycle-18-rollback-build.txt:17: trailing whitespace.
++[plugin builtin:vite-reporter] 
+docs/delivery/evidence/cycle18-expansion-components.txt:15: new blank line at EOF.
+docs/delivery/evidence/cycle18-expansion-rollback-build.txt:17: trailing whitespace.
++[plugin builtin:vite-reporter] 
+docs/delivery/evidence/cycle18-expansion-web-build.txt:17: trailing whitespace.
++[plugin builtin:vite-reporter] 
+docs/delivery/evidence/cycle18-focus-web-full.txt:15: new blank line at EOF.
+docs/delivery/evidence/cycle18-prod-closed-rollback.txt:20: trailing whitespace.
++  1) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 1280px 
+docs/delivery/evidence/cycle18-prod-closed-rollback.txt:51: trailing whitespace.
++  2) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 390px 
+docs/delivery/evidence/cycle18-prod-closed-rollback.txt:82: trailing whitespace.
++  3) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 320px 
+docs/delivery/evidence/cycle18-prod-closed-rollback.txt:114: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 1280px 
+docs/delivery/evidence/cycle18-prod-closed-rollback.txt:115: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 390px 
+docs/delivery/evidence/cycle18-prod-closed-rollback.txt:116: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 320px 
+docs/delivery/evidence/cycle18-prod-targets-rollback.txt:22: trailing whitespace.
++  1) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 1280px 
+docs/delivery/evidence/cycle18-prod-targets-rollback.txt:53: trailing whitespace.
++  2) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 768px 
+docs/delivery/evidence/cycle18-prod-targets-rollback.txt:93: trailing whitespace.
++  3) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 390px 
+docs/delivery/evidence/cycle18-prod-targets-rollback.txt:133: trailing whitespace.
++  4) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 320px 
+docs/delivery/evidence/cycle18-prod-targets-rollback.txt:174: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 1280px 
+docs/delivery/evidence/cycle18-prod-targets-rollback.txt:175: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 768px 
+docs/delivery/evidence/cycle18-prod-targets-rollback.txt:176: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 390px 
+docs/delivery/evidence/cycle18-prod-targets-rollback.txt:177: trailing whitespace.
++    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 320px 
+docs/delivery/evidence/cycle18-targets-components.txt:15: new blank line at EOF.
+docs/delivery/evidence/cycle18-targets-green.txt:15: new blank line at EOF.
+docs/delivery/evidence/cycle18-targets-rollback-build.txt:17: trailing whitespace.
++[plugin builtin:vite-reporter] 
+docs/delivery/evidence/cycle18-targets-web-build.txt:17: trailing whitespace.
++[plugin builtin:vite-reporter] 

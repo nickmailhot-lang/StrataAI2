@@ -1,0 +1,70 @@
+{
+  "at": "2026-10-18T02:50:45.726Z",
+  "testSource": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "actualProduct": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "mode": "rollback",
+  "method": "Fresh disposable Owner, actual served fallback build. Four current connected Organization-settings link rectangles and computed styles; no graph writes or retained account/token/Organization identifiers in projection.",
+  "samples": [
+    {
+      "width": 1280,
+      "height": 44,
+      "top": 366.984375,
+      "bottom": 410.984375,
+      "headerBottom": 64,
+      "minHeight": "44px",
+      "fontSize": "14px",
+      "lineHeight": "24.5px",
+      "paddingTop": "6px",
+      "paddingBottom": "6px",
+      "connected": true,
+      "meets44": true,
+      "textZoom": "100%"
+    },
+    {
+      "width": 768,
+      "height": 61,
+      "top": 1104.90625,
+      "bottom": 1165.90625,
+      "headerBottom": 176.03125,
+      "minHeight": "44px",
+      "fontSize": "28px",
+      "lineHeight": "49px",
+      "paddingTop": "6px",
+      "paddingBottom": "6px",
+      "connected": true,
+      "meets44": true,
+      "textZoom": "200%"
+    },
+    {
+      "width": 390,
+      "height": 44,
+      "top": 589.46875,
+      "bottom": 633.46875,
+      "headerBottom": 56,
+      "minHeight": "44px",
+      "fontSize": "14px",
+      "lineHeight": "24.5px",
+      "paddingTop": "6px",
+      "paddingBottom": "6px",
+      "connected": true,
+      "meets44": true,
+      "textZoom": "100%"
+    },
+    {
+      "width": 320,
+      "height": 44,
+      "top": 683.453125,
+      "bottom": 727.453125,
+      "headerBottom": 56,
+      "minHeight": "44px",
+      "fontSize": "14px",
+      "lineHeight": "24.5px",
+      "paddingTop": "6px",
+      "paddingBottom": "6px",
+      "connected": true,
+      "meets44": true,
+      "textZoom": "100%"
+    }
+  ],
+  "scope": "Diagnostic real-browser sizing only; not whole workflow/full/release acceptance."
+}

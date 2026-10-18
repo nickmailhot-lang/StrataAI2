@@ -1,0 +1,110 @@
+{
+  "previewConfigSha256": "b6a05418ce2299cceacd5d59401e247b424574571d00dac046bf04834705e4e7",
+  "collection": "Total: 37 tests in 10 files",
+  "at": "2026-10-18T01:46:27.1116782+00:00",
+  "productRevision": "c2b79f4f3c00ced49af58f1f3249a5a9425a3bce",
+  "stage": "regressions",
+  "schemaMigrations": 149,
+  "actualDatabaseConnectionRoles": [
+    "strataai_api_runtime|9",
+    "strataai_worker_runtime|8"
+  ],
+  "worker": {
+    "service": "strataai-worker",
+    "mode": "production",
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "hosts": [
+    {
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle8-dotnet-artifacts\\bin\\StrataAI.Api\\release\\StrataAI.Api.dll",
+      "pid": 28452,
+      "createdAt": "2026-10-17T14:51:48.356537-07:00",
+      "kind": "api",
+      "port": 18089,
+      "parentPid": 21476
+    },
+    {
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle11-worker-artifacts\\bin\\StrataAI.Worker\\release\\StrataAI.Worker.dll",
+      "pid": 30136,
+      "createdAt": "2026-10-17T18:45:59.099291-07:00",
+      "kind": "worker",
+      "port": 18093,
+      "parentPid": 38524
+    },
+    {
+      "command": "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vite/bin/vite.js preview --config C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle18-expansion-fixture\\preview-default.config.mjs",
+      "pid": 35352,
+      "createdAt": "2026-10-17T18:42:43.012772-07:00",
+      "kind": "preview",
+      "port": 15185,
+      "parentPid": 37752
+    }
+  ],
+  "scope": "Current complete default41 manifest executes as new4 plus intact original37, with no omitted or narrowed file. Rollback8 repeats under separately hashed0 bundle at identical trusted15185 origin. Real services and controlledUX cases remain distinct. Actual API389/Worker0f and149 restricted roles retained, not relabeled. Local optional-verification fixture support, not hosted helper parity/immutable/provider/HTTPS acceptance.",
+  "testRevision": "c2b79f4f3c00ced49af58f1f3249a5a9425a3bce",
+  "web": {
+    "revision": "c2b79f4f3c00ced49af58f1f3249a5a9425a3bce",
+    "version": "0.1.0"
+  },
+  "databaseProject": "strataai-c11-invite-9ed41294",
+  "wholeDefault": "Total: 41 tests in 11 files",
+  "apiReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "policy": {
+    "allowSelfRegistration": true,
+    "requireVerifiedEmail": false,
+    "minimumPasswordLength": 12
+  },
+  "mode": "default",
+  "files": [
+    "work-navigation.spec.ts",
+    "board-creation-recovery.spec.ts",
+    "signin-card-return.spec.ts",
+    "organization-metadata-live.spec.ts",
+    "organization-invitation-role-live.spec.ts",
+    "organization-settings.spec.ts",
+    "organization-member-administration.spec.ts",
+    "organization-departure.spec.ts",
+    "organization-deletion-retries.spec.ts",
+    "ux-foundation.spec.ts"
+  ],
+  "workerReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "runtimeRoles": [
+    "strataai_api_runtime|t|f|f|f|f|f|f",
+    "strataai_worker_runtime|t|f|f|f|f|f|f"
+  ],
+  "api": {
+    "service": "strataai-api",
+    "mode": "production",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "servedVariantAssets": [
+    {
+      "sha256": "c8e4452b9ca2475bf966142605368832c428f3b9bc5dfece73de0cafe48b0089",
+      "path": "build-metadata.json",
+      "length": 73
+    },
+    {
+      "sha256": "68151997e58a6bbe636c67272d3a3e96f3d7587a35a04a3cbe9ddaa49b69bc4a",
+      "path": "index.html",
+      "length": 578
+    },
+    {
+      "sha256": "b6a2a5fe34fa4916e32f1dc212ea54ebf10bae178ae0330b63d033a5a7d7e6fa",
+      "path": "assets/index-AFkgCIX-.js",
+      "length": 1627219
+    },
+    {
+      "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666",
+      "path": "assets/index-Bw_GsyDn.css",
+      "length": 561
+    }
+  ]
+}

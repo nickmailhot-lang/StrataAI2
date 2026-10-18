@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-18T03:14:54.752Z",
+  "watcherSession": 93137,
+  "watcherResult": "Stopped/exited0 after native8+4 before full frontend",
+  "attempt": 215,
+  "excludedBaseline": 153,
+  "retained": 212,
+  "fresh": 59,
+  "bound": 100,
+  "logSha256": "1df10559eed84258d548f6a65363bdb48ebc4c24f6b88077baf1ecaf5f7a5850",
+  "scope": "Owned synthetic cohort only, no records removed/grants changed; actualWorker0f still running."
+}

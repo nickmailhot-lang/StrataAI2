@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-18T00:54:44.328Z",
+  "source": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+  "totalPassed": 36,
+  "realProductionServices": 30,
+  "controlledShell": 4,
+  "supportingVerifiedDemo": 2,
+  "reason": "ux-shell.spec.ts explicitly intercepts HTTP and WebSocket responses. It is a rendered controlled shell execution against the built app, not a genuine API/Worker/RLS case. Original outcomes/identities/assertions unchanged; earlier34-real labels were too broad.",
+  "sourceBreakdown": "Matrix31:27 real-service+4 controlled shell. Separate scroll3 real-service and checklist2 supporting verified Demo.36 distinct outcomes retained.",
+  "correction": "Corrected public PR108/109 descriptions without changing frozen f7116b73 head or CI39083901136. Preserve old immutable result/identity artifacts and add this clarification; no new execution or weakened gate."
+}

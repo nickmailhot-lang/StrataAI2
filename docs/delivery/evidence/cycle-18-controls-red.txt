@@ -1,0 +1,1198 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/organizations/OrganizationHome.actions.test.tsx src/app/SecondaryActions.test.tsx src/app/workExperience.test.ts
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle18-organization-actions/apps/web
+
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx (6 tests | 5 failed) 4999ms
+   × PRD-03-VS-06-T-03: current role 0 discloses exactly permitted existing Organization actions 1328ms
+   × PRD-03-VS-06-T-03: current role 1 discloses exactly permitted existing Organization actions 1099ms
+   × PRD-03-VS-06-T-03: current role 2 discloses exactly permitted existing Organization actions 1076ms
+   × PRD-03-VS-06-T-03: Create Board precedes secondary operations in keyboard/reading order 59ms
+   × PRD-03-VS-06-T-03: admission withdrawal removes the entire old disclosure before a fresh downgraded role is confirmed 1023ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: current role 0 discloses exactly permitted existing Organization actions
+TestingLibraryElementError: Unable to find an element with the text: Organization actions, which matches selector 'summary'. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="MuiContainer-root MuiContainer-maxWidthLg css-j81c45-MuiContainer-root"
+    >
+      <div
+        class="MuiStack-root css-jzi477-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app"
+            tabindex="0"
+          >
+            Organizations
+          </a>
+          <a
+            aria-label="Open profile"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/profile"
+            tabindex="0"
+          >
+            Profile
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/invitations"
+            tabindex="0"
+          >
+            Invitations
+          </a>
+        </div>
+        <h1
+          class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
+          tabindex="-1"
+        >
+          Current work Organization
+        </h1>
+        <div
+          class="MuiStack-root css-sp4z7j-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/archived-boards"
+            tabindex="0"
+          >
+            Archived boards
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/leave"
+            tabindex="0"
+          >
+            Leave Organization
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/delete"
+            tabindex="0"
+          >
+            Request Organization deletion
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/operational-lifecycle"
+            tabindex="0"
+          >
+            Organization lifecycle
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/settings"
+            tabindex="0"
+          >
+            Organization settings
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/configuration"
+            tabindex="0"
+          >
+            Organization configuration
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-policies"
+            tabindex="0"
+          >
+            Retention policies
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-holds"
+            tabindex="0"
+          >
+            Retention holds
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/members"
+            tabindex="0"
+          >
+            Organization members
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create 
+            board
+          </button>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+        >
+          No accessible boards yet.
+        </p>
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        />
+        <div
+          class="MuiBox-root css-1obf64m"
+        />
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="MuiContainer-root MuiContainer-maxWidthLg css-j81c45-MuiContainer-root"
+    >
+      <div
+        class="MuiStack-root css-jzi477-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app"
+            tabindex="0"
+          >
+            Organizations
+          </a>
+          <a
+            aria-label="Open profile"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/profile"
+            tabindex="0"
+          >
+            Profile
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/invitations"
+            tabindex="0"
+          >
+            Invitations
+          </a>
+        </div>
+        <h1
+          class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
+          tabindex="-1"
+        >
+          Current work Organization
+        </h1>
+        <div
+          class="MuiStack-root css-sp4z7j-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/archived-boards"
+            tabindex="0"
+          >
+            Archived boards
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/leave"
+            tabindex="0"
+          >
+            Leave Organization
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/delete"
+            tabindex="0"
+          >
+            Request Organization deletion
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/operational-lifecycle"
+            tabindex="0"
+          >
+            Organization lifecycle
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/settings"
+            tabindex="0"
+          >
+            Organization settings
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/configuration"
+            tabindex="0"
+          >
+            Organization configuration
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-policies"
+            tabindex="0"
+          >
+            Retention policies
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-holds"
+            tabindex="0"
+          >
+            Retention holds
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/members"
+            tabindex="0"
+          >
+            Organization members
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create 
+            board
+          </button>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+        >
+          No accessible boards yet.
+        </p>
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        />
+        <div
+          class="MuiBox-root css-1obf64m"
+        />
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ waitForWrapper ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx:36:32
+     34|   mount(() => response({ organization, role }));
+     35|   await screen.findByRole('button', { name: 'Create board' });
+     36|   const summary = await screen.findByText('Organization actions', { se…
+       |                                ^
+     37|   expect(summary.parentElement).toHaveProperty('open', false);
+     38|   const disclosure = await openActions(); expect(names(disclosure)).to…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: current role 1 discloses exactly permitted existing Organization actions
+TestingLibraryElementError: Unable to find an element with the text: Organization actions, which matches selector 'summary'. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="MuiContainer-root MuiContainer-maxWidthLg css-j81c45-MuiContainer-root"
+    >
+      <div
+        class="MuiStack-root css-jzi477-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app"
+            tabindex="0"
+          >
+            Organizations
+          </a>
+          <a
+            aria-label="Open profile"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/profile"
+            tabindex="0"
+          >
+            Profile
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/invitations"
+            tabindex="0"
+          >
+            Invitations
+          </a>
+        </div>
+        <h1
+          class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
+          tabindex="-1"
+        >
+          Current work Organization
+        </h1>
+        <div
+          class="MuiStack-root css-sp4z7j-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/archived-boards"
+            tabindex="0"
+          >
+            Archived boards
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/leave"
+            tabindex="0"
+          >
+            Leave Organization
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/operational-lifecycle"
+            tabindex="0"
+          >
+            Organization lifecycle
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/settings"
+            tabindex="0"
+          >
+            Organization settings
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/configuration"
+            tabindex="0"
+          >
+            Organization configuration
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-policies"
+            tabindex="0"
+          >
+            Retention policies
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-holds"
+            tabindex="0"
+          >
+            Retention holds
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/members"
+            tabindex="0"
+          >
+            Organization members
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create 
+            board
+          </button>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+        >
+          No accessible boards yet.
+        </p>
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        />
+        <div
+          class="MuiBox-root css-1obf64m"
+        />
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="MuiContainer-root MuiContainer-maxWidthLg css-j81c45-MuiContainer-root"
+    >
+      <div
+        class="MuiStack-root css-jzi477-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app"
+            tabindex="0"
+          >
+            Organizations
+          </a>
+          <a
+            aria-label="Open profile"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/profile"
+            tabindex="0"
+          >
+            Profile
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/invitations"
+            tabindex="0"
+          >
+            Invitations
+          </a>
+        </div>
+        <h1
+          class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
+          tabindex="-1"
+        >
+          Current work Organization
+        </h1>
+        <div
+          class="MuiStack-root css-sp4z7j-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/archived-boards"
+            tabindex="0"
+          >
+            Archived boards
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/leave"
+            tabindex="0"
+          >
+            Leave Organization
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/operational-lifecycle"
+            tabindex="0"
+          >
+            Organization lifecycle
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/settings"
+            tabindex="0"
+          >
+            Organization settings
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/configuration"
+            tabindex="0"
+          >
+            Organization configuration
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-policies"
+            tabindex="0"
+          >
+            Retention policies
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-holds"
+            tabindex="0"
+          >
+            Retention holds
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/members"
+            tabindex="0"
+          >
+            Organization members
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create 
+            board
+          </button>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+        >
+          No accessible boards yet.
+        </p>
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        />
+        <div
+          class="MuiBox-root css-1obf64m"
+        />
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ waitForWrapper ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx:36:32
+     34|   mount(() => response({ organization, role }));
+     35|   await screen.findByRole('button', { name: 'Create board' });
+     36|   const summary = await screen.findByText('Organization actions', { se…
+       |                                ^
+     37|   expect(summary.parentElement).toHaveProperty('open', false);
+     38|   const disclosure = await openActions(); expect(names(disclosure)).to…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: current role 2 discloses exactly permitted existing Organization actions
+TestingLibraryElementError: Unable to find an element with the text: Organization actions, which matches selector 'summary'. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="MuiContainer-root MuiContainer-maxWidthLg css-j81c45-MuiContainer-root"
+    >
+      <div
+        class="MuiStack-root css-jzi477-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app"
+            tabindex="0"
+          >
+            Organizations
+          </a>
+          <a
+            aria-label="Open profile"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/profile"
+            tabindex="0"
+          >
+            Profile
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/invitations"
+            tabindex="0"
+          >
+            Invitations
+          </a>
+        </div>
+        <h1
+          class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
+          tabindex="-1"
+        >
+          Current work Organization
+        </h1>
+        <div
+          class="MuiStack-root css-sp4z7j-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/archived-boards"
+            tabindex="0"
+          >
+            Archived boards
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/leave"
+            tabindex="0"
+          >
+            Leave Organization
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create 
+            board
+          </button>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+        >
+          No accessible boards yet.
+        </p>
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        />
+        <div
+          class="MuiBox-root css-1obf64m"
+        />
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="MuiContainer-root MuiContainer-maxWidthLg css-j81c45-MuiContainer-root"
+    >
+      <div
+        class="MuiStack-root css-jzi477-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app"
+            tabindex="0"
+          >
+            Organizations
+          </a>
+          <a
+            aria-label="Open profile"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/profile"
+            tabindex="0"
+          >
+            Profile
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/invitations"
+            tabindex="0"
+          >
+            Invitations
+          </a>
+        </div>
+        <h1
+          class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
+          tabindex="-1"
+        >
+          Current work Organization
+        </h1>
+        <div
+          class="MuiStack-root css-sp4z7j-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/archived-boards"
+            tabindex="0"
+          >
+            Archived boards
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/leave"
+            tabindex="0"
+          >
+            Leave Organization
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create 
+            board
+          </button>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+        >
+          No accessible boards yet.
+        </p>
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        />
+        <div
+          class="MuiBox-root css-1obf64m"
+        />
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ waitForWrapper ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx:36:32
+     34|   mount(() => response({ organization, role }));
+     35|   await screen.findByRole('button', { name: 'Create board' });
+     36|   const summary = await screen.findByText('Organization actions', { se…
+       |                                ^
+     37|   expect(summary.parentElement).toHaveProperty('open', false);
+     38|   const disclosure = await openActions(); expect(names(disclosure)).to…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: Create Board precedes secondary operations in keyboard/reading order
+AssertionError: expected <a …(4)></a> to be <button …(3)></button> // Object.is equality
+
+- Expected
++ Received
+
+- <button
++ <a
+    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
++   data-discover="true"
++   href="/app/11111111-1111-4111-8111-111111111111/archived-boards"
+    tabindex="0"
+-   type="button"
+  >
+-   Create 
+-   board
+- </button>
++   Archived boards
++ </a>
+
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx:46:51
+     44|   mount(() => response({ organization, role: 0 }));
+     45|   const create = await screen.findByRole('button', { name: 'Create boa…
+     46|   expect(create.parentElement?.firstElementChild).toBe(create);
+       |                                                   ^
+     47| });
+     48|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: admission withdrawal removes the entire old disclosure before a fresh downgraded role is confirmed
+TestingLibraryElementError: Unable to find an element with the text: Organization actions, which matches selector 'summary'. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="MuiContainer-root MuiContainer-maxWidthLg css-j81c45-MuiContainer-root"
+    >
+      <div
+        class="MuiStack-root css-jzi477-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app"
+            tabindex="0"
+          >
+            Organizations
+          </a>
+          <a
+            aria-label="Open profile"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/profile"
+            tabindex="0"
+          >
+            Profile
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/invitations"
+            tabindex="0"
+          >
+            Invitations
+          </a>
+        </div>
+        <h1
+          class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
+          tabindex="-1"
+        >
+          Current work Organization
+        </h1>
+        <div
+          class="MuiStack-root css-sp4z7j-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/archived-boards"
+            tabindex="0"
+          >
+            Archived boards
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/leave"
+            tabindex="0"
+          >
+            Leave Organization
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/delete"
+            tabindex="0"
+          >
+            Request Organization deletion
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/operational-lifecycle"
+            tabindex="0"
+          >
+            Organization lifecycle
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/settings"
+            tabindex="0"
+          >
+            Organization settings
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/configuration"
+            tabindex="0"
+          >
+            Organization configuration
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-policies"
+            tabindex="0"
+          >
+            Retention policies
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-holds"
+            tabindex="0"
+          >
+            Retention holds
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/members"
+            tabindex="0"
+          >
+            Organization members
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create 
+            board
+          </button>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+        >
+          No accessible boards yet.
+        </p>
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        />
+        <div
+          class="MuiBox-root css-1obf64m"
+        />
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="MuiContainer-root MuiContainer-maxWidthLg css-j81c45-MuiContainer-root"
+    >
+      <div
+        class="MuiStack-root css-jzi477-MuiStack-root"
+      >
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app"
+            tabindex="0"
+          >
+            Organizations
+          </a>
+          <a
+            aria-label="Open profile"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/profile"
+            tabindex="0"
+          >
+            Profile
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/invitations"
+            tabindex="0"
+          >
+            Invitations
+          </a>
+        </div>
+        <h1
+          class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
+          tabindex="-1"
+        >
+          Current work Organization
+        </h1>
+        <div
+          class="MuiStack-root css-sp4z7j-MuiStack-root"
+        >
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/archived-boards"
+            tabindex="0"
+          >
+            Archived boards
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/leave"
+            tabindex="0"
+          >
+            Leave Organization
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/delete"
+            tabindex="0"
+          >
+            Request Organization deletion
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/operational-lifecycle"
+            tabindex="0"
+          >
+            Organization lifecycle
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/settings"
+            tabindex="0"
+          >
+            Organization settings
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/configuration"
+            tabindex="0"
+          >
+            Organization configuration
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-policies"
+            tabindex="0"
+          >
+            Retention policies
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/retention-holds"
+            tabindex="0"
+          >
+            Retention holds
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/11111111-1111-4111-8111-111111111111/members"
+            tabindex="0"
+          >
+            Organization members
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-dizc30-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create 
+            board
+          </button>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+        >
+          No accessible boards yet.
+        </p>
+        <div
+          class="MuiStack-root css-p81m6m-MuiStack-root"
+        />
+        <div
+          class="MuiBox-root css-1obf64m"
+        />
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ waitForWrapper ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ openActions src/features/organizations/OrganizationHome.actions.test.tsx:26:32
+     24| }
+     25| async function openActions() {
+     26|   const summary = await screen.findByText('Organization actions', { se…
+       |                                ^
+     27|   fireEvent.click(summary); expect(summary.parentElement).toHaveProper…
+     28| }
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx:52:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  5 failed | 6 passed (11)
+   Start at  17:49:26
+   Duration  10.74s (import 35%, tests 29%, environment 28%, setup 5%, transform 3%)
+
+Environment  jsdom was created 3 times · 4.97s total, 28% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --maxWorkers=2 src/features/organizations/OrganizationHome.actions.test.tsx src/app/SecondaryActions.test.tsx src/app/workExperience.test.ts

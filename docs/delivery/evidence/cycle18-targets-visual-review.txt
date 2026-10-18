@@ -1,0 +1,109 @@
+{
+  "at": "2026-10-18T02:27:26.221Z",
+  "revision": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "captures": [
+    {
+      "role": "admin",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-targets-admin-1280.png",
+      "sha256": "495a306e74ff2cea2bdf45c7d9e916945895bd05540fe2cb46f33e75f792f91e",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll."
+    },
+    {
+      "role": "member",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-targets-member-1280.png",
+      "sha256": "58cebcf5c3cd681a7365fba7a8454c9c6ed2345490dd998724de943c1eab36f2",
+      "observation": "Protected metadata-checking withdrawal/loading state; this image is not proof of a visible Member menu. Native role/keyboard assertions passed separately."
+    },
+    {
+      "role": "owner",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-targets-owner-1280.png",
+      "sha256": "ab278451a01231fd4d305b66efeded8293e64d5ecf02faf097389f7354c7d4fd",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll.",
+      "repositoryPath": "docs/delivery/evidence/cycle-18-organization-actions-44-1280.png"
+    },
+    {
+      "role": "admin",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-targets-admin-768.png",
+      "sha256": "e1c53643ff9860cc496cb08270798f3d0f43c4b2e546fd897a7c30a94163c4f7",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll."
+    },
+    {
+      "role": "member",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-targets-member-768.png",
+      "sha256": "e1c53643ff9860cc496cb08270798f3d0f43c4b2e546fd897a7c30a94163c4f7",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll."
+    },
+    {
+      "role": "owner",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-targets-owner-768.png",
+      "sha256": "86fb3e564fd41c3c213e6c1950da177648eba7b34ee227006deff4fbbfa62dc7",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll.",
+      "repositoryPath": "docs/delivery/evidence/cycle-18-organization-actions-44-768.png"
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-targets-admin-390.png",
+      "sha256": "7d3e4900b37f51c33964800c5e76a79de5495582dbd01963402eec11496fab22",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll."
+    },
+    {
+      "role": "member",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-targets-member-390.png",
+      "sha256": "fca06a2fd005da12a7c97e13c5a57159930ede823ca121b8673b94508d831a57",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll."
+    },
+    {
+      "role": "owner",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-targets-owner-390.png",
+      "sha256": "6830d1a4e594f9b9713a0674c104c5fab4750b31c7f72e72cbb2cc9e3514e312",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll.",
+      "repositoryPath": "docs/delivery/evidence/cycle-18-organization-actions-44-390.png"
+    },
+    {
+      "role": "admin",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-targets-admin-320.png",
+      "sha256": "554673adf69d0424e3d94892862379adecf8deecb6c67ef328a73820ae0f7d34",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll."
+    },
+    {
+      "role": "member",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-targets-member-320.png",
+      "sha256": "4f691f993ad6e3b6e71626f637e11ebc104739bf3089f4c877c437a610192129",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll."
+    },
+    {
+      "role": "owner",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-targets-owner-320.png",
+      "sha256": "b95ae632ce6e97ca1566a642d5c657dc3236c6de3568df0f3fd423705c29c69c",
+      "observation": "Current open menu after keyboard cycle; tall content continues by normal document scroll.",
+      "repositoryPath": "docs/delivery/evidence/cycle-18-organization-actions-44-320.png"
+    }
+  ],
+  "reviewer": "delivery-agent",
+  "review": "All12 captured states inspected.11 show current Owner/Admin/Member menus; Member1280 records expected neutral revalidation withdrawal and is explicitly not visible-menu evidence. Four Owner viewport PNGs retained portably in repository. Primary Create remains before secondary disclosure; focus ring and44px Organization-link targets wrap with natural vertical scrolling. Native assertions establish actual keyboard/role/geometry/canonical behavior separately. Tablet sidebar label wrapping is retained existing behavior; broad shell/panel redesign not claimed.",
+  "limits": "No whole current original37/rollback8/full or final release/main acceptance yet. Full-device/screen-reader/WCAG certification is broader than these checks."
+}

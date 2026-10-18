@@ -1,0 +1,79 @@
+
+Running 4 tests using 1 worker
+
+(node:20496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 1280px (19.7s)
+  x  2 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 768px (9.2s)
+(node:36360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 390px (18.3s)
+  x  4 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 320px (8.9s)
+
+
+  1) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 768px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      54 |             const summary = document.querySelector('summary');
+      55 |             return !!summary && Boolean(element.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING);
+    > 56 |           })).toBe(true);
+         |               ^
+      57 |         }
+      58 |         const permitted = client.getByRole('link', { name: role === 'Member' ? 'Leave Organization' : 'Organization settings', exact: true });
+      59 |         await openOrganizationActions(client, permitted); await expect(permitted).toBeVisible();
+        at currentActions (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:56:15)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:76:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-new\organization-actions-PRD-0-6769f-d-canonical-return-at-768px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle18-prod-new\organization-actions-PRD-0-6769f-d-canonical-return-at-768px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle18-prod-new\organization-actions-PRD-0-6769f-d-canonical-return-at-768px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle18-prod-new\organization-actions-PRD-0-6769f-d-canonical-return-at-768px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 320px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      54 |             const summary = document.querySelector('summary');
+      55 |             return !!summary && Boolean(element.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING);
+    > 56 |           })).toBe(true);
+         |               ^
+      57 |         }
+      58 |         const permitted = client.getByRole('link', { name: role === 'Member' ? 'Leave Organization' : 'Organization settings', exact: true });
+      59 |         await openOrganizationActions(client, permitted); await expect(permitted).toBeVisible();
+        at currentActions (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:56:15)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:76:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-new\organization-actions-PRD-0-ef373-d-canonical-return-at-320px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle18-prod-new\organization-actions-PRD-0-ef373-d-canonical-return-at-320px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle18-prod-new\organization-actions-PRD-0-ef373-d-canonical-return-at-320px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle18-prod-new\organization-actions-PRD-0-ef373-d-canonical-return-at-320px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 768px 
+    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 320px 
+  2 passed (2.6m)

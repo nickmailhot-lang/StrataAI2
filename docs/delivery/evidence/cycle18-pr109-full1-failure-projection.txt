@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-18T03:13:53.453Z",
+  "pr": 109,
+  "head": "f7116b73d3c18058a59f444912426c7ab47eb795",
+  "actualMergeRevision": "2e31daa8c197f7e232171a4d7acb77c5f394a77a",
+  "version": "0.1.0-1918",
+  "runId": 39083901136,
+  "jobId": 117555727920,
+  "result": "Failed",
+  "counts": {
+    "passed": 116,
+    "failed": 1
+  },
+  "case": "card-dates.spec.ts at390px",
+  "failure": "Expected canonical GET /boards/:id status200, actual503 after both sessions rendered persisted Complete. Cause not established; retain assertion/deadline.",
+  "failureFrame": [
+    "2026-10-18T03:01:03.9102398Z   1) tests/browser/card-dates.spec.ts:7:7 › PRD-12: persisted dates, viewing timezone and completion display across two sessions at 390px ",
+    "2026-10-18T03:01:03.9103331Z ",
+    "2026-10-18T03:01:03.9103670Z     Error: expect(received).toBe(expected) // Object.is equality",
+    "2026-10-18T03:01:03.9104029Z ",
+    "2026-10-18T03:01:03.9104231Z     Expected: 200",
+    "2026-10-18T03:01:03.9104557Z     Received: 503",
+    "2026-10-18T03:01:03.9104788Z ",
+    "2026-10-18T03:01:03.9105073Z       78 |       await page.reload(); await peer.reload();",
+    "2026-10-18T03:01:03.9106144Z       79 |       await expect(region).toContainText('Complete'); await expect(peerDates).toContainText('Complete');",
+    "2026-10-18T03:01:03.9107062Z     > 80 |       const beforePreference = await context.request.get(`/boards/${board}`); expect(beforePreference.status()).toBe(200);",
+    "2026-10-18T03:01:03.9107809Z          |                                                                                                                 ^",
+    "2026-10-18T03:01:03.9108424Z       81 |       const originalDates = await beforePreference.json();",
+    "2026-10-18T03:01:03.9109118Z       82 |       const me = await other.request.get('/me'); expect(me.status()).toBe(200); const profile = await me.json();",
+    "2026-10-18T03:01:03.9109893Z       83 |       expect((await other.request.patch('/me', { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },",
+    "2026-10-18T03:01:03.9110774Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/card-dates.spec.ts:80:113",
+    "2026-10-18T03:01:03.9111189Z "
+  ],
+  "scope": "Whole shard117,1.3h. No rerun or release acceptance inferred. Other shards still active."
+}

@@ -1,0 +1,106 @@
+{
+  "at": "2026-10-18T03:18:48.141435+00:00",
+  "pr": 109,
+  "head": "f7116b73d3c18058a59f444912426c7ab47eb795",
+  "actualMergeRevision": "2e31daa8c197f7e232171a4d7acb77c5f394a77a",
+  "version": "0.1.0-1918",
+  "runId": 39083901136,
+  "artifactId": 12123505336,
+  "zipSha256": "18224e4b6b70e9d7e62f2ee1debd1a8fdaa7362088d680199a9a769beef00ce4",
+  "api": [
+    {
+      "Timestamp": "2026-10-18T02:41:16.3148362+00:00",
+      "Category": "Microsoft.AspNetCore.Routing.EndpointMiddleware",
+      "EventName": "ExecutingEndpoint",
+      "CorrelationId": "96c49e42184b464c948166d6545a08b8",
+      "Message": "Executing endpoint 'HTTP: GET /boards/{boardId:guid}'"
+    },
+    {
+      "Timestamp": "2026-10-18T02:41:16.335235+00:00",
+      "Category": "Microsoft.AspNetCore.Routing.EndpointMiddleware",
+      "EventName": "ExecutingEndpoint",
+      "CorrelationId": "5e35d251433a4b4fbbb76122b24f35ee",
+      "Message": "Executing endpoint 'HTTP: GET /me/'"
+    },
+    {
+      "Timestamp": "2026-10-18T02:41:17.3451153+00:00",
+      "Category": "StrataAI.Infrastructure.Identity.PostgresIdentityUnitOfWork",
+      "EventName": null,
+      "CorrelationId": "5e35d251433a4b4fbbb76122b24f35ee",
+      "Message": "Identity command lacked a database acknowledgment for [synthetic-id]; code 40P01."
+    },
+    {
+      "Timestamp": "2026-10-18T02:41:17.3451957+00:00",
+      "Category": "Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult",
+      "EventName": "WritingResultAsStatusCode",
+      "CorrelationId": "5e35d251433a4b4fbbb76122b24f35ee",
+      "Message": "Setting HTTP status code 503."
+    },
+    {
+      "Timestamp": "2026-10-18T02:41:17.3452734+00:00",
+      "Category": "Microsoft.AspNetCore.Routing.EndpointMiddleware",
+      "EventName": "ExecutedEndpoint",
+      "CorrelationId": "5e35d251433a4b4fbbb76122b24f35ee",
+      "Message": "Executed endpoint 'HTTP: GET /me/'"
+    },
+    {
+      "Timestamp": "2026-10-18T02:41:17.3530559+00:00",
+      "Category": "StrataAI.Infrastructure.WorkManagement.PostgresWorkManagementUnitOfWork",
+      "EventName": null,
+      "CorrelationId": "96c49e42184b464c948166d6545a08b8",
+      "Message": "Work command lacked a database acknowledgment for Organization [synthetic-id]; database code 40P01."
+    },
+    {
+      "Timestamp": "2026-10-18T02:41:17.3531302+00:00",
+      "Category": "Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult",
+      "EventName": "WritingResultAsStatusCode",
+      "CorrelationId": "96c49e42184b464c948166d6545a08b8",
+      "Message": "Setting HTTP status code 503."
+    },
+    {
+      "Timestamp": "2026-10-18T02:41:17.353182+00:00",
+      "Category": "Microsoft.AspNetCore.Routing.EndpointMiddleware",
+      "EventName": "ExecutedEndpoint",
+      "CorrelationId": "96c49e42184b464c948166d6545a08b8",
+      "Message": "Executed endpoint 'HTTP: GET /boards/{boardId:guid}'"
+    }
+  ],
+  "postgresDeadlockGraph": [
+    "postgres-1  | 2026-10-18 02:41:17.344 UTC [15499] ERROR:  deadlock detected",
+    "postgres-1  | 2026-10-18 02:41:17.344 UTC [15499] DETAIL:  Process 15499 waits for AccessExclusiveLock on tuple (10,23) of relation 16817 of database 16384; blocked by process 15360.",
+    "postgres-1  | \tProcess 15360 waits for ShareLock on transaction 14088; blocked by process 15494.",
+    "postgres-1  | \tProcess 15494 waits for ShareLock on transaction 14090; blocked by process 15500.",
+    "postgres-1  | \tProcess 15500 waits for RowShareLock on tuple (10,23) of relation 16817 of database 16384; blocked by process 15499.",
+    "postgres-1  | \tProcess 15499: SELECT id FROM users WHERE id=$1 FOR UPDATE",
+    "postgres-1  | \tProcess 15360: SELECT id FROM users WHERE id=$1 FOR UPDATE",
+    "postgres-1  | \tProcess 15494: SELECT original_event,original_created FROM public.append_or_replay_navigation_interaction($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+    "postgres-1  | \tProcess 15500: SELECT id, email, email_normalized, display_name, avatar_url, locale, timezone,",
+    "postgres-1  | \tstatus, email_verified, password_hash, created_at, updated_at, version FROM users WHERE id = $1 FOR SHARE",
+    "postgres-1  | 2026-10-18 02:41:17.344 UTC [15499] HINT:  See server log for query details.",
+    "postgres-1  | 2026-10-18 02:41:17.344 UTC [15499] STATEMENT:  SELECT id FROM users WHERE id=$1 FOR UPDATE",
+    "postgres-1  | 2026-10-18 02:41:17.350 UTC [15495] ERROR:  canceling statement due to user request",
+    "postgres-1  | 2026-10-18 02:41:17.350 UTC [15495] STATEMENT:  SELECT id FROM organizations WHERE id=$1",
+    "postgres-1  | \t AND status IN ('ACTIVE','SUSPENDED','DEACTIVATED') FOR UPDATE",
+    "postgres-1  | 2026-10-18 02:41:17.351 UTC [15500] ERROR:  deadlock detected",
+    "postgres-1  | 2026-10-18 02:41:17.351 UTC [15500] DETAIL:  Process 15500 waits for RowShareLock on tuple (10,23) of relation 16817 of database 16384; blocked by process 15360.",
+    "postgres-1  | \tProcess 15360 waits for ShareLock on transaction 14088; blocked by process 15494.",
+    "postgres-1  | \tProcess 15494 waits for ShareLock on transaction 14090; blocked by process 15500.",
+    "postgres-1  | \tProcess 15500: SELECT id, email, email_normalized, display_name, avatar_url, locale, timezone,",
+    "postgres-1  | \tstatus, email_verified, password_hash, created_at, updated_at, version FROM users WHERE id = $1 FOR SHARE",
+    "postgres-1  | \tProcess 15360: SELECT id FROM users WHERE id=$1 FOR UPDATE",
+    "postgres-1  | \tProcess 15494: SELECT original_event,original_created FROM public.append_or_replay_navigation_interaction($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+    "postgres-1  | 2026-10-18 02:41:17.351 UTC [15500] HINT:  See server log for query details.",
+    "postgres-1  | 2026-10-18 02:41:17.351 UTC [15500] STATEMENT:  SELECT id, email, email_normalized, display_name, avatar_url, locale, timezone,",
+    "postgres-1  | \tstatus, email_verified, password_hash, created_at, updated_at, version FROM users WHERE id = $1 FOR SHARE"
+  ],
+  "established": "Exact failing BoardGET and concurrent GET/me both return503 with40P01; PostgreSQL logs two actual deadlock detections at the same time. No response or test retry applied.",
+  "hypothesis": "Navigation observation acquires Organization then interaction advisory gate/account SHARE before Board SHARE. Board snapshot takes Organization/member then Board UPDATE before account SHARE; concurrent profile read acquires account UPDATE. This is a possible three-participant lock inversion; a deterministic restricted database reproduction is required before repair.",
+  "sourcePaths": [
+    "src/StrataAI.Infrastructure/WorkManagement/PostgresWorkManagementStore.cs",
+    "src/StrataAI.Infrastructure/Identity/PostgresIdentityUnitOfWork.cs",
+    "src/StrataAI.Infrastructure/Identity/PostgresIdentityStore.cs",
+    "src/StrataAI.Application/Identity/TransactionalIdentityService.cs",
+    "db/migrations/085_interaction_actor_lock_order.sql"
+  ],
+  "next": "After current C18 full suite/final evidence/publication, start isolated bounded actor/Board lock-order counterexample using actual restricted PostgreSQL adapters. Preserve account/session/scope revocation fences and original receipts; no blanket transient mutation retries or weakened browser200 assertion."
+}

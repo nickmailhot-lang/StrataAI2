@@ -1,0 +1,7 @@
+{
+  "at": "2026-10-18T02:09:45.384Z",
+  "revision": "24b9b46b40bd489e570ea28c3a5f511f2bf0a28e",
+  "actualGitDelta": "15\t0\ttests/browser/organization-actions.spec.ts",
+  "corrects": "EVID-CYCLE-18-CLOSED-INPUT-EQUALITY prose says14 additional lines; measured Git delta is15 added/0 removed. This is a transcription correction, with original proof/artifact/hash retained. Source equality, all old assertions, deadlines/retries, actual37 attribution and scenario counts are unchanged.",
+  "sourceChangeSinceFreeze": "None"
+}
