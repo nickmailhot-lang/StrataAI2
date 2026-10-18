@@ -1,0 +1,7 @@
+{
+  "revision": "42b6ec06b5466a08633274b31e5bdbe7d167e824",
+  "rawArtifact": "cycle20-native-baseline-collection.json",
+  "rawSha256": "d41eb4a5ac8b23396dc0c433f632fdb20aac74b60c1d4abcac342cc0ec27adb9",
+  "scope": "Actual originalwholeListrecovery4/1file collectiononly, sameassertions/deadlines/zero retries; passingexecutionnotclaimed.",
+  "rawUtf8Text": "{\r\n  \"fileCount\": 1,\r\n  \"stage\": \"baseline\",\r\n  \"files\": [\r\n    \"list-creation-recovery.spec.ts\"\r\n  ],\r\n  \"exit\": 0,\r\n  \"total\": 4,\r\n  \"revision\": \"42b6ec06b5466a08633274b31e5bdbe7d167e824\",\r\n  \"scope\": \"Actual collection only; whole originalcase files/assertions/deadlines, zeroengine retries, not passing execution.\"\r\n}\r\n"
+}

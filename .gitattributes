@@ -7,3 +7,4 @@ docs/delivery/evidence/cycle18*.txt -whitespace
 # C19 hashed wrappers include original Windows and Linux byte sequences.
 # Preserve exact evidence bytes; source/report normalization and checks remain.
 docs/delivery/evidence/cycle19* -text
+docs/delivery/evidence/cycle20* -text
