@@ -3,6 +3,7 @@ import { fillAdmittedInput, focusAdmittedControl, openAdmittedReview, pressObser
 import { test, expect } from './releaseTest';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+import { trackBoardFilterChanges } from './boardReadTracker';
 
 for (const width of [1280, 768, 390, 320]) {
   test(`UXA-02/04/05/06: real work create assign edit filter and return at ${width}px`, async ({ page, context, browser }, info) => {
@@ -23,10 +24,7 @@ for (const width of [1280, 768, 390, 320]) {
     expect(orgReply.status()).toBe(201); const org = (await orgReply.json()).organization.id;
     const boardReply = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Maintenance work', visibility: 'PRIVATE' } });
     expect(boardReply.status()).toBe(201); const board = (await boardReply.json()).id;
-    let filterChanges = 0;
-    page.on('request', request => {
-      if (request.method() === 'POST' && new URL(request.url()).pathname === `/boards/${board}/filter-change`) filterChanges++;
-    });
+    const filterChanges = trackBoardFilterChanges(page, board);
     const listIds: string[] = [];
     for (const name of ['Reported', 'Scheduled', 'Resolved']) {
       const reply = await context.request.post(`/boards/${board}/lists`, { headers, data: { name } });
@@ -90,7 +88,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(filters.getByRole('textbox', { name: 'Card keyword', exact: true })).toHaveValue('Inspect');
     await activate('Apply filters', filters);
     await expect(filters.getByRole('link', { name: 'Inspect roof — Reported', exact: true })).toBeVisible();
-    expect(filterChanges).toBe(1);
+    expect(filterChanges()).toBe(1);
     await activate('Show this page on Board', filters);
     await expect(page.getByText('Filtered Board: 1 matching Cards on this page.', { exact: true })).toBeVisible();
     await face.focus();
@@ -134,9 +132,9 @@ for (const width of [1280, 768, 390, 320]) {
     await activate('Close', detail);
     await expect(page.getByRole('link', { name: 'Inspect roof and gutters', exact: true })).toBeFocused();
     await expect(page.getByText('Filtered Board: 1 matching Cards on this page.', { exact: true })).toBeVisible();
-    await pressObservedRequest(page.getByRole('button', { name: 'Clear Board filters', exact: true }), () => filterChanges, 2);
+    await pressObservedRequest(page.getByRole('button', { name: 'Clear Board filters', exact: true }), filterChanges, 2);
     await expect(page.getByRole('link', { name: 'Replace lobby lamp', exact: true })).toBeVisible();
-    expect(filterChanges).toBe(2);
+    expect(filterChanges()).toBe(2);
     const canonical = await (await context.request.get(`/boards/${board}`)).json();
     expect(canonical.lists.find((column: { list: { id: string } }) => column.list.id === listIds[1]).cards.some((card: { id: string }) => card.id === cardId)).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

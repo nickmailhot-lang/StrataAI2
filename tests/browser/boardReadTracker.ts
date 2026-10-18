@@ -1,5 +1,17 @@
 import type { Page, Request } from '@playwright/test';
 
+// Filter originals are commands at the Cards route. Count their actual start,
+// never a sibling route, read, foreign Board or cross-origin request.
+export function trackBoardFilterChanges(page: Page, boardId: string): () => number {
+  let observed = 0;
+  page.on('request', request => {
+    const url = new URL(request.url());
+    if (request.method() === 'POST' && url.origin === new URL(page.url()).origin
+      && url.pathname === `/boards/${boardId}/cards/filter-change`) observed++;
+  });
+  return () => observed;
+}
+
 // A request from the previous screen can finish after navigation. Count only
 // reads that started on the intended page, not every matching late response.
 export function trackBoardReads(page: Page, boardId: string, pagePath: string): () => number {

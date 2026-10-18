@@ -1,7 +1,39 @@
 import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { trackBoardReads, trackCardVersion, waitForBoardReads } from './boardReadTracker.ts';
+import { trackBoardFilterChanges, trackBoardReads, trackCardVersion, waitForBoardReads } from './boardReadTracker.ts';
+
+test('filter command observation counts the actual Cards Apply/Clear route exactly once per request start', () => {
+  const page = new EventEmitter(); page.url = () => 'https://example.test/app/org/boards/board';
+  const count = trackBoardFilterChanges(page, 'board');
+  const request = change => ({ method: () => 'POST', url: () => `https://example.test/boards/board/cards/filter-change?change=${change}` });
+  const apply = request('apply'); page.emit('request', apply); assert.equal(count(), 1);
+  page.emit('response', { request: () => apply, status: () => 200 }); assert.equal(count(), 1);
+  page.emit('request', request('clear')); assert.equal(count(), 2);
+});
+test('filter command observation rejects sibling routes, other Boards and reads', () => {
+  const page = new EventEmitter(); page.url = () => 'https://example.test/app/org/boards/board';
+  const count = trackBoardFilterChanges(page, 'board');
+  for (const [path, method] of [['/boards/board/filter-change', 'POST'], ['/boards/other/cards/filter-change', 'POST'],
+    ['/boards/board/cards/filter-change', 'GET'], ['/boards/board/cards/filter-change', 'PATCH'],
+    ['/boards/board/cards/filter-change/other', 'POST']]) {
+    page.emit('request', { method: () => method, url: () => 'https://example.test' + path });
+  }
+  assert.equal(count(), 0);
+});
+test('a foreign-origin filter request cannot satisfy same-origin command admission', () => {
+  const page = new EventEmitter(); page.url = () => 'https://example.test/app/org/boards/board';
+  const count = trackBoardFilterChanges(page, 'board');
+  page.emit('request', { method: () => 'POST', url: () => 'https://foreign.test/boards/board/cards/filter-change?change=clear' });
+  assert.equal(count(), 0);
+});
+test('a filter observer created before navigation qualifies the actual later page origin', () => {
+  const page = new EventEmitter(); let location = 'about:blank'; page.url = () => location;
+  const count = trackBoardFilterChanges(page, 'board');
+  const request = () => ({ method: () => 'POST', url: () => 'https://example.test/boards/board/cards/filter-change?change=apply' });
+  page.emit('request', request()); assert.equal(count(), 0);
+  location = 'https://example.test/app/org/boards/board'; page.emit('request', request()); assert.equal(count(), 1);
+});
 
 test('event-driven readiness observes the qualified second response immediately and cleans up its listeners', async () => {
   const page = new EventEmitter(); let location = 'https://example.test/app'; page.url = () => location;
