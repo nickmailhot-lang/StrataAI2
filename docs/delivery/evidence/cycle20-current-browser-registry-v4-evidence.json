@@ -1,0 +1,7 @@
+{
+  "revision": "8272d8218a3b6ebfef0ca78ebba425e924e013ee",
+  "rawArtifact": "cycle20-current-browser-registry-v4.txt",
+  "rawSha256": "f4361de663ac5f525fdb9eb89de66f8221a2af13317aaa8cb1bc33fbdc53fae9",
+  "scope": "Actual exact8272 source/registry/history validation only; registry collection is not whole release execution.",
+  "rawUtf8Text": "Browser shard coverage: 471 cases in 167 intact files; 119/118/127/107 cases across all four shards.\r\n"
+}

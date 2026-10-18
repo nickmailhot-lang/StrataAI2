@@ -1,0 +1,7 @@
+{
+  "revision": "8272d8218a3b6ebfef0ca78ebba425e924e013ee",
+  "rawArtifact": "cycle20-web-quality-exits.json",
+  "rawSha256": "8116110ac060926fac73f215fb95a7a044c4a7fb13fe4ecd43a66f19d7723197",
+  "scope": "Exact8272 web and browser types, lint, default production build all exit0. Vitebuild26.52s retains existing chunk advisory; actual UI metadata8272/0.1.0.",
+  "rawUtf8Text": "{\r\n  \"exits\": {\r\n    \"lint\": 0,\r\n    \"typecheck:browser\": 0,\r\n    \"build\": 0,\r\n    \"typecheck\": 0\r\n  },\r\n  \"dist\": \"work/cycle20-card-return-dist\",\r\n  \"revision\": \"8272d8218a3b6ebfef0ca78ebba425e924e013ee\"\r\n}\r\n"
+}

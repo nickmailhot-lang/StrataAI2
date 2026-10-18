@@ -1,0 +1,7 @@
+{
+  "revision": "8272d8218a3b6ebfef0ca78ebba425e924e013ee",
+  "rawArtifact": "cycle20-focus-green.txt",
+  "rawSha256": "278dc7536297d66683c66b0811d6b491276a8f925415a033dea38a43dab5b362",
+  "scope": "Same4 new vertical guards plus all5 original unchanged controls:9pass/0fail/0skip,5.32s. Only helper production change; minimum localY client-box reveal remeasures nested containers, preserves visible horizontal Board context.",
+  "rawUtf8Text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/focusBoardReturn.test.ts src/features/kanban/focusBoardReturn.vertical.test.ts\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle20-card-return-vertical/apps/web\r\n\r\n\r\n Test Files  2 passed (2)\r\n      Tests  9 passed (9)\r\n   Start at  23:10:48\r\n   Duration  5.32s (environment 74%, tests 12%, setup 10%, transform 3%, worker 1%, import 1%)\r\n\r\n"
+}

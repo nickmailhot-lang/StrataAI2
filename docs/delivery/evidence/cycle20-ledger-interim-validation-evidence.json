@@ -1,0 +1,7 @@
+{
+  "revision": "8272d8218a3b6ebfef0ca78ebba425e924e013ee",
+  "rawArtifact": "cycle20-ledger-interim-validation.txt",
+  "rawSha256": "80a96358816facf7193d9dd876d4585b10a0c9b57044d854abf8001c39f10009",
+  "scope": "Interim ledger correctly refused missing reviewer/date on bounded unit TRACE verification. Added named automated acceptance reviewer/date, reran complete current source/history validation successfully; original failure retained. No validator relaxed.",
+  "rawUtf8Text": "npm notice run strataai2@0.1.0 delivery:validate\r\nnpm notice run node scripts/delivery-progress.mjs validate\r\nCriterion PRD-09-VS-01-T-03-TEST-01/TRACE needs reviewer/date/evidence\r\n"
+}
