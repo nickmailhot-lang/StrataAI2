@@ -4,9 +4,8 @@ export function focusBoardReturn(target: HTMLElement | null | undefined) {
   const original = target.getBoundingClientRect();
   if (!original.width || !original.height) return;
 
-  // Native nearest scrolling also pans a partly clipped Card by a few pixels.
-  // Preserve that visible local context; reveal locally only when the target
-  // has become wholly hidden, for example after moving to another List.
+  // Native nearest also pans a partly visible horizontal context. Keep that
+  // context; a wholly hidden or relocated Card still needs its native reveal.
   for (let parent = target.parentElement; parent && parent !== document.body; parent = parent.parentElement) {
     const style = getComputedStyle(parent), bounds = parent.getBoundingClientRect();
     if (!bounds.width || !bounds.height) continue;
@@ -17,6 +16,17 @@ export function focusBoardReturn(target: HTMLElement | null | undefined) {
       target.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
       break;
     }
+  }
+
+  // Large text can leave a focused Card partly below or above a local viewport.
+  // Reveal it on Y alone, remeasuring after each inner container has moved.
+  for (let parent = target.parentElement; parent && parent !== document.body; parent = parent.parentElement) {
+    if (!/^(auto|scroll|hidden|clip)$/.test(getComputedStyle(parent).overflowY) || !parent.clientHeight) continue;
+    const origin = parent.getBoundingClientRect().top + parent.clientTop;
+    const edge = origin + parent.clientHeight, bounds = target.getBoundingClientRect();
+    const delta = bounds.top < origin ? bounds.top - origin : bounds.bottom > edge
+      ? Math.min(bounds.bottom - edge, bounds.top - origin) : 0;
+    if (delta) parent.scrollTop += delta;
   }
 
   // A tall Board can leave the return target outside the document viewport.
