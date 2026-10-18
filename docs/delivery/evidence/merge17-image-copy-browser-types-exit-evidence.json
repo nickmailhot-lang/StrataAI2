@@ -1,0 +1,7 @@
+{
+  "revision": "5f0162358b2d766669e4ab73808bcd33f770af09",
+  "rawArtifact": "merge17-image-copy-browser-types-exit.json",
+  "rawSha256": "d1e364a9a78a107d01ba853bdc5181d22f1d10aa4a07bfeaf28101e6f872a86e",
+  "scope": "Browser TypeScript passes on exact two-line working tree immediately before identical5f016235 commit; no product or build changes.",
+  "rawUtf8Text": "{\r\n  \"browserTypes\": 0,\r\n  \"at\": \"2026-10-18T09:23:08.9513991+00:00\",\r\n  \"scope\": \"Only two Board Copy discovery calls now use existing keyboard Board actions helper; original outcomes, receipts, roles, consent and deadlines unchanged.\",\r\n  \"base\": \"3efd79a496f1b82e7e2ecaac6af209a9400ba65b\"\r\n}\r\n"
+}

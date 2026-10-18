@@ -1,0 +1,7 @@
+{
+  "revision": "5f0162358b2d766669e4ab73808bcd33f770af09",
+  "rawArtifact": "merge17-image-copy-native-usability.txt",
+  "rawSha256": "ecab720a3db41a8f3ffa9bd03805881640f673986dd10c9ede4a3349e30870da",
+  "scope": "ActualUI135ee/APIWorker644, whole unchanged ordinaryBoardcopy file: desktop+phone2pass1.6min, zero retries/skips. Existing keyboard discovery, original lost-response body/key, concurrent source, canonical independent content, role and Axe assertions pass. Not image-pipeline acceptance.",
+  "rawUtf8Text": "\r\nRunning 2 tests using 1 worker\r\n\r\n(node:40944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 ..\\merge17-main\\tests\\browser\\board-copy.spec.ts:9:7 › PRD-04: private Board copy, lost reply, concurrent source and keyboard navigation at 1280px (21.6s)\r\n  ok 2 ..\\merge17-main\\tests\\browser\\board-copy.spec.ts:9:7 › PRD-04: private Board copy, lost reply, concurrent source and keyboard navigation at 390px (21.3s)\r\n\r\n  2 passed (1.6m)\r\n"
+}

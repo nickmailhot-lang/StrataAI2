@@ -519,3 +519,10 @@ Tested: the prior actual170 local matrix completes29unique default cases (21real
 Prior hosted A5/synthetic11bebe passes full frontend2904/24existingdeferrals, complete Linux Domain1086/3existing skips and API1429/2existing capacity skips, PostgreSQL/security/image gates. Those actual results are preserved and are not relabelled as the final checkpoint. Current product135ee source contracts372/registries/history pass; source changes after it are test-only and independently typed/validated. Failed input races, the initial counter watching the wrong sibling route, incomplete runs and the typed fixture error remain evidence.
 
 Accepted: local source and affected workflows are reviewable; T03 Task/Test are Testing pending the exact final-head entire hosted qualification and normal expected-head main integration. Only PR96 is merged. No parent PRD or MVP completion, managed-provider/operator acceptance or production deployment is inferred.
+
+
+### 2026-10-18 — Image-backed Board copy discovery qualification
+
+The prior actual A5/synthetic11bebe foundation run completed28 Organization/lifecycle cases and2 reminders, then failed both image-backed Board-copy viewports. Both failure snapshots and the desktop capture show Board actions collapsed; the alternate .case.ts fixture queried a hidden Copy Board button. Source5f016235 changes only those two discovery calls (initial review and post-reload enabled assertion) to the existing keyboard disclosure helper. Every original image, consent, receipt, role/withdrawal, canonical independence, Axe and timeout assertion remains. No product, build, backend or permission change.
+
+The whole existing ordinary Board-copy file passes desktop/phone2 in1.6min, zero retries/skips, on actualUI135ee/APIWorker644. Both final long-name/reflow captures were inspected. Browser types and all298 immutable integration/browser refusal contracts pass. Ordinary copy is separate from image-pipeline acceptance. The entire image/attachment workflow and all new exact-head hosted/release/security gates remain mandatory; qualification remains Testing, only96 merged, no PRD or MVP completion claimed.

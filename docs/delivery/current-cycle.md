@@ -34,6 +34,9 @@ Actual current170 source49/types/lint/bothidentifiedbuilds/372contracts pass; ax
 Prior A5 synthetic11bebe complete hosted frontend2904/24existingdeferrals, Domain1086/3skips, API1429/2skips and PostgreSQL/security/images pass with actual identities retained; not later new-head release acceptance.
 Actual baselineUI170 local29unique default scenarios pass (21real+8controlled), baseline rollbackOrg4 pass. Later rollback Clear failure exposed a real availability mismatch and remains recorded.
 Current135ee Clear correction passes54filter cases, a135 consumer94 with identical product code, types/lint/both builds; observed-input/exact-route24 controls and all8affected current real-service default/fallback workflows pass. Eight current viewport captures inspected; no current global/main completion inferred.
+Prior A5 immutable foundation run completes28 Organization/lifecycle cases and2 reminders, then2 image-backed copy failures. Both fail with Board actions collapsed; desktop screenshot and both error contexts inspected. Original private archive retained.
+Only two alternate image-case entry points now use existing keyboard Board actions disclosure, including after reload. All original outcome, consent, receipt, withdrawal, independent image, role and Axe assertions/deadlines remain. Exact source5f016235; no UI/build/backend change.
+Whole existing ordinary Board copy desktop/phone2 passes1.6min on actual135ee/644, zero retries/skips; both final screenshots inspected. Browser types and all298 immutable browser/integration refusal contracts pass. This is not an image-pipeline pass.
 
 ## 2. Implemented, awaiting validation
 
@@ -41,8 +44,7 @@ PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25
 
 ## 3. Current work in progress
 
-T03 Task/Test are Testing; complete new-head hosted qualification is Not Run until publication. T02 source reconciliation remains Review; T04 main integration remains Ready. Only PR96 actually merged.
-Freeze actual UI135ee/test5bc/backend644. Older170/A5/1152 results retain their actual sources, including incomplete/failed runs. All original17heads and149 counterexample separation verified.
+PRD-25-VS-02-T-03 Testing: publish current5f016235 plus evidence and require complete current hosted source, image pipeline, security and release gates. T04 main integration remains Ready; only96 merged.
 
 ## 4. Blockers and dependencies
 
@@ -50,7 +52,7 @@ Remaining16PRshave historicalfailedormissingrequiredCI andmustnotbe mergedwithou
 
 ## 5. Next highest-priority deliverable
 
-Validate final ledger/history and all newly indexed evidence hashes/strict whitespace; commit tracking metadata only over frozen5bc. Normal fast-forward existing111 after fresh remoteA5/base-main guard, retain Draft and rewrite final description. Record actual head/synthetic merge/run IDs. Require all current applicable source/.NET/Postgres/security/build-once/commands/foundation/notifications/four browser shards/releasebundle gates and fresh reviews/main state. Then normal expected-head merge, verify actual all17 merged receipts and original heads in remote main, update tracking and continue agreed MVP; no parent PRD/MVP completion inferred.
+Validate ledger/history and indexed evidence hashes, commit metadata only, normal fast-forward existing111 from3efd after fresh remote guard. Record exact published head/synthetic merge/run IDs, keep Draft. Await all complete new-head required image/attachment, source, PostgreSQL, security, four browser shards and release gates; inspect/fix failures without relaxing assertions. Then recheck reviews/main/head, normal expected-head merge, verify all17 actual receipts/main ancestry and update progress.
 
 ## 6. PRD progress changes
 
@@ -133,6 +135,12 @@ EVID-CYCLE-21-CLEAR-BUILD-DEFAULT
 EVID-CYCLE-21-CLEAR-BUILD-ROLLBACK
 EVID-CYCLE-21-FINAL-LOCAL-RECONCILIATION
 EVID-CYCLE-21-FINAL-CURRENT-VISUALS
+EVID-CYCLE-21-THIRD-PUBLICATION
+EVID-CYCLE-21-A5-IMAGE-COPY-FAILURE
+EVID-CYCLE-21-COPY-DISCOVERY-TYPES
+EVID-CYCLE-21-COPY-IMMUTABLE-CONTRACTS
+EVID-CYCLE-21-COPY-REAL-CONSUMER2
+EVID-CYCLE-21-COPY-SOURCE-RECONCILIATION
 
 ## Recent verified completed increments
 
