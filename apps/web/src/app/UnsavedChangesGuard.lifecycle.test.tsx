@@ -5,7 +5,7 @@ import { createMemoryRouter, Link, RouterProvider, useNavigate } from 'react-rou
 import { UnsavedChangesGuard } from './UnsavedChangesGuard';
 
 it('UX-DETAIL-02 releases a pending destination after the original save acknowledges a clean draft', async () => {
-  let acknowledge = () => { throw new Error('Card not mounted'); };
+  let acknowledge: () => void = () => { throw new Error('Card not mounted'); };
   function Card() {
     const [dirty, setDirty] = useState(true);
     useLayoutEffect(() => { acknowledge = () => setDirty(false); }, []);
@@ -25,7 +25,7 @@ it('UX-DETAIL-02 releases a pending destination after the original save acknowle
 });
 
 it('UXA-03 cannot retain a private draft or block sign-in after definitive access withdrawal', async () => {
-  let withdraw = () => { throw new Error('Boundary not mounted'); };
+  let withdraw: () => void = () => { throw new Error('Boundary not mounted'); };
   function Boundary() {
     const [admitted, setAdmitted] = useState(true), navigate = useNavigate();
     useLayoutEffect(() => { withdraw = () => setAdmitted(false); }, []);
