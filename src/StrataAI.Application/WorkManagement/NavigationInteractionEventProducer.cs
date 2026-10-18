@@ -33,7 +33,8 @@ public sealed class NavigationInteractionEventProducer(INavigationInteractionEve
         NavigationInteractionEvent source;
         try { source = create(); }
         catch (ArgumentException) { return Task.FromResult(IdentityOperation<NavigationInteractionEvent>.Failure("invalid_navigation")); }
-        return transactions.ExecuteObservationAsync(actor, source.OrganizationId, async () => {
+        async Task<IdentityOperation<NavigationInteractionEvent>> Append()
+        {
             if (!await actors.VerifyAsync(actor, ct))
                 return IdentityOperation<NavigationInteractionEvent>.Failure("session_unavailable");
             if (!await sources.AppendAuthorizedAsync(source, ct))
@@ -42,6 +43,9 @@ public sealed class NavigationInteractionEventProducer(INavigationInteractionEve
             if (!await actors.VerifyAsync(actor, ct))
                 return IdentityOperation<NavigationInteractionEvent>.Failure("session_unavailable");
             return IdentityOperation<NavigationInteractionEvent>.Success(source);
-        }, ct);
+        }
+        return source.OrganizationId is Guid organization && source.BoardId is Guid board
+            ? transactions.ExecuteBoardObservationAsync(actor, organization, board, Append, ct)
+            : transactions.ExecuteObservationAsync(actor, source.OrganizationId, Append, ct);
     }
 }
