@@ -86,7 +86,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect.poll(() => filters.evaluate(element => getComputedStyle(element.closest('.MuiDialog-container')!).opacity)).toBe('1');
     await fillAdmittedInput(filters.getByRole('textbox', { name: 'Card keyword', exact: true }), 'Inspect');
     await expect(filters.getByRole('textbox', { name: 'Card keyword', exact: true })).toHaveValue('Inspect');
-    await activate('Apply filters', filters);
+    await pressObservedRequest(filters.getByRole('button', { name: 'Apply filters', exact: true }), filterChanges, 1);
     await expect(filters.getByRole('link', { name: 'Inspect roof — Reported', exact: true })).toBeVisible();
     expect(filterChanges()).toBe(1);
     await activate('Show this page on Board', filters);
