@@ -229,7 +229,7 @@ internal static class NavigationActorBoardLockContract
         }
     }
 
-    private static ServiceProvider Provider(string connection, string name, Context context, DatabaseCodes logs)
+    internal static ServiceProvider Provider(string connection, string name, Context context, DatabaseCodes logs)
     {
         var services = new ServiceCollection(); services.AddLogging(builder => builder.AddProvider(logs));
         services.AddSingleton(new PostgresConnectionFactory(new NpgsqlConnectionStringBuilder(connection) { ApplicationName = name }.ConnectionString));
@@ -246,7 +246,7 @@ internal static class NavigationActorBoardLockContract
         services.AddStrataAiIdentity(configuration, runtime); services.AddStrataAiOrganizations(runtime); services.AddStrataAiWorkManagement(runtime);
         return services.BuildServiceProvider();
     }
-    private sealed class Context(Guid actor, string hash) : ICommandActorContext, IIdentityCommandContext, IWorkCommandContext
+    internal sealed class Context(Guid actor, string hash) : ICommandActorContext, IIdentityCommandContext, IWorkCommandContext
     {
         public bool HasHttpRequest => true;
         public Guid? AuthenticatedUserId => actor;
@@ -254,7 +254,7 @@ internal static class NavigationActorBoardLockContract
         public string? RevocationSessionTokenHash => hash;
         public Guid? IdempotencyKey => null;
     }
-    private sealed class DatabaseCodes : ILoggerProvider
+    internal sealed class DatabaseCodes : ILoggerProvider
     {
         public ConcurrentQueue<string> Codes { get; } = new();
         public ILogger CreateLogger(string categoryName) => new DatabaseLogger(Codes);

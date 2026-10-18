@@ -237,6 +237,7 @@ if (args.Contains("--identity-recovery-rollback-only", StringComparer.Ordinal))
 if (args.Length == 0 || args.Contains("--navigation-lock-order-only", StringComparer.Ordinal))
 {
     await NavigationActorBoardLockContract.RunAsync(admin, apiConnection, ct);
+    await NavigationParentWithdrawalContract.RunAsync(admin, apiConnection, ct);
     if (args.Contains("--navigation-lock-order-only", StringComparer.Ordinal)) return;
 }
 var previewLifecycleOnly = args.Contains("--attachment-preview-lifecycle-only", StringComparer.Ordinal);
