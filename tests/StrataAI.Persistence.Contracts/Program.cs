@@ -234,6 +234,11 @@ if (args.Contains("--identity-recovery-rollback-only", StringComparer.Ordinal))
     await IdentityRecoveryRollbackContract.RunAsync(admin,apiConnection,ct);
     return;
 }
+if (args.Length == 0 || args.Contains("--navigation-lock-order-only", StringComparer.Ordinal))
+{
+    await NavigationActorBoardLockContract.RunAsync(admin, apiConnection, ct);
+    if (args.Contains("--navigation-lock-order-only", StringComparer.Ordinal)) return;
+}
 var previewLifecycleOnly = args.Contains("--attachment-preview-lifecycle-only", StringComparer.Ordinal);
 if (!args.Contains("--notification-batches-only", StringComparer.Ordinal) && !previewLifecycleOnly)
 {
