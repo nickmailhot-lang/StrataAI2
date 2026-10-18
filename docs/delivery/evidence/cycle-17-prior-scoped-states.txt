@@ -1,0 +1,1086 @@
+{
+  "at": "2026-10-18T00:41:51.276Z",
+  "reason": "Preserve prior implementation identities/verification and gates before advancing current scoped evidence; all original global evidence and lifecycle history retained",
+  "items": [
+    {
+      "id": "PRD-01-VS-04-T-03",
+      "parentId": "PRD-01-VS-04",
+      "kind": "Task",
+      "title": "Verify cross-Organization sign-in denial and return to authorized work",
+      "state": "Testing",
+      "required": true,
+      "estimate": null,
+      "mvpCritical": true,
+      "dependencies": [],
+      "acceptanceCriteria": [
+        "PRD-01-VS-04-T-03/AC-01",
+        "PRD-01-VS-04-T-03/AC-02",
+        "PRD-01-VS-04-T-03/AC-03"
+      ],
+      "sizing": {
+        "focusedCycles": 1
+      },
+      "history": [
+        {
+          "at": "2026-10-17T23:05:06.007Z",
+          "from": null,
+          "to": "Ready",
+          "reason": "Add only the missing real cross-Organization acceptance evidence; retain existing implementation and all original criteria/history."
+        },
+        {
+          "at": "2026-10-17T23:05:06.007Z",
+          "from": "Ready",
+          "to": "In Progress",
+          "reason": "Add the missing genuine cross-Organization scenario before changing any product behavior; preserve original12 and all existing safe return/role contracts."
+        },
+        {
+          "at": "2026-10-17T23:09:22.253Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Permanent additional real cross-Organization ownership/denial/canonical/Back acceptance frozen; every original12 case retained."
+        },
+        {
+          "at": "2026-10-17T23:09:22.253Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Complete13-case consumer running in session77137; zero retries and original90s deadlines. Current54 component checks passed; browser types/lint finishing."
+        },
+        {
+          "at": "2026-10-17T23:15:29.228Z",
+          "from": "Testing",
+          "to": "Review",
+          "reason": "Complete13 native,54 controls/types/lint,372 contracts and full coverage validate; rendered scope reviewed. Required combined immutable/main integration remains pending."
+        },
+        {
+          "at": "2026-10-17T23:29:54.306Z",
+          "from": "Review",
+          "to": "In Progress",
+          "reason": "Qualify earlier canonical snapshot evidence: lists/Card and zero writes passed, but nested Board metadata was not compared. Stronger current whole consumer must verify the child before Review."
+        },
+        {
+          "at": "2026-10-17T23:47:31.189Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Stronger complete nested Board canonical projection exists atcurrente7cb9965; actual unchanged compiled webd5253673 stays distinct."
+        },
+        {
+          "at": "2026-10-17T23:47:31.189Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Whole current13 sign-in consumer passes within21 complete cases; corrected Board metadata now verified. Current whole frontend is Not Run, pending shared-scroll assessment."
+        }
+      ],
+      "implementation": {
+        "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+        "paths": [
+          "tests/browser/signin-card-return.spec.ts"
+        ]
+      },
+      "gates": {
+        "tests": {
+          "status": "Pending",
+          "evidenceIds": [
+            "EVID-CYCLE-16-REGRESSIONS-21"
+          ],
+          "reason": "Current native13 within21 passes; whole current frontend is Not Run."
+        },
+        "acceptance": {
+          "status": "Pending",
+          "reason": "Current full frontend criterionAC03 remains Unverified."
+        },
+        "security": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-REGRESSIONS-21"
+          ]
+        },
+        "roles": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-REGRESSIONS-21"
+          ]
+        },
+        "ux": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-REGRESSIONS-21",
+            "EVID-CYCLE-16-NAVIGATION-VISUAL"
+          ]
+        },
+        "build": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-NAVIGATION-VISUAL"
+          ],
+          "reason": "Actual identifiedd5253673 build retained through exact unchanged app/build inputs."
+        },
+        "regressions": {
+          "status": "Pending",
+          "reason": "Current complete frontend Not Run; priorfbbe942c full is not current navigation acceptance."
+        },
+        "integration": {
+          "status": "Pending",
+          "reason": "Exact current immutable/main integration open."
+        }
+      }
+    },
+    {
+      "id": "PRD-01-VS-04-T-03-TEST-01",
+      "parentId": "PRD-01-VS-04-T-03",
+      "kind": "Test",
+      "title": "Native cross-Organization scope and canonical return acceptance",
+      "state": "Review",
+      "required": true,
+      "estimate": null,
+      "mvpCritical": true,
+      "dependencies": [],
+      "acceptanceCriteria": [
+        "PRD-01-VS-04-T-03-TEST-01/TRACE"
+      ],
+      "sizing": {
+        "focusedCycles": 1
+      },
+      "history": [
+        {
+          "at": "2026-10-17T23:05:06.007Z",
+          "from": null,
+          "to": "Ready",
+          "reason": "Add only the missing real cross-Organization acceptance evidence; retain existing implementation and all original criteria/history."
+        },
+        {
+          "at": "2026-10-17T23:05:06.007Z",
+          "from": "Ready",
+          "to": "In Progress",
+          "reason": "Add the missing genuine cross-Organization scenario before changing any product behavior; preserve original12 and all existing safe return/role contracts."
+        },
+        {
+          "at": "2026-10-17T23:09:22.253Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Permanent additional real cross-Organization ownership/denial/canonical/Back acceptance frozen; every original12 case retained."
+        },
+        {
+          "at": "2026-10-17T23:09:22.253Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Complete13-case consumer running in session77137; zero retries and original90s deadlines. Current54 component checks passed; browser types/lint finishing."
+        },
+        {
+          "at": "2026-10-17T23:15:29.228Z",
+          "from": "Testing",
+          "to": "Review",
+          "reason": "Complete13 native,54 controls/types/lint,372 contracts and full coverage validate; rendered scope reviewed. Required combined immutable/main integration remains pending."
+        },
+        {
+          "at": "2026-10-17T23:29:54.306Z",
+          "from": "Review",
+          "to": "In Progress",
+          "reason": "Qualify earlier canonical snapshot evidence: lists/Card and zero writes passed, but nested Board metadata was not compared. Stronger current whole consumer must verify the child before Review."
+        },
+        {
+          "at": "2026-10-17T23:47:31.189Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Stronger complete nested Board canonical projection exists atcurrente7cb9965; actual unchanged compiled webd5253673 stays distinct."
+        },
+        {
+          "at": "2026-10-17T23:47:31.189Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Whole current13 sign-in consumer passes within21 complete cases; corrected Board metadata now verified. Current whole frontend is Not Run, pending shared-scroll assessment."
+        },
+        {
+          "at": "2026-10-17T23:47:31.189Z",
+          "from": "Testing",
+          "to": "Review",
+          "reason": "Corrected complete native13 consumer passed. Parent current full frontend and exact release/main gates remain open."
+        }
+      ],
+      "testMode": "automated",
+      "testResult": "Passed",
+      "verifies": [
+        "PRD-01-VS-04-T-03/AC-01",
+        "PRD-01-VS-04-T-03/AC-02",
+        "PRD-01-VS-04-T-03/AC-03",
+        "PRD-01-VS-04-T-03-TEST-01/TRACE"
+      ],
+      "implementation": {
+        "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+        "paths": [
+          "tests/browser/signin-card-return.spec.ts"
+        ]
+      },
+      "gates": {
+        "tests": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-REGRESSIONS-21"
+          ]
+        },
+        "acceptance": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-REGRESSIONS-21",
+            "EVID-CYCLE-16-REGRESSIONS-IDENTITY"
+          ]
+        },
+        "security": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-REGRESSIONS-21"
+          ]
+        },
+        "roles": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-REGRESSIONS-21"
+          ]
+        },
+        "ux": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-REGRESSIONS-21",
+            "EVID-CYCLE-16-NAVIGATION-VISUAL"
+          ]
+        },
+        "build": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-NAVIGATION-VISUAL"
+          ]
+        },
+        "regressions": {
+          "status": "Pending",
+          "reason": "Current feature full frontend still running."
+        },
+        "integration": {
+          "status": "Pending",
+          "reason": "Current exact immutable/main integration open."
+        }
+      }
+    },
+    {
+      "id": "PRD-03-VS-06-T-02",
+      "parentId": "PRD-03-VS-06",
+      "kind": "Task",
+      "title": "Discover authorized Work and return through the existing keyboard menu",
+      "state": "Testing",
+      "required": true,
+      "estimate": null,
+      "mvpCritical": true,
+      "dependencies": [
+        "PRD-09-VS-01-T-02"
+      ],
+      "acceptanceCriteria": [
+        "PRD-03-VS-06-T-02/AC-01",
+        "PRD-03-VS-06-T-02/AC-02",
+        "PRD-03-VS-06-T-02/AC-03"
+      ],
+      "sizing": {
+        "focusedCycles": 1
+      },
+      "history": [
+        {
+          "at": "2026-10-17T23:19:09.264Z",
+          "from": null,
+          "to": "Ready",
+          "reason": "Split navigation adoption from the broader existing Work UX increment; preserve implementation and all original scope/history."
+        },
+        {
+          "at": "2026-10-17T23:19:09.264Z",
+          "from": "Ready",
+          "to": "In Progress",
+          "reason": "Adopt only the existing bounded navigation source, preserving account/creation/recovery guards and the remaining independent UX implementation."
+        },
+        {
+          "at": "2026-10-17T23:24:12.849Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Bounded existing Work navigation adopted and frozen atd5253673; no account/creation/recovery/role code changed. Original source/fixtures preserved."
+        },
+        {
+          "at": "2026-10-17T23:24:12.849Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Current160 controls/build/types/lint pass. New native4 running in session87103; original19 and complete frontend remain required."
+        },
+        {
+          "at": "2026-10-17T23:26:00.945Z",
+          "from": "Testing",
+          "to": "In Progress",
+          "reason": "Retain interrupted wrong-scope harness failure; fix single-string argument splatting without changing product or assertions."
+        },
+        {
+          "at": "2026-10-17T23:26:00.945Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Same frozen product/test sourced5253673; external harness now preserves string array and refuses a wrong collected scope."
+        },
+        {
+          "at": "2026-10-17T23:26:00.945Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Corrected collection proves all4 cases in1 intact file; current execution in75960. Original19/full regression remain pending."
+        },
+        {
+          "at": "2026-10-17T23:29:54.306Z",
+          "from": "Testing",
+          "to": "In Progress",
+          "reason": "Add viewport focus proof and correct canonical snapshot projection before broad current security acceptance; retain earlier4 passes and limitations."
+        },
+        {
+          "at": "2026-10-17T23:29:54.306Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Test-only stronger acceptance frozen ate7cb9965; actual unchanged compiled web staysd5253673."
+        },
+        {
+          "at": "2026-10-17T23:29:54.306Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Browser types pass atnewtest source; complete strengthened4 running in64532. Whole original19 and full frontend remain required."
+        },
+        {
+          "at": "2026-10-17T23:55:24.585Z",
+          "from": "Testing",
+          "to": "Blocked",
+          "reason": "Current affected real-service Card-return scroll acceptance fails all3 cases (expected20/received16). Preserve navigation25 passes; PRD09VS01T02 must repair this shared UX regression before final full acceptance/integration."
+        },
+        {
+          "at": "2026-10-18T00:15:09.019Z",
+          "from": "Blocked",
+          "to": "Testing",
+          "reason": "Current shared-scroll3 now passes on repaired97ce484a; resume the prior Testing state. Current complete affected matrix31 and entire frontend remain pending before Review/integration."
+        }
+      ],
+      "implementation": {
+        "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+        "paths": [
+          "apps/web/src/app/navigationModel.ts",
+          "tests/browser/work-navigation.spec.ts"
+        ]
+      },
+      "gates": {
+        "regressions": {
+          "status": "Pending",
+          "reason": "Causal shared regression repaired/verified3; own current31 and entire frontend remain pending."
+        },
+        "integration": {
+          "status": "Pending",
+          "reason": "Exact current immutable/main integration open."
+        }
+      }
+    },
+    {
+      "id": "PRD-03-VS-06-T-02-TEST-01",
+      "parentId": "PRD-03-VS-06-T-02",
+      "kind": "Test",
+      "title": "Current navigation and shell component controls",
+      "state": "Review",
+      "required": true,
+      "estimate": null,
+      "mvpCritical": true,
+      "dependencies": [],
+      "acceptanceCriteria": [
+        "PRD-03-VS-06-T-02-TEST-01/TRACE"
+      ],
+      "sizing": {
+        "focusedCycles": 1
+      },
+      "history": [
+        {
+          "at": "2026-10-17T23:19:09.264Z",
+          "from": null,
+          "to": "Ready",
+          "reason": "Split navigation adoption from the broader existing Work UX increment; preserve implementation and all original scope/history."
+        },
+        {
+          "at": "2026-10-17T23:19:09.264Z",
+          "from": "Ready",
+          "to": "In Progress",
+          "reason": "Adopt only the existing bounded navigation source, preserving account/creation/recovery guards and the remaining independent UX implementation."
+        },
+        {
+          "at": "2026-10-17T23:24:12.849Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Bounded existing Work navigation adopted and frozen atd5253673; no account/creation/recovery/role code changed. Original source/fixtures preserved."
+        },
+        {
+          "at": "2026-10-17T23:24:12.849Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Current160 controls/build/types/lint pass. New native4 running in session87103; original19 and complete frontend remain required."
+        },
+        {
+          "at": "2026-10-17T23:24:12.849Z",
+          "from": "Testing",
+          "to": "Review",
+          "reason": "Current complete scoped component160/type/lint/build pass; user-facing native/full/release acceptance remains distinct."
+        }
+      ],
+      "testMode": "automated",
+      "testResult": "Passed",
+      "verifies": [
+        "PRD-03-VS-06-T-02/AC-01",
+        "PRD-03-VS-06-T-02/AC-02",
+        "PRD-03-VS-06-T-02/AC-03",
+        "PRD-03-VS-06-T-02-TEST-01/TRACE"
+      ],
+      "implementation": {
+        "revision": "d5253673eab1e240649419eb1d8e937d17da8421",
+        "paths": [
+          "apps/web/src/app/navigationModel.test.ts",
+          "apps/web/src/app/InternalAppShell.test.tsx",
+          "apps/web/src/app/App.test.tsx"
+        ]
+      },
+      "gates": {
+        "tests": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-COMPONENTS-160"
+          ]
+        },
+        "build": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-BUILD"
+          ]
+        },
+        "integration": {
+          "status": "Pending",
+          "reason": "Current exact immutable/main integration open."
+        }
+      }
+    },
+    {
+      "id": "PRD-03-VS-06-T-02-TEST-02",
+      "parentId": "PRD-03-VS-06-T-02",
+      "kind": "Test",
+      "title": "Real-service responsive Work navigation and preserved security matrix",
+      "state": "Review",
+      "required": true,
+      "estimate": null,
+      "mvpCritical": true,
+      "dependencies": [],
+      "acceptanceCriteria": [
+        "PRD-03-VS-06-T-02-TEST-02/TRACE"
+      ],
+      "sizing": {
+        "focusedCycles": 1
+      },
+      "history": [
+        {
+          "at": "2026-10-17T23:19:09.264Z",
+          "from": null,
+          "to": "Ready",
+          "reason": "Split navigation adoption from the broader existing Work UX increment; preserve implementation and all original scope/history."
+        },
+        {
+          "at": "2026-10-17T23:19:09.264Z",
+          "from": "Ready",
+          "to": "In Progress",
+          "reason": "Adopt only the existing bounded navigation source, preserving account/creation/recovery guards and the remaining independent UX implementation."
+        },
+        {
+          "at": "2026-10-17T23:24:12.849Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Bounded existing Work navigation adopted and frozen atd5253673; no account/creation/recovery/role code changed. Original source/fixtures preserved."
+        },
+        {
+          "at": "2026-10-17T23:24:12.849Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Current160 controls/build/types/lint pass. New native4 running in session87103; original19 and complete frontend remain required."
+        },
+        {
+          "at": "2026-10-17T23:26:00.945Z",
+          "from": "Testing",
+          "to": "In Progress",
+          "reason": "Retain interrupted wrong-scope harness failure; fix single-string argument splatting without changing product or assertions."
+        },
+        {
+          "at": "2026-10-17T23:26:00.945Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Same frozen product/test sourced5253673; external harness now preserves string array and refuses a wrong collected scope."
+        },
+        {
+          "at": "2026-10-17T23:26:00.945Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Corrected collection proves all4 cases in1 intact file; current execution in75960. Original19/full regression remain pending."
+        },
+        {
+          "at": "2026-10-17T23:29:54.306Z",
+          "from": "Testing",
+          "to": "In Progress",
+          "reason": "Add viewport focus proof and correct canonical snapshot projection before broad current security acceptance; retain earlier4 passes and limitations."
+        },
+        {
+          "at": "2026-10-17T23:29:54.306Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Test-only stronger acceptance frozen ate7cb9965; actual unchanged compiled web staysd5253673."
+        },
+        {
+          "at": "2026-10-17T23:29:54.306Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Browser types pass atnewtest source; complete strengthened4 running in64532. Whole original19 and full frontend remain required."
+        },
+        {
+          "at": "2026-10-17T23:47:31.189Z",
+          "from": "Testing",
+          "to": "Review",
+          "reason": "Whole current native25 pass with zero retries/skips; current whole frontend remains a separate task gate."
+        }
+      ],
+      "testMode": "automated",
+      "testResult": "Passed",
+      "verifies": [
+        "PRD-03-VS-06-T-02/AC-01",
+        "PRD-03-VS-06-T-02/AC-02",
+        "PRD-03-VS-06-T-02/AC-03",
+        "PRD-03-VS-06-T-02-TEST-02/TRACE"
+      ],
+      "implementation": {
+        "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+        "paths": [
+          "tests/browser/work-navigation.spec.ts",
+          "tests/browser/ux-shell.spec.ts",
+          "tests/browser/signin-card-return.spec.ts",
+          "tests/browser/board-creation-recovery.spec.ts"
+        ]
+      },
+      "gates": {
+        "tests": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-16-NAVIGATION-4",
+            "EVID-CYCLE-16-REGRESSIONS-21"
+          ]
+        },
+        "integration": {
+          "status": "Pending",
+          "reason": "Current full frontend and exact immutable/main integration open."
+        }
+      }
+    },
+    {
+      "id": "PRD-09-VS-01-T-02",
+      "parentId": "PRD-09-VS-01",
+      "kind": "Task",
+      "title": "Preserve Board and List scroll while returning visible focus from Card",
+      "state": "Testing",
+      "required": true,
+      "estimate": null,
+      "mvpCritical": true,
+      "dependencies": [],
+      "acceptanceCriteria": [
+        "PRD-09-VS-01-T-02/AC-01",
+        "PRD-09-VS-01-T-02/AC-02",
+        "PRD-09-VS-01-T-02/AC-03"
+      ],
+      "sizing": {
+        "focusedCycles": 1
+      },
+      "history": [
+        {
+          "at": "2026-10-17T23:49:39.888Z",
+          "from": null,
+          "to": "Ready",
+          "reason": "Add only the precise existing Card-return scroll acceptance gap exposed by older required CI; preserve implementation and all original history."
+        },
+        {
+          "at": "2026-10-17T23:49:39.888Z",
+          "from": "Ready",
+          "to": "In Progress",
+          "reason": "Audit and execute unchanged current Card-return consumers before any product edit; retain older five failures as historical until current reproduction."
+        },
+        {
+          "at": "2026-10-18T00:06:23.094Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Minimal conditional focus reveal exists at97ce484a; no schema/API/role/command/recovery migration or new dependency."
+        },
+        {
+          "at": "2026-10-18T00:06:23.094Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Controlled5 pass; wider15-file Board/Card quality and identified build/types/lint running in85457. Real changed native/full acceptance remains required."
+        }
+      ],
+      "implementation": {
+        "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+        "paths": [
+          "apps/web/src/features/kanban/focusBoardReturn.ts",
+          "apps/web/src/features/kanban/BoardScreen.tsx"
+        ]
+      }
+    },
+    {
+      "id": "PRD-09-VS-01-T-02-TEST-01",
+      "parentId": "PRD-09-VS-01-T-02",
+      "kind": "Test",
+      "title": "Controlled visible-focus and local-scroll return counterexamples",
+      "state": "Review",
+      "required": true,
+      "estimate": null,
+      "mvpCritical": true,
+      "dependencies": [],
+      "acceptanceCriteria": [
+        "PRD-09-VS-01-T-02-TEST-01/TRACE"
+      ],
+      "sizing": {
+        "focusedCycles": 1
+      },
+      "history": [
+        {
+          "at": "2026-10-17T23:49:39.888Z",
+          "from": null,
+          "to": "Ready",
+          "reason": "Add only the precise existing Card-return scroll acceptance gap exposed by older required CI; preserve implementation and all original history."
+        },
+        {
+          "at": "2026-10-17T23:49:39.888Z",
+          "from": "Ready",
+          "to": "In Progress",
+          "reason": "Audit and execute unchanged current Card-return consumers before any product edit; retain older five failures as historical until current reproduction."
+        },
+        {
+          "at": "2026-10-17T23:59:02.635Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Controlled counterexamples frozen with behavior-preserving extraction of the actual existing UI return handler."
+        },
+        {
+          "at": "2026-10-17T23:59:02.635Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Whole5 red invocation completed3fail/2pass; no assertion, retry or deadline relaxation."
+        },
+        {
+          "at": "2026-10-18T00:06:23.094Z",
+          "from": "Testing",
+          "to": "In Progress",
+          "reason": "Preserve3red/2positive controls and implement only conditional local reveal/document viewport shift."
+        },
+        {
+          "at": "2026-10-18T00:06:23.094Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Same five controls and final minimal focus helper frozen at97ce484a."
+        },
+        {
+          "at": "2026-10-18T00:06:23.094Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Current whole5 green invocation completed5/5 in2.16s; broader quality/native/full remain separate."
+        },
+        {
+          "at": "2026-10-18T00:06:23.094Z",
+          "from": "Testing",
+          "to": "Review",
+          "reason": "Controlled exact local/viewport/header/hidden/null acceptance passes, without promoting to native/full/release acceptance."
+        }
+      ],
+      "testMode": "automated",
+      "testResult": "Passed",
+      "verifies": [
+        "PRD-09-VS-01-T-02/AC-01",
+        "PRD-09-VS-01-T-02/AC-02",
+        "PRD-09-VS-01-T-02/AC-03",
+        "PRD-09-VS-01-T-02-TEST-01/TRACE"
+      ],
+      "implementation": {
+        "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+        "paths": [
+          "apps/web/src/features/kanban/focusBoardReturn.test.ts",
+          "apps/web/src/features/kanban/focusBoardReturn.ts",
+          "apps/web/src/features/kanban/BoardScreen.tsx"
+        ]
+      },
+      "gates": {
+        "tests": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-17-FOCUS-GREEN"
+          ]
+        },
+        "integration": {
+          "status": "Pending",
+          "reason": "Changed native/full and exact release/main remain open."
+        }
+      }
+    },
+    {
+      "id": "PRD-09-VS-01-T-02-TEST-02",
+      "parentId": "PRD-09-VS-01-T-02",
+      "kind": "Test",
+      "title": "Complete unchanged Kanban and checklist context consumer acceptance",
+      "state": "Review",
+      "required": true,
+      "estimate": null,
+      "mvpCritical": true,
+      "dependencies": [],
+      "acceptanceCriteria": [
+        "PRD-09-VS-01-T-02-TEST-02/TRACE"
+      ],
+      "sizing": {
+        "focusedCycles": 1
+      },
+      "history": [
+        {
+          "at": "2026-10-17T23:49:39.888Z",
+          "from": null,
+          "to": "Ready",
+          "reason": "Add only the precise existing Card-return scroll acceptance gap exposed by older required CI; preserve implementation and all original history."
+        },
+        {
+          "at": "2026-10-17T23:49:39.888Z",
+          "from": "Ready",
+          "to": "In Progress",
+          "reason": "Audit and execute unchanged current Card-return consumers before any product edit; retain older five failures as historical until current reproduction."
+        },
+        {
+          "at": "2026-10-17T23:51:29.525Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Existing entire native consumers frozen unchanged at a128a56b; actual compiled product remainsd5253673 with exact input equality."
+        },
+        {
+          "at": "2026-10-17T23:51:29.525Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "Whole unchanged Kanban-scroll3 baseline running in8632 with original90s deadlines and zero retries. Complete checklist2 and final validation remain pending."
+        },
+        {
+          "at": "2026-10-18T00:06:23.094Z",
+          "from": "Testing",
+          "to": "In Progress",
+          "reason": "Preserve current Production3fail, supporting verified Demo2fail and failed Demo setup separately; prepare current product retest without fixture/assertion relaxation."
+        },
+        {
+          "at": "2026-10-18T00:06:23.094Z",
+          "from": "In Progress",
+          "to": "Implemented",
+          "reason": "Original native files remain byte-unchanged at final repaired product revision97ce484a."
+        },
+        {
+          "at": "2026-10-18T00:06:23.094Z",
+          "from": "Implemented",
+          "to": "Testing",
+          "reason": "New identified build and current changed real-service consumers pending; older failures retained, no passing native claimed."
+        },
+        {
+          "at": "2026-10-18T00:21:14.078Z",
+          "from": "Testing",
+          "to": "Review",
+          "reason": "Every original unchanged native context consumer now passes:3 Production scroll plus2 genuinely verified supporting Demo checklist cases. Full affected31/frontend/release are separate required gates."
+        }
+      ],
+      "testMode": "automated",
+      "testResult": "Passed",
+      "verifies": [
+        "PRD-09-VS-01-T-02/AC-01",
+        "PRD-09-VS-01-T-02/AC-02",
+        "PRD-09-VS-01-T-02/AC-03",
+        "PRD-09-VS-01-T-02-TEST-02/TRACE"
+      ],
+      "implementation": {
+        "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+        "paths": [
+          "tests/browser/kanban-scroll.spec.ts",
+          "tests/browser/checklist-board-context.spec.ts"
+        ]
+      },
+      "gates": {
+        "tests": {
+          "status": "Passed",
+          "evidenceIds": [
+            "EVID-CYCLE-17-REPAIRED-SCROLL-3",
+            "EVID-CYCLE-17-DEMO-REPAIRED-2"
+          ]
+        },
+        "integration": {
+          "status": "Pending",
+          "reason": "Current wider/full/release and target main integration are independent open gates."
+        }
+      }
+    }
+  ],
+  "criteria": [
+    {
+      "id": "PRD-01-VS-04-T-03/AC-01",
+      "ownerId": "PRD-01-VS-04-T-03",
+      "sourceId": "AC-01",
+      "text": "A genuine current owner/member of OrganizationA opening private CardB remains denied before and after explicit re-authentication asA. Stable target Board/INTERNAL/PORTAL reads refuse access, and the page discloses no protected target titles, detail or Internal navigation.",
+      "sourceRefs": [
+        "PRD-01-VS-04/AC-03",
+        "PRD-01/UXA-03"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-16-REGRESSIONS-21",
+        "EVID-CYCLE-16-REGRESSIONS-IDENTITY"
+      ],
+      "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+      "reviewer": "delivery-agent: complete corrected current13 within21 real-service cases; full frontend/release remain separate gates",
+      "verifiedAt": "2026-10-17T23:47:31.189Z",
+      "validationGaps": []
+    },
+    {
+      "id": "PRD-01-VS-04-T-03/AC-02",
+      "ownerId": "PRD-01-VS-04-T-03",
+      "sourceId": "AC-02",
+      "text": "No protected target mutation starts; separately authenticated target owner verifies canonicalB unchanged. Original authorizedA canonical Board/Card remain unchanged and reachable through browser Back with correct scope and no Login history loop.",
+      "sourceRefs": [
+        "PRD-01-VS-04/AC-02",
+        "PRD-01/UXA-02",
+        "PRD-01/UXA-04"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-16-REGRESSIONS-21",
+        "EVID-CYCLE-16-REGRESSIONS-IDENTITY"
+      ],
+      "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+      "reviewer": "delivery-agent: complete corrected current13 within21 real-service cases; full frontend/release remain separate gates",
+      "verifiedAt": "2026-10-17T23:47:31.189Z",
+      "validationGaps": []
+    },
+    {
+      "id": "PRD-01-VS-04-T-03/AC-03",
+      "ownerId": "PRD-01-VS-04-T-03",
+      "sourceId": "AC-03",
+      "text": "The whole original12 plus the new cross-Organization case pass on the verified real Production consumer with unchanged source/role/return guards, responsive/keyboard/Axe and request/canonical assertions. Current unit/type/coverage evidence and exact unchanged-product build/full reuse are recorded separately from release/main integration.",
+      "sourceRefs": [
+        "PRD-01-VS-04/AC-04",
+        "PRD-01/UXA-05",
+        "PRD-01/UXA-06",
+        "PRD-01/UXA-08"
+      ],
+      "status": "Unverified",
+      "evidenceIds": [
+        "EVID-CYCLE-14-CONTROLS-54",
+        "EVID-CYCLE-14-TYPES",
+        "EVID-CYCLE-14-LINT",
+        "EVID-CYCLE-14-NATIVE-13",
+        "EVID-CYCLE-14-RUNTIME",
+        "EVID-CYCLE-14-RECONCILIATION"
+      ],
+      "revision": "1f70dc1028d65a9e7d7075bc166f6cc4c2b7ea2b",
+      "reviewer": "delivery-agent: current controlled/complete native/visual scoped verification; immutable/main integration pending",
+      "verifiedAt": "2026-10-17T23:15:29.228Z",
+      "validationGaps": [
+        "Whole current native13 passes with full Board snapshots. Navigation changed product inputs afterfbbe942c; current whole frontend is running, so prior full2862 is not promoted to current acceptance."
+      ]
+    },
+    {
+      "id": "PRD-01-VS-04-T-03-TEST-01/TRACE",
+      "ownerId": "PRD-01-VS-04-T-03-TEST-01",
+      "sourceId": "TRACE",
+      "text": "Run the complete permanent sign-in return file with all12 original cases and the added genuine cross-Organization ownership case. Preserve deadlines, zero retries and original assertions; record exact test and actual product/runtime sources.",
+      "sourceRefs": [
+        "PRD-01-VS-04-T-03/AC-01",
+        "PRD-01-VS-04-T-03/AC-02",
+        "PRD-01-VS-04-T-03/AC-03"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-16-REGRESSIONS-21",
+        "EVID-CYCLE-16-REGRESSIONS-IDENTITY"
+      ],
+      "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+      "reviewer": "delivery-agent: complete current13 consumer within21; no full frontend/release claim",
+      "verifiedAt": "2026-10-17T23:47:31.189Z",
+      "validationGaps": []
+    },
+    {
+      "id": "PRD-03-VS-06-T-02/AC-01",
+      "ownerId": "PRD-03-VS-06-T-02",
+      "sourceId": "AC-01",
+      "text": "The existing authorized Organization directory, Board and Card routes share the Work menu destination/current state. Unavailable modules have no live, disabled or placeholder menu entries. Current path/Organization and separate account/search/Portal policy remain unchanged.",
+      "sourceRefs": [
+        "PRD-03-VS-06/UX-NAV-01",
+        "PRD-01/UXA-01",
+        "PRD-03/UXA-03"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-16-NAVIGATION-4",
+        "EVID-CYCLE-16-NAVIGATION-VISUAL",
+        "EVID-CYCLE-16-NAVIGATION-IDENTITY"
+      ],
+      "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+      "reviewer": "delivery-agent: current whole4 consumer/viewport review; original21/full/release integration remain separate open gates",
+      "verifiedAt": "2026-10-17T23:32:59.378Z"
+    },
+    {
+      "id": "PRD-03-VS-06-T-02/AC-02",
+      "ownerId": "PRD-03-VS-06-T-02",
+      "sourceId": "AC-02",
+      "text": "At desktop/tablet/phone widths, keyboard navigation reaches Work from Board/Card and returns to the correct authorized directory/Board/Card. The phone menu opens/closes with keyboard and returns focus; scope withdrawal hides protected navigation and data. Browser Back preserves the expected Board/Card context and canonical records remain unchanged without protected writes.",
+      "sourceRefs": [
+        "PRD-03-VS-06/UX-NAV-02",
+        "PRD-03/UXA-02",
+        "PRD-03/UXA-04",
+        "PRD-03/UXA-06"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-16-NAVIGATION-4",
+        "EVID-CYCLE-16-NAVIGATION-VISUAL",
+        "EVID-CYCLE-16-NAVIGATION-IDENTITY"
+      ],
+      "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+      "reviewer": "delivery-agent: current whole4 consumer/viewport review; original21/full/release integration remain separate open gates",
+      "verifiedAt": "2026-10-17T23:32:59.378Z"
+    },
+    {
+      "id": "PRD-03-VS-06-T-02/AC-03",
+      "ownerId": "PRD-03-VS-06-T-02",
+      "sourceId": "AC-03",
+      "text": "Run current component/type/lint checks, all original controlled shell and13 real-service sign-in/security cases plus new real navigation at320/390/768/1280 and tablet200% reflow. Inspect current rendered captures and record identified build/full frontend and complete source/coverage evidence separately from exact immutable/main integration.",
+      "sourceRefs": [
+        "PRD-03/UXA-05",
+        "PRD-03/UXA-08"
+      ],
+      "status": "Unverified",
+      "evidenceIds": []
+    },
+    {
+      "id": "PRD-03-VS-06-T-02-TEST-01/TRACE",
+      "ownerId": "PRD-03-VS-06-T-02-TEST-01",
+      "sourceId": "TRACE",
+      "text": "Execute the recorded complete current scope without skipped assertions, retries or weakened deadlines; preserve failures and exact source/runtime identities.",
+      "sourceRefs": [
+        "PRD-03-VS-06-T-02/AC-01",
+        "PRD-03-VS-06-T-02/AC-02",
+        "PRD-03-VS-06-T-02/AC-03"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-16-COMPONENTS-160",
+        "EVID-CYCLE-16-TYPES",
+        "EVID-CYCLE-16-LINT"
+      ],
+      "revision": "d5253673eab1e240649419eb1d8e937d17da8421",
+      "reviewer": "delivery-agent: exact current component/type/lint scope only",
+      "verifiedAt": "2026-10-17T23:24:12.849Z"
+    },
+    {
+      "id": "PRD-03-VS-06-T-02-TEST-02/TRACE",
+      "ownerId": "PRD-03-VS-06-T-02-TEST-02",
+      "sourceId": "TRACE",
+      "text": "Execute the recorded complete current scope without skipped assertions, retries or weakened deadlines; preserve failures and exact source/runtime identities.",
+      "sourceRefs": [
+        "PRD-03-VS-06-T-02/AC-01",
+        "PRD-03-VS-06-T-02/AC-02",
+        "PRD-03-VS-06-T-02/AC-03"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-16-NAVIGATION-4",
+        "EVID-CYCLE-16-REGRESSIONS-21",
+        "EVID-CYCLE-16-NAVIGATION-VISUAL"
+      ],
+      "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+      "reviewer": "delivery-agent: whole current25 native cases and four viewport inspections only",
+      "verifiedAt": "2026-10-17T23:47:31.189Z"
+    },
+    {
+      "id": "PRD-09-VS-01-T-02/AC-01",
+      "ownerId": "PRD-09-VS-01-T-02",
+      "sourceId": "AC-01",
+      "text": "Opening and closing an unchanged Card preserves exact existing canvas scrollLeft and List scrollTop while returning focus to that Card. No unexpected move/write or document reload occurs; canonical data changes only through explicit permitted operations.",
+      "sourceRefs": [
+        "PRD-09-VS-01/DETAIL-FR-001",
+        "PRD-09-VS-01/DETAIL-FR-005",
+        "PRD-09-VS-01/UX-DETAIL-01"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-17-REPAIRED-SCROLL-3",
+        "EVID-CYCLE-17-DEMO-REPAIRED-2",
+        "EVID-CYCLE-17-FOCUS-GREEN"
+      ],
+      "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+      "reviewer": "delivery-agent: scoped controlled/native/viewport acceptance; wider gates pending",
+      "verifiedAt": "2026-10-18T00:21:14.078Z"
+    },
+    {
+      "id": "PRD-09-VS-01-T-02/AC-02",
+      "ownerId": "PRD-09-VS-01-T-02",
+      "sourceId": "AC-02",
+      "text": "Returning focus remains visibly reachable above/below the viewport and fixed header without moving already visible local canvas/List context. Legitimately relocated fully hidden targets can be revealed where necessary; preserve existing target ownership, fallback and access withdrawal.",
+      "sourceRefs": [
+        "PRD-09/UXA-04",
+        "PRD-09/UXA-05",
+        "PRD-09/UXA-06"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-17-FOCUS-GREEN",
+        "EVID-CYCLE-17-FOCUS-VISUAL",
+        "EVID-CYCLE-17-REPAIRED-SCROLL-3"
+      ],
+      "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+      "reviewer": "delivery-agent: scoped controlled/native/viewport acceptance; wider gates pending",
+      "verifiedAt": "2026-10-18T00:21:14.078Z"
+    },
+    {
+      "id": "PRD-09-VS-01-T-02/AC-03",
+      "ownerId": "PRD-09-VS-01-T-02",
+      "sourceId": "AC-03",
+      "text": "Preserve complete original Kanban scroll3 and checklist context2 consumers, drag/cancel/canonical/version/exact-scroll assertions, deadlines and zero retries. Record unchanged baseline, controlled failures/fix, current relevant25 native and full frontend/build/type/lint/source/coverage evidence with exact runtime/source applicability; keep Production, Demo and immutable-release claims separate.",
+      "sourceRefs": [
+        "PRD-09/UXA-08",
+        "PRD-06/UXA-04"
+      ],
+      "status": "Unverified",
+      "evidenceIds": []
+    },
+    {
+      "id": "PRD-09-VS-01-T-02-TEST-01/TRACE",
+      "ownerId": "PRD-09-VS-01-T-02-TEST-01",
+      "sourceId": "TRACE",
+      "text": "Execute the recorded complete current scope with exact source/runtime identity. Preserve failed/interrupted/skipped/not-run results and original assertions; no completion from code alone.",
+      "sourceRefs": [
+        "PRD-09-VS-01-T-02/AC-01",
+        "PRD-09-VS-01-T-02/AC-02",
+        "PRD-09-VS-01-T-02/AC-03"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-17-FOCUS-GREEN"
+      ],
+      "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+      "reviewer": "delivery-agent: current whole5 controlled scope only",
+      "verifiedAt": "2026-10-18T00:06:23.094Z"
+    },
+    {
+      "id": "PRD-09-VS-01-T-02-TEST-02/TRACE",
+      "ownerId": "PRD-09-VS-01-T-02-TEST-02",
+      "sourceId": "TRACE",
+      "text": "Execute the recorded complete current scope with exact source/runtime identity. Preserve failed/interrupted/skipped/not-run results and original assertions; no completion from code alone.",
+      "sourceRefs": [
+        "PRD-09-VS-01-T-02/AC-01",
+        "PRD-09-VS-01-T-02/AC-02",
+        "PRD-09-VS-01-T-02/AC-03"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-17-REPAIRED-SCROLL-3",
+        "EVID-CYCLE-17-DEMO-REPAIRED-2",
+        "EVID-CYCLE-17-DEMO-REPAIRED-IDENTITY"
+      ],
+      "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+      "reviewer": "delivery-agent: entire unchanged3 Production+2 supporting Demo consumers",
+      "verifiedAt": "2026-10-18T00:21:14.078Z"
+    }
+  ]
+}

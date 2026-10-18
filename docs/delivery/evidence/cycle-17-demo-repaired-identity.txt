@@ -1,0 +1,44 @@
+{
+  "api": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "scope": "Entire unchanged checklist-context2 on current identified repaired web97ce484a. Accounts genuinely verify through the supported Demo token flow; verification fixture is unchanged. Supporting Demo evidence, not Production/RLS/strict/provider/HTTPS or immutable-release certification. Existing Production/main processes untouched.",
+  "at": "2026-10-18T00:12:07.1514269+00:00",
+  "specBlob": "5a809933e0493b7af04aed10edadc9409596fc68",
+  "testRevision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+  "actualProductRevision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+  "policy": {
+    "allowSelfRegistration": true,
+    "requireVerifiedEmail": true,
+    "minimumPasswordLength": 12
+  },
+  "web": {
+    "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+    "version": "0.1.0"
+  },
+  "hosts": [
+    {
+      "parentPid": 35924,
+      "port": 18094,
+      "createdAt": "2026-10-17T17:00:16.427987-07:00",
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle8-dotnet-artifacts\\bin\\StrataAI.Api\\release\\StrataAI.Api.dll",
+      "kind": "api",
+      "pid": 23800
+    },
+    {
+      "parentPid": 32292,
+      "port": 15186,
+      "createdAt": "2026-10-17T17:09:45.171549-07:00",
+      "command": "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vite/bin/vite.js preview --config C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle17-demo-fixture\\preview-repaired.config.mjs",
+      "kind": "preview",
+      "pid": 30908
+    }
+  ],
+  "ready": {
+    "status": "ready",
+    "mode": "demo"
+  }
+}

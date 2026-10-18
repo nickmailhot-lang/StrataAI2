@@ -1,0 +1,33 @@
+Listing tests:
+  archived-cards.spec.ts:6:7 › PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at 1280px
+  archived-cards.spec.ts:6:7 › PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at 390px
+  board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px
+  board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px
+  board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px
+  board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px
+  card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 1280px
+  card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px
+  card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 390px
+  card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 320px
+  signin-card-return.spec.ts:21:5 › PRD-01-VS-04-T-03/AC-01/02/03: another Organization owner remains denied after sign-in and returns to authorized work
+  signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px
+  signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 768px
+  signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 390px
+  signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 320px
+  signin-card-return.spec.ts:159:7 › PRD-01-VS-04/AC-03: sign-in return does not grant outsider access to a private Card
+  signin-card-return.spec.ts:159:7 › PRD-01-VS-04/AC-03: sign-in return does not grant portal-only access to a private Card
+  signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current board → canonical Card → Board at 1280px
+  signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current board → canonical Card → Board at 390px
+  signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 1280px
+  signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 768px
+  signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 390px
+  signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 320px
+  ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 1280px
+  ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 768px
+  ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 390px
+  ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 320px
+  work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 1280px
+  work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 768px
+  work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 390px
+  work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 320px
+Total: 31 tests in 6 files

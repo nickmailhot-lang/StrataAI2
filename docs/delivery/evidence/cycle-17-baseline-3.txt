@@ -1,0 +1,108 @@
+
+Running 3 tests using 1 worker
+
+(node:37396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px (7.2s)
+(node:9868) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px (6.7s)
+(node:18556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px (5.8s)
+
+
+  1) tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 20
+    Received: 16
+
+      85 |     await page.getByRole('button', { name: 'Close', exact: true }).click();
+      86 |     await expect(cardLink).toBeFocused();
+    > 87 |     expect(await canvas.evaluate(node => node.scrollLeft)).toBe(canvasLeft);
+         |                                                            ^
+      88 |     expect(await column.evaluate(node => node.scrollTop)).toBe(columnTop);
+      89 |     expect(writes).toBe(0);
+      90 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle17-card-return-scroll\tests\browser\kanban-scroll.spec.ts:87:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-mouse-84ff7-on-makes-no-write-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-mouse-84ff7-on-makes-no-write-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-mouse-84ff7-on-makes-no-write-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-mouse-84ff7-on-makes-no-write-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 20
+    Received: 16
+
+      85 |     await page.getByRole('button', { name: 'Close', exact: true }).click();
+      86 |     await expect(cardLink).toBeFocused();
+    > 87 |     expect(await canvas.evaluate(node => node.scrollLeft)).toBe(canvasLeft);
+         |                                                            ^
+      88 |     expect(await column.evaluate(node => node.scrollTop)).toBe(columnTop);
+      89 |     expect(writes).toBe(0);
+      90 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle17-card-return-scroll\tests\browser\kanban-scroll.spec.ts:87:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-mouse-241b9-ion-makes-no-write-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-mouse-241b9-ion-makes-no-write-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-mouse-241b9-ion-makes-no-write-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-mouse-241b9-ion-makes-no-write-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 20
+    Received: 16
+
+      85 |     await page.getByRole('button', { name: 'Close', exact: true }).click();
+      86 |     await expect(cardLink).toBeFocused();
+    > 87 |     expect(await canvas.evaluate(node => node.scrollLeft)).toBe(canvasLeft);
+         |                                                            ^
+      88 |     expect(await column.evaluate(node => node.scrollTop)).toBe(columnTop);
+      89 |     expect(writes).toBe(0);
+      90 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle17-card-return-scroll\tests\browser\kanban-scroll.spec.ts:87:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-touch-cd5dd-ion-makes-no-write-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-touch-cd5dd-ion-makes-no-write-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-touch-cd5dd-ion-makes-no-write-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle17-prod-scroll-baseline\kanban-scroll-PRD-06-touch-cd5dd-ion-makes-no-write-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px 
+    tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px 
+    tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px 

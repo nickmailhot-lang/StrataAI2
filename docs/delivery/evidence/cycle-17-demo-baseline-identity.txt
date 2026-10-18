@@ -1,0 +1,44 @@
+{
+  "testRevision": "cc75085fb39cb2dc46e1dca823dbd55ee91e8c85",
+  "hosts": [
+    {
+      "createdAt": "2026-10-17T17:00:16.427987-07:00",
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle8-dotnet-artifacts\\bin\\StrataAI.Api\\release\\StrataAI.Api.dll",
+      "port": 18094,
+      "kind": "api",
+      "parentPid": 35924,
+      "pid": 23800
+    },
+    {
+      "createdAt": "2026-10-17T16:57:19.670368-07:00",
+      "command": "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vite/bin/vite.js preview --config C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle17-demo-fixture\\preview.config.mjs",
+      "port": 15186,
+      "kind": "preview",
+      "parentPid": 25908,
+      "pid": 3392
+    }
+  ],
+  "actualBaselineProduct": "d5253673eab1e240649419eb1d8e937d17da8421",
+  "ready": {
+    "status": "ready",
+    "mode": "demo"
+  },
+  "web": {
+    "revision": "d5253673eab1e240649419eb1d8e937d17da8421",
+    "version": "0.1.0"
+  },
+  "scope": "Entire unchanged checklist-context2 on actual existingd5253673 baseline renderer. Current repo has only extracted the same old focus/nearest behavior for controlled red tests; this is explicitly the baseline built product, not a new build. Accounts genuinely verify through the supported Demo token flow; verification fixture is unchanged. Supporting Demo evidence, not Production/RLS/strict/provider/HTTPS or immutable-release certification. Existing Production/main processes untouched.",
+  "at": "2026-10-18T00:00:30.4744559+00:00",
+  "policy": {
+    "allowSelfRegistration": true,
+    "requireVerifiedEmail": true,
+    "minimumPasswordLength": 12
+  },
+  "specBlob": "5a809933e0493b7af04aed10edadc9409596fc68",
+  "api": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  }
+}

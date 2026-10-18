@@ -1,0 +1,34 @@
+{
+  "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+  "at": "2026-10-18T00:21:14.078Z",
+  "reviewer": "delivery-agent",
+  "captures": [
+    {
+      "width": 1280,
+      "source": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+      "kind": "actual viewport only",
+      "sha256": "21b7010f50a3632476d83808412f3828eb96bb3024983e9c44a1a2e14746d334"
+    },
+    {
+      "width": 768,
+      "source": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+      "kind": "actual viewport only",
+      "sha256": "14646f1a823e0efa9e793d768e0b8adc5a9065dd09167dae805bfdcb253bd9f7"
+    },
+    {
+      "width": 390,
+      "source": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+      "kind": "actual viewport only",
+      "sha256": "6d1ee86001e6ea867e8ecde32a2c3ae59eed5b3fac42a4253122a846bc8589d5"
+    },
+    {
+      "width": 320,
+      "source": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+      "kind": "actual viewport only",
+      "sha256": "02b87618026f7767ffe1ed2f222cf7f0e938f6935618f72af1dfe8e2193f8157"
+    }
+  ],
+  "review": "Inspected all four current actual viewport Card-creation return captures. The focused canonical Card has a clear blue outline and remains below the fixed header, including320 phone and768 tablet at200% text. Header and local canvas remain distinct. The screenshot at320 shows the root document shifted to expose the Card without new page overflow; intentional Board canvas scrolling remains local. Also inspected final touch-scroll390 and supporting Demo checklist390 captures; these final images supplement exact automated focus/scroll assertions and do not themselves measure every intermediate focus state.",
+  "sourceReview": "Current delta from frozen107 preserves existing return-target/card-owner/fallback and Dialog exit timing; replaces only unconditional nearest-scroll. Target focus uses preventScroll, local ancestor reveal is limited to wholly hidden targets, then document-only reveal clears viewport/fixed header. No schema, API, permission, actor, idempotency, route or dependency changes. Existing5 original native consumers unchanged; red3/2 and real baseline failures retained.",
+  "limits": "Broader Board action clutter, detail panel/dirty/filter/disclosure amendments, full frontend, current31 affected matrix and immutable/main integration remain open. Some captures retain existing Recovering board updates caption; no live convergence claim follows from a screenshot. This is scoped visual review, not full WCAG or MVP certification."
+}

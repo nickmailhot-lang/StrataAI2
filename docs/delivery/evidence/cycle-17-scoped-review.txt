@@ -1,0 +1,10 @@
+{
+  "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+  "at": "2026-10-18T00:43:24.193Z",
+  "reviewer": "delivery-agent",
+  "scope": "Author source/product/UX review of bounded Work navigation, exact Card return focus/scroll and corrected cross-Organization canonical acceptance. Final independent/release/main review remains open.",
+  "implementation": "Delta from frozen107 is11 app/browser files,218 additions/20 deletions at97ce484a. Reuses current shell/MUI/routes. Work directory/current route and placeholders reflect the live amendment. Focus helper preserves current target identity/fallback/exit timing and changes only conditional local reveal/document viewport movement. Existing code/recovery is retained; no API/schema/package/dependency or role/actor/idempotency changes in this delta. No whole PR100 BoardScreen/OrganizationHome adoption.",
+  "verified": "Current233 controls,5 red/green controls,34 distinct real Production+2 supporting verified-Demo native cases, entire2875-pass frontend/24 preserved capacity deferrals, identified build/web/browser types/lint, source372/registries and final ledger/refusal tests pass at recorded identities. Eight actual viewport captures and four qualified supplementary images reviewed separately from automated assertions.",
+  "preservation": "Earlier current/older CI failures, failed Demo setup, native red/green, interrupted/refused scope attempts, exact source/runtime identities and previous scoped criterion/implementation states remain immutable. Additive live requirements remain Unverified beyond tested child scope. Queued Organization task/tests are Ready only.",
+  "limits": "No unsupported Done, parent closure, frozen percentage, current107-to97 relabel, managed-provider/TLS/strict-verification certification or target-main integration. Current CI candidate must freeze after publication; later feature work uses a separate checkout. Scoped author review is not independent final approval."
+}
