@@ -8,3 +8,4 @@ docs/delivery/evidence/cycle18*.txt -whitespace
 # Preserve exact evidence bytes; source/report normalization and checks remain.
 docs/delivery/evidence/cycle19* -text
 docs/delivery/evidence/cycle20* -text
+docs/delivery/evidence/merge17* -text

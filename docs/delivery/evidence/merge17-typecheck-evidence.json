@@ -1,0 +1,7 @@
+{
+  "revision": "401b48ef9e951268e2d38793784d2a893bd75090",
+  "rawArtifact": "merge17-typecheck.txt",
+  "rawSha256": "176cdd303d10bf77ced76f06db18cc1d7c00e4a9e15fa5374900549b28fc28bf",
+  "scope": "Current401webtypesrejecttwo newlywrittenfixturecallbacks inferredneverfromthrow. Explicit() => void annotationsfixonlyfixturetypesat0eb. Browsertypes/lintalready0, webtypesrerunningwithactualcritical5filecontrols.",
+  "rawUtf8Text": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\nsrc/app/UnsavedChangesGuard.lifecycle.test.tsx(11,49): error TS2322: Type 'void' is not assignable to type 'never'.\r\nsrc/app/UnsavedChangesGuard.lifecycle.test.tsx(31,46): error TS2322: Type 'void' is not assignable to type 'never'.\r\nnpm error Lifecycle script `typecheck` failed with error:\r\nnpm error code 2\r\nnpm error path C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-main\\apps\\web\r\nnpm error workspace @strataai/web@0.1.0\r\nnpm error location C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-main\\apps\\web\r\nnpm error command failed\r\nnpm error command C:\\WINDOWS\\system32\\cmd.exe /d /s /c tsc --noEmit\r\n"
+}

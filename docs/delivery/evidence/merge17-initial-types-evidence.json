@@ -1,0 +1,7 @@
+{
+  "revision": "ec15a617dcf0b2314a49c204b5c48c7474dcf66e",
+  "rawArtifact": "merge17-initial-types.txt",
+  "rawSha256": "20c1d1f6dd9b74b5988b3e4826917b613b4aa67e214c0c37ed079bb2070685fa",
+  "scope": "InitialcombinedtypecheckrefusedduplicateSecondaryActionsimportfromautomerge. Removedonlyduplicateat8f8d; currentwholetypes/lint rerun52000pending.",
+  "rawUtf8Text": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\nsrc/features/organizations/OrganizationHome.tsx(3,10): error TS2300: Duplicate identifier 'SecondaryActions'.\r\nsrc/features/organizations/OrganizationHome.tsx(34,10): error TS2300: Duplicate identifier 'SecondaryActions'.\r\nnpm error Lifecycle script `typecheck` failed with error:\r\nnpm error code 2\r\nnpm error path C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-main\\apps\\web\r\nnpm error workspace @strataai/web@0.1.0\r\nnpm error location C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-main\\apps\\web\r\nnpm error command failed\r\nnpm error command C:\\WINDOWS\\system32\\cmd.exe /d /s /c tsc --noEmit\r\n"
+}

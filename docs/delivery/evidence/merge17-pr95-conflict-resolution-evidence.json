@@ -1,0 +1,7 @@
+{
+  "revision": "401b48ef9e951268e2d38793784d2a893bd75090",
+  "rawArtifact": "merge17-pr95-conflict-resolution.json",
+  "rawSha256": "a43470578f88ac4eefe41acc0fea53bc342c3ce29610f9041edd571416bc37c4",
+  "scope": "RetainedbothconflictingreportrecordsandallnonconflictingPR95app/docs/testchanges. Localcandidateonly, PR95stillunmerged.",
+  "rawUtf8Text": "{\n  \"at\": \"2026-10-18T06:28:46.555Z\",\n  \"conflicts\": 2,\n  \"path\": \"docs/ux/delivery-report.md\",\n  \"method\": \"Keep both conflicting report records and all automatic nonconflicting PR95 documentation/application changes; label old next-sequence checkpoint. No source/history/test records dropped.\",\n  \"beforeSha256\": \"0085e05d42baad09a50302f8a3a3e35d376b8d90ccfcd702c2a07b8467323b22\",\n  \"afterSha256\": \"54f01cde9ac2dad156bcf2dff222f7a5d97cac4479b5a16d33cdadef1691cbec\"\n}\n"
+}

@@ -1,0 +1,7 @@
+{
+  "revision": "8a4efa611d5c34f0957a9f799e438316ddc1af6c",
+  "rawArtifact": "merge17-draft-guard-green.txt",
+  "rawSha256": "a6d7fe5b93377f42b6505ed98ab27d517b242e4c3fce602533a43b4f8640e7a4",
+  "scope": "Sameunchanged4casespass17.97s afterminimumguardfix. Cleanackreleasespendingdestination, genericpromptvisibleoutsidehiddenprivateboundary, explicitdiscards/keepsanddefinitivewithdrawal preserved. No fullcombinedacceptanceclaim.",
+  "rawUtf8Text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/app/UnsavedChangesGuard.test.tsx src/app/UnsavedChangesGuard.lifecycle.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-main/apps/web\r\n\r\n\r\n Test Files  2 passed (2)\r\n      Tests  4 passed (4)\r\n   Start at  23:36:05\r\n   Duration  17.97s (import 63%, environment 23%, tests 9%, setup 5%, transform 1%)\r\n\r\n"
+}

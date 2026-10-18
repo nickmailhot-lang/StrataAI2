@@ -1,0 +1,7 @@
+{
+  "revision": "16bf945d8b01e61f46d973b2d01a92918d5e24f4",
+  "rawArtifact": "merge17-first-integration.json",
+  "rawSha256": "b92c3acbc60cdb5ac01ad3b59f84743c47f96a71aab5e03fd441b42dd0bd9b87",
+  "scope": "ActualGitHubnormalmerge96be0ac15e to mainafter22checksPassed; original16bfexpectedheadguard, reviews/threads empty. Oneof17merged; notwholeMVPDone.",
+  "rawUtf8Text": "{\n  \"at\": \"2026-10-18T06:27:48.183Z\",\n  \"number\": 96,\n  \"head\": \"16bf945d8b01e61f46d973b2d01a92918d5e24f4\",\n  \"result\": {\n    \"sha\": \"be0ac15ed7688caec26aa1439911aef75e3f97c8\",\n    \"merged\": true,\n    \"message\": \"Pull Request successfully merged\"\n  },\n  \"checks\": \"All22successful includingrequired-ci/releasebundle/fourwholebrowsershards/security/Postgres/CodeQL, no reviews/threads outstanding\",\n  \"method\": \"merge preserving source ancestry\",\n  \"remaining\": 16\n}\n"
+}

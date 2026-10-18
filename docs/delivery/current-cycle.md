@@ -3,69 +3,88 @@
 Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
 
 PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
-Work items: 0/1575 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2390. Unverified includes unknown and partially tested work; it does not assert code is absent.
+Work items: 0/1581 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2396. Unverified includes unknown and partially tested work; it does not assert code is absent.
 
 | Kind | Total | Done |
 | --- | ---: | ---: |
 | Epic | 8 | 0 |
 | PRD | 100 | 0 |
 | Vertical Slice | 469 | 0 |
-| Task | 490 | 0 |
-| Test | 508 | 0 |
+| Task | 493 | 0 |
+| Test | 511 | 0 |
 
-Implemented but unvalidated: 84. Blocked: 0. Known MVP-critical outstanding: 124; unclassified records: 1284. Weighted progress: not measured.
+Implemented but unvalidated: 86. Blocked: 0. Known MVP-critical outstanding: 130; unclassified records: 1284. Weighted progress: not measured.
 
 ## 1. Work completed
 
-Published/attached focused C19draft111 at frozena2bc69b6 with originalcounterexamplebaselineadbranch pushed. Sourcece15/wholeLinuxdefaultmax100/372source pass, native37actual644/frontende14 and29capture review retained.
-Actual whole LinuxAPI644 nowcomplete1429pass/0fail/2existingcapacityskips(1431total),1h32m46.327s; allrestore/build/Domain/APIexits0. No source/result relabel.
-Actual controlledred9at42:5unchangedoriginalfocuscontrols pass,4newlower/upper/clientborder/nestedverticalguards fail56.27s onunchangedoldhelper. Actualoriginalbaseline4/1andplannedrepair13/4collections valid.
-OldUI whole List4 reproduced3pass/1fail at42, tablet200%text local44px clip. Same9helper guards unchanged now all pass5.32s at8272, original5 preserved. Source change committed separately from ledger.
-Actual exact8272 native13pass/0fail/0skip/zero retries8.8min, unchanged original4files. Both fixturefailures retained separately. Four actual viewport returns manually inspected andhashed. Types/browsertypes/lint/defaultbuild/source372/registries/history pass.
+PR96actuallymergedtomainbe0ac15e afterall22checksPassed includingrequiredCI/releasebundle/fourbrowser shards/security/CodeQL/Postgres. Exactoriginalhead16bf retained, nooutstandingreviews/threads.
+All17originalPRheads retainedasGitancestors ofisolatedcurrent401candidate, includingseparatePR95fieldrecovery/PR100Workexperience pluslatest111deadlockand8272verticalfocusrepairs.
+ResolvedtwoPR95reportconflicts and19PR100conflictsacross12files, preservingcurrentactor/form-entry/originalreceipt/refusal/disclosure/focuscontracts andbothhistoricalreportrecords.
+NewboundedPR100guardcounterexamplesactualde580produce2fail/2pass,28.33s. Sameunchanged4 at8a4pass17.97s aftercleanackreleaseandgenericvisibleconfirmationfix; definitivewithdrawalcontrolstayspassing.
+C20metadata1e5merged:actual8272native13/8.8min/0retries/0skip; unit9/build/types/lint/source372pass/fourviewportreviews, first11pass/2fixturefail andoldbaseline3pass/1clipfail retained.
+Initialcombined8files171cases164pass/7unchanged5-secondtimeouts retained. EntireoriginalBoard40isolatedpasses0eb133.38s, exactsameapp/Boardfixtures; no deadlinechanges.401webtypesnewcallbacknevererrorsfixedonlywithexplicitvoidannotationsat0eb.
+Current0ebwebtypespassafterexplicitfixturecallbacktypes. Actualcritical26at0eb25pass/1ownedListrefusalfocusfail83.01s; sameunchanged26after10cffminimumphasefixallpass59.59s. All26originalactor/key/body/denial/independent-navigation/focusassertions retained.
+Remaining16PRreviews/threadsallzero; no formalhumanapprovalclaimed. PR95/100nowattached. Original17heads/sourcehistoriesremainpreserved.
+Actualentire10cfffrontendpassed2900/0fail/24originalcapacitydeferrals(2924total),204files+1deferred,1201.04s, normalisolation/maxWorkers2. Thisprecedeslast3admissioncases/fix; currentfullCIpending.
+Actualadmissionredf28:12pass/1modalkeyboardfail18.33s, partial152same12/1retained17.64s, diagnostic8692/1identifiespresentationwrapper. Final086all13pass17.75s withactualSurfaceAdmission/sessionwithdrawal/approvedCardreturnandlabelledmodalfocus; originalassertionconditionsunchanged.
+Current086all39consumercontrols/ninewholefilespass111.80s, web/browsertypes/lint/default+rollbackbuildall0; source372pass79.495061s/0skip andcurrentcompletecoverage/historyregistriespass. T02bothscopedcriteriaVerified/TaskReview/TestReview.
+All17originalheads/16distinctheadcommits andactualmainbe0 verifiedancestors, prior111descriptionarchivedbeforeconsolidation. Original implementation, failures and historical identities preserved.
 
 ## 2. Implemented, awaiting validation
 
-PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-01-VS-04-T-02, PRD-01-VS-04-T-02-TEST-01, PRD-01-VS-04-T-02-TEST-02, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-01-VS-04-T-03, PRD-01-VS-04-T-03-TEST-01, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02
+PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-25-VS-03, PRD-25-VS-03-T-01, PRD-25-VS-03-T-01-TEST-01, PRD-25-VS-03-T-02, PRD-25-VS-03-T-02-TEST-01, PRD-25-VS-03-T-03, PRD-25-VS-03-T-03-TEST-01, PRD-01-VS-04, PRD-01-VS-04-T-01, PRD-01-VS-04-T-01-TEST-01, PRD-01-VS-04-T-01-TEST-02, PRD-25-VS-03-T-04, PRD-25-VS-03-T-04-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-01-T-04, PRD-04-VS-01-T-04-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-04-VS-05-T-02, PRD-04-VS-05-T-02-TEST-01, PRD-04-VS-05-T-02-TEST-02, PRD-08-VS-04, PRD-08-VS-04-T-01, PRD-08-VS-04-T-01-TEST-01, PRD-08-VS-04-T-01-TEST-02, PRD-08-VS-04-T-01-TEST-03, PRD-08-VS-04-T-02, PRD-08-VS-04-T-02-TEST-01, PRD-08-VS-04-T-02-TEST-02, PRD-07-VS-01-T-01-TEST-02, PRD-07-VS-05, PRD-07-VS-05-T-01, PRD-07-VS-05-T-01-TEST-01, PRD-07-VS-05-T-01-TEST-02, PRD-07-VS-05-T-01-TEST-03, PRD-07-VS-05-T-02, PRD-07-VS-05-T-02-TEST-01, PRD-04-VS-05-T-03, PRD-04-VS-05-T-03-TEST-01, PRD-04-VS-05-T-03-TEST-02, PRD-07-VS-05-T-03, PRD-07-VS-05-T-03-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-01-VS-04-T-02, PRD-01-VS-04-T-02-TEST-01, PRD-01-VS-04-T-02-TEST-02, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-01-VS-04-T-03, PRD-01-VS-04-T-03-TEST-01, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01
 
 ## 3. Current work in progress
 
-TaskT03Testing withAC01/02Verified, both supportingTestsReview. AC03Unverified: standaloneC20wholefrontend notrun; user nowrequests combining all17PRs, current combined-source full regression/release/main must pass.
-PR96actuallymergedbe0ac15e after22/22checks. Separate integrationcheckoutwork/merge17-main preservesall17 originalheads, pending combined validation; allparents/MVPstillopen.
+T03combinedqualificationInProgress/TestInProgress; T04actualmainmergeReady. Currentwholehostedfrontend/native29/fallback8/finalmainintegrationNotRun.
+Only96merged. Current111stilloriginalP/Draft/base110 pendingnormalfast-forward publication; allotheroriginalheadsunmoved.
 
 ## 4. Blockers and dependencies
 
-C19mainrelease/integration stillpending; no parent/MVPDone. Independent originaltablet44pxverticalCardclip confirmedinCI andrequireslocalcounterexample/fix.
+Remaining16PRshave historicalfailedormissingrequiredCI andmustnotbe mergedwithoutcurrentcombinedqualification. Existingoperator/provider/deploymentMVPacceptance remainsseparate.
 
 ## 5. Next highest-priority deliverable
 
-Merge this metadata-only C20checkpoint into isolatedmerge17-main. Continue user-requested17PRintegration using current combinedUI regression/types/lint/build/real native and exact hosted mandatory/release checks. Preserve all17originalheads and failed histories; fast-forward PR111asoneintegrationowner onlyafter coherent local source, retargetmain/rewritefinalscope, mergeexpectedheadonlyafterpassinggates. Do not relabel8272native orolderAPI644 executions as newcombinedsource.
+Runfinalcurrentledger/history+35delivery tests after thisevidence/stateupdate, strictstagedhash/whitespaceaudit, commitonlymetadata/.gitattributes whilecomplete086app/test/buildinputs remainequal. Freshread111headmuststillPa2bc69b6; retargetbase_branch main BEFOREnormalfast-forwardpushcombinedcheckpointtoexisting111branch totriggerpull_request:synchronize. Rewrite111title/bodytofinal17PRscope withactualsourcecountsandpendingcurrentglobalCI. Recordreturnedhead/syntheticmerge/checks, keepDraft untilallcurrentmandatory/releasechecks pass. Concurrent independentlocalbrowserqualification: collectwhole29/8atnewpublishedhead, startnewidentifieddefaultpreview15187 andbounded55Worker/controller; core19real+controlled8, swaprollback8repeats, restoredefault/stopcontroller, originalchecklist2usingdistinctlocalcomposeproject/CIguardedfixtures. Onlyafterexactcurrentgatesandfreshmain/reviewstate mergeexpectedheadandverifyall17actualmergedstates/ancestry; no parentMVPDone.
 
 ## 6. PRD progress changes
 
-Add PRD09VS01T03 and2childTests with5measurablechildcriteria; preserveoriginalidentifiers/history/implementedT02Review andallcanonicalobligations.
-C19TaskTesting→Review afteractualfullAPIcompletion; itsAC03 remainsunverifiedforcurrentrelease/mainvalidation, no parentDone or runtime/source relabel. FrozenPR111headunchanged; laterproofappendinthiscycle.
+AddthreefocusedintegrationtasksandthreetestchildrenunderexistingPRD25VS02; preserveallhistoricalwork/identifiers/criteria. C20TaskTestingAC01/02VerifiedAC03Unverified andbothTestReview; no parentDone.
+PRD25VS02T02scopedAC01/02andTestTRACEVerified at086;Task/TestReview, noDone. T03qualificationTask/TestReady→InProgress; currentwholehosted/native qualificationandT04mainmerge outstanding.
 
 ## 7. Completion evidence
 
-EVID-CYCLE-19-LINUX-API-FULL
-EVID-CYCLE-19-DRAFT-PUBLICATION
-EVID-CYCLE-20-ENTRY
-EVID-CYCLE-20-FOCUS-RED-9
-EVID-CYCLE-20-BASELINE-COLLECTION
-EVID-CYCLE-20-REPAIR-COLLECTION
-EVID-CYCLE-20-BASELINE-RUNTIME
-EVID-CYCLE-20-NATIVE-BASELINE-4
-EVID-CYCLE-20-FOCUS-GREEN-9
-EVID-CYCLE-20-NATIVE-FIRST-REPAIR
-EVID-CYCLE-20-NATIVE-GREEN-13
-EVID-CYCLE-20-NATIVE-GREEN-RUNTIME
-EVID-CYCLE-20-WEB-QUALITY
-EVID-CYCLE-20-SOURCE-372
-EVID-CYCLE-20-BROWSER-REGISTRY
-EVID-CYCLE-20-INTEGRATION-REGISTRY
-EVID-CYCLE-20-LEDGER-CURRENT
-EVID-CYCLE-20-INTERIM-TRACKING-FAILURE
-EVID-CYCLE-20-VISUAL-4
+EVID-CYCLE-21-PR-INVENTORY
+EVID-CYCLE-21-PR96-MERGED
+EVID-CYCLE-21-PR95-REPORT-MERGE
+EVID-CYCLE-21-PR100-CONFLICT-MERGE
+EVID-CYCLE-21-DRAFT-GUARD-RED
+EVID-CYCLE-21-DRAFT-GUARD-GREEN
+EVID-CYCLE-21-INITIAL-TYPES-FAILURE
+EVID-CYCLE-21-AFFECTED-FIRST
+EVID-CYCLE-21-FIXTURE-TYPE-FAILURE
+EVID-CYCLE-21-BOARD-ISOLATED-40
+EVID-CYCLE-21-ACTOR-FOCUS-RED-26
+EVID-CYCLE-21-ACTOR-FOCUS-GREEN-26
+EVID-CYCLE-21-REVIEW-THREAD-AUDIT
+EVID-CYCLE-21-FULL-2900-PRIOR
+EVID-CYCLE-21-ADMISSION-RED-13
+EVID-CYCLE-21-ADMISSION-PARTIAL-13
+EVID-CYCLE-21-ADMISSION-ACTIVE-FOCUS
+EVID-CYCLE-21-ADMISSION-EXTERNAL-SETUP
+EVID-CYCLE-21-ADMISSION-GREEN-13
+EVID-CYCLE-21-NATIVE-SUPPORT-PREPARED
+EVID-CYCLE-21-FRESH-PR-HEADS
+EVID-CYCLE-21-FINAL-CONSUMER-39
+EVID-CYCLE-21-WEB-QUALITY-CURRENT
+EVID-CYCLE-21-BUILD-DEFAULT
+EVID-CYCLE-21-BUILD-ROLLBACK
+EVID-CYCLE-21-SOURCE-372-CURRENT
+EVID-CYCLE-21-BROWSER-REGISTRY-CURRENT
+EVID-CYCLE-21-INTEGRATION-REGISTRY-CURRENT
+EVID-CYCLE-21-LEDGER-CURRENT
+EVID-CYCLE-21-RECONCILIATION-CURRENT
+EVID-CYCLE-21-PR111-DESCRIPTION-HISTORY
 
 ## Recent verified completed increments
 

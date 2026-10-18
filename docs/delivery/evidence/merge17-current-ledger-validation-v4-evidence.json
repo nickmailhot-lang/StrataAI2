@@ -1,0 +1,7 @@
+{
+  "revision": "086735b9eb39ba4e2c4198d522b51918b31bcabc",
+  "rawArtifact": "merge17-current-ledger-validation-v4.txt",
+  "rawSha256": "1511e4243218f7f33059698a89b1a9d6b8106178eda0121d90c0a6e368b8d97e",
+  "scope": "Current exact086 registry/history validation;479browsercases169intactfiles/fourshards or4integrationgroups/7executions/130steps or1581items3872criteria. Actual artifact specifies scope; registration is not wholeexecution.",
+  "rawUtf8Text": "Valid: 1581 work items; 3872 criteria. No unsupported Done claims.\r\n"
+}

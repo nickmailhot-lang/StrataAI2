@@ -1,0 +1,7 @@
+{
+  "revision": "086735b9eb39ba4e2c4198d522b51918b31bcabc",
+  "rawArtifact": "merge17-current-browser-registry-v4.txt",
+  "rawSha256": "4f925e687d81f8df7ed5320837407a2809e1fe7a4490b1e74e3c9762226301de",
+  "scope": "Current exact086 registry/history validation;479browsercases169intactfiles/fourshards or4integrationgroups/7executions/130steps or1581items3872criteria. Actual artifact specifies scope; registration is not wholeexecution.",
+  "rawUtf8Text": "Browser shard coverage: 479 cases in 169 intact files; 121/120/123/115 cases across all four shards.\r\n"
+}
