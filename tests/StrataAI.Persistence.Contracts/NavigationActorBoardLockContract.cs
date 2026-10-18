@@ -25,18 +25,18 @@ internal static class NavigationActorBoardLockContract
     public static async Task RunAsync(NpgsqlConnection admin, string apiConnection, CancellationToken ct)
     {
         var failures = new List<string>();
-        foreach (var (direct, twoProfiles, pauseActor) in new[] {
+        foreach (var (direct, twoProfiles, checkOrder) in new[] {
             (false, false, false), (true, false, false),
-            (false, true, false), (true, true, false), (false, true, true) })
+            (false, true, false), (true, true, false), (false, false, true), (true, false, true) })
         {
-            var mode = (direct ? "restricted-function" : "owning-adapter") + (twoProfiles ? "/two-profiles" : "/single-profile") + (pauseActor ? "/account-held" : "/parent-held");
-            try { await RunCase(admin, apiConnection, direct, twoProfiles, pauseActor, ct); Console.WriteLine($"PASS navigation/account/Board lock order: {mode}."); }
+            var mode = (direct ? "restricted-function" : "owning-adapter") + (twoProfiles ? "/two-profiles" : "/single-profile") + (checkOrder ? "/parent-before-account" : "/parent-held");
+            try { await RunCase(admin, apiConnection, direct, twoProfiles, checkOrder, ct); Console.WriteLine($"PASS navigation/account/Board lock order: {mode}."); }
             catch (InvalidOperationException error) { failures.Add(mode); Console.WriteLine($"FAIL navigation/account/Board lock order: {mode}: {error.Message}"); }
         }
-        Require(failures.Count == 0, $"Navigation/account/Board admission failed in {failures.Count}/5 controlled modes: {string.Join(", ", failures)}.");
+        Require(failures.Count == 0, $"Navigation/account/Board admission failed in {failures.Count}/6 controlled modes: {string.Join(", ", failures)}.");
     }
 
-    private static async Task RunCase(NpgsqlConnection admin, string apiConnection, bool direct, bool twoProfiles, bool pauseActor, CancellationToken ct)
+    private static async Task RunCase(NpgsqlConnection admin, string apiConnection, bool direct, bool twoProfiles, bool checkOrder, CancellationToken ct)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct); deadline.CancelAfter(TimeSpan.FromSeconds(30));
         var token = deadline.Token;
@@ -70,9 +70,8 @@ internal static class NavigationActorBoardLockContract
         var names = new[] { $"nav-lock-work-{actor:N}", $"nav-lock-observation-{actor:N}", $"nav-lock-profile-{actor:N}", $"nav-lock-peer-profile-{actor:N}" };
         var context = new Context(actor, sessionHash);
         var logs = new DatabaseCodes();
-        var pause = pauseActor ? new ActorPause() : null;
         await using var workProvider = Provider(apiConnection, names[0], context, logs);
-        await using var observationProvider = Provider(apiConnection, names[1], context, logs, pause);
+        await using var observationProvider = Provider(apiConnection, names[1], context, logs);
         await using var profileProvider = Provider(apiConnection, names[2], context, logs);
         await using var peerProfileProvider = Provider(apiConnection, names[3], context, logs);
         var work = workProvider.GetRequiredService<IWorkManagementService>();
@@ -80,9 +79,8 @@ internal static class NavigationActorBoardLockContract
         var profile = profileProvider.GetRequiredService<IIdentityService>();
         var peerProfile = peerProfileProvider.GetRequiredService<IIdentityService>();
         await using var gate = await admin.BeginTransactionAsync(token);
-        if (!pauseActor)
+        await using (var held = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@organization AND id=@board FOR UPDATE;", admin, gate))
         {
-            await using var held = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@organization AND id=@board FOR UPDATE;", admin, gate);
             held.Parameters.AddWithValue("organization", organization); held.Parameters.AddWithValue("board", board);
             Require(await held.ExecuteScalarAsync(token) is Guid, "Controlled Board gate missing.");
         }
@@ -94,24 +92,19 @@ internal static class NavigationActorBoardLockContract
         var released = false;
         try
         {
-            if (pause is not null)
-            {
-                observed = Task.Run(() => Observe(), token); running.Add(observed);
-                await pause.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10), token);
-                admitted = Task.Run(() => profile.ReadProfileAsync(actor, token), token); running.Add(admitted);
-                await Waiting(names[2], admitted);
-                peerAdmitted = Task.Run(() => peerProfile.ReadProfileAsync(actor, token), token); running.Add(peerAdmitted);
-                await Waiting(names[3], peerAdmitted);
-                read = Task.Run(() => work.GetBoardAsync(board, actor, token), token); running.Add(read);
-                await Waiting(names[0], read);
-                pause.Resume.TrySetResult(true);
-            }
-            else
-            {
                 read = Task.Run(() => work.GetBoardAsync(board, actor, token), token); running.Add(read);
                 await Waiting(names[0], read);
                 observed = Task.Run(() => Observe(), token); running.Add(observed);
                 await Waiting(names[1], observed);
+                if (checkOrder)
+                {
+                    // Probe the actual restricted account row with NOWAIT.
+                    // A Board-bound observation must wait for its parent before
+                    // retaining account admission. No business write is made.
+                    var available = await AccountAdmissionAvailable();
+                    Console.WriteLine($"Parent-before-account probe: direct={direct}; accountAvailable={available}.");
+                    Require(available, "Board-waiting navigation acquired the account gate before the parent; actual lock-order inversion remains.");
+                }
                 admitted = Task.Run(() => profile.ReadProfileAsync(actor, token), token); running.Add(admitted);
                 await Waiting(names[2], admitted, allowCompleted: true);
                 if (twoProfiles)
@@ -119,7 +112,6 @@ internal static class NavigationActorBoardLockContract
                     peerAdmitted = Task.Run(() => peerProfile.ReadProfileAsync(actor, token), token); running.Add(peerAdmitted);
                     await Waiting(names[3], peerAdmitted, allowCompleted: true);
                 }
-            }
             await gate.CommitAsync(token); released = true;
             await Task.WhenAll(running).WaitAsync(TimeSpan.FromSeconds(15), token);
             var result = await read; var eventResult = await observed; var accountResult = await admitted;
@@ -143,13 +135,22 @@ internal static class NavigationActorBoardLockContract
         }
         finally
         {
-            pause?.Resume.TrySetResult(true);
             if (!released) await gate.RollbackAsync(CancellationToken.None);
             if (running.Count > 0)
             {
                 try { await Task.WhenAll(running).WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None); }
                 catch { deadline.Cancel(); }
             }
+        }
+
+        async Task<bool> AccountAdmissionAvailable()
+        {
+            await using var connection = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(apiConnection) { ApplicationName = $"nav-lock-order-probe-{actor:N}" }.ConnectionString);
+            await connection.OpenAsync(token); await using var transaction = await connection.BeginTransactionAsync(token);
+            await using var probe = new NpgsqlCommand("SELECT id FROM users WHERE id=@actor AND status='ACTIVE' FOR UPDATE NOWAIT;", connection, transaction);
+            probe.Parameters.AddWithValue("actor", actor);
+            try { return await probe.ExecuteScalarAsync(token) is Guid; }
+            catch (PostgresException error) when (error.SqlState == "55P03") { return false; }
         }
 
         async Task<IdentityOperation<NavigationInteractionEvent>> Observe()
@@ -228,14 +229,13 @@ internal static class NavigationActorBoardLockContract
         }
     }
 
-    private static ServiceProvider Provider(string connection, string name, Context context, DatabaseCodes logs, ActorPause? pause = null)
+    private static ServiceProvider Provider(string connection, string name, Context context, DatabaseCodes logs)
     {
         var services = new ServiceCollection(); services.AddLogging(builder => builder.AddProvider(logs));
         services.AddSingleton(new PostgresConnectionFactory(new NpgsqlConnectionStringBuilder(connection) { ApplicationName = name }.ConnectionString));
         services.AddSingleton<IClock, SystemClock>(); services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
         services.AddSingleton<ICommandActorContext>(context); services.AddSingleton<IIdentityCommandContext>(context); services.AddSingleton<IWorkCommandContext>(context);
-        services.AddSingleton<CommandActorAuthorization>();
-        services.AddSingleton<ICommandActorAuthorization>(provider => pause is null ? provider.GetRequiredService<CommandActorAuthorization>() : new PausedAuthorization(provider.GetRequiredService<CommandActorAuthorization>(), pause));
+        services.AddSingleton<ICommandActorAuthorization, CommandActorAuthorization>();
         services.AddSingleton<PostgresBackgroundJobStore>();
         services.AddSingleton<IBackgroundJobStore>(provider => provider.GetRequiredService<PostgresBackgroundJobStore>());
         var runtime = new RuntimeDescriptor(RuntimeMode.Production, "contract", "contract");
@@ -253,24 +253,6 @@ internal static class NavigationActorBoardLockContract
         public string? SessionTokenHash => hash;
         public string? RevocationSessionTokenHash => hash;
         public Guid? IdempotencyKey => null;
-    }
-    private sealed class ActorPause
-    {
-        public TaskCompletionSource<bool> Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        public TaskCompletionSource<bool> Resume { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    }
-    // Only scheduling is controlled: every account/session check delegates to
-    // the actual production authorization adapter with its restricted queries.
-    private sealed class PausedAuthorization(CommandActorAuthorization actual, ActorPause pause) : ICommandActorAuthorization
-    {
-        private int paused;
-        public async Task<bool> VerifyAsync(Guid actor, CancellationToken ct = default)
-        {
-            var result = await actual.VerifyAsync(actor, ct);
-            if (result && Interlocked.Exchange(ref paused, 1) == 0)
-            { pause.Entered.TrySetResult(true); await pause.Resume.Task.WaitAsync(ct); }
-            return result;
-        }
     }
     private sealed class DatabaseCodes : ILoggerProvider
     {
