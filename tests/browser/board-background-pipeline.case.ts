@@ -251,7 +251,7 @@ for (const width of [1280, 390]) {
     await page.getByRole('button', { name: 'Refresh board', exact: true }).click();
     await expect.poll(closedDetailReads).toBeGreaterThanOrEqual(1);
     await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
-    const copy = page.getByRole('button', { name: 'Copy Board', exact: true });
+    const copy = await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Copy Board', exact: true });
     await openAdmittedReview(copy, page.getByRole('dialog', { name: 'Copy Board', exact: true }));
     await expect(page.getByRole('dialog', { name: 'Copy Board', exact: true })).toBeVisible();
     let copyWrites = 0;
@@ -291,7 +291,7 @@ for (const width of [1280, 390]) {
     const freshReads = trackBoardReads(page, target, copiedPath);
     await page.reload(); await expect.poll(freshReads).toBeGreaterThanOrEqual(2);
     await expect.poll(() => copiedImage.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
-    await expect(page.getByRole('button', { name: 'Copy Board', exact: true })).toBeEnabled();
+    await expect(await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Copy Board', exact: true })).toBeEnabled();
     const retained = await context.request.get(`/boards/${target}`);
     expect(retained.status()).toBe(200);
     expect((await retained.json()).board).toMatchObject({ version: 1, backgroundType: 'IMAGE', backgroundValue: copied.backgroundValue });
