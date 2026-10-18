@@ -232,7 +232,7 @@ internal static class NavigationActorBoardLockContract
     internal static ServiceProvider Provider(string connection, string name, Context context, DatabaseCodes logs)
     {
         var services = new ServiceCollection(); services.AddLogging(builder => builder.AddProvider(logs));
-        services.AddSingleton(new PostgresConnectionFactory(new NpgsqlConnectionStringBuilder(connection) { ApplicationName = name }.ConnectionString));
+        services.AddSingleton(_ => new PostgresConnectionFactory(new NpgsqlConnectionStringBuilder(connection) { ApplicationName = name }.ConnectionString));
         services.AddSingleton<IClock, SystemClock>(); services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
         services.AddSingleton<ICommandActorContext>(context); services.AddSingleton<IIdentityCommandContext>(context); services.AddSingleton<IWorkCommandContext>(context);
         services.AddSingleton<ICommandActorAuthorization, CommandActorAuthorization>();
