@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-19T08:21:07.642Z",
+  "result": "Failed",
+  "head": "8872ff39d00559c6db8f34a88f3e9140c290d137",
+  "synthetic": "0b170ce768c9e45abd9355cdfbe5d0ae71013d9d",
+  "run": 39204633167,
+  "job": 117917091603,
+  "wholeShard": {
+    "passed": 117,
+    "failed": 1,
+    "skipped": 2
+  },
+  "failedCase": "list-management-ux.spec.ts:7,390px: invalid-name validation alert absent at line36",
+  "artifact": {
+    "id": 12171138438,
+    "bytes": 3503529,
+    "sha256": "4919490fefdef1e15fa0aeee336fc853269f1dab34adf5611a6de5fb951eb239",
+    "digestVerified": true
+  },
+  "trace": {
+    "fillAfter": 4021861.43,
+    "actualInputValue": "   ",
+    "saveLastEnabledCheck": 4021886.187,
+    "nextBoardRead": 4021902.263,
+    "enterAction": 4021912.812,
+    "saveDisabledAtEnter": true,
+    "observedListPatchRequests": 0
+  },
+  "finding": "Actual trace/screenshot inspected. The intended whitespace remains; an authorized Board refresh disables the submit button after its enabled assertion but before Enter. The original one-keypress helper cannot establish that a native form submission occurred. No List write or validation notice follows an ignored activation.",
+  "owner": "Delivery lead",
+  "scope": "Bounded test-admission rework, not a production List behavior change. Preserve original invalid-name alert, zero HTTP writes, all4widths/200%/Axe/focus/reorder/canonical persistence checks and deadlines/retries. Never retry after a real DOMsubmit; never submit a replacement form."
+}

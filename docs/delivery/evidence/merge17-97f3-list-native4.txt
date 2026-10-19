@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:13644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 1280px (6.5s)
+  ok 2 tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 768px (5.5s)
+  ok 3 tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 390px (7.1s)
+  ok 4 tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 320px (5.7s)
+
+  4 passed (26.4s)

@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-19T08:29:47.287Z",
+  "revision": "97f3d337bd141e692a72870da99835ae974f4cf3",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "method": "Actually inspect all8 rendered native captures separately from automated Axe; validation message and controls visible at all4 widths; focus outlines on Save and returned Move visible;768uses200%text with intentional local Board canvas scrolling. No whole-app or physical-device certification.",
+  "captures": [
+    {
+      "path": "docs/delivery/evidence/list-submit-97f3-list-order-return-320.png",
+      "sha256": "820d3ddfd5a57945ef37be77249eadd04b2c70984b0cd8f8588d4be7c50ab0b2"
+    },
+    {
+      "path": "docs/delivery/evidence/list-submit-97f3-list-rename-review-320.png",
+      "sha256": "6f26506dcc43c1f9924fee8939973cee3b846f406509f505e11039758eba9687"
+    },
+    {
+      "path": "docs/delivery/evidence/list-submit-97f3-list-order-return-390.png",
+      "sha256": "0f44fdacf73cdff5fbbbe7946752e92cc3c243377ceb41bb817d283ab4abc6be"
+    },
+    {
+      "path": "docs/delivery/evidence/list-submit-97f3-list-rename-review-390.png",
+      "sha256": "01610d896421e97d6615e8f8e58e58ff08fc0696afbe8a31e1086e107e8429e1"
+    },
+    {
+      "path": "docs/delivery/evidence/list-submit-97f3-list-order-return-1280.png",
+      "sha256": "29800020f3d02666b25722a07eff26597fac5a000ecbe447477e5490518af827"
+    },
+    {
+      "path": "docs/delivery/evidence/list-submit-97f3-list-rename-review-1280.png",
+      "sha256": "514172b8b0a5c8070069760c64f44c1bbb0ff3896746f270a1733c374dee3ca6"
+    },
+    {
+      "path": "docs/delivery/evidence/list-submit-97f3-list-order-return-768.png",
+      "sha256": "f77cedd0ab24c5d9927f8d35dd07f0dd5a7b1d66ad66c141b362f14c7151c885"
+    },
+    {
+      "path": "docs/delivery/evidence/list-submit-97f3-list-rename-review-768.png",
+      "sha256": "7f87eaef8606927f3addccce82d1443b31a10ab6982408f594865b5ed0e03a61"
+    }
+  ]
+}
