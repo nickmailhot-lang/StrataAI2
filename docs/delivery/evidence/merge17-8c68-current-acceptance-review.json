@@ -1,0 +1,106 @@
+{
+  "richMetric": {
+    "requiredBudgetMs": 200,
+    "currentNativeCases": 10,
+    "currentRichControls": 18,
+    "currentReadinessControls": 87,
+    "metric": "browser-painted-rich-detail",
+    "controllerTimingRetained": true,
+    "originalSourcePreviewPollRetained": true,
+    "scope": "Same nativeclick/fixture/functional source-safety-role-live-archive-logout-Axe assertions, with full focused editable source/preview layout and nextframe stability. Current10Markdowncases actuallyPassed; preserve historic83A119/2and localdiagnostic1/1 asFailed. Local157.5/148.1paint and218.15/213.34controller values remain local; do not relabel as currentimmutable measurements.",
+    "supportingLocalReview": {
+      "at": "2026-10-19T15:26:14.636Z",
+      "result": "Passed",
+      "revision": "484e5c6391e2577e3b1974ef46fa68d30ed945fc",
+      "metrics": [
+        {
+          "fixture": {
+            "lists": 1,
+            "cards": 1,
+            "descriptionCharacters": 466,
+            "width": 1280,
+            "assets": "warm",
+            "initialAdmissionSettled": true
+          },
+          "topology": "unverified runtime",
+          "cachedDetailMs": 157.5,
+          "detailAutomationMs": 218.1523000000002,
+          "clickMs": 69.73810000000003,
+          "measurement": "browser-painted-rich-detail",
+          "readiness": "intended native click to exact focused editable title/source and full preview, stable through the following painted frame",
+          "budgetMs": 200
+        },
+        {
+          "fixture": {
+            "lists": 1,
+            "cards": 1,
+            "descriptionCharacters": 466,
+            "width": 390,
+            "assets": "warm",
+            "initialAdmissionSettled": true
+          },
+          "topology": "unverified runtime",
+          "cachedDetailMs": 148.10000002384186,
+          "detailAutomationMs": 213.33870000000024,
+          "clickMs": 72.13879999999881,
+          "measurement": "browser-painted-rich-detail",
+          "readiness": "intended native click to exact focused editable title/source and full preview, stable through the following painted frame",
+          "budgetMs": 200
+        }
+      ],
+      "runtime": {
+        "client": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+        "api": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+        "mode": "supporting mixed Demo"
+      },
+      "frontendDiff": [
+        "apps/web/src/features/kanban/BoardScreen.test.tsx"
+      ],
+      "runtimeProductCodeChanged": false,
+      "sourceRequirement": "LivePRD09issue10 andPRD25issue26 retain cachedCardopening<200ms; existing canonical browserpaint contract in docs/kanban-performance.md: nativeintendedclick through focused editable visible stablepaint. Original controller metric retained separately; historical controller failures remain Failed.",
+      "method": "Extend canonical shared browser observer with exact full editable source and rendered Markdown heading/layout requirements; preserve title identity/focus/viewport/hidden/inert/disabled criteria and recheck all rich readiness after the following frame. Keep original single-browser source/preview poll and all original functional assertions. One original click starts one interval; no reset/resample/budget/retry/deadline changes.",
+      "scope": "Actual whole10local native and18controls/typecheck pass at484e, browserpaint157.5/148.1000ms vs controller218.1523/213.3387ms, separately labeled. Both prior actual CI failure screenshots inspected; unchanged UI/source-equivalent supporting captures do not certify new release images or wholeMVP. Fresh all22 and actualmain integration mandatory."
+    }
+  },
+  "at": "2026-10-19T19:33:13.642Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "merge": "677a0a7d7a3cd186d1b7a67d286119fcc12ba925",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "items": [
+    "PRD-08-VS-04",
+    "PRD-08-VS-04-T-01",
+    "PRD-08-VS-04-T-01-TEST-01",
+    "PRD-08-VS-04-T-01-TEST-02",
+    "PRD-08-VS-04-T-01-TEST-03",
+    "PRD-08-VS-04-T-02",
+    "PRD-08-VS-04-T-02-TEST-01",
+    "PRD-08-VS-04-T-02-TEST-02",
+    "PRD-25-VS-02-T-07",
+    "PRD-25-VS-02-T-07-TEST-01",
+    "PRD-25-VS-02-T-08",
+    "PRD-25-VS-02-T-08-TEST-01",
+    "PRD-25-VS-02-T-09",
+    "PRD-25-VS-02-T-09-TEST-01"
+  ],
+  "premergeReview": {
+    "at": "2026-10-19T19:27:37.876Z",
+    "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "mainBefore": "596f4ccb080dcc0fdf316649eb90a174d6de94b9",
+    "qualifiedSynthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedTree": "8db2c813a317b547d55ff5e2b9fac76f3c6544ac",
+    "refreshedMergeTreeIdentical": true,
+    "heldSourcesExcluded": true,
+    "blockingReview": false,
+    "unresolvedThreads": [],
+    "providerReviewSubmissions": 0,
+    "providerThreads": 0,
+    "reviewer": "Codex acting as assigned delivery lead",
+    "sourceReview": "The owning-dialog focus boundary is captured before await within the original guarded definitive-refusal path. Actor/epoch/original key-body/privacy/permission/independent navigation checks remain. Native validation admission observes original submit or actual HTTP initiation, stops on the first admission and preserves all outcome/mutation assertions. The rich-detail observer requires complete source/preview plus focused visible enabled title and stable following paint at the same 200ms limit; original controller measurements and failures remain separately identified. All current22 checks and exact original native/API/control scenarios passed. No actionable issue found in the scoped change.",
+    "scope": "Responsible agent source review plus fresh actual provider metadata. No human approval invented; actual integration is still required."
+  },
+  "criteria": "Current original-account admission/legacy compatibility/replacement refusal; identical original retry key/body recovers exactlyonecanonicalCard; bounded actor confirmation and definitiveprivacywithdrawal;4widths/200%reload/canonicalreturn/keyboard/Axe; generic refusal focus belowheader. Native localvalidation observes originalform submit once, retries only0events and rejects retirement/duplication while preserving all caller predicates. Current full4 controlledform4 proves whitespace/HTTP400/error descriptions/preserved description/Savednotice/ariafalse/exact0→1→2PATCH/deniedwithdrawal at4widths/200%text/geometry/Axe. Current full3 real-serviceOrganizationSettings2 retains actual authorization/persistence/lost-acknowledgment recovery; controlled HTTP mocks do not replace it.",
+  "sourceReview": "Runtime change is captured owning-dialog boundary in existing guarded definitive-refusal path. Original epoch, actor, key/body, permission and independent navigation guards retained. Native-submit helper is test-only; valid writes retain HTTP observers. Rich cached-detail observer now measures canonical native-click to complete stable paint while retaining original controller timing separately. No application/private-data cache change or performance threshold relaxation; original default9 and addedrich9 controls pass, all10currentMarkdowncasesPassed. No actionable issue after current review/all22gates/actualintegration.",
+  "retainedFailures": "Original QDemo5/1, red3/green7 then10, earlierlocalWindowsBoardScreen timeouts, wholelocalMarkdown8/2ownerbudgets, hosted832Markdown120/1, hosted8872List117/1/2, initial54/1listenercleanup, old000bfull4 114/1controlled-form admission failure, old83Afull1 119/2controller timing failure and private mixedDemo diagnostic1/1, and mixed-source/opaque-row auxiliary proof refusals remain immutable. Current fullyqualified immutable source resolves scoped failures without retries/skips/timeouts/budget waivers.",
+  "uxApplicability": "Scoped current native UX and separately identified actually inspected source-equivalent captures; no wholeMVP/parentPRD/fullphysical-device certification."
+}

@@ -1,0 +1,189 @@
+{
+  "headRevision": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "hasMore": false,
+  "observedAt": "2026-10-19 19:24:41 UTC",
+  "checks": [
+    {
+      "id": 118255357584,
+      "name": "release-bundle",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118255357584"
+    },
+    {
+      "id": 118255320923,
+      "name": "required-ci",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118255320923"
+    },
+    {
+      "id": 118168916119,
+      "name": "container-integration (browser-full, 1/4)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118168916119"
+    },
+    {
+      "id": 118168915364,
+      "name": "container-integration (browser-notifications, 1/1)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118168915364"
+    },
+    {
+      "id": 118168915304,
+      "name": "container-integration (browser-foundation, 1/1)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118168915304"
+    },
+    {
+      "id": 118168915271,
+      "name": "container-integration (commands, 1/1)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118168915271"
+    },
+    {
+      "id": 118168915265,
+      "name": "container-integration (browser-full, 2/4)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118168915265"
+    },
+    {
+      "id": 118168915213,
+      "name": "container-integration (browser-full, 4/4)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118168915213"
+    },
+    {
+      "id": 118168915171,
+      "name": "container-integration (browser-full, 3/4)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118168915171"
+    },
+    {
+      "id": 118168915161,
+      "name": "security",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118168915161"
+    },
+    {
+      "id": 118167483628,
+      "name": "build-images-once",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118167483628"
+    },
+    {
+      "id": 118167448935,
+      "name": "source-quality-gate",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118167448935"
+    },
+    {
+      "id": 118150879909,
+      "name": "postgres-integration",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118150879909"
+    },
+    {
+      "id": 118150879880,
+      "name": "dotnet-quality",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118150879880"
+    },
+    {
+      "id": 118150879859,
+      "name": "web-quality",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118150879859"
+    },
+    {
+      "id": 118150789658,
+      "name": "metadata",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332124/job/118150789658"
+    },
+    {
+      "id": 118150741915,
+      "name": "CodeQL",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/118150741915"
+    },
+    {
+      "id": 118150529623,
+      "name": "Analyze (javascript-typescript)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332867/job/118150529623"
+    },
+    {
+      "id": 118150529494,
+      "name": "Analyze (python)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332867/job/118150529494"
+    },
+    {
+      "id": 118150529477,
+      "name": "Analyze (c-cpp)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332867/job/118150529477"
+    },
+    {
+      "id": 118150529450,
+      "name": "Analyze (csharp)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332867/job/118150529450"
+    },
+    {
+      "id": 118150529235,
+      "name": "Analyze (actions)",
+      "head_sha": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39279332867/job/118150529235"
+    }
+  ],
+  "statuses": [],
+  "provenance": {
+    "discovery": "Complete root exact-head discovery plus complete CI39279332124 and CodeQL39279332867 job collections.",
+    "verification": "Each actual check read individually by checkRunId at the same exact head; all mandatory names and every additionally reported check/status succeeded. Stale overview conclusions do not substitute for direct check results.",
+    "privacy": "Check metadata retained; full job logs, temporary download URLs and untrusted output text excluded from this public qualification manifest."
+  }
+}

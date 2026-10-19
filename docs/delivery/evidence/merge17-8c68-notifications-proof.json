@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-19T18:05:04.791Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "synthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "run": 39279332124,
+  "job": 118168915364,
+  "result": "Passed",
+  "passed": 93,
+  "executedScopeCounts": [
+    4,
+    2,
+    2,
+    6,
+    44,
+    14,
+    7,
+    9,
+    5
+  ],
+  "records": [
+    "2026-10-19T16:53:35.5273522Z   4 passed (3.2m)",
+    "2026-10-19T16:55:55.8036443Z   2 passed (2.2m)",
+    "2026-10-19T17:00:07.1649941Z   2 passed (4.2m)",
+    "2026-10-19T17:02:54.9644535Z   6 passed (2.8m)",
+    "2026-10-19T17:34:05.2676330Z   44 passed (31.2m)",
+    "2026-10-19T17:42:35.2405825Z   14 passed (8.5m)",
+    "2026-10-19T17:51:04.5232753Z   7 passed (8.5m)",
+    "2026-10-19T18:00:19.1941247Z   9 passed (9.2m)",
+    "2026-10-19T18:04:26.5644652Z   5 passed (4.0m)"
+  ],
+  "mailCases": [
+    "2026-10-19T16:54:50.1732891Z   ✓  1 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 1280px (1.1m)",
+    "2026-10-19T16:55:55.7113951Z   ✓  2 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 390px (1.1m)"
+  ],
+  "scope": "Actual completed exact8c68 job, authenticated provider log and complete step list. Original profile skips retained; no prior-source pass inherited. Main integration and remaining required checks remain separate."
+}

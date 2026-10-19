@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-19T17:03:37.037Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "synthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "run": 39279332124,
+  "job": 118168915304,
+  "result": "Passed",
+  "passed": 50,
+  "executedScopeCounts": [
+    28,
+    2,
+    2,
+    18
+  ],
+  "records": [
+    "2026-10-19T16:47:03.0861017Z   28 passed (14.7m)",
+    "2026-10-19T16:50:03.8961321Z   2 passed (3.0m)",
+    "2026-10-19T16:51:45.4707116Z   2 passed (1.3m)",
+    "2026-10-19T17:02:23.1250327Z   18 passed (10.6m)"
+  ],
+  "scope": "Actual completed exact8c68 job, authenticated provider log and complete step list. Original profile skips retained; no prior-source pass inherited. Main integration and remaining required checks remain separate."
+}

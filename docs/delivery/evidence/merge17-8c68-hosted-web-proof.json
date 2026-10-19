@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-19T16:14:55.852Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "synthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "run": 39279332124,
+  "job": 118150879859,
+  "result": "Passed",
+  "records": [
+    "2026-10-19T15:42:06.6312653Z  ✓ src/features/kanban/BoardScreen.test.tsx (40 tests) 26585ms",
+    "2026-10-19T15:44:25.0837163Z  ✓ src/features/kanban/CardCreationActor.test.tsx (7 tests) 2309ms",
+    "2026-10-19T15:45:16.5560829Z  ✓ src/features/kanban/CardCreationRefusalFocus.test.tsx (3 tests) 1404ms",
+    "2026-10-19T15:45:28.3331578Z  Test Files  207 passed | 1 skipped (208)",
+    "2026-10-19T15:45:28.3346356Z       Tests  2911 passed | 24 skipped (2935)",
+    "2026-10-19T15:45:41.3417260Z ✓ built in 1.36s"
+  ],
+  "scope": "Actual completed exact8c68 job, authenticated provider log and complete step list. Original profile skips retained; no prior-source pass inherited. Main integration and remaining required checks remain separate."
+}

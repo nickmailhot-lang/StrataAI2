@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-19 12:57:44 UTC",
+  "head": "84a18ec7efaf4f05f2f4db89362fc4ee0972638a",
+  "job": 118067043793,
+  "result": "Refused",
+  "scope": "Auxiliary proof parser, not CI/test failure",
+  "initialAssumption": "First seven Node pass summaries were browser readiness groups.",
+  "observed": [
+    289,
+    79,
+    20,
+    29,
+    8,
+    18,
+    57
+  ],
+  "expected": [
+    8,
+    25,
+    4,
+    8,
+    2,
+    22,
+    9
+  ],
+  "correction": "Readiness step has an explicit GitHub log group boundary. Select only that complete step, then require all seven exact group counts and zero fail/skips. Earlier Node integration/shard coverage summaries remain distinct. No test/producer/check changed."
+}

@@ -1,0 +1,87 @@
+{
+  "at": "2026-10-19T16:14:55.852Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "synthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "run": 39279332124,
+  "job": 118150879859,
+  "result": "Passed",
+  "records": [
+    "2026-10-19T15:39:41.3524040Z ℹ tests 8",
+    "2026-10-19T15:39:41.3526062Z ℹ pass 8",
+    "2026-10-19T15:39:41.3526780Z ℹ fail 0",
+    "2026-10-19T15:39:41.3527808Z ℹ skipped 0",
+    "2026-10-19T15:39:41.4924379Z ℹ tests 25",
+    "2026-10-19T15:39:41.4925040Z ℹ pass 25",
+    "2026-10-19T15:39:41.4925330Z ℹ fail 0",
+    "2026-10-19T15:39:41.4925973Z ℹ skipped 0",
+    "2026-10-19T15:39:44.0492470Z ℹ tests 4",
+    "2026-10-19T15:39:44.0493107Z ℹ pass 4",
+    "2026-10-19T15:39:44.0493299Z ℹ fail 0",
+    "2026-10-19T15:39:44.0493692Z ℹ skipped 0",
+    "2026-10-19T15:39:44.2255275Z ℹ tests 8",
+    "2026-10-19T15:39:44.2256561Z ℹ pass 8",
+    "2026-10-19T15:39:44.2256770Z ℹ fail 0",
+    "2026-10-19T15:39:44.2257169Z ℹ skipped 0",
+    "2026-10-19T15:39:44.3369771Z ℹ tests 2",
+    "2026-10-19T15:39:44.3370595Z ℹ pass 2",
+    "2026-10-19T15:39:44.3370865Z ℹ fail 0",
+    "2026-10-19T15:39:44.3371554Z ℹ skipped 0",
+    "2026-10-19T15:40:15.8693414Z ℹ tests 22",
+    "2026-10-19T15:40:15.8694023Z ℹ pass 22",
+    "2026-10-19T15:40:15.8694281Z ℹ fail 0",
+    "2026-10-19T15:40:15.8694722Z ℹ skipped 0",
+    "2026-10-19T15:40:16.0017747Z ℹ tests 18",
+    "2026-10-19T15:40:16.0018316Z ℹ pass 18",
+    "2026-10-19T15:40:16.0018505Z ℹ fail 0",
+    "2026-10-19T15:40:16.0018922Z ℹ skipped 0"
+  ],
+  "total": 87,
+  "groups": [
+    {
+      "file": "boardReadTracker",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "invitationAdmissionTracker",
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "scopedBoardWorker",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "capacityScrollDiagnostics",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "canonicalWorkMutation",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "keyboardAdmission",
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "cachedDetailPaint",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "selectedLocalCounterpart": {
+    "passed": 55
+  },
+  "method": "Exact bounded readiness step log group; unrelated earlier Node suite counts excluded without altering tests."
+}
