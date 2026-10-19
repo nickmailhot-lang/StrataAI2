@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-19 11:13:10 UTC",
+  "head": "000b8659b03d7211edd79c64f9740719ebe2b76e",
+  "synthetic": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+  "run": 39223988623,
+  "job": 117987088719,
+  "result": "Passed",
+  "passed": 93,
+  "executedScopeCounts": [
+    4,
+    2,
+    2,
+    6,
+    44,
+    14,
+    7,
+    9,
+    5
+  ],
+  "records": [
+    "2026-10-19T09:59:32.3695433Z   4 passed (3.4m)",
+    "2026-10-19T10:01:54.9521527Z   2 passed (2.3m)",
+    "2026-10-19T10:06:06.8566507Z   2 passed (4.2m)",
+    "2026-10-19T10:08:57.5559065Z   6 passed (2.8m)",
+    "2026-10-19T10:40:50.8177597Z   44 passed (31.9m)",
+    "2026-10-19T10:49:37.7329533Z   14 passed (8.8m)",
+    "2026-10-19T10:58:24.1053014Z   7 passed (8.8m)",
+    "2026-10-19T11:07:51.9203647Z   9 passed (9.4m)",
+    "2026-10-19T11:12:15.8508496Z   5 passed (4.3m)"
+  ],
+  "identityMailCases": [
+    "2026-10-19T10:00:48.5911697Z   ✓  1 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 1280px (1.1m)",
+    "2026-10-19T10:01:54.8752135Z   ✓  2 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 390px (1.1m)"
+  ],
+  "scope": "Actual current completed notification profile and all9executed native scopesPassed. Both original desktop/mobile identity-mail scenarios actuallyPassed here; conditional full-shard mail skips must remainSkipped, separately covered. Remaining browser/release gates and actual113integration pending."
+}

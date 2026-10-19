@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-19 10:12:12 UTC",
+  "head": "000b8659b03d7211edd79c64f9740719ebe2b76e",
+  "synthetic": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+  "run": 39223988623,
+  "job": 117987088479,
+  "result": "Passed",
+  "passed": 50,
+  "executedScopeCounts": [
+    28,
+    2,
+    2,
+    18
+  ],
+  "records": [
+    "2026-10-19T09:52:52.2461999Z   28 passed (14.6m)",
+    "2026-10-19T09:55:52.7786361Z   2 passed (3.0m)",
+    "2026-10-19T09:57:31.8210501Z   2 passed (1.3m)",
+    "2026-10-19T10:08:08.6426294Z   18 passed (10.6m)"
+  ],
+  "scope": "Actual current completed whole foundation job and four original executed browser scopes. Remaining integration groups, final release and actual113merge still required."
+}

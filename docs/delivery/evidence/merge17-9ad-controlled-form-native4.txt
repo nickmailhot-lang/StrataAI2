@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:40088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\ux-forms.spec.ts:11:7 › UX-005 controlled field recovery, native submit and zoom at 1280px (3.8s)
+  ok 2 tests\browser\ux-forms.spec.ts:11:7 › UX-005 controlled field recovery, native submit and zoom at 768px (3.4s)
+  ok 3 tests\browser\ux-forms.spec.ts:11:7 › UX-005 controlled field recovery, native submit and zoom at 390px (2.7s)
+  ok 4 tests\browser\ux-forms.spec.ts:11:7 › UX-005 controlled field recovery, native submit and zoom at 320px (3.2s)
+
+  4 passed (15.0s)

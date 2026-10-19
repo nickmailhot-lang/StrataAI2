@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-19 11:04:24 UTC",
+  "head": "000b8659b03d7211edd79c64f9740719ebe2b76e",
+  "synthetic": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+  "run": 39223988623,
+  "job": 117987088492,
+  "result": "Passed",
+  "wholePartition": {
+    "passed": 121,
+    "failed": 0
+  },
+  "cardCases": [
+    "2026-10-19T10:33:43.1147956Z   ✓   82 tests/browser/card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px (2.1s)",
+    "2026-10-19T10:34:10.1301039Z   ✓   83 tests/browser/card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px (2.0s)",
+    "2026-10-19T10:34:38.7820725Z   ✓   84 tests/browser/card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 1280px (3.6s)",
+    "2026-10-19T10:35:07.3486447Z   ✓   85 tests/browser/card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px (3.5s)",
+    "2026-10-19T10:35:35.6722657Z   ✓   86 tests/browser/card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 390px (3.3s)",
+    "2026-10-19T10:36:04.1658119Z   ✓   87 tests/browser/card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 320px (3.5s)"
+  ],
+  "markdownCases": [
+    "2026-10-19T10:41:14.6865640Z   ✓   94 tests/browser/card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 1280px (21.3s)",
+    "2026-10-19T10:42:00.0977455Z   ✓   95 tests/browser/card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 390px (20.4s)",
+    "2026-10-19T10:42:44.6171143Z   ✓   96 tests/browser/card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct MEMBER edits and unsaved draft withdrawal at 1280px (19.5s)",
+    "2026-10-19T10:43:29.1236824Z   ✓   97 tests/browser/card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct ADMIN edits and unsaved draft withdrawal at 1280px (19.5s)",
+    "2026-10-19T10:44:14.7375705Z   ✓   98 tests/browser/card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct MEMBER edits and unsaved draft withdrawal at 390px (20.6s)",
+    "2026-10-19T10:45:00.2415928Z   ✓   99 tests/browser/card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct ADMIN edits and unsaved draft withdrawal at 390px (20.5s)",
+    "2026-10-19T10:45:41.3705023Z   ✓  100 tests/browser/card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for organization-reader at 1280px (16.1s)",
+    "2026-10-19T10:46:23.1532078Z   ✓  101 tests/browser/card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for anonymous at 1280px (16.8s)",
+    "2026-10-19T10:47:04.2427803Z   ✓  102 tests/browser/card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for organization-reader at 390px (16.0s)",
+    "2026-10-19T10:47:45.0923122Z   ✓  103 tests/browser/card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for anonymous at 390px (15.8s)"
+  ],
+  "records": [
+    "2026-10-19T11:02:46.5439543Z   121 passed (1.4h)"
+  ],
+  "scope": "Actual current immutable fullbrowser1 complete, six unchanged Card actor/recovery and all ten original Markdown cases actuallyPassed. Remaining current integration/release gates and actual113main integration are still mandatory."
+}
