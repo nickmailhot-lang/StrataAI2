@@ -20,6 +20,40 @@ export async function pressAdmittedAction(button: Locator, key: 'Enter' | 'Space
   await button.press(key);
 }
 
+// Local validation has no HTTP request to observe. Retry only an ignored key
+// until the original form emits one native submit; never retry its result.
+// Mutation callers must keep their HTTP request/receipt observations instead.
+export async function pressObservedValidation(button: Locator, form: Locator) {
+  const observation = await form.evaluateHandle(node => {
+    if (node.nodeName !== 'FORM') throw new Error('Expected the original validation form');
+    const state = { count: 0 };
+    const onSubmit = () => { state.count++; };
+    node.addEventListener('submit', onSubmit, { capture: true });
+    return { node, state, onSubmit };
+  });
+  try {
+    await expect(async () => {
+      if (await observation.evaluate(o => o.state.count) === 0) {
+        expect(await observation.evaluate(o => o.node.isConnected)).toBe(true);
+        await expect(button).toBeEnabled({ timeout: 500 });
+        if (await observation.evaluate(o => o.state.count) === 0) {
+          await button.focus({ timeout: 500 });
+          await expect(button).toBeFocused({ timeout: 500 });
+          await expect(button).toBeEnabled({ timeout: 500 });
+          if (await observation.evaluate(o => o.state.count) === 0) {
+            expect(await observation.evaluate(o => o.node.isConnected)).toBe(true);
+            await button.press('Enter', { timeout: 500 });
+          }
+        }
+      }
+      await expect.poll(() => observation.evaluate(o => o.state.count), { timeout: 500 }).toBe(1);
+    }).toPass({ timeout: 5_000 });
+  } finally {
+    await observation.evaluate(o => o.node.removeEventListener('submit', o.onSubmit, { capture: true }));
+    await observation.dispose();
+  }
+}
+
 // A live read can disable a field between Playwright's actionability check and
 // native insertion. Retry only an insertion that dispatched no input event.
 // Once text reaches the field, callers' value assertions must detect any loss;

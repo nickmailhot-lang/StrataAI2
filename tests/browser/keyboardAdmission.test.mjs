@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { expect } from '@playwright/test';
-import { fillAdmittedInput, openAdmittedReview, pressObservedRequest } from './keyboardAdmission.ts';
+import { fillAdmittedInput, openAdmittedReview, pressObservedRequest, pressObservedValidation } from './keyboardAdmission.ts';
 
 // The real Playwright expectations/polling drive this isolated Locator protocol
 // fixture. Product browser cases separately prove native UI and HTTP behavior.
@@ -174,4 +174,67 @@ test('extra native input remains a failure and cannot trigger another insertion'
   const input = new InputLocator('excess-input');
   await assert.rejects(fillAdmittedInput(input, 'Inspect'));
   assert.equal(input.fills, 1); assert.equal(input.observation.state.count, 2);
+});
+
+class ValidationForm {
+  node = Object.assign(new EventTarget(), { nodeName: 'FORM', isConnected: true });
+  submissions = 0;
+  disposed = false;
+  observation;
+  constructor() { this.node.addEventListener('submit', () => { this.submissions++; }); }
+  async evaluateHandle(callback) {
+    const observed = callback(this.node); this.observation = observed;
+    return { evaluate: async fn => fn(observed), dispose: async () => { this.disposed = true; } };
+  }
+}
+class ValidationButton extends Locator {
+  constructor(form, mode = 'normal') { super(mode); this.form = form; }
+  async focus() {
+    this.focuses++;
+    if (this.mode === 'retired-form') this.form.node.isConnected = false;
+    if (this.mode === 'submit-during-focus') {
+      this.form.node.dispatchEvent(new Event('submit')); this.retired = true;
+    }
+  }
+  async press(key) {
+    assert.equal(key, 'Enter'); assert.equal(this.form.node.isConnected, true);
+    this.presses++;
+    if (this.mode === 'ignored-first' && this.presses === 1) return;
+    this.form.node.dispatchEvent(new Event('submit'));
+    if (this.mode === 'duplicate-submit') this.form.node.dispatchEvent(new Event('submit'));
+    if (this.mode === 'retire-after-submit') { this.form.node.isConnected = false; this.retired = true; }
+  }
+}
+
+test('local validation observes one native submit and removes its listener', async () => {
+  const form = new ValidationForm(), button = new ValidationButton(form);
+  await pressObservedValidation(button, form);
+  assert.equal(button.presses, 1); assert.equal(form.submissions, 1); assert.equal(form.disposed, true);
+  form.node.dispatchEvent(new Event('submit'));
+  assert.equal(form.observation.state.count, 1);
+});
+test('local validation retries only a keypress that emitted no submit', { timeout: 10_000 }, async () => {
+  const form = new ValidationForm(), button = new ValidationButton(form, 'ignored-first');
+  await pressObservedValidation(button, form);
+  assert.equal(button.presses, 2); assert.equal(form.submissions, 1); assert.equal(form.disposed, true);
+});
+test('an observed validation submit during focus cannot dispatch another Enter', { timeout: 10_000 }, async () => {
+  const form = new ValidationForm(), button = new ValidationButton(form, 'submit-during-focus');
+  await pressObservedValidation(button, form);
+  assert.equal(button.presses, 0); assert.equal(form.submissions, 1); assert.equal(form.disposed, true);
+});
+test('a submit that retires its form is not replayed while its result is pending', async () => {
+  const form = new ValidationForm(), button = new ValidationButton(form, 'retire-after-submit');
+  await pressObservedValidation(button, form);
+  assert.equal(button.presses, 1); assert.equal(form.submissions, 1); assert.equal(form.disposed, true);
+});
+test('a retired validation form cannot send a key to a replacement control', { timeout: 12_000 }, async () => {
+  const form = new ValidationForm(), button = new ValidationButton(form, 'retired-form');
+  await assert.rejects(pressObservedValidation(button, form));
+  assert.equal(button.presses, 0); assert.equal(form.submissions, 0); assert.equal(form.disposed, true);
+});
+test('duplicate native submits remain a failure without another activation', { timeout: 12_000 }, async () => {
+  const form = new ValidationForm(), button = new ValidationButton(form, 'duplicate-submit');
+  await assert.rejects(pressObservedValidation(button, form));
+  assert.equal(button.presses, 1); assert.equal(form.submissions, 2); assert.equal(form.disposed, true);
 });

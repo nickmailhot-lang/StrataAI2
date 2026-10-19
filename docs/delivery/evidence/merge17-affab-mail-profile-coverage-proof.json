@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-19T08:13:33.269Z",
+  "head": "affabfad0dfc3bd4cc42ea9f2fd37c98994aeac0",
+  "run": 39204245207,
+  "full2Job": 117916172515,
+  "notificationJob": 117916172384,
+  "result": "Passed in configured mail profile",
+  "skippedFullShard": [
+    "2026-10-19T07:28:49.0148977Z   -   43 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 1280px",
+    "2026-10-19T07:29:14.1098841Z   -   44 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 390px"
+  ],
+  "actualPassedMailProfile": [
+    "2026-10-19T06:41:32.4344934Z   ✓  1 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 1280px (1.1m)",
+    "2026-10-19T06:42:40.3615382Z   ✓  2 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 390px (1.1m)"
+  ],
+  "scope": "Full2's original2mail-profile skips are retained asSkipped, not relabelledPassed there. Exact same two named keyboard verification/recovery scenarios actuallyPassed in the mandatory notification job at this source."
+}

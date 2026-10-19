@@ -429,6 +429,8 @@ function BoardContent() {
     if (busy || !editable) return;
     if (!edit && !creation?.actorId) return;
     const formElement = event.currentTarget;
+    // The modal can retain focus outside its form while submission is disabled.
+    const creationFocusBoundary = formElement.closest('[role="dialog"]') ?? formElement;
     const form = new FormData(event.currentTarget);
     const title = String(form.get("title") ?? "").trim();
     if (!title) {
@@ -507,7 +509,7 @@ function BoardContent() {
         [401, 403, 404].includes(reason.status)
       ) {
         clearDeniedScope(reason, !edit && creation &&
-          (formElement.contains(document.activeElement) || document.activeElement === document.body) ? document.activeElement : undefined);
+          (creationFocusBoundary.contains(document.activeElement) || document.activeElement === document.body) ? document.activeElement : undefined);
       }
       setError(
         reason instanceof WorkRequestError

@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-19 11:39:31 UTC",
+  "head": "000b8659b03d7211edd79c64f9740719ebe2b76e",
+  "synthetic": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+  "run": 39223988623,
+  "job": 117987088521,
+  "result": "Passed",
+  "wholePartition": {
+    "passed": 123,
+    "failed": 0
+  },
+  "records": [
+    "2026-10-19T11:38:22.8717520Z   123 passed (1.2h)"
+  ],
+  "scope": "Actual current immutable wholefull3Passed. Lastfull4, required-ci/release-bundle and actual113integration remain mandatory; no inferred fullMVP/parentPRD closure."
+}

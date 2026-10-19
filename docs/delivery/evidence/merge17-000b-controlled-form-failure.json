@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-19T12:29:57.750Z",
+  "result": "Failed",
+  "head": "000b8659b03d7211edd79c64f9740719ebe2b76e",
+  "synthetic": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+  "run": 39223988623,
+  "job": 117987088464,
+  "wholePartition": {
+    "passed": 114,
+    "failed": 1
+  },
+  "failedCase": "ux-forms.spec.ts:10,1280px: expected Organization settings saved status absent after validLogo fieldEnter atline62; original5000ms assertion failed.",
+  "requiredCiResult": "Failed",
+  "releaseBundle": "Skipped",
+  "artifact": {
+    "id": 12186051277,
+    "bytes": 8943283,
+    "sha256": "99ff92f0177098a5a91130962a1e838b8e2aa125e6ce2052d5daf221cf07b2cd",
+    "digestVerified": true
+  },
+  "trace": {
+    "validLogoFillStart": 2513334.33,
+    "validLogoFillEnd": 2513349.316,
+    "actualValue": "https://example.test/logo.png",
+    "foregroundMeRead": 2513352.803,
+    "enterStart": 2513356.641,
+    "enterEnd": 2513398.235,
+    "appRootHiddenSnapshot": 2513383.646,
+    "appRootVisibleAgain": 2513399.879,
+    "patches": [
+      {
+        "start": 2512541.844,
+        "status": 400
+      }
+    ],
+    "expectedSecondPatchNotSent": true
+  },
+  "finding": "Actual authenticated trace DOM/network/action snapshots and both failed/validation captures inspected. HTTPS draft is intact. Foreground account admission hides the protected app during nativeEnter, then restores it after the keypress. No second PATCH occurs; only controlled first400validation reply exists. Existing app admission remains authoritative; fixture must admit native fieldEnter and observe actual HTTP start before result assertions.",
+  "owner": "Delivery lead",
+  "preserved": "Whole original4width/200%controlledform: name whitespace localvalidation0writes; server400Logo validation1write; visible/focused described field and preserveddescription; keyboardimplicitfieldsubmit; exact2writes andSavednotice/aria-invalidfalse; deniedreloadwithdrawsfields/noextra writes; Axe/overflow/header geometry. Preserve alltimeouts/retries; do not alterruntime/authgate, routefixtures or requiredreal-service Organizationsettings suite."
+}

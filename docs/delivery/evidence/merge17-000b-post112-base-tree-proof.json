@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-19T09:39:18.892Z",
+  "head": "000b8659b03d7211edd79c64f9740719ebe2b76e",
+  "testedSynthetic": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+  "currentSynthetic": "99cd70e6fcd52d0681b838422e57fe54db5f53b9",
+  "fetchedMain": "596f4ccb080dcc0fdf316649eb90a174d6de94b9",
+  "tree": "3310c9953c97fa55df72bc36e8af27735a6e7961",
+  "testedAndCurrentSyntheticAndHeadTreesIdentical": true,
+  "conflictFree": true,
+  "actuallyMerged": false,
+  "scope": "Current PR synthetic merge includes new112main without a source-head rewrite; exact complete source trees equal the already-started frozen68ddequalification. All22own required gates and actual113normalmerge remain mandatory."
+}

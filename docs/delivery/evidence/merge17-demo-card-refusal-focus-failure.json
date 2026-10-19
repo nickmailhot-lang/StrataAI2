@@ -1,0 +1,178 @@
+{
+  "at": "2026-10-19T03:39:18.294Z",
+  "productRevision": "9960731999118f2ff8ee3353e1654116543d1ac6",
+  "actualImageRevision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+  "result": "Failed",
+  "profile": "Owned retained-image Demo, API/web only; no database/Worker; no production deployment",
+  "run": {
+    "passed": 5,
+    "failed": "Desktop1280 refusal alert is visible below header but document.activeElement is BODY; original toBeFocused assertion fails.",
+    "skipped": 0,
+    "retries": 0,
+    "originalTestFiles": [
+      "tests/browser/card-creation-account.spec.ts",
+      "tests/browser/card-creation-recovery.spec.ts"
+    ],
+    "log": "\r\nRunning 6 tests using 1 worker\r\n\r\n(node:37804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  x  1 tests\\browser\\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px (11.9s)\r\n(node:24028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 2 tests\\browser\\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px (4.3s)\r\n  ok 3 tests\\browser\\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 1280px (8.9s)\r\n  ok 4 tests\\browser\\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px (7.0s)\r\n  ok 5 tests\\browser\\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 390px (7.0s)\r\n  ok 6 tests\\browser\\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 320px (6.9s)\r\n\r\n\r\n  1) tests\\browser\\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px \r\n\r\n    Error: expect(locator).toBeFocused() failed\r\n\r\n    Locator:  getByRole('alert').filter({ hasText: 'Sign in to continue.' })\r\n    Expected: focused\r\n    Received: inactive\r\n    Timeout:  5000ms\r\n\r\n    Call log:\r\n      - Expect \"toBeFocused\" getByRole('alert').filter({ hasText: 'Sign in to continue.' }) with timeout 5000ms\r\n      - waiting for getByRole('alert').filter({ hasText: 'Sign in to continue.' })\r\n        14 × locator resolved to <div role=\"alert\" tabindex=\"-1\" class=\"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-3tr75x\">…</div>\r\n           - unexpected value \"inactive\"\r\n\r\n\r\n      90 |       expect(alertBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height);\r\n      91 |       expect(alertBox.y + alertBox.height).toBeLessThanOrEqual(viewport.height);\r\n    > 92 |       await expect(refusal).toBeFocused();\r\n         |                             ^\r\n      93 |       await page.screenshot({ path: test.info().outputPath(`card-account-replacement-refused-${width}.png`), fullPage: true });\r\n      94 |     } finally {\r\n      95 |       holdReads = false; release(); await original?.close(); await member.close();\r\n        at C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-main\\tests\\browser\\card-creation-account.spec.ts:92:29\r\n\r\n    attachment #1: card-command-account-evidence (application/json) ────────────────────────────────\r\n    ..\\merge17-card-demo-current\\card-creation-account-PRD--f6077-placement-account-at-1280px\\attachments\\card-command-account-evidence-4c1a3d0910b2a93ba21e8d658104ca6ce1b488e8.json\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n    attachment #2: card-refusal-geometry (application/json) ────────────────────────────────────────\r\n    ..\\merge17-card-demo-current\\card-creation-account-PRD--f6077-placement-account-at-1280px\\attachments\\card-refusal-geometry-1ccc09f3d9637342b7f364290e15270f6a949933.json\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────\r\n    ..\\merge17-card-demo-current\\card-creation-account-PRD--f6077-placement-account-at-1280px\\test-failed-1.png\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n    Error Context: ..\\merge17-card-demo-current\\card-creation-account-PRD--f6077-placement-account-at-1280px\\error-context.md\r\n\r\n    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────\r\n    ..\\merge17-card-demo-current\\card-creation-account-PRD--f6077-placement-account-at-1280px\\trace.zip\r\n    Usage:\r\n\r\n        npx playwright show-trace ..\\merge17-card-demo-current\\card-creation-account-PRD--f6077-placement-account-at-1280px\\trace.zip\r\n\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n  1 failed\r\n    tests\\browser\\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px \r\n  5 passed (50.9s)\r\n"
+  },
+  "runtime": {
+    "scope": "Correct declared endpoints; original /health and /build probes were SPA fallback and are retained as unsuccessful probes, not application failures. Owned Demo only; no Worker/database/production deployment.",
+    "result": "Passed",
+    "apiHealthStatus": 200,
+    "at": "2026-10-19T03:37:22.7811699Z",
+    "apiRuntime": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "clientBuild": {
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "webHealthStatus": 200
+  },
+  "imageIdentity": {
+    "at": "2026-10-19T03:25:31.627Z",
+    "result": "Passed",
+    "scope": "Original provider-authenticated tar/config/manifest digests and loaded image content identity. Docker Desktop reports the original OCI manifest digest as Id; original provenance config IDs remain unchanged. API/web only; no service or Worker started.",
+    "build": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "shortSha": "f3ca3f474d10",
+      "workflowRunId": "39169877465",
+      "workflowRunNumber": "1927",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1927",
+      "releaseVersion": null,
+      "imageTag": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "createdAt": "2026-10-18T21:54:36.501Z",
+      "images": {
+        "web": "strataai-web:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+        "api": "strataai-api:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+        "worker": "strataai-worker:f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+      }
+    },
+    "records": [
+      {
+        "name": "api",
+        "ref": "strataai-api:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+        "originalConfigDigest": "sha256:5ccb00ca9fb96874d3b0d00d351a237a993c4717fffd7f60d22ab48ec9bebfdb",
+        "originalManifestDigest": "sha256:e48c1a0b7080202ea8a0fb69de0c41794f0a94fae62bd71a663e8157d6a311d2",
+        "loadedDockerId": "sha256:e48c1a0b7080202ea8a0fb69de0c41794f0a94fae62bd71a663e8157d6a311d2",
+        "loadedDescriptor": {
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "digest": "sha256:e48c1a0b7080202ea8a0fb69de0c41794f0a94fae62bd71a663e8157d6a311d2",
+          "size": 1773,
+          "annotations": {
+            "io.containerd.image.name": "docker.io/library/strataai-api:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+            "org.opencontainers.image.ref.name": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+          }
+        },
+        "authenticatedArchiveConfigPreserved": true,
+        "originalRootFsDiffIdsEqual": true,
+        "rootFsLayers": 10,
+        "os": "linux",
+        "architecture": "amd64"
+      },
+      {
+        "name": "web",
+        "ref": "strataai-web:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+        "originalConfigDigest": "sha256:2f78df2f1e15ee878ddbb4e3e3d592dd262655abeb508533906775abe4b76b07",
+        "originalManifestDigest": "sha256:9d6d547d7e4839020ff74898022e039c5aa65fbaa3e579300cddbcc8e8227710",
+        "loadedDockerId": "sha256:9d6d547d7e4839020ff74898022e039c5aa65fbaa3e579300cddbcc8e8227710",
+        "loadedDescriptor": {
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "digest": "sha256:9d6d547d7e4839020ff74898022e039c5aa65fbaa3e579300cddbcc8e8227710",
+          "size": 2062,
+          "annotations": {
+            "io.containerd.image.name": "docker.io/library/strataai-web:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+            "org.opencontainers.image.ref.name": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+          }
+        },
+        "authenticatedArchiveConfigPreserved": true,
+        "originalRootFsDiffIdsEqual": true,
+        "rootFsLayers": 12,
+        "os": "linux",
+        "architecture": "amd64"
+      }
+    ],
+    "initialHelperMismatch": {
+      "result": "Failed",
+      "reason": "Temporary helper compared an OCI manifest Id to the original config digest. Both exact digests now independently verified against the authenticated original archive; no mismatch ignored."
+    }
+  },
+  "desktop": {
+    "geometry": {
+      "width": 1280,
+      "alertBox": {
+        "x": 272,
+        "y": 88,
+        "width": 984,
+        "height": 48.015625
+      },
+      "headerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 64
+      },
+      "height": 900,
+      "scrollY": 0,
+      "alertFocused": false,
+      "activeTag": "BODY"
+    },
+    "account": {
+      "originalActor": "1e1af178-06af-403c-af88-1b065cf10775",
+      "replacementActor": "0b74c604-a8c8-4e8e-8dd2-60f0a9403989",
+      "statuses": [
+        201,
+        401
+      ],
+      "createdIds": [
+        "cc5902ea-d4fe-409a-909d-4810ed0a4357",
+        null
+      ],
+      "sameKey": true,
+      "sameBody": true,
+      "canonicalCardCount": 1
+    }
+  },
+  "phone": {
+    "geometry": {
+      "width": 390,
+      "alertBox": {
+        "x": 16,
+        "y": 72,
+        "width": 358,
+        "height": 68.03125
+      },
+      "headerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 56
+      },
+      "height": 900,
+      "scrollY": 0,
+      "alertFocused": true,
+      "activeTag": "DIV"
+    },
+    "account": {
+      "originalActor": "14d98611-a512-4692-b672-a387e563f0a6",
+      "replacementActor": "2c20ab10-421f-426e-85a5-889f7ad9b37d",
+      "statuses": [
+        201,
+        401
+      ],
+      "createdIds": [
+        "a6f3d318-4d04-4948-ad91-527871434aa2",
+        null
+      ],
+      "sameKey": true,
+      "sameBody": true,
+      "canonicalCardCount": 1
+    }
+  },
+  "scope": "Native source/assertions/deadlines/retries unchanged. Correct401/same key/body/exactly one canonical Card and all four recovery paths pass. Existing full Production996 native6 passes remain separate; this new Demo focus failure must be repaired before Card slice acceptance."
+}

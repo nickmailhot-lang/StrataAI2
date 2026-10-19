@@ -5,6 +5,7 @@ import { registerNotificationAccount } from './notificationAccountFixture';
 import { pressAdmittedAction } from './keyboardAdmission';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, waitForBoardReads } from './boardReadTracker';
+import { armCachedDetailPaint, readCachedDetailPaint } from './cachedDetailPaint';
 
 for (const width of [1280, 390]) {
   test(`PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at ${width}px`, async ({ page, context, browser }) => {
@@ -41,6 +42,7 @@ for (const width of [1280, 390]) {
       expect(reads()).toBeGreaterThanOrEqual(2);
       const cardLink = page.getByRole('link', { name: 'Markdown Card', exact: true });
       await expect(page.getByRole('button', { name: 'Drag Markdown Card card', exact: true })).toBeEnabled();
+      await page.evaluate(armCachedDetailPaint, { path, title: 'Markdown Card', richText: { source: original, heading: 'Review scope' } });
       const openingBegan = performance.now(); await cardLink.click();
       const clickMs = performance.now() - openingBegan;
       await expect.poll(() => page.evaluate(expected => {
@@ -53,7 +55,8 @@ for (const width of [1280, 390]) {
           && !!title && !title.disabled && !!source && !source.disabled
           && source.value === expected && previewHeading?.textContent === 'Review scope';
       }, original), { intervals: [10], timeout: 5_000 }).toBe(true);
-      const openingMs = performance.now() - openingBegan;
+      const detailAutomationMs = performance.now() - openingBegan;
+      const openingMs = await page.evaluate(readCachedDetailPaint);
       const detail = page.getByRole('dialog', { name: 'Card details', exact: true });
       await expect(detail.getByRole('textbox', { name: 'Card title', exact: true })).toBeEnabled();
       const description = detail.getByRole('textbox', { name: 'Description', exact: true });
@@ -61,7 +64,9 @@ for (const width of [1280, 390]) {
       await test.info().attach('card-description-performance.json', { contentType: 'application/json', body: JSON.stringify({
         fixture: { lists: 1, cards: 1, descriptionCharacters: original.length, width, assets: 'warm', initialAdmissionSettled: reads() >= 2 },
         topology: /^[0-9a-f]{40,64}$/.test(process.env.GITHUB_SHA ?? '') ? 'exact release images through Nginx' : 'unverified runtime',
-        cachedDetailMs: openingMs, clickMs, readiness: 'visible editable title/source and full preview, single browser observation', budgetMs: 200,
+        cachedDetailMs: openingMs, detailAutomationMs, clickMs,
+        measurement: 'browser-painted-rich-detail',
+        readiness: 'intended native click to exact focused editable title/source and full preview, stable through the following painted frame', budgetMs: 200,
       }) });
       expect(openingMs).toBeLessThan(200);
       const preview = detail.getByRole('region', { name: 'Description preview', exact: true });

@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
-import { openAdmittedReview, pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
+import { openAdmittedReview, pressObservedRequest, pressObservedValidation } from './keyboardAdmission';
 import { registerNotificationAccount } from './notificationAccountFixture';
 
 for (const width of [1280, 768, 390, 320]) {
@@ -32,7 +32,8 @@ for (const width of [1280, 768, 390, 320]) {
     const rename = page.getByRole('button', { name: 'Rename Planning list', exact: true });
     const field = page.getByRole('textbox', { name: 'New list name', exact: true });
     await openAdmittedReview(rename, field); await expect(field).toBeFocused();
-    await field.fill('   '); await pressAdmittedAction(page.getByRole('button', { name: 'Save list name', exact: true }));
+    await field.fill('   '); await expect(field).toHaveValue('   ');
+    await pressObservedValidation(page.getByRole('button', { name: 'Save list name', exact: true }), page.getByRole('dialog').locator('form'));
     await expect(page.getByRole('alert')).toContainText('Use a list name with 1 to 160 characters.'); expect(writes).toHaveLength(0);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     await page.screenshot({ path: test.info().outputPath(`list-rename-review-${width}.png`) });

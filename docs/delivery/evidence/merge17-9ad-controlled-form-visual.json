@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-19T12:36:05.686Z",
+  "revision": "9ad442f426b4511a4a32038a001768b191f59772",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "method": "Actually inspect all4rendered fullpage validation captures separately from Axe at1280/768/390/320 and200%text. Field-specific secureURL message/description, preserveddescription and form controls readable with responsive wrapping; controllednavigation503banner remains originalfixture behavior, not repaired/mockedaway. Existingnativegeometry/Axe/overflow/focus predicatesPassed. Inputs may scroll their longsingleline value. These are supportingC055rendered captures for test-only9adchange, not newimmutable release or wholeapp/physicaldevice certification.",
+  "captures": [
+    {
+      "path": "docs/delivery/evidence/controlled-form-9ad-ux-form-error-390.png",
+      "sha256": "2c0c386e411f0e5eb43556e1a3635adea22f369d34b2929e94461280c44d2ab8"
+    },
+    {
+      "path": "docs/delivery/evidence/controlled-form-9ad-ux-form-error-768.png",
+      "sha256": "843843cb09278ef5afdba0fe4fa25009d05a1d5ef8031cef83bd320590f8cf1b"
+    },
+    {
+      "path": "docs/delivery/evidence/controlled-form-9ad-ux-form-error-320.png",
+      "sha256": "1e56498a8806ebcce5095352dfed091ee736a9c5988c897045c36f6e5cc12bf2"
+    },
+    {
+      "path": "docs/delivery/evidence/controlled-form-9ad-ux-form-error-1280.png",
+      "sha256": "7cd5dab447e7c6ca246cfccf095957de3bcbfd86a0dc2109b0ea8226739b04e6"
+    }
+  ]
+}

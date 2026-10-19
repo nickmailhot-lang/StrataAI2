@@ -1,0 +1,30 @@
+(node:8784) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-integrated-tracking/tests/browser/cachedDetailPaint.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\merge17-integrated-tracking\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ only the intended native click starts measurement, and readiness survives a painted frame (5.5553ms)
+✔ cannot certify disabled as editable painted readiness (0.8887ms)
+✔ cannot certify wrong title as editable painted readiness (0.7535ms)
+✔ cannot certify hidden as editable painted readiness (0.4772ms)
+✔ cannot certify outside viewport as editable painted readiness (0.5215ms)
+✔ cannot certify unfocused as editable painted readiness (0.4132ms)
+✔ cannot certify zero size as editable painted readiness (0.4501ms)
+✔ losing readiness before paint keeps the full original elapsed time (0.6246ms)
+✔ a missing activation fails on the bounded deadline rather than yielding a passing sample (0.5601ms)
+✔ rich detail requires the complete original source and preview across a painted frame (0.6523ms)
+✔ rich detail cannot certify missing source as full ready paint (0.5179ms)
+✔ rich detail cannot certify disabled source as full ready paint (0.2983ms)
+✔ rich detail cannot certify wrong source as full ready paint (0.2989ms)
+✔ rich detail cannot certify hidden source as full ready paint (0.2819ms)
+✔ rich detail cannot certify missing preview as full ready paint (0.2693ms)
+✔ rich detail cannot certify wrong preview as full ready paint (0.3464ms)
+✔ rich detail cannot certify hidden preview as full ready paint (0.4315ms)
+✔ losing rich source readiness before paint retains the entire original interval (0.9284ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 267.0152

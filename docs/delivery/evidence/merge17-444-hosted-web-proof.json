@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-19T05:27:01.914Z",
+  "head": "44449151f93aeab7d63991c0906e1c515ac83bbc",
+  "run": 39197950530,
+  "job": 117884746830,
+  "result": "Passed",
+  "method": "Actual decoded completed hosted web-quality job at exact444; full2911 tests/24 original capacity deferrals, all40BoardScreen cases and3CardCreationRefusalFocus cases pass. New combined-head full qualification remains required.",
+  "records": [
+    "2026-10-19T04:11:52.8614911Z  ✓ src/features/kanban/BoardScreen.test.tsx (40 tests) 19541ms",
+    "2026-10-19T04:14:25.2756874Z  ✓ src/features/kanban/CardCreationRefusalFocus.test.tsx (3 tests) 1211ms",
+    "2026-10-19T04:14:34.7202355Z  Test Files  207 passed | 1 skipped (208)",
+    "2026-10-19T04:14:34.7217045Z       Tests  2911 passed | 24 skipped (2935)",
+    "2026-10-19T04:14:44.8876385Z ✓ built in 1.12s"
+  ]
+}

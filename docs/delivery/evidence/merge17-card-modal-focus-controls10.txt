@@ -1,0 +1,13 @@
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-integrated-tracking/apps/web
+
+
+ Test Files  2 passed (2)
+      Tests  10 passed (10)
+   Start at  20:45:54
+   Duration  115.96s (import 82%, tests 8%, environment 6%, transform 4%, setup 1%)
+
+     Import  133 modules were evaluated 249 times · 94.21s total, 82% of tracked time
+             ~43.89s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

@@ -1,0 +1,46 @@
+npm notice run strataai2@0.1.0 delivery:test
+npm notice run node --test tests/delivery-progress.test.mjs
+✔ PRD-25-VS-03/AC-01: complete real backlog retains all 100 definitions, obligations and parent links (21996.7695ms)
+✔ PRD-25-VS-03/AC-01: losing a PRD or architecture definition fails closed (187.7991ms)
+✔ PRD-25-VS-03/AC-01: losing original FR or AC cannot shrink acceptance denominator (52.9553ms)
+✔ PRD-25-VS-03/AC-01: source mutation cannot inherit frozen audit (4.011ms)
+✔ PRD-25-VS-03/AC-01: missing slice requirement mapping is rejected (43.2761ms)
+✔ PRD-25-VS-03/AC-02: duplicate item IDs, orphan items and acceptance are refused (1.2368ms)
+✔ PRD-25-VS-03/AC-02: untraced test and unknown dependencies are refused (0.4938ms)
+✔ PRD-25-VS-03/AC-02: lifecycle runs in order and does not skip validation (2.2822ms)
+✔ PRD-25-VS-03/AC-02: Blocked requires reason, owner and exact prior-state resume (0.8992ms)
+✔ PRD-25-VS-03/AC-02: Implemented needs source identity, never just a state label (0.6722ms)
+✔ PRD-25-VS-03/AC-02: state and append-only history must agree (0.3685ms)
+✔ PRD-25-VS-03/AC-02: a new item cannot start at Done to bypass lifecycle (0.6857ms)
+✔ PRD-25-VS-03/AC-03: a Test cannot claim Passed without executed evidence (0.3284ms)
+✔ PRD-25-VS-03/AC-03: complete synthetic evidence passes all gates (0.2946ms)
+✔ PRD-25-VS-03/AC-03: missing tests blocks Done (0.3718ms)
+✔ PRD-25-VS-03/AC-03: missing acceptance blocks Done (0.3021ms)
+✔ PRD-25-VS-03/AC-03: missing security blocks Done (0.2459ms)
+✔ PRD-25-VS-03/AC-03: missing roles blocks Done (0.2551ms)
+✔ PRD-25-VS-03/AC-03: missing regressions blocks Done (0.244ms)
+✔ PRD-25-VS-03/AC-03: missing integration blocks Done (0.259ms)
+✔ PRD-25-VS-03/AC-03: missing tracking blocks Done (0.2328ms)
+✔ PRD-25-VS-03/AC-03: missing review blocks Done (0.3654ms)
+✔ PRD-25-VS-03/AC-03: missing ux blocks Done (0.4161ms)
+✔ PRD-25-VS-03/AC-03: missing build blocks Done (0.3413ms)
+✔ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (0.3643ms)
+✔ PRD-25-VS-03/AC-03: unverified, stale, failed or skipped evidence cannot satisfy acceptance (0.7309ms)
+✔ PRD-25-VS-03/AC-03: unknown critical regressions and unpassed test block completion (0.7693ms)
+✔ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (0.5535ms)
+✔ PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unvalidated work (1.2821ms)
+✔ PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done (0.4876ms)
+✔ PRD-25-VS-03/AC-04: validated Done work contributes completion counts and recent increments (0.3402ms)
+✔ PRD-25-VS-03/AC-05: prior states, criteria and failed evidence cannot be rewritten or deleted (2.1724ms)
+✔ PRD-25-VS-03/AC-03: exact Git integration, evidence hashes and repository path boundaries (2083.0087ms)
+✔ PRD-25-VS-03/AC-04: real CLI reports machine-readable progress and exits nonzero for bad action (46035.2957ms)
+✔ PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its refusal tests (0.6875ms)
+✔ PRD-25-VS-03/AC-05: CLI can validate evolution against the actual retained ledger in Git (22182.1232ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 92855.5138
