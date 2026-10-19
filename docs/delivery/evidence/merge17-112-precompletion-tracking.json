@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-19T09:12:45.773Z",
+  "result": "Passed",
+  "qualifiedImplementation": "affabfad0dfc3bd4cc42ea9f2fd37c98994aeac0",
+  "executedBookkeepingHead": "000b8659b03d7211edd79c64f9740719ebe2b76e",
+  "uncommittedChanges": "Acceptance/integration ledger and hashed evidence only; no validator/report/test code change.",
+  "code": [
+    {
+      "path": "scripts/delivery-progress.mjs",
+      "qualifiedBlob": "7cb5e9ffc9142c6698bd47ef40c2b81ec773d4d2",
+      "executedBlob": "7cb5e9ffc9142c6698bd47ef40c2b81ec773d4d2",
+      "byteIdentical": true
+    },
+    {
+      "path": "tests/delivery-progress.test.mjs",
+      "qualifiedBlob": "42550de31f762cefdd8f0966107be961317602a5",
+      "executedBlob": "42550de31f762cefdd8f0966107be961317602a5",
+      "byteIdentical": true
+    }
+  ],
+  "ledgerSha256BeforeEvidenceAppend": "ba0c25c412afb3b3053a235d4ff96cc175399c74bd6d4fca8ac5c57b93c3f837",
+  "log": {
+    "path": "docs/delivery/evidence/merge17-112-precompletion-validation.txt",
+    "sha256": "69ae9f54703cf4ad92f42dca626e5ce6da764856ce9aeeea74dc952f47216923"
+  },
+  "method": "Actualnpm delivery:validate exit0 on complete1589-item/13Done enriched ledger, actualsource/hash/Git/baseline; refused stale-source initial run retained separately. Each subsequent CLI transition validates actual full ledger before/after state change. Full36contracts required again after earnedDone states.",
+  "scope": "112fixture/reporting acceptance tracking;113runtime/qualification/integration remains pending."
+}

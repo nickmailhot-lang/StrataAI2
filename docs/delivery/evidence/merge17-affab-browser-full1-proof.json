@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-19T07:42:37.014Z",
+  "head": "affabfad0dfc3bd4cc42ea9f2fd37c98994aeac0",
+  "synthetic": "24ea6530a2c03b01a9f78a9df243aed869fe1e09",
+  "run": 39204245207,
+  "job": 117916172393,
+  "result": "Passed",
+  "description10": [
+    "2026-10-19T07:20:22.3630524Z   ✓   94 tests/browser/card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 1280px (18.4s)",
+    "2026-10-19T07:21:06.8146997Z   ✓   95 tests/browser/card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 390px (19.4s)",
+    "2026-10-19T07:21:51.1074350Z   ✓   96 tests/browser/card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct MEMBER edits and unsaved draft withdrawal at 1280px (19.3s)",
+    "2026-10-19T07:22:37.1354589Z   ✓   97 tests/browser/card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct ADMIN edits and unsaved draft withdrawal at 1280px (21.0s)",
+    "2026-10-19T07:23:20.9350291Z   ✓   98 tests/browser/card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct MEMBER edits and unsaved draft withdrawal at 390px (18.8s)",
+    "2026-10-19T07:24:04.6658128Z   ✓   99 tests/browser/card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct ADMIN edits and unsaved draft withdrawal at 390px (18.7s)",
+    "2026-10-19T07:24:45.5557971Z   ✓  100 tests/browser/card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for organization-reader at 1280px (15.9s)",
+    "2026-10-19T07:25:26.0222751Z   ✓  101 tests/browser/card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for anonymous at 1280px (15.5s)",
+    "2026-10-19T07:26:07.0730289Z   ✓  102 tests/browser/card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for organization-reader at 390px (16.0s)",
+    "2026-10-19T07:26:47.6259058Z   ✓  103 tests/browser/card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for anonymous at 390px (15.5s)"
+  ],
+  "card6": [
+    "2026-10-19T07:13:04.3314667Z   ✓   82 tests/browser/card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px (2.1s)",
+    "2026-10-19T07:13:30.7524531Z   ✓   83 tests/browser/card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px (1.4s)",
+    "2026-10-19T07:13:58.5450842Z   ✓   84 tests/browser/card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 1280px (2.8s)",
+    "2026-10-19T07:14:26.2492061Z   ✓   85 tests/browser/card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px (2.7s)",
+    "2026-10-19T07:14:53.8203714Z   ✓   86 tests/browser/card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 390px (2.6s)",
+    "2026-10-19T07:15:21.3512561Z   ✓   87 tests/browser/card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 320px (2.5s)"
+  ],
+  "summary": [
+    "2026-10-19T07:41:22.7954487Z   121 passed (1.3h)"
+  ],
+  "scope": "Actual complete immutable browser-full1 121Passed/0Failed. All10original Markdown scenarios pass, including four edited read-only/anonymous cases with stronger next-tab-stop assertion and original200ms owner budgets. Prior832120/1 and localf738/2 retained separately. Remaining full matrices/notification/finalrelease and integration still pending."
+}
