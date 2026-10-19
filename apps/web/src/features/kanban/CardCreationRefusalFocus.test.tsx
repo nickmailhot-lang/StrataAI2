@@ -31,7 +31,7 @@ it.each([401, 403, 404])('PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for
   const title = await screen.findByLabelText(/Card title/);
   fireEvent.change(title, { target: { value: 'Original Card draft' } });
   const dialog = screen.getByRole('dialog', { name: 'Add card' });
-  const submit = within(dialog).getByRole('button', { name: 'Create', exact: true });
+  const submit = within(dialog).getByRole('button', { name: /^Create$/ });
   fireEvent.click(submit);
   await waitFor(() => expect(finish).toBeTypeOf('function'));
   expect(submit).toBeDisabled();
