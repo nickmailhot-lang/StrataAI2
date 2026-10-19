@@ -1,0 +1,4 @@
+npm notice run strataai2@0.1.0 typecheck
+npm notice run npm --workspace @strataai/web run typecheck
+npm notice run @strataai/web@0.1.0 typecheck
+npm notice run tsc --noEmit
