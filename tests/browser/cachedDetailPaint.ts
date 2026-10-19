@@ -1,6 +1,8 @@
 // These functions run in the browser via page.evaluate. Use its clock
 // explicitly: a test module's imported Node clock cannot cross that boundary.
-export function armCachedDetailPaint({ path, title }: { path: string; title: string }) {
+export function armCachedDetailPaint({ path, title, richText }: {
+  path: string; title: string; richText?: { source: string; heading: string };
+}) {
   const state = window as Window & { strataaiDetailPaint?: Promise<number> };
   state.strataaiDetailPaint = new Promise(resolve => {
     let began = 0;
@@ -13,9 +15,21 @@ export function armCachedDetailPaint({ path, title }: { path: string; title: str
     const ready = () => {
       const input = document.querySelector<HTMLInputElement>('[role="dialog"] input[name="title"]');
       const rect = input?.getBoundingClientRect();
-      return !!input && !input.disabled && input.value === title && document.activeElement === input
+      const titleReady = !!input && !input.disabled && input.value === title && document.activeElement === input
         && !input.closest('[hidden],[inert],[aria-hidden="true"]') && !!rect && rect.width > 0 && rect.height > 0
         && rect.top < innerHeight && rect.bottom > 0 && rect.left < innerWidth && rect.right > 0;
+      if (!titleReady || !input) return false;
+      if (richText === undefined) return true;
+      // Rich descriptions must not inherit a title-only readiness certificate.
+      // Keep their complete original source/preview predicate in this clock.
+      const dialog = input.closest('[role="dialog"]');
+      const source = dialog?.querySelector<HTMLTextAreaElement>('textarea[name="description"]');
+      const heading = dialog?.querySelector<HTMLElement>('[data-description-content] h3');
+      return !!dialog && dialog.getClientRects().length > 0
+        && !!source && !source.disabled && source.value === richText.source
+        && !source.closest('[hidden],[inert],[aria-hidden="true"]') && source.getClientRects().length > 0
+        && !!heading && heading.textContent === richText.heading
+        && !heading.closest('[hidden],[inert],[aria-hidden="true"]') && heading.getClientRects().length > 0;
     };
     const check = () => {
       if (finished) return;
