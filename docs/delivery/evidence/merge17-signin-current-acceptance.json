@@ -1,0 +1,101 @@
+{
+  "at": "2026-10-19T02:27:01.896Z",
+  "reviewer": "Codex scoped source/consumer and rendered UX review",
+  "qualifiedHead": "9960731999118f2ff8ee3353e1654116543d1ac6",
+  "actualMain": "ecd26768582c6a8a621b7c1376ed7fa1b502f935",
+  "actualPreviewUi": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b",
+  "previewUrl": "http://127.0.0.1:15187/login",
+  "captures": [
+    {
+      "width": 320,
+      "height": 844,
+      "path": "docs/delivery/evidence/signin-preview135-320.jpg",
+      "sha256": "09dedf035d2c40e89874335d5aaa413a6fba01feef9bbc184d3897100420e3e1",
+      "actualUi": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "path": "docs/delivery/evidence/signin-preview135-390.jpg",
+      "sha256": "90a25764111d845eb0657b1677af7509b7367973784965e96b5beac6fbd72bc6",
+      "actualUi": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b"
+    },
+    {
+      "width": 768,
+      "height": 844,
+      "path": "docs/delivery/evidence/signin-preview135-768.jpg",
+      "sha256": "2c7c59e2c2bb053599c6be5d07d69ef5298d9354c00932c9bc66dc890654bd72",
+      "actualUi": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b"
+    },
+    {
+      "width": 1280,
+      "height": 844,
+      "path": "docs/delivery/evidence/signin-preview135-1280.jpg",
+      "sha256": "200a063243cae7bcb76dbb59fc65d82c36c6582b52c57cd06f8ed4a319003ded",
+      "actualUi": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b"
+    }
+  ],
+  "sourceEquality": {
+    "comparison": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b..9960731999118f2ff8ee3353e1654116543d1ac6",
+    "allClientChanges": [
+      "apps/web/src/features/organizations/OrganizationInvitationHistoryPage.test.tsx",
+      "apps/web/src/features/organizations/OrganizationInvitationHistoryPage.tsx"
+    ],
+    "signInAndSharedShellSourceIdentical": true
+  },
+  "criteriaReview": {
+    "entry": "Native59–62: generic denied/signed-out Card entry, explicit permitted sign-in, canonical save/reload/Close/Back at1280/768/390/320.",
+    "acknowledgment": "Native original lost response and identical key retry, plus actual19 AuthPage.return controls: uncertainty, mismatch/failed acknowledgment and invalid destinations do not navigate.",
+    "routesAndRoles": "Actual native58/63/64 and controlled allowlist: other Organization owner, outsider and Portal-only denied; no protected target writes/content; original authorized canonical work reachable without login loop.",
+    "session": "Actual native65–70 and29 SurfaceAdmission+6 return controls: immediate withdrawal, fresh401, current Board/Card path, held-read route retirement and unsupported/Portal exclusion.",
+    "ux": "Current original native four-width/no-overflow/keyboard/Axe and tablet200% cases Passed. Separately inspected public sign-in at320/390/768/1280 from identical Auth/shell source: visible labelled fields, tabs, primary sign-in and recovery action. AX focus follows Email→Password→Sign in; settled desktop capture shows focused button. Current Card scene visual equivalence review retained independently."
+  },
+  "cardSceneReview": {
+    "at": "2026-10-19T00:45:09.461Z",
+    "reviewRevision": "9960731999118f2ff8ee3353e1654116543d1ac6",
+    "method": "Reinspect four retained default Card-detail viewport captures, verify their registered hashes, and compare relevant client scene source to candidate. This is a new source-equivalence review, not a new browser execution.",
+    "actualUi": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b",
+    "originalTestRevision": "5bc7919168654491b2e5a1ec1e867ecbd9b923c2",
+    "images": [
+      {
+        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-v5-native-usability\\work-usability-UXA-02-04-0-0e95b--filter-and-return-at-768px\\detail.png",
+        "sha256": "289cda869150b93856237d1fabdbe9ab92bb0b7f57cda7670b925a53763100ab"
+      },
+      {
+        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-v5-native-usability\\work-usability-UXA-02-04-0-46dbc-filter-and-return-at-1280px\\detail.png",
+        "sha256": "8cc0f9f09b90f97380f3d0ce3195f032dee00e1e1df3f9a5e61a6b219b1c0e11"
+      },
+      {
+        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-v5-native-usability\\work-usability-UXA-02-04-0-59ea8--filter-and-return-at-320px\\detail.png",
+        "sha256": "9d8112d48d9d98136d62365f1103c5502c68ef3314737d0c571fce2fc1bea7ea"
+      },
+      {
+        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-v5-native-usability\\work-usability-UXA-02-04-0-ecbaa--filter-and-return-at-390px\\detail.png",
+        "sha256": "9a805c0bc26e311f97faf9a40b5cb95805f48d40697b75ebb8c5b0863d1fe440"
+      }
+    ],
+    "sceneEquality": {
+      "comparison": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b..9960731999118f2ff8ee3353e1654116543d1ac6",
+      "allClientSourceChanges": [
+        "apps/web/src/features/organizations/OrganizationInvitationHistoryPage.tsx",
+        "apps/web/src/features/organizations/OrganizationInvitationHistoryPage.test.tsx"
+      ],
+      "cardSceneAndSharedShellSourceIdentical": true,
+      "reviewed": "The unrelated invitation-history change preserves Card scene source; it changes only bounded revocation feedback and its tests."
+    },
+    "observations": [
+      "1280px: right-hand Card panel, focused labelled title, visible Save and Close; Board context remains behind the modal.",
+      "768px: near-full-width panel, labelled focus and footer actions remain unobscured.",
+      "320/390px: full-width Card content, title and description fit, actions remain visible; no visual horizontal clipping in these captures."
+    ],
+    "result": "Passed",
+    "scope": "Four normal default Card-detail layouts only. These captures are not the separate tablet200%/refusal pictures. Current native assertions separately prove tablet200% canonical return and refusal geometry/focus. No new hosted screenshot execution, physical-device, screen-reader, complete WCAG, full PRD or MVP certificate.",
+    "remaining": "Keep current Card slice in Review until all required current gates, final acceptance and actual target integration. Any final refusal-specific visual review must retain actual source identity."
+  },
+  "limits": [
+    "Preview135 captures prove rendering/source equivalence only; they are not a new current-image backend/browser execution.",
+    "No credentials entered, no form submitted, no production deployment or user service reconfiguration; browser size restored and owned tab closed.",
+    "No complete PRD01/02, physical-device, screen-reader, full WCAG or full MVP completion claimed."
+  ],
+  "history": "Original failure/skip records and prior acceptance remain preserved. Current qualification/main gates now close the prior scoped integration gap."
+}

@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-19T02:27:01.896Z",
+  "revision": "9960731999118f2ff8ee3353e1654116543d1ac6",
+  "validatorGitBlob": "7cb5e9ffc9142c6698bd47ef40c2b81ec773d4d2",
+  "executedValidatorBlob": "7cb5e9ffc9142c6698bd47ef40c2b81ec773d4d2",
+  "equal": true,
+  "inputSha256": "45b4188ed72287e2bb1cacd9f3147651506344db4dc6269c19803251501c9822",
+  "actualTarget": "ecd26768582c6a8a621b7c1376ed7fa1b502f935",
+  "result": "Passed",
+  "doneBefore": 4,
+  "itemsReviewed": [
+    "PRD-01-VS-04",
+    "PRD-01-VS-04-T-01",
+    "PRD-01-VS-04-T-01-TEST-01",
+    "PRD-01-VS-04-T-01-TEST-02",
+    "PRD-01-VS-04-T-02",
+    "PRD-01-VS-04-T-02-TEST-01",
+    "PRD-01-VS-04-T-02-TEST-02",
+    "PRD-01-VS-04-T-03",
+    "PRD-01-VS-04-T-03-TEST-01"
+  ],
+  "scope": "Run byte-identical qualified996 ledger validator on this new review dataset, actual source/evidence hashes/Git and complete baseline/evolution before any new Done transitions. No new hosted CI pass is claimed."
+}

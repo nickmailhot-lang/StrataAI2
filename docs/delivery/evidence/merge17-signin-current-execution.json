@@ -1,0 +1,1232 @@
+{
+  "at": "2026-10-19T02:27:01.896Z",
+  "qualifiedHead": "9960731999118f2ff8ee3353e1654116543d1ac6",
+  "syntheticMerge": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+  "native": {
+    "at": "2026-10-19T00:47:28.540Z",
+    "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+    "syntheticMerge": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "run": 39169877465,
+    "job": 117807359495,
+    "testFile": "tests/browser/signin-card-return.spec.ts",
+    "method": "Read-only rendered live GitHub job log; actual13 case pass records58–70 observed.",
+    "passed": 13,
+    "failed": 0,
+    "cases": [
+      {
+        "number": 58,
+        "flow": "Other Organization owner denied after sign-in; return to authorized work",
+        "durationSeconds": 2.5,
+        "result": "Passed"
+      },
+      {
+        "number": 59,
+        "flow": "Signed-out Card link → sign-in → canonical Card → Board",
+        "width": 1280,
+        "durationSeconds": 3,
+        "result": "Passed"
+      },
+      {
+        "number": 60,
+        "flow": "Signed-out Card link → sign-in → canonical Card → Board",
+        "width": 768,
+        "durationSeconds": 2.8,
+        "result": "Passed"
+      },
+      {
+        "number": 61,
+        "flow": "Signed-out Card link → sign-in → canonical Card → Board",
+        "width": 390,
+        "durationSeconds": 2.8,
+        "result": "Passed"
+      },
+      {
+        "number": 62,
+        "flow": "Signed-out Card link → sign-in → canonical Card → Board",
+        "width": 320,
+        "durationSeconds": 2.7,
+        "result": "Passed"
+      },
+      {
+        "number": 63,
+        "flow": "Outsider private Card access refused after sign-in",
+        "durationSeconds": 0.951,
+        "result": "Passed"
+      },
+      {
+        "number": 64,
+        "flow": "Portal-only private Card access refused after sign-in",
+        "durationSeconds": 1,
+        "result": "Passed"
+      },
+      {
+        "number": 65,
+        "flow": "Revoked session → explicit sign-in → current Board → canonical Card → Board",
+        "width": 1280,
+        "durationSeconds": 3,
+        "result": "Passed"
+      },
+      {
+        "number": 66,
+        "flow": "Revoked session → explicit sign-in → current Board → canonical Card → Board",
+        "width": 390,
+        "durationSeconds": 2.9,
+        "result": "Passed"
+      },
+      {
+        "number": 67,
+        "flow": "Revoked session → explicit sign-in → current Card → canonical Card → Board",
+        "width": 1280,
+        "durationSeconds": 3.1,
+        "result": "Passed"
+      },
+      {
+        "number": 68,
+        "flow": "Revoked session → explicit sign-in → current Card → canonical Card → Board",
+        "width": 768,
+        "durationSeconds": 3,
+        "result": "Passed"
+      },
+      {
+        "number": 69,
+        "flow": "Revoked session → explicit sign-in → current Card → canonical Card → Board",
+        "width": 390,
+        "durationSeconds": 2.8,
+        "result": "Passed"
+      },
+      {
+        "number": 70,
+        "flow": "Revoked session → explicit sign-in → current Card → canonical Card → Board",
+        "width": 320,
+        "durationSeconds": 2.8,
+        "result": "Passed"
+      }
+    ],
+    "wholeJobState": "In Progress",
+    "boundary": "All13 original sign-in/Card-return cases observed Passed. Other full4 cases, final gates, actual integration and own complete PRD acceptance remain pending."
+  },
+  "controls": {
+    "at": "2026-10-19T02:24:38.290Z",
+    "qualifiedHead": "9960731999118f2ff8ee3353e1654116543d1ac6",
+    "syntheticMerge": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "run": 39169877465,
+    "job": 117800585797,
+    "method": "Decoded original completed job logs through the GitHub connector; exact original file pass records, not inferred from source inclusion.",
+    "result": "Passed",
+    "files": 3,
+    "passed": 54,
+    "failed": 0,
+    "records": [
+      "2026-10-18T21:59:47.7473749Z  \u001b[32m✓\u001b[39m src/app/SurfaceAdmission.test.tsx \u001b[2m(\u001b[22m\u001b[2m29 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1477\u001b[2mms\u001b[22m\u001b[39m",
+      "2026-10-18T22:03:01.1997096Z  \u001b[32m✓\u001b[39m src/features/auth/AuthPage.return.test.tsx \u001b[2m(\u001b[22m\u001b[2m19 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2846\u001b[2mms\u001b[22m\u001b[39m",
+      "2026-10-18T22:03:04.4370096Z  \u001b[32m✓\u001b[39m src/app/SurfaceAdmission.return.test.tsx \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 380\u001b[2mms\u001b[22m\u001b[39m"
+    ],
+    "scope": "29 SurfaceAdmission controls,19 AuthPage.return controls,6 SurfaceAdmission.return cases; part of the original whole2908-pass/24-capacity-deferral frontend suite."
+  },
+  "wholeWeb": {
+    "at": "2026-10-18T22:04:46.166Z",
+    "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+    "syntheticMerge": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "run": 39169877465,
+    "job": 117800585797,
+    "result": "Passed",
+    "passed": 2908,
+    "failed": 0,
+    "skipped": 24,
+    "skippedReason": "Original post-MVP frontend capacity deferrals",
+    "filesPassed": 206,
+    "filesSkipped": 1,
+    "filesTotal": 207,
+    "durationSeconds": 315.63,
+    "actualFooters": [
+      "2026-10-18T22:03:51.1878913Z  Test Files  206 passed | 1 skipped (207)",
+      "2026-10-18T22:03:51.1894076Z       Tests  2908 passed | 24 skipped (2932)",
+      "2026-10-18T22:03:51.1902721Z    Duration  315.63s (tests 50%, import 25%, environment 21%, setup 2%, transform 1%)"
+    ],
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Download source evidence identity",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Run actions/setup-node@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install locked dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify mandatory immutable integration coverage",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify complete browser shard coverage",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Typecheck",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Typecheck browser acceptance fixtures",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify browser readiness excludes previous-screen responses",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify security assertion failure paths",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Lint",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify feature HTTP requests retain the shared Problem boundary",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify retained performance evidence excludes private fields",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify operator evidence rejects missing and private metric fields",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify Organization latency evidence and sample boundaries",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify operator alert rules with pinned Prometheus",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify source test report completeness and privacy",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Unit and component tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Summarize web source test results",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Retain web source test results",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Production web build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify generated web build identity",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Run actions/setup-node@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Post Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "scope": "Whole current web-quality types/browser-types/lint/guards/unit/build/identity Passed. Existing React act warnings remain in original log. Runtime browser/security/release qualification still pending."
+  },
+  "wholeFull4": {
+    "at": "2026-10-19T01:18:22.750Z",
+    "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+    "syntheticMerge": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "run": 39169877465,
+    "job": 117807359495,
+    "result": "Passed",
+    "passed": 115,
+    "failed": 0,
+    "skipped": 0,
+    "actualFooters": [
+      "2026-10-19T00:08:00.4600338Z Running 115 tests using 1 worker, shard 4 of 4",
+      "2026-10-19T01:15:27.6276971Z   115 passed (1.1h)"
+    ],
+    "nativePassRecords": [
+      "2026-10-19T00:08:33.4276590Z   ✓    1 tests/browser/card-dates-performance.spec.ts:9:5 › PRD-12: normal dated Board readiness, cached detail and date commands meet budgets (6.1s)",
+      "2026-10-19T00:09:17.9840922Z   ✓    2 tests/browser/checklist-performance.spec.ts:10:5 › PRD-13: normal checklist feedback, seek pages and mutation latency meet budgets (19.5s)",
+      "2026-10-19T00:09:46.9142017Z   ✓    3 tests/browser/kanban-performance.spec.ts:10:5 › PRD-06: normal Board readiness, cached detail and mutation latency meet budgets at 1280px (3.9s)",
+      "2026-10-19T00:10:16.2640358Z   ✓    4 tests/browser/kanban-performance.spec.ts:10:5 › PRD-06: normal Board readiness, cached detail and mutation latency meet budgets at 390px (4.3s)",
+      "2026-10-19T00:10:42.9289368Z   ✓    5 tests/browser/list-feedback-performance.spec.ts:8:5 › PRD-06: list drop feedback precedes persistence and meets its budget at 1280px (1.6s)",
+      "2026-10-19T00:11:09.4223991Z   ✓    6 tests/browser/list-feedback-performance.spec.ts:8:5 › PRD-06: list drop feedback precedes persistence and meets its budget at 390px (1.5s)",
+      "2026-10-19T00:11:40.7718116Z   ✓    7 tests/browser/recipient-invitation-authority.spec.ts:5:7 › PRD-03-TC-05/08/09/11/12, PRD-60-TC-04/09/11/12: nonmember Portal recipient withdraws and recovers changed Organization authority at 1280px (5.9s)",
+      "2026-10-19T00:12:12.4443071Z   ✓    8 tests/browser/recipient-invitation-authority.spec.ts:5:7 › PRD-03-TC-05/08/09/11/12, PRD-60-TC-04/09/11/12: nonmember Portal recipient withdraws and recovers changed Organization authority at 390px (6.7s)",
+      "2026-10-19T00:12:44.0806880Z   ✓    9 tests/browser/recipient-invitation-board-authority.spec.ts:5:7 › PRD-04/60-TC-05/08/10/11/12: actual Board authority clears an invitation before Board admission at 1280px (6.6s)",
+      "2026-10-19T00:13:14.6380222Z   ✓   10 tests/browser/recipient-invitation-board-authority.spec.ts:5:7 › PRD-04/60-TC-05/08/10/11/12: actual Board authority clears an invitation before Board admission at 390px (5.5s)",
+      "2026-10-19T00:13:40.3608503Z   ✓   11 tests/browser/recipient-invitation-bootstrap-account.spec.ts:4:7 › PRD-03/60-TC-05/09/12: recipient socket refuses cookie substitution after original account capture at 1280px (710ms)",
+      "2026-10-19T00:14:06.0667488Z   ✓   12 tests/browser/recipient-invitation-bootstrap-account.spec.ts:4:7 › PRD-03/60-TC-05/09/12: recipient socket refuses cookie substitution after original account capture at 390px (693ms)",
+      "2026-10-19T00:14:33.1628511Z   ✓   13 tests/browser/recipient-invitation-bootstrap-account.spec.ts:44:7 › PRD-03/60-TC-06/09/11/12: recipient retries failed account admission and restores actual live discovery at 1280px (2.1s)",
+      "2026-10-19T00:15:00.2010170Z   ✓   14 tests/browser/recipient-invitation-bootstrap-account.spec.ts:44:7 › PRD-03/60-TC-06/09/11/12: recipient retries failed account admission and restores actual live discovery at 390px (2.0s)",
+      "2026-10-19T00:15:26.9297757Z   ✓   15 tests/browser/recipient-invitation-deadline.spec.ts:5:7 › PRD-03/60-TC-06/07/11/12: recipient whole deadline retains original committed Portal acceptance at 1280px (1.7s)",
+      "2026-10-19T00:15:53.6047270Z   ✓   16 tests/browser/recipient-invitation-deadline.spec.ts:5:7 › PRD-03/60-TC-06/07/11/12: recipient whole deadline retains original committed Portal acceptance at 390px (1.7s)",
+      "2026-10-19T00:16:21.5487015Z   ✓   17 tests/browser/recipient-invitation-expiry.spec.ts:5:7 › PRD-03/05/60: recipient INTERNAL expiry and original-ID recovery at 1280px (2.9s)",
+      "2026-10-19T00:16:49.4614136Z   ✓   18 tests/browser/recipient-invitation-expiry.spec.ts:5:7 › PRD-03/05/60: recipient PORTAL expiry and original-ID recovery at 1280px (2.9s)",
+      "2026-10-19T00:17:19.7814576Z   ✓   19 tests/browser/recipient-invitation-expiry.spec.ts:5:7 › PRD-03/05/60: recipient BOARD expiry and original-ID recovery at 1280px (5.3s)",
+      "2026-10-19T00:17:47.7271795Z   ✓   20 tests/browser/recipient-invitation-expiry.spec.ts:5:7 › PRD-03/05/60: recipient INTERNAL expiry and original-ID recovery at 390px (2.9s)",
+      "2026-10-19T00:18:15.6029152Z   ✓   21 tests/browser/recipient-invitation-expiry.spec.ts:5:7 › PRD-03/05/60: recipient PORTAL expiry and original-ID recovery at 390px (2.9s)",
+      "2026-10-19T00:18:44.5657708Z   ✓   22 tests/browser/recipient-invitation-expiry.spec.ts:5:7 › PRD-03/05/60: recipient BOARD expiry and original-ID recovery at 390px (3.9s)",
+      "2026-10-19T00:19:12.9715258Z   ✓   23 tests/browser/recipient-invitation-issuer-account-authority.spec.ts:5:7 › PRD-60-TC-04/06/07/09/11/12: Portal recipient withdraws deactivated issuer while connected at 1280px (3.4s)",
+      "2026-10-19T00:19:42.4838241Z   ✓   24 tests/browser/recipient-invitation-issuer-account-authority.spec.ts:5:7 › PRD-60-TC-04/06/07/09/11/12: Portal recipient withdraws deactivated issuer after disconnect at 1280px (4.5s)",
+      "2026-10-19T00:20:11.9110479Z   ✓   25 tests/browser/recipient-invitation-issuer-account-authority.spec.ts:5:7 › PRD-60-TC-04/06/07/09/11/12: Portal recipient withdraws deactivated issuer while connected at 390px (4.4s)",
+      "2026-10-19T00:20:41.3057554Z   ✓   26 tests/browser/recipient-invitation-issuer-account-authority.spec.ts:5:7 › PRD-60-TC-04/06/07/09/11/12: Portal recipient withdraws deactivated issuer after disconnect at 390px (4.4s)",
+      "2026-10-19T00:21:09.6287707Z   ✓   27 tests/browser/recipient-invitation-issuer-authority.spec.ts:5:7 › PRD-03-TC-05/08/11/12, PRD-60-TC-04/06/11/12: actual issuer removal withdraws a nonmember Portal invitation at 1280px (3.3s)",
+      "2026-10-19T00:21:37.8704022Z   ✓   28 tests/browser/recipient-invitation-issuer-authority.spec.ts:5:7 › PRD-03-TC-05/08/11/12, PRD-60-TC-04/06/11/12: actual issuer removal withdraws a nonmember Portal invitation at 390px (3.2s)",
+      "2026-10-19T00:22:19.1581871Z   ✓   29 tests/browser/recipient-invitation-lifecycle-authority.spec.ts:6:7 › PRD-03-TC-05/07/09/11/12, PRD-60-TC-04/09/11/12: Portal invitation withdraws on Organization deletion while connected at 1280px (16.3s)",
+      "2026-10-19T00:23:08.3596934Z   ✓   30 tests/browser/recipient-invitation-lifecycle-authority.spec.ts:6:7 › PRD-03-TC-05/07/09/11/12, PRD-60-TC-04/09/11/12: Portal invitation withdraws on Organization deletion after disconnect at 1280px (24.2s)",
+      "2026-10-19T00:23:48.3110630Z   ✓   31 tests/browser/recipient-invitation-lifecycle-authority.spec.ts:6:7 › PRD-03-TC-05/07/09/11/12, PRD-60-TC-04/09/11/12: Portal invitation withdraws on Organization deletion while connected at 390px (14.9s)",
+      "2026-10-19T00:24:37.2600622Z   ✓   32 tests/browser/recipient-invitation-lifecycle-authority.spec.ts:6:7 › PRD-03-TC-05/07/09/11/12, PRD-60-TC-04/09/11/12: Portal invitation withdraws on Organization deletion after disconnect at 390px (23.9s)",
+      "2026-10-19T00:25:08.3570171Z   ✓   33 tests/browser/recipient-invitation-live.spec.ts:6:7 › PRD-03/60-TC-05/08/09/11/12: nonmember Portal recipient discovers, revokes and recovers actual live invitations at 1280px (6.1s)",
+      "2026-10-19T00:25:39.4902815Z   ✓   34 tests/browser/recipient-invitation-live.spec.ts:6:7 › PRD-03/60-TC-05/08/09/11/12: nonmember Portal recipient discovers, revokes and recovers actual live invitations at 390px (6.1s)",
+      "2026-10-19T00:26:20.5274130Z   ✓   35 tests/browser/retention-policy-review.spec.ts:44:7 › PRD-70: real policy creation, stale review and retained history with keyboard confirmation at 1280px (16.0s)",
+      "2026-10-19T00:27:02.4365105Z   ✓   36 tests/browser/retention-policy-review.spec.ts:96:7 › PRD-70: original retry after reload and administrator withdrawal protect private policy work at 1280px (16.9s)",
+      "2026-10-19T00:27:43.1985405Z   ✓   37 tests/browser/retention-policy-review.spec.ts:44:7 › PRD-70: real policy creation, stale review and retained history with keyboard confirmation at 390px (15.8s)",
+      "2026-10-19T00:28:24.7197709Z   ✓   38 tests/browser/retention-policy-review.spec.ts:96:7 › PRD-70: original retry after reload and administrator withdrawal protect private policy work at 390px (16.5s)",
+      "2026-10-19T00:28:53.2493492Z   ✓   39 tests/browser/retention-source-classification.spec.ts:38:7 › PRD-70 hold administration streams another actor's release and withdraws history at 1280px (3.5s)",
+      "2026-10-19T00:29:21.7413315Z   ✓   40 tests/browser/retention-source-classification.spec.ts:38:7 › PRD-70 hold administration streams another actor's release and withdraws history at 390px (3.5s)",
+      "2026-10-19T00:29:52.1949528Z   ✓   41 tests/browser/retention-source-classification.spec.ts:85:7 › PRD-70 hold administration recovers reviewed preservation and releases blocked disposition at 1280px (5.4s)",
+      "2026-10-19T00:30:19.5047783Z   ✓   42 tests/browser/retention-source-classification.spec.ts:151:7 › PRD-70 hold administration withdraws pending private preservation after real membership removal at 1280px (2.3s)",
+      "2026-10-19T00:30:49.2987422Z   ✓   43 tests/browser/retention-source-classification.spec.ts:85:7 › PRD-70 hold administration recovers reviewed preservation and releases blocked disposition at 390px (4.8s)",
+      "2026-10-19T00:31:16.6088977Z   ✓   44 tests/browser/retention-source-classification.spec.ts:151:7 › PRD-70 hold administration withdraws pending private preservation after real membership removal at 390px (2.3s)",
+      "2026-10-19T00:31:57.6821931Z   ✓   45 tests/browser/retention-source-classification.spec.ts:195:7 › PRD-70 archived Card and Attachment classification remains independent of operational editing at 1280px (16.1s)",
+      "2026-10-19T00:32:38.4711537Z   ✓   46 tests/browser/retention-source-classification.spec.ts:255:7 › PRD-70 membership withdrawal clears pending source recovery without replay at 1280px (15.8s)",
+      "2026-10-19T00:33:20.0279634Z   ✓   47 tests/browser/retention-source-classification.spec.ts:324:7 › PRD-70 original classification recovery retains its source Board after a real Card move at 1280px (16.5s)",
+      "2026-10-19T00:34:10.3502816Z   ✓   48 tests/browser/retention-source-classification.spec.ts:377:7 › PRD-70 actual three-source keyboard classification and exact original reload recovery at 1280px (25.3s)",
+      "2026-10-19T00:34:50.5878738Z   ✓   49 tests/browser/retention-source-classification.spec.ts:195:7 › PRD-70 archived Card and Attachment classification remains independent of operational editing at 390px (15.2s)",
+      "2026-10-19T00:35:31.5217622Z   ✓   50 tests/browser/retention-source-classification.spec.ts:255:7 › PRD-70 membership withdrawal clears pending source recovery without replay at 390px (15.9s)",
+      "2026-10-19T00:36:12.5128312Z   ✓   51 tests/browser/retention-source-classification.spec.ts:324:7 › PRD-70 original classification recovery retains its source Board after a real Card move at 390px (16.0s)",
+      "2026-10-19T00:37:00.8422880Z   ✓   52 tests/browser/retention-source-classification.spec.ts:377:7 › PRD-70 actual three-source keyboard classification and exact original reload recovery at 390px (23.3s)",
+      "2026-10-19T00:37:31.9018031Z   ✓   53 tests/browser/root-failure.spec.ts:5:7 › ARCH-02/PRD-06: fatal application root has private-safe keyboard recovery at 1280px (6.0s)",
+      "2026-10-19T00:38:02.8965641Z   ✓   54 tests/browser/root-failure.spec.ts:5:7 › ARCH-02/PRD-06: fatal application root has private-safe keyboard recovery at 390px (6.0s)",
+      "2026-10-19T00:38:33.5289786Z   ✓   55 tests/browser/runtime-exceptions.spec.ts:5:7 › PRD-06: browser exceptions retain a dirty Card draft and report only fixed counts at 1280px (5.6s)",
+      "2026-10-19T00:39:04.1426380Z   ✓   56 tests/browser/runtime-exceptions.spec.ts:5:7 › PRD-06: browser exceptions retain a dirty Card draft and report only fixed counts at 390px (5.6s)",
+      "2026-10-19T00:39:29.4971847Z   ✓   57 tests/browser/security.spec.ts:3:5 › PRD-24-TC-03/04: release CSP blocks script injection and headers protect errors (341ms)",
+      "2026-10-19T00:39:57.0120329Z   ✓   58 tests/browser/signin-card-return.spec.ts:21:5 › PRD-01-VS-04-T-03/AC-01/02/03: another Organization owner remains denied after sign-in and returns to authorized work (2.5s)",
+      "2026-10-19T00:40:25.0140621Z   ✓   59 tests/browser/signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px (3.0s)",
+      "2026-10-19T00:40:52.8560985Z   ✓   60 tests/browser/signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 768px (2.8s)",
+      "2026-10-19T00:41:20.6324058Z   ✓   61 tests/browser/signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 390px (2.8s)",
+      "2026-10-19T00:41:48.3511307Z   ✓   62 tests/browser/signin-card-return.spec.ts:103:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 320px (2.7s)",
+      "2026-10-19T00:42:14.3145268Z   ✓   63 tests/browser/signin-card-return.spec.ts:159:7 › PRD-01-VS-04/AC-03: sign-in return does not grant outsider access to a private Card (951ms)",
+      "2026-10-19T00:42:40.3744895Z   ✓   64 tests/browser/signin-card-return.spec.ts:159:7 › PRD-01-VS-04/AC-03: sign-in return does not grant portal-only access to a private Card (1.0s)",
+      "2026-10-19T00:43:08.3888736Z   ✓   65 tests/browser/signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current board → canonical Card → Board at 1280px (3.0s)",
+      "2026-10-19T00:43:36.2639372Z   ✓   66 tests/browser/signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current board → canonical Card → Board at 390px (2.9s)",
+      "2026-10-19T00:44:04.4070635Z   ✓   67 tests/browser/signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 1280px (3.1s)",
+      "2026-10-19T00:44:32.3985975Z   ✓   68 tests/browser/signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 768px (3.0s)",
+      "2026-10-19T00:45:00.2593152Z   ✓   69 tests/browser/signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 390px (2.8s)",
+      "2026-10-19T00:45:28.0401206Z   ✓   70 tests/browser/signin-card-return.spec.ts:193:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 320px (2.8s)",
+      "2026-10-19T00:45:55.2040972Z   ✓   71 tests/browser/surface-admission.spec.ts:4:7 › ARCH-02-AC-003: Portal-only deep links withhold Council navigation at 1280px (2.1s)",
+      "2026-10-19T00:46:22.2299019Z   ✓   72 tests/browser/surface-admission.spec.ts:4:7 › ARCH-02-AC-003: Portal-only deep links withhold Council navigation at 768px (2.0s)",
+      "2026-10-19T00:46:49.2324387Z   ✓   73 tests/browser/surface-admission.spec.ts:4:7 › ARCH-02-AC-003: Portal-only deep links withhold Council navigation at 390px (2.0s)",
+      "2026-10-19T00:47:16.1897667Z   ✓   74 tests/browser/surface-admission.spec.ts:4:7 › ARCH-02-AC-003: Portal-only deep links withhold Council navigation at 320px (1.9s)",
+      "2026-10-19T00:47:41.7216723Z   ✓   75 tests/browser/ui-build-identity.spec.ts:3:5 › ARCH-02-AC-004: UI reports the deployed web and API commit identity (516ms)",
+      "2026-10-19T00:48:09.8556872Z   ✓   76 tests/browser/url-attachments.spec.ts:6:7 › PRD-14 URL attachments: keyboard creation, lost reply, original retry and safe disclosure at 1280px (3.1s)",
+      "2026-10-19T00:48:37.3718147Z   ✓   77 tests/browser/url-attachments.spec.ts:6:7 › PRD-14 URL attachments: keyboard creation, lost reply, original retry and safe disclosure at 390px (2.5s)",
+      "2026-10-19T00:49:03.8940158Z   ✓   78 tests/browser/ux-forms.spec.ts:10:7 › UX-005 controlled field recovery, native submit and zoom at 1280px (1.5s)",
+      "2026-10-19T00:49:30.3868823Z   ✓   79 tests/browser/ux-forms.spec.ts:10:7 › UX-005 controlled field recovery, native submit and zoom at 768px (1.5s)",
+      "2026-10-19T00:49:56.7811059Z   ✓   80 tests/browser/ux-forms.spec.ts:10:7 › UX-005 controlled field recovery, native submit and zoom at 390px (1.4s)",
+      "2026-10-19T00:50:23.1450248Z   ✓   81 tests/browser/ux-forms.spec.ts:10:7 › UX-005 controlled field recovery, native submit and zoom at 320px (1.4s)",
+      "2026-10-19T00:50:51.9574095Z   ✓   82 tests/browser/ux-foundation.spec.ts:11:7 › UX-002/003 controlled role discovery, shared consumers and zoom at 1280px (3.8s)",
+      "2026-10-19T00:51:20.9016238Z   ✓   83 tests/browser/ux-foundation.spec.ts:11:7 › UX-002/003 controlled role discovery, shared consumers and zoom at 768px (3.9s)",
+      "2026-10-19T00:51:49.6112839Z   ✓   84 tests/browser/ux-foundation.spec.ts:11:7 › UX-002/003 controlled role discovery, shared consumers and zoom at 390px (3.7s)",
+      "2026-10-19T00:52:18.2772267Z   ✓   85 tests/browser/ux-foundation.spec.ts:11:7 › UX-002/003 controlled role discovery, shared consumers and zoom at 320px (3.7s)",
+      "2026-10-19T00:52:44.1338825Z   ✓   86 tests/browser/ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 1280px (844ms)",
+      "2026-10-19T00:53:10.0608919Z   ✓   87 tests/browser/ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 768px (915ms)",
+      "2026-10-19T00:53:37.5555015Z   ✓   88 tests/browser/ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 390px (2.5s)",
+      "2026-10-19T00:54:05.0219843Z   ✓   89 tests/browser/ux-shell.spec.ts:8:7 › UX-001 controlled shell keyboard, reflow and accessibility at 320px (2.4s)",
+      "2026-10-19T00:54:36.1326273Z   ✓   90 tests/browser/view-failure.spec.ts:11:7 › PRD-06: private-safe board render failure and explicit recovery at 1280px (6.1s)",
+      "2026-10-19T00:55:07.4316493Z   ✓   91 tests/browser/view-failure.spec.ts:11:7 › PRD-06: private-safe card render failure and explicit recovery at 1280px (6.3s)",
+      "2026-10-19T00:55:38.4057493Z   ✓   92 tests/browser/view-failure.spec.ts:11:7 › PRD-06: private-safe board render failure and explicit recovery at 390px (6.0s)",
+      "2026-10-19T00:56:09.5438475Z   ✓   93 tests/browser/view-failure.spec.ts:11:7 › PRD-06: private-safe card render failure and explicit recovery at 390px (6.1s)",
+      "2026-10-19T00:57:10.6830830Z   ✓   94 tests/browser/watch-activity-matrix.spec.ts:13:5 › PRD-17-TC-01/06/07/08/10/11/12: all configured watch producers reach private native inboxes (36.1s)",
+      "2026-10-19T00:58:04.6468173Z   ✓   95 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: OWNER cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (28.9s)",
+      "2026-10-19T00:59:19.8734984Z   ✓   96 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: ADMIN cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (50.2s)",
+      "2026-10-19T01:00:35.1265910Z   ✓   97 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: MEMBER cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (50.2s)",
+      "2026-10-19T01:01:50.2953992Z   ✓   98 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: ORGANIZATION_READER cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (50.2s)",
+      "2026-10-19T01:03:05.3085003Z   ✓   99 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: PUBLIC_READER cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (50.0s)",
+      "2026-10-19T01:03:57.0410898Z   ✓  100 tests/browser/watch-notifications.spec.ts:37:5 › PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List movement delivery (26.7s)",
+      "2026-10-19T01:04:49.9276390Z   ✓  101 tests/browser/watch-permission-order.spec.ts:7:5 › PRD-05/17: MEMBER permission withdrawal and actual activity obey observed Board lock order (27.9s)",
+      "2026-10-19T01:05:42.5127701Z   ✓  102 tests/browser/watch-permission-order.spec.ts:7:5 › PRD-05/17: ADMIN permission withdrawal and actual activity obey observed Board lock order (27.6s)",
+      "2026-10-19T01:06:35.9919896Z   ✓  103 tests/browser/watch-permission-order.spec.ts:7:5 › PRD-05/17: ORGANIZATION_READER permission withdrawal and actual activity obey observed Board lock order (28.5s)",
+      "2026-10-19T01:07:29.5935263Z   ✓  104 tests/browser/watch-permission-order.spec.ts:7:5 › PRD-05/17: PUBLIC_READER permission withdrawal and actual activity obey observed Board lock order (28.6s)",
+      "2026-10-19T01:09:04.1265020Z   ✓  105 tests/browser/watch-subscriptions.spec.ts:9:5 › PRD-17: desktop and phone recover personal watches for Board, List and moving Card (1.2m)",
+      "2026-10-19T01:09:45.4490169Z   ✓  106 tests/browser/watch-trigger-order.spec.ts:6:5 › PRD-17-TC-07/08: actual unwatch and activity commands select Card List Board eligibility in observed lock order (16.3s)",
+      "2026-10-19T01:10:13.4968585Z   ✓  107 tests/browser/work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 1280px (3.0s)",
+      "2026-10-19T01:10:41.7559875Z   ✓  108 tests/browser/work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 768px (3.2s)",
+      "2026-10-19T01:11:10.3984961Z   ✓  109 tests/browser/work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 390px (3.6s)",
+      "2026-10-19T01:11:38.9951557Z   ✓  110 tests/browser/work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 320px (3.6s)",
+      "2026-10-19T01:12:23.4533234Z   ✓  111 tests/browser/work-realtime.spec.ts:29:5 › PRD-22: exact release WebSocket delivers persisted changes, cursor recovery and logout revocation through Nginx (19.4s)",
+      "2026-10-19T01:13:09.1485827Z   ✓  112 tests/browser/work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 1280px (20.7s)",
+      "2026-10-19T01:13:54.6012790Z   ✓  113 tests/browser/work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 768px (20.4s)",
+      "2026-10-19T01:14:40.3475903Z   ✓  114 tests/browser/work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 390px (20.7s)",
+      "2026-10-19T01:15:26.1066596Z   ✓  115 tests/browser/work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 320px (20.7s)"
+    ],
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Download exact built images",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Verify image archive checksums",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Load exact built images",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Start release topology",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Apply release-database migrations",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7
+      },
+      {
+        "name": "Verify structured API and Worker console records",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 8
+      },
+      {
+        "name": "Prepare Retain fixed console verification evidence",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9
+      },
+      {
+        "name": "Retain fixed console verification evidence",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 10
+      },
+      {
+        "name": "Provision least-privilege runtime database roles",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11
+      },
+      {
+        "name": "Reject unsafe runtime database roles in exact images",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12
+      },
+      {
+        "name": "Verify installed configuration identities, relationships and restricted capabilities",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13
+      },
+      {
+        "name": "Retention policy schema and restricted capabilities",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 14
+      },
+      {
+        "name": "Health, readiness and SPA deep-link smoke tests",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 15
+      },
+      {
+        "name": "Verify embedded build identity and override resistance",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16
+      },
+      {
+        "name": "Production does not expose demo reset",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17
+      },
+      {
+        "name": "Verify production account defaults and prepare isolated auth fixture",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18
+      },
+      {
+        "name": "Demo documented workflows without PostgreSQL or external network",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 19
+      },
+      {
+        "name": "API and Worker startup fail closed against exact retained images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 20
+      },
+      {
+        "name": "Verify explicit Worker job scope and handler configuration",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 21
+      },
+      {
+        "name": "Verify enabled attachment configuration refusal in exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 22
+      },
+      {
+        "name": "Test PostgreSQL profile concurrency",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 23
+      },
+      {
+        "name": "Identity audit rollback, logout waits and one-connection commands",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 24
+      },
+      {
+        "name": "Session-bound logout and deactivation receipts against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 25
+      },
+      {
+        "name": "Current and legacy credential-checked sign-in retries against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 26
+      },
+      {
+        "name": "Authentication lifecycle privacy against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 27
+      },
+      {
+        "name": "Atomic registration retries against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 28
+      },
+      {
+        "name": "Invitation-backed closed registration and atomic expiry against exact release API",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 29
+      },
+      {
+        "name": "Verified-email invitation discovery and retry-safe acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 30
+      },
+      {
+        "name": "Atomic invitation creation retries against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 31
+      },
+      {
+        "name": "Private board discovery and revoked membership against restricted PostgreSQL runtime",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 32
+      },
+      {
+        "name": "Board member canonical events, receipts, Worker delivery and revoked recovery against exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 33
+      },
+      {
+        "name": "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 34
+      },
+      {
+        "name": "Board grants, lifecycle freezes and original receipt recovery against exact API and restricted PostgreSQL",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 35
+      },
+      {
+        "name": "Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 36
+      },
+      {
+        "name": "Independent full-capacity Board copy and atomic retry recovery against restricted PostgreSQL runtime",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 37
+      },
+      {
+        "name": "Board administrator demotion continuity and atomic recovery",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 38
+      },
+      {
+        "name": "Work command and audit rollback against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 39
+      },
+      {
+        "name": "Organization audit rollback, revoked actor waits and concurrent owner departures",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 40
+      },
+      {
+        "name": "Automatic Organization metadata delivery with typed queue isolation",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 41
+      },
+      {
+        "name": "Automatic recipient authority pages and restart against exact Worker image",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 42
+      },
+      {
+        "name": "Automatic Board recipient authority pages and restart against exact Worker image",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 43
+      },
+      {
+        "name": "Organization request and terminal recipient authority against exact Worker image",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 44
+      },
+      {
+        "name": "Canonical issuer deactivation and bounded authority routing against exact Worker image",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 45
+      },
+      {
+        "name": "Account deactivation and Organization active-owner continuity",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 46
+      },
+      {
+        "name": "Authorized bounded Organization member directory and post-wait revocation",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 47
+      },
+      {
+        "name": "Authorized global search, literal matching, cursor binding and archived scope through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 48
+      },
+      {
+        "name": "Deleted and moved Card content admission across search inbox and notification history through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 49
+      },
+      {
+        "name": "Organization terminal search and notification withdrawal after issuing-session logout or account deactivation through exact API and Worker images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 50
+      },
+      {
+        "name": "Account-bound navigation observations through exact release proxy and API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 51
+      },
+      {
+        "name": "Durable work retry keys against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 52
+      },
+      {
+        "name": "Bounded archives, confirmed deletion and atomic List copies",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 53
+      },
+      {
+        "name": "Transactional labels, atomic association removal and post-wait receipt authorization",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 54
+      },
+      {
+        "name": "Bounded Board members, atomic Card assignments and post-wait revocation through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 55
+      },
+      {
+        "name": "Personal watch revisions, atomic publication and post-wait revocation through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 56
+      },
+      {
+        "name": "Atomic username mentions, source notifications and redaction history through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 57
+      },
+      {
+        "name": "Protected activity history, post-wait access/session admission and persisted cursor restart through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 58
+      },
+      {
+        "name": "Cross-Board Card movement, original receipt admission and atomic reference rollback through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 59
+      },
+      {
+        "name": "Independent Card copy, destination Watch notification and atomic late-publication rollback through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 60
+      },
+      {
+        "name": "UTC Card dates, atomic notification rollback and private retry recovery through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 61
+      },
+      {
+        "name": "Authorized URL attachments, receipts, metadata paging and atomic rollback against exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 62
+      },
+      {
+        "name": "Authorized checklist creation, ordered progress and atomic rollback against exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 63
+      },
+      {
+        "name": "Checklist, comment, activity, movement and lifecycle at supported capacity",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 64
+      },
+      {
+        "name": "Authorized configuration and lifecycle HTTP p95 through exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 65
+      },
+      {
+        "name": "Prepare Retain fixed Organization latency evidence",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 66
+      },
+      {
+        "name": "Retain fixed Organization latency evidence",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 67
+      },
+      {
+        "name": "Validate pinned operator Collector configuration",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 68
+      },
+      {
+        "name": "Verify exact-image operator metric ingestion and private-field exclusion",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 69
+      },
+      {
+        "name": "Verify operator warning firing and resolved delivery",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 70
+      },
+      {
+        "name": "Prepare Retain fixed operator collection evidence",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 71
+      },
+      {
+        "name": "Retain fixed operator collection evidence",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 72
+      },
+      {
+        "name": "Prepare Retain fixed-scope Checklist capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 73
+      },
+      {
+        "name": "Retain fixed-scope Checklist capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 74
+      },
+      {
+        "name": "Prepare Retain fixed-scope activity capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 75
+      },
+      {
+        "name": "Retain fixed-scope activity capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 76
+      },
+      {
+        "name": "Prepare Retain fixed-scope notification inbox capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 77
+      },
+      {
+        "name": "Retain fixed-scope notification inbox capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 78
+      },
+      {
+        "name": "Prepare Retain fixed-scope watch producer fan-out measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 79
+      },
+      {
+        "name": "Retain fixed-scope watch producer fan-out measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 80
+      },
+      {
+        "name": "Prepare Retain fixed-scope global search capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 81
+      },
+      {
+        "name": "Retain fixed-scope global search capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 82
+      },
+      {
+        "name": "Prepare Retain fixed-scope comment capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 83
+      },
+      {
+        "name": "Retain fixed-scope comment capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 84
+      },
+      {
+        "name": "Prepare Retain fixed-scope cross-Board movement capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 85
+      },
+      {
+        "name": "Retain fixed-scope cross-Board movement capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 86
+      },
+      {
+        "name": "Prepare Retain fixed-scope work lifecycle capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 87
+      },
+      {
+        "name": "Retain fixed-scope work lifecycle capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 88
+      },
+      {
+        "name": "Prepare Retain fixed-scope permanent-deletion capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 89
+      },
+      {
+        "name": "Retain fixed-scope permanent-deletion capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 90
+      },
+      {
+        "name": "Prepare Retain fixed-scope Card copy capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 91
+      },
+      {
+        "name": "Retain fixed-scope Card copy capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 92
+      },
+      {
+        "name": "Atomic Work events and leased Worker readiness against exact release images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 93
+      },
+      {
+        "name": "Hosted operational lifecycle discovery and restart recovery against exact release Worker",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 94
+      },
+      {
+        "name": "Independent Portal grants across operational lifecycle changes against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 95
+      },
+      {
+        "name": "Lifecycle session expiry during receipt publication against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 96
+      },
+      {
+        "name": "Archived records and configuration history across operational lifecycle changes",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 97
+      },
+      {
+        "name": "Organization configuration tenant-scoped usage",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 98
+      },
+      {
+        "name": "Retention policy authorized commands and private history against exact release API",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 99
+      },
+      {
+        "name": "Run actions/setup-node@v7",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 100
+      },
+      {
+        "name": "Install browser test dependencies",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 101
+      },
+      {
+        "name": "Demo metadata, terminal and recipient lifecycle against exact API and web images",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 102
+      },
+      {
+        "name": "Attachment upload and isolated Worker image publication through explicit private test providers",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 103
+      },
+      {
+        "name": "Prepare Retain fixed-scope attachment capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 104
+      },
+      {
+        "name": "Retain fixed-scope attachment capacity measurements",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 105
+      },
+      {
+        "name": "Authorized contiguous event replay and mid-read revocation against exact release API",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 106
+      },
+      {
+        "name": "Check concurrent and large-board rank allocation",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 107
+      },
+      {
+        "name": "Prepare Retain actual large-Board native capacity diagnostics",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 108
+      },
+      {
+        "name": "Retain actual large-Board native capacity diagnostics",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 109
+      },
+      {
+        "name": "Check write authorization and lifecycle during live database lock waits",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 110
+      },
+      {
+        "name": "Prepare isolated identity mail transport and ephemeral signing keys",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 111
+      },
+      {
+        "name": "Identity mail against exact API/Worker images and restricted database role",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 112
+      },
+      {
+        "name": "Recipient calendar admission through actual invitation mail proof",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 113
+      },
+      {
+        "name": "Desktop and mobile accessible keyboard verification/recovery through Worker delivery",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 114
+      },
+      {
+        "name": "Desktop and phone task work through provider outage",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 115
+      },
+      {
+        "name": "Strict verified-account Organization departure and account continuity",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 116
+      },
+      {
+        "name": "Strict verified-account Board management and personal preferences",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 117
+      },
+      {
+        "name": "Strict verified-account source classification and original recovery",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 118
+      },
+      {
+        "name": "Strict verified-account watch producers through native private inboxes",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 119
+      },
+      {
+        "name": "Strict verified-account assignment mention and reminder native delivery",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 120
+      },
+      {
+        "name": "Strict verified-account watch and permission ordering through observed database waits",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 121
+      },
+      {
+        "name": "Restore isolated unverified-email account fixture for profile browser tests",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 122
+      },
+      {
+        "name": "Enable automatic Organization metadata and invitation authority routing for native browser acceptance",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 123
+      },
+      {
+        "name": "Authenticated browser E2E against exact release images",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 124
+      },
+      {
+        "name": "Authentication and invitation abuse limits on API and edge",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 125
+      },
+      {
+        "name": "Prepare Retain browser failure evidence",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 126
+      },
+      {
+        "name": "Retain browser failure evidence",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 127
+      },
+      {
+        "name": "Prepare Retain scoped browser performance measurements",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 128
+      },
+      {
+        "name": "Retain scoped browser performance measurements",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 129
+      },
+      {
+        "name": "Capture container state and logs",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 130
+      },
+      {
+        "name": "Prepare Upload integration diagnostics",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 131
+      },
+      {
+        "name": "Upload integration diagnostics",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 132
+      },
+      {
+        "name": "Stop release topology",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 133
+      },
+      {
+        "name": "Post Run actions/setup-node@v7",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 265
+      },
+      {
+        "name": "Post Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 266
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 267
+      }
+    ],
+    "boundary": "Whole current-image full4 job Passed. Final release-bundle gate and actual main integration remain pending."
+  },
+  "scope": "Actual current13 original native and54 controlled cases executed; unchanged test file from97ce to996. No old pass is relabelled as a new execution."
+}
