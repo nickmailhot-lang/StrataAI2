@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { pressObservedRequest, pressObservedValidation } from './keyboardAdmission';
 
 const org = '11111111-1111-4111-8111-111111111111';
 const actor = '22222222-2222-4222-8222-222222222222';
@@ -39,12 +40,15 @@ for (const width of [1280, 768, 390, 320]) {
     const logo = page.getByRole('textbox', { name: 'Logo URL' });
     await expect(name).toHaveValue('Council');
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
-    await name.fill('   '); await name.press('Enter');
+    await name.fill('   '); await expect(name).toHaveValue('   ');
+    await pressObservedValidation(name, page.locator('form'));
     await expect(name).toBeFocused();
     await expect(name).toHaveAttribute('aria-invalid', 'true');
     await expect(name).toHaveAccessibleDescription('Use 1–160 characters; spaces alone are not a name.');
     expect(writes).toBe(0);
-    await name.fill('Council'); await logo.fill('http://example.test/logo.png'); await logo.press('Enter');
+    await name.fill('Council'); await expect(name).toHaveValue('Council');
+    await logo.fill('http://example.test/logo.png'); await expect(logo).toHaveValue('http://example.test/logo.png');
+    await pressObservedRequest(logo, () => writes, 1);
     await expect(logo).toBeFocused();
     await expect(logo).toHaveAttribute('aria-invalid', 'true');
     await expect(logo).toHaveAccessibleDescription('Enter an HTTPS URL without a username or password.');
@@ -58,7 +62,10 @@ for (const width of [1280, 768, 390, 320]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     await page.screenshot({ path: test.info().outputPath(`ux-form-error-${width}.png`), fullPage: true });
-    await logo.fill('https://example.test/logo.png'); await logo.press('Enter');
+    await logo.fill('https://example.test/logo.png'); await expect(logo).toHaveValue('https://example.test/logo.png');
+    // A foreground account check can hide this preserved form after insertion.
+    // Keep native field Enter; stop admission as soon as its PATCH starts.
+    await pressObservedRequest(logo, () => writes, 2);
     await expect(page.getByRole('status').filter({ hasText: 'Organization settings saved.' })).toBeVisible();
     await expect(logo).toHaveAttribute('aria-invalid', 'false');
     expect(writes).toBe(2);
