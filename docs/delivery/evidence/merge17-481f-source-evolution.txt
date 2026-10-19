@@ -1,0 +1,3 @@
+npm notice run strataai2@0.1.0 delivery:validate
+npm notice run node scripts/delivery-progress.mjs validate --base-ref 000b8659b03d7211edd79c64f9740719ebe2b76e
+Valid: 1589 work items; 3880 criteria. No unsupported Done claims.
