@@ -28,7 +28,7 @@ export async function pressObservedValidation(button: Locator, form: Locator) {
     if (node.nodeName !== 'FORM') throw new Error('Expected the original validation form');
     const state = { count: 0 };
     const onSubmit = () => { state.count++; };
-    node.addEventListener('submit', onSubmit, true);
+    node.addEventListener('submit', onSubmit, { capture: true });
     return { node, state, onSubmit };
   });
   try {
@@ -49,7 +49,7 @@ export async function pressObservedValidation(button: Locator, form: Locator) {
       await expect.poll(() => observation.evaluate(o => o.state.count), { timeout: 500 }).toBe(1);
     }).toPass({ timeout: 5_000 });
   } finally {
-    await observation.evaluate(o => o.node.removeEventListener('submit', o.onSubmit, true));
+    await observation.evaluate(o => o.node.removeEventListener('submit', o.onSubmit, { capture: true }));
     await observation.dispose();
   }
 }
