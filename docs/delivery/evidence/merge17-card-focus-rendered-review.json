@@ -1,0 +1,61 @@
+{
+  "at": "2026-10-19T03:59:23.683Z",
+  "reviewer": "Codex actual viewport review",
+  "result": "Passed",
+  "shots": [
+    {
+      "scene": "refusal",
+      "width": 1280,
+      "path": "docs/delivery/evidence/card-refusal-c055-1280.png",
+      "sha256": "a77cc5ac717ab26340db7dbbd3d2d76d0662a2b48b6ced05c9a891da14b93b72",
+      "actualClient": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "actualApi": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+    },
+    {
+      "scene": "refusal",
+      "width": 390,
+      "path": "docs/delivery/evidence/card-refusal-c055-390.png",
+      "sha256": "8629dfd5d1e9e88fab2e6e2aeba0ae1bfe3a5d301880889cb913ee3b55ce5d25",
+      "actualClient": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "actualApi": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+    },
+    {
+      "scene": "return",
+      "width": 1280,
+      "path": "docs/delivery/evidence/card-return-c055-1280.png",
+      "sha256": "807d5e9e92072299f69a9f081d0b5a21d1480301d2cc0e5e95fab2aec178df06",
+      "actualClient": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "actualApi": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+    },
+    {
+      "scene": "return",
+      "width": 768,
+      "path": "docs/delivery/evidence/card-return-c055-768.png",
+      "sha256": "05622a04dc2178b955e86ab950db3cd23008bb494164ca7921fe6903ba002211",
+      "actualClient": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "actualApi": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+    },
+    {
+      "scene": "return",
+      "width": 390,
+      "path": "docs/delivery/evidence/card-return-c055-390.png",
+      "sha256": "60853b10fab5ebd7051d1bf5eb7a7a0817b68b71fce56e82a3df5ee330942409",
+      "actualClient": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "actualApi": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+    },
+    {
+      "scene": "return",
+      "width": 320,
+      "path": "docs/delivery/evidence/card-return-c055-320.png",
+      "sha256": "993cb7d52f86a8d8e6bcee9874852a8e0fa41736f4a730bc86bfa48052ac4552",
+      "actualClient": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "actualApi": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+    }
+  ],
+  "observations": [
+    "Desktop and phone refusal: clear generic feedback with visible focus outline entirely below fixed header; no old private Card content.",
+    "All four canonical returns: created Card remains present, readable, focused and visible in its Board context. Tablet768 retains200% text; local canvas scrolling remains intentional.",
+    "Original API/request/key/body and currentAxe/no-overflow/focus assertions are separate executed evidence; images are separately inspected."
+  ],
+  "scope": "Scoped localc055 client/retained API Demo UX review; no new immutable release, physical-device, screen-reader, whole-WCAG or full MVP certificate."
+}

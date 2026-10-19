@@ -1,0 +1,184 @@
+{
+  "at": "2026-10-19T03:59:23.683Z",
+  "result": "Passed",
+  "source": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+  "profile": "Supporting owned Demo: explicit read-only localc055 client overlay over retained API f3ca; no DB/Worker; not a new qualified image/bundle or Production deployment.",
+  "runtime": {
+    "at": "2026-10-19T03:51:42.4277241Z",
+    "apiContainerUnchanged": true,
+    "result": "Passed",
+    "clientBuild": {
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "version": "0.1.0-local-card-focus"
+    },
+    "scope": "Read-only local client overlay, explicit mixed local Demo validation. Not a new qualified image/bundle. Original retained API and all user services unchanged; no Worker.",
+    "apiRevision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+  },
+  "originalRuntime": {
+    "scope": "Correct declared endpoints; original /health and /build probes were SPA fallback and are retained as unsuccessful probes, not application failures. Owned Demo only; no Worker/database/production deployment.",
+    "result": "Passed",
+    "apiHealthStatus": 200,
+    "at": "2026-10-19T03:37:22.7811699Z",
+    "apiRuntime": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "clientBuild": {
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "webHealthStatus": 200
+  },
+  "images": {
+    "at": "2026-10-19T03:25:31.627Z",
+    "result": "Passed",
+    "scope": "Original provider-authenticated tar/config/manifest digests and loaded image content identity. Docker Desktop reports the original OCI manifest digest as Id; original provenance config IDs remain unchanged. API/web only; no service or Worker started.",
+    "build": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "shortSha": "f3ca3f474d10",
+      "workflowRunId": "39169877465",
+      "workflowRunNumber": "1927",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1927",
+      "releaseVersion": null,
+      "imageTag": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "createdAt": "2026-10-18T21:54:36.501Z",
+      "images": {
+        "web": "strataai-web:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+        "api": "strataai-api:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+        "worker": "strataai-worker:f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+      }
+    },
+    "records": [
+      {
+        "name": "api",
+        "ref": "strataai-api:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+        "originalConfigDigest": "sha256:5ccb00ca9fb96874d3b0d00d351a237a993c4717fffd7f60d22ab48ec9bebfdb",
+        "originalManifestDigest": "sha256:e48c1a0b7080202ea8a0fb69de0c41794f0a94fae62bd71a663e8157d6a311d2",
+        "loadedDockerId": "sha256:e48c1a0b7080202ea8a0fb69de0c41794f0a94fae62bd71a663e8157d6a311d2",
+        "loadedDescriptor": {
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "digest": "sha256:e48c1a0b7080202ea8a0fb69de0c41794f0a94fae62bd71a663e8157d6a311d2",
+          "size": 1773,
+          "annotations": {
+            "io.containerd.image.name": "docker.io/library/strataai-api:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+            "org.opencontainers.image.ref.name": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+          }
+        },
+        "authenticatedArchiveConfigPreserved": true,
+        "originalRootFsDiffIdsEqual": true,
+        "rootFsLayers": 10,
+        "os": "linux",
+        "architecture": "amd64"
+      },
+      {
+        "name": "web",
+        "ref": "strataai-web:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+        "originalConfigDigest": "sha256:2f78df2f1e15ee878ddbb4e3e3d592dd262655abeb508533906775abe4b76b07",
+        "originalManifestDigest": "sha256:9d6d547d7e4839020ff74898022e039c5aa65fbaa3e579300cddbcc8e8227710",
+        "loadedDockerId": "sha256:9d6d547d7e4839020ff74898022e039c5aa65fbaa3e579300cddbcc8e8227710",
+        "loadedDescriptor": {
+          "mediaType": "application/vnd.oci.image.manifest.v1+json",
+          "digest": "sha256:9d6d547d7e4839020ff74898022e039c5aa65fbaa3e579300cddbcc8e8227710",
+          "size": 2062,
+          "annotations": {
+            "io.containerd.image.name": "docker.io/library/strataai-web:f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+            "org.opencontainers.image.ref.name": "f3ca3f474d106684e77d57af4f4bc1d7107e9514"
+          }
+        },
+        "authenticatedArchiveConfigPreserved": true,
+        "originalRootFsDiffIdsEqual": true,
+        "rootFsLayers": 12,
+        "os": "linux",
+        "architecture": "amd64"
+      }
+    ],
+    "initialHelperMismatch": {
+      "result": "Failed",
+      "reason": "Temporary helper compared an OCI manifest Id to the original config digest. Both exact digests now independently verified against the authenticated original archive; no mismatch ignored."
+    }
+  },
+  "tests": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "retries": 0,
+    "log": "\r\nRunning 6 tests using 1 worker\r\n\r\n(node:27376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 tests\\browser\\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 1280px (3.3s)\r\n  ok 2 tests\\browser\\card-creation-account.spec.ts:8:7 › PRD-08-VS-01-T-01/ACCOUNT: an original Card creation retry cannot execute as a replacement account at 390px (3.1s)\r\n  ok 3 tests\\browser\\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 1280px (5.8s)\r\n  ok 4 tests\\browser\\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 768px (5.6s)\r\n  ok 5 tests\\browser\\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 390px (4.8s)\r\n  ok 6 tests\\browser\\card-creation-recovery.spec.ts:8:7 › PRD-08-VS-04/AC-02/04: original-account Card retry persists once and returns to its Board at 320px (5.1s)\r\n\r\n  6 passed (30.0s)\r\n"
+  },
+  "desktop": {
+    "geometry": {
+      "width": 1280,
+      "alertBox": {
+        "x": 272,
+        "y": 88,
+        "width": 984,
+        "height": 48.015625
+      },
+      "headerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 64
+      },
+      "height": 900,
+      "scrollY": 0,
+      "alertFocused": true,
+      "activeTag": "DIV"
+    },
+    "command": {
+      "originalActor": "397c313a-2f86-4549-8f52-7ca05f0e5595",
+      "replacementActor": "7d4d0608-cae3-4e41-a20a-3515b1b3a52d",
+      "statuses": [
+        201,
+        401
+      ],
+      "createdIds": [
+        "9186b153-7f31-4d5f-a063-3f227abdfcfe",
+        null
+      ],
+      "sameKey": true,
+      "sameBody": true,
+      "canonicalCardCount": 1
+    }
+  },
+  "phone": {
+    "geometry": {
+      "width": 390,
+      "alertBox": {
+        "x": 16,
+        "y": 72,
+        "width": 358,
+        "height": 68.03125
+      },
+      "headerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 56
+      },
+      "height": 900,
+      "scrollY": 0,
+      "alertFocused": true,
+      "activeTag": "DIV"
+    },
+    "command": {
+      "originalActor": "4df19e1b-3202-4dca-8081-dca9c0fff23f",
+      "replacementActor": "354bc8c8-a939-49f5-9785-f83de4fb501c",
+      "statuses": [
+        201,
+        401
+      ],
+      "createdIds": [
+        "cd1c6d35-e1a8-45da-b268-e2f30ab47941",
+        null
+      ],
+      "sameKey": true,
+      "sameBody": true,
+      "canonicalCardCount": 1
+    }
+  },
+  "assertions": "Original six cases/source/deadlines unchanged: original actor/key/body, exact401 replacement refusal, one canonical Card, current focus/geometry, four canonical save/reload/return widths,768200% text/keyboard/Axe/no overflow."
+}
