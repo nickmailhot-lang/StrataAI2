@@ -1,0 +1,93 @@
+
+Running 10 tests using 1 worker
+
+(node:39868) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   1 tests\browser\card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 1280px (5.4s)
+(node:21148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   2 tests\browser\card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 390px (6.2s)
+(node:36744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  3 tests\browser\card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct MEMBER edits and unsaved draft withdrawal at 1280px (12.1s)
+  ok  4 tests\browser\card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct ADMIN edits and unsaved draft withdrawal at 1280px (11.1s)
+  ok  5 tests\browser\card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct MEMBER edits and unsaved draft withdrawal at 390px (11.2s)
+  ok  6 tests\browser\card-description.spec.ts:120:7 › PRD-09 TC-04/05/08/11/12: distinct ADMIN edits and unsaved draft withdrawal at 390px (8.7s)
+  ok  7 tests\browser\card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for organization-reader at 1280px (5.9s)
+  ok  8 tests\browser\card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for anonymous at 1280px (5.6s)
+  ok  9 tests\browser\card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for organization-reader at 390px (5.9s)
+  ok 10 tests\browser\card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for anonymous at 390px (5.5s)
+
+
+  1) tests\browser\card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 1280px 
+
+    Error: expect(received).toBeLessThan(expected)
+
+    Expected: < 200
+    Received:   370.02760000000035
+
+      64 |         cachedDetailMs: openingMs, clickMs, readiness: 'visible editable title/source and full preview, single browser observation', budgetMs: 200,
+      65 |       }) });
+    > 66 |       expect(openingMs).toBeLessThan(200);
+         |                         ^
+      67 |       const preview = detail.getByRole('region', { name: 'Description preview', exact: true });
+      68 |       await expect(preview.getByRole('heading', { name: 'Review scope', exact: true })).toBeVisible();
+      69 |       await expect(preview.locator('strong')).toHaveText('Strong text');
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\merge17-tracking-fix\tests\browser\card-description.spec.ts:66:25
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\merge17-markdown-admitted\card-description-PRD-09-FR-44a66-ession-withdrawal-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\merge17-markdown-admitted\card-description-PRD-09-FR-44a66-ession-withdrawal-at-1280px\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\merge17-markdown-admitted\card-description-PRD-09-FR-44a66-ession-withdrawal-at-1280px\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\merge17-markdown-admitted\card-description-PRD-09-FR-44a66-ession-withdrawal-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\merge17-markdown-admitted\card-description-PRD-09-FR-44a66-ession-withdrawal-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 390px 
+
+    Error: expect(received).toBeLessThan(expected)
+
+    Expected: < 200
+    Received:   315.2550000000001
+
+      64 |         cachedDetailMs: openingMs, clickMs, readiness: 'visible editable title/source and full preview, single browser observation', budgetMs: 200,
+      65 |       }) });
+    > 66 |       expect(openingMs).toBeLessThan(200);
+         |                         ^
+      67 |       const preview = detail.getByRole('region', { name: 'Description preview', exact: true });
+      68 |       await expect(preview.getByRole('heading', { name: 'Review scope', exact: true })).toBeVisible();
+      69 |       await expect(preview.locator('strong')).toHaveText('Strong text');
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\merge17-tracking-fix\tests\browser\card-description.spec.ts:66:25
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\merge17-markdown-admitted\card-description-PRD-09-FR-e3f8d-session-withdrawal-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\merge17-markdown-admitted\card-description-PRD-09-FR-e3f8d-session-withdrawal-at-390px\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\merge17-markdown-admitted\card-description-PRD-09-FR-e3f8d-session-withdrawal-at-390px\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\merge17-markdown-admitted\card-description-PRD-09-FR-e3f8d-session-withdrawal-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\merge17-markdown-admitted\card-description-PRD-09-FR-e3f8d-session-withdrawal-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 1280px 
+    tests\browser\card-description.spec.ts:10:7 › PRD-09 FR-008/009, AC-DETAIL-09-03, TC-01/05/10/11/12: safe Markdown original, live peer, keyboard editing and archived/session withdrawal at 390px 
+  8 passed (1.4m)
