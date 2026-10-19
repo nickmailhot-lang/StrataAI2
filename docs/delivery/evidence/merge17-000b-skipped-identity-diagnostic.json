@@ -1,0 +1,108 @@
+{
+  "at": "2026-10-19T09:30:30.194Z",
+  "finding": "Initial artifact guard refused exact skipped caseId equality; inspect actual current/prior skipped source identities before making any coverage claim.",
+  "runs": {
+    "current": {
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+        "shortSha": "68dde04a1856",
+        "workflowRunId": "39223988623",
+        "workflowRunNumber": "1934",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1934",
+        "releaseVersion": null,
+        "imageTag": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+        "createdAt": "2026-10-19T08:38:12.357Z",
+        "images": {
+          "web": "strataai-web:68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+          "api": "strataai-api:68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+          "worker": "strataai-worker:68dde04a185603c18fc2a88ed6efdd0cc2f581ad"
+        }
+      },
+      "cases": [
+        {
+          "caseId": "0b238d8f3f4aa6596c4c9feda2d623076f05fd2dc487f664c106d7f984056f56",
+          "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "2831f4556184e1731bd133169cccb2c3969a93da0a736203cbc7119d4dd34474",
+          "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "4eb3d91a3f7fa8c5679ae4bae9ad1d33ddbd03785538054572ddefbdec2f24a7",
+          "source": "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "921b28ab8fb3b4b027dde7ae4d831ddcad16317d96a46c1bbb0701df8a94984d",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "66b14a5cef2b615c6d7c2272a1d4cd31f7f02487e0146748e1420c91ac39153b",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition",
+          "outcome": "skipped",
+          "durationMs": 0
+        }
+      ]
+    },
+    "previous": {
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "0b170ce768c9e45abd9355cdfbe5d0ae71013d9d",
+        "shortSha": "0b170ce768c9",
+        "workflowRunId": "39204633167",
+        "workflowRunNumber": "1933",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1933",
+        "releaseVersion": null,
+        "imageTag": "0b170ce768c9e45abd9355cdfbe5d0ae71013d9d",
+        "createdAt": "2026-10-19T05:28:56.635Z",
+        "images": {
+          "web": "strataai-web:0b170ce768c9e45abd9355cdfbe5d0ae71013d9d",
+          "api": "strataai-api:0b170ce768c9e45abd9355cdfbe5d0ae71013d9d",
+          "worker": "strataai-worker:0b170ce768c9e45abd9355cdfbe5d0ae71013d9d"
+        }
+      },
+      "cases": [
+        {
+          "caseId": "c28fa94d150d19017fdf5082101b9fa5dc1d4f1bcfc69d4cdb93ad55bcdb8f05",
+          "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "20957de9cc0ff6c8c850778dd697d75d033a41109e96f8060217b1286183c6fe",
+          "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "826b81f75452edcff192854390c6e989f2126f4cc12ad1e79f996961f2560615",
+          "source": "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "921b28ab8fb3b4b027dde7ae4d831ddcad16317d96a46c1bbb0701df8a94984d",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "66b14a5cef2b615c6d7c2272a1d4cd31f7f02487e0146748e1420c91ac39153b",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition",
+          "outcome": "skipped",
+          "durationMs": 0
+        }
+      ]
+    }
+  }
+}

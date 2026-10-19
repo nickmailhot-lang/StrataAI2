@@ -1,0 +1,150 @@
+{
+  "at": "2026-10-19T09:31:52.740Z",
+  "result": "Passed",
+  "head": "000b8659b03d7211edd79c64f9740719ebe2b76e",
+  "synthetic": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+  "run": 39223988623,
+  "job": 117966343609,
+  "artifact": {
+    "id": 12175223931,
+    "bytes": 150511,
+    "zipSha256": "b609f5f3735a3c3df5fd4cd36522fdfedf372b464f4d284d9b612b738e8b0629",
+    "digestVerified": true,
+    "jsonSha256": "35e6f208ff3671adc733455f32ede2756c61e32e7975abbde39c33e0ab6925a7"
+  },
+  "build": {
+    "repository": "nickmailhot-lang/StrataAI2",
+    "commitSha": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+    "shortSha": "68dde04a1856",
+    "workflowRunId": "39223988623",
+    "workflowRunNumber": "1934",
+    "workflowRunAttempt": "1",
+    "version": "0.1.0-1934",
+    "releaseVersion": null,
+    "imageTag": "68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+    "createdAt": "2026-10-19T08:38:12.357Z",
+    "images": {
+      "web": "strataai-web:68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+      "api": "strataai-api:68dde04a185603c18fc2a88ed6efdd0cc2f581ad",
+      "worker": "strataai-worker:68dde04a185603c18fc2a88ed6efdd0cc2f581ad"
+    }
+  },
+  "reportCounts": [
+    {
+      "passed": 1086,
+      "failed": 0,
+      "skipped": 3,
+      "error": 0
+    },
+    {
+      "passed": 1429,
+      "failed": 0,
+      "skipped": 2,
+      "error": 0
+    }
+  ],
+  "unchangedActorTest": {
+    "path": "tests/StrataAI.Api.Tests/CardCreationActorTests.cs",
+    "blob": "67f1a5c70ef8c01f409797a0cad36ecd910cba87"
+  },
+  "cases": [
+    {
+      "caseId": "afb2af2abe22a9a7b24d902e872bc66b040c268acce6adc319e2fddac08c620a",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_original_Card_creation_actor_preserves_receipt_and_refuses_replacement",
+      "outcome": "passed",
+      "durationMs": 3043
+    },
+    {
+      "caseId": "9e59b2850bd8d11d21369ea7124de44024f2c4587506d2d37633503e1a062137",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_without_expected_actor_preserves_legacy_Card_receipt",
+      "outcome": "passed",
+      "durationMs": 3300
+    },
+    {
+      "caseId": "2b2a12f75b9f0da24065c110c7616f80f316640bb919dc6c8852b0e5be851e2a",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation",
+      "outcome": "passed",
+      "durationMs": 4648
+    },
+    {
+      "caseId": "6fa40ea34c8627f72ef21cde07009a483d18b618a114d06ee68f6485bf165ce5",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation",
+      "outcome": "passed",
+      "durationMs": 4677
+    },
+    {
+      "caseId": "4191033b751ce9189bc1254477563881df97dbb92f40c8482301c4de07e7ccd5",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation",
+      "outcome": "passed",
+      "durationMs": 4613
+    },
+    {
+      "caseId": "05aa0338cc4104a7b89a7a4278c8f49455dd16fdc1434e6b02ea27802b6529b1",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_creation_expected_actor_rejects_before_Card_mutation",
+      "outcome": "passed",
+      "durationMs": 4630
+    }
+  ],
+  "existingSkips": [
+    {
+      "caseId": "0b238d8f3f4aa6596c4c9feda2d623076f05fd2dc487f664c106d7f984056f56",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+      "outcome": "skipped"
+    },
+    {
+      "caseId": "2831f4556184e1731bd133169cccb2c3969a93da0a736203cbc7119d4dd34474",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+      "outcome": "skipped"
+    },
+    {
+      "caseId": "4eb3d91a3f7fa8c5679ae4bae9ad1d33ddbd03785538054572ddefbdec2f24a7",
+      "source": "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+      "outcome": "skipped"
+    },
+    {
+      "caseId": "921b28ab8fb3b4b027dde7ae4d831ddcad16317d96a46c1bbb0701df8a94984d",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+      "outcome": "skipped"
+    },
+    {
+      "caseId": "66b14a5cef2b615c6d7c2272a1d4cd31f7f02487e0146748e1420c91ac39153b",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition",
+      "outcome": "skipped"
+    }
+  ],
+  "priorSkips": [
+    {
+      "caseId": "c28fa94d150d19017fdf5082101b9fa5dc1d4f1bcfc69d4cdb93ad55bcdb8f05",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+      "outcome": "skipped"
+    },
+    {
+      "caseId": "20957de9cc0ff6c8c850778dd697d75d033a41109e96f8060217b1286183c6fe",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+      "outcome": "skipped"
+    },
+    {
+      "caseId": "826b81f75452edcff192854390c6e989f2126f4cc12ad1e79f996961f2560615",
+      "source": "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+      "outcome": "skipped"
+    },
+    {
+      "caseId": "921b28ab8fb3b4b027dde7ae4d831ddcad16317d96a46c1bbb0701df8a94984d",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+      "outcome": "skipped"
+    },
+    {
+      "caseId": "66b14a5cef2b615c6d7c2272a1d4cd31f7f02487e0146748e1420c91ac39153b",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition",
+      "outcome": "skipped"
+    }
+  ],
+  "originalSkippedSourceMultisetUnchanged": true,
+  "allDomainApiTestAndSummaryCodeUnchanged": true,
+  "caseIdDiagnostic": {
+    "initialGuard": "Refused exact cross-run skipped caseId equality before making a proof claim; retained work/merge17-000b-skipped-identity-diagnostic.json.",
+    "producer": "scripts/ci/summarize-source-tests.py:89; SHA256(testId + NUL + testName + NUL + TRX result row index).",
+    "finding": "Opaque generated caseIds include row identity and are not a promised cross-run source identity. All5current/prior skipped source identities and multiplicities match; allDomain/APItest and summary producer files Git-byte-identical. Exact current/prior IDs remain separately recorded. No skipped case relabeledPassed."
+  },
+  "scope": "Six exact current API actor cases actuallyPassed in authenticated SHA-verified source artifact. Existing3Domain/2APIskip sources and multiplicities preserved. Full current immutable browser/release qualification and actual113integration remain pending."
+}
