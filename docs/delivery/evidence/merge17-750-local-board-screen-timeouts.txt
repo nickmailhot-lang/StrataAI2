@@ -1,0 +1,266 @@
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-tracking-fix/apps/web
+
+ ❯ src/features/kanban/BoardScreen.test.tsx (40 tests | 18 failed) 412152ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > fences competing mutations during unresolved attachment lifecycle and recovers its original request after a newer Card snapshot
+   ❯ PRD-01/04/07/08/09 persisted board flows (40)
+     × fences competing mutations during unresolved attachment lifecycle and recovers its original request after a newer Card snapshot 11437ms
+     × updates the card face on acknowledgement and ignores an older refresh without resurrecting a removed card 5368ms
+     × preserves a dirty draft through a hung live read and retries after its deadline 5642ms
+     × creates a list and refreshes from the server only after acknowledgment 5486ms
+     × retains conflicting edits until explicit discard and sends the current version 5524ms
+     × preserves a dirty editor through an unavailable refresh and a newer authoritative snapshot 5155ms
+     × clears the scoped board and its draft on a 404 refresh denial 18933ms
+     × cannot restore scoped data from an older read after a denied save 107682ms
+     × does not resurrect an old save confirmation after access loss and a fresh authorized load 10317ms
+     × reloads canonical placement after a bound append acknowledgment 5366ms
+     × keeps Card archive recovery outside the removed canonical editor and returns to the Board 5220ms
+     × keeps cross-Board recovery after source removal without treating the moved Card as denied archived detail 10070ms
+     × retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery 25941ms
+     × keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery 77091ms
+     × fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot 15016ms
+     × fences competing Card changes for an unresolved cover receipt and permits only its original retry after a newer snapshot 11584ms
+     × fences competing changes and Card closure while recovering an original comment acknowledgment 12830ms
+     × renders only admitted cover hints on the Card face/detail and retires images during live refresh/removal 10877ms
+Error: Test timed out in 10000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:202:3
+    200|   });
+    201|
+    202|   it('fences competing mutations during unresolved attachment lifecycl…
+       |   ^
+    203|     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).p…
+    204|     const org = uuid(1), board = uuid(2), card = uuid(3), actor = uuid…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > updates the card face on acknowledgement and ignores an older refresh without resurrecting a removed card
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:317:3
+    315|     expect(screen.queryByRole('group', { name: 'Card assignee indicato…
+    316|   });
+    317|   it("updates the card face on acknowledgement and ignores an older re…
+       |   ^
+    318|     let finishRead!: (value: Response) => void;
+    319|     const savedCard = {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > preserves a dirty draft through a hung live read and retries after its deadline
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:359:3
+    357|     ).not.toBeInTheDocument();
+    358|   });
+    359|   it("preserves a dirty draft through a hung live read and retries aft…
+       |   ^
+    360|     let invalidate = () => {};
+    361|     vi.mocked(watchBoard).mockImplementationOnce((options) => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > creates a list and refreshes from the server only after acknowledgment
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:500:3
+    498|     expect(screen.queryByText("Persisted board")).not.toBeInTheDocumen…
+    499|   });
+    500|   it("creates a list and refreshes from the server only after acknowle…
+       |   ^
+    501|     const fetcher = vi
+    502|       .fn()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > retains conflicting edits until explicit discard and sends the current version
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:548:3
+    546|     );
+    547|   });
+    548|   it("retains conflicting edits until explicit discard and sends the c…
+       |   ^
+    549|     const fetcher = vi
+    550|       .fn()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > preserves a dirty editor through an unavailable refresh and a newer authoritative snapshot
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:639:3
+    637|     expect(screen.getByRole("button", { name: "Save card" })).toBeEnab…
+    638|   });
+    639|   it("preserves a dirty editor through an unavailable refresh and a ne…
+       |   ^
+    640|     const latest = {
+    641|       ...fixture,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > clears the scoped board and its draft on a 404 refresh denial
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:689:27
+    687|     expect(screen.getByRole("button", { name: "Save card" })).toBeEnab…
+    688|   });
+    689|   it.each([401, 403, 404])(
+       |                           ^
+    690|     "clears the scoped board and its draft on a %s refresh denial",
+    691|     async (status) => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > cannot restore scoped data from an older read after a denied save
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:712:3
+    710|     },
+    711|   );
+    712|   it("cannot restore scoped data from an older read after a denied sav…
+       |   ^
+    713|     let finishRead!: (value: Response) => void;
+    714|     let reads = 0;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > does not resurrect an old save confirmation after access loss and a fresh authorized load
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:739:3
+    737|     expect(screen.queryByText("Persisted board")).not.toBeInTheDocumen…
+    738|   });
+    739|   it("does not resurrect an old save confirmation after access loss an…
+       |   ^
+    740|     const savedCard = {
+    741|       ...fixture.lists[0].cards[0],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > reloads canonical placement after a bound append acknowledgment
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:829:3
+    827|     expect(screen.queryByRole('button', { name: 'Move card' })).not.to…
+    828|   });
+    829|   it('reloads canonical placement after a bound append acknowledgment'…
+       |   ^
+    830|     const destination = { list: { id: 'list-2', name: 'Complete', rank…
+    831|     const initial = { ...fixture, lists: [...fixture.lists, destinatio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > keeps Card archive recovery outside the removed canonical editor and returns to the Board
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:894:3
+    892|     expect(screen.queryByText("Persisted board")).not.toBeInTheDocumen…
+    893|   });
+    894|   it('keeps Card archive recovery outside the removed canonical editor…
+       |   ^
+    895|     const active = { ...fixture, lists: [{ ...fixture.lists[0], list: …
+    896|     let archived = false; const writes: RequestInit[] = [];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > keeps cross-Board recovery after source removal without treating the moved Card as denied archived detail
+Error: Test timed out in 10000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:919:3
+    917|     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe…
+    918|   });
+    919|   it('keeps cross-Board recovery after source removal without treating…
+       |   ^
+    920|     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).p…
+    921|     const org = uuid(1), board = uuid(2), cardId = uuid(3), destinatio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:961:3
+    959|     await waitFor(() => expect(screen.getByRole('button', { name: 'Ref…
+    960|   }, 10_000);
+    961|   it('retains a lost whole-List move after source removal, fences othe…
+       |   ^
+    962|     const board = '11111111-1111-1111-1111-111111111111', org = '22222…
+    963|     const list = '33333333-3333-3333-3333-333333333333', target = '444…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:997:3
+    995|     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe…
+    996|   });
+    997|   it('keeps a lost List copy bound through a canonical source revision…
+       |   ^
+    998|     const board = '11111111-1111-1111-1111-111111111111'; const org = …
+    999|     const list = '33333333-3333-3333-3333-333333333333'; const copiedI…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:1032:3
+    1030|     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe…
+    1031|   });
+    1032|   it('fences other Board mutations while URL attachment receipt is unr…
+       |   ^
+    1033|     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).p…
+    1034|     const org = uuid(1), board = uuid(2), card = uuid(3), actor = uuid…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > fences competing Card changes for an unresolved cover receipt and permits only its original retry after a newer snapshot
+Error: Test timed out in 10000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:1074:3
+    1072|   });
+    1073|
+    1074|   it('fences competing Card changes for an unresolved cover receipt an…
+       |   ^
+    1075|     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).p…
+    1076|     const org = uuid(1), board = uuid(2), card = uuid(3), file = uuid(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > fences competing changes and Card closure while recovering an original comment acknowledgment
+Error: Test timed out in 10000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:1113:3
+    1111|   }, 10_000);
+    1112|
+    1113|   it('fences competing changes and Card closure while recovering an or…
+       |   ^
+    1114|     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).p…
+    1115|     const org = uuid(1), board = uuid(2), card = uuid(3), actor = uuid…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/18]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > renders only admitted cover hints on the Card face/detail and retires images during live refresh/removal
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:1151:3
+    1149|   }, 10_000);
+    1150|
+    1151|   it('renders only admitted cover hints on the Card face/detail and re…
+       |   ^
+    1152|     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).p…
+    1153|     const current = structuredClone(fixture); current.board.id = uuid(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/18]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  18 failed | 22 passed (40)
+   Start at  19:35:57
+   Duration  526.70s (tests 78%, import 20%, transform 1%)
+
