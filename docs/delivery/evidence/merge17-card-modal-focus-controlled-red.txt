@@ -1,0 +1,330 @@
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-integrated-tracking/apps/web
+
+stderr | src/features/kanban/CardCreationRefusalFocus.test.tsx > PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for a 401 creation refusal
+An update to ForwardRef(FormControl) inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/features/kanban/CardCreationRefusalFocus.test.tsx > PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for a 403 creation refusal
+An update to ForwardRef(FormControl) inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/features/kanban/CardCreationRefusalFocus.test.tsx > PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for a 404 creation refusal
+An update to ForwardRef(FormControl) inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ❯ src/features/kanban/CardCreationRefusalFocus.test.tsx (3 tests | 3 failed) 4489ms
+   × PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for a 401 creation refusal 2319ms
+   × PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for a 403 creation refusal 1417ms
+   × PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for a 404 creation refusal 745ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/CardCreationRefusalFocus.test.tsx > PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for a 401 creation refusal
+Error: expect(element).toHaveFocus()
+
+Expected element with focus:
+  <div
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-jseicq-MuiPaper-root-MuiAlert-root"
+  role="alert"
+  style="--Paper-shadow: var(--mui-shadows-0);"
+  tabindex="-1"
+>
+  <div
+    class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+  >
+    <svg
+      aria-hidden="true"
+      class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-8hoymy-MuiSvgIcon-root"
+      data-testid="ErrorOutlineIcon"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+      />
+    </svg>
+  </div>
+  <div
+    class="MuiAlert-message css-137t94f-MuiAlert-message"
+  >
+    Sign in to continue.
+  </div>
+</div>
+Received element with focus:
+  <body
+  style=""
+>
+  <div>
+    <div
+      class="MuiStack-root css-n46lgt-MuiStack-root"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-jseicq-MuiPaper-root-MuiAlert-root"
+        role="alert"
+        style="--Paper-shadow: var(--mui-shadows-0);"
+        tabindex="-1"
+      >
+        <div
+          class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-8hoymy-MuiSvgIcon-root"
+            data-testid="ErrorOutlineIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
+        </div>
+        <div
+          class="MuiAlert-message css-137t94f-MuiAlert-message"
+        >
+          Sign in to continue.
+        </div>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Retry
+      </button>
+      <a
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        data-discover="true"
+        href="/login"
+        tabindex="0"
+      >
+        Sign in
+      </a>
+    </div>
+  </div>
+</body>
+ ❯ src/features/kanban/CardCreationRefusalFocus.test.tsx:48:19
+     46|   const refusal = await screen.findByRole('alert');
+     47|   expect(refusal).toBeVisible();
+     48|   expect(refusal).toHaveFocus();
+       |                   ^
+     49|   expect(screen.queryByRole('dialog', { name: 'Add card' })).not.toBeI…
+     50|   expect(screen.queryByText('Private work')).not.toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/features/kanban/CardCreationRefusalFocus.test.tsx > PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for a 403 creation refusal
+Error: expect(element).toHaveFocus()
+
+Expected element with focus:
+  <div
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-jseicq-MuiPaper-root-MuiAlert-root"
+  role="alert"
+  style="--Paper-shadow: var(--mui-shadows-0);"
+  tabindex="-1"
+>
+  <div
+    class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+  >
+    <svg
+      aria-hidden="true"
+      class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-8hoymy-MuiSvgIcon-root"
+      data-testid="ErrorOutlineIcon"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+      />
+    </svg>
+  </div>
+  <div
+    class="MuiAlert-message css-137t94f-MuiAlert-message"
+  >
+    This board or action is unavailable.
+  </div>
+</div>
+Received element with focus:
+  <body
+  style=""
+>
+  <div>
+    <div
+      class="MuiStack-root css-n46lgt-MuiStack-root"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-jseicq-MuiPaper-root-MuiAlert-root"
+        role="alert"
+        style="--Paper-shadow: var(--mui-shadows-0);"
+        tabindex="-1"
+      >
+        <div
+          class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-8hoymy-MuiSvgIcon-root"
+            data-testid="ErrorOutlineIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
+        </div>
+        <div
+          class="MuiAlert-message css-137t94f-MuiAlert-message"
+        >
+          This board or action is unavailable.
+        </div>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Retry
+      </button>
+    </div>
+  </div>
+</body>
+ ❯ src/features/kanban/CardCreationRefusalFocus.test.tsx:48:19
+     46|   const refusal = await screen.findByRole('alert');
+     47|   expect(refusal).toBeVisible();
+     48|   expect(refusal).toHaveFocus();
+       |                   ^
+     49|   expect(screen.queryByRole('dialog', { name: 'Add card' })).not.toBeI…
+     50|   expect(screen.queryByText('Private work')).not.toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/features/kanban/CardCreationRefusalFocus.test.tsx > PRD-08-VS-04-T-02/AC-01: retains modal-owned focus for a 404 creation refusal
+Error: expect(element).toHaveFocus()
+
+Expected element with focus:
+  <div
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-jseicq-MuiPaper-root-MuiAlert-root"
+  role="alert"
+  style="--Paper-shadow: var(--mui-shadows-0);"
+  tabindex="-1"
+>
+  <div
+    class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+  >
+    <svg
+      aria-hidden="true"
+      class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-8hoymy-MuiSvgIcon-root"
+      data-testid="ErrorOutlineIcon"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+      />
+    </svg>
+  </div>
+  <div
+    class="MuiAlert-message css-137t94f-MuiAlert-message"
+  >
+    This board or action is unavailable.
+  </div>
+</div>
+Received element with focus:
+  <body
+  style=""
+>
+  <div>
+    <div
+      class="MuiStack-root css-n46lgt-MuiStack-root"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiAlert-root MuiAlert-colorError MuiAlert-standard css-jseicq-MuiPaper-root-MuiAlert-root"
+        role="alert"
+        style="--Paper-shadow: var(--mui-shadows-0);"
+        tabindex="-1"
+      >
+        <div
+          class="MuiAlert-icon css-vab54s-MuiAlert-icon"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeInherit css-8hoymy-MuiSvgIcon-root"
+            data-testid="ErrorOutlineIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+            />
+          </svg>
+        </div>
+        <div
+          class="MuiAlert-message css-137t94f-MuiAlert-message"
+        >
+          This board or action is unavailable.
+        </div>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Retry
+      </button>
+      <a
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        data-discover="true"
+        href="/login"
+        tabindex="0"
+      >
+        Sign in
+      </a>
+    </div>
+  </div>
+</body>
+ ❯ src/features/kanban/CardCreationRefusalFocus.test.tsx:48:19
+     46|   const refusal = await screen.findByRole('alert');
+     47|   expect(refusal).toBeVisible();
+     48|   expect(refusal).toHaveFocus();
+       |                   ^
+     49|   expect(screen.queryByRole('dialog', { name: 'Add card' })).not.toBeI…
+     50|   expect(screen.queryByText('Private work')).not.toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  3 failed | 7 passed (10)
+   Start at  20:42:01
+   Duration  155.17s (import 84%, tests 7%, environment 5%, transform 3%, setup 1%)
+
+     Import  133 modules were evaluated 249 times · 130.14s total, 84% of tracked time
+             ~60.63s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
