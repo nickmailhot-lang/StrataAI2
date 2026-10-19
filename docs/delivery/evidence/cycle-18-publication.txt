@@ -1,0 +1,72 @@
+{
+  "at": "2026-10-18T00:47:28.633Z",
+  "focused": {
+    "number": 108,
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/108",
+    "base": "delivery/combined-operational-candidate-20261017"
+  },
+  "candidate": {
+    "number": 109,
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/109",
+    "head": "f7116b73d3c18058a59f444912426c7ab47eb795",
+    "base": "main",
+    "run": 39083901136
+  },
+  "checks": [
+    {
+      "name": "postgres-integration",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39083901136/job/117546394748"
+    },
+    {
+      "name": "dotnet-quality",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39083901136/job/117546394739"
+    },
+    {
+      "name": "web-quality",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39083901136/job/117546394677"
+    },
+    {
+      "name": "metadata",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39083901136/job/117546345538"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39083899779/job/117546343155"
+    },
+    {
+      "name": "Analyze (python)",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39083899779/job/117546342990"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39083899779/job/117546342971"
+    },
+    {
+      "name": "Analyze (csharp)",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39083899779/job/117546342923"
+    },
+    {
+      "name": "Analyze (c-cpp)",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39083899779/job/117546342751"
+    }
+  ],
+  "scope": "Publication and initial status inspection only. Metadata passed; source/container/release/main acceptance pending. Candidate stays frozen while independent next increment proceeds."
+}

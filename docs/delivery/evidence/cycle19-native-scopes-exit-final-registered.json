@@ -1,0 +1,17 @@
+{
+  "revision": "ce3313e7fd9b43cb4df216d85bf5d8a59fb10923",
+  "rawArtifact": "cycle19-native-scopes-exit.json",
+  "rawSha256": "3383e5b595202fb529456f7bfad181f8b5852ea09581d20326bffc17179ac218",
+  "scope": "Owned externalC19supportcontroller stoppedbysentinel afteroriginal37completed, no container/datadeletion andlastcurrentWorker39retained running; no product/source change.",
+  "lines": [
+    "{",
+    "  \"scope\": \"Watcher stops only; current owned Worker remains running. No data/container deletion.\",",
+    "  \"deadlineReached\": false,",
+    "  \"stoppedBySentinel\": true,",
+    "  \"at\": \"2026-10-18T05:26:04.1973996+00:00\",",
+    "  \"attempt\": 39,",
+    "  \"container\": \"bce064b0cb8ada6599d30d70d0cc0b1df77dd25a0c8ac96945458db5a2d90c10\"",
+    "}",
+    ""
+  ]
+}

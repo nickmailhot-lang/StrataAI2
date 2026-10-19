@@ -1,0 +1,7 @@
+xUnit.net v3 In-Process Runner v4.0.1+8ed8aa354c (64-bit .NET 10.0.12)
+  Discovering: StrataAI.Api.Tests
+  Discovered:  StrataAI.Api.Tests
+  Starting:    StrataAI.Api.Tests
+  Finished:    StrataAI.Api.Tests (ID = '6778c33f05e6d43b8c9668ee3274771a0e29258596f72168463f5bc44ab0e566')
+=== TEST EXECUTION SUMMARY ===
+   StrataAI.Api.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 11.436s

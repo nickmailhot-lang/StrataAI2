@@ -158,3 +158,9 @@ test('PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its r
   assert.match(metadata,/node scripts\/delivery-progress\.mjs validate/);
   assert.match(metadata,/node --test tests\/delivery-progress\.test\.mjs/);
 });
+
+test('PRD-25-VS-03/AC-05: CLI can validate evolution against the actual retained ledger in Git', () => {
+  const result=spawnSync(process.execPath,['scripts/delivery-progress.mjs','validate','--base-ref','HEAD'],{encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr);
+  assert.match(result.stdout,/No unsupported Done claims/);
+});

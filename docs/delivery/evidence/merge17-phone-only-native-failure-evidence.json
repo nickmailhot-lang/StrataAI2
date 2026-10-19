@@ -1,0 +1,119 @@
+{
+  "at": "2026-10-18T14:17:24.581Z",
+  "revision": "bc9c673be144567c8fc1f5e19c0c825464af945c",
+  "result": "Failed",
+  "run": {
+    "variant": "phone-only",
+    "source": "bc9c673be144567c8fc1f5e19c0c825464af945c",
+    "at": "2026-10-18T14:16:18.2586653+00:00",
+    "scope": "Whole two desktop/phone Kanban performance cases; center variant only adds pre-gesture destination vertical position to private copy. No controller, no Docker/SQL mutation, original assertions/budgets and zero retries. Local supporting evidence only.",
+    "exit": 1,
+    "workerUnchanged": true
+  },
+  "classification": "First and only local native whole2 execution at exactbc9; originalUI135ee/default5, compiledLinuxAPIWorker644, Vite proxy, not immutable hosted images. No other local validation/test jobs ran concurrently; no Worker or SQL mutation/controller.",
+  "passed": 1,
+  "failed": 1,
+  "measurements": [
+    {
+      "metric": "normal-desktop-kanban",
+      "status": "passed",
+      "fixture": {
+        "lists": 3,
+        "cards": 50,
+        "samples": 20,
+        "viewport": "1280x844",
+        "assets": "warm",
+        "tracing": "commands-and-network",
+        "detailTiming": "browser-painted-editable"
+      },
+      "usableMs": 870.2450000000026,
+      "detailMs": 156,
+      "detailObserved": true,
+      "detailAutomationMs": 219.14689999999973,
+      "feedbackObserved": true,
+      "feedbackMs": 73.80000001192093,
+      "mutationP95Ms": 179.84599999999773,
+      "mutationSamplesMs": [
+        145.65259999999398,
+        179.84599999999773,
+        172.7598999999973,
+        190.25690000000031,
+        159.209400000007,
+        174.61549999999988,
+        159.69019999999728,
+        122.52560000000085,
+        127.21579999999813,
+        129.6519000000044,
+        132.4988000000012,
+        127.44740000000456,
+        170.1434999999983,
+        156.2977000000028,
+        146.26639999999315,
+        149.38190000000031,
+        164.85379999999714,
+        179.1229999999996,
+        148.99049999999988,
+        148.3961999999956
+      ],
+      "budgetsMs": {
+        "usable": 1500,
+        "feedback": 100,
+        "detail": 200,
+        "mutationP95": 500
+      }
+    },
+    {
+      "metric": "normal-phone-kanban",
+      "status": "failed",
+      "fixture": {
+        "lists": 3,
+        "cards": 50,
+        "samples": 20,
+        "viewport": "390x844",
+        "assets": "warm",
+        "tracing": "commands-and-network",
+        "detailTiming": "browser-painted-editable",
+        "input": "chromium-touch"
+      },
+      "usableMs": 1291.290399999998,
+      "detailMs": 227.80000001192093,
+      "detailObserved": true,
+      "detailAutomationMs": 335.3435000000027,
+      "feedbackObserved": true,
+      "feedbackMs": 130.69999998807907,
+      "mutationP95Ms": 161.939200000008,
+      "mutationSamplesMs": [
+        198.55590000000666,
+        138.58460000000196,
+        161.939200000008,
+        159.98470000000088,
+        160.83030000000144,
+        137.1921999999904,
+        148.25719999999274,
+        156.42459999999846,
+        147.74030000000494,
+        151.64719999999215,
+        155.1356999999989,
+        147.18439999999828,
+        116.12930000000051,
+        118.216499999995,
+        121.90599999998813,
+        126.26440000000002,
+        130.4884999999922,
+        136.77339999999094,
+        128.31509999999253,
+        138.49899999999616
+      ],
+      "budgetsMs": {
+        "usable": 1500,
+        "feedback": 100,
+        "detail": 200,
+        "mutationP95": 500
+      }
+    }
+  ],
+  "outcome": "Desktop original setup passes all four budgets. Phone intended Card4 adjacency, held request200/version2/source-removal assertions pass, but final feedback<100 fails130.7ms. Detail227.8ms also exceeds200 measurement budget, though its later assertion is not reached. This does not establish hosted failure cause. No unchanged rerun or accepted timing claim.",
+  "rawOutputSha256": "a743bfa81c54e2612a652d9304b09598c364ba11a9ef824d178bb40d17215bd6",
+  "privateTrace": "Retained under work/merge17-stock-kanban-phone-only-output; not committed or copied to outputs.",
+  "next": "Capture currentoldhead full4 final failure stack/measurements. Evaluate against unchanged product and explicit local topology; fix only demonstrated cause, require all22new final-head gates and actual main integration."
+}

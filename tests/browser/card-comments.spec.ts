@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -41,6 +42,7 @@ for (const width of [1280, 390]) {
       const peerReview = peerPage.getByRole('button', { name: 'Review Card comments', exact: true });
       await openAdmittedReview(peerReview, peerPage.getByText('No comments on this page. Add the first comment.', { exact: true }));
       const review = page.getByRole('button', { name: 'Review Card comments', exact: true });
+      await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Card cover', exact: true });
       const add = page.getByRole('button', { name: 'Add comment', exact: true });
       await openAdmittedReview(review, add);
       const text = page.getByRole('textbox', { name: 'New comment', exact: true });

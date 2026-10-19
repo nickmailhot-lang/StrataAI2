@@ -1,0 +1,361 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/apps/web
+
+ ❯ src/features/kanban/BoardScreen.test.tsx (40 tests | 3 failed) 96315ms
+   ❯ PRD-01/04/07/08/09 persisted board flows (40)
+     × creates a list and refreshes from the server only after acknowledgment 2604ms
+     × retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery 5056ms
+     × fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot 5620ms
+ ❯ src/features/kanban/BoardScreen.drag.test.tsx (3 tests | 1 failed) 7564ms
+   × opens cached Card detail and retires the modal with focus restored to its canvas link 5039ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/BoardScreen.drag.test.tsx > opens cached Card detail and retires the modal with focus restored to its canvas link
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.drag.test.tsx:45:1
+     43| afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); drag.cu…
+     44|
+     45| it('opens cached Card detail and retires the modal with focus restored…
+       | ^
+     46|     const layoutReads: HTMLElement[] = [];
+     47|     const scrollTop = Object.getOwnPropertyDescriptor(Element.prototyp…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > creates a list and refreshes from the server only after acknowledgment
+TestingLibraryElementError: Unable to find role="heading" and name "Completed"
+
+Ignored nodes: comments, script, style
+<body
+  style="padding-right: 1024px; overflow: hidden;"
+>
+  <div
+    aria-hidden="true"
+  >
+    <div
+      aria-busy="false"
+      aria-label="Board workspace"
+      class="MuiStack-root css-u91wg7-MuiStack-root"
+      role="region"
+    >
+      <p
+        aria-live="polite"
+        class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+        role="status"
+      >
+        Connecting live updates.
+      </p>
+      <div
+        class="MuiStack-root css-5r67bj-MuiStack-root"
+      >
+        <div
+          class="MuiBox-root css-14mf7e5"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+          >
+            Persisted board
+          </h2>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+          >
+            Real description
+          </p>
+        </div>
+        <div
+          class="MuiStack-root css-r3epm3-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh board
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board
+             watching
+          </button>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/invite"
+            tabindex="0"
+          >
+            Invite to Board
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/visibility"
+            tabindex="0"
+          >
+            Board visibility
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/date-policy"
+            tabindex="0"
+          >
+            Board timezone
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/members"
+            tabindex="0"
+          >
+            Board members
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/invitations"
+            tabindex="0"
+          >
+            Board invitations
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/archived-lists"
+            tabindex="0"
+          >
+            Archived lists
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/archived-cards"
+            tabindex="0"
+          >
+            Archived cards
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Board starring
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Archive a list
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create label
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+           ...
+
+Ignored nodes: comments, script, style
+<body
+  style="padding-right: 1024px; overflow: hidden;"
+>
+  <div
+    aria-hidden="true"
+  >
+    <div
+      aria-busy="false"
+      aria-label="Board workspace"
+      class="MuiStack-root css-u91wg7-MuiStack-root"
+      role="region"
+    >
+      <p
+        aria-live="polite"
+        class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+        role="status"
+      >
+        Connecting live updates.
+      </p>
+      <div
+        class="MuiStack-root css-5r67bj-MuiStack-root"
+      >
+        <div
+          class="MuiBox-root css-14mf7e5"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+          >
+            Persisted board
+          </h2>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+          >
+            Real description
+          </p>
+        </div>
+        <div
+          class="MuiStack-root css-r3epm3-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Refresh board
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board
+             watching
+          </button>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/invite"
+            tabindex="0"
+          >
+            Invite to Board
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/visibility"
+            tabindex="0"
+          >
+            Board visibility
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/date-policy"
+            tabindex="0"
+          >
+            Board timezone
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/members"
+            tabindex="0"
+          >
+            Board members
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/invitations"
+            tabindex="0"
+          >
+            Board invitations
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/archived-lists"
+            tabindex="0"
+          >
+            Archived lists
+          </a>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org-1/boards/board-1/archived-cards"
+            tabindex="0"
+          >
+            Archived cards
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Board starring
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Archive a list
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            Create label
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+           ...
+ ❯ waitForWrapper ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/features/kanban/BoardScreen.test.tsx:534:20
+    532|     fireEvent.click(screen.getByRole("button", { name: "Create" }));
+    533|     expect(
+    534|       await screen.findByRole("heading", { name: "Completed" }),
+       |                    ^
+    535|     ).toBeVisible();
+    536|     expect(fetcher.mock.calls[1][0]).toBe("/boards/board-1/lists");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:957:3
+    955|     await waitFor(() => expect(screen.getByRole('button', { name: 'Ref…
+    956|   }, 10_000);
+    957|   it('retains a lost whole-List move after source removal, fences othe…
+       |   ^
+    958|     const board = '11111111-1111-1111-1111-111111111111', org = '22222…
+    959|     const list = '33333333-3333-3333-3333-333333333333', target = '444…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:1028:3
+    1026|     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe…
+    1027|   });
+    1028|   it('fences other Board mutations while URL attachment receipt is unr…
+       |   ^
+    1029|     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).p…
+    1030|     const org = uuid(1), board = uuid(2), card = uuid(3), actor = uuid…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed | 187 passed | 1 skipped (190)
+      Tests  4 failed | 2821 passed | 24 skipped (2849)
+   Start at  09:20:17
+   Duration  1156.58s (import 38%, tests 36%, environment 21%, setup 4%, transform 1%)
+
+     Import  408 modules were evaluated 2373 times · 861.35s total, 38% of tracked time
+             ~322.14s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --maxWorkers=2

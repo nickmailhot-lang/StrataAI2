@@ -1,0 +1,24 @@
+{
+  "revision": "f4ce3729f9c841ffc0c48b8ec61381535c8b8ec6",
+  "rawArtifact": "cycle19-row-queue-green-build.txt",
+  "rawSha256": "221995cbbd78eccad3ed74ab1bd527efa79f0ed07a47e10e280a67cb3abd5da1",
+  "scope": "Actual currentf4 portable framework-dependent contract build15.78s/0warnings/errors, warnings as errors. No currentf4 Linux compilation claimed.",
+  "lines": [
+    "  Determining projects to restore...",
+    "  Restored C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-navigation-lock-order\\src\\StrataAI.Domain\\StrataAI.Domain.csproj (in 192 ms).",
+    "  Restored C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-navigation-lock-order\\src\\StrataAI.Application\\StrataAI.Application.csproj (in 204 ms).",
+    "  Restored C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-navigation-lock-order\\src\\StrataAI.Infrastructure\\StrataAI.Infrastructure.csproj (in 479 ms).",
+    "  Restored C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-navigation-lock-order\\tests\\StrataAI.Persistence.Contracts\\StrataAI.Persistence.Contracts.csproj (in 488 ms).",
+    "  StrataAI.Domain -> C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-row-queue-green-artifacts\\bin\\StrataAI.Domain\\release\\StrataAI.Domain.dll",
+    "  StrataAI.Application -> C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-row-queue-green-artifacts\\bin\\StrataAI.Application\\release\\StrataAI.Application.dll",
+    "  StrataAI.Infrastructure -> C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-row-queue-green-artifacts\\bin\\StrataAI.Infrastructure\\release\\StrataAI.Infrastructure.dll",
+    "  StrataAI.Persistence.Contracts -> C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle19-row-queue-green-artifacts\\bin\\StrataAI.Persistence.Contracts\\release\\StrataAI.Persistence.Contracts.dll",
+    "",
+    "Build succeeded.",
+    "    0 Warning(s)",
+    "    0 Error(s)",
+    "",
+    "Time Elapsed 00:00:15.78",
+    ""
+  ]
+}

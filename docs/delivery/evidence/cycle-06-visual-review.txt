@@ -1,0 +1,45 @@
+Developer review 2026-10-17T18:16:37.792Z, compiled API/web 3bf5c2ba7598f3348143b3b5083c8c7be3be1bc8.
+Inspected all 10 current Card captures: four drafts, four post-reload returns and two refusal screens. Dialog labels, fields, actions and keyboard rings fit at 320/390/768/1280; long single-line text scrolls locally. Canonical Card return rings are visible. Private Card/Board/form content is absent after refusal. Native Axe and overflow assertions pass.
+UX acceptance is NOT complete: the tablet root-font setting resets on reload, so its return screenshot is normal text rather than persistent 200%; extend the test and validate the complete zoomed return. The mobile refusal full-page capture shows the generic error partially behind the fixed header; reproduce viewport geometry/focus and repair scoped feedback recovery. An unfocused skip link is also visible in scrolled full-page captures; distinguish live viewport behavior from capture effects in the bounded UX audit. No screen-reader/device/full WCAG acceptance claim.
+[
+  {
+    "file": "card-account-replacement-refused-390.png",
+    "sha256": "6f5959cb17394fa9b39c2c9b6e11550b9abe7cd50990bacea3dbbff77cd4dff3"
+  },
+  {
+    "file": "card-account-replacement-refused-1280.png",
+    "sha256": "d0133c645154be7dbfdd59182f235db54dd3bd5cd543f9f196244f3f2e569ecd"
+  },
+  {
+    "file": "card-creation-draft-1280.png",
+    "sha256": "b1d169a361d352cc706ca9b9cfdc796762a54a54a118064c141786253c24418b"
+  },
+  {
+    "file": "card-creation-return-1280.png",
+    "sha256": "b19d77816c50d87c699cfbb3b52e98436809ac8487efe6e8e3564035f30d6c39"
+  },
+  {
+    "file": "card-creation-draft-768.png",
+    "sha256": "3e4eb6f2c7fb183cdb10a3deaa8177878c1bef2286698c7ffc2fec02ed52b309"
+  },
+  {
+    "file": "card-creation-return-768.png",
+    "sha256": "3e533f90de76a30a2d1f4817d4facddb66513dfbeb09feeafa49b28e22a1d071"
+  },
+  {
+    "file": "card-creation-draft-390.png",
+    "sha256": "f15c252380519b7092b926dce4994f9f0aa5cffac73724c1ff6c05bfd5b0e6c6"
+  },
+  {
+    "file": "card-creation-return-390.png",
+    "sha256": "a55aca6f59e9bb855ebdd395178fca879c528b11ce3c2856ada70cc510727f4b"
+  },
+  {
+    "file": "card-creation-draft-320.png",
+    "sha256": "e27385fab5e80921c030d318bb8b799328b8e2501828c7ac5422c4c53612e40b"
+  },
+  {
+    "file": "card-creation-return-320.png",
+    "sha256": "df8750881c4300b518b80da41b24d30dbb773f1e9aca1a779d5144f6c0ff6bfe"
+  }
+]

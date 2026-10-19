@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-17T22:40:10.491Z",
+  "revision": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+  "reviewer": "delivery-agent",
+  "diff": "SurfaceAdmission adds current approved internal-path state to its existing fresh401 redirect. Existing return allowlist, privacy/scope cleanup, membership/transport distinction and all permissions/commands remain unchanged. Dedicated6-case regression and6 new permanent revoked-session cases; original native6 untouched.",
+  "controlled": {
+    "newAndOriginal": 54,
+    "broaderEntryAndNavigation": 81,
+    "retainedRed": "4fail/50pass atd3e7268d"
+  },
+  "native": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "retries": 0,
+    "duration": "6.1m",
+    "source": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+    "actualApi": "389c70ab/1.0.0",
+    "actualWorker": "0f6ddc29/0.1.0"
+  },
+  "visual": "Eight actual captures inspected; tablet dialog scroll/Save availability and320 editable-title scrolling recorded separately from Axe. No complete device/WCAG certification.",
+  "full": {
+    "total": 2886,
+    "passed": 2862,
+    "failed": 0,
+    "skipped": 24
+  },
+  "seconds": 809.03,
+  "browserRegistry": "Browser shard coverage: 462 cases in 165 intact files; 117/116/127/102 cases across all four shards.\r\n",
+  "integrationRegistry": "Mandatory integration coverage: 4 groups/7 isolated executions, 130 registered steps\r\n",
+  "result": "Scoped source/product/UX review passed after current local applicable checks; advance only the bounded session-return task/tests to Review.",
+  "remaining": "ParentAC03 genuine other-Organization-member return remains Unverified. Older Card archive input-admission failure remains unreconciled; prioritize unchanged baseline and bounded helper verification next. Current combined immutable required CI/main integration remain mandatory. No new independent-human approval gate or complete MVP claim."
+}

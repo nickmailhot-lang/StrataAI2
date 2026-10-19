@@ -1,0 +1,7 @@
+{
+  "revision": "086735b9eb39ba4e2c4198d522b51918b31bcabc",
+  "rawArtifact": "merge17-admission-green-v2.txt",
+  "rawSha256": "3271be76ece2a01c4cdbacd7fcadb19c8596806fa5cd27ab9cb55e676ee059a0",
+  "scope": "All13currentcases/fourwholefilespass17.75s/0fail/skip. Sameassertionconditions; onlyactivenodefailuredescriptionaddedafteroldred. GenericbodymodalexplicitlyenforcesfocusandredirectsownpresentationwrapperfocustovisibleKeepeditingchoice. Privatecontentstayshidden, realSurfacewithdrawal/loginandapprovedreturn/keep/discard/cleanackcontrolsunchanged. No mutation/permissionchange; currentwholehostedfrontendstillrequired.",
+  "rawUtf8Text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run --maxWorkers=2 src/app/UnsavedChangesGuard.test.tsx src/app/UnsavedChangesGuard.lifecycle.test.tsx src/app/UnsavedChangesGuard.admission.test.tsx src/app/SurfaceAdmission.return.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-main/apps/web\r\n\r\n\r\n Test Files  4 passed (4)\r\n      Tests  13 passed (13)\r\n   Start at  00:21:21\r\n   Duration  17.75s (import 55%, environment 29%, tests 8%, setup 5%, transform 2%)\r\n\r\nEnvironment  jsdom was created 4 times · 9.92s total, 29% of tracked time\r\n             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)\r\n             learn more: https://vitest.dev/guide/improving-performance#test-environments\r\n\r\n"
+}

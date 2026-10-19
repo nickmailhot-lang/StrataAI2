@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-18T02:54:00.120Z",
+  "testRevision": "6c86174268df15b10dab114d7f524c56098fab59",
+  "actualProductRevision": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "change": "Only tests/browser/organization-actions.spec.ts,10added/3removed. No app/unit/backend/config/package/dependency input changes.",
+  "problem": "Old check focused a resolved control, asserted focus separately, then measured a later handle. A foreground metadata admission read removes protected controls;1280 failure frame shows checking-metadata only,768/320 logs show fresh links repeatedly inactive. Sizing probe now verifies44/61px live targets. Revalidation between focus and geometry is the inferred failure cause, supported by current withdrawal frames and existing focusAdmittedControl contract.",
+  "correction": "Repeat only read-only current focus inside the existing5s focus-observation window, then resolve/measure the current connected focused node in one evaluateAll. Retain44px/header/viewport/hit-test predicates, original120s case deadlines, all role/denial/canonical/withdrawal assertions and0 engine retries. No activation/mutation repeats or protected control retention.",
+  "reuse": "All complete repository inputs other than this existing4-case test file exactly equal e14. Current268/default/rollback builds and whole original37/19.3m stay attributed to actuale14; no rebuild or old result relabel. Entire strengthened rollback8 is prioritized before fresh default4, then actual whole frontend at6c861742. New browser types/contracts/collections required.",
+  "limits": "Current new observer not yet executed. It must pass original geometry and current focus at every required role/width. No product/release/main completion inferred."
+}

@@ -1,0 +1,7 @@
+{
+  "revision": "1152a767225599aad560c04f0e73eb0e05b00319",
+  "rawArtifact": "merge17-v3-native-usability.txt",
+  "rawSha256": "4fb7f368178032b0768a51913082d21ca9c66138db86582319765a98be81d214",
+  "scope": "ActualUI170/backend644:whole4 real create/assign/dates/filter/edit/dirtynavigation/503same-key recovery/move/return/Axe/outsider scenarios pass3.7min. No retries/skips; completes earlier unique default29 with core15/controlled8/checklist2.",
+  "rawUtf8Text": "\r\nRunning 4 tests using 1 worker\r\n\r\n(node:31552) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:8:7 › UXA-02/04/05/06: real work create assign edit filter and return at 1280px (29.9s)\r\n  ok 2 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:8:7 › UXA-02/04/05/06: real work create assign edit filter and return at 768px (31.3s)\r\n  ok 3 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:8:7 › UXA-02/04/05/06: real work create assign edit filter and return at 390px (27.1s)\r\n  ok 4 ..\\merge17-main\\tests\\browser\\work-usability.spec.ts:8:7 › UXA-02/04/05/06: real work create assign edit filter and return at 320px (29.4s)\r\n\r\n  4 passed (3.7m)\r\n"
+}

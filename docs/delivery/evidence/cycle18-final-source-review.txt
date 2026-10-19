@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-18T03:22:42.591Z",
+  "revision": "6c86174268df15b10dab114d7f524c56098fab59",
+  "actualProduct": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "reviewer": "delivery-agent",
+  "paths": [
+    "apps/web/src/app/SecondaryActions.test.tsx",
+    "apps/web/src/app/SecondaryActions.tsx",
+    "apps/web/src/app/workExperience.test.ts",
+    "apps/web/src/app/workExperience.ts",
+    "apps/web/src/features/organizations/OrganizationHome.actions.test.tsx",
+    "apps/web/src/features/organizations/OrganizationHome.test.tsx",
+    "apps/web/src/features/organizations/OrganizationHome.tsx",
+    "tests/browser/organization-actions.spec.ts",
+    "tests/browser/organization-deletion-retries.spec.ts",
+    "tests/browser/organization-departure.spec.ts",
+    "tests/browser/organization-member-administration.spec.ts",
+    "tests/browser/organization-settings.spec.ts",
+    "tests/browser/organizationActionAdmission.ts",
+    "tests/browser/ux-foundation.spec.ts"
+  ],
+  "productionPaths": [
+    "apps/web/src/app/SecondaryActions.tsx",
+    "apps/web/src/app/workExperience.ts",
+    "apps/web/src/features/organizations/OrganizationHome.tsx"
+  ],
+  "scope": "14focused app/browser files342added/13removed against frozenf711; threeproduction files. Test-only6c observer10added/3removed against actuale14; all other complete repository inputs equal e14.",
+  "findings": "Current action map and handlers unchanged. Only current permitted routes mount; metadata/session withdrawal still retires links and route content. Callback retains native public boolean only, reset by existing keyed Organization boundary; children remain mounted when simply collapsed. No mutation/key/body/draft owner changed. Existing consumer tests add only permitted disclosure entry. New current-focus observer retries read-only focus only within prior5s window and measures current connected/focused44px/header/viewport/hit-test atomically; no activation or mutation retry, no deadline/engine-retry/assertion relaxation. Exact new/default/fallback, canonical no-write and broader original37 pass. Backend/db/packages/config/coverage input equality verified; no server or schema change.",
+  "limitations": [
+    "Existing global build-footer crop at768200% remains separate explicit limitation; no unrelated shell repair.",
+    "Build-time flag comment retains anticipated Card-panel migration from reused component source; no Card-panel feature is implemented or accepted here.",
+    "Frozen109 exact merge2e31 fails canonical Board503 confirmed40P01. No current release/main acceptance, known-critical-zero claim, parent PRD closure or MVP completion.",
+    "Current local optional-verification fixture and supporting runtime provenance do not certify managed providers/strict verification/HTTPS/immutable deployment."
+  ],
+  "actualGates": {
+    "full": "2887passed/0failed/24existing capacitydeferrals/759.65s at6c",
+    "newNative": "4/3.2m at6c actuale14",
+    "fallbackNative": "8/5.2m at6c actuale14",
+    "unchangedOriginal": "37/19.3m atactuale14 with complete other-input equality,33real+4controlled",
+    "controlled": "268/78.64s atactuale14",
+    "builds": "default5.86s/rollback5.17s atactuale14; no relabel",
+    "currentSource": "372/49.41s at6c",
+    "delivery": "35/35,ledger1567/3850/diff/history0 againstf711 andfreshmaine90c6442ccc0b928a38db8793853ef03abe1bf3d"
+  }
+}

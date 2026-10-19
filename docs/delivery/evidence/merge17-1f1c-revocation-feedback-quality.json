@@ -1,0 +1,91 @@
+{
+  "at": "2026-10-18T21:48:13.434Z",
+  "revision": "1f1c2a6cc3a54afce1683d41788d9b775d806d96",
+  "preflight": {
+    "at": "2026-10-18T21:27:08.028Z",
+    "base": "365bfdb44f1690cb64f78c7bf1bf112fe2c284ff",
+    "red": {
+      "failed": 2,
+      "deselectedByNameFilter": 61,
+      "durationSeconds": 48.66
+    },
+    "green": {
+      "passed": 100,
+      "failed": 0,
+      "skipped": 0,
+      "files": 4,
+      "durationSeconds": 37.01
+    },
+    "types": "Passed",
+    "lint": "Passed",
+    "evidenceArtifactsVerified": 624,
+    "sources": [
+      {
+        "path": "apps/web/src/features/organizations/OrganizationInvitationHistoryPage.tsx",
+        "diskSha256": "d7eeb1fdb2e8f87f0034ef59496b45134253be8a19230d0b99602bf5aa307dc4",
+        "normalizedSha256": "83f2699d0aab0c8d8d2418e50a76dc5a59c3a2f9b17d5e24efd832fedbf4cff3"
+      },
+      {
+        "path": "apps/web/src/features/organizations/OrganizationInvitationHistoryPage.test.tsx",
+        "diskSha256": "39c6add6178c257e149a28e6156a5ead89ae257c2b78933a50304ae02e17420a",
+        "normalizedSha256": "a10c8e726c5b2a9d9e722bc705a34f2787cae0a0122be2d0ae9e444291d74142"
+      }
+    ],
+    "scope": "Bounded product message preservation, exact original single-write/privacy/authority behavior. Native new build and full corrected-head hosted gates still required."
+  },
+  "build": {
+    "dist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\merge17-1f1c-default-dist",
+    "exit": 0,
+    "revision": "1f1c2a6cc3a54afce1683d41788d9b775d806d96",
+    "identity": {
+      "revision": "1f1c2a6cc3a54afce1683d41788d9b775d806d96",
+      "version": "0.1.0"
+    },
+    "assets": [
+      {
+        "sha256": "070d7a13ba9e091995a0ce52c47bbefd4ef113fa9b121477d9d3206002c6b578",
+        "path": "build-metadata.json",
+        "length": 73
+      },
+      {
+        "sha256": "ce5001c7c9ad48b180cf8d269e0635f7d36c505a0d4b12ba5b22fb2298dd05be",
+        "path": "index.html",
+        "length": 578
+      },
+      {
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666",
+        "path": "assets/index-Bw_GsyDn.css",
+        "length": 561
+      },
+      {
+        "sha256": "c1db22d18b80e55cec31fdfe044bd09d55665286ebdde8d118c698067e3c8296",
+        "path": "assets/index-CisWknrx.js",
+        "length": 1634625
+      }
+    ],
+    "scope": "Actual identified local production build after red2/green100/types/lint. No Docker images, existing previews or Worker changed; complete final-new-head immutable qualification still required.",
+    "variant": "default",
+    "at": "2026-10-18T21:30:07.0275787+00:00"
+  },
+  "red": {
+    "exit": 1,
+    "scope": "New deterministic Organization/Board regression against unchanged product code365; focused tests only",
+    "at": "2026-10-18T21:23:46.5451615+00:00"
+  },
+  "green": {
+    "exit": 0,
+    "at": "2026-10-18T21:25:02.4287396+00:00",
+    "scope": "Whole four affected invitation-history files, including new deterministic regression; working product fix"
+  },
+  "types": {
+    "scope": "Web TypeScript with pending-revocation feedback fix",
+    "exit": 0,
+    "at": "2026-10-18T21:25:02.3673867+00:00"
+  },
+  "lint": {
+    "scope": "Web lint with pending-revocation feedback fix",
+    "at": "2026-10-18T21:25:17.3049255+00:00",
+    "exit": 0
+  },
+  "scope": "Specific uncertainty survives a failed history refresh while original authority withdrawal, private-row removal and single-write recovery remain. Two deterministic Organization/Board regressions fail before the fix; all100 tests in four affected files pass afterward. Scoped quality, not complete hosted acceptance."
+}

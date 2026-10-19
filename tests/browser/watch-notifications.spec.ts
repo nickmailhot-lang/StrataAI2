@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -65,7 +66,9 @@ test('PRD-17-TC-01/07/08/11/12: native watch overlap, unwatch and current List m
     await page.goto(path);
     for (const kind of ['Board', 'List', 'Card']) {
       if (kind === 'Card') await page.goto(`${path}/cards/${card}`);
-      const open = page.getByRole('button', { name: `${kind} watching`, exact: true });
+      const open = kind === 'Card'
+        ? await disclosedWorkControl(page, 'Card actions', 'button', { name: `${kind} watching`, exact: true })
+        : page.getByRole('button', { name: `${kind} watching`, exact: true });
       await activate(open);
       const dialog = page.getByRole('dialog', { name: `${kind} watching`, exact: true });
       await expect(dialog.getByText(`You are not watching this ${kind}.`, { exact: true })).toBeVisible();

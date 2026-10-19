@@ -1,0 +1,11 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/kanban/CardArchiveControl.test.tsx src/features/kanban/ArchivedCardsPage.test.tsx
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle13-archive-admission/apps/web
+
+
+ Test Files  2 passed (2)
+      Tests  58 passed (58)
+   Start at  15:49:51
+   Duration  15.42s (tests 52%, import 28%, environment 16%, setup 3%, transform 2%)
+

@@ -1,0 +1,9 @@
+{
+  "revision": "c2b79f4f3c00ced49af58f1f3249a5a9425a3bce",
+  "reason": "npm.ps1 wrapper invocation failed with empty Path before build command; no product-test failure. Preserve controls, compute output path before npm.cmd invocation.",
+  "session": 52774,
+  "at": "2026-10-18T01:41:04.4264361+00:00",
+  "build": "Not Run",
+  "controls": "268 passed,74.78s",
+  "exit": 1
+}

@@ -1,0 +1,103 @@
+
+Running 4 tests using 1 worker
+
+(node:35984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 1280px (14.8s)
+(node:38884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 768px (19.6s)
+  x  3 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 390px (17.1s)
+(node:37552) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 320px (20.5s)
+
+
+  1) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 1280px 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('link', { name: 'Organization settings', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('link', { name: 'Organization settings', exact: true }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Organization settings', exact: true })
+
+
+      61 |         }
+      62 |         const permitted = client.getByRole('link', { name: role === 'Member' ? 'Leave Organization' : 'Organization settings', exact: true });
+    > 63 |         await openOrganizationActions(client, permitted); await expect(permitted).toBeVisible();
+         |                                                                                   ^
+      64 |         if (role === 'Member') await expect(client.getByRole('link', { name: 'Organization settings', exact: true, includeHidden: true })).toHaveCount(0);
+      65 |         else await expect(client.getByRole('link', { name: 'Organization settings', exact: true })).toHaveAttribute('href', `${directoryPath}/settings`);
+      66 |         if (role === 'Owner') await expect(client.getByRole('link', { name: 'Request Organization deletion', exact: true })).toBeVisible();
+        at currentActions (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:63:83)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:91:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-b055-new\organization-actions-PRD-0-0fb19--canonical-return-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-b055-new\organization-actions-PRD-0-0fb19--canonical-return-at-1280px\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle18-prod-b055-new\organization-actions-PRD-0-0fb19--canonical-return-at-1280px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle18-prod-b055-new\organization-actions-PRD-0-0fb19--canonical-return-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle18-prod-b055-new\organization-actions-PRD-0-0fb19--canonical-return-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 390px 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: getByRole('link', { name: 'Organization settings', exact: true })
+    Expected: "/app/0a098b02-fcbf-297f-106e-a0ebf12dab4a/settings"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" getByRole('link', { name: 'Organization settings', exact: true }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Organization settings', exact: true })
+
+
+      63 |         await openOrganizationActions(client, permitted); await expect(permitted).toBeVisible();
+      64 |         if (role === 'Member') await expect(client.getByRole('link', { name: 'Organization settings', exact: true, includeHidden: true })).toHaveCount(0);
+    > 65 |         else await expect(client.getByRole('link', { name: 'Organization settings', exact: true })).toHaveAttribute('href', `${directoryPath}/settings`);
+         |                                                                                                     ^
+      66 |         if (role === 'Owner') await expect(client.getByRole('link', { name: 'Request Organization deletion', exact: true })).toBeVisible();
+      67 |         else await expect(client.getByRole('link', { name: 'Request Organization deletion', exact: true, includeHidden: true })).toHaveCount(0);
+      68 |         const focusTarget = rollback ? permitted : summary;
+        at currentActions (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:65:101)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:96:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-b055-new\organization-actions-PRD-0-c268b-d-canonical-return-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-b055-new\organization-actions-PRD-0-c268b-d-canonical-return-at-390px\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle18-prod-b055-new\organization-actions-PRD-0-c268b-d-canonical-return-at-390px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle18-prod-b055-new\organization-actions-PRD-0-c268b-d-canonical-return-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle18-prod-b055-new\organization-actions-PRD-0-c268b-d-canonical-return-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 1280px 
+    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 390px 
+  2 passed (2.9m)

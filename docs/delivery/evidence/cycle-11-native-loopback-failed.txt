@@ -1,0 +1,74 @@
+
+Running 2 tests using 1 worker
+
+(node:30856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\invitation-issuer-telemetry.spec.ts:8:7 › PRD-03/04-TC-06/07/11/12: Organization and Board invitation observations retain original requests and exclude private data at 1280px (802ms)
+(node:12936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\invitation-issuer-telemetry.spec.ts:8:7 › PRD-03/04-TC-06/07/11/12: Organization and Board invitation observations retain original requests and exclude private data at 390px (551ms)
+
+
+  1) tests\browser\invitation-issuer-telemetry.spec.ts:8:7 › PRD-03/04-TC-06/07/11/12: Organization and Board invitation observations retain original requests and exclude private data at 1280px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 401
+
+      14 |     expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+      15 |     const created = await context.request.post('/organizations', { headers, data: { name: 'Private invitation metrics council' } });
+    > 16 |     expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
+         |                              ^
+      17 |     const boardResult = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Private invitation metrics Board', visibility: 'PRIVATE' } });
+      18 |     expect(boardResult.status()).toBe(201); const board = (await boardResult.json()).id;
+      19 |     expect((await (await context.request.get('/api/runtime')).json()).mode).toBe('production');
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle11-invitation-observations\tests\browser\invitation-issuer-telemetry.spec.ts:16:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle11-prod-native\invitation-issuer-telemetr-d906e-lude-private-data-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle11-prod-native\invitation-issuer-telemetr-d906e-lude-private-data-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle11-prod-native\invitation-issuer-telemetr-d906e-lude-private-data-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle11-prod-native\invitation-issuer-telemetr-d906e-lude-private-data-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\invitation-issuer-telemetry.spec.ts:8:7 › PRD-03/04-TC-06/07/11/12: Organization and Board invitation observations retain original requests and exclude private data at 390px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 401
+
+      14 |     expect((await context.request.post('/auth/login', { headers, data: account })).status()).toBe(200);
+      15 |     const created = await context.request.post('/organizations', { headers, data: { name: 'Private invitation metrics council' } });
+    > 16 |     expect(created.status()).toBe(201); const org = (await created.json()).organization.id;
+         |                              ^
+      17 |     const boardResult = await context.request.post('/boards', { headers, data: { organizationId: org, name: 'Private invitation metrics Board', visibility: 'PRIVATE' } });
+      18 |     expect(boardResult.status()).toBe(201); const board = (await boardResult.json()).id;
+      19 |     expect((await (await context.request.get('/api/runtime')).json()).mode).toBe('production');
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle11-invitation-observations\tests\browser\invitation-issuer-telemetry.spec.ts:16:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle11-prod-native\invitation-issuer-telemetr-cb286-clude-private-data-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle11-prod-native\invitation-issuer-telemetr-cb286-clude-private-data-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle11-prod-native\invitation-issuer-telemetr-cb286-clude-private-data-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle11-prod-native\invitation-issuer-telemetr-cb286-clude-private-data-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\invitation-issuer-telemetry.spec.ts:8:7 › PRD-03/04-TC-06/07/11/12: Organization and Board invitation observations retain original requests and exclude private data at 1280px 
+    tests\browser\invitation-issuer-telemetry.spec.ts:8:7 › PRD-03/04-TC-06/07/11/12: Organization and Board invitation observations retain original requests and exclude private data at 390px 

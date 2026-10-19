@@ -1,0 +1,69 @@
+{
+  "at": "2026-10-17T23:34:58.489Z",
+  "candidate": "6c42c51a537299c3dd8b9b5521290577036def75",
+  "pullRequest": 107,
+  "runId": 39078410829,
+  "state": "Required CI and release pending; no overall pass",
+  "checks": [
+    {
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/runs/117530341134"
+    },
+    {
+      "name": "web-quality",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39078410829/job/117530297143"
+    },
+    {
+      "name": "postgres-integration",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39078410829/job/117530297088"
+    },
+    {
+      "name": "dotnet-quality",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39078410829/job/117530297076"
+    },
+    {
+      "name": "metadata",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39078410829/job/117530239435"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39078409429/job/117530237878"
+    },
+    {
+      "name": "Analyze (python)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39078409429/job/117530237262"
+    },
+    {
+      "name": "Analyze (csharp)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39078409429/job/117530237223"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39078409429/job/117530237214"
+    },
+    {
+      "name": "Analyze (c-cpp)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39078409429/job/117530237168"
+    }
+  ]
+}

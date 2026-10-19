@@ -1,0 +1,23 @@
+{
+  "revision": "0dd1689c80ad2139dcbc46a6a06c666575c757ff",
+  "rawArtifact": "cycle19-order-migration150-proof.json",
+  "rawSha256": "fa998b403c66de62e3376dbf66d467163d27d5f19c1c25a9ad0127f66f35f9d1",
+  "lines": [
+    "{",
+    "  \"at\": \"2026-10-18T03:48:39.2850817+00:00\",",
+    "  \"revision\": \"0dd1689c80ad2139dcbc46a6a06c666575c757ff\",",
+    "  \"container\": \"a64e36aa47a7c98a71dfa018d8bb7a6bb48b6e1bfd62f121b772a9726f5c7dea\",",
+    "  \"scope\": \"Only owned C19 baseline is advanced149→150; original migrations/data/history retained and oldC11/user resources unchanged. No runtime grant expansion, source/body shape changes beyond parent ordering, native or release acceptance inferred.\",",
+    "  \"migrationExit\": 0,",
+    "  \"privateHelperExecute\": \"f|f\",",
+    "  \"roleFlags\": [",
+    "    \"strataai_api_runtime|f|f|f|f|f|f\",",
+    "    \"strataai_worker_runtime|f|f|f|f|f|f\"",
+    "  ],",
+    "  \"after\": 150,",
+    "  \"project\": \"strataai-c19-lock-c22f61d3\",",
+    "  \"before\": 149",
+    "}",
+    ""
+  ]
+}

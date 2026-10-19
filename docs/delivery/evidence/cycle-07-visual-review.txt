@@ -1,0 +1,29 @@
+Developer inspection 2026-10-17T18:42:26.144Z; current compiled web/test ccc424c8d3cef6407268f428c6af87e7c5c45531; unchanged compiled Demo API 3bf5c2ba7598f3348143b3b5083c8c7be3be1bc8.
+Inspected all six new actual viewport captures: two generic refusal screens and four canonical Card returns. Mobile refusal is fully visible at y72 below header56, scroll0, with clear focus outline; desktop y88 below header64 also focused. No stale private Board/Card/form content appears. All four return rings are visible and unobscured. Tablet retains200% text after reload, with wrapped Card title and complete focused Card inside viewport below the larger header. Native geometry/root-font/overflow/key/actor/canonical/keyboard/Axe assertions pass. Prior same-layout dialog captures remain separately identified; no screen-reader/device/full WCAG or release acceptance claim.
+The apparent off-viewport skip link in scrolled full-page captures is absent in these actual viewport captures; no shell changes were needed.
+[
+  {
+    "file": "card-refusal-viewport-390.png",
+    "sha256": "df09dd4b53c5dc21e61ec4d05807625f343b97b0e308b283864456928e097d9b"
+  },
+  {
+    "file": "card-refusal-viewport-1280.png",
+    "sha256": "79515686b115f6aedea0f8a79f4e00e76347b46d7357990cc0cde23dd7bcd984"
+  },
+  {
+    "file": "card-creation-return-viewport-1280.png",
+    "sha256": "ffdd67cda8f470c1d6f899301b7e9479c293c4f70e5bb20527ba66daee9b175e"
+  },
+  {
+    "file": "card-creation-return-viewport-768.png",
+    "sha256": "e1efd48f0dad6882617a1853e994e171e99054c762563741e7e430c936746a4d"
+  },
+  {
+    "file": "card-creation-return-viewport-390.png",
+    "sha256": "d34b253d89d50ad4fc426cef23ee2401763e15f989369e7add72d39e726ec5fd"
+  },
+  {
+    "file": "card-creation-return-viewport-320.png",
+    "sha256": "02b87618026f7767ffe1ed2f222cf7f0e938f6935618f72af1dfe8e2193f8157"
+  }
+]

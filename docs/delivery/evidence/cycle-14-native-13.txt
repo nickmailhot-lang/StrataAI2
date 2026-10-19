@@ -1,0 +1,20 @@
+
+Running 13 tests using 1 worker
+
+(node:12280) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\signin-card-return.spec.ts:21:5 › PRD-01-VS-04-T-03/AC-01/02/03: another Organization owner remains denied after sign-in and returns to authorized work (5.5s)
+  ok  2 tests\browser\signin-card-return.spec.ts:102:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 1280px (5.8s)
+  ok  3 tests\browser\signin-card-return.spec.ts:102:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 768px (5.6s)
+  ok  4 tests\browser\signin-card-return.spec.ts:102:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 390px (4.9s)
+  ok  5 tests\browser\signin-card-return.spec.ts:102:7 › PRD-01-VS-04/AC-01/02/04: signed-out Card link → sign-in → canonical Card → Board at 320px (5.0s)
+  ok  6 tests\browser\signin-card-return.spec.ts:158:7 › PRD-01-VS-04/AC-03: sign-in return does not grant outsider access to a private Card (2.0s)
+  ok  7 tests\browser\signin-card-return.spec.ts:158:7 › PRD-01-VS-04/AC-03: sign-in return does not grant portal-only access to a private Card (2.1s)
+  ok  8 tests\browser\signin-card-return.spec.ts:192:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current board → canonical Card → Board at 1280px (4.8s)
+  ok  9 tests\browser\signin-card-return.spec.ts:192:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current board → canonical Card → Board at 390px (4.7s)
+  ok 10 tests\browser\signin-card-return.spec.ts:192:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 1280px (4.7s)
+  ok 11 tests\browser\signin-card-return.spec.ts:192:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 768px (5.0s)
+  ok 12 tests\browser\signin-card-return.spec.ts:192:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 390px (4.8s)
+  ok 13 tests\browser\signin-card-return.spec.ts:192:7 › PRD-01-VS-04-T-02: revoked session → explicit sign-in → current card → canonical Card → Board at 320px (4.6s)
+
+  13 passed (6.4m)

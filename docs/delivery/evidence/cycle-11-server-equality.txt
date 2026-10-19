@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-17T21:40:04.284Z",
+  "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+  "compiledApi": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+  "trees": [
+    {
+      "path": "src",
+      "current": "ee421ed1a77c780f51f040b05910d883724385b9",
+      "compiled": "ee421ed1a77c780f51f040b05910d883724385b9"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests",
+      "current": "abae174f3ee4a809395ab896a42d6267143056a1",
+      "compiled": "abae174f3ee4a809395ab896a42d6267143056a1"
+    },
+    {
+      "path": "db",
+      "current": "954bce778f56edcba68fc5a95809b4f3342e6603",
+      "compiled": "954bce778f56edcba68fc5a95809b4f3342e6603"
+    }
+  ],
+  "scope": "All server/API-test/migration trees are exactly unchanged. Reuse the known compiled API389c70ab; a separate current Worker build and disposable restricted PostgreSQL fixture are still required for native Production validation. No current API22 re-execution inferred."
+}

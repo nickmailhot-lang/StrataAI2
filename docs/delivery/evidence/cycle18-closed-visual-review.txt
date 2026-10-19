@@ -1,0 +1,93 @@
+{
+  "at": "2026-10-18T02:12:16.564Z",
+  "testRevision": "24b9b46b40bd489e570ea28c3a5f511f2bf0a28e",
+  "actualProductRevision": "c2b79f4f3c00ced49af58f1f3249a5a9425a3bce",
+  "captures": [
+    {
+      "role": "admin",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-admin-1280.png",
+      "sha256": "395f6f649d58c8e5002918726999520f2d5fd7e487338c707f453dd6bc8576cc"
+    },
+    {
+      "role": "member",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-member-1280.png",
+      "sha256": "f7ae596afcb114b6aa8397b52c4a8d224de46336d965fad6c4fb7201f0cf9fee"
+    },
+    {
+      "role": "owner",
+      "width": 1280,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-owner-1280.png",
+      "sha256": "e243135e27f791f69ce2b91445c9e596a5699b19b7f47bc0134121b1f4670321"
+    },
+    {
+      "role": "admin",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-admin-768.png",
+      "sha256": "2ece3d3cc8c47296d71537383ab6f12dc6899180ad63a638c80adb98936edc53"
+    },
+    {
+      "role": "member",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-member-768.png",
+      "sha256": "2ece3d3cc8c47296d71537383ab6f12dc6899180ad63a638c80adb98936edc53"
+    },
+    {
+      "role": "owner",
+      "width": 768,
+      "textZoom": "200%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-owner-768.png",
+      "sha256": "b599149a44b3082170c7c0761aae2b9252509ef5b2a10c4d541889c50661e738"
+    },
+    {
+      "role": "admin",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-admin-390.png",
+      "sha256": "b4055391b52b9b28ca59077852b5c9175fe44ee552687e3ab26228271cb4a062"
+    },
+    {
+      "role": "member",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-member-390.png",
+      "sha256": "1c1a3429445d1105bdcdd93539621c2e7c3ccd8de793037252e1b9d3274c541d"
+    },
+    {
+      "role": "owner",
+      "width": 390,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-owner-390.png",
+      "sha256": "668e6ce68a4d76f3a1e5018ed8c35e111030dfd80182c53adf0ae51f8bcca7c0"
+    },
+    {
+      "role": "admin",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-admin-320.png",
+      "sha256": "52b85e3750f1567fe54e341a3734a22ea0ab3b925c17769f394a066b4bd0aa23"
+    },
+    {
+      "role": "member",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-member-320.png",
+      "sha256": "39d30cfca9ea3759f7f28f88689d28c273cf5d6ba9bef8d9110e8edc4c9d4bd4"
+    },
+    {
+      "role": "owner",
+      "width": 320,
+      "textZoom": "100%",
+      "path": "outputs/StrataAI2-organization-actions-keyboard-owner-320.png",
+      "sha256": "4b728f7ee421d66dd6faf13e22d6dba78415c322ee1e465a97a16d7a4cf8b602"
+    }
+  ],
+  "reviewer": "delivery-agent",
+  "review": "All12 current open-after-keyboard-cycle viewport captures inspected for Create Board prominence, native summary focus outline, role-permitted actions, wrapping and canonical Board destination. Member has only archived/leave. Tablet200% uses normal document scrolling; tall Owner menus continue below viewport. Closed accessibility/Tab behavior is proven by automated native assertions, not these open-menu images. No all-device/screen-reader/full WCAG certification inferred."
+}

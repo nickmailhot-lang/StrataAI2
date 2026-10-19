@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-17T23:26:00.945Z",
+  "revision": "d5253673eab1e240649419eb1d8e937d17da8421",
+  "cause": "PowerShell unrolled a single-item if-result to a scalar string. Splatting that string produced separate character arguments, selecting the wider browser suite.",
+  "actualCli": "node ... test w o r k - n a v i g a t i o n . s p e c . t s ...",
+  "outcome": "Stopped only exact verified owned runner14992 and its recorded descendants. Original log/runtime/exit-1 and ownership metadata retained. Intended4 did not execute; no application failure established.",
+  "repair": "Explicit System.String[] type for file arguments, reject nonarray input, collect whole files first and refuse unexpected exact4/1 or19/3 case/file summaries. No product, test assertion, deadline or retry change.",
+  "newSession": 75960,
+  "newManifest": "Listing tests:\r\n  work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 1280px\r\n  work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 768px\r\n  work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 390px\r\n  work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 320px\r\nTotal: 4 tests in 1 file\r\n",
+  "originalRuntimeEvidence": "EVID-CYCLE-16-RUNTIME certifies actual runtime/role/process identities only. Its declared files field did not prove actual CLI arguments; this failure evaluation supersedes that selection assumption."
+}

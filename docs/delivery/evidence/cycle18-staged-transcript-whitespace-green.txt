@@ -1,0 +1,5 @@
+{
+  "scope": "Staged source/report checks pass; only verbatim hashed Cycle18 transcript data has explicit reviewed whitespace attributes. All original bytes/hashes and failed result preserved; no product/test/assertion/deadline changes.",
+  "revision": "6c86174268df15b10dab114d7f524c56098fab59",
+  "exit": 0
+}

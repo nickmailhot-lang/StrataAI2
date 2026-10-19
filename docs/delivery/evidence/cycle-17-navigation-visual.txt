@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-18T00:29:54.674Z",
+  "revision": "97ce484a69f330af1dc3a7463c2ad34535520d25",
+  "captures": [
+    {
+      "width": 1280,
+      "kind": "actual viewport only",
+      "sha256": "1ff6c3b094414789e63902940839f88041581c51219a26779152263b003f5753"
+    },
+    {
+      "width": 768,
+      "kind": "actual viewport only",
+      "sha256": "d1760a0e494321f5bffbf8af17d0453f65bf0f6021b009f8515654bf1680a347"
+    },
+    {
+      "width": 390,
+      "kind": "actual viewport only",
+      "sha256": "c1e90567faeb581ede7801a4ec89952c9ffbb50b34cc62f378725cff840706b0"
+    },
+    {
+      "width": 320,
+      "kind": "actual viewport only",
+      "sha256": "2c1ff99477f624f43a36ff6cbc4fdf02dc376937a6735674418d09a7ee83ece0"
+    }
+  ],
+  "reviewer": "delivery-agent",
+  "review": "Inspected all4 current actual viewport Work captures. Selected/focused Work has a visible outline on desktop/tablet and phone drawer. At200% tablet, Work stays inside the fixed sidebar below the header; Organization/Notifications wrap in the existing narrow sidebar.320/390 drawer exposes readable Organizations/Work/Notifications and Close. No unavailable module placeholders. Automated geometry/Axe/overflow and actual keyboard/Back/withdrawal assertions remain separate from visual inspection.",
+  "crossOrganization": "Inspected current denied390 and authorized-return390 captures. Denial contains only neutral error/reference/Retry/Sign in and build metadata, with no target names or Internal navigation. Authorized-return capture is a full-page image with fixed-header stitching and is explicitly NOT viewport/header-geometry evidence; it shows the permitted original Card title/focus, while native canonical, denial, no-write, keyboard/Axe/Back checks provide behavioral evidence. No complete-dialog-at-once or live convergence claim.",
+  "limitations": "Broader Board action clutter and detail/disclosure amendments remain open. Current full frontend is running, not passed. No full WCAG/device or immutable deployment acceptance."
+}

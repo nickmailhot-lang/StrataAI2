@@ -1,0 +1,7 @@
+{
+  "revision": "8272d8218a3b6ebfef0ca78ebba425e924e013ee",
+  "rawArtifact": "cycle20-current-ledger-validation-v4.txt",
+  "rawSha256": "f41f2c753cd753797ee9cc8b2da031ff068ee56c2f97e1523f24a6de557de849",
+  "scope": "Actual exact8272 source/registry/history validation only; registry collection is not whole release execution.",
+  "rawUtf8Text": "Valid: 1575 work items; 3863 criteria. No unsupported Done claims.\r\n"
+}

@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { openAdmittedReview } from './keyboardAdmission';
 import { randomUUID } from 'node:crypto';
@@ -66,7 +67,7 @@ for (const width of [1280, 390]) {
       const cardPath = `/app/${org}/boards/${board}/cards/${card}`; const reads = trackBoardReads(page, board, cardPath);
       await page.goto(cardPath); await expect.poll(reads).toBeGreaterThanOrEqual(2);
       expect(imageReads).toBe(0);
-      const review = page.getByRole('button', { name: 'Review Card cover', exact: true });
+      const review = (await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Card cover', exact: true }));
       const candidate = page.getByRole('button', { name: 'Use Cover photo.png as cover', exact: true });
       await expect(review).toBeEnabled(); await openAdmittedReview(review, candidate);
       await candidate.press('Enter');
@@ -82,7 +83,7 @@ for (const width of [1280, 390]) {
       await expect.poll(() => image.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
       await expect(review).toBeFocused();
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-      const removal = page.getByRole('button', { name: 'Remove Card cover', exact: true });
+      const removal = (await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Remove Card cover', exact: true }));
       await openAdmittedReview(review, removal); await removal.press('Enter');
       await expect(consent).toHaveCount(0); await page.getByRole('button', { name: 'Confirm cover removal', exact: true }).press('Enter');
       await expect(page.getByText('Card cover removed.', { exact: true })).toBeVisible(); await expect(image).toHaveCount(0);

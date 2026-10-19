@@ -1,6 +1,8 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
+import { openOrganizationActions } from './organizationActionAdmission';
 import { pressAdmittedAction } from './keyboardAdmission';
 import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
@@ -16,7 +18,9 @@ for (const width of [1280, 390]) {
     const home = trackInvitationAdmission(page, org, actor, undefined, `/app/${org}`, `/organizations/${org}`);
     await page.goto(`/app/${org}`);
     await expect.poll(home.ready, { timeout: 30_000 }).toBe(true);
-    await pressAdmittedAction(page.getByRole('link', { name: 'Leave Organization', exact: true }));
+    const leave = page.getByRole('link', { name: 'Leave Organization', exact: true });
+    await openOrganizationActions(page, leave);
+    await pressAdmittedAction(leave);
     await pressAdmittedAction(page.getByRole('button', { name: 'Review departure' }));
     await expect(page.getByRole('button', { name: 'Cancel departure' })).toBeFocused();
     await pressAdmittedAction(page.getByRole('button', { name: 'Confirm departure' }));

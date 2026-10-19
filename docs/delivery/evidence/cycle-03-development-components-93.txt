@@ -1,0 +1,11 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --run src/features/organizations/OrganizationHome.test.tsx src/app/SurfaceAdmission.test.tsx
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/apps/web
+
+
+ Test Files  2 passed (2)
+      Tests  93 passed (93)
+   Start at  09:13:37
+   Duration  29.51s (tests 58%, import 27%, environment 11%, transform 3%, setup 2%)
+

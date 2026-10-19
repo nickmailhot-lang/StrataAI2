@@ -140,8 +140,12 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
         Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default)
         => ExecuteActorAsync(actorId, operation, cancellationToken, null, observation: false);
 
+    public Task<IdentityOperation<T>> ExecuteBoardObservationAsync<T>(Guid actorId, Guid organizationId, Guid boardId,
+        Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default)
+        => ExecuteActorAsync(actorId, operation, cancellationToken, organizationId, observation: true, boardId: boardId);
+
     private async Task<IdentityOperation<T>> ExecuteActorAsync<T>(Guid actorId,
-        Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken, Guid? organizationId, bool observation)
+        Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken, Guid? organizationId, bool observation, Guid? boardId = null)
     {
         try
         {
@@ -153,6 +157,16 @@ internal sealed class PostgresIdentityUnitOfWork(PostgresConnectionFactory conne
                         await using var parent = new NpgsqlCommand("SELECT id FROM organizations WHERE id=@tenant AND status='ACTIVE' FOR SHARE;", tenant.Connection, tenant.Transaction);
                         parent.Parameters.AddWithValue("tenant", organization);
                         await parent.ExecuteScalarAsync(cancellationToken);
+                        if (boardId is Guid board)
+                        {
+                            // Work commands own the Board before checking the
+                            // account. Do not retain an actor gate while waiting
+                            // for that parent; all later permission checks stay.
+                            await using var boardParent = new NpgsqlCommand("SELECT id FROM boards WHERE tenant_id=@tenant AND id=@board AND lifecycle_state='ACTIVE' FOR SHARE;", tenant.Connection, tenant.Transaction);
+                            boardParent.Parameters.AddWithValue("tenant", organization);
+                            boardParent.Parameters.AddWithValue("board", board);
+                            await boardParent.ExecuteScalarAsync(cancellationToken);
+                        }
                     }, cancellationToken);
                 await using var session = await connections.OpenGlobalSessionAsync(cancellationToken);
                 if (observation) {

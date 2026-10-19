@@ -1,5 +1,6 @@
 import { expect, test } from './releaseTest';
 import { trackBoardReads } from './boardReadTracker';
+import { focusVisibleBoardCard } from './visibleBoardCard';
 
 for (const { width, input } of [{ width: 1280, input: 'mouse' }, { width: 390, input: 'mouse' },
   { width: 390, input: 'touch' }] as const) {
@@ -75,7 +76,7 @@ for (const { width, input } of [{ width: 1280, input: 'mouse' }, { width: 390, i
     await canvas.evaluate(node => { node.scrollLeft = 20; });
     await column.evaluate(node => { node.scrollTop = 100; });
     const cardLink = page.getByRole('link', { name: 'Scrollable card 4', exact: true });
-    await cardLink.evaluate(node => (node as HTMLElement).focus({ preventScroll: true }));
+    await focusVisibleBoardCard(cardLink);
     await expect(cardLink).toBeFocused();
     const canvasLeft = await canvas.evaluate(node => node.scrollLeft);
     const columnTop = await column.evaluate(node => node.scrollTop);

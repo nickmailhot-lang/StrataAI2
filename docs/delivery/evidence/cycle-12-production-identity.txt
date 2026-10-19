@@ -1,0 +1,80 @@
+{
+  "databaseContainer": "70ba5208fe35d914eb6837e46cbad5201bee183570df1004a7719168600e6315",
+  "authPolicy": {
+    "allowSelfRegistration": true,
+    "requireVerifiedEmail": false,
+    "minimumPasswordLength": 12
+  },
+  "apiReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "configSha256": "8389C188F44290AFAE678D1019F270A4E6846EAC2073580937729DF283701A9A",
+  "schemaMigrations": 149,
+  "apiBinarySha256": "7D68C79C44E300602CAE1345FAF5AD54800987AA77383253C2BBF5D1BA8AA6E4",
+  "testRevision": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+  "api": {
+    "service": "strataai-api",
+    "mode": "production",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "workerBinarySha256": "03F9039504BDC5F3066B12C0E9187F6CCD6C661F00B96E62928E5D916126CF60",
+  "mainApi": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "runtimeRoles": [
+    "strataai_api_runtime|f|f|f|f|f|f",
+    "strataai_worker_runtime|f|f|f|f|f|f"
+  ],
+  "hosts": [
+    {
+      "createdAt": "2026-10-17T14:51:48.356537-07:00",
+      "parentPid": 21476,
+      "kind": "api",
+      "port": 18089,
+      "pid": 28452,
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle8-dotnet-artifacts\\bin\\StrataAI.Api\\release\\StrataAI.Api.dll"
+    },
+    {
+      "createdAt": "2026-10-17T15:17:38.209733-07:00",
+      "parentPid": 37224,
+      "kind": "worker",
+      "port": 18093,
+      "pid": 8864,
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle11-worker-artifacts\\bin\\StrataAI.Worker\\release\\StrataAI.Worker.dll"
+    },
+    {
+      "createdAt": "2026-10-17T15:17:27.664841-07:00",
+      "parentPid": 37400,
+      "kind": "preview",
+      "port": 15185,
+      "pid": 37704,
+      "command": "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vite/bin/vite.js preview --config C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-fixture\\preview.config.mjs"
+    }
+  ],
+  "web": {
+    "revision": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+    "version": "0.1.0"
+  },
+  "mainWeb": {
+    "revision": "33e5c6d2176d6b8718fda2e19435c33dc40f4f91",
+    "version": "0.1.0"
+  },
+  "scope": "Current compiled webfbbe942c; unchanged actual API389c70ab/1.0.0 and Worker0f6ddc29/0.1.0, complete backend/db/API/Domain test tree equality. Real local optional-verification Production consumer with restricted149 database and explicit owned Organization scopes. Not CI Docker-helper, immutable release, strict/provider or HTTPS certification.",
+  "worker": {
+    "service": "strataai-worker",
+    "mode": "production",
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "databaseProject": "strataai-c11-invite-9ed41294",
+  "workerReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "at": "2026-10-17T22:17:55.1605369+00:00"
+}

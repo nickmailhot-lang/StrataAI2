@@ -1,0 +1,9 @@
+
+Running 2 tests using 1 worker
+
+(node:37248) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\archived-cards.spec.ts:6:7 › PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at 1280px (14.6s)
+  ok 2 tests\browser\archived-cards.spec.ts:6:7 › PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at 390px (14.7s)
+
+  2 passed (1.3m)

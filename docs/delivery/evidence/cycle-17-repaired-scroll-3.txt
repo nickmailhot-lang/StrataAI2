@@ -1,0 +1,10 @@
+
+Running 3 tests using 1 worker
+
+(node:35096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px (5.1s)
+  ok 2 tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px (5.0s)
+  ok 3 tests\browser\kanban-scroll.spec.ts:6:7 › PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px (4.7s)
+
+  3 passed (1.5m)

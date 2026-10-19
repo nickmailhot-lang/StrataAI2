@@ -1,0 +1,47 @@
+xUnit.net v3 In-Process Runner v4.0.1+8ed8aa354c (64-bit .NET 10.0.12)
+  Discovering: StrataAI.Api.Tests
+  Discovered:  StrataAI.Api.Tests
+  Starting:    StrataAI.Api.Tests
+    StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(scenario: "other", status: Unauthorized) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: Unauthorized
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(72,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(String scenario, HttpStatusCode status)
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(78,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(String scenario, HttpStatusCode status)
+        --- End of stack trace from previous location ---
+    StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(scenario: "empty", status: Unauthorized) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: Unauthorized
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(72,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(String scenario, HttpStatusCode status)
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(78,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(String scenario, HttpStatusCode status)
+        --- End of stack trace from previous location ---
+    StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(scenario: "malformed", status: BadRequest) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: BadRequest
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(72,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(String scenario, HttpStatusCode status)
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(78,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(String scenario, HttpStatusCode status)
+        --- End of stack trace from previous location ---
+    StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(scenario: "multiple", status: BadRequest) [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: BadRequest
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(72,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(String scenario, HttpStatusCode status)
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(78,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation(String scenario, HttpStatusCode status)
+        --- End of stack trace from previous location ---
+    StrataAI.Api.Tests.ApiHostTests.PRD_04_original_Board_creation_actor_survives_account_replacement_and_legacy_replay [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: Unauthorized
+      Actual:   Created
+      Stack Trace:
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(28,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_original_Board_creation_actor_survives_account_replacement_and_legacy_replay()
+        tests\StrataAI.Api.Tests\BoardCreationActorTests.cs(46,0): at StrataAI.Api.Tests.ApiHostTests.PRD_04_original_Board_creation_actor_survives_account_replacement_and_legacy_replay()
+        --- End of stack trace from previous location ---
+  Finished:    StrataAI.Api.Tests (ID = '6778c33f05e6d43b8c9668ee3274771a0e29258596f72168463f5bc44ab0e566')
+=== TEST EXECUTION SUMMARY ===
+   StrataAI.Api.Tests  Total: 6, Errors: 0, Failed: 5, Skipped: 0, Not Run: 0, Time: 16.150s

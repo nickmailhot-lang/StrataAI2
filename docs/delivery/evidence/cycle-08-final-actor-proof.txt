@@ -1,0 +1,37 @@
+{
+  "revision": "ad9e826f17548936bc8774f24f0c93f6d32d99b6",
+  "backend": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+  "actors": [
+    {
+      "originalActor": "0e95c030-2012-411b-b276-2dcc556a5344",
+      "replacementActor": "8d8e52fa-7d37-4618-90fa-5eec21312ab5",
+      "statuses": [
+        201,
+        401
+      ],
+      "createdIds": [
+        "3585d9fa-2d8a-4088-beb3-688d8b8f9d8b",
+        null
+      ],
+      "sameKey": true,
+      "sameBody": true,
+      "canonicalListCount": 1
+    },
+    {
+      "originalActor": "e1e4fc52-f45e-44f6-8ad4-1cd025a8da9b",
+      "replacementActor": "5a28873c-7fda-4034-a159-d2bebd25cb17",
+      "statuses": [
+        201,
+        401
+      ],
+      "createdIds": [
+        "d6568118-86d1-49dc-8150-ed9235641937",
+        null
+      ],
+      "sameKey": true,
+      "sameBody": true,
+      "canonicalListCount": 1
+    }
+  ],
+  "returnVisibility": "Four native cases verify current link focused, below header, in viewport, and fully inside every clipping ancestor. Tablet root32px persists acrossreload."
+}

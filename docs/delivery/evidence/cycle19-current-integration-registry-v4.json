@@ -1,0 +1,10 @@
+{
+  "revision": "ce3313e7fd9b43cb4df216d85bf5d8a59fb10923",
+  "rawArtifact": "cycle19-current-integration-registry-v4.txt",
+  "rawSha256": "0bc779b0d8ab1b4f8dcbb06e1563d5c397159cc4e6f7b5ad5e6c6a5040bc18cb",
+  "scope": "Current4groups/7isolatedexecutions/130registeredsteps coverage only; no immutable/mainexecution inferred.",
+  "lines": [
+    "Mandatory integration coverage: 4 groups/7 isolated executions, 130 registered steps",
+    ""
+  ]
+}

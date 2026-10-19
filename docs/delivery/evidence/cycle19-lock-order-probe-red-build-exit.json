@@ -1,0 +1,13 @@
+{
+  "revision": "a929df89a5bdb81fe8c5d9b00ebb1ba731fb00a7",
+  "rawArtifact": "cycle19-lock-order-probe-red-build-exit.json",
+  "rawSha256": "c6b7d5c2cf1e93494bcb2dec19048e6ce0482c59ef37f5614f52cea9432c1bc1",
+  "lines": [
+    "{",
+    "  \"scope\": \"Actual frozen new counterexample sourcea929df89, unchanged backend/baseline149. Restricted persistence fixture, not HTTP/release certification.\",",
+    "  \"revision\": \"a929df89a5bdb81fe8c5d9b00ebb1ba731fb00a7\",",
+    "  \"exit\": 0",
+    "}",
+    ""
+  ]
+}

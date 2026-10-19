@@ -10,13 +10,18 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  MenuItem,
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   loadBoard,
+  boundedWorkRead,
+  workRequest,
   WorkMutationIntent,
   WorkRequestError,
   WorkInputError,
@@ -25,6 +30,10 @@ import {
 } from "../../api/workManagement";
 import { CardDetailEditor } from "./CardDetailEditor";
 import { boardCardLocation } from './boardCardLocation';
+import { focusBoardReturn } from './focusBoardReturn';
+import { SecondaryActions } from '../../app/SecondaryActions';
+import { UnsavedChangesGuard } from '../../app/UnsavedChangesGuard';
+import { workExperienceEnabled } from '../../app/workExperience';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 import { ArchivedCardDetail } from './ArchivedCardDetail';
 import { CardChecklists } from './CardChecklists';
@@ -82,8 +91,9 @@ import { ImmediateDialogTransition } from './ImmediateDialogTransition';
 import { listDragAnnouncements, listDragInstructions } from './listDragAccessibility';
 import { previewCardMove, type CardMovePreview } from "./cardMovePreview";
 import { watchBoard, type LiveStatus } from "../../api/boardLive";
+import { isNotificationProfile } from '../notifications/notificationInbox';
 type Loaded = { key: string; snapshot?: BoardSnapshot; error?: Error };
-type Creation = { kind: "list" | "card"; listId?: string };
+type Creation = { kind: "list" | "card"; listId?: string; actorId?: string };
 type AcknowledgedCard = { listId: string; card: WorkCard };
 function preserveAcknowledged(
   snapshot: BoardSnapshot,
@@ -114,6 +124,10 @@ export function BoardScreen() {
   return <BoardContent key={`${organizationId}/${boardId}`} />;
 }
 function BoardContent() {
+  const phone = useMediaQuery(useTheme().breakpoints.down('sm'));
+  const [draftState, setDraftState] = useState({ dirty: false, canSave: false });
+  const [creationDirty, setCreationDirty] = useState(false);
+  const [discardCreation, setDiscardCreation] = useState(false);
   const { organizationId = "", boardId = "", cardId } = useParams();
   const key = `${organizationId}/${boardId}`;
   const [loaded, setLoaded] = useState<Loaded>();
@@ -121,7 +135,16 @@ function BoardContent() {
   const [canvasFilter, setCanvasFilter] = useState<BoardCanvasFilter>();
   const refreshFilteredBoard = useCallback(() => { setSnapshotReading(true); setReload(value => value + 1); }, []);
   const [creation, setCreation] = useState<Creation>();
-  const [operationBusy, setBusy] = useState(false);
+  const [checkingCreation, setCheckingCreation] = useState(false);
+  const creationRead = useRef<{ controller: AbortController; kind: Creation['kind']; listId?: string } | undefined>(undefined);
+  const creationRefusal = useRef<HTMLDivElement>(null);
+  const creationRefusalOwner = useRef<Element | null | undefined>(undefined);
+  const [operationBusyState, setBusy] = useState(false);
+  const operationBusy = operationBusyState || checkingCreation;
+  function closeCreation() {
+    if (creationDirty) setDiscardCreation(true);
+    else setCreation(undefined);
+  }
   const [listArchiveRecovery, setArchiveRecovery] = useState(false);
   const [boardArchiveRecovery, setBoardArchiveRecovery] = useState(false);
   const [boardMetadataRecovery, setBoardMetadataRecovery] = useState(false);
@@ -191,9 +214,10 @@ function BoardContent() {
   const windowMemory = useRef(new Map<string, number>());
   const windowHeights = useRef<BoardWindowHeights>(new Map());
   const closeFocusCard = useRef<string | undefined>(undefined);
+  const closeFocusReady = useRef(false);
   // History Back closes the dialog without calling closeCard. Remember each
   // current detail route's return target before its exit transition can run.
-  useLayoutEffect(() => { if (cardId) closeFocusCard.current = cardId; }, [cardId]);
+  useLayoutEffect(() => { if (cardId) { closeFocusCard.current = cardId; closeFocusReady.current = false; } }, [cardId]);
   const cardClose = useRef<HTMLButtonElement>(null);
   const canvasFocus = useRef<{ scope: string; cardId: string } | undefined>(undefined);
   useEffect(() => {
@@ -209,7 +233,7 @@ function BoardContent() {
   const [liveStatus, setLiveStatus] = useState<LiveStatus>("connecting");
   const [reconnectSequence, setReconnectSequence] = useState(0);
   const accessEpoch = useRef(0);
-  const [failure, setFailure] = useState<{ cardId?: string; error: Error }>();
+  const [failure, setFailure] = useState<{ cardId?: string; error: Error; creationEntry?: boolean }>();
   const [acknowledged, setAcknowledged] = useState<WorkCard>();
   const acknowledgedCard = useRef<AcknowledgedCard | undefined>(undefined);
   const [savedFor, setSavedFor] = useState<{ cardId?: string }>();
@@ -221,8 +245,10 @@ function BoardContent() {
   function setSaved(next: boolean) {
     setSavedFor(next ? { cardId } : undefined);
   }
-  function clearDeniedScope(failure: Error) {
+  function clearDeniedScope(failure: Error, recoveryOwner?: Element | null) {
+    if (recoveryOwner !== undefined) creationRefusalOwner.current = recoveryOwner;
     accessEpoch.current += 1;
+    creationRead.current?.controller.abort();
     activeRead.current?.abort();
     queuedRefresh.current = false;
     mutation.current = new WorkMutationIntent();
@@ -230,6 +256,7 @@ function BoardContent() {
     acknowledgedCard.current = undefined;
     setSavedFor(undefined);
     setCreation(undefined);
+    setCreationDirty(false); setDiscardCreation(false); setDraftState({ dirty: false, canSave: false });
     setFailure(undefined);
     setLoaded({ key, error: failure });
   }
@@ -243,7 +270,7 @@ function BoardContent() {
       setReload((value) => value + 1);
     } else setSnapshotReading(false);
   }
-  useEffect(() => () => activeRead.current?.abort(), []);
+  useEffect(() => () => { activeRead.current?.abort(); creationRead.current?.controller.abort(); }, []);
   useEffect(() => {
     activeRead.current?.abort();
     const controller = new AbortController();
@@ -289,6 +316,22 @@ function BoardContent() {
       : previewListMove(previewCardMove(snapshot, movePreview), listPreview)).lists.map(column => ({ ...column, id: column.list.id }))
     : [], [snapshot, canvasFilter, movePreview, listPreview]);
   const loadError = loaded?.key === key ? loaded.error : undefined;
+  const focusCreationRefusal = useCallback(() => {
+    const owner = creationRefusalOwner.current;
+    if (owner === undefined || !(loadError && !snapshot || error && failure?.creationEntry)) return;
+    // Recover the retired command's focus, preserving deliberate navigation
+    // elsewhere. Centering also clears a retained Board scroll under the header.
+    if (document.activeElement !== owner && document.activeElement !== document.body) return;
+    creationRefusal.current?.focus({ preventScroll: true });
+    creationRefusal.current?.scrollIntoView?.({ block: 'center' });
+  }, [loadError, snapshot, error, failure?.creationEntry]);
+  // Present a focused refusal before paint, then account for a retired modal's
+  // passive focus cleanup. Both phases preserve deliberate outside navigation.
+  useLayoutEffect(focusCreationRefusal, [focusCreationRefusal]);
+  useEffect(() => {
+    focusCreationRefusal();
+    creationRefusalOwner.current = undefined;
+  }, [focusCreationRefusal]);
   const subscribed = Boolean(snapshot);
   const invalidate = useEffectEvent(() => {
     if (reading.current) queuedRefresh.current = true;
@@ -316,7 +359,62 @@ function BoardContent() {
   const activeCard = Boolean(card && cardLocation?.list.lifecycleState === 'active');
   const editable =
     snapshot?.access.canEdit && snapshot.board.lifecycleState === "active";
+  useEffect(() => {
+    const permitted = (kind: Creation['kind'], listId?: string) => editable && (kind === 'list' || snapshot?.lists.some(column => column.list.id === listId && column.list.lifecycleState === 'active'));
+    if (creationRead.current && !permitted(creationRead.current.kind, creationRead.current.listId)) creationRead.current.controller.abort();
+    setCreation(current => current && !permitted(current.kind, current.listId) ? undefined : current);
+  }, [editable, snapshot]);
+  async function openCreation(kind: Creation['kind'], listId?: string) {
+    if (busy || !editable || snapshotReading || loadError || creationRead.current || kind === 'card' && !listId) return;
+    const controller = new AbortController(), epoch = accessEpoch.current, focusOwner = document.activeElement;
+    creationRead.current = { controller, kind, listId };
+    setBusy(true); setCheckingCreation(true); setError(undefined);
+    try {
+      // This explicit entry read binds the form, not only its first submission.
+      // Retrying the original command never refreshes it to a replacement actor.
+      const profile = await boundedWorkRead(signal => workRequest<unknown>('/me', { signal }), controller.signal);
+      if (controller.signal.aborted || epoch !== accessEpoch.current) return;
+      if (!isNotificationProfile(profile)) throw new WorkRequestError(503, null);
+      setCreationDirty(false); setDiscardCreation(false);
+      setCreation({ kind, listId, actorId: profile.id });
+    } catch (reason) {
+      if (controller.signal.aborted || epoch !== accessEpoch.current) return;
+      const failure = reason instanceof WorkRequestError ? reason : new WorkRequestError(503, null);
+      const recoveryOwner = document.activeElement === focusOwner || document.activeElement === document.body ? document.activeElement : undefined;
+      if ([401, 403, 404].includes(failure.status)) clearDeniedScope(failure, recoveryOwner);
+      else if (recoveryOwner !== undefined) creationRefusalOwner.current = recoveryOwner;
+      setFailure({ cardId, error: failure, creationEntry: true });
+    } finally {
+      if (creationRead.current?.controller === controller) creationRead.current = undefined;
+      setBusy(false); setCheckingCreation(false);
+    }
+  }
   const boardPath = `/app/${organizationId}/boards/${boardId}`;
+  useEffect(() => {
+    if (!closeFocusReady.current || cardId || !closeFocusCard.current || snapshotReading || busy
+      || canvasFilter && (canvasFilter.pending || canvasFilter.snapshot !== snapshot)) return;
+    const target = cardLinks.current.get(closeFocusCard.current);
+    // A late authorized filter read may remount the return Card after the
+    // dialog exits. Restore it only while focus is still on the fallback.
+    if (document.activeElement === boardRefresh.current || document.activeElement === document.body)
+      focusBoardReturn(target ?? boardRefresh.current);
+  }, [cardId, snapshotReading, busy, canvasFilter, snapshot]);
+  useEffect(() => {
+    if (cardId) return;
+    // A restored Card can remount again after a live/filter admission. Keep the
+    // return target until the next deliberate interaction, then never reclaim
+    // focus from the user's new task.
+    const releaseReturnFocus = () => {
+      closeFocusCard.current = undefined;
+      closeFocusReady.current = false;
+    };
+    document.addEventListener('pointerdown', releaseReturnFocus, true);
+    document.addEventListener('keydown', releaseReturnFocus, true);
+    return () => {
+      document.removeEventListener('pointerdown', releaseReturnFocus, true);
+      document.removeEventListener('keydown', releaseReturnFocus, true);
+    };
+  }, [cardId]);
   function closeCard() {
     closeFocusCard.current = cardId;
     if (location.state?.cardOverlay) navigate(-1);
@@ -329,6 +427,8 @@ function BoardContent() {
   ) {
     event.preventDefault();
     if (busy || !editable) return;
+    if (!edit && !creation?.actorId) return;
+    const formElement = event.currentTarget;
     const form = new FormData(event.currentTarget);
     const title = String(form.get("title") ?? "").trim();
     if (!title) {
@@ -387,16 +487,17 @@ function BoardContent() {
           );
         }
         setAcknowledged(updated);
-      } else if (creation?.kind === "list")
-        await mutation.current.send(`/boards/${boardId}/lists`, "POST", {
+      } else if (creation?.kind === "list" && creation.actorId)
+        await mutation.current.send(`/boards/${boardId}/lists?expectedActorId=${encodeURIComponent(creation.actorId)}`, "POST", {
           name: title,
         });
-      else if (creation?.listId)
-        await mutation.current.send(`/lists/${creation.listId}/cards`, "POST", {
+      else if (creation?.listId && creation.actorId)
+        await mutation.current.send(`/lists/${creation.listId}/cards?expectedActorId=${encodeURIComponent(creation.actorId)}`, "POST", {
           title,
         });
       if (epoch !== accessEpoch.current) return;
       setCreation(undefined);
+      setCreationDirty(false);
       setSaved(true);
       setReload((value) => value + 1);
     } catch (reason) {
@@ -405,7 +506,8 @@ function BoardContent() {
         reason instanceof WorkRequestError &&
         [401, 403, 404].includes(reason.status)
       ) {
-        clearDeniedScope(reason);
+        clearDeniedScope(reason, !edit && creation &&
+          (formElement.contains(document.activeElement) || document.activeElement === document.body) ? document.activeElement : undefined);
       }
       setError(
         reason instanceof WorkRequestError
@@ -454,8 +556,8 @@ function BoardContent() {
       setBusy(false);
     }
   }
-  const message = (failure: Error) => (
-    <Alert severity="error">
+  const message = (failure: Error, recovery = false) => (
+    <Alert severity="error" ref={recovery ? creationRefusal : undefined} tabIndex={recovery ? -1 : undefined}>
       {failure instanceof WorkRequestError || failure instanceof WorkInputError
         ? failure.message
         : "Unable to load or save this board. Please try again."}
@@ -467,10 +569,12 @@ function BoardContent() {
   if (loadError && !snapshot)
     return (
       <Stack spacing={2}>
-        {message(loadError)}
+        {message(loadError, true)}
         <Button onClick={() => setReload((value) => value + 1)}>Retry</Button>
-        {loadError instanceof WorkRequestError && loadError.status === 401 && (
-          <Button component={Link} to="/login">
+        {loadError instanceof WorkRequestError && [401, 404].includes(loadError.status) && (
+          // Private and missing Boards share the same unavailable response.
+          // Offer the same generic sign-in path without disclosing existence.
+          <Button component={Link} to="/login" replace state={{ returnTo: location.pathname }}>
             Sign in
           </Button>
         )}
@@ -479,11 +583,13 @@ function BoardContent() {
   if (!snapshot) return <CircularProgress aria-label="Loading board" />;
   return (
     <Stack role="region" aria-label="Board workspace" aria-busy={snapshotReading} spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1, position: 'relative', isolation: 'isolate' }}>
+      <UnsavedChangesGuard dirty={draftState.dirty || Boolean(creation && creationDirty)} />
       <BoardBackgroundImage snapshot={snapshot} unavailable={snapshotReading || !!loadError} />
       {snapshot.board.lifecycleState === 'active' && snapshot.board.version !== undefined &&
         <NavigationConfirmation target={{ kind: 'board', organization: snapshot.board.organizationId, board: snapshot.board.id, version: snapshot.board.version }}
           admitted={!snapshotReading && !loadError} />}
       {loadError && message(loadError)}
+      {error && failure?.creationEntry && message(error, true)}
       <Typography role="status" aria-live="polite" variant="body2">
         {liveStatus === "live"
           ? "Live updates connected."
@@ -514,6 +620,7 @@ function BoardContent() {
           <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="BOARD" entityId={snapshot.board.id}
             admitted={snapshot.access.canView && snapshot.board.lifecycleState === 'active'} disabled={busy || !!loadError} refreshing={snapshotReading}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
+          <SecondaryActions label="Board actions">
           {snapshot.access.canAdminister && snapshot.board.lifecycleState === "active" && (
             <><Button component={Link} to={`/app/${organizationId}/boards/${boardId}/invite`}>Invite to Board</Button>
             <Button component={Link} to={`/app/${organizationId}/boards/${boardId}/visibility`}>Board visibility</Button>
@@ -567,13 +674,20 @@ function BoardContent() {
             onBusyChange={setBusy} onRecoveryChange={setLabelManageRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onReturnFocus={() => boardRefresh.current?.focus({ preventScroll: true })} />
+          </SecondaryActions>
+          {editable && (
+            <Button variant="contained" disabled={busy || snapshotReading || !!loadError || !snapshot.lists.some(column => column.list.lifecycleState === 'active')}
+              onClick={() => {
+                const listId = snapshot.lists.find(column => column.list.lifecycleState === 'active')?.list.id;
+                if (!listId) return;
+                void openCreation('card', listId);
+              }}>Add card</Button>
+          )}
           {editable && (
             <Button
+              variant={snapshot.lists.length ? 'text' : 'contained'}
               disabled={busy || snapshotReading || !!loadError}
-              onClick={() => {
-                setError(undefined);
-                setCreation({ kind: "list" });
-              }}
+              onClick={() => void openCreation('list')}
             >
               Add list
             </Button>
@@ -584,7 +698,7 @@ function BoardContent() {
       <ActivityHistoryControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
         kind="BOARD" targetId={snapshot.board.id} unavailable={snapshotReading || !!loadError}
         refreshSequence={`${reload}/${reconnectSequence}`} onDenied={clearDeniedScope} />
-      <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0 || !!cardId || !!creation}
+      <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0}
         onRefresh={refreshFilteredBoard} onCanvasChange={setCanvasFilter} />
       {snapshot.board.lifecycleState !== "active" && (
         <Alert severity="info">
@@ -648,8 +762,8 @@ function BoardContent() {
             disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id) || renameRecovery.has(column.list.id)}
             available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(column.list.version) && Number(column.list.version) > 0}
           >
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
+            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3" sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
               {column.list.name}
             </Typography>
             <ListRenameControl list={column.list} snapshot={snapshot}
@@ -685,10 +799,7 @@ function BoardContent() {
             {editable && column.list.lifecycleState === "active" && (
               <Button
                 disabled={busy || snapshotReading || !!loadError}
-                onClick={() => {
-                  setError(undefined);
-                  setCreation({ kind: "card", listId: column.list.id });
-                }}
+                onClick={() => void openCreation('card', column.list.id)}
               >
                 Add card to {column.list.name}
               </Button>
@@ -705,10 +816,11 @@ function BoardContent() {
           onAcknowledged={() => { canvasFocus.current = { scope: key, cardId: moved.id }; setSnapshotReading(true); setReload(value => value + 1); }}
           onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />;
       })()}
+      {checkingCreation && <Typography role="status">Checking creation access…</Typography>}
       <Dialog
         open={Boolean(creation)}
         onClose={() => {
-          if (!busy) setCreation(undefined);
+          if (!busy) closeCreation();
         }}
         fullWidth
         maxWidth="sm"
@@ -717,12 +829,17 @@ function BoardContent() {
           <DialogTitle>Add {creation?.kind}</DialogTitle>
           <DialogContent>
             {error && message(error)}
+            {creation?.kind === 'card' && <TextField select fullWidth margin="normal" label="List" value={creation.listId ?? ''}
+              disabled={busy} onChange={event => setCreation(current => current && ({ ...current, listId: event.target.value }))}>
+              {snapshot.lists.filter(column => column.list.lifecycleState === 'active').map(column => <MenuItem key={column.list.id} value={column.list.id}>{column.list.name}</MenuItem>)}
+            </TextField>}
             <TextField
               autoFocus
               required
               fullWidth
               margin="normal"
               name="title"
+              onChange={event => setCreationDirty(event.target.value.length > 0)}
               label={creation?.kind === "list" ? "List name" : "Card title"}
               slotProps={{
                 htmlInput: { maxLength: creation?.kind === "list" ? 160 : 500 },
@@ -730,7 +847,7 @@ function BoardContent() {
             />
           </DialogContent>
           <DialogActions>
-            <Button disabled={busy} onClick={() => setCreation(undefined)}>
+            <Button disabled={busy} onClick={closeCreation}>
               Cancel
             </Button>
             <Button disabled={busy} type="submit">
@@ -739,23 +856,44 @@ function BoardContent() {
           </DialogActions>
         </Box>
       </Dialog>
+      <Dialog open={discardCreation} onClose={() => setDiscardCreation(false)} aria-labelledby="discard-creation-title">
+        <DialogTitle id="discard-creation-title">Discard this draft?</DialogTitle>
+        <DialogContent>The new item has not been saved.</DialogContent>
+        <DialogActions>
+          <Button autoFocus onClick={() => setDiscardCreation(false)}>Keep editing</Button>
+          <Button color="error" onClick={() => { setDiscardCreation(false); setCreationDirty(false); setCreation(undefined); }}>Discard draft</Button>
+        </DialogActions>
+      </Dialog>
       <Dialog
         open={Boolean(cardId)}
         transitionDuration={0}
         slots={{ transition: ImmediateDialogTransition }}
         disableRestoreFocus
-        slotProps={{ backdrop: { slots: { transition: ImmediateDialogTransition } }, transition: { onExited: () => {
-          (cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current)?.focus({ preventScroll: true });
-          closeFocusCard.current = undefined;
+        slotProps={{ backdrop: { slots: { transition: ImmediateDialogTransition } }, paper: { sx: workExperienceEnabled ? { m: 0, height: '100dvh', maxHeight: '100dvh', width: { xs: '100%', sm: 720 }, maxWidth: '100%', borderRadius: 0 } : undefined }, transition: { onExited: () => {
+          closeFocusReady.current = true;
+          const target = cardLinks.current.get(closeFocusCard.current ?? '') ?? boardRefresh.current;
+          focusBoardReturn(target);
         } } }}
         onClose={() => {
           if (!busy) closeCard();
         }}
         fullWidth
-        maxWidth="sm"
+        fullScreen={workExperienceEnabled && phone}
+        maxWidth={workExperienceEnabled ? false : 'sm'}
+        sx={workExperienceEnabled ? { '& .MuiDialog-container': { justifyContent: 'flex-end' } } : undefined}
+        aria-labelledby="card-detail-title"
       >
-        <DialogTitle>Card details</DialogTitle>
+        <DialogTitle id="card-detail-title">Card details</DialogTitle>
         <DialogContent>
+          <Typography variant="h6" component="h3">Summary</Typography>
+          {cardId && <CardLabelPicker key={`label-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
+            disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
+            onBusyChange={setBusy} onRecoveryChange={setAssignmentRecovery}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+          {cardId && <CardMemberPicker key={`member-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
+            disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
+            onBusyChange={setBusy} onRecoveryChange={setMemberRecovery}
+            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
           {!card ? (
             crossBoardMoveRecovery || cardCopyRecovery ? <Typography role="status">Checking the original Card command.</Typography>
               : crossBoardMoved && crossBoardMoved.cardId === cardId ? <Button component={Link}
@@ -773,6 +911,8 @@ function BoardContent() {
             <CardCoverImage organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} card={card} detail
               unavailable={snapshotReading || !!loadError || snapshot.board.lifecycleState !== 'active' || !activeCard} />
             <CardDetailEditor
+              externalSave={workExperienceEnabled}
+              onDraftStateChange={setDraftState}
               key={card.id}
               card={card}
               acknowledged={acknowledged}
@@ -785,6 +925,12 @@ function BoardContent() {
               onDiscard={discardAndLoad}
               onRefresh={() => setReload((value) => value + 1)}
             />
+            {cardId && <CardLabels key={`labels-${card.id}`} organizationId={snapshot.board.organizationId}
+              boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+            {cardId && <CardAssignees key={`assignees-${card.id}`} organizationId={snapshot.board.organizationId}
+              boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             <CardDateDisplay card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               boardTimezone={snapshot.board.dateTimezoneOverride}
               unavailable={snapshotReading || !!loadError} onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
@@ -793,10 +939,18 @@ function BoardContent() {
               editable={Boolean(editable)} disabled={otherBusy || cardRecovery || cardCommandRecovery} unavailable={snapshotReading || !!loadError}
               onBusyChange={setBusy} onRecoveryChange={setDateRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
+            {snapshot.access.canMove && snapshot.board.lifecycleState === "active"
+              && activeCard && <CardMoveControls
+              key={`move-${card.id}`} card={card} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery}
+              onBusyChange={setBusy}
+              onPreview={setMovePreview}
+              onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             <CardReminderControl card={card} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || cardRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery}
               unavailable={snapshotReading || !!loadError} onBusyChange={setBusy} onRecoveryChange={setReminderRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />
+            <Typography variant="h6" component="h3" sx={{ mt: 3 }}>Checklist and attachments</Typography>
             {cardId && <CardAttachments organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               canAdminister={snapshot.access.canAdminister}
@@ -804,9 +958,6 @@ function BoardContent() {
             {cardId && <CardChecklists reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            {cardId && <ActivityHistoryControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
-              kind="CARD" targetId={card.id} unavailable={snapshotReading || !!loadError}
-              refreshSequence={`${reload}/${reconnectSequence}/${card.version}`} onDenied={clearDeniedScope} />}
             {cardId && <UrlAttachmentCreateControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} editable={Boolean(editable) && activeCard} unavailable={snapshotReading || !!loadError}
               disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery || commentRecovery}
@@ -816,30 +967,6 @@ function BoardContent() {
               cardId={card.id} version={card.version} editable={Boolean(editable) && activeCard} unavailable={snapshotReading || !!loadError}
               disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || attachmentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setFileAttachmentRecovery}
-              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            {cardId && <BoardBackgroundImageControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
-              cardId={card.id} version={card.version} boardVersion={snapshot.board.version!}
-              editable={snapshot.access.canEdit && Boolean(editable) && snapshot.board.lifecycleState === 'active' && activeCard}
-              unavailable={snapshotReading || !!loadError}
-              disabled={crossBoardMoveRecovery || cardCopyRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery || commentRecovery}
-              onBusyChange={setBusy} onRecoveryChange={setBackgroundRecovery}
-              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            {cardId && <CardCoverControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
-              cardId={card.id} version={card.version} editable={Boolean(editable) && activeCard}
-              unavailable={snapshotReading || !!loadError}
-              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || commentRecovery}
-              onBusyChange={setBusy} onRecoveryChange={setCoverRecovery}
-              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            {cardId && <SourceRetentionEntry organizationId={snapshot.board.organizationId}
-              boardId={snapshot.board.id} cardId={card.id} cardVersion={card.version} kind="card" recordId={card.id}
-              sourceVersion={card.version} canAdminister={snapshot.access.canAdminister} unavailable={snapshotReading || !!loadError}
-              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            {cardId && <CardCommentsControl reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
-              canAdminister={snapshot.access.canAdminister}
-              cardId={card.id} version={card.version} editable={Boolean(editable) && activeCard}
-              unavailable={snapshotReading || !!loadError}
-              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery}
-              onBusyChange={setBusy} onRecoveryChange={setCommentRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
             {cardId && <AttachmentManageControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
               cardId={card.id} version={card.version} canAdminister={snapshot.access.canAdminister}
@@ -859,27 +986,48 @@ function BoardContent() {
               disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistCreateRecovery || attachmentRecovery || fileAttachmentRecovery}
               onBusyChange={setBusy} onRecoveryChange={setChecklistManageRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            {cardId && <CardLabels key={`labels-${card.id}`} organizationId={snapshot.board.organizationId}
-              boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+            <SecondaryActions label="Appearance actions">
+            {cardId && <BoardBackgroundImageControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              cardId={card.id} version={card.version} boardVersion={snapshot.board.version!}
+              editable={snapshot.access.canEdit && Boolean(editable) && snapshot.board.lifecycleState === 'active' && activeCard}
+              unavailable={snapshotReading || !!loadError}
+              disabled={crossBoardMoveRecovery || cardCopyRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery || commentRecovery}
+              onBusyChange={setBusy} onRecoveryChange={setBackgroundRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            {cardId && <CardAssignees key={`assignees-${card.id}`} organizationId={snapshot.board.organizationId}
-              boardId={snapshot.board.id} cardId={card.id} version={card.version} unavailable={snapshotReading || !!loadError}
+            {cardId && <CardCoverControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              cardId={card.id} version={card.version} editable={Boolean(editable) && activeCard}
+              unavailable={snapshotReading || !!loadError}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || commentRecovery}
+              onBusyChange={setBusy} onRecoveryChange={setCoverRecovery}
               onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-            {snapshot.access.canMove && snapshot.board.lifecycleState === "active"
-              && activeCard && <CardMoveControls
-              key={`move-${card.id}`} card={card} snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery}
-              onBusyChange={setBusy}
-              onPreview={setMovePreview}
-              onAcknowledged={() => { setSnapshotReading(true); setReload(value => value + 1); }}
-              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}</>
+            </SecondaryActions>
+            {cardId && <SourceRetentionEntry organizationId={snapshot.board.organizationId}
+              boardId={snapshot.board.id} cardId={card.id} cardVersion={card.version} kind="card" recordId={card.id}
+              sourceVersion={card.version} canAdminister={snapshot.access.canAdminister} unavailable={snapshotReading || !!loadError}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+            <Typography variant="h6" component="h3" sx={{ mt: 3 }}>Discussion</Typography>
+            {cardId && <CardCommentsControl reconnectSequence={reconnectSequence} organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              canAdminister={snapshot.access.canAdminister}
+              cardId={card.id} version={card.version} editable={Boolean(editable) && activeCard}
+              unavailable={snapshotReading || !!loadError}
+              disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || memberRecovery || dateRecovery || reminderRecovery || cardRecovery || checklistRecovery || urlAttachmentRecovery || fileAttachmentRecovery || attachmentLifecycleRecovery || coverRecovery}
+              onBusyChange={setBusy} onRecoveryChange={setCommentRecovery}
+              onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+            <Typography variant="h6" component="h3" sx={{ mt: 3 }}>Activity history</Typography>
+            {cardId && <ActivityHistoryControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
+              kind="CARD" targetId={card.id} unavailable={snapshotReading || !!loadError}
+              refreshSequence={`${reload}/${reconnectSequence}/${card.version}`} onDenied={clearDeniedScope} />}
+            </>
           )}
+          <SecondaryActions label="Card actions">
+          {draftState.dirty && <Typography variant="body2">Save your title and description changes before moving to another Board, copying or archiving this Card.</Typography>}
           {cardId && <CrossBoardCardMoveControl key={`cross-move-${cardId}`} card={card} selectedCardId={cardId}
-            snapshot={snapshot} disabled={otherBusy || dateRecovery || cardRecovery || cardCopyRecovery} unavailable={snapshotReading || !!loadError}
+            snapshot={snapshot} disabled={draftState.dirty || otherBusy || dateRecovery || cardRecovery || cardCopyRecovery} unavailable={snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCrossBoardMoveRecovery}
             onAcknowledged={(movedCardId, movedBoardId) => setCrossBoardMoved({ cardId: movedCardId, boardId: movedBoardId })}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
           {cardId && <CardCopyControl key={`card-copy-${cardId}`} card={card} selectedCardId={cardId}
-            snapshot={snapshot} disabled={otherBusy || dateRecovery || cardRecovery || crossBoardMoveRecovery} unavailable={snapshotReading || !!loadError}
+            snapshot={snapshot} disabled={draftState.dirty || otherBusy || dateRecovery || cardRecovery || crossBoardMoveRecovery} unavailable={snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardCopyRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
           {cardId && <WatchControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id} entityType="CARD" entityId={cardId}
@@ -887,21 +1035,15 @@ function BoardContent() {
               activeCard}
             disabled={busy || !!loadError} refreshing={snapshotReading} onReturnFocus={() => cardClose.current?.focus({ preventScroll: true })} />}
           {cardId && <CardArchiveControl key={`archive-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={cardCommandRecovery || operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
+            disabled={draftState.dirty || cardCommandRecovery || operationBusy || archiveRecovery || copyRecovery || assignmentRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
             onBusyChange={setBusy} onRecoveryChange={setCardArchiveRecovery}
             onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }}
             onAcknowledged={() => { canvasFocus.current = { scope: key, cardId };
               setSnapshotReading(true); setReload(value => value + 1); closeCard(); }} />}
-          {cardId && <CardLabelPicker key={`label-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
-            onBusyChange={setBusy} onRecoveryChange={setAssignmentRecovery}
-            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
-          {cardId && <CardMemberPicker key={`member-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
-            disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || assignmentRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
-            onBusyChange={setBusy} onRecoveryChange={setMemberRecovery}
-            onRefresh={() => { setSnapshotReading(true); setReload(value => value + 1); }} />}
+          </SecondaryActions>
         </DialogContent>
         <DialogActions>
+          {workExperienceEnabled && card && editable && <Button variant="contained" type="submit" form="card-core-form" disabled={busy || !draftState.canSave}>{operationBusy ? 'Saving…' : 'Save card'}</Button>}
           <Button ref={cardClose} disabled={busy} onClick={closeCard}>
             Close
           </Button>

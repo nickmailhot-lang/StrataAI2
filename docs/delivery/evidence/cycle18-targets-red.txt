@@ -1,0 +1,64 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/organizations/OrganizationHome.actions.test.tsx src/app/SecondaryActions.test.tsx src/app/workExperience.test.ts
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle18-organization-actions/apps/web
+
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx (7 tests | 4 failed) 1211ms
+   × PRD-03-VS-06-T-03: current role 0 discloses exactly permitted existing Organization actions 376ms
+   × PRD-03-VS-06-T-03: current role 1 discloses exactly permitted existing Organization actions 91ms
+   × PRD-03-VS-06-T-03: current role 2 discloses exactly permitted existing Organization actions 94ms
+   × PRD-03-VS-06-T-03: rollback retains inline role-permitted actions and the existing Board creation/cancel workflow 204ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: current role 0 discloses exactly permitted existing Organization actions
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: current role 1 discloses exactly permitted existing Organization actions
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: current role 2 discloses exactly permitted existing Organization actions
+Error: expect(element).toHaveStyle()
+
+- Expected
+
+- minHeight: 44px;
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx:41:18
+
+     39|   for (const link of disclosure.querySelectorAll('a')) {
+     40|     expect(link.getAttribute('href')).toMatch(new RegExp(`^/app/${org}…
+     41|     expect(link).toHaveStyle({ minHeight: '44px' });
+       |                  ^
+     42|   }
+     43|   fireEvent.click(summary); expect(disclosure).toHaveProperty('open', …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/features/organizations/OrganizationHome.actions.test.tsx > PRD-03-VS-06-T-03: rollback retains inline role-permitted actions and the existing Board creation/cancel workflow
+Error: expect(element).toHaveStyle()
+
+- Expected
+
+- minHeight: 44px;
+ ❯ src/features/organizations/OrganizationHome.actions.test.tsx:74:71
+     72|   expect(screen.queryByText('Organization actions', { selector: 'summa…
+     73|   expect(screen.getByRole('link', { name: 'Organization settings' })).…
+     74|   expect(screen.getByRole('link', { name: 'Organization settings' })).…
+       |                                                                       ^
+     75|   fireEvent.click(create); fireEvent.change(await screen.findByLabelTe…
+     76|   fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  4 failed | 8 passed (12)
+   Start at  19:16:22
+   Duration  7.56s (import 45%, environment 35%, tests 10%, setup 6%, transform 3%)
+
+Environment  jsdom was created 3 times · 4.76s total, 35% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --maxWorkers=2 src/features/organizations/OrganizationHome.actions.test.tsx src/app/SecondaryActions.test.tsx src/app/workExperience.test.ts

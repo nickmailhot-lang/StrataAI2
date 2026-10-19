@@ -1,0 +1,9 @@
+{
+  "revision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "rawArtifact": "cycle19-ledger-validation.txt",
+  "rawSha256": "1bbb0b7aab916879cfbd6fa3c1c7e918a6da4eabf01701d73068128bf6ea7a77",
+  "lines": [
+    "Valid: 1571 work items; 3857 criteria. No unsupported Done claims.",
+    ""
+  ]
+}

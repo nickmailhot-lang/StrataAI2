@@ -1,0 +1,53 @@
+{
+  "at": "2026-10-17T22:35:11.788Z",
+  "pullRequest": 99,
+  "headRevision": "f474115e473f2d9ad249c52247bb045d9c2a82e5",
+  "actualImageRevision": "dc27b080a8e25b2b0af77c12628ba1563df156f5",
+  "runId": 39060697234,
+  "jobId": 117488124985,
+  "job": {
+    "id": 117488124985,
+    "head_sha": "f474115e473f2d9ad249c52247bb045d9c2a82e5",
+    "name": "container-integration (browser-full, 1/4)",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "logTruncated": true,
+  "scope": "Complete browser-full1 invocation final summary, older frozen candidate only. No current native reproduction claimed.",
+  "counts": {
+    "total": 111,
+    "passed": 110,
+    "failed": 1,
+    "skipped": 0
+  },
+  "failure": [
+    "2026-10-17T21:09:19.7726158Z   1) tests/browser/archived-cards.spec.ts:6:7 › PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at 390px ",
+    "2026-10-17T21:09:19.7726682Z ",
+    "2026-10-17T21:09:19.7726842Z     Error: expect(locator).toBeEnabled() failed",
+    "2026-10-17T21:09:19.7727040Z ",
+    "2026-10-17T21:09:19.7727275Z     Locator: getByRole('button', { name: 'Retry this Card archive', exact: true })",
+    "2026-10-17T21:09:19.7727634Z     Expected: enabled",
+    "2026-10-17T21:09:19.7727843Z     Timeout: 5000ms",
+    "2026-10-17T21:09:19.7728057Z     Error: element(s) not found",
+    "2026-10-17T21:09:19.7728198Z ",
+    "2026-10-17T21:09:19.7728274Z     Call log:",
+    "2026-10-17T21:09:19.7728773Z       - Expect \"toBeEnabled\" getByRole('button', { name: 'Retry this Card archive', exact: true }) with timeout 5000ms",
+    "2026-10-17T21:09:19.7729384Z       - waiting for getByRole('button', { name: 'Retry this Card archive', exact: true })",
+    "2026-10-17T21:09:19.7729663Z ",
+    "2026-10-17T21:09:19.7729684Z ",
+    "2026-10-17T21:09:19.7730033Z       44 |       await expect(page.getByText('Archive Archived work from Planning?', { exact: true })).toBeVisible();",
+    "2026-10-17T21:09:19.7730766Z       45 |       await page.getByRole('button', { name: 'Confirm Card archive', exact: true }).focus(); await page.keyboard.press('Enter');",
+    "2026-10-17T21:09:19.7731465Z     > 46 |       await expect(page.getByRole('button', { name: 'Retry this Card archive', exact: true })).toBeEnabled();",
+    "2026-10-17T21:09:19.7732025Z          |                                                                                                ^",
+    "2026-10-17T21:09:19.7732522Z       47 |       await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();",
+    "2026-10-17T21:09:19.7733426Z       48 |       await expect(other.getByRole('link', { name: 'Archived work', exact: true })).toHaveCount(0);",
+    "2026-10-17T21:09:19.7783964Z       49 |       await page.getByRole('button', { name: 'Retry this Card archive', exact: true }).focus(); await page.keyboard.press('Enter');",
+    "2026-10-17T21:09:19.7784948Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/archived-cards.spec.ts:46:96",
+    "2026-10-17T21:09:19.7785259Z ",
+    "2026-10-17T21:09:19.7785821Z     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────"
+  ],
+  "artifactId": 12114796638,
+  "artifactSha256": "01eba41d018cf2ea7c57bb8330c945fb8040c90f33e2385cfe347a2d992eb2fa",
+  "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39060697234/job/117488124985",
+  "followup": "Checksum-verified trace shows zero archive requests. Confirmation is disabled/tabIndex-1 at546114.680; page keyboard Enter occurs546115.489. Existing control/spec unchanged versus currentfbbe942c, though BoardScreen has later creation/readmission repairs. Next cycle must audit and run original whole2 baseline before a bounded existing-helper input-admission repair. Preserve all original receipt/peer/parent/version/rank assertions and deadlines."
+}

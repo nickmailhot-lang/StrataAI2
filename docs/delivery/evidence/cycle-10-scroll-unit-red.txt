@@ -1,0 +1,35 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/kanban/ListPositionFocusVisible.test.tsx
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle10-list-audit/apps/web
+
+ ❯ src/features/kanban/ListPositionFocusVisible.test.tsx (1 test | 1 failed) 370ms
+   × keeps the approved MUI focus indicator after an owned admission refresh retains DOM focus 367ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/ListPositionFocusVisible.test.tsx > keeps the approved MUI focus indicator after an owned admission refresh retains DOM focus
+AssertionError: expected "vi.fn()" to be called at least once
+ ❯ src/features/kanban/ListPositionFocusVisible.test.tsx:31:20
+     29|     await waitFor(() => expect(action).toHaveClass('Mui-focusVisible')…
+     30|     expect(action).toHaveFocus(); expect(fetcher).toHaveBeenCalledOnce…
+     31|     expect(scroll).toHaveBeenCalled(); const ownedScrolls = scroll.moc…
+       |                    ^
+     32|     const outside = screen.getByRole('button', { name: 'Outside naviga…
+     33|     act(() => outside.focus()); view.rerender(draw(true, acknowledged)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  14:00:33
+   Duration  5.33s (import 56%, environment 30%, tests 7%, setup 5%, transform 2%)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle10-list-audit\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle10-list-audit\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --maxWorkers=2 src/features/kanban/ListPositionFocusVisible.test.tsx

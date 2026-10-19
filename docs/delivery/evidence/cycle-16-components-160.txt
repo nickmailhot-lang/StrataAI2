@@ -1,0 +1,14 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/app/SurfaceAdmission.return.test.tsx src/app/SurfaceAdmission.test.tsx src/features/auth/AuthPage.return.test.tsx src/app/App.test.tsx src/app/InternalAppShell.test.tsx src/app/navigationModel.test.ts src/features/organizations/OrganizationHome.test.tsx src/features/organizations/OrganizationHome.focus.test.tsx
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle16-work-ux-integration/apps/web
+
+
+ Test Files  8 passed (8)
+      Tests  160 passed (160)
+   Start at  16:21:21
+   Duration  44.89s (import 55%, tests 23%, environment 15%, transform 4%, setup 3%)
+
+    Isolate  8 workers spawned · ~1.76s startup each (spawn + environment, per file)
+             at least ~5.29s faster with isolate: false — reuses workers across files instead of one per file
+

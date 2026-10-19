@@ -1,0 +1,66 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/organizations/InvitationReadGenerationTelemetry.test.tsx src/features/organizations/OrganizationInvitationTelemetry.test.tsx
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle11-invitation-observations/apps/web
+
+ ❯ src/features/organizations/InvitationReadGenerationTelemetry.test.tsx (4 tests | 4 failed) 1504ms
+   × PRD-03-VS-05/AC-01: Organization healthy permission read becomes obsolete without a false outcome 658ms
+   × PRD-03-VS-05/AC-01: Organization rejected permission read becomes obsolete without a false outcome 303ms
+   × PRD-03-VS-05/AC-01: Board healthy permission read becomes obsolete without a false outcome 265ms
+   × PRD-03-VS-05/AC-01: Board rejected permission read becomes obsolete without a false outcome 276ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/organizations/InvitationReadGenerationTelemetry.test.tsx > PRD-03-VS-05/AC-01: Organization healthy permission read becomes obsolete without a false outcome
+ FAIL  src/features/organizations/InvitationReadGenerationTelemetry.test.tsx > PRD-03-VS-05/AC-01: Board healthy permission read becomes obsolete without a false outcome
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ src/features/organizations/InvitationReadGenerationTelemetry.test.tsx:68:56
+     66|     const prefix = boardSurface ? 'board_invitation' : 'organization_i…
+     67|     expect(count(events, prefix + '_read', 'exception')).toBe(0);
+     68|     expect(count(events, prefix + '_read', 'failure')).toBe(0);
+       |                                                        ^
+     69|     expect(count(events, prefix + '_read', 'success')).toBe(2);
+     70|     expect(count(events, prefix + '_disclosure', 'open')).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/features/organizations/InvitationReadGenerationTelemetry.test.tsx > PRD-03-VS-05/AC-01: Organization rejected permission read becomes obsolete without a false outcome
+ FAIL  src/features/organizations/InvitationReadGenerationTelemetry.test.tsx > PRD-03-VS-05/AC-01: Board rejected permission read becomes obsolete without a false outcome
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ src/features/organizations/InvitationReadGenerationTelemetry.test.tsx:67:58
+     65|     const events = reports.flatMap(report => report.events) as Observa…
+     66|     const prefix = boardSurface ? 'board_invitation' : 'organization_i…
+     67|     expect(count(events, prefix + '_read', 'exception')).toBe(0);
+       |                                                          ^
+     68|     expect(count(events, prefix + '_read', 'failure')).toBe(0);
+     69|     expect(count(events, prefix + '_read', 'success')).toBe(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 14 passed (18)
+   Start at  14:29:32
+   Duration  7.89s (import 44%, tests 25%, environment 22%, setup 4%, transform 4%)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle11-invitation-observations\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle11-invitation-observations\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --maxWorkers=2 src/features/organizations/InvitationReadGenerationTelemetry.test.tsx src/features/organizations/OrganizationInvitationTelemetry.test.tsx

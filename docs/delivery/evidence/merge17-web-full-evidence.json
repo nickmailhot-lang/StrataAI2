@@ -1,0 +1,7 @@
+{
+  "revision": "10cff066e81623fce3008d0a297b9dafabb0a43f",
+  "rawArtifact": "merge17-web-full.txt",
+  "rawSha256": "b42a87561f42ba3c9514e90a06db857e239fa7f0140a76ac7188490c0856a68c",
+  "scope": "Whole actual10cff frontend:2900passed/0failed/24originalcapacitydeferrals,2924total/204passingfiles+1deferred,1201.04s. Normal isolation/maxWorkers2 andoriginaldeadlines preserved; noheavybuild/native/typeoverlap. Three newadmissioncases andlatergenericmodalfixnotyetinthissnapshot; neverrelabelasnew086wholepass. Ignoredlogrecommendationtodisableisolation.",
+  "rawUtf8Text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run --maxWorkers=2\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-main/apps/web\r\n\r\n\r\n Test Files  204 passed | 1 skipped (205)\r\n      Tests  2900 passed | 24 skipped (2924)\r\n   Start at  23:53:08\r\n   Duration  1201.04s (import 43%, tests 32%, environment 20%, setup 4%, transform 1%)\r\n\r\n     Import  427 modules were evaluated 2863 times · 1009.88s total, 43% of tracked time\r\n             ~395.94s faster with isolate: false — shared modules are evaluated once per worker instead of once per file\r\n             learn more: https://vitest.dev/guide/improving-performance#test-isolation\r\n\r\n"
+}

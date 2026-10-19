@@ -1,0 +1,16 @@
+{
+  "recordedAt": "2026-10-17T20:34:22.061Z",
+  "headRevision": "aa64e0a2a6e5f8e7bd680a89bc3f89ad0d40b0de",
+  "runId": 39055149611,
+  "job": {
+    "id": 117471072907,
+    "head_sha": "aa64e0a2a6e5f8e7bd680a89bc3f89ad0d40b0de",
+    "name": "container-integration (browser-full, 2/4)",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "logTruncated": true,
+  "excerpt": "2026-10-17T20:24:20.8314497Z     Error: expect(received).toBe(expected) // Object.is equality\n2026-10-17T20:24:20.8314976Z     Expected: 1\n2026-10-17T20:24:20.8315244Z     Received: 2\n2026-10-17T20:24:20.8315471Z       74 |         if (boardSurface) {\n2026-10-17T20:24:20.8315779Z       75 |           expect(permissionRefused).toBe(true);\n2026-10-17T20:24:20.8316461Z     > 76 |           for (const kind of ['exception', 'failure', 'retry']) expect(observed(prefix + '_read', kind)).toBe(1);\n2026-10-17T20:24:20.8317315Z       77 |         }\n2026-10-17T20:24:20.8325045Z   1 failed\n2026-10-17T20:24:20.8326653Z   2 skipped\n2026-10-17T20:24:20.8326884Z   107 passed (1.1h)",
+  "interpretation": "Failure at Board permission-read exception/failure/retry loop: actual2 expected1. Truncated log does not identify individual kind or cause. Whole shard107passed/1failed/2existingSkipped. No current composite pass/failure inferred.",
+  "next": "After current frozen4135 full and checkpoint, reproduce unchanged Production invitation-issuer-telemetry spec before any fix; preserve original assertions and privacy/key/canonical checks."
+}

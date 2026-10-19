@@ -1,0 +1,92 @@
+{
+  "at": "2026-10-17T22:48:18.019Z",
+  "testRevision": "15a2a6404453fefd286d779d9a21efbd36dcc477",
+  "productRevision": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+  "confirmFocus": 75990.817,
+  "enter": 76065.46,
+  "method": "Read compressed frame snapshots using the installed Playwright1.63 postorder-node/subtree-reference algorithm; no HTML/script execution and only stable confirmation-control flags exported.",
+  "confirmStates": [
+    {
+      "time": 75961.143,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 75970.252,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 75980.541,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 75988.671,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 76045.98,
+      "name": null,
+      "disabled": true,
+      "ariaDisabled": null,
+      "tabIndex": "-1",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 76064.036,
+      "name": null,
+      "disabled": true,
+      "ariaDisabled": null,
+      "tabIndex": "-1",
+      "focusVisible": false,
+      "target": ""
+    },
+    {
+      "time": 76068.426,
+      "name": null,
+      "disabled": true,
+      "ariaDisabled": null,
+      "tabIndex": "-1",
+      "focusVisible": false,
+      "target": ""
+    },
+    {
+      "time": 76073.623,
+      "name": null,
+      "disabled": true,
+      "ariaDisabled": null,
+      "tabIndex": "-1",
+      "focusVisible": false,
+      "target": ""
+    },
+    {
+      "time": 76078.986,
+      "name": null,
+      "disabled": true,
+      "ariaDisabled": null,
+      "tabIndex": "-1",
+      "focusVisible": false,
+      "target": null
+    }
+  ],
+  "scope": "Exact current failed phone baseline trace, with unchanged original product and fixture. No cookies/headers/account fields, body data or temporary URL exported."
+}

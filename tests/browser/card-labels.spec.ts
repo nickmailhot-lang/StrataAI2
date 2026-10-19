@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
@@ -34,7 +35,7 @@ for (const width of [1280, 390]) {
         const reply = await route.fetch(); expect(reply.status()).toBe(201);
         if (attempts.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
       });
-      const createLabel = page.getByRole('button', { name: 'Create label', exact: true });
+      const createLabel = (await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Create label', exact: true }));
       const labelName = page.getByLabel('Label name (optional)');
       await openAdmittedReview(createLabel, labelName);
       await labelName.fill('Priority');
@@ -212,7 +213,7 @@ for (const width of [1280, 390]) {
         const reply = await route.fetch(); expect(reply.status()).toBe(200);
         if (edits.length === 1) await route.abort('failed'); else await route.fulfill({ response: reply });
       });
-      const manageLabels = page.getByRole('button', { name: 'Manage labels', exact: true });
+      const manageLabels = (await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Manage labels', exact: true }));
       await pressAdmittedAction(manageLabels);
       const management = page.getByRole('dialog', { name: 'Manage Board labels' });
       const editPriority = management.getByRole('button', { name: 'Edit Priority (red)', exact: true });

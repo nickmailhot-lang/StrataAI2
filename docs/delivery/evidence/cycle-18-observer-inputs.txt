@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-18T01:31:19.810Z",
+  "testRevision": "b055114d7860291687286dbd922a9c76cdee4d8c",
+  "actualProductRevision": "e63c6d09004ae2cda70bbb1b7e2b12b78f858bc9",
+  "method": "git diff --exit-code complete app/unit/build/backend inputs against actuale63; current changed browser TypeScript check",
+  "changedOnly": "tests/browser/organization-actions.spec.ts,7 added/3 removed lines. Whole case count4, test120s deadline, all assertions, role/denial/canonical/keyboard behavior and zero retries retained.",
+  "observation": "Original ordering used a resolved Create handle and a later global summary query. Retained failed768/320 end-state and screencast images show metadata revalidation with controls withdrawn. Source always places Create before the disclosure when both current nodes exist. A stale/noncontemporaneous observation is the inferred cause; current whole4 must verify.",
+  "repair": "Use read-only expect.poll/evaluateAll to compare currently connected Create and labelled Organization actions summary in one DOM evaluation. True order remains required. No role-control retention, product logic, request replay, retry count or test-deadline change.",
+  "images": [
+    {
+      "width": 768,
+      "index": 1,
+      "sha256": "78f6a8d9aaa89c91aceac4bea1b2d761a58ff32380c8f90c3eed6982715c4536"
+    },
+    {
+      "width": 768,
+      "index": 2,
+      "sha256": "c43c39d231aaf96343dedfaa5b32f3ac10781cc83ac6b842c9dedd8672ddf984"
+    },
+    {
+      "width": 768,
+      "index": 3,
+      "sha256": "435073ec96dfe4072a8c231491934543ae2d89f87aad9822d066154986f006d4"
+    },
+    {
+      "width": 320,
+      "index": 1,
+      "sha256": "75b2319962fec5e800389362f733bd8331155d7b861d6ad90907ce4f1bd06fd0"
+    },
+    {
+      "width": 320,
+      "index": 2,
+      "sha256": "9f19b1b17de5745836c68738608d9654b1265e43a9345cb72bcf06a56f4a6fbe"
+    },
+    {
+      "width": 320,
+      "index": 3,
+      "sha256": "d8583210bd152855f28f34b14da3fa04001b4d1971bcea722a4e2959338ad695"
+    }
+  ],
+  "inspection": "Four representative last screencast frames and failed768 screenshot inspected. Initial trace projections v1/v2 lacked ordering callback events under current protocol and are not causal proof. No headers/cookies, account/scope IDs, credentials or request bodies exposed.",
+  "reuse": "Actual default/rollback bundles and267 controls/build/lint remaine63. This is explicit complete-input equivalence, not new app/build/test execution atb055. Current browser types and following native execution belong tob055."
+}

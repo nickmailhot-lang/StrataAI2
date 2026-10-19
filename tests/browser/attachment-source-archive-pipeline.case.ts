@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import type { BrowserContext, Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -83,7 +84,7 @@ test('PRD-14 private published cover and attachment review withdraw when Board m
     for (const client of clients) {
       await expect(client.page.getByRole('img', { name: 'Card cover', exact: true })).toHaveCount(0, { timeout: 20_000 });
       await expect(client.page.getByRole('group', { name: 'Attachment Private original.png', exact: true })).toHaveCount(0, { timeout: 20_000 });
-      await expect(client.page.getByRole('button', { name: 'Review Card cover', exact: true })).toHaveCount(0);
+      await expect(client.page.getByRole('button', { name: 'Review Card cover', exact: true, includeHidden: true })).toHaveCount(0);
       await expect(client.page).toHaveURL(new RegExp(`/cards/${fixture.cardId}$`)); expect(client.navigations).toBe(0);
       for (const route of [`/boards/${fixture.boardId}`, coverPath, coverPath + '/image', `/cards/${fixture.cardId}/attachments`,
         ...['download-options', 'download', 'preview'].map(suffix => `/cards/${fixture.cardId}/attachments/${originalCover.attachmentId}/${suffix}`)]) {
@@ -450,7 +451,7 @@ for (const { width, loseReply, rejected, format, untrustedLabels, invalidBytes }
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     if (format === 'jpeg' || format === 'webp') {
       const coverPath = `/cards/${card}/cover`;
-      await pressAdmittedAction(page.getByRole('button', { name: 'Review Card cover', exact: true }));
+      await pressAdmittedAction((await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Card cover', exact: true })));
       await pressAdmittedAction(page.getByRole('button', { name: `Use ${name} as cover`, exact: true }));
       await expect(page.getByRole('checkbox', { name: 'I understand this cover image will be publicly visible', exact: true })).toHaveCount(0);
       const coverWrite = page.waitForResponse(response => response.request().method() === 'PUT' && new URL(response.url()).pathname === coverPath);

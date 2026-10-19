@@ -1,0 +1,24 @@
+{
+  "revision": "0dd1689c80ad2139dcbc46a6a06c666575c757ff",
+  "rawArtifact": "cycle19-order-input-proof.json",
+  "rawSha256": "9f259f38262101c4edb0faf76f66bfcc0f34190c67b997bc88e99afcfec51627",
+  "lines": [
+    "{",
+    "  \"at\": \"2026-10-18T03:51:01.600Z\",",
+    "  \"revision\": \"0dd1689c80ad2139dcbc46a6a06c666575c757ff\",",
+    "  \"testSource\": \"a929df89a5bdb81fe8c5d9b00ebb1ba731fb00a7, entire6source identical\",",
+    "  \"originalMigration\": \"085 byte/source unchanged\",",
+    "  \"interactionFunctionBodies\": \"Four existing bodies exactly equal085 after removing only4new private parent calls\",",
+    "  \"newHelper\": \"Invoker, fixedsearch_path/temporarytenantcontext, activecurrenttenantBoardSHARE, PUBLICexecute revoked and no runtime grant; actual DBcapabilityfalse/false verified separately\",",
+    "  \"unit\": \"New Board-aware observation path locksOrg/BoardSHARE beforeactoradvisory/accountSHARE; all original actors/session/private-target/final-proof callbacks retained. Global search/Organization context path and Demo default existing owningtransaction remain unchanged.\",",
+    "  \"consumers\": [",
+    "    \"NavigationInteractionEventProducer\",",
+    "    \"NavigationInteractionReplayProducer\",",
+    "    \"BoardFilterInteractionChangeProducer\"",
+    "  ],",
+    "  \"readiness\": \"All original149 + additive150 required, oldfixtureC11 untouched\",",
+    "  \"limits\": \"Actual six-case orderguard andfourpositive/receipt checks only. Does not establish reproduction/fix ofcomplete40P01 CIcycle, native originalCarddates, broaderwithdrawal, immutable/main orMVPacceptance.\"",
+    "}",
+    ""
+  ]
+}

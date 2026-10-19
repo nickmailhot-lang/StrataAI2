@@ -1,0 +1,57 @@
+{
+  "at": "2026-10-17T23:29:54.306Z",
+  "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+  "actualProduct": "d5253673eab1e240649419eb1d8e937d17da8421",
+  "priorAcceptance": [
+    {
+      "id": "PRD-01-VS-04-T-03/AC-02",
+      "ownerId": "PRD-01-VS-04-T-03",
+      "sourceId": "AC-02",
+      "text": "No protected target mutation starts; separately authenticated target owner verifies canonicalB unchanged. Original authorizedA canonical Board/Card remain unchanged and reachable through browser Back with correct scope and no Login history loop.",
+      "sourceRefs": [
+        "PRD-01-VS-04/AC-02",
+        "PRD-01/UXA-02",
+        "PRD-01/UXA-04"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-14-CONTROLS-54",
+        "EVID-CYCLE-14-TYPES",
+        "EVID-CYCLE-14-LINT",
+        "EVID-CYCLE-14-NATIVE-13",
+        "EVID-CYCLE-14-RUNTIME",
+        "EVID-CYCLE-14-RECONCILIATION"
+      ],
+      "revision": "1f70dc1028d65a9e7d7075bc166f6cc4c2b7ea2b",
+      "reviewer": "delivery-agent: current controlled/complete native/visual scoped verification; immutable/main integration pending",
+      "verifiedAt": "2026-10-17T23:15:29.228Z"
+    },
+    {
+      "id": "PRD-01-VS-04-T-03-TEST-01/TRACE",
+      "ownerId": "PRD-01-VS-04-T-03-TEST-01",
+      "sourceId": "TRACE",
+      "text": "Run the complete permanent sign-in return file with all12 original cases and the added genuine cross-Organization ownership case. Preserve deadlines, zero retries and original assertions; record exact test and actual product/runtime sources.",
+      "sourceRefs": [
+        "PRD-01-VS-04-T-03/AC-01",
+        "PRD-01-VS-04-T-03/AC-02",
+        "PRD-01-VS-04-T-03/AC-03"
+      ],
+      "status": "Verified",
+      "evidenceIds": [
+        "EVID-CYCLE-14-CONTROLS-54",
+        "EVID-CYCLE-14-TYPES",
+        "EVID-CYCLE-14-LINT",
+        "EVID-CYCLE-14-NATIVE-13",
+        "EVID-CYCLE-14-RUNTIME",
+        "EVID-CYCLE-14-RECONCILIATION"
+      ],
+      "revision": "1f70dc1028d65a9e7d7075bc166f6cc4c2b7ea2b",
+      "reviewer": "delivery-agent: current controlled/complete native/visual scoped verification; immutable/main integration pending",
+      "verifiedAt": "2026-10-17T23:15:29.228Z"
+    }
+  ],
+  "canonicalGap": "Earlier C14 helper selected id/name/version at response root; actual Board snapshot lives under board. It compared the full lists/Card contents and zero protected writes but did not establish unchanged Board metadata. Those original passes remain, with this limitation. Reopen only that child acceptance/trace until the stronger whole13 consumer passes.",
+  "repair": "Assert value.board contains the requested id, then compare full board plus lists before/after for both real Organizations. No product change or test relaxation.",
+  "visualGap": "Current4 pass and three full-page captures manually inspected. Fixed headers in full-page200% captures do not establish the current viewport. Add viewport-only captures plus in-viewport and center-hit visibility assertions; rerun whole4 because this additional acceptance is not yet verified. This is not a reproduced UI defect.",
+  "applicability": "All web/app/unit/build/backend inputs exactly equal actual d5253673. Retain actual160/build/lint at that source without rebuilding or relabeling. Browser types pass at e7cb9965. Whole strengthened4 now runs in64532; original19 and current full frontend remain pending."
+}

@@ -1,0 +1,35 @@
+Manual inspection 2026-10-17T20:48:12.623Z of all8initial four-width review/return viewport captures. Review field/validation/cancel/save readable, localcanvasno pageoverflow,200%persists; however retained rename acknowledgment shares headingrow and squeezes Planning renamed into fragmented words at320/768200%. Native stronger measurements reproduce. Initial320return has no visible focusoutline; later390post-Axe computed/native assertion independently reproduces focused/:focus-visibletrue but noMui class/0pxoutline. This is failed completeUX acceptance despite initial4automatedpasses; do not relabel initialtests as failed or infer no defects. No screenreader/device/fullWCAG/Production certification.
+[
+  {
+    "name": "list-order-return-320.png",
+    "sha256": "b39be4e75a8b51a83829800698f3697a3932784b22cab931bf6e23ed97420d85"
+  },
+  {
+    "name": "list-rename-review-320.png",
+    "sha256": "47c4547f4ded3d137b4102ed1b5231ff18b8da9e25fdcafe0b9328fd77d57145"
+  },
+  {
+    "name": "list-order-return-390.png",
+    "sha256": "eca5f75de5d42e15b8ebd63e1e08bc520a8e52b18e52128f3dbdda1d8ce8aef6"
+  },
+  {
+    "name": "list-rename-review-390.png",
+    "sha256": "1c0210ae747f29192aa3511ba1de2d0adbab8be61ec24609941814dc75ffad96"
+  },
+  {
+    "name": "list-order-return-1280.png",
+    "sha256": "2fc250c898ded68b9bacd70d2f8cfec941f83bf94bff13d137db2583eb8c722d"
+  },
+  {
+    "name": "list-rename-review-1280.png",
+    "sha256": "2ffa89159aabc06ccf341e74f9d84fa56bb21116c015caa1fd4e54e6aa365899"
+  },
+  {
+    "name": "list-order-return-768.png",
+    "sha256": "183886cc55aed89cbb44896046675c94eb692a202fcef5c31711851d2c6518fb"
+  },
+  {
+    "name": "list-rename-review-768.png",
+    "sha256": "71e98a154e243409c6eda12ddaaed44a5292efdb95831a7a50f0fa16e85e375d"
+  }
+]

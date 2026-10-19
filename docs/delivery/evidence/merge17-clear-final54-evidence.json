@@ -1,0 +1,7 @@
+{
+  "revision": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b",
+  "rawArtifact": "merge17-clear-final54.txt",
+  "rawSha256": "b5ca1498967927e0d9758c9583cb1c350ae048d24b3c1fdb3acd26c6d7d956c8",
+  "scope": "Actual clean135ee whole3filter files54pass37.68s,zero failures/skips. Both new Canvas/Dialog Clear cases verify no writes during refusal and exactly one actor-bound original command after admission.",
+  "rawUtf8Text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run --maxWorkers=2 src/features/kanban/BoardFilterClearAdmission.test.tsx src/features/kanban/BoardFilterControl.test.tsx src/features/kanban/BoardFilterInteractionControl.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-main/apps/web\r\n\r\n\r\n Test Files  3 passed (3)\r\n      Tests  54 passed (54)\r\n   Start at  01:53:46\r\n   Duration  37.68s (tests 62%, import 24%, environment 10%, setup 2%, transform 1%)\r\n\r\n"
+}

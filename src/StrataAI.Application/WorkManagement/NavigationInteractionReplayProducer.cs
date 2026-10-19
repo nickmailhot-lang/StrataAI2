@@ -35,7 +35,8 @@ public sealed class NavigationInteractionReplayProducer(INavigationInteractionRe
         NavigationInteractionEvent candidate;
         try { candidate = create(); }
         catch (ArgumentException) { return Task.FromResult(IdentityOperation<NavigationInteractionEvent>.Failure("invalid_navigation")); }
-        return transactions.ExecuteObservationAsync(actor, candidate.OrganizationId, async () => {
+        async Task<IdentityOperation<NavigationInteractionEvent>> Append()
+        {
             if (!await actors.VerifyAsync(actor, ct)) return IdentityOperation<NavigationInteractionEvent>.Failure("session_unavailable");
             var original = await receipts.AppendOrReplayAuthorizedAsync(requestId, fingerprint, candidate, ct);
             if (original is null || original.ActorId != actor || original.EventType != candidate.EventType
@@ -45,6 +46,9 @@ public sealed class NavigationInteractionReplayProducer(INavigationInteractionRe
                 return IdentityOperation<NavigationInteractionEvent>.Failure("navigation_unavailable");
             if (!await actors.VerifyAsync(actor, ct)) return IdentityOperation<NavigationInteractionEvent>.Failure("session_unavailable");
             return IdentityOperation<NavigationInteractionEvent>.Success(original);
-        }, ct);
+        }
+        return candidate.OrganizationId is Guid organization && candidate.BoardId is Guid board
+            ? transactions.ExecuteBoardObservationAsync(actor, organization, board, Append, ct)
+            : transactions.ExecuteObservationAsync(actor, candidate.OrganizationId, Append, ct);
     }
 }

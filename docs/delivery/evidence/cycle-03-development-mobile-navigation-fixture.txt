@@ -1,0 +1,86 @@
+
+Running 7 tests using 1 worker
+
+(node:7428) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (8.5s)
+  ok 2 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (5.6s)
+  x  3 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (1.5m)
+(node:35716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (1.5m)
+(node:5064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (9.8s)
+  ok 6 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (9.3s)
+  ok 7 tests\browser\board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (9.4s)
+
+
+  1) tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: locator.click: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByRole('link', { name: 'Boards', exact: true })
+
+
+      71 |     expect((await canonical.json()).board).toMatchObject({ organizationId: org, name: 'Recovered planning Board', description: 'Keep this unsent draft', visibility: 'PRIVATE' });
+      72 |     await page.reload();
+    > 73 |     await expect(page.getByRole('heading', { name: 'Recovered planning Board', exact: true })).toBeVisible();
+         |                                                                   ^
+      74 |     const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
+      75 |     if (await menu.isVisible()) await menu.click();
+      76 |     await page.getByRole('link', { name: 'Boards', exact: true }).click();
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board-creation-recovery.spec.ts:73:67
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-preview-browser\board-creation-recovery-PR-3e317-original-key-retry-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-preview-browser\board-creation-recovery-PR-3e317-original-key-retry-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-preview-browser\board-creation-recovery-PR-3e317-original-key-retry-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-preview-browser\board-creation-recovery-PR-3e317-original-key-retry-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px 
+
+    Test timeout of 90000ms exceeded.
+
+    Error: locator.click: Test timeout of 90000ms exceeded.
+    Call log:
+      - waiting for getByRole('link', { name: 'Boards', exact: true })
+
+
+      71 |     expect((await canonical.json()).board).toMatchObject({ organizationId: org, name: 'Recovered planning Board', description: 'Keep this unsent draft', visibility: 'PRIVATE' });
+      72 |     await page.reload();
+    > 73 |     await expect(page.getByRole('heading', { name: 'Recovered planning Board', exact: true })).toBeVisible();
+         |                                                                   ^
+      74 |     const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
+      75 |     if (await menu.isVisible()) await menu.click();
+      76 |     await page.getByRole('link', { name: 'Boards', exact: true }).click();
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\StrataAI2\tests\browser\board-creation-recovery.spec.ts:73:67
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle3-preview-browser\board-creation-recovery-PR-aefaf-original-key-retry-at-320px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle3-preview-browser\board-creation-recovery-PR-aefaf-original-key-retry-at-320px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle3-preview-browser\board-creation-recovery-PR-aefaf-original-key-retry-at-320px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle3-preview-browser\board-creation-recovery-PR-aefaf-original-key-retry-at-320px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px 
+    tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px 
+  5 passed (3.8m)

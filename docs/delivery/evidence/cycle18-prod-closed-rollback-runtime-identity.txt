@@ -1,0 +1,102 @@
+{
+  "hosts": [
+    {
+      "parentPid": 21476,
+      "kind": "api",
+      "createdAt": "2026-10-17T14:51:48.356537-07:00",
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle8-dotnet-artifacts\\bin\\StrataAI.Api\\release\\StrataAI.Api.dll",
+      "pid": 28452,
+      "port": 18089
+    },
+    {
+      "parentPid": 37992,
+      "kind": "worker",
+      "createdAt": "2026-10-17T19:10:00.94082-07:00",
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle11-worker-artifacts\\bin\\StrataAI.Worker\\release\\StrataAI.Worker.dll",
+      "pid": 20788,
+      "port": 18093
+    },
+    {
+      "parentPid": 30368,
+      "kind": "preview",
+      "createdAt": "2026-10-17T19:10:28.33156-07:00",
+      "command": "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vite/bin/vite.js preview --config C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle18-expansion-fixture\\preview-rollback.config.mjs",
+      "pid": 36340,
+      "port": 15185
+    }
+  ],
+  "productRevision": "c2b79f4f3c00ced49af58f1f3249a5a9425a3bce",
+  "mode": "rollback",
+  "databaseProject": "strataai-c11-invite-9ed41294",
+  "runtimeRoles": [
+    "strataai_api_runtime|t|f|f|f|f|f|f",
+    "strataai_worker_runtime|t|f|f|f|f|f|f"
+  ],
+  "collection": "Total: 8 tests in 2 files",
+  "wholeDefault": "Total: 41 tests in 11 files",
+  "worker": {
+    "service": "strataai-worker",
+    "mode": "production",
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "schemaMigrations": 149,
+  "policy": {
+    "allowSelfRegistration": true,
+    "requireVerifiedEmail": false,
+    "minimumPasswordLength": 12
+  },
+  "previewConfigSha256": "a79343918d016d417a33349c4b46fc1930e6d5b7c3366fa427ea727f5fd7d588",
+  "testRevision": "24b9b46b40bd489e570ea28c3a5f511f2bf0a28e",
+  "workerReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "web": {
+    "revision": "c2b79f4f3c00ced49af58f1f3249a5a9425a3bce",
+    "version": "0.1.0"
+  },
+  "api": {
+    "service": "strataai-api",
+    "mode": "production",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "at": "2026-10-18T02:10:44.9636152+00:00",
+  "actualDatabaseConnectionRoles": [
+    "strataai_api_runtime|9",
+    "strataai_worker_runtime|8"
+  ],
+  "scope": "Current strengthened new4 executes at recorded test revision; intact original37 already executed at actual productc2 with complete other-input equality. No prior execution is relabeled. Rollback8 repeats under separately hashed0 bundle at identical trusted15185 origin. Real services and controlledUX cases remain distinct. Actual API389/Worker0f and149 restricted roles retained, not relabeled. Local optional-verification fixture support, not hosted helper parity/immutable/provider/HTTPS acceptance.",
+  "servedVariantAssets": [
+    {
+      "length": 73,
+      "path": "build-metadata.json",
+      "sha256": "c8e4452b9ca2475bf966142605368832c428f3b9bc5dfece73de0cafe48b0089"
+    },
+    {
+      "length": 578,
+      "path": "index.html",
+      "sha256": "2c8112746b72835acab65a5e3a0ee7954e2344d6a8cff21af8d78d5b950b1195"
+    },
+    {
+      "length": 561,
+      "path": "assets/index-Bw_GsyDn.css",
+      "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+    },
+    {
+      "length": 1626953,
+      "path": "assets/index-C50yzUnV.js",
+      "sha256": "98fee13333cebd5e159ec604c5e98948de69a2f8a9d0b46566533c4263fb6000"
+    }
+  ],
+  "apiReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "files": [
+    "organization-actions.spec.ts",
+    "board-creation-recovery.spec.ts"
+  ],
+  "stage": "rollback"
+}

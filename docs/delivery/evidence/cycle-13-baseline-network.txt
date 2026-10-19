@@ -1,0 +1,130 @@
+{
+  "archiveRequests": [],
+  "productRevision": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+  "at": "2026-10-17T22:48:18.6433443+00:00",
+  "confirmControlSnapshots": [
+    {
+      "snapshot": null,
+      "time": 75954.355,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "disabled": false
+    }
+  ],
+  "boardReads": [
+    {
+      "status": 200,
+      "time": 74248.653
+    },
+    {
+      "status": 200,
+      "time": 74729.738
+    },
+    {
+      "status": 200,
+      "time": 74834.787
+    },
+    {
+      "status": 200,
+      "time": 75427.116
+    },
+    {
+      "status": 200,
+      "time": 76040.635
+    },
+    {
+      "status": 200,
+      "time": 76163.103
+    },
+    {
+      "status": 200,
+      "time": 67746.833
+    }
+  ],
+  "actions": [
+    {
+      "method": "keyboardPress",
+      "callId": "call@275",
+      "api": null,
+      "time": 75686.624,
+      "selector": null,
+      "key": "Enter"
+    },
+    {
+      "method": "isVisible",
+      "callId": "call@279",
+      "api": null,
+      "time": 75812.129,
+      "selector": "internal:role=button[name=\"Archive Card\"s]",
+      "key": null
+    },
+    {
+      "method": "isEnabled",
+      "callId": "call@281",
+      "api": null,
+      "time": 75829.69,
+      "selector": "internal:role=button[name=\"Archive Card\"s]",
+      "key": null
+    },
+    {
+      "method": "focus",
+      "callId": "call@283",
+      "api": null,
+      "time": 75844.565,
+      "selector": "internal:role=button[name=\"Archive Card\"s]",
+      "key": null
+    },
+    {
+      "method": "expect",
+      "callId": "call@285",
+      "api": null,
+      "time": 75875.387,
+      "selector": "internal:role=button[name=\"Archive Card\"s]",
+      "key": null
+    },
+    {
+      "method": "expect",
+      "callId": "call@287",
+      "api": null,
+      "time": 75902.311,
+      "selector": "internal:role=button[name=\"Archive Card\"s]",
+      "key": null
+    },
+    {
+      "method": "press",
+      "callId": "call@289",
+      "api": null,
+      "time": 75918.533,
+      "selector": "internal:role=button[name=\"Archive Card\"s]",
+      "key": "Enter"
+    },
+    {
+      "method": "focus",
+      "callId": "call@295",
+      "api": null,
+      "time": 75990.817,
+      "selector": "internal:role=button[name=\"Confirm Card archive\"s]",
+      "key": null
+    },
+    {
+      "method": "keyboardPress",
+      "callId": "call@297",
+      "api": null,
+      "time": 76065.46,
+      "selector": null,
+      "key": "Enter"
+    },
+    {
+      "method": "expect",
+      "callId": "call@299",
+      "api": null,
+      "time": 76075.654,
+      "selector": "internal:role=button[name=\"Retry this Card archive\"s]",
+      "key": null
+    }
+  ],
+  "traceSha256": "75909bc2178249d30618023616b8c72e1fd60c03766b796eecdcd6286e49316d",
+  "privacy": "Only stable target control names, key names, methods, status, time and disabled/tabIndex flags. No headers/cookies, account/scope identities, emails, passwords, request bodies or temporary download URL.",
+  "testRevision": "15a2a6404453fefd286d779d9a21efbd36dcc477",
+  "scope": "Whitelisted projection from the exact current failed390 baseline trace, before any fixture or product edit."
+}

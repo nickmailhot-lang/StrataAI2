@@ -1,0 +1,6 @@
+{
+  "at": "2026-10-18T02:54:55.5404377+00:00",
+  "testSource": "6c86174268df15b10dab114d7f524c56098fab59",
+  "actualProduct": "e14db04c3d30a9c120c464e86ab886530fdeea75",
+  "correction": "Copied local runner description strings referenced older c2/24b9. Native/full descriptions corrected before execution. Browser type exit metadata old scope text retained; actual revision6c and exit0 are correct and complete-input Git proof is against e14, not c2. No source/test result or bundle relabel."
+}

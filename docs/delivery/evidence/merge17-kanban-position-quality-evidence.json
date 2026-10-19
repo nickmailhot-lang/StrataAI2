@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-18T14:09:49.020Z",
+  "revision": "27609c1b7a95c0c09bc41a0d3b6870f9704837b8",
+  "checks": [
+    {
+      "path": "work/merge17-kanban-position-types-exit.json",
+      "exit": 0,
+      "scope": "Uncommitted pre-gesture destination vertical positioning plus committed50ad fixture fixes. No product/oracle/budget/retry/coverage change.",
+      "base": "50ad0f4a1cfc7a7a2b5e9e7fc2636df0c0d2df3d",
+      "at": "2026-10-18T14:05:55.1942801+00:00",
+      "sha256": "453fec223504ceee15827c5de5f5855890a9a1316add7a449f7769f710aa3663"
+    },
+    {
+      "path": "work/merge17-kanban-position-contracts-exit.json",
+      "scope": "Existing immutable integration and complete browser shard contracts after pre-gesture positioning; all original acceptance/oracles/limits preserved",
+      "exit": 0,
+      "at": "2026-10-18T14:08:43.9626105+00:00",
+      "revision": "27609c1b7a95c0c09bc41a0d3b6870f9704837b8",
+      "sha256": "e0e0a50a99cb2962a742cefbf9344901991c943a9a415231ebbdc4ac55870f0d"
+    }
+  ],
+  "contracts": {
+    "passed": 298,
+    "failed": 0,
+    "skipped": 0
+  },
+  "scope": "Browser types and existing immutable/shard refusal contracts only. Complete native timing and hosted release remain Failed/pending."
+}

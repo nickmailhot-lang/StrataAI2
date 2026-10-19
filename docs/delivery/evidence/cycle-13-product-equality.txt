@@ -1,0 +1,52 @@
+{
+  "at": "2026-10-17T22:52:51.029Z",
+  "testRevision": "62539518a8c75d057dfd3f26581e7645835c8f33",
+  "actualCompiledWeb": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+  "actualApi": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+  "actualWorker": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+  "trees": [
+    {
+      "path": "apps/web",
+      "current": "4cf0ca814d153bc28b20861025a4263ddd2f4ff6",
+      "product": "4cf0ca814d153bc28b20861025a4263ddd2f4ff6"
+    },
+    {
+      "path": "src",
+      "current": "ee421ed1a77c780f51f040b05910d883724385b9",
+      "product": "ee421ed1a77c780f51f040b05910d883724385b9"
+    },
+    {
+      "path": "db",
+      "current": "954bce778f56edcba68fc5a95809b4f3342e6603",
+      "product": "954bce778f56edcba68fc5a95809b4f3342e6603"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests",
+      "current": "abae174f3ee4a809395ab896a42d6267143056a1",
+      "product": "abae174f3ee4a809395ab896a42d6267143056a1"
+    },
+    {
+      "path": "tests/StrataAI.Domain.Tests",
+      "current": "f847beb1fdbc52f16de6697397dd500fe5f9288f",
+      "product": "f847beb1fdbc52f16de6697397dd500fe5f9288f"
+    },
+    {
+      "path": "tests/browser/signin-card-return.spec.ts",
+      "current": "665c8e0aa1149347122b763ddda6cf81db603fc9",
+      "product": "665c8e0aa1149347122b763ddda6cf81db603fc9"
+    },
+    {
+      "path": "tests/browser/keyboardAdmission.ts",
+      "current": "4958a4cb5ea0fe9e607ee95296e4906a668ce5cf",
+      "product": "4958a4cb5ea0fe9e607ee95296e4906a668ce5cf"
+    }
+  ],
+  "productAndBuildInputsEqual": true,
+  "onlyBrowserChange": "Existing helper import and replacement of initial raw focus/page Enter with observed first archive request. No assertion, timeout, retry count, product/API/schema/permission/layout change.",
+  "reused": {
+    "build": "EVID-CYCLE-12-WEB-BUILD, executed at actualfbbe942c",
+    "full": "EVID-CYCLE-12-FULL:2862pass/0fail/24 unchanged deferrals,809.03s at actualfbbe942c",
+    "native": "EVID-CYCLE-12-NATIVE-12:12pass at actualfbbe942c, exact unchanged sign-in test blob"
+  },
+  "notRun": "No new web build or full frontend at62539518. Exact unchanged product/build inputs justify preserving the actual prior results; new changed archive native consumer and final source/coverage checks remain required."
+}

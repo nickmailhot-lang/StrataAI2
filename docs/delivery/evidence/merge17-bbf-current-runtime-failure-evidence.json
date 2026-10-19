@@ -1,0 +1,534 @@
+{
+  "at": "2026-10-18T17:26:30.169Z",
+  "revision": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+  "actualSynthetic": "0443965e27bd157e3af679efdfbacde016a5dc0b",
+  "currentRunIncomplete": true,
+  "checks": {
+    "headRevision": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+    "checks": [
+      {
+        "id": 117716356499,
+        "name": "container-integration (browser-full, 1/4)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "failure",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117716356499",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 117716356414,
+        "name": "security",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117716356414",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117716356413,
+        "name": "container-integration (browser-foundation, 1/1)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117716356413",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117716356387,
+        "name": "container-integration (browser-notifications, 1/1)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117716356387",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117716356381,
+        "name": "container-integration (commands, 1/1)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117716356381",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117716356358,
+        "name": "container-integration (browser-full, 2/4)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "in_progress",
+        "conclusion": null,
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117716356358",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117716356350,
+        "name": "container-integration (browser-full, 4/4)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "in_progress",
+        "conclusion": null,
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117716356350",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117716356346,
+        "name": "container-integration (browser-full, 3/4)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "in_progress",
+        "conclusion": null,
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117716356346",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117715821156,
+        "name": "build-images-once",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117715821156",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117715802039,
+        "name": "source-quality-gate",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117715802039",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117705823441,
+        "name": "CodeQL",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/117705823441",
+        "output": {
+          "title": "No new alerts in code changed by this pull request",
+          "summary": "[View all branch alerts](/nickmailhot-lang/StrataAI2/security/code-scanning?query=pr%3A111+tool%3ACodeQL+is%3Aopen).",
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117705754679,
+        "name": "postgres-integration",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117705754679",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117705754667,
+        "name": "web-quality",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117705754667",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117705754659,
+        "name": "dotnet-quality",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117705754659",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117705687692,
+        "name": "metadata",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137769087/job/117705687692",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 117705685525,
+        "name": "Analyze (javascript-typescript)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137767218/job/117705685525",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 2
+        }
+      },
+      {
+        "id": 117705685499,
+        "name": "Analyze (c-cpp)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137767218/job/117705685499",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 2
+        }
+      },
+      {
+        "id": 117705685445,
+        "name": "Analyze (csharp)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137767218/job/117705685445",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 2
+        }
+      },
+      {
+        "id": 117705685436,
+        "name": "Analyze (python)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137767218/job/117705685436",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 2
+        }
+      },
+      {
+        "id": 117705685271,
+        "name": "Analyze (actions)",
+        "head_sha": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39137767218/job/117705685271",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 2
+        }
+      }
+    ],
+    "statuses": [],
+    "annotations": [],
+    "hasMore": false,
+    "job": null,
+    "jobs": [],
+    "log": null,
+    "logTruncated": false,
+    "providerGuidance": "GitHub guidance for this response only: use checkRunId for output and annotations, runId from a GitHub Actions /runs/<id> link to list jobs, or jobId from a /jobs/<id> link for logs. page paginates checks, jobs or annotations. Keep the supplied account and returned headRevision on follow-up reads. Third-party CI exposes only the output reported to GitHub."
+  },
+  "failure": {
+    "at": "2026-10-18 17:17:33 UTC",
+    "head": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+    "actualSynthetic": "0443965e27bd157e3af679efdfbacde016a5dc0b",
+    "run": 39137769087,
+    "job": 117716356499,
+    "status": "failure",
+    "passed": 120,
+    "failed": 1,
+    "skipped": 0,
+    "total": 121,
+    "duration": "1.4h",
+    "failure": {
+      "file": "tests/browser/board-creation-recovery.spec.ts",
+      "line": 28,
+      "width": 1280,
+      "error": "Test timeout of 90000ms exceeded; locator.fill waiting for dialog Name",
+      "boundary": "Before any draft input, intentional lifecycle interruption or Board-write request",
+      "click": {
+        "start": 1252923.222,
+        "end": 1252989.772,
+        "completed": true
+      },
+      "initialFill": {
+        "start": 1252992.88,
+        "completed": false
+      },
+      "observed": "Successful surface-access/profile/Organization refreshes overlap the completed initial click. Final screenshot/context has current-access checked and enabled Create board, no form. No POST /boards occurred in the failed browser trace.",
+      "analysis": "Consistent with the existing foreground-admission opening race; precise event scheduling not asserted. The product button only opens local state. Reuse the existing bounded read-only openAdmittedReview before first field input; preserve all later draft, lifecycle, save, exact-key/count and canonical assertions."
+    },
+    "artifact": {
+      "id": 12143994153,
+      "sha256": "31954872a262109b98183eb0bbf5cad2965d914bc685ef2bfeb6680370b32a6e",
+      "sha256Verified": true,
+      "privateZip": "work/merge17-bbf-full1-browser-diagnostics.zip",
+      "selectedPrivateDirectory": "work/merge17-bbf-full1-selected"
+    },
+    "limits": "This is a failed full native scope, not a passing release. One supporting local original case passed separately; no product cause inferred from that pass. Other current hosted groups still collecting; no remote push or main merge."
+  },
+  "foundation": {
+    "at": "2026-10-18 16:19:11 UTC",
+    "head": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+    "actualSynthetic": "0443965e27bd157e3af679efdfbacde016a5dc0b",
+    "run": 39137769087,
+    "job": 117716356413,
+    "status": "success",
+    "scopes": [
+      {
+        "name": "Demo metadata, terminal and recipient lifecycle",
+        "passed": 28,
+        "duration": "14.7m"
+      },
+      {
+        "name": "Private Card reminders",
+        "passed": 2,
+        "duration": "3.0m"
+      },
+      {
+        "name": "Image-backed Board copy",
+        "passed": 2,
+        "duration": "1.4m"
+      },
+      {
+        "name": "Attachment lifecycle through isolated test providers",
+        "passed": 18,
+        "duration": "10.7m"
+      }
+    ],
+    "passed": 50,
+    "failed": 0,
+    "footers": [
+      "2026-10-18T16:00:52.9894052Z   28 passed (14.7m)",
+      "2026-10-18T16:03:54.0759430Z   2 passed (3.0m)",
+      "2026-10-18T16:05:42.0086494Z   2 passed (1.4m)",
+      "2026-10-18T16:16:27.0686572Z   18 passed (10.7m)"
+    ],
+    "method": "Whole current completed-success job plus all four actual native scope footers",
+    "limits": "Uses explicit private test providers. No managed-provider readiness, whole release, parent PRD completion, or main merge inferred."
+  },
+  "commands": {
+    "at": "2026-10-18 16:25:17 UTC",
+    "head": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+    "actualSynthetic": "0443965e27bd157e3af679efdfbacde016a5dc0b",
+    "run": 39137769087,
+    "job": 117716356381,
+    "status": "success",
+    "passedSteps": [
+      "Set up job",
+      "Run actions/checkout@v7",
+      "Download exact built images",
+      "Verify image archive checksums",
+      "Load exact built images",
+      "Start release topology",
+      "Apply release-database migrations",
+      "Verify structured API and Worker console records",
+      "Prepare Retain fixed console verification evidence",
+      "Retain fixed console verification evidence",
+      "Provision least-privilege runtime database roles",
+      "Reject unsafe runtime database roles in exact images",
+      "Verify installed configuration identities, relationships and restricted capabilities",
+      "Retention policy schema and restricted capabilities",
+      "Health, readiness and SPA deep-link smoke tests",
+      "Verify embedded build identity and override resistance",
+      "Production does not expose demo reset",
+      "Verify production account defaults and prepare isolated auth fixture",
+      "Demo documented workflows without PostgreSQL or external network",
+      "API and Worker startup fail closed against exact retained images",
+      "Verify explicit Worker job scope and handler configuration",
+      "Verify enabled attachment configuration refusal in exact release images",
+      "Test PostgreSQL profile concurrency",
+      "Identity audit rollback, logout waits and one-connection commands",
+      "Session-bound logout and deactivation receipts against exact release API",
+      "Current and legacy credential-checked sign-in retries against exact release API",
+      "Authentication lifecycle privacy against exact release API",
+      "Atomic registration retries against exact release API",
+      "Invitation-backed closed registration and atomic expiry against exact release API",
+      "Verified-email invitation discovery and retry-safe acceptance",
+      "Atomic invitation creation retries against exact release API",
+      "Private board discovery and revoked membership against restricted PostgreSQL runtime",
+      "Board member canonical events, receipts, Worker delivery and revoked recovery against exact release images",
+      "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL",
+      "Board grants, lifecycle freezes and original receipt recovery against exact API and restricted PostgreSQL",
+      "Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime",
+      "Board administrator demotion continuity and atomic recovery",
+      "Work command and audit rollback against exact release API",
+      "Organization audit rollback, revoked actor waits and concurrent owner departures",
+      "Automatic Organization metadata delivery with typed queue isolation",
+      "Automatic recipient authority pages and restart against exact Worker image",
+      "Automatic Board recipient authority pages and restart against exact Worker image",
+      "Organization request and terminal recipient authority against exact Worker image",
+      "Canonical issuer deactivation and bounded authority routing against exact Worker image",
+      "Account deactivation and Organization active-owner continuity",
+      "Authorized bounded Organization member directory and post-wait revocation",
+      "Authorized global search, literal matching, cursor binding and archived scope through exact release images",
+      "Deleted and moved Card content admission across search inbox and notification history through exact release images",
+      "Organization terminal search and notification withdrawal after issuing-session logout or account deactivation through exact API and Worker images",
+      "Account-bound navigation observations through exact release proxy and API",
+      "Durable work retry keys against exact release API",
+      "Bounded archives, confirmed deletion and atomic List copies",
+      "Transactional labels, atomic association removal and post-wait receipt authorization",
+      "Bounded Board members, atomic Card assignments and post-wait revocation through exact release images",
+      "Personal watch revisions, atomic publication and post-wait revocation through exact release images",
+      "Atomic username mentions, source notifications and redaction history through exact release images",
+      "Protected activity history, post-wait access/session admission and persisted cursor restart through exact release images",
+      "Cross-Board Card movement, original receipt admission and atomic reference rollback through exact release images",
+      "Independent Card copy, destination Watch notification and atomic late-publication rollback through exact release images",
+      "UTC Card dates, atomic notification rollback and private retry recovery through exact release images",
+      "Authorized URL attachments, receipts, metadata paging and atomic rollback against exact release images",
+      "Authorized checklist creation, ordered progress and atomic rollback against exact release images",
+      "Authorized configuration and lifecycle HTTP p95 through exact release images",
+      "Prepare Retain fixed Organization latency evidence",
+      "Retain fixed Organization latency evidence",
+      "Validate pinned operator Collector configuration",
+      "Verify exact-image operator metric ingestion and private-field exclusion",
+      "Verify operator warning firing and resolved delivery",
+      "Prepare Retain fixed operator collection evidence",
+      "Retain fixed operator collection evidence",
+      "Atomic Work events and leased Worker readiness against exact release images",
+      "Hosted operational lifecycle discovery and restart recovery against exact release Worker",
+      "Independent Portal grants across operational lifecycle changes against exact release API",
+      "Lifecycle session expiry during receipt publication against exact release API",
+      "Archived records and configuration history across operational lifecycle changes",
+      "Organization configuration tenant-scoped usage",
+      "Retention policy authorized commands and private history against exact release API",
+      "Stop release topology",
+      "Post Run actions/checkout@v7",
+      "Complete job"
+    ],
+    "navigationFooter": [
+      "2026-10-18T16:09:55.9436342Z Exact-image navigation: proxy routing, account binding, canonical originals, concurrent replay, private scope, stale revision and archived-parent refusal passed."
+    ],
+    "method": "Whole completed current provider job and actual decoded log",
+    "limits": "A command-group pass does not satisfy the remaining native browser/release checks or managed-provider operation. No assertion count invented."
+  },
+  "notifications": {
+    "at": "2026-10-18 17:23:49 UTC",
+    "head": "bbf21db5853d95fcf6a20ff7ad5175b923b931cb",
+    "actualSynthetic": "0443965e27bd157e3af679efdfbacde016a5dc0b",
+    "run": 39137769087,
+    "job": 117716356387,
+    "status": "success",
+    "passedExecutions": 93,
+    "failedExecutions": 0,
+    "nativeScopes": [
+      {
+        "name": "Recipient calendar through actual invitation proof",
+        "passed": 4,
+        "footer": "2026-10-18T16:07:42.4410906Z   4 passed (3.3m)"
+      },
+      {
+        "name": "Accessible keyboard verification/recovery through Worker delivery",
+        "passed": 2,
+        "footer": "2026-10-18T16:10:07.2684372Z   2 passed (2.3m)"
+      },
+      {
+        "name": "Task work through provider outage",
+        "passed": 2,
+        "footer": "2026-10-18T16:14:22.8962878Z   2 passed (4.2m)"
+      },
+      {
+        "name": "Verified-account Organization departure/continuity",
+        "passed": 6,
+        "footer": "2026-10-18T16:17:17.2927383Z   6 passed (2.9m)"
+      },
+      {
+        "name": "Verified-account Board/Card management/preferences",
+        "passed": 44,
+        "footer": "2026-10-18T16:49:46.1039687Z   44 passed (32.5m)"
+      },
+      {
+        "name": "Source classification/original recovery",
+        "passed": 14,
+        "footer": "2026-10-18T16:58:41.2535932Z   14 passed (8.9m)"
+      },
+      {
+        "name": "Watch producers through private native inboxes",
+        "passed": 7,
+        "footer": "2026-10-18T17:07:33.6776599Z   7 passed (8.9m)"
+      },
+      {
+        "name": "Assignment/mention/reminder native delivery",
+        "passed": 9,
+        "footer": "2026-10-18T17:17:25.9762291Z   9 passed (9.9m)"
+      },
+      {
+        "name": "Watch/permission ordering through observed database waits",
+        "passed": 5,
+        "footer": "2026-10-18T17:22:13.0504364Z   5 passed (4.7m)"
+      }
+    ],
+    "mailCommandChecks": "Passed as part of the completed job; scoped provider fixtures, separate Worker delivery, signing/rotation/verification/reset/replay and receipt/rollback controls",
+    "method": "Whole current completed-success job plus all nine actual native scope footers, 93 passing case executions. Not a count of unique product capabilities.",
+    "limits": "Explicit isolated providers and exact runtime images, not independently managed-provider deployment readiness. Do not add overlapping executions to a unique feature count. Browser-full1 remains Failed; full2/3/4 and required/release pending."
+  },
+  "interpretation": "Full browser1 failed 120pass/1fail; no initial Board write or draft input. Three other full groups remain in progress; required/release gates are not yet created. Completed source/security/CodeQL and commands/foundation/notifications passes remain scoped, not a passing release. All raw traces stay private; provider artifact digest verified."
+}

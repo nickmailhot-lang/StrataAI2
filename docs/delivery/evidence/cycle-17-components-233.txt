@@ -1,0 +1,15 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/kanban/focusBoardReturn.test.ts src/app/SurfaceAdmission.return.test.tsx src/app/SurfaceAdmission.test.tsx src/features/auth/AuthPage.return.test.tsx src/app/App.test.tsx src/app/InternalAppShell.test.tsx src/app/navigationModel.test.ts src/features/organizations/OrganizationHome.test.tsx src/features/organizations/OrganizationHome.focus.test.tsx src/features/kanban/BoardScreen.test.tsx src/features/kanban/BoardScreen.drag.test.tsx src/features/kanban/CardCreationActor.test.tsx src/features/kanban/ListCreationActor.test.tsx src/features/kanban/CreationAdmissionBusy.test.tsx src/features/kanban/CardDetailEditor.test.tsx
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle17-card-return-scroll/apps/web
+
+
+ Test Files  15 passed (15)
+      Tests  233 passed (233)
+   Start at  17:05:10
+   Duration  157.51s (import 65%, tests 24%, environment 8%, transform 2%, setup 1%)
+
+     Import  227 modules were evaluated 903 times · 188.15s total, 65% of tracked time
+             ~56.36s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

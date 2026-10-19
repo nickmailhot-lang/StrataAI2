@@ -1,0 +1,1 @@
+Valid: 1561 work items; 3836 criteria. No unsupported Done claims.

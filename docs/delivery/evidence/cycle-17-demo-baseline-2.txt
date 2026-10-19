@@ -1,0 +1,74 @@
+
+Running 2 tests using 1 worker
+
+(node:4880) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\checklist-board-context.spec.ts:9:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 1280px (5.3s)
+(node:38328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\checklist-board-context.spec.ts:9:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 390px (4.1s)
+
+
+  1) tests\browser\checklist-board-context.spec.ts:9:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 1280px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 20
+    Received: 16
+
+      85 |       await pressAdmittedAction(dialog.getByRole('button', { name: 'Close', exact: true }));
+      86 |       await expect(dialog).toHaveCount(0); await expect(page).toHaveURL(boardPath); await expect(cardLink).toBeFocused();
+    > 87 |       expect(await canvas.evaluate(node => node.scrollLeft)).toBe(left);
+         |                                                              ^
+      88 |       expect(await column.evaluate(node => node.scrollTop)).toBe(top);
+      89 |       expect(edits).toBe(1); expect(moves).toBe(0); expect(documents).toBe(1);
+      90 |       const final = await context.request.get(`/boards/${board}`); expect(final.status()).toBe(200);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle17-card-return-scroll\tests\browser\checklist-board-context.spec.ts:87:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle17-demo-verified-baseline-checklist-2\checklist-board-context-PR-ce26d-ll-and-Card-focus-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle17-demo-verified-baseline-checklist-2\checklist-board-context-PR-ce26d-ll-and-Card-focus-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle17-demo-verified-baseline-checklist-2\checklist-board-context-PR-ce26d-ll-and-Card-focus-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle17-demo-verified-baseline-checklist-2\checklist-board-context-PR-ce26d-ll-and-Card-focus-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\checklist-board-context.spec.ts:9:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 390px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 20
+    Received: 16
+
+      85 |       await pressAdmittedAction(dialog.getByRole('button', { name: 'Close', exact: true }));
+      86 |       await expect(dialog).toHaveCount(0); await expect(page).toHaveURL(boardPath); await expect(cardLink).toBeFocused();
+    > 87 |       expect(await canvas.evaluate(node => node.scrollLeft)).toBe(left);
+         |                                                              ^
+      88 |       expect(await column.evaluate(node => node.scrollTop)).toBe(top);
+      89 |       expect(edits).toBe(1); expect(moves).toBe(0); expect(documents).toBe(1);
+      90 |       const final = await context.request.get(`/boards/${board}`); expect(final.status()).toBe(200);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle17-card-return-scroll\tests\browser\checklist-board-context.spec.ts:87:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle17-demo-verified-baseline-checklist-2\checklist-board-context-PR-1850e-oll-and-Card-focus-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle17-demo-verified-baseline-checklist-2\checklist-board-context-PR-1850e-oll-and-Card-focus-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle17-demo-verified-baseline-checklist-2\checklist-board-context-PR-1850e-oll-and-Card-focus-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle17-demo-verified-baseline-checklist-2\checklist-board-context-PR-1850e-oll-and-Card-focus-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\browser\checklist-board-context.spec.ts:9:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 1280px 
+    tests\browser\checklist-board-context.spec.ts:9:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 390px 

@@ -1,0 +1,22 @@
+npm notice run @strataai/web@0.1.0 build
+npm notice run tsc --noEmit && vite build --outDir C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-rollback-dist
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 12057 modules transformed.
+
+(!) outDir C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-rollback-dist is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+rendering chunks...
+computing gzip size...
+../../../cycle18-rollback-dist/build-metadata.json            0.07 kB │ gzip:   0.08 kB
+../../../cycle18-rollback-dist/index.html                     0.57 kB │ gzip:   0.34 kB
+../../../cycle18-rollback-dist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB
+../../../cycle18-rollback-dist/assets/index-DhQx4yNu.js   1,626.76 kB │ gzip: 452.97 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.17s

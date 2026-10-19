@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
@@ -40,7 +41,7 @@ for (const width of [1280, 390]) {
       const reads = trackBoardReads(page, board, path); await page.goto(path);
       await expect.poll(reads).toBeGreaterThanOrEqual(2);
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
-      await openAdmittedReview(page.getByRole('button', { name: 'Create label', exact: true }), page.getByRole('dialog', { name: 'Create Board label', exact: true }));
+      await openAdmittedReview((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Create label', exact: true })), page.getByRole('dialog', { name: 'Create Board label', exact: true }));
       await page.getByLabel('Label name (optional)', { exact: true }).fill('Release ready');
       const dialog = page.getByRole('dialog', { name: 'Create Board label', exact: true });
       await pressAdmittedAction(dialog.getByRole('button', { name: 'Create', exact: true }));

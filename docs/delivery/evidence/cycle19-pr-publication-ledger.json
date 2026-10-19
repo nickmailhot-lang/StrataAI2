@@ -1,0 +1,7 @@
+{
+  "revision": "a2bc69b60740acd2321deec50695a47e969eda6c",
+  "rawArtifact": "cycle19-pr-publication.json",
+  "rawSha256": "dc4bce1749a71d03c3603bc1ed8c765f24011d48132da3ddd132df0f29fc8cea",
+  "scope": "Actual focusedDraft111published/attached, heada2bc69b6/base608, baselineadpushed; publicationactiononly, notintegration/featureacceptance.",
+  "rawUtf8Text": "{\n  \"at\": \"2026-10-18T05:44:15Z\",\n  \"url\": \"https://github.com/nickmailhot-lang/StrataAI2/pull/111\",\n  \"number\": 111,\n  \"title\": \"Keep concurrent Board and account reads available during navigation\",\n  \"head\": \"a2bc69b60740acd2321deec50695a47e969eda6c\",\n  \"base\": \"608549254397bfc9669e27defc23fbabc7fa2abc\",\n  \"headBranch\": \"delivery/navigation-lock-order-20261017\",\n  \"baseBranch\": \"delivery/organization-actions-20261017\",\n  \"draft\": true,\n  \"actualTestSource\": \"ce3313e7fd9b43cb4df216d85bf5d8a59fb10923\",\n  \"baselineSource\": \"ad7ed385da9d2eb3e6641dd18f73aaea9b3dda87\",\n  \"scope\": \"Focused draft publication only, not main integration or MVP acceptance. Head remains frozen; later API completion belongs in next ledger cycle.\"\n}\n"
+}

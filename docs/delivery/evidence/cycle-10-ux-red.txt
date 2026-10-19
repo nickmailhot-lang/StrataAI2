@@ -1,0 +1,125 @@
+
+Running 4 tests using 1 worker
+
+(node:5964) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 1280px (5.9s)
+  x  2 tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 768px (3.2s)
+(node:36808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 390px (4.8s)
+(node:34272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 320px (3.9s)
+
+
+  1) tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 768px 
+
+    Error: Rename acknowledgment must not squeeze otherwise fitting List-name words into fragments
+
+    expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 160.703125
+    Received:    75.984375
+
+      49 |       return { available: element.getBoundingClientRect().width, word: Math.max(...element.textContent!.split(/\s+/).map(word => context.measureText(word).width)) };
+      50 |     });
+    > 51 |     expect(readability.available, 'Rename acknowledgment must not squeeze otherwise fitting List-name words into fragments').toBeGreaterThanOrEqual(readability.word);
+         |                                                                                                                              ^
+      52 |     const move = page.getByRole('button', { name: 'Move Planning renamed list', exact: true });
+      53 |     const position = page.getByRole('combobox', { name: 'Position for Planning renamed', exact: true });
+      54 |     await openAdmittedReview(move, position);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle10-list-audit\tests\browser\list-management-ux.spec.ts:51:126
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle10-list-ux-red\list-management-ux-PRD-07--9f631-and-reorder-return-at-768px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle10-list-ux-red\list-management-ux-PRD-07--9f631-and-reorder-return-at-768px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle10-list-ux-red\list-management-ux-PRD-07--9f631-and-reorder-return-at-768px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle10-list-ux-red\list-management-ux-PRD-07--9f631-and-reorder-return-at-768px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 390px 
+
+    Error: expect(received).toMatchObject(expected)
+
+    - Expected  - 3
+    + Received  + 3
+
+      Object {
+        "focused": true,
+    -   "muiVisible": true,
+    -   "outline": "solid",
+    +   "muiVisible": false,
+    +   "outline": "none",
+        "visible": true,
+    -   "width": "2px",
+    +   "width": "0px",
+      }
+
+      73 |     const focus = await move.evaluate(element => ({ focused: document.activeElement === element, visible: element.matches(':focus-visible'),
+      74 |       muiVisible: element.classList.contains('Mui-focusVisible'), outline: getComputedStyle(element).outlineStyle, width: getComputedStyle(element).outlineWidth }));
+    > 75 |     expect(focus).toMatchObject({ focused: true, visible: true, muiVisible: true, outline: 'solid', width: '2px' });
+         |                   ^
+      76 |     await test.info().attach(`list-order-focus-${width}.json`, { contentType: 'application/json', body: JSON.stringify(focus) });
+      77 |     await page.screenshot({ path: test.info().outputPath(`list-order-return-${width}.png`) });
+      78 |     const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200); const final = await canonical.json();
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle10-list-audit\tests\browser\list-management-ux.spec.ts:75:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle10-list-ux-red\list-management-ux-PRD-07--8e22f-and-reorder-return-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle10-list-ux-red\list-management-ux-PRD-07--8e22f-and-reorder-return-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle10-list-ux-red\list-management-ux-PRD-07--8e22f-and-reorder-return-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle10-list-ux-red\list-management-ux-PRD-07--8e22f-and-reorder-return-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 320px 
+
+    Error: Rename acknowledgment must not squeeze otherwise fitting List-name words into fragments
+
+    expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 80.3515625
+    Received:    64.0625
+
+      49 |       return { available: element.getBoundingClientRect().width, word: Math.max(...element.textContent!.split(/\s+/).map(word => context.measureText(word).width)) };
+      50 |     });
+    > 51 |     expect(readability.available, 'Rename acknowledgment must not squeeze otherwise fitting List-name words into fragments').toBeGreaterThanOrEqual(readability.word);
+         |                                                                                                                              ^
+      52 |     const move = page.getByRole('button', { name: 'Move Planning renamed list', exact: true });
+      53 |     const position = page.getByRole('combobox', { name: 'Position for Planning renamed', exact: true });
+      54 |     await openAdmittedReview(move, position);
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle10-list-audit\tests\browser\list-management-ux.spec.ts:51:126
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle10-list-ux-red\list-management-ux-PRD-07--3f3cf-and-reorder-return-at-320px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle10-list-ux-red\list-management-ux-PRD-07--3f3cf-and-reorder-return-at-320px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle10-list-ux-red\list-management-ux-PRD-07--3f3cf-and-reorder-return-at-320px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle10-list-ux-red\list-management-ux-PRD-07--3f3cf-and-reorder-return-at-320px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 768px 
+    tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 390px 
+    tests\browser\list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 320px 
+  1 passed (22.2s)

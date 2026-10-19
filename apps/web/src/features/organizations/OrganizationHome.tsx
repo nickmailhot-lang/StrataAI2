@@ -1,6 +1,6 @@
 import { organizationNavigation } from '../../app/navigationModel';
 import { ActionRow } from '../../components/ActionRow';
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -30,6 +30,7 @@ import { watchOrganizationMetadata } from './organizationMetadataLive';
 import { watchOrganizationLifecycle, type OrganizationLifecycleState } from './organizationLifecycleLive';
 import { OrganizationCreationDialog } from './OrganizationCreationDialog';
 import { organizationTypeLabel } from './organizationTypes';
+import { SecondaryActions } from '../../app/SecondaryActions';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
 
 type OrganizationSummary = {
@@ -102,6 +103,15 @@ export function OrganizationHome() {
   );
 }
 function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
+  const actionsOpen = useRef(false);
+  const actionsElement = useRef<HTMLDetailsElement | null>(null);
+  // Admission recovery removes every old action. Retain only the user's public
+  // expansion choice, then apply it to the newly authorized disclosure.
+  const rememberActions = useCallback((element: HTMLDetailsElement | null) => {
+    if (actionsElement.current) actionsOpen.current = actionsElement.current.open;
+    actionsElement.current = element;
+    if (element) element.open = actionsOpen.current;
+  }, []);
   const [data, setData] = useState<Discovery>();
   const [loadError, setLoadError] = useState<Error>();
   const [reload, setReload] = useState(0);
@@ -110,6 +120,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   // same-page admission recovery while private directory content is withdrawn.
   const [paging, setPaging] = useState<{ after?: string; next: string | null }>();
   const [creating, setCreating] = useState(false);
+  const [creationContainer, setCreationContainer] = useState<HTMLDivElement | null>(null);
+  const creationRecoveryFocus = useRef<HTMLElement | undefined>(undefined);
+  const creationRetirementFocus = useRef<HTMLElement | undefined>(undefined);
   const [busy, setBusy] = useState(false);
   const mutation = useRef(new WorkMutationIntent());
   const pageFocus = useRef(false);
@@ -171,6 +184,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
       if (controller.signal.aborted) return;
       setPaging(undefined);
       setLiveActor(undefined); setData(undefined);
+      if (reason instanceof WorkRequestError && [401, 403, 404].includes(reason.status)) {
+        setCreating(false); creationRecoveryFocus.current = undefined;
+      }
       if (reason instanceof WorkRequestError && reason.status === 401) {
         actor.current = undefined; setLifecycleActor(undefined); lifecycle.current = undefined; setLifecycleState(undefined);
         navigate("/login", { replace: true });
@@ -185,8 +201,11 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   }, [organizationId, cursor, reload, navigate, lifecycleState]);
   useEffect(() => {
     if (!organizationId || !lifecycleActor) return;
-    const withdraw = () => {
-      read.current?.abort(); setData(undefined); setPaging(undefined); setLoadError(undefined); setError(undefined); setCreating(false); setLiveActor(undefined);
+    const withdraw = (retireCreation = true) => {
+      if (!retireCreation && document.activeElement instanceof HTMLElement && creationContainer?.contains(document.activeElement))
+        creationRecoveryFocus.current = document.activeElement;
+      read.current?.abort(); setData(undefined); setPaging(undefined); setLoadError(undefined); setLiveActor(undefined);
+      if (retireCreation) { setError(undefined); setCreating(false); creationRecoveryFocus.current = undefined; }
     };
     return watchOrganizationLifecycle({ organizationId, userId: lifecycleActor,
       update: state => {
@@ -195,7 +214,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
         setLiveNotice(state === 'COMPLETED' ? 'Organization deletion confirmed complete.' : 'Organization deletion is being confirmed.');
       },
       unavailable: () => {
-        lifecycle.current = undefined; setLifecycleState(undefined); withdraw();
+        lifecycle.current = undefined; setLifecycleState(undefined); withdraw(false);
         setLiveNotice('Checking current Organization lifecycle and access.'); setReload(value => value + 1);
       },
       accountUnavailable: () => {
@@ -203,35 +222,52 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
         withdraw(); setLiveNotice(undefined); navigate('/login', { replace: true });
       },
     });
-  }, [organizationId, lifecycleActor, navigate]);
+  }, [organizationId, lifecycleActor, navigate, creationContainer]);
   useEffect(() => {
     if (!organizationId || !liveActor) return;
-    const recover = (message: string) => {
+    const recover = (message: string, retireUnsubmitted = false) => {
       // Ordinary stream teardown may report a queued disconnect after the
       // lifecycle stream has withdrawn graph access. Keep that current fact
       // until the lifecycle stream itself rechecks it.
       if (lifecycle.current === 'PENDING' || lifecycle.current === 'COMPLETED') return;
+      if (retireUnsubmitted && !mutation.current.hasPending) {
+        const owner = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
+        creationRetirementFocus.current = owner && creationContainer?.contains(owner) ? owner
+          : owner === document.body ? creationRecoveryFocus.current : undefined;
+        creationRecoveryFocus.current = undefined; creationFocus.current = false;
+        setCreating(false); setError(undefined);
+      } else if (document.activeElement instanceof HTMLElement && creationContainer?.contains(document.activeElement))
+        creationRecoveryFocus.current = document.activeElement;
       read.current?.abort(); setData(undefined); setLoadError(undefined);
-      setCreating(false); setLiveNotice(message); setReload(value => value + 1);
+      setLiveNotice(message); setReload(value => value + 1);
     };
     const stopBoards = watchOrganizationBoards({ organizationId, userId: liveActor, audience: 'discovery',
       invalidate: () => recover("Boards changed. Checking current access."),
-      reset: () => recover("Checking current Board access."),
+      reset: established => recover("Checking current Board access.", established === true),
       unavailable: () => recover("Live updates interrupted. Checking current access.") });
     const stopMetadata = watchOrganizationMetadata({ organizationId, userId: liveActor,
       invalidate: () => recover('Organization changed. Checking current access.'),
       reset: () => recover('Checking current Organization metadata.'),
       unavailable: () => recover('Live Organization updates interrupted. Checking current access.') });
     return () => { stopBoards(); stopMetadata(); };
-  }, [organizationId, liveActor]);
+  }, [organizationId, liveActor, creationContainer]);
+  useLayoutEffect(() => {
+    if (!data) return;
+    const retiringOwner = creationRetirementFocus.current; creationRetirementFocus.current = undefined;
+    if (retiringOwner && (document.activeElement === document.body || document.activeElement === retiringOwner))
+      createButton.current?.focus();
+    const owner = creationRecoveryFocus.current; creationRecoveryFocus.current = undefined;
+    if (owner?.isConnected && !owner.matches(':disabled')
+      && (document.activeElement === document.body || document.activeElement === owner)) owner.focus({ preventScroll: true });
+  }, [data]);
   useLayoutEffect(() => {
     if (!data || !pageFocus.current) return;
     pageFocus.current = false;
     (cursor ? firstPage.current : nextPage.current ?? heading.current)?.focus();
   }, [data, cursor]);
   useEffect(() => {
-    if (data && creationFocus.current) { creationFocus.current = false; createButton.current?.focus(); }
-  }, [data]);
+    if (data && !creating && creationFocus.current) { creationFocus.current = false; createButton.current?.focus(); }
+  }, [data, creating]);
   const organization = data?.organizations.find(
     (item) => item.organization.id === organizationId,
   )?.organization;
@@ -239,7 +275,8 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   const nextCursor = paging?.after === cursor ? paging?.next : undefined;
   async function create(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    const originalActor = actor.current;
+    if (busy || !data || !originalActor || liveActor !== originalActor) return;
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") ?? "").trim();
     if (!name) {
@@ -251,7 +288,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
     try {
       if (organizationId) {
         const board = await mutation.current.send<{ id: string }>(
-          "/boards",
+          `/boards?expectedActorId=${encodeURIComponent(originalActor)}`,
           "POST",
           {
             organizationId,
@@ -334,18 +371,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               <Typography>{organization.description}</Typography>
             )}
             <ActionRow sx={{ gap: 2 }}>
-              {organizationNavigation(organizationId, currentOrganization).map(item =>
-                <Button key={item.id} component={Link} to={item.to}>{item.label}</Button>)}
-              <Button disabled={creating && !organizationId}
-                onClick={() => {
-                  setData(undefined);
-                  setReload((value) => value + 1);
-                }}
-              >
-                Refresh
-              </Button>
               {(!organizationId || organization?.status === 0) && (
                 <Button
+                  variant="contained"
                   ref={createButton} disabled={creating}
                   onClick={() => {
                     setError(undefined);
@@ -355,6 +383,18 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
                   Create {organizationId ? "board" : "organization"}
                 </Button>
               )}
+              <Button disabled={creating && !organizationId}
+                onClick={() => {
+                  setData(undefined);
+                  setReload((value) => value + 1);
+                }}
+              >
+                Refresh
+              </Button>
+              {organizationId && <SecondaryActions label="Organization actions" detailsRef={rememberActions}>
+                {organizationNavigation(organizationId, currentOrganization).map(item =>
+                  <Button key={item.id} component={Link} to={item.to} sx={{ minHeight: 44 }}>{item.label}</Button>)}
+              </SecondaryActions>}
             </ActionRow>
             {organizationId ? (
               data.boards.length === 0 ? (
@@ -397,10 +437,16 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
         {creating && !organizationId && liveActor && <OrganizationCreationDialog actorId={liveActor}
           onCancel={() => { creationFocus.current = true; setCreating(false); setData(undefined); setReload(value => value + 1); }}
           onCreated={id => { setCreating(false); navigate(`/app/${id}`); }} />}
-        {creating && organizationId && <Dialog
+        {/* Keep only the original draft mounted during uncertain admission. Its
+            portal and controls are hidden until the same actor is revalidated. */}
+        <Box ref={setCreationContainer} hidden={!data} sx={{ display: data ? 'contents' : 'none' }}>
+        {creating && organizationId && creationContainer && <Dialog
+          container={creationContainer}
+          disableAutoFocus={!data}
+          disableEnforceFocus={!data}
           open={creating}
           onClose={() => {
-            if (!busy) setCreating(false);
+            if (!busy) { creationFocus.current = true; setCreating(false); }
           }}
           fullWidth
           maxWidth="sm"
@@ -447,7 +493,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               )}
             </DialogContent>
             <DialogActions>
-              <Button disabled={busy} onClick={() => setCreating(false)}>
+              <Button disabled={busy} onClick={() => { creationFocus.current = true; setCreating(false); }}>
                 Cancel
               </Button>
               <Button disabled={busy} type="submit">
@@ -456,6 +502,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
             </DialogActions>
           </Box>
         </Dialog>}
+        </Box>
       </Stack>
     </Container>
   );

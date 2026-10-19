@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-17T23:32:59.378Z",
+  "revision": "e7cb996554f51360216c19f7ec4baab3718d91cb",
+  "actualCompiledProduct": "d5253673eab1e240649419eb1d8e937d17da8421",
+  "captures": [
+    {
+      "width": 1280,
+      "name": "work-navigation-viewport-1280.png",
+      "sha256": "9733b9fbe8f66f1eae448668e93b92e63739a83de4448b42c3c9e09bb5620381"
+    },
+    {
+      "width": 768,
+      "name": "work-navigation-viewport-768.png",
+      "sha256": "3969f6a76bbac9fa7fcb8a7687fde6f4ce392d46daca87db67759ee717792092"
+    },
+    {
+      "width": 390,
+      "name": "work-navigation-viewport-390.png",
+      "sha256": "c1e90567faeb581ede7801a4ec89952c9ffbb50b34cc62f378725cff840706b0"
+    },
+    {
+      "width": 320,
+      "name": "work-navigation-viewport-320.png",
+      "sha256": "2c1ff99477f624f43a36ff6cbc4fdf02dc376937a6735674418d09a7ee83ece0"
+    }
+  ],
+  "reviewer": "delivery-agent",
+  "visual": "All four actual viewport-only captures inspected. Work has visible selected/focus outlines; desktop and200% tablet header does not cover it. Phone320/390 drawer has readable Organizations/Work/Notifications and Close; no unavailable placeholders or horizontal page overflow. Existing Organization/Notifications labels wrap at200% within the narrow fixed sidebar; no new clipping of Work. Full-page fixed-header positions were not treated as viewport proof. Initial Recovering board updates caption is visible in some captures and does not certify live convergence; broader CI remains required.",
+  "productEquality": "Complete app/unit/build/backend inputs exactly equal actuald5253673. Current160/build/lint results stay at that source, without rebuilding/relabeling. Current stronger browser types/native4 execute ate7cb9965. Complete frontend and original21 are pending.",
+  "scope": "Only NAV01/02 and focused taskAC01/02 are locally verified here. NAV03/Organization disclosure, corrected cross-Organization full Board comparison, original21, complete frontend, exact immutable/main integration and broader PRDs remain open."
+}

@@ -72,22 +72,33 @@ mkfifo "$scratch/interaction-gate"
 docker compose -f compose.release.yml exec -T postgres sh -c 'psql -X -qAt -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
   < "$scratch/interaction-gate" > "$scratch/interaction-gate.log" 2>&1 & gate_pid=$!
 exec 3> "$scratch/interaction-gate"
-printf "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','%s',true); SELECT id FROM organizations WHERE id='%s' FOR SHARE; SELECT id FROM boards WHERE id='%s' FOR UPDATE; SELECT 'board-held';\n" "$org" "$org" "$board" >&3
+printf "BEGIN; SET LOCAL ROLE strataai_api_runtime; SELECT set_config('app.tenant_id','%s',true); SELECT id FROM organizations WHERE id='%s' FOR SHARE; SELECT id FROM boards WHERE id='%s' FOR UPDATE; SELECT 'board-backend:' || pg_backend_pid(); SELECT 'board-held';\n" "$org" "$org" "$board" >&3
 for ((attempt=0; attempt<100; attempt++)); do
   if grep -q '^board-held$' "$scratch/interaction-gate.log"; then break; fi
   sleep 0.1
 done
 grep -q '^board-held$' "$scratch/interaction-gate.log"
+gate_backend=$(sed -n 's/^board-backend://p' "$scratch/interaction-gate.log")
+[[ "$gate_backend" =~ ^[0-9]+$ ]]
+# The owning C# transaction now waits at its Board parent before retaining
+# account/history locks. Observe that exact read and this fixture's blocker;
+# a wait in the later append function or an unrelated request is insufficient.
+parent_wait_count() {
+  admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE 'SELECT id FROM boards WHERE tenant_id=% AND id=% AND lifecycle_state=''ACTIVE'' FOR SHARE%' AND $gate_backend=ANY(pg_blocking_pids(pid));"
+}
 observe owner "$actor" "$(uuid)" "kind=board&organizationId=$org&boardId=$board&version=$board_version" > "$scratch/lock-order.status" & observation_pid=$!
 for ((attempt=0; attempt<100; attempt++)); do
-  if test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%append_or_replay_navigation_interaction%';")" = 1; then break; fi
+  if test "$(parent_wait_count)" = 1; then break; fi
   sleep 0.1
 done
-test "$(admin "SELECT count(*) FROM pg_stat_activity WHERE usename='strataai_api_runtime' AND wait_event_type='Lock' AND query LIKE '%append_or_replay_navigation_interaction%';")" = 1
-printf "SELECT id FROM users WHERE id='%s' FOR SHARE; SELECT 'actor-read'; COMMIT;\n\\q\n" "$actor" >&3
+test "$(parent_wait_count)" = 1
+# An exclusive NOWAIT read also proves the observer has retained no conflicting
+# account lock. Keep the original shared read and successful reply assertions.
+printf "SELECT id FROM users WHERE id='%s' FOR UPDATE NOWAIT; SELECT 'actor-unlocked'; SELECT id FROM users WHERE id='%s' FOR SHARE; SELECT 'actor-read'; COMMIT;\n\\q\n" "$actor" "$actor" >&3
 exec 3>&-
 wait "$gate_pid"; gate_pid=''
 wait "$observation_pid"; observation_pid=''
+grep -q '^actor-unlocked$' "$scratch/interaction-gate.log"
 grep -q '^actor-read$' "$scratch/interaction-gate.log"
 test "$(cat "$scratch/lock-order.status")" = 200
 jq -e --arg actor "$actor" '.actorId==$actor and .eventType=="BOARD_OPENED"' "$scratch/response.json" >/dev/null

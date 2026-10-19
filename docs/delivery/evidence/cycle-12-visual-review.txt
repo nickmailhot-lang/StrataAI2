@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-17T22:25:45.631Z",
+  "revision": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+  "reviewer": "delivery-agent",
+  "captures": [
+    {
+      "label": "board-1280",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-native\\signin-card-return-PRD-01--fb2b3-ical-Card-→-Board-at-1280px\\revoked-board-return-1280.png",
+      "sha256": "cc7d96df9908b5419f645fb61afd78ae18ff0a8cf3b431a5ee651ceb81170871"
+    },
+    {
+      "label": "board-390",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-native\\signin-card-return-PRD-01--c867c-nical-Card-→-Board-at-390px\\revoked-board-return-390.png",
+      "sha256": "e26fc3c1c776efcdedd3d9fe8cba185c8cf6449a9dd4d58dedfd0d7040618262"
+    },
+    {
+      "label": "card-1280",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-native\\signin-card-return-PRD-01--d2b10-ical-Card-→-Board-at-1280px\\revoked-card-return-1280.png",
+      "sha256": "709fb475791c2d6ef292fe6b73cfc6f99e6fee59409d8cff6ee8739ddefb4d67"
+    },
+    {
+      "label": "card-768-200pct",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-native\\signin-card-return-PRD-01--35c09-nical-Card-→-Board-at-768px\\revoked-card-return-768.png",
+      "sha256": "124d772bb4b5f9d773971a85a222029071b4fa9962017dce5f2a5b32aad2fc06"
+    },
+    {
+      "label": "card-390",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-native\\signin-card-return-PRD-01--72b66-nical-Card-→-Board-at-390px\\revoked-card-return-390.png",
+      "sha256": "e26fc3c1c776efcdedd3d9fe8cba185c8cf6449a9dd4d58dedfd0d7040618262"
+    },
+    {
+      "label": "card-320",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-native\\signin-card-return-PRD-01--e0cb2-nical-Card-→-Board-at-320px\\revoked-card-return-320.png",
+      "sha256": "c3a3fecac00c0c598e02e64d25e2426443a4c7282f4b473883ddb2de7ee197ed"
+    },
+    {
+      "label": "outsider",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-native\\signin-card-return-PRD-01--14ae1-er-access-to-a-private-Card\\test-finished-1.png",
+      "sha256": "a910f78051cc2499f6a562af1b59b385ab96cc9a9505d6c8782261223edff5a5"
+    },
+    {
+      "label": "portal-only",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-native\\signin-card-return-PRD-01--ed938-ly-access-to-a-private-Card\\test-finished-1.png",
+      "sha256": "98382a301f656feb3f3c2652190ab4a52b0efd8a00fa648753cc1f75f3e71bfa"
+    }
+  ],
+  "result": "Scoped current rendered review passed",
+  "observations": [
+    "Inspected all six current revoked-session workflow captures plus both original outsider/Portal denial captures. Recovered canonical title, MUI field labels, visible focus and Close remain available. Current build identity is visible in the captures.",
+    "Tablet200% uses the existing local dialog scroll for Save/supporting controls, while title/focus and the Close footer remain visible. Native keyboard Save completed before the reload capture. Do not claim Save is always simultaneously visible at200%.",
+    "At320px the long focused editable title uses normal native horizontal text scrolling; complete input value and canonical record are asserted separately. The Card tile wraps its full label. No page-width overflow is observed or reported by native assertions.",
+    "Both denial captures show only generic unavailability, a safe reference, Retry and Sign in. Protected titles, Card detail and Internal navigation remain absent.",
+    "Navigation-only repair retains existing shell/theme/layout and the original safe-path allowlist. Automated Axe and rendered inspection remain separate from complete device/screen-reader/WCAG, provider/strict/HTTPS or immutable release certification."
+  ],
+  "remaining": "Current full frontend running alone. Genuine member-of-another-Organization return counterfactual has not been executed; parentAC03 remains Unverified. Exact combined immutable required CI and main integration remain open."
+}

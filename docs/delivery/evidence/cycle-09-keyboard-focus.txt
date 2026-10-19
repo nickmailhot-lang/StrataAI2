@@ -1,0 +1,38 @@
+[
+  {
+    "focused": true,
+    "keyboardFocusVisible": true,
+    "muiFocusVisible": true,
+    "outlineStyle": "solid",
+    "outlineWidth": "2px",
+    "outlineColor": "rgb(15, 76, 129)",
+    "file": "board-authority-focus-390.json"
+  },
+  {
+    "focused": true,
+    "keyboardFocusVisible": true,
+    "muiFocusVisible": true,
+    "outlineStyle": "solid",
+    "outlineWidth": "2px",
+    "outlineColor": "rgb(15, 76, 129)",
+    "file": "board-authority-focus-1280.json"
+  },
+  {
+    "focused": true,
+    "keyboardFocusVisible": true,
+    "muiFocusVisible": true,
+    "outlineStyle": "solid",
+    "outlineWidth": "2px",
+    "outlineColor": "rgb(15, 76, 129)",
+    "file": "board-authority-focus-768.json"
+  },
+  {
+    "focused": true,
+    "keyboardFocusVisible": true,
+    "muiFocusVisible": true,
+    "outlineStyle": "solid",
+    "outlineWidth": "2px",
+    "outlineColor": "rgb(15, 76, 129)",
+    "file": "board-authority-focus-320.json"
+  }
+]

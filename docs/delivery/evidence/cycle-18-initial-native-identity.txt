@@ -1,0 +1,101 @@
+{
+  "previewConfigSha256": "d8b38de5baba77eaed4eb731de9c3393fab2f9ab31d60149a271b3881f50cd82",
+  "collection": "Total: 4 tests in 1 file",
+  "workerReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "wholeDefault": "Total: 41 tests in 11 files",
+  "mode": "default",
+  "servedVariantAssets": [
+    {
+      "path": "build-metadata.json",
+      "length": 73,
+      "sha256": "3bf8946ce090ab29f2183f1f827aa309b1126669fefc88a81327b9b7c1f14b8a"
+    },
+    {
+      "path": "index.html",
+      "length": 578,
+      "sha256": "405e7e4127f87ddb20a20f71027ca3a96b7d7e6d8bade91a7143e3c3f1c81b8f"
+    },
+    {
+      "path": "assets/index-Bw_GsyDn.css",
+      "length": 561,
+      "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+    },
+    {
+      "path": "assets/index-vX5HC2Kq.js",
+      "length": 1627029,
+      "sha256": "61aa76ca19096aac1246f7b8b3e3e5e9fca53e4dd60d3d4cd0c71ba2f8f4bdc6"
+    }
+  ],
+  "actualDatabaseConnectionRoles": [
+    "strataai_api_runtime|1",
+    "strataai_worker_runtime|5"
+  ],
+  "files": [
+    "organization-actions.spec.ts"
+  ],
+  "policy": {
+    "allowSelfRegistration": true,
+    "requireVerifiedEmail": false,
+    "minimumPasswordLength": 12
+  },
+  "api": {
+    "service": "strataai-api",
+    "mode": "production",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "testRevision": "e63c6d09004ae2cda70bbb1b7e2b12b78f858bc9",
+  "hosts": [
+    {
+      "createdAt": "2026-10-17T14:51:48.356537-07:00",
+      "parentPid": 21476,
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle8-dotnet-artifacts\\bin\\StrataAI.Api\\release\\StrataAI.Api.dll",
+      "port": 18089,
+      "pid": 28452,
+      "kind": "api"
+    },
+    {
+      "createdAt": "2026-10-17T17:28:51.399364-07:00",
+      "parentPid": 24868,
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle11-worker-artifacts\\bin\\StrataAI.Worker\\release\\StrataAI.Worker.dll",
+      "port": 18093,
+      "pid": 18240,
+      "kind": "worker"
+    },
+    {
+      "createdAt": "2026-10-17T18:11:14.0964-07:00",
+      "parentPid": 38016,
+      "command": "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vite/bin/vite.js preview --config C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle18-prod-fixture\\preview-default.config.mjs",
+      "port": 15185,
+      "pid": 37232,
+      "kind": "preview"
+    }
+  ],
+  "worker": {
+    "service": "strataai-worker",
+    "mode": "production",
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "schemaMigrations": 149,
+  "at": "2026-10-18T01:13:10.6065277+00:00",
+  "web": {
+    "revision": "e63c6d09004ae2cda70bbb1b7e2b12b78f858bc9",
+    "version": "0.1.0"
+  },
+  "stage": "new",
+  "productRevision": "e63c6d09004ae2cda70bbb1b7e2b12b78f858bc9",
+  "runtimeRoles": [
+    "strataai_api_runtime|t|f|f|f|f|f|f",
+    "strataai_worker_runtime|t|f|f|f|f|f|f"
+  ],
+  "apiReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "databaseProject": "strataai-c11-invite-9ed41294",
+  "scope": "Current complete default41 manifest executes as new4 plus intact original37, with no omitted or narrowed file. Rollback8 repeats under separately hashed0 bundle at identical trusted15185 origin. Real services and controlledUX cases remain distinct. Actual API389/Worker0f and149 restricted roles retained, not relabeled. Local optional-verification fixture support, not hosted helper parity/immutable/provider/HTTPS acceptance."
+}

@@ -82,7 +82,7 @@ export function ListRenameControl({ list, snapshot, disabled, onRefresh, onBusyC
   return <>
     {admitted && !denied && <IconButton ref={action} size="small" disabled={disabled || busy || !!intent}
       aria-label={`Rename ${list.name} list`} onClick={open}><EditOutlinedIcon /></IconButton>}
-    {!review && notice && <Typography role="status" variant="body2">{notice}</Typography>}
+    {!review && notice && <Typography role="status" variant="body2" sx={{ flexBasis: '100%', minWidth: 0 }}>{notice}</Typography>}
     <Dialog open={!!review} onClose={close} disableRestoreFocus
       slotProps={{ transition: { onExited: () => action.current?.focus({ preventScroll: true }) } }} fullWidth maxWidth="sm">
       {review && <Box component="form" onSubmit={event => { event.preventDefault(); void save(); }}>

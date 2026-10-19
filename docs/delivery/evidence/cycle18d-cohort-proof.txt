@@ -1,0 +1,11 @@
+{
+  "scope": "Metadata-only snapshot. Records/history preserved; Worker bounded fresh rerun cohort, not hosted-helper parity.",
+  "priorWorkerAttempt": 157,
+  "excluded": 153,
+  "cohortSha256": "c22cfaf3b6ad62cf1ea41f8692426d2218e9469466ae9acabe7185b51a81b80f",
+  "project": "strataai-c11-invite-9ed41294",
+  "runtimeScopeLimit": 100,
+  "at": "2026-10-18T02:19:09.8962097+00:00",
+  "previousExcluded": 94,
+  "nextAttempt": 158
+}

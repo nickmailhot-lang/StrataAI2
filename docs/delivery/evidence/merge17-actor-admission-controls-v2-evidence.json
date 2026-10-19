@@ -1,0 +1,7 @@
+{
+  "revision": "10cff066e81623fce3008d0a297b9dafabb0a43f",
+  "rawArtifact": "merge17-actor-admission-controls-v2.txt",
+  "rawSha256": "4250abc9389fe1edb9edd8026b11c954e01efc973e9e976323a8b4674f2e7505",
+  "scope": "Exactsame26originalcases/fivefilespass59.59s,0fail/skip, no originalassertion/deadlinechange. Currentownedrefusalcallbackfocusesbeforepaintandagainafterretiredmodalpassivecleanup, clearsintentonlyafterfinalphase; bothphasespreservedeliberateoutsidefocus. Sameactor/receipt/retirementsemantics.",
+  "rawUtf8Text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/CardCreationActor.test.tsx src/features/kanban/ListCreationActor.test.tsx src/features/kanban/CreationAdmissionBusy.test.tsx src/features/organizations/OrganizationHome.actions.test.tsx src/features/organizations/OrganizationHome.focus.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-main/apps/web\r\n\r\n\r\n Test Files  5 passed (5)\r\n      Tests  26 passed (26)\r\n   Start at  23:50:47\r\n   Duration  59.59s (import 77%, tests 9%, environment 7%, transform 5%, setup 1%)\r\n\r\n"
+}

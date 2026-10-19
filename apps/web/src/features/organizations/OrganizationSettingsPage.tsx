@@ -1,3 +1,5 @@
+import { PageHeader } from '../../components/PageHeader';
+import { ActionRow } from '../../components/ActionRow';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -41,10 +43,16 @@ function Settings({ organizationId }: { organizationId: string }) {
   const navigate = useNavigate();
   const [record, setRecord] = useState<Summary>(); const [draft, setDraft] = useState<Draft>();
   const [latest, setLatest] = useState<Summary>(); const [busy, setBusy] = useState(false);
-  const [error, setFailure] = useState<{ message: string; reference: string | null }>(); const [notice, setNotice] = useState<string>();
-  function setError(message: string | undefined, reference: string | null = null) {
-    setFailure(message ? { message, reference: publicCorrelationReference(reference) } : undefined);
+  const [error, setFailure] = useState<{ message: string; reference: string | null; field?: 'name' | 'logoUrl' }>(); const [notice, setNotice] = useState<string>();
+  function setError(message: string | undefined, reference: string | null = null, field?: 'name' | 'logoUrl') {
+    setFailure(message ? { message, reference: publicCorrelationReference(reference), field } : undefined);
   }
+  const nameInput = useRef<HTMLInputElement>(null);
+  const logoInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (error?.field === 'name') nameInput.current?.focus();
+    if (error?.field === 'logoUrl') logoInput.current?.focus();
+  }, [error]);
   const [review, setReview] = useState(false); const [unavailable, setUnavailable] = useState(false);
   const [intent, setIntent] = useState<Intent>();
   const [liveActor, setLiveActor] = useState<string>();
@@ -135,7 +143,7 @@ function Settings({ organizationId }: { organizationId: string }) {
   async function save(event?: React.FormEvent, retry = false) {
     event?.preventDefault();
     if (pending.current || (!retry && (review || intent)) || !record || !draft) return;
-    if (!draft.name.trim() || draft.name.trim().length > 160) { setError('Enter an Organization name of at most 160 characters.'); return; }
+    if (!draft.name.trim() || draft.name.trim().length > 160) { setError('Enter an Organization name of at most 160 characters.', null, 'name'); return; }
     const proposed = intent ?? { draft: { ...draft }, version: record.organization.version, key: crypto.randomUUID(), actorId: actor.current ?? '' };
     let submitted = false;
     const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); setNotice(undefined);
@@ -170,7 +178,7 @@ function Settings({ organizationId }: { organizationId: string }) {
         const code = result.body && typeof result.body === 'object' && 'code' in result.body ? result.body.code : undefined;
         if (result.status === 400) {
           setIntent(undefined);
-          setError(code === 'invalid_organization_logo_url' ? 'Use a secure HTTPS logo URL without embedded credentials, or leave it empty.' : 'Check the Organization fields and try again.', result.reference); return;
+          setError(code === 'invalid_organization_logo_url' ? 'Use a secure HTTPS logo URL without embedded credentials, or leave it empty.' : 'Check the Organization fields and try again.', result.reference, code === 'invalid_organization_logo_url' ? 'logoUrl' : undefined); return;
         }
         setReview(true);
         if (result.status === 409) activityEvent('organization_settings_update', 'conflict');
@@ -191,7 +199,7 @@ function Settings({ organizationId }: { organizationId: string }) {
   }
   return <Container maxWidth="md" sx={{ py: 3 }}><Stack spacing={2}>
     <Button component={Link} to={`/app/${organizationId}`}>Organization boards</Button>
-    <Typography component="h1" variant="h4">Organization settings</Typography>
+    <PageHeader title="Organization settings" level="h1" />
     {record && record.role <= 1 && <Button component={Link} to={`/app/${organizationId}/operational-lifecycle`}>Organization lifecycle</Button>}
     {error && <Alert severity="error"><span>{error.message}</span>{error.reference && <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>Reference: {error.reference}</Typography>}</Alert>}
     {notice && <Alert severity="success" role="status">{notice}</Alert>}
@@ -206,14 +214,16 @@ function Settings({ organizationId }: { organizationId: string }) {
       <Typography>Description: {latest.organization.description || 'None'}</Typography>
       <Typography>Logo URL: {latest.organization.logoUrl || 'None'}</Typography>
       <Typography>Review the saved settings before replacing them with your draft.</Typography>
+      <ActionRow>
       <Button disabled={busy || !!intent} onClick={() => { setRecord(latest); setDraft(fields(latest.organization)); setLatest(undefined); setReview(false); setError(undefined); }}>Discard draft and use current settings</Button>
       <Button disabled={busy || !!intent} onClick={() => { setRecord(latest); setLatest(undefined); setReview(false); setError(undefined); setNotice('Draft retained. Saving will replace the current settings you reviewed.'); }}>Keep draft after review</Button>
+      </ActionRow>
     </Stack></Paper>}
     {record && draft && !unavailable && <Box component="form" onSubmit={event => void save(event)}><Stack spacing={2}>
-      <TextField label="Organization name" required value={draft.name} disabled={busy && !backgroundReading || !!intent} slotProps={{ htmlInput: { maxLength: 160 } }} onChange={event => { setDraft({ ...draft, name: event.target.value }); setNotice(undefined); }} />
+      <TextField label="Organization name" inputRef={nameInput} error={error?.field === 'name'} helperText={error?.field === 'name' ? 'Use 1–160 characters; spaces alone are not a name.' : undefined} required value={draft.name} disabled={busy && !backgroundReading || !!intent} slotProps={{ htmlInput: { maxLength: 160 } }} onChange={event => { setDraft({ ...draft, name: event.target.value }); setNotice(undefined); }} />
       <TextField label="Description" multiline minRows={3} value={draft.description ?? ''} disabled={busy && !backgroundReading || !!intent} onChange={event => { setDraft({ ...draft, description: event.target.value }); setNotice(undefined); }} />
-      <TextField label="Logo URL" value={draft.logoUrl ?? ''} disabled={busy && !backgroundReading || !!intent} helperText="Optional secure HTTPS URL, or leave empty." onChange={event => { setDraft({ ...draft, logoUrl: event.target.value }); setNotice(undefined); }} />
-      <Button type="submit" disabled={busy || review}>Save Organization settings</Button>
+      <TextField label="Logo URL" inputRef={logoInput} error={error?.field === 'logoUrl'} value={draft.logoUrl ?? ''} disabled={busy && !backgroundReading || !!intent} helperText={error?.field === 'logoUrl' ? 'Enter an HTTPS URL without a username or password.' : 'Optional secure HTTPS URL, or leave empty.'} onChange={event => { setDraft({ ...draft, logoUrl: event.target.value }); setNotice(undefined); }} />
+      <ActionRow><Button type="submit" disabled={busy || review}>Save Organization settings</Button></ActionRow>
     </Stack></Box>}
   </Stack></Container>;
 }

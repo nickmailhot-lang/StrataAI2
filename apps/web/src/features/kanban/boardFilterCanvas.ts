@@ -1,7 +1,7 @@
 import type { BoardSnapshot, WorkCard } from '../../api/workManagement';
 
 export type FilterCard = WorkCard & { listId: string };
-export type BoardCanvasFilter = { snapshot: BoardSnapshot; items: FilterCard[] };
+export type BoardCanvasFilter = { snapshot: BoardSnapshot; items: FilterCard[]; pending?: boolean };
 export function filterPageMatchesSnapshot(snapshot: BoardSnapshot, items: FilterCard[]): boolean {
   return items.every(item => snapshot.lists.some(column => column.list.id === item.listId && column.list.lifecycleState === 'active'
     && column.cards.some(card => card.id === item.id && card.version === item.version && card.title === item.title

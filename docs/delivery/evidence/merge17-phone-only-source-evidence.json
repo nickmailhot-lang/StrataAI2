@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-18T14:13:24.842Z",
+  "revision": "bc9c673be144567c8fc1f5e19c0c825464af945c",
+  "types": {
+    "at": "2026-10-18T14:10:58.3505019+00:00",
+    "exit": 0,
+    "scope": "Phone-only fixture precondition; desktop original setup preserved; original acceptance and limits unchanged",
+    "revision": "bc9c673be144567c8fc1f5e19c0c825464af945c"
+  },
+  "phoneOnlySetupLines": 8,
+  "remainingWholeTestBodyByteIdentical": true,
+  "originalBodySha256": "0240637b6cf54d06809fe60545d062d7060948e7ed7db8064c055078aabb5a34",
+  "currentTestSha256": "ac44e02cadb923b633b251b7f4dbf8b612ff3f604f237724fcb2bd46426efde8",
+  "originalHeadsPreserved": 17,
+  "distinctOriginalHeads": 16,
+  "excludedHeads": [
+    "ad7ed385da9d2eb3e6641dd18f73aaea9b3dda87",
+    "0438b1fd5294cf5338e81aa8086bbf45e80843e2"
+  ],
+  "uiInputRevision": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b",
+  "backendInputRevision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "productInputsEqual": true,
+  "scope": "Source/type proof only. Native timing remains Failed at276; no new bc9 native or current hosted acceptance. Main integration not complete."
+}

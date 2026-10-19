@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
@@ -39,7 +40,7 @@ for (const width of [1280, 390]) {
         const result = await route.fetch(); expect(result.status()).toBe(200);
         if (archiveRequests.length === 1) await route.abort('failed'); else await route.fulfill({ response: result });
       });
-      await openAdmittedReview(page.getByRole('button', { name: 'Archive a list', exact: true }),
+      await openAdmittedReview((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Archive a list', exact: true })),
         page.getByRole('combobox', { name: 'List to archive' }));
       await page.getByRole('combobox', { name: 'List to archive' }).click();
       await page.getByRole('option', { name: 'Planning', exact: true }).focus(); await page.keyboard.press('Enter');

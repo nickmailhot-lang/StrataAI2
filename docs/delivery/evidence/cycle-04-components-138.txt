@@ -1,0 +1,15 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --run src/features/kanban/BoardScreen.test.tsx src/features/kanban/BoardScreen.drag.test.tsx src/features/organizations/OrganizationHome.test.tsx src/features/organizations/OrganizationHome.focus.test.tsx src/app/SurfaceAdmission.test.tsx --maxWorkers=1
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/StrataAI2/apps/web
+
+
+ Test Files  5 passed (5)
+      Tests  138 passed (138)
+   Start at  09:48:17
+   Duration  165.93s (import 49%, tests 43%, environment 5%, transform 2%, setup 1%)
+
+     Import  141 modules were evaluated 300 times · 80.68s total, 49% of tracked time
+             ~42.76s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+

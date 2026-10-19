@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-17T22:09:34.855Z",
+  "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+  "reviewer": "delivery-agent",
+  "sourceDiff": "Two observation guards plus a dedicated four-case controlled regression file. Reviewed against10747dc2. No new UI, request, authorization, event, database, dependency or navigation behavior.",
+  "controlled": "Four initial failures retained; current18/18 and broader109/109 pass with real current failure/retry/privacy/refusal controls intact.",
+  "native": "Whole unchanged original Production invitation file2/2 in1.5m, zero retries/skips. Initial numeric-loopback401 and missing explicit Worker scope failures retained and corrected only in the disposable harness.",
+  "visual": "Two actual current native viewport captures inspected; current MUI shell and receipt feedback retained, normal vertical scrolling for lower receipt details. Automated Axe and rendered review remain separate.",
+  "full": {
+    "total": 2880,
+    "passed": 2856,
+    "failed": 0,
+    "skipped": 24
+  },
+  "fullDurationSeconds": 733.21,
+  "sourceContracts": "riginal capacity cases without executing them (57.9441ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (225.431ms)\r\n✔ phase guard detects eager allocation and accidental default activation (66.6655ms)\r\n✔ ARCH-02-FR-009 rejects direct and aliased browser fetch in feature clients (1339.6681ms)\r\n✔ ARCH-02-FR-009 allows the shared transport and isolated test fixtures (37.0738ms)\r\n✔ ARCH-02-FR-009 permits feature requests through apiFetch (7.6902ms)\r\nℹ tests 372\r\nℹ suites 0\r\nℹ pass 372\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 28403.5321\r\n",
+  "browserRegistry": "Browser shard coverage: 456 cases in 165 intact files; 115/116/111/114 cases across all four shards.\r\n",
+  "integrationRegistry": "Mandatory integration coverage: 4 groups/7 isolated executions, 130 registered steps\r\n",
+  "result": "Scoped source/product/UX review passed after local applicable checks. No known critical regression in the reviewed scope.",
+  "remaining": "Current combined immutable release/required-CI and actual main integration remain mandatory. No independent human review, strict/provider/HTTPS or complete MVP certification is inferred."
+}

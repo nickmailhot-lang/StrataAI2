@@ -1,0 +1,35 @@
+{
+  "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+  "actors": [
+    {
+      "originalActor": "89c7323b-fa16-47b2-a7cc-a183b543ec7e",
+      "replacementActor": "92f557f8-47d0-477e-98e4-fe41ae974f14",
+      "statuses": [
+        201,
+        401
+      ],
+      "createdIds": [
+        "e02755a8-04d8-4c4f-aca4-d59d49da6b8e",
+        null
+      ],
+      "sameKey": true,
+      "sameBody": true,
+      "canonicalListCount": 1
+    },
+    {
+      "originalActor": "15ba10c1-42ee-4a8e-9a31-74099051d6f7",
+      "replacementActor": "7cb4b101-af61-4e20-8099-65dd959d4485",
+      "statuses": [
+        201,
+        401
+      ],
+      "createdIds": [
+        "32a54ef3-2a6e-4008-bee1-0bc64e1093ec",
+        null
+      ],
+      "sameKey": true,
+      "sameBody": true,
+      "canonicalListCount": 1
+    }
+  ]
+}

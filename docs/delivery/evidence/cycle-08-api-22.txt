@@ -1,0 +1,10 @@
+The '-parallel' switch has been deprecated in favor of '-parallelMode' and will be removed in the next major version
+The '-xml' switch has been deprecated in favor of '-result-xml' and will be removed in the next major version
+
+xUnit.net v3 In-Process Runner v4.0.1+8ed8aa354c (64-bit .NET 10.0.12)
+  Discovering: StrataAI.Api.Tests
+  Discovered:  StrataAI.Api.Tests
+  Starting:    StrataAI.Api.Tests
+  Finished:    StrataAI.Api.Tests (ID = '67bc8372815e68ac73a0e0fa6f52edfd8878340d042d84993dd0673f43c1f51f')
+=== TEST EXECUTION SUMMARY ===
+   StrataAI.Api.Tests  Total: 22, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 69.987s

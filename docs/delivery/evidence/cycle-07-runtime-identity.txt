@@ -1,0 +1,15 @@
+{
+  "api": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "3bf5c2ba7598f3348143b3b5083c8c7be3be1bc8",
+    "version": "1.0.0"
+  },
+  "topology": "Compiled Demo API3bf5c2ba and compiled current web; exact server/test Git trees unchanged. Frontend-only UX repair; no new server build or immutable-release claim.",
+  "testRevision": "ccc424c8d3cef6407268f428c6af87e7c5c45531",
+  "web": {
+    "revision": "ccc424c8d3cef6407268f428c6af87e7c5c45531",
+    "version": "0.1.0"
+  },
+  "backendSourceUnchanged": true
+}

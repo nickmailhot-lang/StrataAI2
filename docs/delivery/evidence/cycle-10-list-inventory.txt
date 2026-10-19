@@ -1,0 +1,218 @@
+{
+  "sliceId": "PRD-07-VS-01",
+  "sourceRevision": "33e5c6d2176d6b8718fda2e19435c33dc40f4f91",
+  "liveRequirements": {
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/issues/8",
+    "sha256": "3bd77f27fe2b820c3cde49cdc72cbc5a8083b134a51ab043e177d3eee029bfbf",
+    "matchesFrozenBody": true,
+    "fetchArtifact": "work/cycle10-prd07-live.json"
+  },
+  "runtime": {
+    "webAndNativeSource": "33e5c6d2176d6b8718fda2e19435c33dc40f4f91",
+    "compiledApiAndApi22Execution": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "serverAndApiTestTreesUnchanged": true,
+    "topology": "Compiled local Demo API plus compiled preview; does not certify current PostgreSQL/RLS/Worker/immutable release or providers."
+  },
+  "requirements": [
+    {
+      "id": "LIST-FR-001",
+      "implementation": [
+        "apps/web/src/features/kanban/BoardScreen.tsx",
+        "src/StrataAI.Api/WorkManagement/WorkManagementEndpoints.cs",
+        "src/StrataAI.Application/WorkManagement/WorkManagementService.cs",
+        "src/StrataAI.Application/WorkManagement/TransactionalWorkManagementService.cs"
+      ],
+      "retainedBehavior": "Explicit permitted creation admission, original actor and keyed body, server CanEdit/active-parent/input checks, transactional receipt and canonical LIST_CREATED result.",
+      "currentEvidence": [
+        "EVID-CYCLE-10-SCROLL-UI-111",
+        "EVID-CYCLE-10-SCROLL-NATIVE-42",
+        "EVID-CYCLE-10-SCROLL-ACCOUNT-PROOF"
+      ],
+      "separateApiEvidence": "EVID-CYCLE-08-API-22 at actual389c70ab; no new API22 execution at33e5c6d2",
+      "remaining": "Current exact immutable Production/RLS/review/main acceptance; preserve existing parent and release criteria."
+    },
+    {
+      "id": "LIST-FR-002",
+      "implementation": [
+        "src/StrataAI.Domain/WorkManagement/BoardList.cs",
+        "src/StrataAI.Application/WorkManagement/RankToken.cs",
+        "src/StrataAI.Infrastructure/WorkManagement/PostgresWorkManagementStore.cs",
+        "src/StrataAI.Infrastructure/WorkManagement/InMemoryWorkManagementStore.cs"
+      ],
+      "retainedBehavior": "Append rank allocation and tenant-scoped board_lists insertion; rank/version remain canonical through rename and ordering. Existing PostgreSQL provider is retained.",
+      "currentEvidence": [
+        "EVID-CYCLE-10-SCROLL-NATIVE-42"
+      ],
+      "currentCases": "Creation/reload, original two-client rename preserving rank and Card records, original positioning and four-width canonical order/version/neighbor/Card preservation.",
+      "remaining": "Current immutable PostgreSQL durability/RLS and release evidence is required; local Demo does not establish database restart durability."
+    },
+    {
+      "id": "LIST-FR-003",
+      "implementation": [
+        "apps/web/src/features/kanban/ListRenameControl.tsx",
+        "apps/web/src/features/kanban/BoardScreen.tsx",
+        "src/StrataAI.Application/WorkManagement/WorkManagementService.cs",
+        "src/StrataAI.Application/WorkManagement/TransactionalWorkManagementService.cs"
+      ],
+      "retainedBehavior": "Reviewed name/version/key, recoverable lost acknowledgment, live draft/conflict recovery, permission withdrawal, stable rank and Card records. New bounded T02 changes only heading/confirmation wrapping.",
+      "tests": [
+        "apps/web/src/features/kanban/ListRenameControl.test.tsx",
+        "tests/browser/list-rename.spec.ts",
+        "tests/browser/list-management-ux.spec.ts"
+      ],
+      "currentEvidence": [
+        "EVID-CYCLE-10-SCROLL-UI-111",
+        "EVID-CYCLE-10-SCROLL-NATIVE-42",
+        "EVID-CYCLE-10-SCROLL-VISUAL-12"
+      ],
+      "remaining": "immutable role/RLS/Worker/release evidence, review and main integration remain separate required gates."
+    },
+    {
+      "id": "LIST-FR-004",
+      "implementation": [
+        "apps/web/src/features/kanban/ListPositionControls.tsx",
+        "apps/web/src/features/kanban/ListDragColumn.tsx",
+        "src/StrataAI.Application/WorkManagement/WorkManagementService.cs",
+        "src/StrataAI.Application/WorkManagement/TransactionalWorkManagementService.cs",
+        "src/StrataAI.Infrastructure/WorkManagement/PostgresWorkManagementStore.cs"
+      ],
+      "retainedBehavior": "Explicit reviewed current position/name/version/key, canonical neighbor ranks, stable invalid-position and stale-version refusal, keyboard and pointer paths, cancellation without writes. New bounded T03 restores approved owned focus and reveals its complete outline while preserving outside navigation.",
+      "tests": [
+        "apps/web/src/features/kanban/ListPositionControls.test.tsx",
+        "apps/web/src/features/kanban/ListPositionFocusVisible.test.tsx",
+        "tests/StrataAI.Api.Tests/ListPositionTests.cs",
+        "tests/browser/list-position.spec.ts",
+        "tests/browser/list-management-ux.spec.ts"
+      ],
+      "currentEvidence": [
+        "EVID-CYCLE-10-SCROLL-UI-111",
+        "EVID-CYCLE-10-SCROLL-NATIVE-42",
+        "EVID-CYCLE-10-SCROLL-VISUAL-12"
+      ],
+      "testScopeNote": "ListPositionTests.cs was inspected as retained source, not newly executed during this frontend cycle.",
+      "remaining": "immutable Production/RLS/release evidence, review and main integration remain required."
+    }
+  ],
+  "boundedGapTasks": [
+    {
+      "id": "PRD-07-VS-05",
+      "scope": "Original-account List creation and local Card return",
+      "evidence": "Retained earlier increment; current whole42 includes original account and four-width recovery consumer cases."
+    },
+    {
+      "id": "PRD-07-VS-01-T-02",
+      "scope": "Readable renamed List heading and full confirmation",
+      "state": "Current scoped acceptance verified; full/release/review/integration pending."
+    },
+    {
+      "id": "PRD-07-VS-01-T-03",
+      "scope": "Approved visible and fully unobscured owned List return focus",
+      "state": "Current scoped acceptance verified; full/release/review/integration pending."
+    }
+  ],
+  "remainingAcceptance": [
+    "PRD-07-VS-01/EXIT includes actual integration; it is not verified by these local checks.",
+    "Complete local frontend now passes 2852/0/24 existing deferrals; current immutable Production/release and actual main integration remain required.",
+    "Current exact immutable Production/RLS/real Worker/release checks and responsible review remain required.",
+    "LIST-FR-005 through012 and canonical parent criteria belong to their retained separate PRD-07 slices and remain open; this audit does not close them.",
+    "Existing 24 deferred capacity cases remain deferred under the agreed post-MVP phase; no performance or capacity completion is inferred.",
+    "No additional human approval gate is introduced by this audit. Obey any actual protected-branch review requirement; record responsible product/UX/source review explicitly."
+  ],
+  "generatedAt": "2026-10-17T21:23:25.879Z",
+  "currentVerification": {
+    "full": {
+      "total": 2876,
+      "passed": 2852,
+      "failed": 0,
+      "skipped": 24
+    },
+    "fullEvidenceId": "EVID-CYCLE-10-FULL-FRONTEND",
+    "focusedTests": {
+      "passed": 111,
+      "failed": 0,
+      "existingCapacityDeferrals": 24
+    },
+    "native": {
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0
+    },
+    "sourceContracts": 372,
+    "visualCapturesInspected": 12
+  },
+  "sourceBlobs": [
+    {
+      "path": "apps/web/src/features/kanban/BoardScreen.tsx",
+      "gitBlob": "812f26d9ca4a766aa5936108b45bb6f71f4fb13e"
+    },
+    {
+      "path": "src/StrataAI.Api/WorkManagement/WorkManagementEndpoints.cs",
+      "gitBlob": "b232597c2051c9385d962eb4d64b1066ace74822"
+    },
+    {
+      "path": "src/StrataAI.Application/WorkManagement/WorkManagementService.cs",
+      "gitBlob": "129a3500699223d7ab214732604d96f5d631a5c9"
+    },
+    {
+      "path": "src/StrataAI.Application/WorkManagement/TransactionalWorkManagementService.cs",
+      "gitBlob": "343b6f49ed800989ef57de28e7d2b5bc1788bbc6"
+    },
+    {
+      "path": "src/StrataAI.Domain/WorkManagement/BoardList.cs",
+      "gitBlob": "a359395e34233db433372543133af8131fa5fd05"
+    },
+    {
+      "path": "src/StrataAI.Application/WorkManagement/RankToken.cs",
+      "gitBlob": "bc0a766f4043b48e0b5aaa70f371cd29a81887a3"
+    },
+    {
+      "path": "src/StrataAI.Infrastructure/WorkManagement/PostgresWorkManagementStore.cs",
+      "gitBlob": "b94a7b37876b3cd1e1d211dae03d0ceb2685d2bc"
+    },
+    {
+      "path": "src/StrataAI.Infrastructure/WorkManagement/InMemoryWorkManagementStore.cs",
+      "gitBlob": "528d430b97816c93b76466263d631338a23e73ec"
+    },
+    {
+      "path": "apps/web/src/features/kanban/ListRenameControl.tsx",
+      "gitBlob": "0bec918a4cc6dfc0dee0e43bed43e13b3b28e228"
+    },
+    {
+      "path": "apps/web/src/features/kanban/ListRenameControl.test.tsx",
+      "gitBlob": "d961912e188f02dcea6bac7edf30fbc9f524f22b"
+    },
+    {
+      "path": "tests/browser/list-rename.spec.ts",
+      "gitBlob": "24e413ff3dcec98928030fb4951f656269cd8c5c"
+    },
+    {
+      "path": "tests/browser/list-management-ux.spec.ts",
+      "gitBlob": "260f7d71e3ec43a6190ad4c5d1d3d1172e715ef5"
+    },
+    {
+      "path": "apps/web/src/features/kanban/ListPositionControls.tsx",
+      "gitBlob": "981f7ae169deaecfd051b46edf5179ebf33df763"
+    },
+    {
+      "path": "apps/web/src/features/kanban/ListDragColumn.tsx",
+      "gitBlob": "3a16f635a0353a4af9f430f74d442a5c92fdfefe"
+    },
+    {
+      "path": "apps/web/src/features/kanban/ListPositionControls.test.tsx",
+      "gitBlob": "a3d43b129429734589b169022dd5a107e48bddaf"
+    },
+    {
+      "path": "apps/web/src/features/kanban/ListPositionFocusVisible.test.tsx",
+      "gitBlob": "407355931d5813c6a8690d21e8973ac661c207ee"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/ListPositionTests.cs",
+      "gitBlob": "fb1fc517473b18e0fc41f75ed548ec3a22ac6065"
+    },
+    {
+      "path": "tests/browser/list-position.spec.ts",
+      "gitBlob": "92cdb008e88179ba7fa4aeca9eafd21ad1922965"
+    }
+  ]
+}

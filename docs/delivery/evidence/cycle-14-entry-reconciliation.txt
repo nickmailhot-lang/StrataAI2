@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-17T23:05:06.007Z",
+  "revision": "ae9185045314645caef3a35247c1ecaed111548f",
+  "livePrd01UpdatedAt": "2026-10-17T19:29:24Z",
+  "livePrd02UpdatedAt": "2026-10-16T18:03:14Z",
+  "liveBodiesUnchanged": true,
+  "prd01BodySha256": "315dd4c0e56ceca755d804a7b3fcca0704eaf59cedadc1af0b5891efd641eeed",
+  "prd02BodySha256": "35e2061b75d7385cfd6f6943497a98801d13d25485a4e2c29aa3468622bb202e",
+  "publication": {
+    "number": 105,
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/105",
+    "head": "ae9185045314645caef3a35247c1ecaed111548f",
+    "base": "delivery/session-return-20261017",
+    "draft": true
+  },
+  "missingEvidence": "PRD01VS04AC03 remains Unverified: actual outsider/Portal denials do not establish the genuine owner/member-of-another-Organization counterfactual.",
+  "workflow": "An authenticated owner of OrganizationA opens private CardB, sees generic denial, explicitly signs in again asA, still cannot discover/access/mutateB, and returns with browser Back to original authorized BoardA/CardA. Both canonical resources remain unchanged.",
+  "decisions": [
+    "Add only the missing permanent real-service acceptance case; preserve every original12 case. Do not invent a product change if existing authority and navigation already pass.",
+    "Keep A authenticated when openingB to distinguish membership refusal from session loss. Explicit re-authentication asA cannot confer B authority. Browser Back must preserve the prior authorized A route without reintroducing Login.",
+    "Verify A has genuine current owner membership inA; use a distinct separately authenticated owner ofB for target canonical before/after checks. No request observer records passwords, cookies or private bodies.",
+    "Complete this bounded missing acceptance before the combined build-once candidate so it does not require another image build solely for the new test. All existing frozen drafts and product source are preserved."
+  ],
+  "scope": "Owning task is verification of the existing sign-in/Organization/Board/Card boundary. Existing MUI/theme/shell, stable routes, current return allowlist and source-identical fbbe942c product remain. No new role, API, schema, dependency, navigation control or independent Work UX adoption.",
+  "ux": "UXA01–08 and PRD01/02 backlog rows read. Authorized entry → unavailable target → explicit sign-in → still-denied target → browser Back → authorized canonical work. Whole existing responsive/keyboard/Axe cases remain intact; current exact source/runtime and complete regression reuse remain separate from immutable/strict/provider/HTTPS acceptance."
+}

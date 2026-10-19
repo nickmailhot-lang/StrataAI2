@@ -92,6 +92,7 @@ public static partial class WorkManagementEndpoints
                 "/boards",
                 async (
                     CreateBoardRequest request,
+                    Guid? expectedActorId,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -101,6 +102,10 @@ public static partial class WorkManagementEndpoints
                     {
                         return Results.Unauthorized();
                     }
+                    // Existing clients may omit this context. Browser creation
+                    // and original retries stay bound to the admitted account.
+                    if (expectedActorId is Guid expected && expected != userId.Value)
+                        return ErrorFor("session_unavailable");
 
                     if (!TryParseVisibility(
                             request.Visibility,
@@ -440,6 +445,7 @@ public static partial class WorkManagementEndpoints
                 async (
                     Guid boardId,
                     CreateListRequest request,
+                    Guid? expectedActorId,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -449,6 +455,9 @@ public static partial class WorkManagementEndpoints
                     {
                         return Results.Unauthorized();
                     }
+
+                    if (expectedActorId is Guid expected && expected != userId.Value)
+                        return ErrorFor("session_unavailable");
 
                     var result = await service.CreateListAsync(
                         boardId,
@@ -548,6 +557,7 @@ public static partial class WorkManagementEndpoints
                 async (
                     Guid listId,
                     CreateCardRequest request,
+                    Guid? expectedActorId,
                     HttpContext context,
                     IWorkManagementService service,
                     CancellationToken cancellationToken) =>
@@ -557,6 +567,11 @@ public static partial class WorkManagementEndpoints
                     {
                         return Results.Unauthorized();
                     }
+
+                    // A recovered browser command remains the original actor's
+                    // command, even if the replacement actor can edit this Board.
+                    if (expectedActorId is Guid expected && expected != userId.Value)
+                        return ErrorFor("session_unavailable");
 
                     var result = await service.CreateCardAsync(
                         listId,

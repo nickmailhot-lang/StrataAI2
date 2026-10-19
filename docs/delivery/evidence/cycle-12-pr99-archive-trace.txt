@@ -1,0 +1,132 @@
+{
+  "boardReads": [
+    {
+      "time": 545370.509,
+      "status": 200
+    },
+    {
+      "time": 545526.47,
+      "status": 200
+    },
+    {
+      "time": 545626.664,
+      "status": 200
+    },
+    {
+      "time": 545825.115,
+      "status": 200
+    },
+    {
+      "time": 546107.334,
+      "status": 200
+    },
+    {
+      "time": 546198.72,
+      "status": 200
+    },
+    {
+      "time": 539285.848,
+      "status": 200
+    }
+  ],
+  "actions": [
+    {
+      "callId": "call@2636",
+      "method": "keyboardPress",
+      "key": "Enter",
+      "time": 545900.085,
+      "api": null,
+      "selector": null
+    },
+    {
+      "callId": "call@2640",
+      "method": "isVisible",
+      "key": null,
+      "time": 545925.125,
+      "api": null,
+      "selector": "internal:role=button[name=\"Archive Card\"s]"
+    },
+    {
+      "callId": "call@2642",
+      "method": "isEnabled",
+      "key": null,
+      "time": 546001.957,
+      "api": null,
+      "selector": "internal:role=button[name=\"Archive Card\"s]"
+    },
+    {
+      "callId": "call@2644",
+      "method": "focus",
+      "key": null,
+      "time": 546015.501,
+      "api": null,
+      "selector": "internal:role=button[name=\"Archive Card\"s]"
+    },
+    {
+      "callId": "call@2646",
+      "method": "expect",
+      "key": null,
+      "time": 546035.641,
+      "api": null,
+      "selector": "internal:role=button[name=\"Archive Card\"s]"
+    },
+    {
+      "callId": "call@2648",
+      "method": "expect",
+      "key": null,
+      "time": 546054.8,
+      "api": null,
+      "selector": "internal:role=button[name=\"Archive Card\"s]"
+    },
+    {
+      "callId": "call@2650",
+      "method": "press",
+      "key": "Enter",
+      "time": 546062.142,
+      "api": null,
+      "selector": "internal:role=button[name=\"Archive Card\"s]"
+    },
+    {
+      "callId": "call@2656",
+      "method": "focus",
+      "key": null,
+      "time": 546084.987,
+      "api": null,
+      "selector": "internal:role=button[name=\"Confirm Card archive\"s]"
+    },
+    {
+      "callId": "call@2658",
+      "method": "keyboardPress",
+      "key": "Enter",
+      "time": 546115.489,
+      "api": null,
+      "selector": null
+    },
+    {
+      "callId": "call@2660",
+      "method": "expect",
+      "key": null,
+      "time": 546122.367,
+      "api": null,
+      "selector": "internal:role=button[name=\"Retry this Card archive\"s]"
+    }
+  ],
+  "confirmControlSnapshots": [
+    {
+      "disabled": false,
+      "time": 546076.461,
+      "ariaDisabled": null,
+      "snapshot": null,
+      "tabIndex": "0"
+    }
+  ],
+  "at": "2026-10-17T22:31:28.1788110+00:00",
+  "privacy": "Only stable target control names, key names, methods, status, time and disabled/tabIndex flags. No headers/cookies, account/scope identities, emails, passwords, request bodies or temporary download URL.",
+  "actualImageRevision": "dc27b080a8e25b2b0af77c12628ba1563df156f5",
+  "artifactId": 12114796638,
+  "archiveRequests": [],
+  "artifactUrl": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39060697234/artifacts/12114796638",
+  "zipSha256": "01eba41d018cf2ea7c57bb8330c945fb8040c90f33e2385cfe347a2d992eb2fa",
+  "scope": "Whitelisted projection from the exact older failed390 trace, not a new current workflow execution. Product/helper cause must be evaluated against current source before repair.",
+  "pullRequestHead": "f474115e473f2d9ad249c52247bb045d9c2a82e5"
+}

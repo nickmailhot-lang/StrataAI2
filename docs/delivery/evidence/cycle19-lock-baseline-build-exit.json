@@ -1,0 +1,14 @@
+{
+  "sourceRevision": "991be52910ef3c871ecf2e270b3e231d7f9a47b2",
+  "rawArtifact": "cycle19-lock-baseline-build-exit.json",
+  "rawSha256": "c473d99f2a4d0ced65d56620aca4dfab17f1401b812e547bdddfa9dc9f0b5fc4",
+  "lines": [
+    "{",
+    "  \"exit\": 0,",
+    "  \"scope\": \"Actual frozen new counterexample source991be529, unchanged backend/baseline149. Restricted persistence fixture, not HTTP/release certification.\",",
+    "  \"revision\": \"991be52910ef3c871ecf2e270b3e231d7f9a47b2\"",
+    "}",
+    ""
+  ],
+  "preservation": "Original external work artifact unchanged; lossless line strings preserve terminal whitespace without treating it as source formatting."
+}

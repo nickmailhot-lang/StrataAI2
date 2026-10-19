@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+(node:28392) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (6.5s)
+  ok 2 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (5.8s)
+  ok 3 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (5.0s)
+  ok 4 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (5.6s)
+  ok 5 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 1280px (22.8s)
+  ok 6 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 768px (22.0s)
+  ok 7 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 390px (20.4s)
+  ok 8 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 320px (21.3s)
+
+  8 passed (5.2m)

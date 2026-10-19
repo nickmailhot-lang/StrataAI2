@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-17T16:47:46.2285819Z",
+  "state": "Interrupted",
+  "sourceRevision": "fc1d347dff2f890e5c8d16fbeb058836b58ac9cf",
+  "discoveredEntries": 532,
+  "reason": "Shared partial ApiHostTests class selected a broad server suite instead of the intended Board-specific checks. Stop this optional local diagnostic pass; retain output and platform/capacity skips, claim no aggregate pass. Full server release CI remains required; run the relevant Board receipt/authorization methods separately.",
+  "processId": 19580,
+  "commandLine": "\"C:\\Program Files\\dotnet\\dotnet.exe\" ../cycle3-dotnet-artifacts/bin/StrataAI.Api.Tests/release/StrataAI.Api.Tests.dll -class StrataAI.Api.Tests.ApiHostTests -parallel none -xml ../cycle3-api-host-tests.xml"
+}

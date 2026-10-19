@@ -1,0 +1,10 @@
+{
+  "revision": "ce3313e7fd9b43cb4df216d85bf5d8a59fb10923",
+  "rawArtifact": "cycle19-current-ledger-validation-v4.txt",
+  "rawSha256": "917c2df73131b2f4e8a7708fde2366835ea862cb7bd0f5e557d0bf974ef77d94",
+  "scope": "Current1572items/3858criteria andappend-onlybaseline608history validation; no unsupportedDone.",
+  "lines": [
+    "Valid: 1572 work items; 3858 criteria. No unsupported Done claims.",
+    ""
+  ]
+}

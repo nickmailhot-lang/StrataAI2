@@ -1,0 +1,44 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --run src/features/kanban/CreationAdmissionBusy.test.tsx src/features/kanban/CardCreationActor.test.tsx --maxWorkers=2
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle8-list-actor/apps/web
+
+ ❯ src/features/kanban/CreationAdmissionBusy.test.tsx (2 tests | 2 failed) 1112ms
+   × PRD-07-VS-05-T-03 keeps List admission pending after a sibling busy release 699ms
+   × PRD-07-VS-05-T-03 keeps Card admission pending after a sibling busy release 408ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/CreationAdmissionBusy.test.tsx > PRD-07-VS-05-T-03 keeps List admission pending after a sibling busy release
+ FAIL  src/features/kanban/CreationAdmissionBusy.test.tsx > PRD-07-VS-05-T-03 keeps Card admission pending after a sibling busy release
+Error: expect(element).toBeDisabled()
+
+Received element is not disabled:
+  <button
+  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+  tabindex="0"
+  type="button"
+/>
+ ❯ src/features/kanban/CreationAdmissionBusy.test.tsx:33:61
+     31|   await waitFor(() => expect(finish).toBeDefined()); expect(sibling.re…
+     32|   act(() => sibling.release!());
+     33|   expect(screen.getByRole('button', { name, exact: true })).toBeDisabl…
+       |                                                             ^
+     34|   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+     35|   expect(fetcher.mock.calls.filter(([, options]) => options?.method ==…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 7 passed (9)
+   Start at  13:10:56
+   Duration  38.74s (import 83%, tests 6%, transform 5%, environment 5%, setup 1%)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --run src/features/kanban/CreationAdmissionBusy.test.tsx src/features/kanban/CardCreationActor.test.tsx --maxWorkers=2

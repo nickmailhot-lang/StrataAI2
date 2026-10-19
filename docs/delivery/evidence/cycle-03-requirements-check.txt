@@ -1,0 +1,3 @@
+Live GitHub issue #5 body exactly matches retained authoritative PRD-04 snapshot.
+https://github.com/nickmailhot-lang/StrataAI2/issues/5
+Checked 2026-10-17T16:25:06.139Z

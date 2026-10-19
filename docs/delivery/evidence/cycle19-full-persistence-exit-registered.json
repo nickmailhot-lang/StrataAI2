@@ -1,0 +1,16 @@
+{
+  "revision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "rawArtifact": "cycle19-full-persistence-exit.json",
+  "rawSha256": "3bc97a4b820873ca49673200a6243306201714f64cc5a59d72f46fbce662c036",
+  "scope": "Exact isolated whole executable exit0/retained fixture and source644.",
+  "lines": [
+    "{",
+    "  \"exit\": 0,",
+    "  \"revision\": \"64411b5b74d8b3a3648f46158f235eab14406495\",",
+    "  \"scope\": \"Whole unchanged no-argument Linux persistence executable, actual current644, original150migrations/restrictedAPI/Worker/privateIdentity role, no filters/assertion changes. Logs/footer provide actual scope; not HTTP/native/immutable/main acceptance. New fixtures retained for audit.\",",
+    "  \"at\": \"2026-10-18T04:50:00.5557917+00:00\",",
+    "  \"runner\": \"a9d284405d2e96e3e4fa9d56e10dd0d9ea5e6daf12995eeadb8f520b602e194f\"",
+    "}",
+    ""
+  ]
+}

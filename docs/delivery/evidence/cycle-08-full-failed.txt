@@ -1,0 +1,511 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle8-list-actor/apps/web
+
+stderr | src/features/kanban/BoardScreen.drag.test.tsx > preserves canvas columns during dialog state changes and replaces them after an authoritative refresh
+An update to BoardContent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to BoardContent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to BoardContent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ❯ src/features/kanban/BoardScreen.drag.test.tsx (3 tests | 1 failed) 3932ms
+   × preserves canvas columns during dialog state changes and replaces them after an authoritative refresh 657ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/BoardScreen.drag.test.tsx > preserves canvas columns during dialog state changes and replaces them after an authoritative refresh
+TestingLibraryElementError: Unable to find an accessible element with the role "dialog"
+
+Here are the accessible roles:
+
+  region:
+
+  Name "Board workspace":
+  <div
+    aria-busy="false"
+    aria-label="Board workspace"
+    class="MuiStack-root css-u91wg7-MuiStack-root"
+    role="region"
+  />
+
+  Name "Kanban board":
+  <div
+    aria-label="Kanban board"
+    class="MuiBox-root css-18y1frb"
+    data-kanban-scroll="true"
+    data-kanban-scroll-axis="horizontal"
+    role="region"
+  />
+
+  Name "Planning":
+  <section
+    aria-labelledby="list-name-source"
+    class="MuiBox-root css-1mhijgy"
+    data-kanban-scroll="true"
+    data-kanban-scroll-axis="vertical"
+  />
+
+  Name "Complete":
+  <section
+    aria-labelledby="list-name-dest"
+    class="MuiBox-root css-1mhijgy"
+    data-kanban-scroll="true"
+    data-kanban-scroll-axis="vertical"
+  />
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  <p
+    aria-live="polite"
+    class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+    role="status"
+  />
+
+  Name "":
+  <div
+    aria-atomic="true"
+    aria-live="assertive"
+    id="DndLiveRegion-2"
+    role="status"
+    style="position: fixed; top: 0px; left: 0px; width: 1px; height: 1px; margin: -1px; border: 0px; padding: 0px; overflow: hidden; clip: rect(0px); clip-path: inset(100%); white-space: nowrap;"
+  />
+
+  Name "":
+  <p
+    class="MuiTypography-root MuiTypography-body1 css-1m6jozi-MuiTypography-root"
+    role="status"
+  />
+
+  --------------------------------------------------
+  heading:
+
+  Name "Repairs":
+  <h2
+    class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+  />
+
+  Name "Planning":
+  <h3
+    class="MuiTypography-root MuiTypography-h6 css-1e9xrqu-MuiTypography-root"
+    id="list-name-source"
+  />
+
+  Name "Complete":
+  <h3
+    class="MuiTypography-root MuiTypography-h6 css-1e9xrqu-MuiTypography-root"
+    id="list-name-dest"
+  />
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  <p
+    class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+  />
+
+  Name "":
+  <p
+    class="MuiTypography-root MuiTypography-body1 css-1vtw0ib-MuiTypography-root"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Refresh board":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Board watching":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Board starring":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Copy list":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Create label":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Manage labels":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Add list":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Review Board activity":
+  <button
+    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    tabindex="0"
+    type="button"
+  />
+
+  Name "Filter Board Cards":
+  <button
+    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    tabindex="0"
+    type="button"
+  />
+
+  Name "Drag Planning list":
+  <button
+    aria-describedby="DndDescribedBy-2"
+    aria-disabled="true"
+    aria-roledescription="draggable"
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-yn463l-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    role="button"
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Rename Planning list":
+  <button
+    aria-label="Rename Planning list"
+    class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-fe6huj-MuiButtonBase-root-MuiIconButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "List watching":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Move Planning list":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Drag Inspect roof card":
+  <button
+    aria-describedby="DndDescribedBy-2"
+    aria-disabled="true"
+    aria-roledescription="draggable"
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-yn463l-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    role="button"
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Add card to Planning":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Drag Complete list":
+  <button
+    aria-describedby="DndDescribedBy-2"
+    aria-disabled="true"
+    aria-roledescription="draggable"
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-yn463l-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    role="button"
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Rename Complete list":
+  <button
+    aria-label="Rename Complete list"
+    class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-fe6huj-MuiButtonBase-root-MuiIconButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "List watching":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Move Complete list":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  Name "Add card to Complete":
+  <button
+    class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    disabled=""
+    tabindex="-1"
+    type="button"
+  />
+
+  --------------------------------------------------
+  link:
+
+  Name "Archived cards":
+  <a
+    class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+    data-discover="true"
+    href="/app/org/boards/board/archived-cards"
+    tabindex="0"
+  />
+
+  Name "Inspect roof":
+  <a
+    aria-label="Inspect roof"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1ax6fqc-MuiPaper-root-MuiCard-root"
+    data-discover="true"
+    href="/app/org/boards/board/cards/card"
+    style="--Paper-shadow: var(--mui-shadows-1);"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body
+  style=""
+>
+  <div>
+    <div
+      aria-busy="false"
+      aria-label="Board workspace"
+      class="MuiStack-root css-u91wg7-MuiStack-root"
+      role="region"
+    >
+      <p
+        aria-live="polite"
+        class="MuiTypography-root MuiTypography-body2 css-1mjex82-MuiTypography-root"
+        role="status"
+      >
+        Connecting live updates.
+      </p>
+      <div
+        class="MuiStack-root css-5r67bj-MuiStack-root"
+      >
+        <div
+          class="MuiBox-root css-14mf7e5"
+        >
+          <h2
+            class="MuiTypography-root MuiTypography-h4 css-19puw9b-MuiTypography-root"
+          >
+            Repairs
+          </h2>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-ecy0zj-MuiTypography-root"
+          />
+        </div>
+        <div
+          class="MuiStack-root css-r3epm3-MuiStack-root"
+        >
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Refresh board
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board
+             watching
+          </button>
+          <a
+            class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            data-discover="true"
+            href="/app/org/boards/board/archived-cards"
+            tabindex="0"
+          >
+            Archived cards
+          </a>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Board starring
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Copy list
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Create label
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Manage labels
+          </button>
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            Add list
+          </button>
+        </div>
+      </div>
+      <div
+        class="MuiStack-root css-690f4r-MuiStack-root"
+      >
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          Review Board activity
+        </button>
+      </div>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-1u79vu6-MuiButtonBase-root-MuiButton-root"
+        tabindex="0"
+        type="button"
+      >
+        Filter Board Cards
+      </button>
+      <div
+        aria-label="Kanban board"
+        class="MuiBox-root css-18y1frb"
+        data-kanban-scroll="true"
+        data-kanban-scroll-axis="horizontal"
+        role="region"
+      >
+        <div
+          class="MuiBox-root css-0"
+        >
+          <section
+            aria-labelledby="list-name-source"
+            class="MuiBox-root css-1mhijgy"
+            data-kanban-scroll="true"
+            data-kanban-scroll-axis="vertical"
+          >
+            <button
+              aria-describedby="DndDescribedBy-2"
+              aria-disabled="true"
+              aria-roledescription="draggable"
+              class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-yn463l-MuiButtonBase-root-MuiButton-root"
+              disabled...
+ ❯ Object.getElementError ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../../../../../2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/features/kanban/BoardScreen.drag.test.tsx:83:17
+     81|   vi.mocked(boardCardLocation).mockClear();
+     82|   act(() => screen.getByRole('button', { name: 'Add list' }).click());
+     83|   expect(screen.getByRole('dialog')).toBeVisible();
+       |                 ^
+     84|   expect(canvas.items).toBe(original);
+     85|   act(() => within(screen.getByRole('dialog')).getByRole('button', { n…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 191 passed | 1 skipped (193)
+      Tests  1 failed | 2842 passed | 24 skipped (2867)
+   Start at  12:35:23
+   Duration  825.82s (import 40%, tests 33%, environment 22%, setup 4%, transform 1%)
+
+     Import  411 modules were evaluated 2619 times · 640.55s total, 40% of tracked time
+             ~246.90s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\apps\web
+npm error workspace @strataai/web@0.1.0
+npm error location C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle8-list-actor\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --maxWorkers=2

@@ -1,0 +1,51 @@
+Actualmanualinspection 2026-10-17T21:09:18.524Z of12currentcompiled33e5c6d2viewportcaptures: all8newfourwidthListreview/positionreturns, plus currentCard200%return,List-to-Card200%and320returns,andordinaryBoardauthority200%return. Reviewvalidation/name/cancel/savecontrolsreadableat320/390/768/1280. Canonicalrenamedheading/statusarevisiblyreadableat320/390/1280; nativewordmeasurementchecksheadingat200%beforereordering. CurrentreturnedListaction/fullsolid2pxoutlineiscenteredandunobscuredatallfourwidths,includingtablet200%. TabletListheadingmayleaveviewwithintentionalcanvasscrollwhilethecurrentactionlabelkeepsitsfullListcontext. Statusannouncementispreservedonitsownrow. ExistinglocalCardreturnfocus/entireCardvisibleinsideclippingparentsandbelowheaderstillhold. OrdinaryBoardreturncapturehaspointermodality; donotclaimitsoutlineaskeyboardproof. AutomatedAxe/geometry/nativefocus assertionsareseparatefromthismanualreview. No screenreader/device/fullWCAG/immutableProduction/providercertification. Priorfailedmanual/native/compile/provenanceevidenceretained.
+[
+  {
+    "name": "card-creation-return-viewport-768.png",
+    "sha256": "31b4bed3a388182885cc3374df4f986cf27c5164f688917b0e3d0db53555d0e9"
+  },
+  {
+    "name": "list-to-card-return-768.png",
+    "sha256": "339f9455b6f0482ef8855e9a67a2cb48a74deb71d56d9e8209ac6b7c4bebb732"
+  },
+  {
+    "name": "list-to-card-return-320.png",
+    "sha256": "3726967cc589bd3f56cab51a84851e353083b907031c393948e65f2a13705d96"
+  },
+  {
+    "name": "list-order-return-320.png",
+    "sha256": "ce1f7ad9c92e0d60f61b57c3ab7c457239acd22408afd9cf85652d3e41537bc7"
+  },
+  {
+    "name": "list-rename-review-320.png",
+    "sha256": "3650b8b77b2dfe382a9f12dacd28b2f2dc20e0a54594e8ab4a258a138c718011"
+  },
+  {
+    "name": "list-order-return-390.png",
+    "sha256": "a31f950edb2dd27fd48ec32099ecf08f84b35397c3dfbf8fa4b6abaefe40ff54"
+  },
+  {
+    "name": "list-rename-review-390.png",
+    "sha256": "59fdc785415ddcb1f7693ecac66c247246ad2a6bf19c773deb2eb447c41b0ea7"
+  },
+  {
+    "name": "list-order-return-1280.png",
+    "sha256": "00f1a5ed5a5067f2e8b950678d89a8ab211267d6b1ac7bdb2dbdc7cf5341ce5b"
+  },
+  {
+    "name": "list-rename-review-1280.png",
+    "sha256": "ebcfafb70822a5888a4225aedf5b0317642da797c9d92dd33c7123b054e1c45b"
+  },
+  {
+    "name": "list-order-return-768.png",
+    "sha256": "de1f7e149f6f55e7b7f7c9944d58c7fb8cde310d2b5bb75d18f1b243947ff3a7"
+  },
+  {
+    "name": "list-rename-review-768.png",
+    "sha256": "5582e8561ee582a2e37368061e0989dbf710fc08049e3720dbb26ad6099f219e"
+  },
+  {
+    "name": "board-authority-return-768.png",
+    "sha256": "170cdbf333361a45ac732b3d3bcb81094d5a2eff4ffaf8c0b20818c9404458fe"
+  }
+]

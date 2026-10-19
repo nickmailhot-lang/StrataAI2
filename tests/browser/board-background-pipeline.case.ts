@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
@@ -122,7 +123,7 @@ for (const width of [1280, 390]) {
       if (coverWrites.length === 1) await route.abort('failed');
       else await route.fulfill({ response: result });
     });
-    const coverReview = page.getByRole('button', { name: 'Review Card cover', exact: true });
+    const coverReview = (await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Card cover', exact: true }));
     let coverReviewReads = 0;
     page.on('request', request => {
       if (request.method() === 'GET' && new URL(request.url()).pathname === coverPath) coverReviewReads++;
@@ -218,7 +219,7 @@ for (const width of [1280, 390]) {
       if (attempts.length === 1) await route.abort('failed');
       else { expect(attempts).toHaveLength(2); expect(attempts[1]).toEqual(attempts[0]); await route.fulfill({ response: result }); }
     });
-    const review = page.getByRole('button', { name: 'Review Board background images', exact: true });
+    const review = (await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Board background images', exact: true }));
     await openAdmittedReview(review, page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true }));
     await pressAdmittedAction(page.getByRole('button', { name: 'Use Private original.png as Board background', exact: true }));
     const confirm = page.getByRole('button', { name: 'Confirm Board background image', exact: true });
@@ -250,7 +251,7 @@ for (const width of [1280, 390]) {
     await page.getByRole('button', { name: 'Refresh board', exact: true }).click();
     await expect.poll(closedDetailReads).toBeGreaterThanOrEqual(1);
     await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
-    const copy = page.getByRole('button', { name: 'Copy Board', exact: true });
+    const copy = await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Copy Board', exact: true });
     await openAdmittedReview(copy, page.getByRole('dialog', { name: 'Copy Board', exact: true }));
     await expect(page.getByRole('dialog', { name: 'Copy Board', exact: true })).toBeVisible();
     let copyWrites = 0;
@@ -290,7 +291,7 @@ for (const width of [1280, 390]) {
     const freshReads = trackBoardReads(page, target, copiedPath);
     await page.reload(); await expect.poll(freshReads).toBeGreaterThanOrEqual(2);
     await expect.poll(() => copiedImage.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1);
-    await expect(page.getByRole('button', { name: 'Copy Board', exact: true })).toBeEnabled();
+    await expect(await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Copy Board', exact: true })).toBeEnabled();
     const retained = await context.request.get(`/boards/${target}`);
     expect(retained.status()).toBe(200);
     expect((await retained.json()).board).toMatchObject({ version: 1, backgroundType: 'IMAGE', backgroundValue: copied.backgroundValue });

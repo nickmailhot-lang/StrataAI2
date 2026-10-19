@@ -1,0 +1,178 @@
+
+Running 8 tests using 1 worker
+
+(node:23116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (5.6s)
+  ok 2 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (5.1s)
+  ok 3 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (5.8s)
+  ok 4 tests\browser\board-creation-recovery.spec.ts:7:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (5.1s)
+  x  5 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 1280px (9.3s)
+(node:18224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  6 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 768px (13.5s)
+(node:28132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  7 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 390px (13.2s)
+(node:26808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  8 tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 320px (12.0s)
+
+
+  1) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 1280px 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      87 |             return box.height >= 44 && box.top >= (header?.bottom ?? 0) && box.bottom <= window.innerHeight
+      88 |               && element.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2));
+    > 89 |         })).toBe(true);
+         |             ^
+      90 |         await layout(client);
+      91 |         await client.screenshot({ path: test.info().outputPath(`organization-actions-${rollback ? 'rollback' : 'default'}-${role.toLowerCase()}-viewport-${width}.png`), fullPage: false });
+      92 |       }
+        at currentActions (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:89:13)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:95:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-7cf0c--canonical-return-at-1280px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-7cf0c--canonical-return-at-1280px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-7cf0c--canonical-return-at-1280px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-7cf0c--canonical-return-at-1280px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 768px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Organization settings', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Organization settings', exact: true }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Organization settings', exact: true })
+        11 × locator resolved to <a tabindex="0" data-discover="true" href="/app/10111915-e0ef-ac3c-2ac1-cceb6db82143/settings" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-178rdwy">Organization settings</a>
+           - unexpected value "inactive"
+
+
+      82 |         }
+      83 |         const focusTarget = rollback ? permitted : summary;
+    > 84 |         await client.keyboard.press('Tab'); await focusTarget.focus(); await expect(focusTarget).toBeFocused();
+         |                                                                                                  ^
+      85 |         expect(await focusTarget.evaluate(element => {
+      86 |             const box = element.getBoundingClientRect(), header = document.querySelector('header')?.getBoundingClientRect();
+      87 |             return box.height >= 44 && box.top >= (header?.bottom ?? 0) && box.bottom <= window.innerHeight
+        at currentActions (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:84:98)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:95:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-02258-d-canonical-return-at-768px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-02258-d-canonical-return-at-768px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-02258-d-canonical-return-at-768px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-02258-d-canonical-return-at-768px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 390px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Organization settings', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Organization settings', exact: true }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Organization settings', exact: true })
+        11 × locator resolved to <a tabindex="0" data-discover="true" href="/app/e67d39b9-f1e3-a82e-5cf2-82e9880a9f53/settings" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-178rdwy">Organization settings</a>
+           - unexpected value "inactive"
+
+
+      82 |         }
+      83 |         const focusTarget = rollback ? permitted : summary;
+    > 84 |         await client.keyboard.press('Tab'); await focusTarget.focus(); await expect(focusTarget).toBeFocused();
+         |                                                                                                  ^
+      85 |         expect(await focusTarget.evaluate(element => {
+      86 |             const box = element.getBoundingClientRect(), header = document.querySelector('header')?.getBoundingClientRect();
+      87 |             return box.height >= 44 && box.top >= (header?.bottom ?? 0) && box.bottom <= window.innerHeight
+        at currentActions (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:84:98)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:95:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-2552c-d-canonical-return-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-2552c-d-canonical-return-at-390px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-2552c-d-canonical-return-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-2552c-d-canonical-return-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 320px 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByRole('link', { name: 'Organization settings', exact: true })
+    Expected: focused
+    Received: inactive
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeFocused" getByRole('link', { name: 'Organization settings', exact: true }) with timeout 5000ms
+      - waiting for getByRole('link', { name: 'Organization settings', exact: true })
+        11 × locator resolved to <a tabindex="0" data-discover="true" href="/app/b7d14794-1c15-3eb4-91b1-88e0ad1346b1/settings" class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary css-178rdwy">Organization settings</a>
+           - unexpected value "inactive"
+
+
+      82 |         }
+      83 |         const focusTarget = rollback ? permitted : summary;
+    > 84 |         await client.keyboard.press('Tab'); await focusTarget.focus(); await expect(focusTarget).toBeFocused();
+         |                                                                                                  ^
+      85 |         expect(await focusTarget.evaluate(element => {
+      86 |             const box = element.getBoundingClientRect(), header = document.querySelector('header')?.getBoundingClientRect();
+      87 |             return box.height >= 44 && box.top >= (header?.bottom ?? 0) && box.bottom <= window.innerHeight
+        at currentActions (C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:84:98)
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle18-organization-actions\tests\browser\organization-actions.spec.ts:95:7
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-0dbb1-d-canonical-return-at-320px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-0dbb1-d-canonical-return-at-320px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-0dbb1-d-canonical-return-at-320px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle18-prod-targets-rollback\organization-actions-PRD-0-0dbb1-d-canonical-return-at-320px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 1280px 
+    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 768px 
+    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 390px 
+    tests\browser\organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: rollback permitted Organization actions and canonical return at 320px 
+  4 passed (4.6m)

@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-18T21:48:13.434Z",
+  "revision": "1f1c2a6cc3a54afce1683d41788d9b775d806d96",
+  "focused": {
+    "revision": "1f1c2a6cc3a54afce1683d41788d9b775d806d96",
+    "workerUnchanged": true,
+    "exit": 1,
+    "scope": "Actual new1f1c web / existing389 verified Demo four-scope UI invocation; focused canonical/single-write/privacy/Axe/responsive checks plus explicit failed account/recovery-read persistence; no original production-stream qualification. Supporting only, no hosted/new-head release qualification.",
+    "adapterSha256": "0699e1993b307c0958c5eb8fbfba74e8322fba8aeb96c262482da12521960b9e",
+    "at": "2026-10-18T21:37:28.5140858+00:00"
+  },
+  "original": {
+    "exit": 1,
+    "scope": "Actual new1f1c web / existing389 verified Demo four-scope UI invocation; original canonical/single-write/privacy/Axe/responsive oracles plus explicit failed foreground-read persistence check. Supporting only, no hosted/new-head release qualification.",
+    "adapterSha256": "0ef9feeccab206464a2d62e98754ddabf6221d365610a25271ff46057e51e5fc",
+    "workerUnchanged": true,
+    "at": "2026-10-18T21:33:54.1601764+00:00",
+    "revision": "1f1c2a6cc3a54afce1683d41788d9b775d806d96"
+  },
+  "boundary": [
+    {
+      "stage": "Retired review before any revocation transport; actual helper could not find Confirm",
+      "case": "recovery-feedback-PRD-60-c-767ac--checks-Board-false-1280px-",
+      "observedDeleteRequests": 0
+    },
+    {
+      "stage": "Retired review before any revocation transport; actual helper could not find Confirm",
+      "case": "recovery-feedback-PRD-60-c-ebe5b-d-checks-Board-false-390px-",
+      "observedDeleteRequests": 0
+    }
+  ],
+  "focusedCounts": {
+    "passed": 2,
+    "failed": 2,
+    "skipped": 0,
+    "duration": "2.5m"
+  },
+  "originalScenarioAdapterCounts": {
+    "passed": 0,
+    "failed": 4,
+    "reason": "All stop at required live-stream bootstrap on existing Demo backend before revocation."
+  },
+  "visualReview": {
+    "at": "2026-10-18T21:48:13.434Z",
+    "reviewer": "Codex",
+    "screenshots": [
+      {
+        "case": "recovery-feedback-PRD-60-c-3e1dc-d-checks-Board-true-1280px-",
+        "frame": "pending-feedback.png",
+        "sha256": "bec214ae98c1fefbe131337c6e56a73594dd113b389eae95eda753b4f876d3fd"
+      },
+      {
+        "case": "recovery-feedback-PRD-60-c-3e1dc-d-checks-Board-true-1280px-",
+        "frame": "confirmed-feedback.png",
+        "sha256": "9afb21825c38d9470a5dcedfa2425591be42301d9d76320ae18efd9f49e6a02d"
+      },
+      {
+        "case": "recovery-feedback-PRD-60-c-d56e7-ed-checks-Board-true-390px-",
+        "frame": "pending-feedback.png",
+        "sha256": "07d495a41b1c7eac7447517125a87b81568c3cf6a5e5cad942fc0ea956497c1b"
+      },
+      {
+        "case": "recovery-feedback-PRD-60-c-d56e7-ed-checks-Board-true-390px-",
+        "frame": "confirmed-feedback.png",
+        "sha256": "f2997ea577356a3e9e1ac69a40b3d20e91b560ed8d00deb56047df7325c40f7f"
+      }
+    ],
+    "observed": "Inspected actual Board desktop1280/phone390 pending and confirmed screens. Specific uncertainty and Check revocation remain; private rows stay absent while authority is unavailable. Canonical Revoked appears after access restoration. Native one-write, Axe and responsive oracles pass for those two cases."
+  },
+  "scope": "Existing389 Demo API, actual identified1f1c UI. Two Organization cases retire their review before any DELETE; retained as failed, no automatic reconfirmation or assertion waiver. Original production scenarios unchanged and still required. Stock Worker unchanged; no service substitution."
+}

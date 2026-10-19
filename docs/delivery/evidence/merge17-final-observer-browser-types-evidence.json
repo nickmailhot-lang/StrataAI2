@@ -1,0 +1,7 @@
+{
+  "revision": "5bc7919168654491b2e5a1ec1e867ecbd9b923c2",
+  "rawArtifact": "merge17-final-observer-browser-types.txt",
+  "rawSha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+  "scope": "Browser typing passes on exact corrected working-tree bytes subsequently committed5bc. UI/build/backend inputs unchanged from135ee; do not rebuild or relabel UI.",
+  "rawUtf8Text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+}

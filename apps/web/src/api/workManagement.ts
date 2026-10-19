@@ -177,6 +177,9 @@ export function mutateWork<T = unknown>(
 // input, another resource, or a completed operation starts a new intent.
 export class WorkMutationIntent {
   private pending?: { signature: string; key: string };
+  // A submitted intent stays recoverable until a successful acknowledgment.
+  get hasPending(): boolean { return this.pending !== undefined; }
+
   async send<T = unknown>(
     path: string,
     method: string,

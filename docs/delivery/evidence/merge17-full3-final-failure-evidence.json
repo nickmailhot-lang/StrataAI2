@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-18T14:03:42.733Z",
+  "publishedHead": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+  "synthetic": "577e80591fac1ddb5f6b60ea89d3ab0dd3c6cf02",
+  "run": 39121650532,
+  "job": 117668178379,
+  "status": "failure",
+  "passed": 119,
+  "failed": 4,
+  "failures": "Four original organization-actions widths all fail original waitForBoardDelivery30000ms before UI; exact scopedBoardWorker.ts28/organization-actions.spec.ts29 stacks. Sole missing scopedBoardWorker fixture matches prior original local4 counterexample. No additional failed cases in completed whole job.",
+  "safeFooter": [
+    "2026-10-18T14:02:32.4765126Z         at waitForBoardDelivery (/home/runner/work/StrataAI2/StrataAI2/tests/browser/scopedBoardWorker.ts:28:27)",
+    "2026-10-18T14:02:32.4766441Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/organization-actions.spec.ts:29:33",
+    "2026-10-18T14:02:32.4791408Z         at waitForBoardDelivery (/home/runner/work/StrataAI2/StrataAI2/tests/browser/scopedBoardWorker.ts:28:27)",
+    "2026-10-18T14:02:32.4792855Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/organization-actions.spec.ts:29:33",
+    "2026-10-18T14:02:32.4819209Z         at waitForBoardDelivery (/home/runner/work/StrataAI2/StrataAI2/tests/browser/scopedBoardWorker.ts:28:27)",
+    "2026-10-18T14:02:32.4820585Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/organization-actions.spec.ts:29:33",
+    "2026-10-18T14:02:32.4845888Z         at waitForBoardDelivery (/home/runner/work/StrataAI2/StrataAI2/tests/browser/scopedBoardWorker.ts:28:27)",
+    "2026-10-18T14:02:32.4847287Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/organization-actions.spec.ts:29:33",
+    "2026-10-18T14:02:32.4860215Z   4 failed",
+    "2026-10-18T14:02:32.4869617Z   119 passed (1.3h)"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "testRevision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+  "topology": "Current compiled Demo API and compiled Vite preview, local8080/5175. No immutable Production/provider certification.",
+  "api": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "web": {
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "0.1.0"
+  }
+}

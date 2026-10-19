@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-18T14:42:24.999Z",
+  "revision": "082bfc462339ac3d15cd0e6cf36ec33bbffc76f2",
+  "types": {
+    "scope": "Apply uses existing observed single-request helper, original value/result/count oracles preserved, no app/backend change",
+    "at": "2026-10-18T14:38:24.2204070+00:00",
+    "exit": 0,
+    "revision": "082bfc462339ac3d15cd0e6cf36ec33bbffc76f2"
+  },
+  "originalUsabilityBodyOtherwiseByteIdentical": true,
+  "originalBodySha256": "638ca7608ee79c9d80bb6c726a2ca3a826bfb11d288ca3362b6bac0d3c274c33",
+  "currentBodySha256": "9cd85012b6b4c0e451c80233f2398953231373cc9719694255d69d7a38d7de96",
+  "change": "One Apply filters activation now uses existing pressObservedRequest(...filterChanges,1), already imported and used for Clear. Stops at first observed request, exact count1/result/value and all other original oracles/widths unchanged. Original 5000ms admission bound and global retries0 retained.",
+  "underlyingProductBackendPipelineAndHelpersUnchanged": true,
+  "scope": "Source/type proof only. Corrected native320 and complete final-head qualification NotRun. Latest localbc9 phone timing remainsFailed."
+}

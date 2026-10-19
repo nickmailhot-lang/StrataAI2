@@ -28,6 +28,12 @@ public interface IIdentityUnitOfWork
     Task<IdentityOperation<T>> ExecuteObservationAsync<T>(Guid actorId, Guid? organizationId,
         Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default);
 
+    // PostgreSQL admits the Board parent before retaining actor/history locks.
+    // Other adapters retain their existing owning identity transaction behavior.
+    Task<IdentityOperation<T>> ExecuteBoardObservationAsync<T>(Guid actorId, Guid organizationId, Guid boardId,
+        Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default)
+        => ExecuteObservationAsync(actorId, organizationId, operation, cancellationToken);
+
     Task<IdentityOperation<T>> ExecuteAsync<T>(Guid actorId,
         Func<Task<IdentityOperation<T>>> operation, CancellationToken cancellationToken = default);
 }

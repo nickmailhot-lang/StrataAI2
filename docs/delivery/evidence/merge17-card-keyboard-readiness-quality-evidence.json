@@ -1,0 +1,147 @@
+{
+  "at": "2026-10-18T20:55:30.318Z",
+  "revision": "365bfdb44f1690cb64f78c7bf1bf112fe2c284ff",
+  "result": "Passed",
+  "committedSourceBinding": {
+    "testedBase": "903572e3290b06b35651a43da428c562f3f468d6",
+    "workingFileSha256": "74852853b4eb0fc62d32ed3c9f735c59dd2aa5031b8fd77a37057d26711ba935",
+    "normalizedContentSha256": "a17d9a2299a640583acab051fe92bb434c5d52ae49443c3ebec0fd285e16bb54",
+    "committedNormalizedBytesVerified": true
+  },
+  "native": {
+    "result": "Passed",
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "duration": "2.5m",
+    "runtime": {
+      "testFileSha256": "74852853b4eb0fc62d32ed3c9f735c59dd2aa5031b8fd77a37057d26711ba935",
+      "scope": "Four original read-only Markdown roles/widths with an uncommitted foreground-admission precondition. Current135 UI/existing389 Demo API and normal verification-token fixture. Supporting UI evidence only; no exact Production/RLS or hosted qualification. All original keyboard, sanitization, role, live-update, canonical withdrawal assertions, case deadlines and zero retries retained.",
+      "testedBaseRevision": "903572e3290b06b35651a43da428c562f3f468d6",
+      "web": "135ee4b8629f1a12bd041b1982ccc19246cb5d4b",
+      "at": "2026-10-18T20:48:59.0803391+00:00",
+      "worker": "d892a40b08190562efb3f061084c5eb0dac69a192d3985b1a8415ac822232bbd",
+      "api": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07"
+    },
+    "exit": {
+      "testFileSha256": "74852853b4eb0fc62d32ed3c9f735c59dd2aa5031b8fd77a37057d26711ba935",
+      "exit": 0,
+      "scope": "All four original read-only role/width cases with hashed working fixture. No Worker/container or authority change; supporting Demo UI scope only.",
+      "testedBaseRevision": "903572e3290b06b35651a43da428c562f3f468d6",
+      "at": "2026-10-18T20:51:27.8619706+00:00",
+      "workerUnchanged": true
+    },
+    "actualFooter": [
+      "  ok 1 work\\merge17-main\\tests\\browser\\card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for organization-reader at 1280px (11.5s)",
+      "  ok 2 work\\merge17-main\\tests\\browser\\card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for anonymous at 1280px (10.5s)",
+      "  ok 3 work\\merge17-main\\tests\\browser\\card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for organization-reader at 390px (10.9s)",
+      "  ok 4 work\\merge17-main\\tests\\browser\\card-description.spec.ts:241:7 › PRD-09 TC-04/05/08/11/12: read-only Markdown, live revision and visibility withdrawal for anonymous at 390px (10.4s)",
+      "  4 passed (2.5m)"
+    ],
+    "outputSha256": "a4952125f4ca911826a6e1d801d3709bab07228af7a10de624df9c1733795db7"
+  },
+  "browserTypes": {
+    "scope": "Browser TypeScript with corrected hidden-background state observation and original visible keyboard assertions",
+    "exit": 0,
+    "at": "2026-10-18T20:49:08.2595805+00:00"
+  },
+  "sourceAudit": {
+    "at": "2026-10-18T20:48:54.835Z",
+    "testedBaseRevision": "903572e3290b06b35651a43da428c562f3f468d6",
+    "file": "tests/browser/card-description.spec.ts",
+    "workingFileSha256": "74852853b4eb0fc62d32ed3c9f735c59dd2aa5031b8fd77a37057d26711ba935",
+    "normalizedContentSha256": "a17d9a2299a640583acab051fe92bb434c5d52ae49443c3ebec0fd285e16bb54",
+    "originalBodyUnchangedOutsidePrecondition": true,
+    "applicationBackendHelperPipelineDependenciesUnchanged": true,
+    "rolesAndWidths": [
+      "organization-reader1280",
+      "anonymous1280",
+      "organization-reader390",
+      "anonymous390"
+    ],
+    "originalFocusRoundTripAndVisibleOutlineRetained": true,
+    "originalSanitizationNetworkRoleLiveRevisionWithdrawalCanonicalChecksRetained": true,
+    "original120SecondCaseLimit": true,
+    "retries": 0,
+    "materialAssumption": "Trace shows a current successful Board revalidation overlapping native Tab, and its next label disclosure recreated disabled in the after-Tab snapshot. Foreground the page and settle current Board admission before the uninterrupted keyboard round trip. This is a test-readiness correction; exact exclusive event cause is not asserted.",
+    "scope": "Working test fixture only. Browser types Passed; four native Demo role/width cases in progress. Requires committed source identity, complete local results and new exact hosted qualification before integration."
+  },
+  "visualReview": {
+    "reviewer": "Codex",
+    "at": "2026-10-18T20:55:30.318Z",
+    "method": "Inspected actual retained desktop1280 and phone390 frames after the original post-Shift+Tab Reference-focus assertion Passed; also inspected intermediate next-disclosure focus frames and the original hosted failed screenshot.",
+    "frames": [
+      {
+        "width": 1280,
+        "file": "screencast/page@1197b85400e3b5632e075c376e68c624-1792356606282.jpeg",
+        "frameTime": 67093.438,
+        "assertionEnd": 67092.171,
+        "postTabAssertionPassed": true,
+        "stage": "After successful original Reference focus assertion",
+        "sha256": "10875d14d10f693c434a5071e24a5c71eff4b4b7a4e24dfc652116a5f89fb3d1"
+      },
+      {
+        "width": 390,
+        "file": "screencast/page@eaeec3d0cb5fc76e323d670017b613e5-1792356678265.jpeg",
+        "frameTime": 139076.733,
+        "assertionEnd": 139070.373,
+        "postTabAssertionPassed": true,
+        "stage": "After successful original Reference focus assertion",
+        "sha256": "9708d57e39b25da025be0c3813c9c422ea0830096389f9672002c171fa94a716"
+      }
+    ],
+    "observed": "Visible Reference focus outline in both sizes, legible sanitized Markdown, local dialog scrolling, visible Close. Native original Axe/role/unauthorized-write/live-update/private-withdrawal/canonical-history/network assertions also passed. Demo reports unavailable live transport and uses polling fallback; no Production Worker or provider readiness inferred."
+  },
+  "preservedAttempts": {
+    "missingBaseUrl": {
+      "scope": "Original anonymous desktop case, one run, original assertions and limits. No Worker/container or authority change.",
+      "workerUnchanged": true,
+      "at": "2026-10-18T20:39:00.3172058+00:00",
+      "exit": 1,
+      "head": "903572e3290b06b35651a43da428c562f3f468d6",
+      "outcome": "Invalid diagnostic setup",
+      "reason": "Imported config had no resolved API baseURL. Failed at initial registration request URL construction before any app HTTP request. Original logs/exit/trace retained. Corrected explicit-baseURL diagnostic uses v2 names; no product or acceptance failure inferred."
+    },
+    "productionUndelivered": {
+      "scope": "Original anonymous desktop case, one run, original assertions and limits. No Worker/container or authority change.",
+      "exit": 1,
+      "at": "2026-10-18T20:40:51.3598716+00:00",
+      "workerUnchanged": true,
+      "head": "903572e3290b06b35651a43da428c562f3f468d6",
+      "outcome": "Pre-UI delivery not validated",
+      "reason": "Current stock Worker retains its pre-existing disposable canary scope; CI=false scopedBoardWorker intentionally performs no replacement. New test Organization events remained undelivered. Case stopped before page.goto and all keyboard assertions; no focus result or product defect inferred. No Worker swap attempted; original artifacts retained."
+    },
+    "demoUnverifiedAdmission": {
+      "scope": "Original anonymous desktop case, one run, original assertions and limits. No Worker/container or authority change.",
+      "workerUnchanged": true,
+      "exit": 1,
+      "head": "903572e3290b06b35651a43da428c562f3f468d6",
+      "at": "2026-10-18T20:43:29.0695099+00:00",
+      "outcome": "Pre-UI account admission refused",
+      "reason": "Existing Demo API correctly requires email verification; initial diagnostic selected unverified fixture profile and stopped at login403. No keyboard scenario executed. Corrected profile uses normal Demo registration verificationToken plus /auth/verify-email, as implemented by existing helper. CI remains false so no SQL activation or Worker replacement can run."
+    },
+    "unchangedVerifiedDemoBaseline": {
+      "exit": 0,
+      "scope": "An unchanged supporting Demo pass does not dismiss the actual hosted failure.",
+      "head": "903572e3290b06b35651a43da428c562f3f468d6",
+      "at": "2026-10-18T20:45:05.7155535+00:00",
+      "workerUnchanged": true,
+      "passed": 1,
+      "caseSeconds": 11.8,
+      "invocationSeconds": 38.7
+    },
+    "initialReadinessProbe": {
+      "testedBaseRevision": "903572e3290b06b35651a43da428c562f3f468d6",
+      "at": "2026-10-18T20:48:43.0907141+00:00",
+      "testFileSha256": "1322330de640a84516e743fd61d8e2318210d4b8457a3ff20e4a0cb444034e96",
+      "exit": 1,
+      "workerUnchanged": true,
+      "scope": "All four original read-only role/width cases with hashed working fixture. No Worker/container or authority change; supporting Demo UI scope only.",
+      "passed": 0,
+      "failed": 4,
+      "reason": "Added visible-only Board-workspace lookup could not observe aria-hidden background while Card modal was open. Stopped before original keyboard sequence. Corrected includeHidden only for that background busy-attribute observation; original visible-control oracles retained.",
+      "outputSha256": "18b050d0b44a4007133341d1666287e321d3b75db074df87ad9f448c0d842d57"
+    }
+  },
+  "scope": "Scoped local readiness correction on committed test bytes, current135 web / existing389 Demo API with normal disposable verification tokens. CI=false throughout: no SQL fixture activation, Worker replacement, widened discovery or service reconfiguration. Application/backend/helpers/pipeline/dependencies, original test body after precondition,120-second cases and zero retries unchanged. Complete corrected-final-head immutable qualification remains NotRun."
+}

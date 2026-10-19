@@ -1,0 +1,11 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --run src/features/kanban/CardCreationActor.test.tsx --maxWorkers=1
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle6-creation-actor/apps/web
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  11:33:13
+   Duration  51.42s (import 83%, tests 7%, transform 5%, environment 4%, setup 1%)
+

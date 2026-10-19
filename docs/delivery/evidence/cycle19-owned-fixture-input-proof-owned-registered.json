@@ -1,0 +1,27 @@
+{
+  "revision": "ce3313e7fd9b43cb4df216d85bf5d8a59fb10923",
+  "rawArtifact": "cycle19-owned-fixture-input-proof.json",
+  "rawSha256": "5ffd02b291ba0c1247cf6c8efc76e13955ac2c8c0d5000898c7752aa257af769",
+  "scope": "Exact3changedtestpaths, original6guards unchangedbeyondfixtureownership, paired2byteidentical, allproductinputsidentical644 andofficialDIownershipsource.",
+  "lines": [
+    "{",
+    "  \"at\": \"2026-10-18T05:28:33.264Z\",",
+    "  \"revision\": \"ce3313e7fd9b43cb4df216d85bf5d8a59fb10923\",",
+    "  \"baseline\": \"ad7ed385da9d2eb3e6641dd18f73aaea9b3dda87\",",
+    "  \"actualNativeApiWorker\": \"64411b5b74d8b3a3648f46158f235eab14406495\",",
+    "  \"actualFrontend\": \"e14db04c3d30a9c120c464e86ab886530fdeea75\",",
+    "  \"onlyChangedPaths\": [",
+    "    \"tests/StrataAI.Persistence.Contracts/NavigationActorBoardLockContract.cs\",",
+    "    \"tests/StrataAI.Persistence.Contracts/NavigationInitialRowQueueContract.cs\",",
+    "    \"tests/StrataAI.Persistence.Contracts/Program.cs\"",
+    "  ],",
+    "  \"pairedGuardSha256\": \"3bc1209b47b04b94d90bda7d4988898622c141694bf1f089191fe1d7637d15da\",",
+    "  \"assertions\": \"Original6/currentwithdrawal7 query/assertions/deadlines preserved; original6file changes only DI factory registration ownership. New2 exactlybyte-identical currentce andbaselinead.15actualpassescurrentce; baselineactual40P01red2/4freshdetections/14edges.\",",
+    "  \"completeProductEquality\": \"All product src/db, API/Domain tests, frontend/browser/build/package inputs equal actual644. Native37/fullLinuxbuild/Domain/fullAPI runs stay actual644 andfrontende14, no relabel. Wholedefaultce usesnewportable framework-dependent assembly in Linux, not a claimed Linuxcompilece.\",",
+    "  \"disposal\": \"Registering disposable factory through container-created singleton delegate gives owning awaitusing ServiceProvider disposal of its data sources; prior provided-instance helper was externally owned. Only C19testhelpers change; realruntimeFactorypooling/roles/locks unchanged. Rawtemporaryconnectionsremainexplicitlyunpooled.\",",
+    "  \"source\": \"https://learn.microsoft.com/dotnet/core/extensions/dependency-injection-guidelines#services-not-created-by-the-service-container\",",
+    "  \"previousFullFailure\": \"Originalf4 and3awholedefaultfail53300 atmax100 retained.3a reachedlaterWorkEventBatch. Currentcewholeoriginalmax100/session96111stillrunning; do notclaimfullpass.\"",
+    "}",
+    ""
+  ]
+}

@@ -1,0 +1,53 @@
+
+Running 2 tests using 1 worker
+
+(node:36356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\archived-cards.spec.ts:6:7 › PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at 1280px (15.0s)
+  x  2 tests\browser\archived-cards.spec.ts:6:7 › PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at 390px (14.3s)
+
+
+  1) tests\browser\archived-cards.spec.ts:6:7 › PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at 390px 
+
+    Error: expect(locator).toBeEnabled() failed
+
+    Locator: getByRole('button', { name: 'Retry this Card archive', exact: true })
+    Expected: enabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeEnabled" getByRole('button', { name: 'Retry this Card archive', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Retry this Card archive', exact: true })
+
+
+      44 |       await expect(page.getByText('Archive Archived work from Planning?', { exact: true })).toBeVisible();
+      45 |       await page.getByRole('button', { name: 'Confirm Card archive', exact: true }).focus(); await page.keyboard.press('Enter');
+    > 46 |       await expect(page.getByRole('button', { name: 'Retry this Card archive', exact: true })).toBeEnabled();
+         |                                                                                                ^
+      47 |       await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
+      48 |       await expect(other.getByRole('link', { name: 'Archived work', exact: true })).toHaveCount(0);
+      49 |       await page.getByRole('button', { name: 'Retry this Card archive', exact: true }).focus(); await page.keyboard.press('Enter');
+        at C:\Users\nickm\Documents\Codex\2026-10-17\strataai2-incremental-prd-delivery-and-progress\work\cycle13-archive-admission\tests\browser\archived-cards.spec.ts:46:96
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle13-prod-baseline\archived-cards-PRD-18-revi-53877-ers-a-lost-receipt-at-390px\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\cycle13-prod-baseline\archived-cards-PRD-18-revi-53877-ers-a-lost-receipt-at-390px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\cycle13-prod-baseline\archived-cards-PRD-18-revi-53877-ers-a-lost-receipt-at-390px\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\cycle13-prod-baseline\archived-cards-PRD-18-revi-53877-ers-a-lost-receipt-at-390px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\cycle13-prod-baseline\archived-cards-PRD-18-revi-53877-ers-a-lost-receipt-at-390px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests\browser\archived-cards.spec.ts:6:7 › PRD-18: reviewed Card restore respects parent changes and recovers a lost receipt at 390px 
+  1 passed (1.3m)

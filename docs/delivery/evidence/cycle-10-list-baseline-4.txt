@@ -1,0 +1,11 @@
+
+Running 4 tests using 1 worker
+
+(node:10308) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\list-position.spec.ts:6:7 › PRD-06: keyboard list positioning persists at 1280px (3.3s)
+  ok 2 tests\browser\list-position.spec.ts:6:7 › PRD-06: keyboard list positioning persists at 390px (2.2s)
+  ok 3 tests\browser\list-rename.spec.ts:7:7 › PRD-07: list rename recovers a lost acknowledgment and preserves a live draft at 1280px (4.6s)
+  ok 4 tests\browser\list-rename.spec.ts:7:7 › PRD-07: list rename recovers a lost acknowledgment and preserves a live draft at 390px (4.7s)
+
+  4 passed (16.1s)

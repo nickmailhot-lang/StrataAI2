@@ -238,7 +238,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       // Missing base is allowed only for the first ledger introduction. Invalid refs still fail.
       execFileSync('git', ['rev-parse', '--verify', ref], {cwd:root,stdio:'pipe'});
       const files = execFileSync('git',['ls-tree','--name-only',ref,'--','docs/delivery/progress.json'],{cwd:root,encoding:'utf8'});
-      if (files.trim()) validateEvolution(JSON.parse(execFileSync('git',['show',`${ref}:docs/delivery/progress.json`],{cwd:root,encoding:'utf8'})),ledger);
+      if (files.trim()) validateEvolution(JSON.parse(execFileSync('git',['show',`${ref}:docs/delivery/progress.json`],{cwd:root,encoding:'utf8',maxBuffer:16*1024*1024})),ledger);
     }
     if (command === 'validate') console.log(`Valid: ${ledger.items.length} work items; ${ledger.criteria.length} criteria. No unsupported Done claims.`);
     else if (command === 'report') console.log(args.includes('--json') ? JSON.stringify(progress(ledger), null, 2) : markdownReport(progress(ledger)));

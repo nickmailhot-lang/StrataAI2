@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
@@ -31,7 +32,7 @@ for (const width of [1280, 390]) {
         const result = await route.fetch(); expect(result.status()).toBe(200);
         if (requests.length === 1) await route.abort('failed'); else await route.fulfill({ response: result });
       });
-      await openAdmittedReview(page.getByRole('button', { name: 'Edit Board details', exact: true }),
+      await openAdmittedReview((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Edit Board details', exact: true })),
         page.getByRole('dialog', { name: 'Edit Board details', exact: true }));
       await page.getByRole('textbox', { name: 'Board name', exact: true }).fill(longName);
       await page.getByRole('textbox', { name: 'Board description', exact: true }).fill(description);
@@ -46,7 +47,7 @@ for (const width of [1280, 390]) {
       await expect(other.getByRole('region', { name: 'Board workspace', exact: true })).toHaveCSS('background-color', 'rgb(250, 245, 255)');
       await pressAdmittedAction(page.getByRole('button', { name: 'Retry this Board save', exact: true }));
       await expect(page.getByText('Board changes acknowledged. Current Board state is being checked.', { exact: true })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Edit Board details', exact: true })).toBeFocused();
+      await expect((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Edit Board details', exact: true }))).toBeFocused();
       expect(requests).toHaveLength(2); expect(requests[1]).toEqual(requests[0]); expect(requests[0].key).toMatch(/^[0-9a-f-]{36}$/);
       expect(JSON.parse(requests[0].body!)).toEqual({ name: longName, description, version: board.version, backgroundType: 'COLOR', backgroundValue: 'purple' });
       for (const client of [page, other]) {
@@ -54,7 +55,7 @@ for (const width of [1280, 390]) {
         await expect(client.getByText(description, { exact: true })).toHaveCSS('white-space', 'pre-wrap');
         expect(await client.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       }
-      await openAdmittedReview(page.getByRole('button', { name: 'Edit Board details', exact: true }),
+      await openAdmittedReview((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Edit Board details', exact: true })),
         page.getByRole('dialog', { name: 'Edit Board details', exact: true }));
       await page.getByRole('textbox', { name: 'Board name', exact: true }).fill('Retained draft');
       const concurrent = await context.request.patch(`/boards/${board.id}`, { headers, data: { name: 'Concurrent Board', description: 'Concurrent description', version: board.version + 1 } });
@@ -66,7 +67,7 @@ for (const width of [1280, 390]) {
       await pressAdmittedAction(page.getByRole('button', { name: 'Review current Board revision', exact: true }));
       await page.getByRole('textbox', { name: 'Board description', exact: true }).fill('Reviewed draft description');
       await pressAdmittedAction(page.getByRole('button', { name: 'Save Board details', exact: true }));
-      await expect(page.getByRole('button', { name: 'Edit Board details', exact: true })).toBeFocused();
+      await expect((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Edit Board details', exact: true }))).toBeFocused();
       await expect(other.getByRole('heading', { name: 'Retained draft', exact: true })).toBeVisible();
       expect(requests).toHaveLength(3); expect(requests[2].key).not.toBe(requests[0].key);
       expect(JSON.parse(requests[2].body!)).toEqual({ name: 'Retained draft', description: 'Reviewed draft description', version: board.version + 2 });

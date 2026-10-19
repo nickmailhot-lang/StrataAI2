@@ -1,0 +1,10 @@
+{
+  "actual": {
+    "revision": "development",
+    "version": "0.0.0-dev"
+  },
+  "decision": "Rebuild exact unchanged source with explicit existing VITE build revision/version; do not relabel development assets as current evidence.",
+  "revision": "0c146329d6799e1e9316fd113ca281043666d164",
+  "native": "Not Run: runtime identity guard rejected development fallback before any native output was created",
+  "at": "2026-10-17T20:55:40.6572615+00:00"
+}

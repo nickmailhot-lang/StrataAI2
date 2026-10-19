@@ -1,0 +1,15 @@
+npm notice run @strataai/web@0.1.0 test
+npm notice run vitest run --maxWorkers=2 src/features/organizations/OrganizationHome.actions.test.tsx src/app/SecondaryActions.test.tsx src/app/workExperience.test.ts
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle18-organization-actions/apps/web
+
+
+ Test Files  3 passed (3)
+      Tests  12 passed (12)
+   Start at  19:16:41
+   Duration  7.29s (import 44%, environment 33%, tests 12%, setup 6%, transform 4%)
+
+Environment  jsdom was created 3 times · 4.47s total, 33% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+

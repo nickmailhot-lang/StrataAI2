@@ -157,7 +157,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       }
       return response(current);
     }));
-    mount(); const edit = await screen.findByRole('button', { name: 'Edit Board details' });
+    mount(); fireEvent.click(await screen.findByText('Board actions')); const edit = await screen.findByRole('button', { name: 'Edit Board details' });
     await waitFor(() => expect(edit).toBeEnabled()); fireEvent.click(edit);
     const dialog = screen.getByRole('dialog'); const controls = within(dialog);
     fireEvent.change(controls.getByLabelText('Board name'), { target: { value: 'Updated Board' } });
@@ -184,7 +184,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
       }
       return response(current);
     }));
-    mount(); const archive = await screen.findByRole('button', { name: 'Archive Board' });
+    mount(); fireEvent.click(await screen.findByText('Board actions')); const archive = await screen.findByRole('button', { name: 'Archive Board' });
     await waitFor(() => expect(archive).toBeEnabled()); fireEvent.click(archive);
     fireEvent.click(screen.getByRole('button', { name: 'Confirm archive' }));
     const retry = await screen.findByRole('button', { name: 'Retry this archive' });
@@ -499,6 +499,7 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     const fetcher = vi
       .fn()
       .mockResolvedValueOnce(response(fixture))
+      .mockResolvedValueOnce(response({ id: "11111111-1111-1111-1111-111111111111", status: "ACTIVE", version: 1, locale: "en", timezone: "UTC", emailVerified: true }))
       .mockResolvedValueOnce(response({ id: "list-2" }, 201))
       .mockResolvedValueOnce(
         response({
@@ -520,12 +521,13 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     vi.stubGlobal("fetch", fetcher);
     mount();
     fireEvent.click(await screen.findByRole("button", { name: "Add list" }));
-    fireEvent.change(screen.getByLabelText(/List name/), {
+    fireEvent.change(await screen.findByLabelText(/List name/), {
       target: { value: "   " },
     });
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
     expect(screen.getByRole("alert")).toHaveTextContent("Enter a list name.");
-    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher.mock.calls.filter(([, options]) => options?.method === "POST")).toHaveLength(0);
     fireEvent.change(screen.getByLabelText(/List name/), {
       target: { value: "Completed" },
     });
@@ -533,11 +535,11 @@ describe("PRD-01/04/07/08/09 persisted board flows", () => {
     expect(
       await screen.findByRole("heading", { name: "Completed" }),
     ).toBeVisible();
-    expect(fetcher.mock.calls[1][0]).toBe("/boards/board-1/lists");
-    expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({
+    expect(fetcher.mock.calls[2][0]).toBe("/boards/board-1/lists?expectedActorId=11111111-1111-1111-1111-111111111111");
+    expect(JSON.parse(fetcher.mock.calls[2][1].body)).toEqual({
       name: "Completed",
     });
-    expect(fetcher.mock.calls[1][1].headers.get("X-StrataAI-Request")).toBe(
+    expect(fetcher.mock.calls[2][1].headers.get("X-StrataAI-Request")).toBe(
       "1",
     );
   });

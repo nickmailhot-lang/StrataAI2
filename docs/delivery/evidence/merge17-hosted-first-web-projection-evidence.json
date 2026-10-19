@@ -1,0 +1,7 @@
+{
+  "revision": "51f95e6e1231affd328dbc23a278efcdf8b9e850",
+  "rawArtifact": "merge17-hosted-first-web-projection.json",
+  "rawSha256": "72f1b5bc1750f19883d9631913dcdd30905246154108ecceff45c998b9b9ca82",
+  "scope": "Actual first published-head hosted whole frontend:2903passed/0failed/24existing deferrals,205files+1deferred,311.63s. Actual synthetic compiled source51f95e6 over headc233, not later170 execution. Types/lint/productionbuild/web-quality passed; later final-head CI required.",
+  "rawUtf8Text": "{\n  \"capturedAt\": \"2026-10-18T07:52:40.455Z\",\n  \"pr\": 111,\n  \"head\": \"c233d44f9173c51358710e827bd7b160a767ac01\",\n  \"actualCompiledSource\": \"51f95e6e1231affd328dbc23a278efcdf8b9e850\",\n  \"runId\": 39108585320,\n  \"webJob\": 117619707689,\n  \"conclusion\": \"success\",\n  \"wholeFrontend\": {\n    \"passed\": 2903,\n    \"failed\": 0,\n    \"skipped\": 24,\n    \"total\": 2927,\n    \"filesPassed\": 205,\n    \"filesSkipped\": 1,\n    \"durationSeconds\": 311.63\n  },\n  \"identityAndFooter\": [],\n  \"scope\": \"Whole actual hosted frontend at the first combined head's synthetic merge; later axis-only Card return correction, new counterexample and migration-stage test additions are not relabelled as this execution. Exact final-head CI remains required.\"\n}\n"
+}

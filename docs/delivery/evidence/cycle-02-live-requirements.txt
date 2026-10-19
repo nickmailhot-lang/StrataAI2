@@ -1,0 +1,23 @@
+[
+  {
+    "title": "[PRD-01] Product Foundation and Information Architecture",
+    "state": "open",
+    "updatedAt": "2026-10-17T00:18:10Z",
+    "number": 1,
+    "bodyMatchesFrozenSnapshot": true
+  },
+  {
+    "title": "[PRD-02] Authentication and User Accounts",
+    "state": "open",
+    "updatedAt": "2026-10-16T18:03:14Z",
+    "number": 2,
+    "bodyMatchesFrozenSnapshot": true
+  },
+  {
+    "title": "[PRD-04] Board Creation and Board Management",
+    "state": "open",
+    "updatedAt": "2026-10-17T01:35:46Z",
+    "number": 5,
+    "bodyMatchesFrozenSnapshot": true
+  }
+]

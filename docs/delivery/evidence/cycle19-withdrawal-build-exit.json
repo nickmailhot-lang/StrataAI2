@@ -1,0 +1,13 @@
+{
+  "revision": "64411b5b74d8b3a3648f46158f235eab14406495",
+  "rawArtifact": "cycle19-withdrawal-build-exit.json",
+  "rawSha256": "2cc88c727b76c8845ab5e7ffa08328fcd4ab9ccbaa850f4a2fe451ab964e36a6",
+  "lines": [
+    "{",
+    "  \"scope\": \"Current13-case contract source64411b5b; sourceproduct logic/db exactly0dd. Original6case assertions retained, onlythree helper access modifiers change for new7withdrawal consumers.\",",
+    "  \"revision\": \"64411b5b74d8b3a3648f46158f235eab14406495\",",
+    "  \"exit\": 0",
+    "}",
+    ""
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "revision": "a135e0be66454accc8635b7bb3134fdc4a936ab7",
+  "rawArtifact": "merge17-clear-consumer-94.txt",
+  "rawSha256": "087e4c077c93b73adb68530aef161e4d4c613386f360526b9674e8eabe62a20e",
+  "scope": "Actual clean a135 whole4files94pass133.15s; includes all40Boardconsumer cases and54filter cases. Original5s budgets/normalisolation/two workers retained. Later135ee changes only the new fixture ignored selector option.",
+  "rawUtf8Text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run --maxWorkers=2 src/features/kanban/BoardFilterClearAdmission.test.tsx src/features/kanban/BoardFilterControl.test.tsx src/features/kanban/BoardFilterInteractionControl.test.tsx src/features/kanban/BoardScreen.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-main/apps/web\r\n\r\n\r\n Test Files  4 passed (4)\r\n      Tests  94 passed (94)\r\n   Start at  01:49:55\r\n   Duration  133.15s (tests 59%, import 34%, environment 5%, transform 2%, setup 1%)\r\n\r\n"
+}

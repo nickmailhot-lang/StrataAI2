@@ -1,0 +1,7 @@
+{
+  "revision": "15290b950d1904bac8113f1ae915fe459ac4260c",
+  "rawArtifact": "merge17-admission-focus-diagnostic.txt",
+  "rawSha256": "998e8a665568e5f86eaffca8268644a7730c7033886792cb22e2620fbcce580b",
+  "scope": "External supplementarydiagnosticconfigurationcouldnotloadactualsetup/@fs path;0testcasesexecuted. Notaproductfailureorpassingtest. Preservedand replacedbyregisteredtestwithsameassertionconditionplusactive-node description. No runtime/helper/securityguardchangedforthissetup.",
+  "rawUtf8Text": "\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-session-probe\r\n\r\n ❯ SurfaceAdmission.dirty-session.test.tsx (0 test)\r\n\r\n⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯\r\n\r\n FAIL  SurfaceAdmission.dirty-session.test.tsx [ SurfaceAdmission.dirty-session.test.tsx ]\r\nError: Cannot find module '/@fs/C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-main/apps/web/src/test/setup.ts'\r\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\r\n\r\n\r\n Test Files  1 failed (1)\r\n      Tests  no tests\r\n   Start at  00:19:25\r\n   Duration  2.22s (environment 99%, worker 1%)\r\n\r\n"
+}

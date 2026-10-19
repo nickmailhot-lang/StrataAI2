@@ -1,0 +1,44 @@
+{
+  "testRevision": "ac318f3ceab6a25b6122a25925b66696fc93cef2",
+  "compiledAppRevision": "3bf5c2ba7598f3348143b3b5083c8c7be3be1bc8",
+  "geometry": [
+    {
+      "width": 390,
+      "alertBox": {
+        "x": 16,
+        "y": 8,
+        "width": 358,
+        "height": 68.03125
+      },
+      "headerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 56
+      },
+      "height": 900,
+      "scrollY": 64,
+      "alertFocused": false,
+      "activeTag": "BODY"
+    },
+    {
+      "width": 1280,
+      "alertBox": {
+        "x": 272,
+        "y": 88,
+        "width": 984,
+        "height": 48.015625
+      },
+      "headerBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 64
+      },
+      "height": 900,
+      "scrollY": 0,
+      "alertFocused": false,
+      "activeTag": "BODY"
+    }
+  ]
+}

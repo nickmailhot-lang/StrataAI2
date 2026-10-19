@@ -1,0 +1,68 @@
+{
+  "at": "2026-10-17T23:48:22.370Z",
+  "pullRequest": 101,
+  "headRevision": "df638da3731a5043dd2388b0ace5b356bab2de89",
+  "actualCheckoutRevision": "ffb03d91189f5514e111d30480778c7986a51a26",
+  "runId": 39067731383,
+  "job": {
+    "id": 117508335492,
+    "head_sha": "df638da3731a5043dd2388b0ace5b356bab2de89",
+    "name": "container-integration (browser-full, 2/4)",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "logTruncated": true,
+  "failures": [
+    {
+      "name": "1) tests/browser/checklist-board-context.spec.ts:9:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 1280px",
+      "comparison": [
+        "Expected: 20",
+        "Received: 16",
+        "> 87 |       expect(await canvas.evaluate(node => node.scrollLeft)).toBe(left);",
+        "at /home/runner/work/StrataAI2/StrataAI2/tests/browser/checklist-board-context.spec.ts:87:62"
+      ]
+    },
+    {
+      "name": "2) tests/browser/checklist-board-context.spec.ts:9:7 › PRD-13-TC-11/12: checklist editing preserves Board scroll and Card focus at 390px",
+      "comparison": [
+        "Expected: 20",
+        "Received: 16",
+        "> 87 |       expect(await canvas.evaluate(node => node.scrollLeft)).toBe(left);",
+        "at /home/runner/work/StrataAI2/StrataAI2/tests/browser/checklist-board-context.spec.ts:87:62"
+      ]
+    },
+    {
+      "name": "3) tests/browser/kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px",
+      "comparison": [
+        "Expected: 20",
+        "Received: 16",
+        "> 87 |     expect(await canvas.evaluate(node => node.scrollLeft)).toBe(canvasLeft);",
+        "at /home/runner/work/StrataAI2/StrataAI2/tests/browser/kanban-scroll.spec.ts:87:60"
+      ]
+    },
+    {
+      "name": "4) tests/browser/kanban-scroll.spec.ts:6:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "comparison": [
+        "Expected: 20",
+        "Received: 16",
+        "> 87 |     expect(await canvas.evaluate(node => node.scrollLeft)).toBe(canvasLeft);",
+        "at /home/runner/work/StrataAI2/StrataAI2/tests/browser/kanban-scroll.spec.ts:87:60"
+      ]
+    },
+    {
+      "name": "5) tests/browser/kanban-scroll.spec.ts:6:7 › PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "comparison": [
+        "Expected: 20",
+        "Received: 16",
+        "> 87 |     expect(await canvas.evaluate(node => node.scrollLeft)).toBe(canvasLeft);",
+        "at /home/runner/work/StrataAI2/StrataAI2/tests/browser/kanban-scroll.spec.ts:87:60"
+      ]
+    }
+  ],
+  "footer": [
+    "5 failed",
+    "2 skipped",
+    "105 passed (1.1h)"
+  ],
+  "scope": "Older exact frozen candidate; five horizontal return-scroll failures expected20/received16. Current D525 product still has unconditional nearest scrolling but differs in List layout; unchanged current baseline is required before claiming reproduction or a fix."
+}

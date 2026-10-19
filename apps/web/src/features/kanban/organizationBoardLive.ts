@@ -8,7 +8,7 @@ export function createOrganizationBoardConnection() {
   }).withAutomaticReconnect([0, 2000, 10_000, 30_000]).configureLogging(LogLevel.None).build();
 }
 export function watchOrganizationBoards(options: {
-  organizationId: string; userId: string; invalidate: () => void; reset: () => void; unavailable: () => void;
+  organizationId: string; userId: string; invalidate: () => void; reset: (established?: boolean) => void; unavailable: () => void;
   audience?: 'discovery';
   connection?: ReturnType<typeof createOrganizationBoardConnection>;
 }) {
@@ -41,7 +41,7 @@ export function watchOrganizationBoards(options: {
         if (!page) { fail(); return; }
         // Ciphertext may change on every heartbeat. Only a canonical source or
         // reset invalidates the view; no numeric position or content hash is used.
-        if (page.resetRequired) { seen.clear(); options.reset(); }
+        if (page.resetRequired) { seen.clear(); options.reset(cursor !== undefined); }
         if (page.eventIds.length) invalidate();
         cursor = page.cursor;
         for (const [id, fingerprint] of page.eventIds) seen.set(id, fingerprint);

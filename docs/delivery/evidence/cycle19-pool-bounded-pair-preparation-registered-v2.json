@@ -1,0 +1,16 @@
+{
+  "revision": "3a41fc46ae5941723a8262f8773979675863d6c9",
+  "rawArtifact": "cycle19-pool-bounded-pair-preparation.json",
+  "rawSha256": "2da56cba3d52311e363b952a95bc813a382bb21ac013fb17502c27ff20a6aa6a",
+  "scope": "Only temporary rawfixture Pooling=false resourceownership changed in newtest; businessadapters/pools/assertions/queries/lockmodes/deadlines unchanged. Current3a actual15/fullmax100 reruns pending.",
+  "lines": [
+    "{",
+    "  \"at\": \"2026-10-18T05:12:03.566Z\",",
+    "  \"baselineSource\": \"12294317dfa8bce93f38993a19a50431a3b5ee64\",",
+    "  \"previousCurrentSource\": \"f4ce3729f9c841ffc0c48b8ec61381535c8b8ec6\",",
+    "  \"testSha256\": \"5aea19f22fc705213e6a04fd18a0654abea6bc39fae15f4ea211e6202128de30\",",
+    "  \"scope\": \"Same pairedguard andalloriginalassertions/deadlines. Only3temporary rawfixtureconnections nowPooling=false so disposal closes ratherthanretaining globalpools. ActualbusinessPostgresConnectionFactory/adapters/rolechecks/lockmodes unchanged. Original149/max100baselinev3 alreadyfailedbothpaths withactual40P01; current15+wholedefaultmax100rerunrequired. Prior92red/f4green15/fullf4failed53300 retained.\"",
+    "}",
+    ""
+  ]
+}

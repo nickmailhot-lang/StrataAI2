@@ -1,3 +1,4 @@
+import { disclosedWorkControl } from './workActionDisclosure';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
@@ -49,7 +50,7 @@ for (const width of [1280, 390]) for (const action of ['read', 'edit'] as const)
       await expect.poll(reads).toBeGreaterThanOrEqual(2);
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
       const dialog = page.getByRole('dialog', { name: 'Manage Board labels', exact: true });
-      await openAdmittedReview(page.getByRole('button', { name: 'Manage labels', exact: true }), dialog);
+      await openAdmittedReview((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Manage labels', exact: true })), dialog);
       if (action === 'edit') {
         const name = dialog.getByLabel('Label name (optional)', { exact: true });
         await openAdmittedReview(dialog.getByRole('button', { name: 'Edit Original label (green)', exact: true }), name);

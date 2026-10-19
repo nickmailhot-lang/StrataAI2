@@ -1,0 +1,257 @@
+{
+  "at": "2026-10-17T23:15:29.228Z",
+  "revision": "1f70dc1028d65a9e7d7075bc166f6cc4c2b7ea2b",
+  "productRevision": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+  "priorAcceptance": [
+    {
+      "id": "PRD-01-VS-04",
+      "state": "In Progress",
+      "implementation": {
+        "revision": "9b26f63d4c1665b97f2b6d7950ea33c8c2be2d4d",
+        "paths": [
+          "apps/web/src/features/auth/AuthPage.tsx",
+          "apps/web/src/features/auth/signInReturnPath.ts",
+          "apps/web/src/features/kanban/BoardScreen.tsx"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "PRD-01-VS-04/AC-01",
+          "ownerId": "PRD-01-VS-04",
+          "sourceId": "AC-01",
+          "text": "The same generic sign-in action is available for unauthenticated/missing private Board responses without exposing protected titles; a validated sign-in returns to the original canonical Board or Card route.",
+          "sourceRefs": [
+            "PRD-01/FOUND-FR-006",
+            "PRD-01/FOUND-FR-007",
+            "PRD-02/AUTH-FR-003",
+            "UXA-01–08"
+          ],
+          "status": "Verified",
+          "evidenceIds": [
+            "EVID-CYCLE-02-WEB",
+            "EVID-CYCLE-02-RETURN-BROWSER",
+            "EVID-CYCLE-02-VISUAL"
+          ],
+          "reviewer": "delivery-agent: scoped automated/developer review; final product/release acceptance pending",
+          "verifiedAt": "2026-10-17T15:54:38.072Z"
+        },
+        {
+          "id": "PRD-01-VS-04/AC-02",
+          "ownerId": "PRD-01-VS-04",
+          "sourceId": "AC-02",
+          "text": "Failed, uncertain or mismatched sign-in acknowledgment cannot navigate. Explicit same-details retry retains its original key and destination; permitted Card edits remain canonical after reload, Close returns to Board, and Back does not reintroduce sign-in.",
+          "sourceRefs": [
+            "PRD-01/FOUND-FR-006",
+            "PRD-01/FOUND-FR-007",
+            "PRD-02/AUTH-FR-003",
+            "UXA-01–08"
+          ],
+          "status": "Verified",
+          "evidenceIds": [
+            "EVID-CYCLE-02-WEB",
+            "EVID-CYCLE-02-RETURN-BROWSER",
+            "EVID-CYCLE-02-VISUAL"
+          ],
+          "reviewer": "delivery-agent: scoped automated/developer review; final product/release acceptance pending",
+          "verifiedAt": "2026-10-17T15:54:38.072Z"
+        },
+        {
+          "id": "PRD-01-VS-04/AC-03",
+          "ownerId": "PRD-01-VS-04",
+          "sourceId": "AC-03",
+          "text": "Only canonical internal Board/Card paths can be return destinations. External, malformed, Portal, destructive, query and fragment destinations fall back to /app; invitation callbacks keep ownership. Existing outsider, Portal and cross-Organization denial remain server-authoritative without protected content/navigation disclosure.",
+          "sourceRefs": [
+            "PRD-01/FOUND-FR-006",
+            "PRD-01/FOUND-FR-007",
+            "PRD-02/AUTH-FR-003",
+            "UXA-01–08"
+          ],
+          "status": "Unverified",
+          "evidenceIds": [],
+          "validationGaps": [
+            "Complete current cross-Organization/Production regression remains unverified; the focused outsider and Portal checks pass."
+          ]
+        },
+        {
+          "id": "PRD-01-VS-04/AC-04",
+          "ownerId": "PRD-01-VS-04",
+          "sourceId": "AC-04",
+          "text": "The complete affected workflow is keyboard-usable at 320/390/768/1280px with no page overflow and applicable Axe checks passing. Record visual review, exact source/test evidence and remaining integration/release gates separately.",
+          "sourceRefs": [
+            "PRD-01/FOUND-FR-006",
+            "PRD-01/FOUND-FR-007",
+            "PRD-02/AUTH-FR-003",
+            "UXA-01–08"
+          ],
+          "status": "Verified",
+          "evidenceIds": [
+            "EVID-CYCLE-02-WEB",
+            "EVID-CYCLE-02-RETURN-BROWSER",
+            "EVID-CYCLE-02-VISUAL"
+          ],
+          "reviewer": "delivery-agent: scoped automated/developer review; final product/release acceptance pending",
+          "verifiedAt": "2026-10-17T15:54:38.072Z"
+        }
+      ]
+    },
+    {
+      "id": "PRD-01-VS-04-T-01",
+      "state": "Blocked",
+      "implementation": {
+        "revision": "9b26f63d4c1665b97f2b6d7950ea33c8c2be2d4d",
+        "paths": [
+          "apps/web/src/features/auth/AuthPage.tsx",
+          "apps/web/src/features/auth/signInReturnPath.ts",
+          "apps/web/src/features/kanban/BoardScreen.tsx"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "PRD-01-VS-04-T-01/AC-01",
+          "ownerId": "PRD-01-VS-04-T-01",
+          "sourceId": "AC-01",
+          "text": "The same generic sign-in action is available for unauthenticated/missing private Board responses without exposing protected titles; a validated sign-in returns to the original canonical Board or Card route.",
+          "sourceRefs": [
+            "PRD-01-VS-04/AC-01"
+          ],
+          "status": "Verified",
+          "evidenceIds": [
+            "EVID-CYCLE-02-WEB",
+            "EVID-CYCLE-02-RETURN-BROWSER",
+            "EVID-CYCLE-02-VISUAL"
+          ],
+          "reviewer": "delivery-agent: scoped automated/developer review; final product/release acceptance pending",
+          "verifiedAt": "2026-10-17T15:54:38.072Z"
+        },
+        {
+          "id": "PRD-01-VS-04-T-01/AC-02",
+          "ownerId": "PRD-01-VS-04-T-01",
+          "sourceId": "AC-02",
+          "text": "Failed, uncertain or mismatched sign-in acknowledgment cannot navigate. Explicit same-details retry retains its original key and destination; permitted Card edits remain canonical after reload, Close returns to Board, and Back does not reintroduce sign-in.",
+          "sourceRefs": [
+            "PRD-01-VS-04/AC-02"
+          ],
+          "status": "Verified",
+          "evidenceIds": [
+            "EVID-CYCLE-02-WEB",
+            "EVID-CYCLE-02-RETURN-BROWSER",
+            "EVID-CYCLE-02-VISUAL"
+          ],
+          "reviewer": "delivery-agent: scoped automated/developer review; final product/release acceptance pending",
+          "verifiedAt": "2026-10-17T15:54:38.072Z"
+        },
+        {
+          "id": "PRD-01-VS-04-T-01/AC-03",
+          "ownerId": "PRD-01-VS-04-T-01",
+          "sourceId": "AC-03",
+          "text": "Only canonical internal Board/Card paths can be return destinations. External, malformed, Portal, destructive, query and fragment destinations fall back to /app; invitation callbacks keep ownership. Existing outsider, Portal and cross-Organization denial remain server-authoritative without protected content/navigation disclosure.",
+          "sourceRefs": [
+            "PRD-01-VS-04/AC-03"
+          ],
+          "status": "Unverified",
+          "evidenceIds": [],
+          "validationGaps": [
+            "Complete current cross-Organization/Production regression remains unverified; the focused outsider and Portal checks pass."
+          ]
+        },
+        {
+          "id": "PRD-01-VS-04-T-01/AC-04",
+          "ownerId": "PRD-01-VS-04-T-01",
+          "sourceId": "AC-04",
+          "text": "The complete affected workflow is keyboard-usable at 320/390/768/1280px with no page overflow and applicable Axe checks passing. Record visual review, exact source/test evidence and remaining integration/release gates separately.",
+          "sourceRefs": [
+            "PRD-01-VS-04/AC-04"
+          ],
+          "status": "Verified",
+          "evidenceIds": [
+            "EVID-CYCLE-02-WEB",
+            "EVID-CYCLE-02-RETURN-BROWSER",
+            "EVID-CYCLE-02-VISUAL"
+          ],
+          "reviewer": "delivery-agent: scoped automated/developer review; final product/release acceptance pending",
+          "verifiedAt": "2026-10-17T15:54:38.072Z"
+        }
+      ]
+    },
+    {
+      "id": "PRD-01-VS-04-T-01-TEST-01",
+      "state": "Review",
+      "implementation": {
+        "revision": "9b26f63d4c1665b97f2b6d7950ea33c8c2be2d4d",
+        "paths": [
+          "apps/web/src/features/auth/AuthPage.return.test.tsx"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "PRD-01-VS-04-T-01-TEST-01/AC-01",
+          "ownerId": "PRD-01-VS-04-T-01-TEST-01",
+          "sourceId": "AC-01",
+          "text": "Execute the recorded positive/negative scope without skips or assertion relaxation; retain failed probes and current revision results.",
+          "sourceRefs": [
+            "PRD-01-VS-04/AC-01",
+            "PRD-01-VS-04/AC-02",
+            "PRD-01-VS-04/AC-03"
+          ],
+          "status": "Verified",
+          "evidenceIds": [
+            "EVID-CYCLE-02-WEB"
+          ],
+          "reviewer": "delivery-agent: scoped automated/developer review; final product/release acceptance pending",
+          "verifiedAt": "2026-10-17T15:54:38.072Z"
+        }
+      ]
+    },
+    {
+      "id": "PRD-01-VS-04-T-01-TEST-02",
+      "state": "Review",
+      "implementation": {
+        "revision": "9b26f63d4c1665b97f2b6d7950ea33c8c2be2d4d",
+        "paths": [
+          "tests/browser/signin-card-return.spec.ts"
+        ]
+      },
+      "criteria": [
+        {
+          "id": "PRD-01-VS-04-T-01-TEST-02/AC-01",
+          "ownerId": "PRD-01-VS-04-T-01-TEST-02",
+          "sourceId": "AC-01",
+          "text": "Execute the recorded positive/negative scope without skips or assertion relaxation; retain failed probes and current revision results.",
+          "sourceRefs": [
+            "PRD-01-VS-04/AC-01",
+            "PRD-01-VS-04/AC-02",
+            "PRD-01-VS-04/AC-03",
+            "PRD-01-VS-04/AC-04"
+          ],
+          "status": "Verified",
+          "evidenceIds": [
+            "EVID-CYCLE-02-RETURN-BROWSER"
+          ],
+          "reviewer": "delivery-agent: scoped automated/developer review; final product/release acceptance pending",
+          "verifiedAt": "2026-10-17T15:54:38.072Z"
+        }
+      ]
+    }
+  ],
+  "visual": {
+    "reviewer": "delivery-agent",
+    "captures": [
+      {
+        "name": "cross-organization-denied-390.png",
+        "sha256": "f49a7e062b079108243c10ba6fc0e7214701f94cc24b768e03720cabbe75dadd"
+      },
+      {
+        "name": "cross-organization-authorized-return-390.png",
+        "sha256": "5c4d4839f37e078ac3870b3367a5580947b6a7c60a48745fd91809a04d654750"
+      }
+    ],
+    "observed": "Manually inspected both actual current phone screenshots: denial shows only generic unavailable message, public reference, Retry/Sign in and build footer; no target data or navigation. Authorized Back opens original CardA with readable title, visible focused title outline, Save/Close and local vertical detail content. Native request, URL, role, canonical and Axe assertions are separate evidence; capture is not whole-WCAG certification."
+  },
+  "reusedProduct": {
+    "proof": "Complete apps/web, backend/db/API/Domain-test and root build inputs exactly equal fbbe942c; runtime evidence explicitly identifies actual compiled webfbbe942c/API389c70ab/Worker0f6ddc29.",
+    "build": "Existing identified fbbe942c/0.1.0 production build reused. No new build at test-only1f70dc10.",
+    "full": "Actual complete frontend execution atfbbe942c:2862passed/0failed/24existingdeferrals,809.03s; no current full rerun inferred.",
+    "sourceOnlyChange": "One permanent additional browser acceptance. No product/API/schema/permission/dependency/UX rewrite."
+  },
+  "review": "Current original sign-in return scope is locally verified including genuine cross-Organization denial. Previously unverified AC03 is now substantiated by current54 controls and whole13 real-service cases. Broader PRD01/02, independent Work UX amendments, exact combined immutable required CI and target-main integration remain pending. Original evidence and lifecycle history retained; no parent or MVP Done."
+}

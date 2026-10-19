@@ -1,0 +1,69 @@
+Responsible delivery-agent source/product/UX review at 2026-10-17T21:23:25.879Z; exact source 33e5c6d2176d6b8718fda2e19435c33dc40f4f91.
+Reviewed all three production-file changes against frozen PR101 head df638da3, plus current full 2852/0/24, focused111/native42/12 rendered captures and retained red evidence. Heading/status wrap locally; supported MUI ButtonBaseActions restores the existing approved indicator. Centered reveal stays behind the existing current-version, admission and focus-ownership checks; outside navigation preserves focus and scroll. No command body/key/version/order, role, server/schema/event, dependency or shared shell/theme change. No known critical regression found in this tested scope. This is responsible agent review, not an independent human approval or full Production/provider/WCAG certificate. Obey actual protected-branch review requirements at integration; no extra approval flow is invented. Exact immutable current release and main integration remain pending.
+
+diff --git a/apps/web/src/features/kanban/BoardScreen.tsx b/apps/web/src/features/kanban/BoardScreen.tsx
+index 79718ccb..812f26d9 100644
+--- a/apps/web/src/features/kanban/BoardScreen.tsx
++++ b/apps/web/src/features/kanban/BoardScreen.tsx
+@@ -700,8 +700,8 @@ function BoardContent() {
+             disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id) || renameRecovery.has(column.list.id)}
+             available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(column.list.version) && Number(column.list.version) > 0}
+           >
+-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+-            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
++            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
++            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3" sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
+               {column.list.name}
+             </Typography>
+             <ListRenameControl list={column.list} snapshot={snapshot}
+diff --git a/apps/web/src/features/kanban/ListPositionControls.tsx b/apps/web/src/features/kanban/ListPositionControls.tsx
+index 9615d7fa..981f7ae1 100644
+--- a/apps/web/src/features/kanban/ListPositionControls.tsx
++++ b/apps/web/src/features/kanban/ListPositionControls.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useEffectEvent, useRef, useState } from 'react';
+ import { Alert, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
++import type { ButtonBaseActions } from '@mui/material/ButtonBase';
+ import type { BoardSnapshot } from '../../api/workManagement';
+ import { apiFetch } from '../../api/apiFetch';
+ import type { ListMovePreview } from './listMovePreview';
+@@ -15,13 +16,16 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
+   const [busy, setBusy] = useState(false); const [blocked, setBlocked] = useState(false); const [notice, setNotice] = useState<string>();
+   useEffect(() => { onRecoveryChange?.(list.id, !!intent || blocked); return () => onRecoveryChange?.(list.id, false); }, [list.id, intent, blocked, onRecoveryChange]);
+   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(true); const action = useRef<HTMLButtonElement>(null);
++  const focusAction = useRef<ButtonBaseActions>(null);
+   const focusRequested = useRef<number | undefined>(undefined);
+   useEffect(() => {
+     const expectedVersion = focusRequested.current;
+     if (expectedVersion === undefined || disabled || busy || review || Number(list.version) < expectedVersion
+       || !snapshot.access.canMove || snapshot.board.lifecycleState !== 'active' || list.lifecycleState !== 'active'
+       || !action.current || action.current.disabled) return;
+-    action.current.focus();
++    focusAction.current?.focusVisible();
++    // Leave room for the approved outline inside the viewport and local canvas.
++    action.current.scrollIntoView?.({ block: 'center', inline: 'nearest' });
+     // Keep ownership through later admission refreshes that disable the button.
+     // An explicit focus move to another control releases it in onBlur.
+   }, [disabled, busy, review, list.version, list.lifecycleState, snapshot.access.canMove, snapshot.board.lifecycleState]);
+@@ -80,7 +84,7 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
+   }
+   return <Stack spacing={1} sx={{ mt: 1 }}>
+     {notice && <Alert severity="info">{notice}</Alert>}
+-    {!review ? <Button ref={action} disabled={disabled || !admitted}
++    {!review ? <Button ref={action} action={focusAction} disabled={disabled || !admitted}
+       onFocus={() => { focusRequested.current = Number(list.version); }}
+       onBlur={event => { if (event.relatedTarget !== null) focusRequested.current = undefined; }}
+       onClick={() => { focusRequested.current = undefined; setNotice(undefined); setReview({ name: list.name, version: list.version!, before: '' }); }}>Move {list.name} list</Button>
+diff --git a/apps/web/src/features/kanban/ListRenameControl.tsx b/apps/web/src/features/kanban/ListRenameControl.tsx
+index 54c2c961..0bec918a 100644
+--- a/apps/web/src/features/kanban/ListRenameControl.tsx
++++ b/apps/web/src/features/kanban/ListRenameControl.tsx
+@@ -82,7 +82,7 @@ export function ListRenameControl({ list, snapshot, disabled, onRefresh, onBusyC
+   return <>
+     {admitted && !denied && <IconButton ref={action} size="small" disabled={disabled || busy || !!intent}
+       aria-label={`Rename ${list.name} list`} onClick={open}><EditOutlinedIcon /></IconButton>}
+-    {!review && notice && <Typography role="status" variant="body2">{notice}</Typography>}
++    {!review && notice && <Typography role="status" variant="body2" sx={{ flexBasis: '100%', minWidth: 0 }}>{notice}</Typography>}
+     <Dialog open={!!review} onClose={close} disableRestoreFocus
+       slotProps={{ transition: { onExited: () => action.current?.focus({ preventScroll: true }) } }} fullWidth maxWidth="sm">
+       {review && <Box component="form" onSubmit={event => { event.preventDefault(); void save(); }}>

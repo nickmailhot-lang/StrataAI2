@@ -1,0 +1,7 @@
+{
+  "revision": "42b6ec06b5466a08633274b31e5bdbe7d167e824",
+  "rawArtifact": "cycle20-native-repair-collection.json",
+  "rawSha256": "02a9c99961ec529c5850172ca850b5e49ecd25d7b62e16080072c163efa66915",
+  "scope": "Actual plannedwholeList4/Kanban3/checklist2/Work4 =13/4files collectiononly. Discoveryisnotexecution.",
+  "rawUtf8Text": "{\r\n  \"scope\": \"Actual collection only; whole originalcase files/assertions/deadlines, zeroengine retries, not passing execution.\",\r\n  \"fileCount\": 4,\r\n  \"exit\": 0,\r\n  \"total\": 13,\r\n  \"revision\": \"42b6ec06b5466a08633274b31e5bdbe7d167e824\",\r\n  \"files\": [\r\n    \"list-creation-recovery.spec.ts\",\r\n    \"kanban-scroll.spec.ts\",\r\n    \"checklist-board-context.spec.ts\",\r\n    \"work-navigation.spec.ts\"\r\n  ],\r\n  \"stage\": \"repair\"\r\n}\r\n"
+}

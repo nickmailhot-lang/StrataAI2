@@ -1,0 +1,99 @@
+{
+  "at": "2026-10-17T22:33:03.137Z",
+  "artifactId": 12114796638,
+  "actualImageRevision": "dc27b080a8e25b2b0af77c12628ba1563df156f5",
+  "method": "Read compressed frame snapshots using the installed Playwright1.63 postorder-node/subtree-reference algorithm; no HTML/script execution and only stable confirmation-control flags exported.",
+  "confirmStates": [
+    {
+      "time": 546076.461,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 546078.066,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 546080.2,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 546081.462,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 546084.494,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 546095.838,
+      "name": null,
+      "disabled": false,
+      "ariaDisabled": null,
+      "tabIndex": "0",
+      "focusVisible": false,
+      "target": null
+    },
+    {
+      "time": 546114.68,
+      "name": null,
+      "disabled": true,
+      "ariaDisabled": null,
+      "tabIndex": "-1",
+      "focusVisible": false,
+      "target": ""
+    },
+    {
+      "time": 546116.506,
+      "name": null,
+      "disabled": true,
+      "ariaDisabled": null,
+      "tabIndex": "-1",
+      "focusVisible": false,
+      "target": ""
+    },
+    {
+      "time": 546121.538,
+      "name": null,
+      "disabled": true,
+      "ariaDisabled": null,
+      "tabIndex": "-1",
+      "focusVisible": false,
+      "target": ""
+    },
+    {
+      "time": 546123.397,
+      "name": null,
+      "disabled": true,
+      "ariaDisabled": null,
+      "tabIndex": "-1",
+      "focusVisible": false,
+      "target": null
+    }
+  ],
+  "scope": "Exact older failed trace, not a current native reproduction. No cookies/headers/account fields, body data or temporary URL exported."
+}

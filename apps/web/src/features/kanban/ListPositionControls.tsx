@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Alert, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import type { ButtonBaseActions } from '@mui/material/ButtonBase';
 import type { BoardSnapshot } from '../../api/workManagement';
 import { apiFetch } from '../../api/apiFetch';
 import type { ListMovePreview } from './listMovePreview';
@@ -15,13 +16,16 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
   const [busy, setBusy] = useState(false); const [blocked, setBlocked] = useState(false); const [notice, setNotice] = useState<string>();
   useEffect(() => { onRecoveryChange?.(list.id, !!intent || blocked); return () => onRecoveryChange?.(list.id, false); }, [list.id, intent, blocked, onRecoveryChange]);
   const pending = useRef<AbortController | undefined>(undefined); const mounted = useRef(true); const action = useRef<HTMLButtonElement>(null);
+  const focusAction = useRef<ButtonBaseActions>(null);
   const focusRequested = useRef<number | undefined>(undefined);
   useEffect(() => {
     const expectedVersion = focusRequested.current;
     if (expectedVersion === undefined || disabled || busy || review || Number(list.version) < expectedVersion
       || !snapshot.access.canMove || snapshot.board.lifecycleState !== 'active' || list.lifecycleState !== 'active'
       || !action.current || action.current.disabled) return;
-    action.current.focus();
+    focusAction.current?.focusVisible();
+    // Leave room for the approved outline inside the viewport and local canvas.
+    action.current.scrollIntoView?.({ block: 'center', inline: 'nearest' });
     // Keep ownership through later admission refreshes that disable the button.
     // An explicit focus move to another control releases it in onBlur.
   }, [disabled, busy, review, list.version, list.lifecycleState, snapshot.access.canMove, snapshot.board.lifecycleState]);
@@ -80,7 +84,7 @@ export function ListPositionControls({ list, snapshot, disabled, onRefresh, onBu
   }
   return <Stack spacing={1} sx={{ mt: 1 }}>
     {notice && <Alert severity="info">{notice}</Alert>}
-    {!review ? <Button ref={action} disabled={disabled || !admitted}
+    {!review ? <Button ref={action} action={focusAction} disabled={disabled || !admitted}
       onFocus={() => { focusRequested.current = Number(list.version); }}
       onBlur={event => { if (event.relatedTarget !== null) focusRequested.current = undefined; }}
       onClick={() => { focusRequested.current = undefined; setNotice(undefined); setReview({ name: list.name, version: list.version!, before: '' }); }}>Move {list.name} list</Button>

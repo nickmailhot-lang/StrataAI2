@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-17T21:57:10.235Z",
+  "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+  "reviewer": "delivery-agent",
+  "result": "Passed for scoped observation-only increment",
+  "captures": [
+    {
+      "width": 1280,
+      "source": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle11-prod-scoped-native\\invitation-issuer-telemetr-d906e-lude-private-data-at-1280px\\test-finished-1.png",
+      "export": "outputs/StrataAI2-invitation-recovery-1280.png",
+      "sha256": "e8f69a0fc7abf9fd0770152cf6520076c25886ccaa3f0df56e510d1e61443efe"
+    },
+    {
+      "width": 390,
+      "source": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle11-prod-scoped-native\\invitation-issuer-telemetr-cb286-clude-private-data-at-390px\\test-finished-1.png",
+      "export": "outputs/StrataAI2-invitation-recovery-390.png",
+      "sha256": "ef62c08f05672cae1242028fd341975bd736d676fbde692ed17f32db46d934a8"
+    }
+  ],
+  "observations": [
+    "Inspected both actual native final viewport captures. Desktop and phone retain current permission feedback, Back to Board and issued-history links, heading, role description and acknowledged receipt. Phone heading wraps within the content width; current MUI shell and navigation remain.",
+    "These are viewport captures. Receipt details and the explicit next action extend below the fold and require normal page scrolling; the images do not prove every receipt line or focus outline is simultaneously visible. Original native checks separately prove keyboard recovery, enabled next action, exact canonical state and Axe.",
+    "The only product changes are two observation-generation guards. No label, route, layout, shell, theme, navigation, command, permission, schema or event contract changed. The two-width real consumer is the applicable current rendered check for this system-observation increment; prior four-width List/Card evidence remains explicitly at33e5c6d2, not relabeled current.",
+    "Automated Axe and rendered inspection are distinct. No full screen-reader/device/WCAG, managed-provider, strict-account, HTTPS or immutable-image certification is inferred."
+  ],
+  "remaining": "Current full frontend is running alone at0f6ddc29; final contracts/registries, exact immutable required CI and target integration remain pending."
+}

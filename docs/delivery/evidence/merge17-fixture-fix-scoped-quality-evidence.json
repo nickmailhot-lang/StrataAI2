@@ -1,0 +1,60 @@
+{
+  "at": "2026-10-18T13:52:22.776Z",
+  "revision": "50ad0f4a1cfc7a7a2b5e9e7fc2636df0c0d2df3d",
+  "result": "Passed",
+  "scope": "Scoped quality only; no new-head production workflow or full release acceptance.",
+  "checks": [
+    {
+      "path": "work/merge17-watch-and-scope-types-exit.json",
+      "exit": 0,
+      "scope": "Uncommitted Organization-actions scopedWorker and dynamic Card-watch disclosure corrections only; all original scopes/assertions/deadlines retained; app/backend unchanged",
+      "base": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+      "at": "2026-10-18T13:36:54.7924849+00:00",
+      "sha256": "0a2f359093d966aea2ba770f28ec246092db2b04adfd96cdf9c9c5c50c95caf3"
+    },
+    {
+      "path": "work/merge17-fixture-rework-contracts-exit.json",
+      "scope": "Existing integration registry, shard completeness, keyboard admission, and delivery lifecycle contracts",
+      "exit": 0,
+      "at": "2026-10-18T13:51:10.1375850+00:00",
+      "sha256": "b15ddee9f7464171ea22d4fd72cd5235f129894cda38d572e09b8433928dccd5"
+    }
+  ],
+  "contracts": {
+    "passed": 349,
+    "failed": 0,
+    "skipped": 0
+  },
+  "inputs": [
+    {
+      "path": "tests/browser/organization-actions.spec.ts",
+      "sha256": "e132fdc4c77ff0d48070b020ade5897194c00a512a9a53e98dab77896322a1d3"
+    },
+    {
+      "path": "tests/browser/watch-cross-board-notifications.spec.ts",
+      "sha256": "725b759ba6d1dc6614a94fc0a764417ca09822f474421d48794ec7549bdb2637"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "1df15ae7642099852e9d67ced7599852daa76d16888ed753e88552f7dfc24d13"
+    }
+  ],
+  "retainedCurrentHosted": {
+    "publishedHead": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+    "synthetic": "577e80591fac1ddb5f6b60ea89d3ab0dd3c6cf02",
+    "run": 39121650532,
+    "full2": {
+      "job": 117668178408,
+      "status": "success",
+      "passed": 118,
+      "skipped": 2
+    },
+    "full4": {
+      "job": 117668178438,
+      "status": "In Progress",
+      "observation": "Read actual live provider output: normal Card dates, checklist and desktop Kanban passed; normal phone Kanban failed. Whole job and final phone error stack not yet available. No timing result inferred, assertion/budget unchanged.",
+      "pending": "Capture final log and retained measurement before deciding correction."
+    }
+  },
+  "next": "Retain final old-head diagnostics, complete only justified corrections, then require all22 new exact-head gates before normal expected-head main merge and actual17receipt ancestry verification."
+}

@@ -67,6 +67,14 @@ test(`PRD-06: normal Board readiness, cached detail and mutation latency meet bu
     if (touch) await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
     await page.getByRole('button', { name: 'Drag Performance card 2 card', exact: true }).scrollIntoViewIfNeeded();
     if (width === 1280) await page.getByRole('link', { name: 'Performance card 4', exact: true }).scrollIntoViewIfNeeded();
+    // Set up the intended destination away from the vertical auto-scroll edge
+    // before the real cross-List gesture and timed release.
+    if (width === 390) await page.getByRole('link', { name: 'Performance card 4', exact: true }).evaluate(anchor => {
+      const section = anchor.closest('section')!;
+      const rect = anchor.getBoundingClientRect(), bounds = section.getBoundingClientRect();
+      const top = Math.max(0, bounds.top), bottom = Math.min(innerHeight, bounds.bottom);
+      section.scrollTop += rect.top + rect.height / 2 - (top + bottom) / 2;
+    });
     const source = await page.getByRole('button', { name: 'Drag Performance card 2 card', exact: true }).boundingBox();
     const anchorLink = page.getByRole('link', { name: 'Performance card 4', exact: true });
     expect(source).not.toBeNull();

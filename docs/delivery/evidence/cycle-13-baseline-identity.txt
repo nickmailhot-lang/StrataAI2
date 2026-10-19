@@ -1,0 +1,109 @@
+{
+  "stage": "baseline",
+  "productRevision": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+  "api": {
+    "service": "strataai-api",
+    "mode": "production",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "configSha256": "871B22BB3FC2601855B4E2BF8242781644950019576D1D039DF44596C1EA1882",
+  "scope": "Whole original archive consumer; no changed product/backend/build tree. Actual compiled webfbbe942c/0.1.0, API389c70ab/1.0.0, Worker0f6ddc29/0.1.0 retained, not relabeled. Restricted149 database and owned explicit scopes; normal optional-verification local Production phase. Not immutable CI/helper parity, strict/provider/HTTPS certification or a new full frontend execution.",
+  "hosts": [
+    {
+      "createdAt": "2026-10-17T14:51:48.356537-07:00",
+      "port": 18089,
+      "parentPid": 21476,
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle8-dotnet-artifacts\\bin\\StrataAI.Api\\release\\StrataAI.Api.dll",
+      "pid": 28452,
+      "kind": "api"
+    },
+    {
+      "createdAt": "2026-10-17T15:44:37.487568-07:00",
+      "port": 18093,
+      "parentPid": 36480,
+      "command": "\"C:\\Program Files\\dotnet\\dotnet.exe\" C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle11-worker-artifacts\\bin\\StrataAI.Worker\\release\\StrataAI.Worker.dll",
+      "pid": 17312,
+      "kind": "worker"
+    },
+    {
+      "createdAt": "2026-10-17T15:17:27.664841-07:00",
+      "port": 15185,
+      "parentPid": 37400,
+      "command": "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vite/bin/vite.js preview --config C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle12-prod-fixture\\preview.config.mjs",
+      "pid": 37704,
+      "kind": "preview"
+    }
+  ],
+  "web": {
+    "revision": "fbbe942c5fd3636463318237fe2942ba40c3a6f7",
+    "version": "0.1.0"
+  },
+  "mainApi": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "389c70abd820bf617c33bd9cfc18f5c04d7c9f07",
+    "version": "1.0.0"
+  },
+  "container": "70ba5208fe35d914eb6837e46cbad5201bee183570df1004a7719168600e6315",
+  "specBlob": "f71e36e5e428f4f9a4f704d95be66f9e6c13ab29",
+  "runtimeRoles": [
+    "strataai_api_runtime|f|f|f|f|f|f",
+    "strataai_worker_runtime|f|f|f|f|f|f"
+  ],
+  "at": "2026-10-17T22:45:31.0191300+00:00",
+  "schemaMigrations": 149,
+  "apiReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "databaseProject": "strataai-c11-invite-9ed41294",
+  "policy": {
+    "allowSelfRegistration": true,
+    "requireVerifiedEmail": false,
+    "minimumPasswordLength": 12
+  },
+  "helperBlob": "4958a4cb5ea0fe9e607ee95296e4906a668ce5cf",
+  "mainWeb": {
+    "revision": "33e5c6d2176d6b8718fda2e19435c33dc40f4f91",
+    "version": "0.1.0"
+  },
+  "trees": [
+    {
+      "current": "4cf0ca814d153bc28b20861025a4263ddd2f4ff6",
+      "compiledProduct": "4cf0ca814d153bc28b20861025a4263ddd2f4ff6",
+      "path": "apps/web"
+    },
+    {
+      "current": "ee421ed1a77c780f51f040b05910d883724385b9",
+      "compiledProduct": "ee421ed1a77c780f51f040b05910d883724385b9",
+      "path": "src"
+    },
+    {
+      "current": "954bce778f56edcba68fc5a95809b4f3342e6603",
+      "compiledProduct": "954bce778f56edcba68fc5a95809b4f3342e6603",
+      "path": "db"
+    },
+    {
+      "current": "abae174f3ee4a809395ab896a42d6267143056a1",
+      "compiledProduct": "abae174f3ee4a809395ab896a42d6267143056a1",
+      "path": "tests/StrataAI.Api.Tests"
+    },
+    {
+      "current": "f847beb1fdbc52f16de6697397dd500fe5f9288f",
+      "compiledProduct": "f847beb1fdbc52f16de6697397dd500fe5f9288f",
+      "path": "tests/StrataAI.Domain.Tests"
+    }
+  ],
+  "workerReady": {
+    "status": "ready",
+    "mode": "production"
+  },
+  "worker": {
+    "service": "strataai-worker",
+    "mode": "production",
+    "revision": "0f6ddc293bfe76455a237ae052c210541a9fae96",
+    "version": "0.1.0"
+  },
+  "testRevision": "15a2a6404453fefd286d779d9a21efbd36dcc477"
+}

@@ -1,0 +1,140 @@
+{
+  "at": "2026-10-18 04:40:14 UTC",
+  "pr": 109,
+  "head": "f7116b73d3c18058a59f444912426c7ab47eb795",
+  "checks": [
+    {
+      "name": "release-bundle",
+      "id": 117583082389,
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "required-ci",
+      "id": 117583067198,
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "container-integration (browser-full, 3/4)",
+      "id": 117555727948,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "container-integration (browser-full, 1/4)",
+      "id": 117555727920,
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "container-integration (browser-notifications, 1/1)",
+      "id": 117555727915,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "container-integration (browser-full, 2/4)",
+      "id": 117555727907,
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "container-integration (browser-foundation, 1/1)",
+      "id": 117555727883,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "container-integration (browser-full, 4/4)",
+      "id": 117555727881,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "container-integration (commands, 1/1)",
+      "id": 117555727866,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "security",
+      "id": 117555727811,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "build-images-once",
+      "id": 117555220192,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "source-quality-gate",
+      "id": 117555205167,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CodeQL",
+      "id": 117546451881,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "postgres-integration",
+      "id": 117546394748,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "dotnet-quality",
+      "id": 117546394739,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "web-quality",
+      "id": 117546394677,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "metadata",
+      "id": 117546345538,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Analyze (actions)",
+      "id": 117546343155,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Analyze (python)",
+      "id": 117546342990,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "id": 117546342971,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Analyze (csharp)",
+      "id": 117546342923,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Analyze (c-cpp)",
+      "id": 117546342751,
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "scope": "Frozen109 only, not C19 source. required-ci failed/release-bundle skipped; full3/full4/notifications success; full1/full2 failed."
+}

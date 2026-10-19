@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-18T13:29:02.410Z",
+  "publishedHead": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+  "actualHostedSynthetic": "577e80591fac1ddb5f6b60ea89d3ab0dd3c6cf02",
+  "sameCompleteTree": "c3298dd017352d129ee4187ff4d1ecc5ccdb2ab4",
+  "ci": {
+    "run": 39121650532,
+    "job": 117668178379,
+    "stateAtObservation": "In Progress",
+    "method": "Read live authenticated provider job output. Four original Organization-actions cases at1280/768/390/320 observed failed, eachabout30s. Not a whole-job result or captured final error stack.",
+    "observedFailedWidths": [
+      1280,
+      768,
+      390,
+      320
+    ]
+  },
+  "local": {
+    "exit": 1,
+    "at": "2026-10-18T13:10:32.3223613+00:00",
+    "workerUnchanged": true,
+    "scope": "Whole unchanged four Organization-actions cases, actualUI135ee/APIWorker644, original stock Worker unchanged, no external controller, no retries or changed assertions/deadlines.",
+    "source": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+    "passed": 0,
+    "failed": 4,
+    "error": "All four time out at original waitForBoardDelivery30000ms predicate before entering UI.",
+    "rawOutputSha256": "352348eb1ce01aedf7e9e9b1cca6511fd585567f391f36fa1c6e8b1565d37e5e"
+  },
+  "audit": {
+    "totalCallers": 66,
+    "missing": [
+      {
+        "file": "organization-actions.spec.ts",
+        "ownsScopedWorker": false
+      }
+    ]
+  },
+  "cause": "This fixture waits for new Board delivery without owning/restoring existing scopedBoardWorker, unlike other65 production delivery-waiting specs. Existing local dynamic scope controllers previously masked this missing CI setup.",
+  "correction": "Import/call existing scopedBoardWorker immediately before original delivery wait; restore in finally while always closing participant. Keep all original four widths/roles/authority withdrawal/direct denial/canonical graph/Axe/focus/receipt/deadline assertions.",
+  "positiveValidation": "Not Run. Extra local Worker-swap diagnostic was automatically rejected, reason only blocked by policy; no such mutation ran. Use existing isolated CI fixture for actual positive execution; no waiver or claim."
+}

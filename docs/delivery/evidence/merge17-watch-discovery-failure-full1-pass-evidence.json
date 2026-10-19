@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-18T13:32:10Z",
+  "publishedHead": "1c3f83aee0788bc71c9a4f2a7de006463d8cf301",
+  "actualSynthetic": "577e80591fac1ddb5f6b60ea89d3ab0dd3c6cf02",
+  "run": 39121650532,
+  "full1": {
+    "job": 117668178399,
+    "result": "Passed",
+    "footer": [
+      "2026-10-18T13:25:35.8794917Z   121 passed (1.4h)"
+    ],
+    "caseExecutions": 121
+  },
+  "notifications": {
+    "job": 117668178425,
+    "result": "Failed",
+    "failedStep": 119,
+    "failedStepName": "Strict verified-account watch producers through native private inboxes",
+    "footer": [
+      "2026-10-18T12:21:30.4834424Z   4 passed (3.2m)",
+      "2026-10-18T12:23:51.3334565Z   2 passed (2.2m)",
+      "2026-10-18T12:28:00.9076581Z   2 passed (4.1m)",
+      "2026-10-18T12:30:47.2245050Z   6 passed (2.8m)",
+      "2026-10-18T13:01:48.6553484Z   44 passed (31.0m)",
+      "2026-10-18T13:10:16.8884801Z   14 passed (8.5m)",
+      "2026-10-18T13:17:08.0289231Z   5 failed",
+      "2026-10-18T13:17:08.0293779Z   2 passed (6.8m)"
+    ],
+    "failedCases": [
+      "2026-10-18T13:12:09.7984783Z   ✘  2 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: OWNER cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (25.8s)",
+      "2026-10-18T13:13:01.5875024Z   ✘  3 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: ADMIN cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (26.0s)",
+      "2026-10-18T13:13:53.4028328Z   ✘  4 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: MEMBER cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (26.1s)",
+      "2026-10-18T13:14:44.5308450Z   ✘  5 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: ORGANIZATION_READER cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (25.4s)",
+      "2026-10-18T13:15:34.2366502Z   ✘  6 tests/browser/watch-cross-board-notifications.spec.ts:16:5 › PRD-17-TC-01/07/08/11/12: PUBLIC_READER cross-Board watch relationships and direct Card identity reach desktop and phone inboxes (24.0s)"
+    ],
+    "safeFailure": "Five role cases fail finding enabled Card watching launcher, element not found, existing keyboard admission5000ms predicate. Dynamic watch(kind) path fails to open existing Card actions disclosure; same file later already uses trusted disclosedWorkControl.",
+    "assertionsPreserved": "Original five roles, desktop+phone inboxes, recipient/private live frames, cross-Board stable Card identity, notification counts/kinds/links, subscription versions, withdrawal/direct-denial/Axe/recovery and command/receipt deadlines unchanged."
+  },
+  "scope": "Complete actual first121-case partition and notification job only; other partitions/whole current qualification not passed. Two known fixture failure families, application/backend inputs unchanged."
+}

@@ -1,0 +1,60 @@
+Developer inspection 2026-10-17T17:38:12.803Z; current compiled API/web d35f775e5e788c4e6670c0351743982a478e77ad.
+Inspected both current account-refusal Login screens (1280/390), with no original Board/private form content, and all four current recovered-launcher return screens. Keyboard Cancel now activates through Enter on mobile; the visible focused launcher remains in view at every width, including 768px at 200% root text. Current native checks also verify empty reopening, original-key canonical creation, responsive navigation, no page overflow and applicable Axe. The scrolled 200% full-page capture retains sticky header placement; the active launcher is below it and unobscured. Earlier same-layout dialog/Card captures remain separate scoped evidence. This is not screen-reader/device/full WCAG or release acceptance.
+[
+  {
+    "file": "account-replacement-refused-1280.png",
+    "sha256": "6a342fb1309cede31299613498bca6e8c088d1ef986b634c8d5d0d2a1bf48134"
+  },
+  {
+    "file": "account-replacement-refused-390.png",
+    "sha256": "a2efb33e8ee7753ed12d979f08d754d6f3753168d74b75c5e6e592f12ba8f67f"
+  },
+  {
+    "file": "recovered-board-draft-768.png",
+    "sha256": "95c79f1593ddc1dce38108aa4b313bd7ada2004a4851834dff363f1ccc56873a"
+  },
+  {
+    "file": "recovered-board-return-768.png",
+    "sha256": "9ec27d5553ddaee6e4e08b428d14ee6237a5c9a96bf7bf99f8f5b9d0e6d4d140"
+  },
+  {
+    "file": "recovered-board-draft-390.png",
+    "sha256": "69de7430fb4b6cc18e7e9408b538af7f5505fe97629e4a5cfc08558f5bb0f1d5"
+  },
+  {
+    "file": "recovered-board-return-390.png",
+    "sha256": "9a5e0f16596179f228a111c00038b06e2850976432bdd8ae31d44ee6409ab51e"
+  },
+  {
+    "file": "recovered-board-draft-320.png",
+    "sha256": "ce105ac3d19628bb692801ea3bec38e9dacf786a626f16faaecc0f0bc1eba7b6"
+  },
+  {
+    "file": "recovered-board-return-320.png",
+    "sha256": "13c571836736cb49266d4c7ed821cb91c2827973238e6be62c9c6cbf97438126"
+  },
+  {
+    "file": "recovered-board-draft-1280.png",
+    "sha256": "26a3a6976fd35c9491b5519f7998982bca1e65a55b87e8d05a6fd8dce9b5da14"
+  },
+  {
+    "file": "recovered-board-return-1280.png",
+    "sha256": "b556cb0441f3a516666aaaf689e6c84b9af25b9f8832dbc4d2c39d4605c3aa80"
+  },
+  {
+    "file": "resumed-card-768.png",
+    "sha256": "bca951d87f01e79cccccee138d8957e0c645cf9ad947c93a29272254246d7ba9"
+  },
+  {
+    "file": "resumed-card-1280.png",
+    "sha256": "0067cae0f5294b771367bb789e0578376ec457e7cc447ea974f7c363d8617a8d"
+  },
+  {
+    "file": "resumed-card-390.png",
+    "sha256": "2fd3cd7e66e5b8d51eef81639175dcec23d2df516bfbd8c10053544d8a03aa24"
+  },
+  {
+    "file": "resumed-card-320.png",
+    "sha256": "018d6b49935405ce755b669a98ae93ab20dd8b9d2ecb4ed9121ed5c7a22cfecb"
+  }
+]

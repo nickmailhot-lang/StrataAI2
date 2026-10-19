@@ -1,2 +1,11 @@
 # Hashed delivery evidence must have identical bytes on Windows and Linux.
 docs/delivery/evidence/*.txt text eol=lf
+# Cycle18 transcripts retain original hashed failure/build output, including
+# terminal whitespace. This data exception leaves source/report checks intact.
+docs/delivery/evidence/cycle-18*.txt -whitespace
+docs/delivery/evidence/cycle18*.txt -whitespace
+# C19 hashed wrappers include original Windows and Linux byte sequences.
+# Preserve exact evidence bytes; source/report normalization and checks remain.
+docs/delivery/evidence/cycle19* -text
+docs/delivery/evidence/cycle20* -text
+docs/delivery/evidence/merge17* -text
