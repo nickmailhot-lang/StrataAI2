@@ -1,0 +1,52 @@
+{
+  "at": "2026-10-19T15:11:59.566Z",
+  "head": "84a18ec7efaf4f05f2f4db89362fc4ee0972638a",
+  "synthetic": "de5e423683fc8a4251a84b7cd90741e3929b57cb",
+  "run": 39254689933,
+  "job": 118084795912,
+  "result": "Failed",
+  "wholePartition": {
+    "passed": 119,
+    "failed": 2
+  },
+  "failedCases": [
+    {
+      "file": "tests/browser/card-description.spec.ts:10",
+      "width": 1280,
+      "openingMs": 208.71265700040385,
+      "clickMs": 188.86217500036582
+    },
+    {
+      "file": "tests/browser/card-description.spec.ts:10",
+      "width": 390,
+      "openingMs": 201.2533340000009,
+      "clickMs": 75.91240700000344
+    }
+  ],
+  "budgetMs": 200,
+  "artifact": {
+    "id": 12196746067,
+    "bytes": 10146738,
+    "sha256": "31ff8607cb048871bcbef5de2aed4ce0c19bff9bf6ea13030d3ffd6b023202a9",
+    "digestVerified": true
+  },
+  "inspection": "Both actual failure screenshots and authenticated trace/metric attachments inspected. Title is focused and full original source/preview present in failure captures; that is not a passing timing or later functional assertion. Controller durations include substantial native-click automation and readiness-poll delivery intervals. Actual browser click-to-full-rich-preview paint has not yet been measured; no machine cause or performance pass inferred.",
+  "trace": {
+    "desktop": {
+      "serverClickStart": 3691484.036,
+      "serverClickEnd": 3691577.797,
+      "performingClick": 3691548.051,
+      "firstReadyEvaluation": 3691674.366,
+      "firstReadyResult": 3691685.215
+    },
+    "phone": {
+      "serverClickStart": 3733091.973,
+      "serverClickEnd": 3733165.031,
+      "performingClick": 3733158.18,
+      "firstFalseEvaluation": 3733168.679,
+      "secondReadyEvaluation": 3733281.1,
+      "secondReadyResult": 3733289.187
+    }
+  },
+  "scope": "Six original current Card account/recovery cases passed, but whole partition Failed. Two owners stop at the original200ms assertion; later owner safety/edit/live/archive/logout assertions are not claimed executed. Keep all other source/profile results source-specific, no whole-head qualification or merge. Preserve original mixed-Demo370.03/315.26ms failures and all earlier failures."
+}

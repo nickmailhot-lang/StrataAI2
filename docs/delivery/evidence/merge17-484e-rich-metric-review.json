@@ -1,0 +1,53 @@
+{
+  "at": "2026-10-19T15:26:14.636Z",
+  "result": "Passed",
+  "revision": "484e5c6391e2577e3b1974ef46fa68d30ed945fc",
+  "metrics": [
+    {
+      "fixture": {
+        "lists": 1,
+        "cards": 1,
+        "descriptionCharacters": 466,
+        "width": 1280,
+        "assets": "warm",
+        "initialAdmissionSettled": true
+      },
+      "topology": "unverified runtime",
+      "cachedDetailMs": 157.5,
+      "detailAutomationMs": 218.1523000000002,
+      "clickMs": 69.73810000000003,
+      "measurement": "browser-painted-rich-detail",
+      "readiness": "intended native click to exact focused editable title/source and full preview, stable through the following painted frame",
+      "budgetMs": 200
+    },
+    {
+      "fixture": {
+        "lists": 1,
+        "cards": 1,
+        "descriptionCharacters": 466,
+        "width": 390,
+        "assets": "warm",
+        "initialAdmissionSettled": true
+      },
+      "topology": "unverified runtime",
+      "cachedDetailMs": 148.10000002384186,
+      "detailAutomationMs": 213.33870000000024,
+      "clickMs": 72.13879999999881,
+      "measurement": "browser-painted-rich-detail",
+      "readiness": "intended native click to exact focused editable title/source and full preview, stable through the following painted frame",
+      "budgetMs": 200
+    }
+  ],
+  "runtime": {
+    "client": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+    "api": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "mode": "supporting mixed Demo"
+  },
+  "frontendDiff": [
+    "apps/web/src/features/kanban/BoardScreen.test.tsx"
+  ],
+  "runtimeProductCodeChanged": false,
+  "sourceRequirement": "LivePRD09issue10 andPRD25issue26 retain cachedCardopening<200ms; existing canonical browserpaint contract in docs/kanban-performance.md: nativeintendedclick through focused editable visible stablepaint. Original controller metric retained separately; historical controller failures remain Failed.",
+  "method": "Extend canonical shared browser observer with exact full editable source and rendered Markdown heading/layout requirements; preserve title identity/focus/viewport/hidden/inert/disabled criteria and recheck all rich readiness after the following frame. Keep original single-browser source/preview poll and all original functional assertions. One original click starts one interval; no reset/resample/budget/retry/deadline changes.",
+  "scope": "Actual whole10local native and18controls/typecheck pass at484e, browserpaint157.5/148.1000ms vs controller218.1523/213.3387ms, separately labeled. Both prior actual CI failure screenshots inspected; unchanged UI/source-equivalent supporting captures do not certify new release images or wholeMVP. Fresh all22 and actualmain integration mandatory."
+}

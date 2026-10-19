@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-19T15:26:14.636Z",
+  "result": "Failed",
+  "diagnosticOnly": true,
+  "originalFixtureRevision": "84a18ec7efaf4f05f2f4db89362fc4ee0972638a",
+  "extraDiagnosticSourceSha256": "16f55566dd1204d977aa27c3b41bbf391cc4eda34945cabc76b6fd421fc4950f",
+  "extraDiagnosticSourceRetainedAt": "work/merge17-rich-paint-diagnostic-source.ts",
+  "runtime": {
+    "client": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+    "api": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "mode": "supporting mixed Demo"
+  },
+  "run": {
+    "exit": 1,
+    "passed": 1,
+    "failed": 1
+  },
+  "observations": [
+    {
+      "width": 1280,
+      "browserPaintMs": 130.39999997615814,
+      "browserTimeOrigin": 1792422915789.4,
+      "controllerOpeningMs": 194.5396999999998,
+      "controllerClickMs": 73.67389999999978,
+      "budgetMs": 200,
+      "diagnosticOnly": true,
+      "predicate": "exact focused editable title and full exact editable source/rendered Markdown heading, visible/non-inert/layout/viewport, stable through next painted frame; intended native click only; original controller gate and all subsequent assertions retained"
+    },
+    {
+      "width": 390,
+      "browserPaintMs": 153.89999997615814,
+      "browserTimeOrigin": 1792422924037.5,
+      "controllerOpeningMs": 209.01879999999983,
+      "controllerClickMs": 68.3114000000005,
+      "budgetMs": 200,
+      "diagnosticOnly": true,
+      "predicate": "exact focused editable title and full exact editable source/rendered Markdown heading, visible/non-inert/layout/viewport, stable through next painted frame; intended native click only; original controller gate and all subsequent assertions retained"
+    }
+  ],
+  "scope": "Extra browser observer in private copied owner2 fixture, original controller200ms assertion unchanged. Desktop fullyPassed, phone failed209.0188controller budget; later phone assertions not claimed. Native rich paint130.4/153.9ms measured separately. Demonstrates different boundaries, no machine/sole cause or release repeatability claim; no diagnostic result promoted to acceptance."
+}
