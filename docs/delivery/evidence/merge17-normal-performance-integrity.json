@@ -1,0 +1,248 @@
+{
+  "canonicalBuildMetadataByteIdentical": true,
+  "measurements": [
+    {
+      "metric": "normal-desktop-card-dates",
+      "status": "passed",
+      "fixture": {
+        "lists": 3,
+        "cards": 50,
+        "datedCards": 50,
+        "samples": 20,
+        "viewport": "1280x844",
+        "assets": "warm",
+        "tracing": "commands-and-network",
+        "detailTiming": "browser-painted-editable"
+      },
+      "usableMs": 804.4010390000003,
+      "detailMs": 82.30000000004657,
+      "detailObserved": true,
+      "detailAutomationMs": 135.75667199999953,
+      "mutationP95Ms": 48.98622199999954,
+      "mutationSamplesMs": [
+        48.051174000000174,
+        48.98622199999954,
+        38.169826999997895,
+        36.9562900000019,
+        35.410133000001224,
+        36.26081300000078,
+        34.81887199999983,
+        40.906057000000146,
+        36.28283700000247,
+        36.70389100000102,
+        40.642995999998675,
+        46.394830999997794,
+        35.27501400000256,
+        40.51736700000038,
+        41.37270999999964,
+        34.50446400000146,
+        42.03862200000003,
+        39.39958399999887,
+        42.54484499999671,
+        51.53072799999791
+      ],
+      "budgetsMs": {
+        "usable": 1500,
+        "detail": 200,
+        "mutationP95": 500
+      }
+    },
+    {
+      "metric": "normal-desktop-checklist",
+      "status": "passed",
+      "fixture": {
+        "lists": 3,
+        "cards": 50,
+        "samples": 20,
+        "viewport": "1280x844",
+        "assets": "warm",
+        "tracing": "commands-and-network",
+        "detailTiming": "browser-painted-editable",
+        "checklists": 2,
+        "items": 63,
+        "pageSize": 50
+      },
+      "itemPageMs": 113.05187500000466,
+      "nextItemPageMs": 55.936178000003565,
+      "usableMs": 409.0483520000125,
+      "detailMs": 80.19999999995343,
+      "detailObserved": true,
+      "detailAutomationMs": 145.12204000000202,
+      "feedbackObserved": true,
+      "feedbackMs": 46.79999999993015,
+      "mutationP95Ms": 41.78256700000202,
+      "mutationSamplesMs": [
+        45.21154999999271,
+        41.78256700000202,
+        38.36187799999607,
+        28.294670999996015,
+        33.842442999986815,
+        33.13363599999866,
+        34.50726399999985,
+        27.75517299999774,
+        26.8004809999984,
+        29.88460399999167,
+        40.39569499999925,
+        41.56779000000097,
+        36.12433900000178,
+        24.87230799999088,
+        27.84282499999972,
+        25.336776999989524,
+        24.5794370000076,
+        25.808006999999634,
+        26.221067999998922,
+        31.856111999994027
+      ],
+      "budgetsMs": {
+        "usable": 1500,
+        "feedback": 100,
+        "detail": 200,
+        "mutationP95": 500
+      }
+    },
+    {
+      "metric": "normal-desktop-kanban",
+      "status": "passed",
+      "fixture": {
+        "lists": 3,
+        "cards": 50,
+        "samples": 20,
+        "viewport": "1280x844",
+        "assets": "warm",
+        "tracing": "commands-and-network",
+        "detailTiming": "browser-painted-editable"
+      },
+      "usableMs": 412.86050599999726,
+      "detailMs": 75.29999999993015,
+      "detailObserved": true,
+      "detailAutomationMs": 128.3226549999963,
+      "feedbackObserved": true,
+      "feedbackMs": 43.5,
+      "mutationP95Ms": 57.004521000009845,
+      "mutationSamplesMs": [
+        64.6142189999955,
+        57.004521000009845,
+        56.14202300000761,
+        46.47171199999866,
+        46.16116000000329,
+        44.22371099999873,
+        46.5254130000103,
+        46.531572000007145,
+        45.38773999999103,
+        45.63558400000329,
+        44.27319200000784,
+        46.17229099999531,
+        42.904320999994525,
+        42.202083999989554,
+        44.58027400000719,
+        46.41096100000141,
+        45.91147800000908,
+        54.454440999994404,
+        42.57000799999514,
+        46.36588199999824
+      ],
+      "budgetsMs": {
+        "usable": 1500,
+        "feedback": 100,
+        "detail": 200,
+        "mutationP95": 500
+      }
+    },
+    {
+      "metric": "normal-phone-kanban",
+      "status": "passed",
+      "fixture": {
+        "lists": 3,
+        "cards": 50,
+        "samples": 20,
+        "viewport": "390x844",
+        "assets": "warm",
+        "tracing": "commands-and-network",
+        "detailTiming": "browser-painted-editable",
+        "input": "chromium-touch"
+      },
+      "usableMs": 417.0229859999963,
+      "detailMs": 78.19999999995343,
+      "detailObserved": true,
+      "detailAutomationMs": 128.17557000002125,
+      "feedbackObserved": true,
+      "feedbackMs": 41.10000000009313,
+      "mutationP95Ms": 53.79977800001507,
+      "mutationSamplesMs": [
+        53.79977800001507,
+        49.80863300000783,
+        48.16040200000862,
+        47.656893000006676,
+        44.30450099997688,
+        45.4096299999801,
+        45.39837300000363,
+        43.09450900001684,
+        45.73289600000135,
+        45.825932000007015,
+        46.13786600000458,
+        45.19754500000272,
+        52.014809999993304,
+        48.2470869999961,
+        45.78007300000172,
+        44.147509999980684,
+        42.00320599999395,
+        62.656838000024436,
+        47.22077600000193,
+        41.64158600001247
+      ],
+      "budgetsMs": {
+        "usable": 1500,
+        "feedback": 100,
+        "detail": 200,
+        "mutationP95": 500
+      }
+    },
+    {
+      "metric": "desktop-list-feedback",
+      "status": "passed",
+      "fixture": {
+        "lists": 2,
+        "cards": 0,
+        "viewport": "1280x844",
+        "tracing": "commands-and-network"
+      },
+      "feedbackObserved": true,
+      "feedbackMs": 31.699999999953434,
+      "budgetsMs": {
+        "feedback": 100
+      }
+    },
+    {
+      "metric": "phone-list-feedback",
+      "status": "passed",
+      "fixture": {
+        "lists": 2,
+        "cards": 0,
+        "viewport": "390x844",
+        "tracing": "commands-and-network",
+        "input": "chromium-touch"
+      },
+      "feedbackObserved": true,
+      "feedbackMs": 31.599999999976717,
+      "budgetsMs": {
+        "feedback": 100
+      }
+    }
+  ],
+  "scope": "Six original normal-load retained-image measurements; no deferred large-load qualification or production deployment.",
+  "qualifiedHead": "9960731999118f2ff8ee3353e1654116543d1ac6",
+  "result": "Passed",
+  "artifact": 12157431920,
+  "providerSha256": "f527a1575dea0e2209a341a5fcce50c38ef5ebd528fcc3a50351db0cb7ab8f36",
+  "checksums": [
+    {
+      "name": "build-metadata.json",
+      "sha256": "f14f8edb370fa06b0e80958d561dc0653154eb4c3daf8f44a5e5e8a9904e2783"
+    },
+    {
+      "name": "kanban.json",
+      "sha256": "ee3580a287a2ff665673239061677fffa6b2eb04c69b63ec8dfa501a5db0bb8c"
+    }
+  ],
+  "at": "2026-10-19T02:09:24.3914287Z"
+}

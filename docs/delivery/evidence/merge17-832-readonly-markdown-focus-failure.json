@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-19T05:12:59.066Z",
+  "result": "Failed",
+  "source": "83288b4bc05e8ccd75094c659c39986377fea0ed",
+  "syntheticMerge": "24f4854bef1089f5332e9ad450b3a402d4fe544d",
+  "run": 39192181112,
+  "job": 117875239027,
+  "scope": "Whole browser-full1:120Passed/1Failed; anonymous390 Markdown reference Tab/Shift+Tab line293.",
+  "artifact": {
+    "id": 12164142901,
+    "sha256": "83fcc184172aec8ed527921a244d92728bdc0fe117527c431695608a9e4ba877",
+    "bytes": 5995322,
+    "localHashVerified": true
+  },
+  "trace": {
+    "initialBoardRead": 3971406.849,
+    "firstHeadRead": 3971594.117,
+    "ariaBusyFalseAssertion": 3971671.092,
+    "referenceFocused": 3971680.545,
+    "tab": 3971683.678,
+    "coalescedBoardRead": 3971703.802,
+    "shiftTab": 3971707.852,
+    "failedAssertion": 3971717.836
+  },
+  "finding": "Trace snapshots show Show labels replaced by disabled control during the authorized coalesced read between keys. Shift+Tab focuses Close. All three real Board responses200. Initial head immediately invalidates then its existing events schedule a100ms coalesced invalidation. Waiting for only2 initial reads admits keyboard before the third read. Screenshot inspected; no assertion/retry/deadline change proposed.",
+  "owner": "Delivery lead",
+  "next": "Require third real delivered-fixture Board read; preserve original uninterrupted keyboard round trip and all content/privacy/role/Axe assertions; run affected native file and new exact-head CI."
+}

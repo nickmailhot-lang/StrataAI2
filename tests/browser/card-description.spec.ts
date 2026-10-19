@@ -276,7 +276,10 @@ for (const width of [1280, 390]) for (const audience of ['organization-reader', 
       page.on('request', request => { if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++; });
       await page.route('https://description-probe.example.test/**', async route => { externalRequests++; await route.fulfill({ status: 403, body: '' }); });
       const path = `/app/${org}/boards/${board}/cards/${card}`; const reads = trackBoardReads(page, board, path);
-      await page.goto(path); await waitForBoardReads(page, reads, 2);
+      // This delivered fixture has an initial snapshot, a first-head read, and
+      // the coalesced read for the head's existing Card events. The second read
+      // alone can leave that third refresh queued across the keyboard check.
+      await page.goto(path); await waitForBoardReads(page, reads, 3);
       const preview = page.getByRole('region', { name: 'Description preview', exact: true });
       await expect(preview.getByRole('heading', { name: 'Authorized description', exact: true })).toBeVisible();
       await expect(preview.locator('strong')).toHaveText('Read-only strong');
@@ -289,7 +292,9 @@ for (const width of [1280, 390]) for (const audience of ['organization-reader', 
       await expect.poll(() => page.evaluate(() => document.hasFocus())).toBe(true);
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true, includeHidden: true })).toHaveAttribute('aria-busy', 'false');
       await reference.focus(); await expect(reference).toBeFocused();
-      await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Tab');
+      await expect(page.getByRole('button', { name: 'Show labels', exact: true })).toBeFocused();
+      await page.keyboard.press('Shift+Tab');
       await expect(reference).toBeFocused();
       expect(await reference.evaluate(node => Number.parseFloat(getComputedStyle(node).outlineWidth))).toBeGreaterThan(0);
       await expect(preview.getByRole('link', { name: 'Unsafe', exact: true })).toHaveCount(0);

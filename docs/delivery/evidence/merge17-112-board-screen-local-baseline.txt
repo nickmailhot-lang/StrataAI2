@@ -1,0 +1,28 @@
+
+ RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-tracking-fix/apps/web
+
+ ❯ src/features/kanban/BoardScreen.test.tsx (40 tests | 1 failed) 95928ms
+   ❯ PRD-01/04/07/08/09 persisted board flows (40)
+     × fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot 5065ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/features/kanban/BoardScreen.test.tsx > PRD-01/04/07/08/09 persisted board flows > fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/features/kanban/BoardScreen.test.tsx:1030:3
+    1028|     expect(new Headers(writes[1].headers).get('Idempotency-Key')).toBe…
+    1029|   });
+    1030|   it('fences other Board mutations while URL attachment receipt is unr…
+       |   ^
+    1031|     const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).p…
+    1032|     const org = uuid(1), board = uuid(2), card = uuid(3), actor = uuid…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 39 passed (40)
+   Start at  19:30:37
+   Duration  236.19s (tests 41%, import 34%, environment 20%, setup 3%, transform 2%)
+
