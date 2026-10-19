@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-19T19:17:11.330Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "synthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "run": 39279332124,
+  "job": 118168915213,
+  "result": "Passed",
+  "wholePartition": {
+    "passed": 115,
+    "failed": 0
+  },
+  "records": [
+    "2026-10-19T19:16:12.3553150Z   115 passed (1.2h)"
+  ],
+  "controlledFormCases": [
+    "2026-10-19T18:48:47.6341029Z   ✓   78 tests/browser/ux-forms.spec.ts:11:7 › UX-005 controlled field recovery, native submit and zoom at 1280px (2.0s)",
+    "2026-10-19T18:49:14.6242379Z   ✓   79 tests/browser/ux-forms.spec.ts:11:7 › UX-005 controlled field recovery, native submit and zoom at 768px (2.0s)",
+    "2026-10-19T18:49:41.5656166Z   ✓   80 tests/browser/ux-forms.spec.ts:11:7 › UX-005 controlled field recovery, native submit and zoom at 390px (1.9s)",
+    "2026-10-19T18:50:08.5156355Z   ✓   81 tests/browser/ux-forms.spec.ts:11:7 › UX-005 controlled field recovery, native submit and zoom at 320px (1.9s)"
+  ],
+  "scope": "Actual completed exact8c68 job, authenticated provider log and complete step list. Original profile skips retained; no prior-source pass inherited. Main integration and remaining required checks remain separate."
+}

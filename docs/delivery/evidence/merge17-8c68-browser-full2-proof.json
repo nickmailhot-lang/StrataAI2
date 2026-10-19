@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-19T18:25:16.087Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "synthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "run": 39279332124,
+  "job": 118168915265,
+  "result": "Passed",
+  "wholePartition": {
+    "passed": 118,
+    "failed": 0,
+    "skipped": 2
+  },
+  "records": [
+    "2026-10-19T18:24:12.5170759Z   118 passed (1.2h)"
+  ],
+  "listCases": [
+    "2026-10-19T18:20:16.3718547Z   ✓  113 tests/browser/list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 1280px (4.7s)",
+    "2026-10-19T18:20:45.8578511Z   ✓  114 tests/browser/list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 768px (4.5s)",
+    "2026-10-19T18:21:15.1131858Z   ✓  115 tests/browser/list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 390px (4.2s)",
+    "2026-10-19T18:21:44.4035977Z   ✓  116 tests/browser/list-management-ux.spec.ts:7:7 › PRD-07-VS-01/FR-003/004/UXA-05/06: keyboard List rename and reorder return at 320px (4.3s)"
+  ],
+  "profileMailSkips": [
+    "2026-10-19T17:41:58.6347956Z   -   43 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 1280px",
+    "2026-10-19T17:42:23.7332210Z   -   44 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 390px"
+  ],
+  "actualSameCaseNotificationPasses": [
+    "2026-10-19T16:54:50.1732891Z   ✓  1 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 1280px (1.1m)",
+    "2026-10-19T16:55:55.7113951Z   ✓  2 tests/browser/identity-mail.spec.ts:5:5 › PRD-02-TC-01/07/11/12: verification and recovery consume Worker-delivered links using keyboard at 390px (1.1m)"
+  ],
+  "notificationJob": 118168915364,
+  "originalMailCounterpartsActuallyPassed": true,
+  "scope": "Actual completed exact8c68 job, authenticated provider log and complete step list. Original profile skips retained; no prior-source pass inherited. Main integration and remaining required checks remain separate."
+}

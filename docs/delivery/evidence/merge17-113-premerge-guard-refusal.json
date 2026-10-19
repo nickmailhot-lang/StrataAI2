@@ -1,0 +1,23 @@
+{
+  "recordedAt": "2026-10-19T19:28:18.221Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "result": "Failed",
+  "kind": "auxiliary premerge proof refusal",
+  "originalAssumption": "The already-integrated112 merge must also be an ancestor of the PR113 source branch before merge.",
+  "actual": {
+    "main": "596f4ccb080dcc0fdf316649eb90a174d6de94b9",
+    "sourceContainsMainMerge": false,
+    "qualifiedTestedMerge": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedMergeParents": [
+      "596f4ccb080dcc0fdf316649eb90a174d6de94b9",
+      "8c68b032bb963b64b37b66b122f7e377e9e58e3a"
+    ],
+    "qualifiedTree": "8db2c813a317b547d55ff5e2b9fac76f3c6544ac",
+    "refreshedMergeTreeIdentical": true
+  },
+  "evaluation": "The source branch and main have parallel histories. The original auxiliary assumption is unnecessarily restrictive for an ordinary merge. Historical preservation belongs to the qualified combined merge and actual target first-parent history, not a required source-branch ancestry. The passing reviewed preflight retains complete history/held-source exclusion, exact all22 source qualification and identical combined tree. Actual normal merge must still preserve both parents and be independently verified afterward.",
+  "sourceChanged": false,
+  "requiredTestsChanged": false,
+  "ciFailure": false,
+  "actualIntegrationStillRequired": true
+}

@@ -1,0 +1,74 @@
+{
+  "at": "2026-10-19T19:33:13.642Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "qualifiedCurrentNative": {
+    "cardCases": 6,
+    "listCases": 4,
+    "controlledFormCases": 4,
+    "realServiceOrganizationSettingsCases": 2,
+    "cardApiCases": 6,
+    "wholeBrowserPassed": 477,
+    "profileMailSkips": 2,
+    "notificationPassed": 93
+  },
+  "supportingRenderedClient": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+  "supportingApiSource": "9960731999118f2ff8ee3353e1654116543d1ac6",
+  "frontendDifferences": [
+    "apps/web/src/features/kanban/BoardScreen.test.tsx"
+  ],
+  "runtimeFrontendChanged": false,
+  "backendSchemaDeploymentChanged": false,
+  "supportingEvidence": [
+    {
+      "id": "EVID-CYCLE-34-C055-NATIVE6",
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "path": "docs/delivery/evidence/merge17-card-focus-current-native6.json",
+      "sha256": "eedae75ca896ef4feec6152f37358a4c1c2c3802b9e2e714d9adfabaef4a30b4"
+    },
+    {
+      "id": "EVID-CYCLE-34-C055-RENDERED-REVIEW",
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "path": "docs/delivery/evidence/merge17-card-focus-rendered-review.json",
+      "sha256": "c234e95f868d9ce3c0c17bc6738e0328daec49eda583fb6ea152e7e51273d6bf"
+    },
+    {
+      "id": "EVID-CYCLE-36-97F3-LIST-NATIVE4",
+      "revision": "97f3d337bd141e692a72870da99835ae974f4cf3",
+      "path": "docs/delivery/evidence/merge17-97f3-list-native4.txt",
+      "sha256": "152da6f852849062be9eceadfe8177fec87376c7241994d712440b969fe360c5"
+    },
+    {
+      "id": "EVID-CYCLE-36-97F3-LIST-VISUAL8",
+      "revision": "97f3d337bd141e692a72870da99835ae974f4cf3",
+      "path": "docs/delivery/evidence/merge17-97f3-list-visual8.json",
+      "sha256": "ed0793d77f26bd292c7430001e7d60fa58b00fb1b0a15a34cf2d2ef8eeb895e8"
+    },
+    {
+      "id": "EVID-CYCLE-38-9AD-CONTROLLED-NATIVE4",
+      "revision": "9ad442f426b4511a4a32038a001768b191f59772",
+      "path": "docs/delivery/evidence/merge17-9ad-controlled-form-native4.txt",
+      "sha256": "0b2d59f0b865a9bda728d14812196212329da328986919e7dbc4e99bd60df2a2"
+    },
+    {
+      "id": "EVID-CYCLE-38-9AD-CONTROLLED-VISUAL4",
+      "revision": "9ad442f426b4511a4a32038a001768b191f59772",
+      "path": "docs/delivery/evidence/merge17-9ad-controlled-form-visual.json",
+      "sha256": "ac19e57fd6165c6e738a9da2a6ae964a668b027a9bcf08eb1ad970464b0e3af4"
+    },
+    {
+      "id": "EVID-CYCLE-39-484E-RICH-NATIVE10",
+      "revision": "484e5c6391e2577e3b1974ef46fa68d30ed945fc",
+      "path": "docs/delivery/evidence/merge17-484e-rich-native10.txt",
+      "sha256": "5667a49d019840357b5c3afa268cc6515efdd03ca75efe9359ade6a58fd6fb38"
+    },
+    {
+      "id": "EVID-CYCLE-39-484E-RICH-METRIC-REVIEW",
+      "revision": "484e5c6391e2577e3b1974ef46fa68d30ed945fc",
+      "path": "docs/delivery/evidence/merge17-484e-rich-metric-review.json",
+      "sha256": "2f15bfde1cb2d4ac4d59390ea24f340c3876137d9fb696a0164bb0dc9d6bb885"
+    }
+  ],
+  "scope": "Current immutable6Card/4List workflows directlyPassed at8c68, including roles, original command recovery, canonical persistence/return, supported widths/200%text/keyboard/Axe/focus geometry. Earlier actually inspectedC055Card6/List8 captures support scoped visual review because runtime frontend/locks are identical. They remain separately identified mixed supportingDemo captures, not new immutable screenshots or physical-device/full-app accessibility certification."
+}

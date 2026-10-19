@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-19T18:30:18.932Z",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "synthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "run": 39279332124,
+  "job": 118168915171,
+  "result": "Passed",
+  "wholePartition": {
+    "passed": 123,
+    "failed": 0
+  },
+  "records": [
+    "2026-10-19T18:29:36.1689836Z   123 passed (1.2h)"
+  ],
+  "organizationSettingsCases": [
+    "2026-10-19T18:16:13.1091864Z   ✓   96 tests/browser/organization-settings.spec.ts:10:7 › PRD-03-TC-01/06/08/11/12: keyboard Organization metadata review and lost acknowledgment at 1280px (16.6s)",
+    "2026-10-19T18:16:54.4393663Z   ✓   97 tests/browser/organization-settings.spec.ts:10:7 › PRD-03-TC-01/06/08/11/12: keyboard Organization metadata review and lost acknowledgment at 390px (16.3s)"
+  ],
+  "scope": "Actual completed exact8c68 job, authenticated provider log and complete step list. Original profile skips retained; no prior-source pass inherited. Main integration and remaining required checks remain separate."
+}
