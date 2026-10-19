@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-19T05:22:13.6601721Z",
+  "client": {
+    "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+    "version": "0.1.0-local-card-focus"
+  },
+  "api": {
+    "service": "strataai-api",
+    "mode": "demo",
+    "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "version": "0.1.0-1927"
+  },
+  "stockWorker": "d892a40b08190562efb3f061084c5eb0dac69a192d3985b1a8415ac822232bbd 2026-10-18T11:55:57.435785219Z"
+}
