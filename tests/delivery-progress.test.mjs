@@ -114,9 +114,25 @@ test('PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unva
   d.items[3].state='Blocked';d.items[3].blocked={reason:'CI pending',owner:'delivery-owner'};assert.deepEqual(progress(d).implementedButUnvalidated,['ITEM-3']);
 });
 test('PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done', () => {
-  const report=progress(ledger); assert.equal(report.prdsCompleted,0); assert.equal(report.workItemsCompleted,0);
-  assert.equal(report.recentCompletedIncrements.length,0); assert.ok(report.historicalEvidence.length>0);
+  const incomplete=fixture();
+  incomplete.items[1].source={issueState:'closed'};
+  incomplete.historicalEvidence=clone(ledger.historicalEvidence);
+  validateLedger(incomplete);
+  const report=progress(incomplete); assert.equal(report.prdsCompleted,0); assert.equal(report.workItemsCompleted,0);
+  assert.equal(report.recentCompletedIncrements.length,0); assert.deepEqual(report.historicalEvidence,ledger.historicalEvidence);
+  assert.ok(report.historicalEvidence.length>0);
   assert.equal(ledger.items.find(x=>x.id==='ARCH-01').source.issueState,'closed');
+});
+
+test('PRD-25-VS-03/AC-04: validated Done work contributes completion counts and recent increments', () => {
+  const complete=fixture(true); validateLedger(complete);
+  const report=progress(complete);
+  assert.equal(report.prdsCompleted,1); assert.equal(report.workItemsCompleted,5);
+  for (const kind of ['Epic','PRD','Vertical Slice','Task','Test']) assert.equal(report.byKind[kind].done,1);
+  assert.equal(report.recentCompletedIncrements.length,1);
+  assert.equal(report.recentCompletedIncrements[0].id,'ITEM-2');
+  assert.equal(report.recentCompletedIncrements[0].completedAt,at);
+  assert.equal(report.weightedProgress,null);
 });
 test('PRD-25-VS-03/AC-05: prior states, criteria and failed evidence cannot be rewritten or deleted', () => {
   const old=fixture(true);

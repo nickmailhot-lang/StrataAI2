@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-19T02:05:11.711Z",
+  "revision": "ecd26768582c6a8a621b7c1376ed7fa1b502f935",
+  "result": "Failed",
+  "scope": "Intentional reproduction of the old real-ledger global-zero assertion on a fully validated prospective four-Done dataset. Canonical ledger remains zero Done; this is a reporting-test defect, not a current application failure.",
+  "oldAssertion": "assert.equal(report.workItemsCompleted, 0)",
+  "failure": {
+    "name": "AssertionError",
+    "expected": 0,
+    "actual": 4,
+    "operator": "strictEqual"
+  },
+  "canonicalDone": 0,
+  "projectedDone": 4,
+  "projectedIds": [
+    "PRD-25-VS-02-T-03-TEST-01",
+    "PRD-25-VS-02-T-03",
+    "PRD-25-VS-02-T-04-TEST-01",
+    "PRD-25-VS-02-T-04"
+  ],
+  "actualMain": "ecd26768582c6a8a621b7c1376ed7fa1b502f935",
+  "qualifiedSource": "9960731999118f2ff8ee3353e1654116543d1ac6",
+  "canonicalUnchanged": true,
+  "canonicalSha256": "48d4d9ba0862bc4004a40b0303dc707a6ace3acad739f5c0fd6e16c29ad58cf0",
+  "validatedProjectedDatasetSha256": "250f65765b9f3c46feb66043b0e74ec6557f1164725e61667422ca3bf08e9e6b"
+}

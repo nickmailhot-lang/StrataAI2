@@ -1,0 +1,266 @@
+{
+  "at": "2026-10-19T01:45:12.921Z",
+  "qualifiedHead": "9960731999118f2ff8ee3353e1654116543d1ac6",
+  "syntheticMerge": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+  "tree": "0810f2d6fb09d7b8c370fdb322469209fc8c6d82",
+  "ciRun": 39169877465,
+  "codeqlRun": 39169875900,
+  "checks": [
+    {
+      "name": "release-bundle",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117844059722"
+    },
+    {
+      "name": "required-ci",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117844036240"
+    },
+    {
+      "name": "security",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117807360233"
+    },
+    {
+      "name": "container-integration (browser-full, 1/4)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117807359599"
+    },
+    {
+      "name": "container-integration (commands, 1/1)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117807359581"
+    },
+    {
+      "name": "container-integration (browser-full, 2/4)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117807359550"
+    },
+    {
+      "name": "container-integration (browser-notifications, 1/1)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117807359515"
+    },
+    {
+      "name": "container-integration (browser-full, 4/4)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117807359495"
+    },
+    {
+      "name": "container-integration (browser-foundation, 1/1)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117807359493"
+    },
+    {
+      "name": "container-integration (browser-full, 3/4)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117807359482"
+    },
+    {
+      "name": "build-images-once",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117806736706"
+    },
+    {
+      "name": "source-quality-gate",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117806721762"
+    },
+    {
+      "name": "CodeQL",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/runs/117800625252"
+    },
+    {
+      "name": "web-quality",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117800585797"
+    },
+    {
+      "name": "dotnet-quality",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117800585713"
+    },
+    {
+      "name": "postgres-integration",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117800585703"
+    },
+    {
+      "name": "metadata",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169877465/job/117800523354"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169875900/job/117800520872"
+    },
+    {
+      "name": "Analyze (c-cpp)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169875900/job/117800520841"
+    },
+    {
+      "name": "Analyze (python)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169875900/job/117800520834"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169875900/job/117800520758"
+    },
+    {
+      "name": "Analyze (csharp)",
+      "status": "completed",
+      "result": "success",
+      "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+      "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39169875900/job/117800520744"
+    }
+  ],
+  "testSummary": {
+    "web": {
+      "passed": 2908,
+      "failed": 0,
+      "originalCapacityDeferrals": 24
+    },
+    "domain": {
+      "passed": 1086,
+      "failed": 0,
+      "originalCapacityDeferrals": 3
+    },
+    "api": {
+      "passed": 1429,
+      "failed": 0,
+      "originalCapacityDeferrals": 2
+    },
+    "tracking": {
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0
+    },
+    "fullBrowser": {
+      "passed": 477,
+      "failed": 0,
+      "originalMailProfileSkips": 2,
+      "declared": 479
+    },
+    "notifications": {
+      "passed": 93,
+      "failed": 0,
+      "skipped": 0
+    },
+    "foundation": {
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0
+    },
+    "commands": {
+      "result": "Passed",
+      "aggregateTestCount": null
+    }
+  },
+  "releaseArtifact": {
+    "id": 12157279077,
+    "name": "strataai2-docker-bundle-f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "providerSha256": "5a44de9b183cd7fa02344df54f0448ffe517891016554470a1896cc5264a34e2",
+    "bytes": 518889483,
+    "gate": "Passed including source-free/Demo/HTTPS/recovery and final integrity",
+    "localBundleDownloadVerified": false
+  },
+  "originalSecurityInputIntegrity": {
+    "result": "Passed",
+    "providerZipSha256": "bcaeabe15b463eb8b4b1bbc68ad9a203553f3004145b1b9587010b43bfe9aebf",
+    "artifact": 12152627728,
+    "at": "2026-10-19T01:03:35.4554375Z",
+    "members": [
+      {
+        "bytes": 614,
+        "sha256": "f14f8edb370fa06b0e80958d561dc0653154eb4c3daf8f44a5e5e8a9904e2783",
+        "name": "build-metadata.json"
+      },
+      {
+        "bytes": 964,
+        "sha256": "a2ec5d811922ce43b299ee7cc9abfb91b7d826516e7a5a62c8fd43c17587574f",
+        "name": "image-provenance.json"
+      },
+      {
+        "bytes": 1221015,
+        "sha256": "b3c439475d313b6a34b1101504d0d428b4ea497204c856bbeb217fa4cc3c1637",
+        "name": "metrics-collector.cdx.json"
+      },
+      {
+        "bytes": 249870,
+        "sha256": "acae45de351f17297c4692851fbf31c048081dc10bff501c41e835d7a3a2470f",
+        "name": "strataai-api.cdx.json"
+      },
+      {
+        "bytes": 115263,
+        "sha256": "20d799ac2f58f8cc822af6d554eae619a515e0561b18fd7b15ef6e0812c8957d",
+        "name": "strataai-web.cdx.json"
+      },
+      {
+        "bytes": 250811,
+        "sha256": "0a7c1cd2c9b73921de2e78b00188f2bd69db34f9740db7ca92257ff8323108bf",
+        "name": "strataai-worker.cdx.json"
+      }
+    ],
+    "identityVerifiedAt": "2026-10-19T01:05:32.098Z",
+    "head": "9960731999118f2ff8ee3353e1654116543d1ac6",
+    "syntheticMerge": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "run": 39169877465,
+    "canonicalBuildMetadataEqual": true,
+    "canonicalProvenanceBuildEqual": true,
+    "imageIds": {
+      "web": "sha256:2f78df2f1e15ee878ddbb4e3e3d592dd262655abeb508533906775abe4b76b07",
+      "api": "sha256:5ccb00ca9fb96874d3b0d00d351a237a993c4717fffd7f60d22ab48ec9bebfdb",
+      "worker": "sha256:0b803814547202f14de9364ff52d1fc5cffc315f0dbd5df781ba5caf022275f3"
+    },
+    "zip": "work/merge17-996-original-security-evidence.zip",
+    "scope": "Original configured security/provenance inputs verified, not a zero-vulnerabilities claim. Release bundle not yet collected."
+  },
+  "scope": "Actual complete22 current-head checks Passed. Hosted execution used synthetic f3ca with the identical996 tree. Original profile/capacity skips and old failures remain distinct. Release gate Passed; local bundle validation and operator deployment acceptance remain separate."
+}

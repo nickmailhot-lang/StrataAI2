@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-19T01:45:12.921Z",
+  "revision": "9960731999118f2ff8ee3353e1654116543d1ac6",
+  "code": "Unchanged current delivery validator from qualified996",
+  "actualLocalMain": "ecd26768582c6a8a621b7c1376ed7fa1b502f935",
+  "independentGitCommonDirectory": "C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/merge17-integrated-tracking/.git",
+  "result": "Passed",
+  "phase": "Reconciled source/gates/criteria and original628 evidence validated before any Done transition.",
+  "items": 1581,
+  "criteria": 3872,
+  "originalEvidencePreserved": 628,
+  "currentDone": 0,
+  "validatedInputSha256": "616aa0d1b66fa756137365c31af8347c5680b0559861a019b7b95f2150178b04",
+  "scope": "validateLedger with actual source/evidence hashes and Git, complete100-definition baseline, and append-only evolution against actual merged main. This does not claim the baseline-only global-zero test is fixed."
+}
