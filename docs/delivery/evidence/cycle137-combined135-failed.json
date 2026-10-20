@@ -1,0 +1,88 @@
+{
+  "at": "2026-10-20T22:09:41.514Z",
+  "native": {
+    "at": "2026-10-20T22:06:31.467Z",
+    "startedAt": "2026-10-20T21:52:56.366Z",
+    "project": "strataai-mvp-browser-e81d6eb5e135206e",
+    "exit": 1,
+    "stats": {
+      "startTime": "2026-10-20T21:53:53.333Z",
+      "duration": 752764.485,
+      "expected": 11,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "frontendSource": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+    "testSource": "a33bc64bf07387a34041adeac15aebc165d6d909",
+    "result": "Failed",
+    "phases": [
+      {
+        "name": "Start exclusive fixture database",
+        "exit": 0
+      },
+      {
+        "name": "Apply packaged migrations without application build",
+        "exit": 0
+      },
+      {
+        "name": "Provision canonical restricted runtime roles",
+        "exit": 0
+      },
+      {
+        "name": "Provision original disposable identity CI role",
+        "exit": 0
+      },
+      {
+        "name": "Start retained images with original browser-full account fixture",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned api container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned worker container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned web container",
+        "exit": 0
+      },
+      {
+        "name": "Original five additional affected cases",
+        "exit": 1
+      },
+      {
+        "name": "Clean only exclusive fixture resources",
+        "exit": 0
+      }
+    ],
+    "primaryError": null,
+    "cleanupError": null,
+    "stockUnchanged": true,
+    "ownedRemaining": {
+      "containers": "",
+      "volumes": "",
+      "networks": ""
+    },
+    "privateSettingsRemoved": true,
+    "logSha256": "5da1716f4247ed8cd9f4fb16c91b4f620d67081f89026c22660455f49d1c57bf",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "scope": "Complete12case combined first-use Board5, native navigation recovery3 and Organization actions4 at a33bc64. Actual frontend build4bc16f8 has identical production/unit inputs; real isolated PostgreSQL and retained code-equivalent hAPI/Worker. Original assertions/deadlines/retries0/actor-key-version receipts, lost-response recovery, canonical persistence, UX/Axe and access-withdrawal checks unchanged. Scoped supporting mixed-client local verification; never immutableCI/main acceptance. Earlier CI and132failures retained separately."
+  },
+  "reportSha256": "2f548cb503932cd026c4423ac72d9795eb69ad8819962cf80b77f1f76fefb0d5",
+  "failure": {
+    "case": "Organization actions default1280",
+    "line": 81,
+    "column": 75,
+    "assertion": "Shift+Tab must return focus to Organization actions summary",
+    "actual": "inactive",
+    "originalTimeoutMs": 5000,
+    "contextSha256": "0ded29a71d861dd77e648d3e979a644451d91440b55a3dde0e227434c47f3c34",
+    "traceSha256": "4c98df9e7380e53fa059a9167bd53ae1266e36fa6799dbffef007086d4dc4a1b",
+    "actualFailureRenderViewed": "test-failed-2.png"
+  },
+  "scope": "Actual complete12cases at a33bc64 finished11pass/1failure/0skip/retry,84369terminal1. AllBoard5/navigation3andother3Organizationcasespassed, but aggregate remainsFailed. Exact trace locatesShift+Tab return-focus check during Admin currentActions, not previousBoardentry/closedopening failure. Preserve alloriginal60Organizationexpect-relatednodes; rework bounded origin-only native traversal and reject brokenorder. Both ownedcleanup andStock invariants passed. No fullincrementacceptance/main/currentCI inferred."
+}

@@ -1,0 +1,78 @@
+{
+  "at": "2026-10-20T21:53:52.914Z",
+  "native": {
+    "at": "2026-10-20T21:45:05.515Z",
+    "startedAt": "2026-10-20T21:39:16.202Z",
+    "project": "strataai-mvp-browser-85a408082b2a9a87",
+    "exit": 1,
+    "stats": {
+      "startTime": "2026-10-20T21:40:17.031Z",
+      "duration": 284127.465,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "frontendSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "testSource": "46023ce9a6c10d302382a840820c5a5ec3f6ee0a",
+    "result": "Failed",
+    "phases": [
+      {
+        "name": "Start exclusive fixture database",
+        "exit": 0
+      },
+      {
+        "name": "Apply packaged migrations without application build",
+        "exit": 0
+      },
+      {
+        "name": "Provision canonical restricted runtime roles",
+        "exit": 0
+      },
+      {
+        "name": "Provision original disposable identity CI role",
+        "exit": 0
+      },
+      {
+        "name": "Start retained images with original browser-full account fixture",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned api container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned worker container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned web container",
+        "exit": 0
+      },
+      {
+        "name": "Original five additional affected cases",
+        "exit": 1
+      },
+      {
+        "name": "Clean only exclusive fixture resources",
+        "exit": 0
+      }
+    ],
+    "primaryError": null,
+    "cleanupError": null,
+    "stockUnchanged": true,
+    "ownedRemaining": {
+      "containers": "",
+      "volumes": "",
+      "networks": ""
+    },
+    "privateSettingsRemoved": true,
+    "logSha256": "13865c306312eb6c5945a6f61421445b814a28e760979340daaf0833bee258d6",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "scope": "Complete five-case affected-workflow execution on owned retainedAPI/Worker/PG plus offline-fixed frontend/first-use tests. Originalfive affected cases with all original assertions/deadlines and zero retries preserved. Localfixture only, not currentimmutableCI; earlierfailed aggregates remainretained."
+  },
+  "reportSha256": "53946f532e77a6fb7e465e475872c9301534ee929edd1ea5967f10faea56529c",
+  "errorContextSha256": "6d1e6f405f8e2cd236610628e1d6b8d8f994f580809b02d46c21a4e7d9dd18fb",
+  "scope": "Actual complete original four-case run132:3passed/1failed (not five cases despite copied controller phase/scope label). Failure390px expected details.open=true after Shift+Tab+Enter reopening but receivedfalse. Board entry atother3widths passed; this whole run remainsFailed. Existing bounded read-only opening admission applied to reopening too; all original details.open/visibility/hidden keyboard/Tab/focus/role/canonical/Axe/120s assertions retained. No product failure cause exclusively inferred from this local failure."
+}

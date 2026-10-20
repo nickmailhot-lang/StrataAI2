@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-20T21:58:07.818Z",
+  "runtimeSource": "aaf66a29c068b670a20647e5bdbd02834f8e1cbf",
+  "newControlSubsequentlyCommitted": "27fc8159fb87f9eb46462a557cf7f35b07174486",
+  "actualSession": 45032,
+  "exit": 1,
+  "selectedFailed": 1,
+  "otherTestsDeselected": 13,
+  "logSha256": "9372f90ab7010a0fb7bcc172935c4022ca533b07b635212318a8c388aa327343",
+  "scope": "Actual new controlled regression on original P3 runtime plus uncommitted new test subsequently committed27fc: protected admissionfalse→true after lost reply dispatched2POSTs instead of1 without explicitRetry. Original failed proof retained. Deselected13are targetedselection, not whole-suite skips/qualification."
+}
