@@ -1,0 +1,19 @@
+{
+  "artifact": "work/cycle101-entry-stability-red.json",
+  "sha256": "855bb87ed4b6ef0115445a4c7f20c3189d866cd36709766b27004ecbcea5bc5c",
+  "total": 2,
+  "passed": 0,
+  "failed": 2,
+  "skipped": 0,
+  "cases": [
+    {
+      "name": "uses identical entry/return reveal policy at a fractional { edge: 'viewport bottom', …(2) } boundary",
+      "result": "failed"
+    },
+    {
+      "name": "uses identical entry/return reveal policy at a fractional { edge: 'fixed header', y: 79.25, …(1) } boundary",
+      "result": "failed"
+    }
+  ],
+  "scope": "Actual committed cf5838 source: two deterministic fractional entry/return controls fail35to36 and35to34. Synthetic geometry models policy mismatch; exact CI fractional rectangles were not retained. Original native equality unchanged."
+}

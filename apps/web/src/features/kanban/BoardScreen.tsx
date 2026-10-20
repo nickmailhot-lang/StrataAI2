@@ -51,6 +51,7 @@ import { ChecklistManageControl } from './ChecklistManageControl';
 import { CardDateDisplay } from './CardDateDisplay';
 import { BoardDateProvider } from './BoardDateBadges';
 import { BoardCardLink } from './BoardCardLink';
+import { observeFocusedCardVisibility } from './focusedCardVisibility';
 import { BoardWindow, type BoardWindowHeights } from './BoardWindow';
 import { CardDateEditor } from './CardDateEditor';
 import { CardLabels } from './CardLabels';
@@ -211,6 +212,8 @@ function BoardContent() {
   const reading = useRef(false);
   const [snapshotReading, setSnapshotReading] = useState(true);
   const cardLinks = useRef(new Map<string, HTMLAnchorElement>());
+  useLayoutEffect(() => observeFocusedCardVisibility(cardLinks.current,
+    () => !dragCard.current && !dragList.current), [key]);
   const windowMemory = useRef(new Map<string, number>());
   const windowHeights = useRef<BoardWindowHeights>(new Map());
   const closeFocusCard = useRef<string | undefined>(undefined);
