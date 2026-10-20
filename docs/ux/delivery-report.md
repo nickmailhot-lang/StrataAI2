@@ -713,3 +713,13 @@ The wider frontend suite is still running; no full pass, new published CI pass o
 
 
 CI repair validation at ac55be7025ad1df93c09fed8f68b679517516486: original invitation10 passed at F and additional14 affected original cases passed at F2, separately bound runs with zero skips/retries. Named Organization/Board/Card at1280/768200%/390/320 preserves exact scroll and focus return, private context withdrawal and Axe checks. Canonical event collectors preserve actor/version/private metadata and distinct producer effects across independent connections. Six actual320/200% captures inspected; neutral pending header withdrawal remains intentional. Original frontend2942Pass/24deferred sourceC result retained; current repaired-head immutable CI and main integration remain pending. No product/schema/API/permission/CI-policy change or parent closure.
+
+
+## Card entry and return context — 2026-10-20
+
+Actual PR117 and118 third browser partitions fail the original320px exact return-scroll assertion35→36. The official118 trace shows the shift after Close; all60 retained artifact checksums were verified. Two deterministic fractional policy controls fail before repair. Source 271da4900f99e2c97e42d99932ec424b2b705a75 reuses the existing reveal policy for initial focus and return, observes only the focused Card/layout, preserves horizontal context, and yields to manual scrolling and drags. No API, role, event, schema or native test comparison changes.
+
+Tested locally:24 focus controls, 56 original caption/keyboard/drag cases, web types, scoped lint and one isolated frontend build pass. Original12 real-service context/work/scroll/touch scenarios and BoardScreen regression remain pending. Responsive/keyboard/Axe/manual visual, full required CI, review and main integration remain required. No product acceptance or new Done.
+
+
+Current271da real-service validation passed12/12 withzero skips/retries: originalfour named-context/exactreturn/privatewithdrawal profiles, four Work journeys, three scroll cancellation cases and originaltouch persistence. Nine selected rendered resources inspected, including320native focused return frame; neutral pending return captures do not prove settled names. Own fixture cleanup and protectedWorker invariant pass. Separately, original40-case localBoardScreen suite failed19Pass/21Fail; a bounded unchangedP2/repaired comparison reproduces the due-description failure onboth. Full baseline comparison and own newimmutableCI remain required; no localfullpass, acceptance, integration or Done claimed.

@@ -1,0 +1,25 @@
+{
+  "head": "ac40cca303bb12fc5edaaaa568905aa5dc1fd635",
+  "job": {
+    "id": 118702910161,
+    "head_sha": "ac40cca303bb12fc5edaaaa568905aa5dc1fd635",
+    "name": "container-integration (browser-full, 3/4)",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "logTruncated": true,
+  "passed": 124,
+  "failed": 1,
+  "case": "organization-context-name.spec.ts:27:7 at320px",
+  "assertion": "line93 exact document X/Y afterClose",
+  "expected": {
+    "x": 0,
+    "y": 35
+  },
+  "actual": {
+    "x": 0,
+    "y": 36
+  },
+  "excerpt": "  1) tests/browser/organization-context-name.spec.ts:27:7 › PRD-03-VS-01-T-02-TEST-02: sign-in, named Organization, Board, Card and private-context withdrawal at 320px \n2026-10-20T17:12:05.0189803Z \n2026-10-20T17:12:05.0190365Z     Error: expect(received).toEqual(expected) // deep equality\n2026-10-20T17:12:05.0191025Z \n2026-10-20T17:12:05.0191374Z     - Expected  - 1\n2026-10-20T17:12:05.0191871Z     + Received  + 1\n2026-10-20T17:12:05.0192156Z \n2026-10-20T17:12:05.0192339Z       Object {\n2026-10-20T17:12:05.0192739Z         \"x\": 0,\n2026-10-20T17:12:05.0193139Z     -   \"y\": 35,\n2026-10-20T17:12:05.0193546Z     +   \"y\": 36,\n2026-10-20T17:12:05.0193933Z       }\n2026-10-20T17:12:05.0194127Z \n2026-10-20T17:12:05.0194620Z       91 |       await focusAdmittedControl(close); await close.press('Enter');\n2026-10-20T17:12:05.0196925Z       92 |       await expect(detail).toHaveCount(0); await expect(face).toBeFocused();\n2026-10-20T17:12:05.0198133Z     > 93 |       expect(await page.evaluate(() => ({ x: scrollX, y: scrollY }))).toEqual(boardScroll);\n2026-10-20T17:12:05.0199159Z          |                                                                       ^\n2026-10-20T17:12:05.0199928Z       94 |       await assertContext(page, name, org);\n2026-10-20T17:12:05.0200571Z       95 |       if (width < 600) {\n2026-10-20T17:12:05.0201442Z       96 |         const trigger = page.getByRole('button', { name: 'Open navigation', exact: true });\n2026-10-20T17:12:05.0202818Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/organization-context-name.spec.ts:93:71\n2026-10-20T17:12:05.0203634Z \n2026-10-20T17:12:05.0204580Z     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n2026-10-20T17:12:05.0206197Z     test-results/organization-context-name--0563e-context-withdrawal-at-320px/test-failed-1.png\n2026-10-20T17:12:05.0207753Z     ────────────────────────────────────────────────────────────────────────────────────────────────\n2026-10-20T17:12:05.0208712Z \n2026-10-20T17:12:05.0209347Z     Error Context: test-results/organization-context-name--0563e-context-withdrawal-at-320px/error-context.md\n2026-10-20T17:12:05.0209896Z \n2026-10-20T17:12:05.0210390Z     attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\n2026-10-20T17:12:05.0211113Z     test-results/organization-context-name--0563e-context-withdrawal-at-320px/trace.zip\n2026-10-20T17:12:05.0211608Z     Usage:\n2026-10-20T17:12:05.0211734Z \n2026-10-20T17:12:05.0212559Z         npx playwright show-trace test-results/organization-context-name--0563e-context-withdrawal-at-320px/trace.zip\n2026-10-20T17:12:05.0213506Z \n2026-10-20T17:12:05.0214276Z     ────────────────────────────────────────────────────────────────────────────────────────────────\n2026-10-20T17:12:05.0214879Z \n2026-10-20T17:12:05.0216066Z   1 failed\n2026-10-20T17:12:05.0217811Z     tests/browser/organization-context-name.spec.ts:27:7 › PRD-03-VS-01-T-02-TEST-02: sign-in, named Organization, Board, Card and private-context withdrawal at 320px \n2026-10-20T17:12:05.0219179Z   124 passed (1.3h)\n2026-10-20T17:12:05.4117282Z ##[error]Process completed with exit code 1.\n2026-10-20T17:12:05.4187297Z ##[group]Run python3 scripts/ci/prepare-evidence-artifact.py --metadata image-artifacts/build-metadata.json --output artifacts/retained/browser-diagnostics --entry \"test-results/\" \"test-results\" --entry \"playwright-report/\" \"playwright-report\"\n2026-10-20T17:12:05",
+  "scope": "Actual completed PR117 full3 job through official CodeReview diagnostics.124Passed/1Failed; later320private-withdrawal assertions unreached. Current CI snapshot19Success/22reported, aggregateFailed/releaseSkipped, no merge."
+}

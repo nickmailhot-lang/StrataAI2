@@ -1,0 +1,60 @@
+{
+  "at": "2026-10-20T18:19:53.634Z",
+  "images": [
+    {
+      "path": "docs/delivery/evidence/cycle103-99582-named-board.png",
+      "sha256": "ad6ea269a131ec7f66b9fef25138abba2f2d4ffc97370f5258b1cda65806618d"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle103-99582-named-card.png",
+      "sha256": "2d244ced96ecab88edbf1ecf85a414200db056315b2d035c75ac91c9bb88e713"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle103-1bceb-named-card.png",
+      "sha256": "e9e286f760fdd1083446470699e9e310b0c92144498c42c43011b4b19f4e09c4"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle103-1bceb-context-withdrawn.png",
+      "sha256": "91e300376bf284ee578f2c6f0e3f17a10378d924a3c229c88731f1352e418a93"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle103-0563e-named-board.png",
+      "sha256": "57dcaa26190da22abffa67af65645e2d3d2c80fab002a57df4e18de0d4102e96"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle103-0563e-named-card.png",
+      "sha256": "d8f77cd673d0967f18a8901a3b63937385da2b54e350b4a70a7c4c41bd9af15d"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle103-0563e-named-return.png",
+      "sha256": "90d28f715a4a7364c44163558653bddae6451535456e16f4e169f6c8b697d59a"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle103-0563e-context-withdrawn.png",
+      "sha256": "12ede056f4f9d62c547f407c665e121fda791382bc9634676a35b5c8b4e73592"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle103-p320-focused-return.jpeg",
+      "sha256": "257f7a810fae595bf254c882985c245f580a70fc00336613077ba83c61359d90"
+    }
+  ],
+  "trace": {
+    "source": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "closePressStart": 466148.812,
+    "exactScrollAfter": 466310.155,
+    "nextNavigationFocus": 466487.691,
+    "frame": {
+      "type": "screencast-frame",
+      "pageId": "page@7f0f717980c197b93c8f24b7ff58a29c",
+      "file": "screencast/page@7f0f717980c197b93c8f24b7ff58a29c-1792519805048.jpeg",
+      "width": 320,
+      "height": 900,
+      "timestamp": 466285.146,
+      "frameSwapWallTime": 1792519805039.716
+    },
+    "image": "work\\cycle103-p320-focused-return.jpeg",
+    "imageSha256": "257f7a810fae595bf254c882985c245f580a70fc00336613077ba83c61359d90",
+    "scope": "Unaltered native screencast resource after Close activation, preceding passing exact-scroll evaluation and next navigation focus. Actual encoded native frame may be lower resolution than CSS viewport; no image editing or resizing applied."
+  },
+  "scope": "Nine actual rendered resources inspected individually: eight unchanged native captures plus original320screencast frame afterClose/beforeexactscroll andnextnavigationfocus. Frame shows focused Card with complete outline belowheader; native return X/Y are exactly0/0 before andafter.768200% namedheader/Boardheading and dialogtitle/Close readable; phone dialog controls usable. Some return/withdrawal captures are neutral pending states, not settlednamedOrganization acceptance; automatic named-context assertions provide separate evidence.320withdrawn capture is actual deniedsurface with no private name/actions. Native encoded screencast may be lower resolution thanCSSviewport; no image editing. No device/screenreader/globalWCAG certification."
+}
