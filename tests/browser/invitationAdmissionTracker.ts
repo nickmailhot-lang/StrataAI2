@@ -10,14 +10,26 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
   const scope = board ?? organization;
   const readPath = protectedReadPath ?? (board ? `/boards/${board}` : `/organizations/${organization}/members/${actor}`);
   let heads = 0, generation = 0, readGeneration = -1, reads = 0;
+  let documentGeneration = 0;
+  type Stream = { generation: number; readGeneration: number };
+  const streams = new Set<Stream>();
   const issued = new Set<string>();
   const seen = new Set<string>();
-  const pending = new Map<Request, number>();
+  const pending = new Map<Request, { generation: number; document: number; streams: [Stream, number][] }>();
+  page.on('framenavigated', frame => {
+    if (frame !== page.mainFrame()) return;
+    documentGeneration++; generation++; readGeneration = -1;
+    streams.clear(); pending.clear();
+  });
   page.on('websocket', socket => {
     if (new URL(socket.url()).pathname !== socketPath) return;
+    const document = documentGeneration;
+    const stream: Stream = { generation: 0, readGeneration: -1 };
+    let closed = false;
     const watches = new Set<string>(), observed = new Set<string>();
+    socket.on('close', () => { closed = true; streams.delete(stream); });
     socket.on('framesent', frame => {
-      if (typeof frame.payload !== 'string' || new URL(page.url()).pathname !== pagePath) return;
+      if (closed || document !== documentGeneration || typeof frame.payload !== 'string' || new URL(page.url()).pathname !== pagePath) return;
       for (const part of frame.payload.split('\u001e').filter(Boolean)) {
         try {
           const value = JSON.parse(part);
@@ -27,7 +39,7 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
       }
     });
     socket.on('framereceived', frame => {
-      if (typeof frame.payload !== 'string' || new URL(page.url()).pathname !== pagePath) return;
+      if (closed || document !== documentGeneration || typeof frame.payload !== 'string' || new URL(page.url()).pathname !== pagePath) return;
       for (const part of frame.payload.split('\u001e').filter(Boolean)) {
         try {
           const value = JSON.parse(part);
@@ -38,7 +50,10 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
             eventId?: unknown; eventType?: unknown; organizationId?: unknown; boardId?: unknown; entityId?: unknown;
           }) => !event || typeof event.eventId !== 'string' || typeof event.eventType !== 'string'
             || event.organizationId !== organization || event.boardId !== (board ?? null) || typeof event.entityId !== 'string'))) continue;
-          if (!observed.has(value.invocationId)) { observed.add(value.invocationId); heads++; generation++; }
+          if (!observed.has(value.invocationId)) {
+            observed.add(value.invocationId); heads++; generation++;
+            stream.generation++; stream.readGeneration = -1; streams.add(stream);
+          }
           if (issuedInvitation) {
             if (item.resetRequired) { generation++; seen.clear(); }
             for (const event of item.events) {
@@ -52,16 +67,31 @@ export function trackInvitationAdmission(page: Page, organization: string, actor
     });
   });
   page.on('request', request => {
-    if (heads > 0 && new URL(page.url()).pathname === pagePath && request.method() === 'GET'
-      && new URL(request.url()).pathname === readPath) pending.set(request, generation);
+    if (streams.size > 0 && new URL(page.url()).pathname === pagePath && request.method() === 'GET'
+      && new URL(request.url()).pathname === readPath) pending.set(request, {
+      generation, document: documentGeneration, streams: [...streams].map(stream => [stream, stream.generation]),
+    });
   });
   page.on('response', response => {
     const started = pending.get(response.request()); pending.delete(response.request());
-    if (started !== undefined && started === generation && response.status() === 200) { readGeneration = started; reads++; }
+    if (!started || started.document !== documentGeneration || response.status() !== 200) return;
+    let currentStreamRead = false;
+    for (const [stream, version] of started.streams) {
+      if (streams.has(stream) && stream.generation === version) {
+        stream.readGeneration = version; currentStreamRead = true;
+      }
+    }
+    if (started.generation === generation) readGeneration = generation;
+    if (issuedInvitation ? started.generation === generation : currentStreamRead) reads++;
   });
   page.on('requestfailed', request => pending.delete(request));
   return { heads: () => heads, reads: () => reads,
-    ready: () => heads > 0 && readGeneration === generation && (!issuedInvitation || !!issuedInvitation.id && issued.has(board ?? issuedInvitation.id)) };
+    // The caption and invitation form own independent connections. A new head
+    // fences its own earlier read, not another live connection's proof. Issued
+    // source/event admission keeps its existing aggregate generation fence.
+    ready: () => streams.size > 0 && (issuedInvitation
+      ? readGeneration === generation && !!issuedInvitation.id && issued.has(board ?? issuedInvitation.id)
+      : [...streams].some(stream => stream.readGeneration === stream.generation)) };
 }
 
 // A displayed review can precede the Board event that invalidates it. Observe

@@ -34,6 +34,7 @@ test('independently owned metadata stream cannot fence another live stream own f
 test('closing the only admitted stream retires its protected read proof', () => {
   const f = independentMetadataFixture(), form = f.socket(); form.head('form'); f.response(f.request());
   assert.equal(f.tracker.ready(), true); form.value.emit('close'); assert.equal(f.tracker.ready(), false);
+  form.head('late-closed'); f.response(f.request()); assert.equal(f.tracker.ready(), false);
 });
 
 test('new document cannot inherit old stream or in-flight protected read admission', () => {
