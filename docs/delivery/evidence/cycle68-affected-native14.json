@@ -1,0 +1,83 @@
+{
+  "at": "2026-10-20T14:07:21.965Z",
+  "startedAt": "2026-10-20T13:54:04.810Z",
+  "project": "strataai-mvp-browser-d78eb3adb6bd0a7a",
+  "exit": 0,
+  "stats": {
+    "startTime": "2026-10-20T13:54:53.164Z",
+    "duration": 744486.313,
+    "expected": 14,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "frontendSource": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "testSource": "ac55be7025ad1df93c09fed8f68b679517516486",
+  "result": "Passed",
+  "phases": [
+    {
+      "name": "Start exclusive fixture database",
+      "exit": 0
+    },
+    {
+      "name": "Apply packaged migrations without application build",
+      "exit": 0
+    },
+    {
+      "name": "Provision canonical restricted runtime roles",
+      "exit": 0
+    },
+    {
+      "name": "Provision original disposable identity CI role",
+      "exit": 0
+    },
+    {
+      "name": "Start retained images with original browser-full account fixture",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned api container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned worker container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned web container",
+      "exit": 0
+    },
+    {
+      "name": "Original fourteen additional affected cases",
+      "exit": 0
+    },
+    {
+      "name": "Clean only exclusive fixture resources",
+      "exit": 0
+    }
+  ],
+  "primaryError": null,
+  "cleanupError": null,
+  "stockUnchanged": true,
+  "ownedRemaining": {
+    "containers": "",
+    "volumes": "",
+    "networks": ""
+  },
+  "privateSettingsRemoved": true,
+  "logSha256": "1dd8d3cda207dc5015c5f053f87b0402944bb4847f5157dc3397bf44a168db00",
+  "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "scope": "Actual original14 additional affected workflows passed at F2: invitation deadline4, issuer telemetry2, named Organization/Board/Card/context-withdrawal4, live accepted roles2, live member/removal recovery2. All original assertions/deadlines/retries retained. This separate14-case run plus prior F10 supports local repair; neither substitutes for current-head immutable CI. Owned services/private settings cleaned, StockWorker unchanged.",
+  "renderedReview": {
+    "at": "2026-10-20T14:08:50.072Z",
+    "reviewer": "delivery-owner",
+    "cases": [
+      "320px Board/Card/return/access-withdrawal",
+      "768px with200%text Board/Card"
+    ],
+    "capturesInspected": 6,
+    "limits": "Organization return header may neutrally withdraw during revalidation; no stale name retained as authority. Existing empty-assignee producer gap remains separate C66 work."
+  },
+  "prior10HelperPrefixByteEqual": true
+}

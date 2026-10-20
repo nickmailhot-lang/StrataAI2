@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-20T14:08:50.072Z",
+  "source": "ac55be7025ad1df93c09fed8f68b679517516486",
+  "passed": 36,
+  "failed": 0,
+  "skipped": 0,
+  "nativeSha256": "11a45dbbbe966102edbdbde73dcf6f5a8902ca3c0b1632fe64f1aa669de0e7ba",
+  "inputLedgerEvidence": 866,
+  "scope": "All36 original delivery tracking/refusal contracts passed on866-evidence input. Contract source unchanged; final ledger validation is separately required after appending evidence. No assertions, lifecycle or baseline relaxed."
+}
