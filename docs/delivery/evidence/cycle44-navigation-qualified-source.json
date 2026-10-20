@@ -1,0 +1,69 @@
+{
+  "at": "2026-10-20T02:08:40.982Z",
+  "result": "Passed",
+  "qualifiedSource": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "currentAuditBase": "fba339dbba2fb35a8539634f707da54d0c48de57",
+  "actualMain": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "sourcePaths": [
+    {
+      "path": "apps/web/src/app/navigationModel.ts",
+      "sha256": "bf8e54b5990de99c7db376f5bc57a44dbfecb9eca9f4407680b3ba8cb10a60b9"
+    },
+    {
+      "path": "apps/web/src/app/InternalAppShell.tsx",
+      "sha256": "b974ff79abec81e63025fb65b379fc7ea3665756c0516f8a6701904595f45d53"
+    },
+    {
+      "path": "apps/web/src/app/SecondaryActions.tsx",
+      "sha256": "815754cca5afa232d290b9cb0cc5ce5816ea18112b4af3e4b07515690f43523c"
+    },
+    {
+      "path": "apps/web/src/app/workExperience.ts",
+      "sha256": "019a51b12915dac1794a41f98ac09459116a7d9fff65ebe23fac96fd179d6889"
+    },
+    {
+      "path": "apps/web/src/features/organizations/OrganizationHome.tsx",
+      "sha256": "75898343b46d6ca537c49b0a4a79d3de1cf0c9b008d075b4d95f8d556c175aa7"
+    },
+    {
+      "path": "tests/browser/work-navigation.spec.ts",
+      "sha256": "6153e2d5127a9f7152df990e832680660fee1cf86dfcf1d68b37fe4b496f37db"
+    },
+    {
+      "path": "tests/browser/organization-actions.spec.ts",
+      "sha256": "10fc9f5a24b6acfc0ca0fca50b3d43f42fa27f0cdb2f2b03df4b1e95782af348"
+    }
+  ],
+  "scopedSourceEqualInCurrentMain": true,
+  "ci22": {
+    "id": "EVID-CYCLE-40-8C68-CI22",
+    "path": "docs/delivery/evidence/merge17-8c68-final22-checks.json",
+    "sha256": "3fcb70154b8cd64b5a879e675c2940dd8cecf8afa916c1f1e7cfb1f020ce0938"
+  },
+  "actualIntegration": {
+    "id": "EVID-CYCLE-40-113-MAIN",
+    "path": "docs/delivery/evidence/merge17-pr113-verified-integration.json",
+    "sha256": "45c08d8a57dcfee2da3c0e0a7778e7b2f778dd76b66a5fcc9e03993cfe033b4f"
+  },
+  "actualNativeRows": [
+    "2026-10-19T17:22:22.3769784Z   ✓    9 tests/browser/organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 1280px (19.6s)",
+    "2026-10-19T17:23:08.3156056Z   ✓   10 tests/browser/organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 768px (20.9s)",
+    "2026-10-19T17:23:52.9983408Z   ✓   11 tests/browser/organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 390px (19.7s)",
+    "2026-10-19T17:24:37.8166037Z   ✓   12 tests/browser/organization-actions.spec.ts:11:7 › PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 320px (19.8s)",
+    "2026-10-19T19:10:50.1153276Z   ✓  107 tests/browser/work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 1280px (4.0s)",
+    "2026-10-19T19:11:19.0428969Z   ✓  108 tests/browser/work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 768px (3.9s)",
+    "2026-10-19T19:11:48.5979120Z   ✓  109 tests/browser/work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 390px (4.5s)",
+    "2026-10-19T19:12:18.1459342Z   ✓  110 tests/browser/work-navigation.spec.ts:6:7 › PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 320px (4.5s)"
+  ],
+  "actualNativePassed": 8,
+  "actualComponentRows": [
+    "2026-10-19T15:44:09.0425446Z  ✓ src/app/App.test.tsx (5 tests) 1553ms",
+    "2026-10-19T15:44:35.3455060Z  ✓ src/features/organizations/OrganizationHome.actions.test.tsx (7 tests) 1157ms",
+    "2026-10-19T15:44:52.1011792Z  ✓ src/app/InternalAppShell.test.tsx (5 tests) 1499ms",
+    "2026-10-19T15:45:00.8831884Z  ✓ src/app/navigationModel.test.ts (25 tests) 10ms",
+    "2026-10-19T15:45:24.1650619Z  ✓ src/app/SecondaryActions.test.tsx (2 tests) 153ms",
+    "2026-10-19T15:45:28.0097074Z  ✓ src/app/workExperience.test.ts (3 tests) 5ms"
+  ],
+  "actualComponentsPassed": 47,
+  "scope": "Actual previously qualified/integrated8c68 evidence for unchanged Worknavigation/admittedOrganizationactions. Four Production-onlyOrgactions cases actuallyPassed at original modeassertion; four Worknav and47controls Passed. This is not freshcurrentPR115 immutablequalification or a newmanaged-provider certification. No new productimplementation required; auditpackage itself stillunintegrated."
+}

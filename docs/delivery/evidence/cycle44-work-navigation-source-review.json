@@ -1,0 +1,53 @@
+{
+  "at": "2026-10-20T02:08:40.982Z",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "existingImplementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "auditBase": "fba339dbba2fb35a8539634f707da54d0c48de57",
+  "items": [
+    "PRD-04-VS-06",
+    "PRD-04-VS-06-T-01",
+    "PRD-04-VS-06-T-01-TEST-01"
+  ],
+  "criteria": [
+    {
+      "id": "PRD-04-VS-06/UX-NAV-01",
+      "text": "Work has aria-current on directory and all board descendants."
+    },
+    {
+      "id": "PRD-04-VS-06/UX-NAV-02",
+      "text": "Phone menu opens/closes by keyboard and restores focus."
+    },
+    {
+      "id": "PRD-04-VS-06/UX-NAV-03",
+      "text": "OrganizationHome exposes only role-permitted actions from its currently admitted summary, including synchronous withdrawal."
+    },
+    {
+      "id": "PRD-04-VS-06-T-01/AC-01",
+      "text": "Inspect the retained original/current requirements and independently owned UX increment, map exact source/tests for the three navigation criteria and record current unmet acceptance without duplicating implementation."
+    },
+    {
+      "id": "PRD-04-VS-06-T-01-TEST-01/AC-01",
+      "text": "Verify all three linked navigation criteria at the integrated current source, including keyboard/focus, role withdrawal and applicable responsive/UXA evidence. Unmerged code or planned evidence does not count as accepted."
+    }
+  ],
+  "mapping": {
+    "UX-NAV-01": "navigationModel scope/descendant rules,25controls and actual4Worknavigation widthcases/currentaria ondirectory/Board/hiddenmodalcontext.",
+    "UX-NAV-02": "InternalAppShell standardMUIphoneDrawer, keyboardOpen/Escape/focusrestore and currentWorklink exacthref; actualtwoPhoneWidths and controls.",
+    "UX-NAV-03": "OrganizationHome admits currentprofile/summary onbothsides ofboundedread, drops data duringrecovery; organizationNavigation rejectsforeign/inactive/unknownrole and derives currentactions. Sevencontrols plusactual4Productionowner/admin/member/downgrade/directrefusal/canonicalunchanged cases.",
+    "Task/Testaudit": "Current livebothPRD03/04 amendments preserved and mapped to exactcode/tests/actualresults. Newauditpackageoutput requires its ownsourcecommit/currenttracking andtargetintegration beforeDone."
+  },
+  "sourceReview": [
+    "Navigation models discovery only; actualpage/API authorization remains decisive. CurrentWork covers Organizationdirectory/Boarddescendants and fixedexistingroutes; nofutureplaceholderlinks.",
+    "OrganizationHome setData(undefined) duringrefresh/recovery and uses currentOrganization for roleactions; boundedcurrent /me andsummary/graph reads reject invalid/changedactor/context.",
+    "PrimaryCreate precedes labelledSecondaryActions; standardnative details preserves mountedrecovery/dialogowners whileclosedcommands remain outsidekeyboard/AT discovery. Existingcontrolledrollback flag staysunchanged."
+  ],
+  "evidence": [
+    "EVID-CYCLE-44-LIVE-ISSUE3",
+    "EVID-CYCLE-44-LIVE-ISSUE5",
+    "EVID-CYCLE-44-NAV-QUALIFIED-SOURCE",
+    "EVID-CYCLE-44-WORK-NATIVE4",
+    "EVID-CYCLE-44-WORK-VISUAL12"
+  ],
+  "scope": "Scopedresponsibleagentsource/evidence review. Existingcapability implemented/tested inmain, but newauditoutput/threeReady verificationrecords are notDone andrequire currentpublication/targetintegration. OtherBoardcreation persistentfont/Cardblanktitle sources and broadparentPRDs remainindependent/open."
+}
