@@ -701,3 +701,12 @@ Acceptance remains pending. The new feature still needs its own current CI, fina
 
 
 The focused change is published as draft [PR #117](https://github.com/nickmailhot-lang/StrataAI2/pull/117). Its initial stacked target did not match the maintained CI filter, so the target was corrected to main with no source or workflow change. It depends on #116; inherited #116 changes will leave the diff after that PR merges. The normal publication-ledger update starts eligible current-head CI. All three feature records remain Testing until their own required checks, final review and actual main integration pass.
+
+
+## Offline Organization context repair — 2026-10-20
+
+Published PR117 exposed two original offline member lifecycle failures: the protected page withdrew names but the new header retained the Organization name. The failure and original verification history remain recorded. Source `c940a6501e64c96bb90ee2ce42a0396059c97d56` now withdraws the header immediately on disconnection, cancels late authority, refuses offline refresh and reads fresh authority on reconnect.
+
+Three dedicated controls failed before repair. All 27 caption controls passed after it. The complete original four lifecycle and four Organization/Board/Card context browser cases passed with zero failures, skips or retries, including both previously failing cases. Original 150-second lifecycle and 90-second context deadlines, five-second name assertion, role/receipt/Axe checks and retries remain unchanged. One new isolated frontend build passed, and all eight selected captures were inspected with explicit pending/neutral-capture limits. The isolated runtime cleaned up and the protected Worker was unchanged.
+
+The wider frontend suite is still running; no full pass, new published CI pass or main integration is inferred. The caption records return through Implemented and Testing with these limits. PR116 has separately merged with all 22 checks and exact source/tested/main tree equality; no parent PRD or MVP is closed.
