@@ -1,0 +1,258 @@
+{
+  "at": "2026-10-20T22:28:49.395Z",
+  "source": "dc40d9963a9d13606d232be9678ebcd020c7eb71",
+  "native": {
+    "at": "2026-10-20T22:26:37.856Z",
+    "startedAt": "2026-10-20T22:20:57.530Z",
+    "project": "strataai-mvp-browser-c29bc072137c02e3",
+    "exit": 0,
+    "stats": {
+      "startTime": "2026-10-20T22:21:52.191Z",
+      "duration": 280642.176,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "frontendSource": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+    "testSource": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+    "result": "Passed",
+    "phases": [
+      {
+        "name": "Start exclusive fixture database",
+        "exit": 0
+      },
+      {
+        "name": "Apply packaged migrations without application build",
+        "exit": 0
+      },
+      {
+        "name": "Provision canonical restricted runtime roles",
+        "exit": 0
+      },
+      {
+        "name": "Provision original disposable identity CI role",
+        "exit": 0
+      },
+      {
+        "name": "Start retained images with original browser-full account fixture",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned api container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned worker container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned web container",
+        "exit": 0
+      },
+      {
+        "name": "Original five additional affected cases",
+        "exit": 0
+      },
+      {
+        "name": "Clean only exclusive fixture resources",
+        "exit": 0
+      }
+    ],
+    "primaryError": null,
+    "cleanupError": null,
+    "stockUnchanged": true,
+    "ownedRemaining": {
+      "containers": "",
+      "volumes": "",
+      "networks": ""
+    },
+    "privateSettingsRemoved": true,
+    "logSha256": "eeb585b529e13aa94a829a6e8dccf10007cc4ccf8d1c14a3cdccdd5136302335",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "scope": "Complete four-width rollback Organization actions at a54e2f2 with explicitly compiled workUX0 frontend fdab59a2. Actual rollback frontend buildfdab59a2 has identical production/unit inputs; real isolated PostgreSQL and retained code-equivalent hAPI/Worker. Original assertions/deadlines/retries0/actor-key-version receipts, lost-response recovery, canonical persistence, UX/Axe and access-withdrawal checks unchanged. Scoped supporting mixed-client local verification; never immutableCI/main acceptance. Earlier CI,132and135failures retained separately. BoundednativeTabadmissionneverfocusesdestination;all original focus/order assertions preserved."
+  },
+  "fixture": {
+    "at": "2026-10-20T22:17:50.894Z",
+    "root": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle138-owned-browser-fixture",
+    "project": "strataai-mvp-browser-c29bc072137c02e3",
+    "ports": {
+      "api": 15300,
+      "worker": 15301,
+      "web": 15302,
+      "identity": 19090
+    },
+    "providerInstance": "892d92cc-4333-4e75-adf2-fd88f1f47ca1",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedServerHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "frontendSource": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+    "testSource": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+    "frontendDist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle67-invitation-ci-repair\\apps\\web\\dist-cycle136",
+    "frontendBuild": "Passed exact new client metadata and four assets; controller must verify actual served hashes.",
+    "testPaths": [
+      {
+        "path": "tests/browser/board.spec.ts",
+        "sha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d"
+      },
+      {
+        "path": "tests/browser/navigation-observations.spec.ts",
+        "sha256": "037c19ea3c821be3fbc812785b54a9b3bbce9460c713c33f60d609fe7a061855"
+      },
+      {
+        "path": "tests/browser/organization-actions.spec.ts",
+        "sha256": "17b23551d9c8552d4989267f27ca410dda887ea4f83ce7733a0715419fcb3e5c"
+      },
+      {
+        "path": "tests/browser/keyboardAdmission.ts",
+        "sha256": "68bca543ac5d826cdbd41732d1db5c9a01c25296c81e6c3fde4ac45e5e5641f4"
+      },
+      {
+        "path": "tests/browser/organizationActionAdmission.ts",
+        "sha256": "521a392fbf22f06dc15a779b7ef4f5e090abcd9131c86c5665911689880c27e2"
+      },
+      {
+        "path": "tests/browser/releaseTest.ts",
+        "sha256": "ab2ea4ef38482df067d458c3d83aff8fbfffe5cbb25f4f4d6534e96bafb5cd9c"
+      },
+      {
+        "path": "tests/browser/scopedBoardWorker.ts",
+        "sha256": "e626bbe37e8dd0bec4e6fed81e70a8ff4c0b7a3b078a914a7bce072dae01fce0"
+      }
+    ],
+    "fixtureChanges": [
+      {
+        "path": "compose.release.yml",
+        "originalSha256": "05c50091b01217d535340cc1ee1bc6d3e060e789a2492e00aa16fd1e84dcb0c7",
+        "fixtureSha256": "2b575667a08160741afdcda76f7500800f41e1da5398baba998a756e2eac57d3",
+        "edits": [
+          {
+            "from": "\"8080:8080\"",
+            "to": "\"127.0.0.1:15300:8080\""
+          },
+          {
+            "from": "\"8081:8081\"",
+            "to": "\"127.0.0.1:15301:8081\""
+          },
+          {
+            "from": "\"8088:80\"",
+            "to": "\"127.0.0.1:15302:80\""
+          }
+        ]
+      },
+      {
+        "path": "scripts/ci/compose.auth-test.yml",
+        "originalSha256": "a96d0dba516a5d295a8e823d6fb264c2f609e79458768bd8b1b98fc7f534f4e3",
+        "fixtureSha256": "ed0b9ded6c89c159e580eb5dcee112cf39a17b6a73f0e2005f1743686802fb89",
+        "edits": [
+          {
+            "from": "http://localhost:8088",
+            "to": "http://localhost:15302"
+          }
+        ]
+      }
+    ],
+    "localClientOverrideSha256": "4dab08dd988900e29adc1b57e1aa1c201b99080fe1489c39b1804bd47c34b269",
+    "expectedCases": 4,
+    "scope": "Complete original 4compiledworkUX0rollbackOrganization native cases at a54e2f2. Latest bounded keyboard traversal focuses only origin and sends native Tab/Shift+Tab; original destination assertions remain. Source-backed retained hAPI/Worker and exact code-equivalent4bc/default orfdab/flag0frontend inputs verified, no production deployment or immutableCI claim."
+  },
+  "runtime": {
+    "at": "2026-10-20T22:21:49.425Z",
+    "project": "strataai-mvp-browser-c29bc072137c02e3",
+    "api": {
+      "service": "strataai-api",
+      "mode": "production",
+      "revision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "version": "0.1.0-1937"
+    },
+    "client": {
+      "revision": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+      "version": "0.1.0-local-navigation-rollback"
+    },
+    "servedAssets": [
+      {
+        "path": "build-metadata.json",
+        "sha256": "1b7df911d74a6daee074710f23917be7ae941469a8b3ea912ef89479e2783347",
+        "size": 99
+      },
+      {
+        "path": "index.html",
+        "sha256": "fcdc80f2ea9063b2beaa02ba2da0fa453c8c0ba1aed46115ca81aaccb853604f",
+        "size": 561
+      },
+      {
+        "path": "assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666",
+        "size": 561
+      },
+      {
+        "path": "assets/index-CRme1zvK.js",
+        "sha256": "1309f90bceb5e5d71a2c2b84924776ef2aaff903f3bd197a354e23ce3737ea2c",
+        "size": 1638032
+      }
+    ],
+    "frontendSource": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+    "testSource": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+    "containers": [
+      {
+        "service": "api",
+        "id": "e40747a0c813f5b357f4b4fbd819d8a434d7d7f615833f1604cdc843790c2414",
+        "image": "sha256:6843e40e15b93bc190d6a1d8ea7a0dd7859cecb8cdb2c3bba301e7f2430a2c27",
+        "startedAt": "2026-10-20T22:21:33.083848351Z"
+      },
+      {
+        "service": "worker",
+        "id": "a6014492975ed144155e56ae08634dda48c94f91439dcdf6e63a61323428a473",
+        "image": "sha256:ffde817b2729a1dd1d3b74c6c704b0127b9477d782d61c359fa4dde8d1d54897",
+        "startedAt": "2026-10-20T22:21:32.491485604Z"
+      },
+      {
+        "service": "web",
+        "id": "37be7c538d5e70bb5c0f7a0fa8bfa3233bd7c2fd3f566a886823593bc584d396",
+        "image": "sha256:6e0ecd1435c3b7e150109c74413dd992e0bd5c0ed0f062fc05f21cf365ec23c8",
+        "startedAt": "2026-10-20T22:21:40.38311579Z"
+      }
+    ],
+    "scope": "Retainedh API/Worker images with exact offline-fixed readonlyfrontend override and hashverifiedservedassets, real isolatedPG and originalauth/identityprofile. Supporting mixed-client runtime only, not immutableCI or productiondeployment."
+  },
+  "compiledClient": {
+    "compiledRollbackFlag": "0",
+    "startedAt": "2026-10-20T21:51:36.189Z",
+    "finishedAt": "2026-10-20T21:51:44.550Z",
+    "result": "Passed",
+    "source": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+    "version": "0.1.0-local-navigation-rollback",
+    "metadata": {
+      "revision": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+      "version": "0.1.0-local-navigation-rollback"
+    },
+    "files": [
+      {
+        "path": "build-metadata.json",
+        "size": 99,
+        "sha256": "1b7df911d74a6daee074710f23917be7ae941469a8b3ea912ef89479e2783347"
+      },
+      {
+        "path": "index.html",
+        "size": 561,
+        "sha256": "fcdc80f2ea9063b2beaa02ba2da0fa453c8c0ba1aed46115ca81aaccb853604f"
+      },
+      {
+        "path": "assets/index-Bw_GsyDn.css",
+        "size": 561,
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+      },
+      {
+        "path": "assets/index-CRme1zvK.js",
+        "size": 1638032,
+        "sha256": "1309f90bceb5e5d71a2c2b84924776ef2aaff903f3bd197a354e23ce3737ea2c"
+      }
+    ],
+    "dist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle67-invitation-ci-repair/apps/web/dist-cycle136",
+    "bundlerExit": 0,
+    "logSha256": "14ace860058966a2a1b6ecf41ef39db17f720f05a5978282fd9ed46a5967f4dd",
+    "scope": "One isolated frontend build for explicit navigation retry and admitted first-original survival through protected reads. Existing C58/dist and protected shared Demo mount untouched. Retained h API/Worker inputs unchanged/reused; no production deployment or immutableCI claim."
+  },
+  "reportSha256": "3260f42ddc732d2e4160173977260dc762d3284638dc75163a2ec60c3ce31e0b",
+  "scope": "All4original rollback1280/768200%/390/320 Organization workflows Passed,58749terminal0, zero failures/skips/retries. Actualcompiled workUX0 client fdab verified byservedmetadata/assethashes; currentdc has identicalproduction/unit inputs. Sameoriginalrole/currentaccount/visibility/canonical/no-write/URL/focus/Axe120s assertions. Ownedfixture/provider/private settingsfullyremoved andStockunchanged. Supportingmixed-clientlocalvalidation only; notcurrentimmutableCI/main orPRDacceptance."
+}

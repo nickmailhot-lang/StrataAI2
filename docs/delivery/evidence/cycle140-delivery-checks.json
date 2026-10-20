@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-20T22:35:49.003Z",
+  "source": "dc40d9963a9d13606d232be9678ebcd020c7eb71",
+  "proofs": [
+    {
+      "key": "p",
+      "dir": "work/cycle67-invitation-ci-repair",
+      "session": 1194,
+      "exit": 0,
+      "tests": 36,
+      "durationMs": 244629.6457,
+      "validatedItems": 1607,
+      "validatedEvidence": 896,
+      "validatedLedgerSha256": "aca19b1a27f6a1120488124ed3193e9e05c5f7aa517a10c15f74d987df44dfcc",
+      "logPath": "docs/delivery/evidence/cycle140-p-delivery-check.txt",
+      "logSha256": "110f8e2e5c82eff64f3929f5d607b171576b2af4e9ee3a09aa35186241b9e865"
+    },
+    {
+      "key": "y",
+      "dir": "work/cycle56-organization-creation-audit",
+      "session": 55866,
+      "exit": 0,
+      "tests": 36,
+      "durationMs": 245149.4055,
+      "validatedItems": 1609,
+      "validatedEvidence": 913,
+      "validatedLedgerSha256": "bfa689e3277ecad4d6bb9bc932173c9345317a7d60662b67e4f125d7b38a9031",
+      "logPath": "docs/delivery/evidence/cycle140-y-delivery-check.txt",
+      "logSha256": "1cd9ae7e0f54d46ac71cff688dba7614d9409e2a45d995f01fa8fc36624079f8"
+    },
+    {
+      "key": "central",
+      "dir": "work/cycle66-card-scan-reflow",
+      "session": 53782,
+      "exit": 0,
+      "tests": null,
+      "validatedItems": 1619,
+      "validatedEvidence": 1011,
+      "validatedLedgerSha256": "5fdea8475cd340d0e75b9e87253a881181a0d691f8da8ca9abf44bdcbdb68fc6",
+      "logPath": "docs/delivery/evidence/cycle140-central-delivery-check.txt",
+      "logSha256": "a2f05de39de38a3a5dc70a23abef67511471f3c5cdfa24f3a2dfd5b0f1e85380"
+    }
+  ],
+  "scope": "Actual P36andY36deliverycontractsPassed0failures/skips,1194/55866terminal0; includes fullsource/evidence/baseline/actualHEAD evolution and refusal controls at prior896/913evidence snapshots. Central1011fullvalidator53782terminal0 with1619items/3917criteria/noUnsupportedDone. Exact priorledger and retainedrawlog hashes recorded. This one tracking-only append nowrequires final897/914/1012fullvalidation before metadata commit/publication; do not relabel36execution as afterthisappend. Runtime/browser code unchanged. No CI/main/productacceptance/newDone."
+}

@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-20T21:58:07.818Z",
+  "runtimeSource": "27fc8159fb87f9eb46462a557cf7f35b07174486",
+  "newControlSubsequentlyCommitted": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+  "actualSession": 42889,
+  "exit": 1,
+  "selectedFailed": 1,
+  "otherTestsDeselected": 14,
+  "logSha256": "ec2811d49c68b0d627b2bff2d870dc1f627a822921d54814d0ce6f064ac84360",
+  "scope": "Actual second new control on27fc runtime plus new uncommitted test subsequently committed4bc: live admissionfalse aborted an already admitted first-originalPOST. Expected signalfalse but true, establishing cancellation race before explicit-retry catch. Original14other tests deliberately deselected only for this counterexample; not complete regression."
+}

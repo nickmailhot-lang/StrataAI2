@@ -1,0 +1,230 @@
+{
+  "at": "2026-10-20T22:28:49.395Z",
+  "source": "dc40d9963a9d13606d232be9678ebcd020c7eb71",
+  "actualTestSource": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+  "actualClientSource": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+  "sourceBinding": {
+    "at": "2026-10-20T22:08:55.265Z",
+    "result": "Passed",
+    "prior": "a40e36ce96f3afb2874504e1a507eb31808498d2",
+    "source": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+    "matchingPr117Source": "dc40d9963a9d13606d232be9678ebcd020c7eb71",
+    "rows": [
+      {
+        "file": "tests/browser/organization-actions.spec.ts",
+        "oldSha256": "10fc9f5a24b6acfc0ca0fca50b3d43f42fa27f0cdb2f2b03df4b1e95782af348",
+        "newSha256": "17b23551d9c8552d4989267f27ca410dda887ea4f83ce7733a0715419fcb3e5c",
+        "originalExpectRelatedNodes": 60,
+        "currentExpectRelatedNodes": 60,
+        "allOriginalAssertionExpressionsAndMultiplicityPreserved": true,
+        "byteUnchanged": false
+      },
+      {
+        "file": "tests/browser/navigation-observations.spec.ts",
+        "oldSha256": "037c19ea3c821be3fbc812785b54a9b3bbce9460c713c33f60d609fe7a061855",
+        "newSha256": "037c19ea3c821be3fbc812785b54a9b3bbce9460c713c33f60d609fe7a061855",
+        "originalExpectRelatedNodes": 53,
+        "currentExpectRelatedNodes": 53,
+        "allOriginalAssertionExpressionsAndMultiplicityPreserved": true,
+        "byteUnchanged": true
+      },
+      {
+        "file": "tests/browser/board.spec.ts",
+        "oldSha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d",
+        "newSha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d",
+        "originalExpectRelatedNodes": 57,
+        "currentExpectRelatedNodes": 57,
+        "allOriginalAssertionExpressionsAndMultiplicityPreserved": true,
+        "byteUnchanged": true
+      }
+    ],
+    "scope": "TypeScriptAST comparison verifies all original expectation expressions/multiplicities in complete Organization, navigation and first-use Board files.120s native scenarios/original5000ms assertions unchanged. Relevant P/Y navigation runtime/unit/browser/helper inputs byteequal. Board5isactualYsource; no Pboard test result relabeling. Collection/preservation is not execution or productacceptance."
+  },
+  "cases": [
+    {
+      "file": "navigation-observations.spec.ts",
+      "title": "PRD-01 navigation originals, return recovery and keyboard Back at 1280px",
+      "status": "Passed",
+      "durationMs": 28811
+    },
+    {
+      "file": "navigation-observations.spec.ts",
+      "title": "PRD-01 navigation originals, return recovery and keyboard Back at 768px",
+      "status": "Passed",
+      "durationMs": 27409
+    },
+    {
+      "file": "navigation-observations.spec.ts",
+      "title": "PRD-01 navigation originals, return recovery and keyboard Back at 390px",
+      "status": "Passed",
+      "durationMs": 25559
+    },
+    {
+      "file": "organization-actions.spec.ts",
+      "title": "PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 1280px",
+      "status": "Passed",
+      "durationMs": 45296
+    },
+    {
+      "file": "organization-actions.spec.ts",
+      "title": "PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 768px",
+      "status": "Passed",
+      "durationMs": 45879
+    },
+    {
+      "file": "organization-actions.spec.ts",
+      "title": "PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 390px",
+      "status": "Passed",
+      "durationMs": 38148
+    },
+    {
+      "file": "organization-actions.spec.ts",
+      "title": "PRD-03-VS-06-T-03/AC-01/02/03: default permitted Organization actions and canonical return at 320px",
+      "status": "Passed",
+      "durationMs": 38422
+    }
+  ],
+  "fixture": {
+    "at": "2026-10-20T22:07:29.231Z",
+    "root": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle137-owned-browser-fixture",
+    "project": "strataai-mvp-browser-513f54c6c7848759",
+    "ports": {
+      "api": 15300,
+      "worker": 15301,
+      "web": 15302,
+      "identity": 19090
+    },
+    "providerInstance": "b42960b4-dc49-42d8-8668-ba306275301e",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedServerHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "frontendSource": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+    "testSource": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+    "frontendDist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle67-invitation-ci-repair\\apps\\web\\dist-cycle133",
+    "frontendBuild": "Passed exact new client metadata and four assets; controller must verify actual served hashes.",
+    "testPaths": [
+      {
+        "path": "tests/browser/board.spec.ts",
+        "sha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d"
+      },
+      {
+        "path": "tests/browser/navigation-observations.spec.ts",
+        "sha256": "037c19ea3c821be3fbc812785b54a9b3bbce9460c713c33f60d609fe7a061855"
+      },
+      {
+        "path": "tests/browser/organization-actions.spec.ts",
+        "sha256": "17b23551d9c8552d4989267f27ca410dda887ea4f83ce7733a0715419fcb3e5c"
+      },
+      {
+        "path": "tests/browser/keyboardAdmission.ts",
+        "sha256": "68bca543ac5d826cdbd41732d1db5c9a01c25296c81e6c3fde4ac45e5e5641f4"
+      },
+      {
+        "path": "tests/browser/organizationActionAdmission.ts",
+        "sha256": "521a392fbf22f06dc15a779b7ef4f5e090abcd9131c86c5665911689880c27e2"
+      },
+      {
+        "path": "tests/browser/releaseTest.ts",
+        "sha256": "ab2ea4ef38482df067d458c3d83aff8fbfffe5cbb25f4f4d6534e96bafb5cd9c"
+      },
+      {
+        "path": "tests/browser/scopedBoardWorker.ts",
+        "sha256": "e626bbe37e8dd0bec4e6fed81e70a8ff4c0b7a3b078a914a7bce072dae01fce0"
+      }
+    ],
+    "fixtureChanges": [
+      {
+        "path": "compose.release.yml",
+        "originalSha256": "05c50091b01217d535340cc1ee1bc6d3e060e789a2492e00aa16fd1e84dcb0c7",
+        "fixtureSha256": "2b575667a08160741afdcda76f7500800f41e1da5398baba998a756e2eac57d3",
+        "edits": [
+          {
+            "from": "\"8080:8080\"",
+            "to": "\"127.0.0.1:15300:8080\""
+          },
+          {
+            "from": "\"8081:8081\"",
+            "to": "\"127.0.0.1:15301:8081\""
+          },
+          {
+            "from": "\"8088:80\"",
+            "to": "\"127.0.0.1:15302:80\""
+          }
+        ]
+      },
+      {
+        "path": "scripts/ci/compose.auth-test.yml",
+        "originalSha256": "a96d0dba516a5d295a8e823d6fb264c2f609e79458768bd8b1b98fc7f534f4e3",
+        "fixtureSha256": "ed0b9ded6c89c159e580eb5dcee112cf39a17b6a73f0e2005f1743686802fb89",
+        "edits": [
+          {
+            "from": "http://localhost:8088",
+            "to": "http://localhost:15302"
+          }
+        ]
+      }
+    ],
+    "localClientOverrideSha256": "629f3dff1e2279ca631371ac81c1bce2e3b7795005910e8d6cc73a5375d6f269",
+    "expectedCases": 12,
+    "scope": "Complete original 12default Board5/navigation3/Organization4 native cases at a54e2f2. Latest bounded keyboard traversal focuses only origin and sends native Tab/Shift+Tab; original destination assertions remain. Source-backed retained hAPI/Worker and exact code-equivalent4bc/default orfdab/flag0frontend inputs verified, no production deployment or immutableCI claim."
+  },
+  "runtime": {
+    "at": "2026-10-20T22:08:30.184Z",
+    "project": "strataai-mvp-browser-513f54c6c7848759",
+    "api": {
+      "service": "strataai-api",
+      "mode": "production",
+      "revision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "version": "0.1.0-1937"
+    },
+    "client": {
+      "revision": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+      "version": "0.1.0-local-navigation-recovery"
+    },
+    "servedAssets": [
+      {
+        "path": "build-metadata.json",
+        "sha256": "9f9f1fac486997eda948fff30cfce7f972c5dd7b4bd3bd94b6b9c1bcf27497bc",
+        "size": 99
+      },
+      {
+        "path": "index.html",
+        "sha256": "fd027b43a05ef9475e64ca343c799bd7e456d369e4977aa3d6af4c77cf838228",
+        "size": 561
+      },
+      {
+        "path": "assets/index-BWvKr4no.js",
+        "sha256": "0e95df6038cc70016ed8860c3721f2769148fc7ca76cc743e7e2c8b56f5ace49",
+        "size": 1638587
+      },
+      {
+        "path": "assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666",
+        "size": 561
+      }
+    ],
+    "frontendSource": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+    "testSource": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+    "containers": [
+      {
+        "service": "api",
+        "id": "58ac6c48e74cdec3b436a36463bb63ace69e4e953529afbc5507c3e8f1038b2e",
+        "image": "sha256:6843e40e15b93bc190d6a1d8ea7a0dd7859cecb8cdb2c3bba301e7f2430a2c27",
+        "startedAt": "2026-10-20T22:08:10.397889804Z"
+      },
+      {
+        "service": "worker",
+        "id": "1ba90ed65ba34742a7118e4424e3673342ff43acc6be10694b349873f8fb9c66",
+        "image": "sha256:ffde817b2729a1dd1d3b74c6c704b0127b9477d782d61c359fa4dde8d1d54897",
+        "startedAt": "2026-10-20T22:08:09.80411472Z"
+      },
+      {
+        "service": "web",
+        "id": "d6c10a5ba3f0d90292a7d7df3b0296102531240b792c0f670898296f7e247cbc",
+        "image": "sha256:6e0ecd1435c3b7e150109c74413dd992e0bd5c0ed0f062fc05f21cf365ec23c8",
+        "startedAt": "2026-10-20T22:08:18.434786069Z"
+      }
+    ],
+    "scope": "Retainedh API/Worker images with exact offline-fixed readonlyfrontend override and hashverifiedservedassets, real isolatedPG and originalauth/identityprofile. Supporting mixed-client runtime only, not immutableCI or productiondeployment."
+  },
+  "scope": "All3complete original desktop/tablet/phone navigation recovery cases and all4default Organization role/disclosure/return cases passed at a54 with current4bcfrontend. Actualoriginal actor/key/version/eventshape, noimplicitmutationreplay, explicitreturn/recovery, keyboardfocus/nativeTab, closed accessibility, Admin→Memberwithdrawal, direct404, canonicalunchanged/noBoardwrites, responsive/200%text/Axe and sessionloss assertions retained. Everyoriginal60/53/57expect-relatedbrowsernode preserved. Relevant Pdc/Y a54 runtime/unit/native/helper inputs byteequal; API/Worker retainedhinputs unchanged. These7passed cases are explicit subsets of the separatelyFailed12caseaggregate, not a passingwhole12 or completeCI/acceptance."
+}

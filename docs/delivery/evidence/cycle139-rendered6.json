@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-20T22:28:49.395Z",
+  "source": "dc40d9963a9d13606d232be9678ebcd020c7eb71",
+  "actualTestSource": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+  "actualClientSource": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+  "images": [
+    {
+      "path": "docs/delivery/evidence/cycle139-org-owner-1280.png",
+      "sha256": "0f54fbb866faf8789658610106b68cb9f59d696f28c2522fc99b9375b494a649"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle139-org-admin-768-200.png",
+      "sha256": "0f611aa2ef67d3bde82342d8054c6f220523ca7d4d92521dc8925762f62a42fd"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle139-org-member-390.png",
+      "sha256": "0cbc35b2bd721cd16b5460d2672feeb3358f2bedeb0da55296fb0567b9692e42"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle139-org-member-320.png",
+      "sha256": "a67763b7ab1be4ae2bd52f09b5742757bef43aad043c0803544225176d47fc03"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle139-retry-1280.jpeg",
+      "sha256": "63a82aeafb18982e5104316b298c09fa532acd3bbe2da40bca2299a6f47b9589"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle139-retry-390.jpeg",
+      "sha256": "a82b93c1186dc401b722567a5f1f4b8512a65377069e660900b59257d5e46ffd"
+    }
+  ],
+  "traceFrames": [
+    {
+      "width": 1280,
+      "path": "work\\cycle139-rendered\\cycle139-navigation-retry-1280-1.jpeg",
+      "sha256": "63a82aeafb18982e5104316b298c09fa532acd3bbe2da40bca2299a6f47b9589",
+      "expectStart": 318408.991,
+      "expectEnd": 320046.461,
+      "frameTime": 319777.353,
+      "traceSha256": "67cce36822afbc36205f8e96416ef1681709e6fb05431d55bceefdea735293e8",
+      "scope": "Actual native screencast frame nearest passing Retry visibility assertion. Must visually inspect before claiming this frame shows retry."
+    },
+    {
+      "width": 390,
+      "path": "work\\cycle139-rendered\\cycle139-navigation-retry-390-1.jpeg",
+      "sha256": "a82b93c1186dc401b722567a5f1f4b8512a65377069e660900b59257d5e46ffd",
+      "expectStart": 426829.723,
+      "expectEnd": 427228.123,
+      "frameTime": 427153.508,
+      "traceSha256": "3a3b476352167a7d5f1284457c3ab98f25a1be86414c26e11c83077eb8a19592",
+      "scope": "Actual native screencast frame nearest passing Retry visibility assertion. Must visually inspect before claiming this frame shows retry."
+    }
+  ],
+  "scope": "All6 actualresources individually viewed: Owner1280, Admin768with200%text, Member390/320, plus actualdesktop/phone nativeRetry screencast frames from passing navigationcases. PrimaryCreateBoard/permittedroleactions/disclosurefocus readable andunobscured; no observed horizontaloverflow;200%layout reflows. GenericRetry confirmation visible insideCardpanel abovefields afterlostreply; nativefullcases separately prove originalreceipt/explicitreturn behavior. ScreencastJPEGs may be downsampled byPlaywright; notnewfullpixel screenshots. Scopedmanualvisualreview is separatefrom automatedAxe/fullWCAG/physical-device/completeBoard orMVPacceptance."
+}

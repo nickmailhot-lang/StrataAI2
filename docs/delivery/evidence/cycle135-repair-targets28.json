@@ -1,0 +1,159 @@
+{
+  "at": "2026-10-20T21:58:07.818Z",
+  "source": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+  "executedRuntimeAndUnitSource": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+  "inputBinding": "Complete apps/package/lock input equality4bc→fdab; fdab adds only browser admission changes. New original controls already byteidentical to4bcwhen executed before source commit.",
+  "actualSession": 28103,
+  "exit": 0,
+  "tests": 28,
+  "files": 4,
+  "failed": 0,
+  "skipped": 0,
+  "logSha256": "fe189c069c660254cf556fa9c3553f30d1830bd8f9ee0ed636d20f350977498f",
+  "assertionPreservation": {
+    "at": "2026-10-20T21:55:41.814Z",
+    "result": "Passed",
+    "prior": "a40e36ce96f3afb2874504e1a507eb31808498d2",
+    "source": "a33bc64bf07387a34041adeac15aebc165d6d909",
+    "matchingPr117Source": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+    "rows": [
+      {
+        "file": "tests/browser/organization-actions.spec.ts",
+        "oldSha256": "10fc9f5a24b6acfc0ca0fca50b3d43f42fa27f0cdb2f2b03df4b1e95782af348",
+        "newSha256": "35d904593ce0e42f24fec6bd32f7ea0e897159bf6653d618ace8ec844684dc3e",
+        "originalExpectRelatedNodes": 60,
+        "currentExpectRelatedNodes": 60,
+        "allOriginalAssertionExpressionsAndMultiplicityPreserved": true,
+        "byteUnchanged": false
+      },
+      {
+        "file": "tests/browser/navigation-observations.spec.ts",
+        "oldSha256": "037c19ea3c821be3fbc812785b54a9b3bbce9460c713c33f60d609fe7a061855",
+        "newSha256": "037c19ea3c821be3fbc812785b54a9b3bbce9460c713c33f60d609fe7a061855",
+        "originalExpectRelatedNodes": 53,
+        "currentExpectRelatedNodes": 53,
+        "allOriginalAssertionExpressionsAndMultiplicityPreserved": true,
+        "byteUnchanged": true
+      },
+      {
+        "file": "tests/browser/board.spec.ts",
+        "oldSha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d",
+        "newSha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d",
+        "originalExpectRelatedNodes": 57,
+        "currentExpectRelatedNodes": 57,
+        "allOriginalAssertionExpressionsAndMultiplicityPreserved": true,
+        "byteUnchanged": true
+      }
+    ],
+    "scope": "TypeScriptAST comparison verifies all original expectation expressions/multiplicities in complete Organization, navigation and first-use Board files.120s native scenarios/original5000ms assertions unchanged. Relevant P/Y navigation runtime/unit/browser/helper inputs byteequal. Board5isactualYsource; no Pboard test result relabeling. Collection/preservation is not execution or productacceptance."
+  },
+  "defaultClientBuild": {
+    "startedAt": "2026-10-20T21:46:06.066Z",
+    "finishedAt": "2026-10-20T21:47:27.885Z",
+    "result": "Passed",
+    "source": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+    "version": "0.1.0-local-navigation-recovery",
+    "metadata": {
+      "revision": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+      "version": "0.1.0-local-navigation-recovery"
+    },
+    "files": [
+      {
+        "path": "build-metadata.json",
+        "size": 99,
+        "sha256": "9f9f1fac486997eda948fff30cfce7f972c5dd7b4bd3bd94b6b9c1bcf27497bc"
+      },
+      {
+        "path": "index.html",
+        "size": 561,
+        "sha256": "fd027b43a05ef9475e64ca343c799bd7e456d369e4977aa3d6af4c77cf838228"
+      },
+      {
+        "path": "assets/index-BWvKr4no.js",
+        "size": 1638587,
+        "sha256": "0e95df6038cc70016ed8860c3721f2769148fc7ca76cc743e7e2c8b56f5ace49"
+      },
+      {
+        "path": "assets/index-Bw_GsyDn.css",
+        "size": 561,
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+      }
+    ],
+    "dist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle67-invitation-ci-repair/apps/web/dist-cycle133",
+    "bundlerExit": 0,
+    "logSha256": "433b3db2276061f157766a2c2f41a485f7fbf8850d295fbeaa799f3e0fa288c1",
+    "scope": "One isolated frontend build for explicit navigation retry and admitted first-original survival through protected reads. Existing C58/dist and protected shared Demo mount untouched. Retained h API/Worker inputs unchanged/reused; no production deployment or immutableCI claim."
+  },
+  "rollbackClientBuild": {
+    "compiledRollbackFlag": "0",
+    "startedAt": "2026-10-20T21:51:36.189Z",
+    "finishedAt": "2026-10-20T21:51:44.550Z",
+    "result": "Passed",
+    "source": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+    "version": "0.1.0-local-navigation-rollback",
+    "metadata": {
+      "revision": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+      "version": "0.1.0-local-navigation-rollback"
+    },
+    "files": [
+      {
+        "path": "build-metadata.json",
+        "size": 99,
+        "sha256": "1b7df911d74a6daee074710f23917be7ae941469a8b3ea912ef89479e2783347"
+      },
+      {
+        "path": "index.html",
+        "size": 561,
+        "sha256": "fcdc80f2ea9063b2beaa02ba2da0fa453c8c0ba1aed46115ca81aaccb853604f"
+      },
+      {
+        "path": "assets/index-Bw_GsyDn.css",
+        "size": 561,
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+      },
+      {
+        "path": "assets/index-CRme1zvK.js",
+        "size": 1638032,
+        "sha256": "1309f90bceb5e5d71a2c2b84924776ef2aaff903f3bd197a354e23ce3737ea2c"
+      }
+    ],
+    "dist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle67-invitation-ci-repair/apps/web/dist-cycle136",
+    "bundlerExit": 0,
+    "logSha256": "14ace860058966a2a1b6ecf41ef39db17f720f05a5978282fd9ed46a5967f4dd",
+    "scope": "One isolated frontend build for explicit navigation retry and admitted first-original survival through protected reads. Existing C58/dist and protected shared Demo mount untouched. Retained h API/Worker inputs unchanged/reused; no production deployment or immutableCI claim."
+  },
+  "static": {
+    "browserTypes": {
+      "session": 11068,
+      "exit": 0
+    },
+    "browserCoverage": {
+      "session": 11068,
+      "exit": 0,
+      "cases": 485,
+      "files": 170,
+      "shards": [
+        123,
+        120,
+        127,
+        115
+      ]
+    },
+    "runtimeTypes": {
+      "session": 81183,
+      "typescriptExit": 0,
+      "note": "Subsequent ESLint invocation used wrong cwd and failed to locate files; corrected original intended command46953 passed."
+    },
+    "correctedLint": {
+      "session": 46953,
+      "exit": 0
+    },
+    "keyboardAdmissionProtocol": {
+      "session": 69836,
+      "exit": 0,
+      "passed": 22,
+      "failed": 0
+    }
+  },
+  "scope": "Actual complete4files/28navigation component/original/acknowledgment/recovery checks Passed, including both new adverse controls plus existing scope cancellation/finalactor/returnedoriginal/key/version/permission controls. Two prior red failures retained separately. Relevant P/Y runtime/unit/browser/helpers byteequal; currentoriginal60/53/57expect-relatedbrowsernodes preserved. Fresh default4bc and compiledworkUX0fdab builds passed withhashes. Fullfrontend84012 Running; combinednative135 Running; rollback136 NotRun; owncurrentCI/main/review NotRun. This is targeted/source proof, not wholeincrement acceptance."
+}

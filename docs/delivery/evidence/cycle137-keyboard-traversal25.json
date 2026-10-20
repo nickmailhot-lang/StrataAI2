@@ -1,0 +1,65 @@
+{
+  "at": "2026-10-20T22:09:41.514Z",
+  "source": "dc40d9963a9d13606d232be9678ebcd020c7eb71",
+  "session": 64742,
+  "exit": 0,
+  "tests": 25,
+  "failed": 0,
+  "skipped": 0,
+  "logSha256": "aa613861e28eb337176cee4f79e15b3d8279fcc41dbd3a231452c39f80f0fe6a",
+  "assertionPreservation": {
+    "at": "2026-10-20T22:08:55.265Z",
+    "result": "Passed",
+    "prior": "a40e36ce96f3afb2874504e1a507eb31808498d2",
+    "source": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+    "matchingPr117Source": "dc40d9963a9d13606d232be9678ebcd020c7eb71",
+    "rows": [
+      {
+        "file": "tests/browser/organization-actions.spec.ts",
+        "oldSha256": "10fc9f5a24b6acfc0ca0fca50b3d43f42fa27f0cdb2f2b03df4b1e95782af348",
+        "newSha256": "17b23551d9c8552d4989267f27ca410dda887ea4f83ce7733a0715419fcb3e5c",
+        "originalExpectRelatedNodes": 60,
+        "currentExpectRelatedNodes": 60,
+        "allOriginalAssertionExpressionsAndMultiplicityPreserved": true,
+        "byteUnchanged": false
+      },
+      {
+        "file": "tests/browser/navigation-observations.spec.ts",
+        "oldSha256": "037c19ea3c821be3fbc812785b54a9b3bbce9460c713c33f60d609fe7a061855",
+        "newSha256": "037c19ea3c821be3fbc812785b54a9b3bbce9460c713c33f60d609fe7a061855",
+        "originalExpectRelatedNodes": 53,
+        "currentExpectRelatedNodes": 53,
+        "allOriginalAssertionExpressionsAndMultiplicityPreserved": true,
+        "byteUnchanged": true
+      },
+      {
+        "file": "tests/browser/board.spec.ts",
+        "oldSha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d",
+        "newSha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d",
+        "originalExpectRelatedNodes": 57,
+        "currentExpectRelatedNodes": 57,
+        "allOriginalAssertionExpressionsAndMultiplicityPreserved": true,
+        "byteUnchanged": true
+      }
+    ],
+    "scope": "TypeScriptAST comparison verifies all original expectation expressions/multiplicities in complete Organization, navigation and first-use Board files.120s native scenarios/original5000ms assertions unchanged. Relevant P/Y navigation runtime/unit/browser/helper inputs byteequal. Board5isactualYsource; no Pboard test result relabeling. Collection/preservation is not execution or productacceptance."
+  },
+  "static": {
+    "session": 5179,
+    "exit": 0,
+    "browserTypes": "Passed",
+    "pBrowserCoverage": {
+      "cases": 483,
+      "files": 170,
+      "shards": [
+        121,
+        122,
+        125,
+        115
+      ]
+    },
+    "note": "P483andY485differ by existingtwoYBoardprofiles; neither collection reduced. Current change adds3protocolcontrols, no new nativecase."
+  },
+  "productionAndUnitInputBinding": "Complete apps/src/db/deploy/scripts/github/package/lock inputs fdab→dc unchanged; existingnavigation28at4bc andfrontendbuilds remain sameactualsource and are not relabeled as newexecutions.",
+  "scope": "Alloriginal22keyboardadmissionprotocolcases plus3meaningfultraversalcontrols Passed. Successfulnativekeychangesdestination, ignoredfirstShiftTab retriesonlyfromorigin, brokenTaborderfailswithinoriginal5s and destination.focus explicitlythrows. Defaultnative13712andcompiledrollback1384stillpending; fullfrontend84012stillRunning. Existingdeadline/assertion/permission checks preserved, no mutationretry or directdestinationfocus used. Scope is protocol/static/source verification only."
+}
