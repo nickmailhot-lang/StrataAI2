@@ -74,6 +74,12 @@ for (const width of [1280, 768, 390, 320]) {
       await page.screenshot({ path: info.outputPath('named-board.png'), fullPage: true });
       const face = page.getByRole('link', { name: 'Inspect entrance', exact: true });
       await focusAdmittedControl(face);
+      await assertContext(page, name, org);
+      // Sample the exact return position after font layout and focus scrolling settle.
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+      });
       const boardScroll = await page.evaluate(() => ({ x: scrollX, y: scrollY }));
       await face.press('Enter');
       const detail = page.getByRole('dialog', { name: 'Card details', exact: true });

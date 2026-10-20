@@ -192,3 +192,21 @@ export function trackArchivedBoardChanges(page: Page, organization: string, acto
   return { count: (type: string) => counts.get(type) ?? 0, ready: () => epoch > 0 && readEpoch === epoch,
     settled: (type: string, minimum: number) => epoch > 0 && readEpoch === epoch && (counts.get(type) ?? 0) >= minimum };
 }
+
+// Multiple independently owned UI streams can replay the same canonical event.
+// Distinct event IDs still count separately; inconsistent copies fail the test.
+export function appendCanonicalEvents(target: Array<Record<string, unknown>>, incoming: Array<Record<string, unknown>>) {
+  const canonical = (value: unknown): string => {
+    if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
+    if (value !== null && typeof value === 'object') return '{' + Object.entries(value).sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, item]) => JSON.stringify(key) + ':' + canonical(item)).join(',') + '}';
+    return JSON.stringify(value) ?? 'undefined';
+  };
+  for (const event of incoming) {
+    if (typeof event.eventId !== 'string' || !event.eventId) throw new Error('Canonical event ID is required');
+    const existing = target.find(row => row.eventId === event.eventId);
+    if (existing) {
+      if (canonical(existing) !== canonical(event)) throw new Error('Conflicting copies of canonical event ' + event.eventId);
+    } else target.push(structuredClone(event));
+  }
+}

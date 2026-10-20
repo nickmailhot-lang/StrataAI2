@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { trackInvitationAdmission, trackBoardHistoryChanges, trackArchivedBoardChanges } from './invitationAdmissionTracker.ts';
+import { appendCanonicalEvents, trackInvitationAdmission, trackBoardHistoryChanges, trackArchivedBoardChanges } from './invitationAdmissionTracker.ts';
 
 function independentMetadataFixture() {
   const page = new EventEmitter(), frame = {}; let path = '/app/org/invite';
@@ -246,3 +246,23 @@ for (const board of [undefined, 'board']) {
     f.response(f.request()); assert.equal(f.tracker.ready(), true);
   });
 }
+
+test('independent metadata connections count an identical canonical event once', () => {
+  const events = [], source = { eventId: 'event-1', entityId: 'member', version: 1, metadata: {} };
+  appendCanonicalEvents(events, [source]);
+  appendCanonicalEvents(events, [{ metadata: {}, version: 1, entityId: 'member', eventId: 'event-1' }]);
+  assert.equal(events.length, 1); assert.deepEqual(events[0], source);
+});
+test('distinct canonical IDs retain duplicate producer effects for exact-count detection', () => {
+  const events = [], source = { eventId: 'event-1', entityId: 'member', version: 1, metadata: {} };
+  appendCanonicalEvents(events, [source, { ...source, eventId: 'event-2' }]);
+  assert.equal(events.length, 2);
+});
+test('conflicting or unidentified canonical events fail instead of being discarded', () => {
+  const events = [], source = { eventId: 'event-1', entityId: 'member', version: 1, metadata: {} };
+  appendCanonicalEvents(events, [source]);
+  assert.throws(() => appendCanonicalEvents(events, [{ ...source, version: 2 }]), /Conflicting copies/);
+  assert.throws(() => appendCanonicalEvents(events, [{ entityId: 'member' }]), /event ID is required/);
+  assert.throws(() => appendCanonicalEvents(events, [{ ...source, metadata: { private: true } }]), /Conflicting copies/);
+  assert.equal(events.length, 1);
+});
