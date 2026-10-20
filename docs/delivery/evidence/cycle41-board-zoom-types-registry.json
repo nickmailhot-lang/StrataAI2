@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-20T00:33:59.166Z",
+  "result": "Passed",
+  "revision": "acdc8b0aecee1efa76b9b9599b3a498f739f6ce1",
+  "testSourceSha256": "360d9d313a73839cbb006fc9272fae09253d0f13ad368dcfed9004b745931324",
+  "browserTypes": {
+    "exit": 0,
+    "artifact": {
+      "path": "docs/delivery/evidence/cycle41-board-zoom-browser-types.txt",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    }
+  },
+  "browserRegistry": {
+    "exit": 0,
+    "artifact": {
+      "path": "docs/delivery/evidence/cycle41-board-zoom-browser-registry.txt",
+      "sha256": "4f925e687d81f8df7ed5320837407a2809e1fe7a4490b1e74e3c9762226301de"
+    },
+    "cases": 479,
+    "files": 169,
+    "partitions": [
+      121,
+      120,
+      123,
+      115
+    ]
+  },
+  "scope": "Actual local browser typecheck and original complete case/file/shard registration passed.479registered includes original mail-profile deferrals; not479executedpasses. No source typecheck/code rerun inferred beyond actual commands."
+}

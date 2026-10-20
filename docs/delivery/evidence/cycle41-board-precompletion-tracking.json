@@ -1,0 +1,54 @@
+{
+  "at": "2026-10-20T00:19:59.906Z",
+  "result": "Passed",
+  "qualifiedImplementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "checkoutHead": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "ledgerInputSha256": "90306ed9d43a032cc0777b8b19eda181d21b025e11bc7a281af02450956ddad2",
+  "workItems": 1593,
+  "existingDone": 33,
+  "selectedReviewRecords": [
+    "PRD-04-VS-05",
+    "PRD-04-VS-05-T-01",
+    "PRD-04-VS-05-T-01-TEST-01",
+    "PRD-04-VS-05-T-02",
+    "PRD-04-VS-05-T-02-TEST-01",
+    "PRD-04-VS-05-T-02-TEST-02",
+    "PRD-04-VS-05-T-03",
+    "PRD-04-VS-05-T-03-TEST-01",
+    "PRD-04-VS-05-T-03-TEST-02",
+    "PRD-04-VS-01-T-03",
+    "PRD-04-VS-01-T-03-TEST-01",
+    "PRD-04-VS-01-T-04",
+    "PRD-04-VS-01-T-04-TEST-01"
+  ],
+  "wholeContracts": {
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "rawOutputSha256": "32b4b4a5b0e2272406936cdceb84f6a7833b098c85fff9ccac5c630d40402410"
+  },
+  "actualCliTerminals": {
+    "at": "2026-10-20 00:19:21 UTC",
+    "validateExit": 0,
+    "contractExit": 0,
+    "validationSession": 50109,
+    "contractSession": 79897,
+    "contracts": {
+      "tests": 36,
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "validationOutput": "work/cycle41-board-preacceptance-validate.txt",
+    "contractOutput": "work/cycle41-board-preacceptance-contracts.txt",
+    "source": "Actual terminal exec session results independently observed; no completion inferred from a running handle."
+  },
+  "sourceEvidenceHashesAndGitPassed": true,
+  "baselineAndEvolutionRefs": [
+    "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+    "8c68b032bb963b64b37b66b122f7e377e9e58e3a"
+  ],
+  "tenNestedRenderedCaptureHashesPassed": true,
+  "scope": "Actual enriched pre-completion dataset, original validator/test source Git-byte-identical to qualified8c68; source/hash/Git/baseline/history and complete36contracts passed. No state Done inferred; legal child-first completion and final dataset validation remain."
+}

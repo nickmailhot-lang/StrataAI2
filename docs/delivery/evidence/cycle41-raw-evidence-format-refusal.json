@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-20T00:57:00.678Z",
+  "result": "Failed",
+  "head": "92bc43d6d02bd1724fc48b65fce68599c8384fa6",
+  "command": "git diff --check origin/main...HEAD",
+  "observedBeforeRawArtifactDeclaration": true,
+  "exit": 1,
+  "diagnostics": [
+    {
+      "path": "docs/delivery/evidence/cycle41-board-zoom-browser-registry.txt",
+      "lines": [
+        1
+      ],
+      "issue": "Captured CRLF flagged as trailingwhitespace"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-board-zoom-browser-types.txt",
+      "lines": [
+        1,
+        2
+      ],
+      "issue": "Captured CRLF flagged as trailingwhitespace"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-sourceR-contracts.txt",
+      "lines": [
+        45
+      ],
+      "issue": "Captured terminalblankline"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-sourceR-evolution-main.txt",
+      "lines": [
+        2
+      ],
+      "issue": "Captured terminalblankline"
+    }
+  ],
+  "correction": {
+    "classification": "Four exact immutable commandbyte-stream artifacts use Git binary representation; their capturedCRLF/terminalblanklines and recordedSHA256s must remainexact.",
+    "softwareAndManifestTextRulesUnchanged": true,
+    "testsAndAcceptanceUnchanged": true,
+    "workingCandidateFullWhitespaceCheckExit": 0,
+    "committedCandidateWhitespaceAndEveryBlobHashCheckStillRequired": true
+  },
+  "sourceCi": {
+    "supersededHead": "92bc43d6d02bd1724fc48b65fce68599c8384fa6",
+    "run": 39350309824,
+    "codeqlRun": 39350307603,
+    "observedCiJobStates": {
+      "metadata": "success",
+      "postgres": "in_progress",
+      "web": "in_progress",
+      "dotnet": "in_progress"
+    },
+    "qualification": "Partial source checks,notaccepted; a new candidate requires all22freshchecks."
+  },
+  "scope": "Local source-text formatter discovered an evidence-data representation mismatch, not a failing application scenario. Exact raw evidence is retained as data; all softwarefiles,JSONmanifests,hashvalidators and requiredtests remainchecked."
+}

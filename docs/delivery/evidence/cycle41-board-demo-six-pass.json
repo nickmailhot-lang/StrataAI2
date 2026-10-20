@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-20T00:15:26.419Z",
+  "result": "Passed",
+  "qualifiedImplementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "executedTestSource": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "baseURL": "http://127.0.0.1:15188",
+  "accountFixture": "Original ordinary Demo; strict-production email verification remains separately qualified",
+  "runtimeBefore": {
+    "at": "2026-10-20T00:02:34.743Z",
+    "main": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+    "client": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+    "api": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+    "runtime": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "clientMetadata": {
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "version": "0.1.0-local-card-focus"
+    },
+    "assets": [
+      {
+        "path": "/assets/index-WokoLKxv.js",
+        "sha256": "ba653f509a0fab4071718578b1fc832e4ce641ad700ff037e8d1dc7a3e814256"
+      },
+      {
+        "path": "/assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+      }
+    ],
+    "runtimeFrontendByteEquivalent": true,
+    "apiSchemaDeploymentBlobInventoriesEqual": true,
+    "testSource": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+    "scope": "Supporting running Demo with C055 compiled client and f3ca API; source/blob/served-asset equivalence explicitly verified to current main. Does not replace separately retained exact8c68 Production/RLS/immutable qualification. Existing containers, Worker, settings and database untouched; tests create only unique disposable accounts/Organizations."
+  },
+  "runtimeAfter": {
+    "client": {
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "version": "0.1.0-local-card-focus"
+    },
+    "api": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "servedAssetsUnchanged": true
+  },
+  "stats": {
+    "startTime": "2026-10-20T00:10:09.529Z",
+    "duration": 192855.086,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px",
+      "status": "Passed",
+      "attempts": 1
+    }
+  ],
+  "workers": 1,
+  "retries": 0,
+  "ratePacing": true,
+  "rawReportSha256": "79f02c2807445fa86528c79c4b49d80b9c42e7ebcada5baec6b4757e9bae44d4",
+  "scope": "Complete unchanged six-case current-source-equivalent supporting Demo run: two genuine account replacements and four lifecycle withdrawal/original-command recovery workflows. Native assertions, role checks,200%text/Axe/canonical persistence/return and deadlines unchanged. Not substituted for current immutable Production/RLS or strict-account gates."
+}

@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-20T00:33:59.166Z",
+  "result": "Passed",
+  "revision": "acdc8b0aecee1efa76b9b9599b3a498f739f6ce1",
+  "reviewer": "Delivery lead",
+  "newActuallyInspectedScreenshots": [
+    {
+      "path": "docs/delivery/evidence/cycle41-board-zoom-canonical-768.png",
+      "sha256": "188f270b059114e552bf4db099b46990c068436e6ed94cf385905c5d886f22ac"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-board-zoom-directory-768.png",
+      "sha256": "8dafd205a5b532f566b55bc922e148617c448da8060c48194ab6bb9eceda6934"
+    }
+  ],
+  "actuallyInspectedRed": {
+    "path": "docs/delivery/evidence/cycle41-board-zoom-red-reload-768.png",
+    "sha256": "7d760cb744ccf0ca78a2a5e6bf0892441b5705e13fae47062ee2ff10e8e489f5"
+  },
+  "previousActualTenCaptureReview": "EVID-CYCLE-41-BOARD-VISUAL10",
+  "scope": "New two missing full-journey phases actually inspected at768px/200%text; previous ten original recovery/refusal captures remain separately retained and inspected against the same unchanged application. Source-only fixture change adds no product UI. Current green six-case original scope passed, but no new immutable/physical-device/screen-reader/provider qualification inferred.",
+  "observations": [
+    "Red actualcanonicalreload capture returns to ordinarytext, matching16px DOM failure.",
+    "Green canonicalBoard capture retains200%text, visible original privateBoard name/description and discoverable permittedAddList/Boardactions; pagehasverticalscroll without horizontaloverflow.",
+    "Green finalWorkdirectory capture retains200%text with the canonicalBoard link readable and no horizontaloverflow.",
+    "Bothnewphases pass the explicit32px,overflow and original WCAG-taggedAxe checks; original keyboard,role,receipt/privacy and fourwidth actions remain unchanged."
+  ]
+}

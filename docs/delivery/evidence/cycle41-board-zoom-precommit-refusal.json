@@ -1,0 +1,7 @@
+{
+  "at": "2026-10-20 00:31:55 UTC",
+  "result": "Failed",
+  "phase": "Source-only commit preflight before any staging or commit",
+  "cause": "Auxiliary Git status reader trimmed significant leading porcelain whitespace, so its exact allowed-path guard refused the first row.",
+  "correction": "Read raw porcelain output and trim only its final newline. Preserve the full exact allowed-path guard, source snapshot hash, original assertion-removal guard and staged-file checks. No product/test/runtime/CI gate change."
+}

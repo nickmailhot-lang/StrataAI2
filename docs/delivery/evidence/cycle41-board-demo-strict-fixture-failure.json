@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-20T00:06:30.273Z",
+  "result": "Failed",
+  "testSource": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "stats": {
+    "startTime": "2026-10-20T00:02:45.681Z",
+    "duration": 163475.528,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 6,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px",
+      "status": "Failed",
+      "attempts": 1,
+      "error": "notificationAccountFixture.ts:16: Expected pending login403, received200 before Board workflow setup."
+    },
+    {
+      "title": "PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px",
+      "status": "Failed",
+      "attempts": 1,
+      "error": "notificationAccountFixture.ts:16: Expected pending login403, received200 before Board workflow setup."
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px",
+      "status": "Failed",
+      "attempts": 1,
+      "error": "notificationAccountFixture.ts:16: Expected pending login403, received200 before Board workflow setup."
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px",
+      "status": "Failed",
+      "attempts": 1,
+      "error": "notificationAccountFixture.ts:16: Expected pending login403, received200 before Board workflow setup."
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px",
+      "status": "Failed",
+      "attempts": 1,
+      "error": "notificationAccountFixture.ts:16: Expected pending login403, received200 before Board workflow setup."
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px",
+      "status": "Failed",
+      "attempts": 1,
+      "error": "notificationAccountFixture.ts:16: Expected pending login403, received200 before Board workflow setup."
+    }
+  ],
+  "rawReportSha256": "69aa72682a2e1cc65571ea4c3c6df5ccf87eb205260961cfea769f999ee28a31",
+  "classification": "Supplemental fixture/profile mismatch, not a passing Board or strict-verification test. This Demo runtime permits unverified login; the run incorrectly requested the optional strict-email fixture. All six failed before Board workflow setup. Runtime/test/assertions remain unchanged. Corrected complete same Board scope uses the original default Demo fixture and remains separately labeled; it cannot replace production configured email-verification acceptance.",
+  "owner": "Delivery lead",
+  "next": "Run unchanged full six cases with default Demo fixture and inspect rendered screenshots; retain separate current Production/RLS/strict-profile evidence."
+}

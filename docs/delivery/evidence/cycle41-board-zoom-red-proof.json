@@ -1,0 +1,50 @@
+{
+  "at": "2026-10-20T00:33:59.166Z",
+  "result": "Failed",
+  "baseRevision": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "dirtyTestSource": true,
+  "testSourceSha256": "9e9c5b7deac0b09aaed39241b162abced6d90ed5b399c2dc87300261b0dd45b3",
+  "sourceSnapshot": {
+    "path": "docs/delivery/evidence/cycle41-board-zoom-red-source.txt",
+    "sha256": "9e9c5b7deac0b09aaed39241b162abced6d90ed5b399c2dc87300261b0dd45b3"
+  },
+  "input": {
+    "at": "2026-10-20T00:26:16.902Z",
+    "phase": "red",
+    "baseRevision": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+    "testPath": "tests/browser/board-creation-recovery.spec.ts",
+    "testSha256": "9e9c5b7deac0b09aaed39241b162abced6d90ed5b399c2dc87300261b0dd45b3",
+    "configSha256": "cf27852ca274d8ad4a8dbda53f497e22da62ec3117eedb4ca6e840ecbcd14e7d",
+    "dirtyTestSource": true,
+    "change": "Add original postreload32px assertion only; preserve existing nonpersistent initialpageevaluate fixture for red verification.",
+    "baseURL": "http://127.0.0.1:15188",
+    "ordinaryDemo": true,
+    "ratePacing": true,
+    "retries": 0,
+    "workers": 1
+  },
+  "stats": {
+    "startTime": "2026-10-20T00:26:22.354Z",
+    "duration": 34031.948,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px",
+      "status": "Failed",
+      "attempts": 1,
+      "expected": "32px",
+      "actual": "16px",
+      "stage": "After canonicalBoardreload; prior original recovery/persistence assertions completed"
+    }
+  ],
+  "rawReportSha256": "5d8d627acd63eadba2455e5806d15ebd412460739f3e8cb482fa915085be25f7",
+  "actualRenderedFailure": {
+    "path": "docs/delivery/evidence/cycle41-board-zoom-red-reload-768.png",
+    "sha256": "7d760cb744ccf0ca78a2a5e6bf0892441b5705e13fae47062ee2ff10e8e489f5"
+  },
+  "classification": "Verification-fixture gap, not an application text-size preference defect. Existing fixture sets200%oninitialdocument but cannot prove user-equivalent persistenttext across reload. Additive assertion correctly refused completion before fixture correction."
+}

@@ -20,8 +20,12 @@ for (const width of [1280, 768, 390, 320]) {
     await page.routeWebSocket(/\/organizations\/live\/lifecycle(?:\?|$)/, route => {
       socket = route; route.connectToServer();
     });
+    // PRD-04-VS-05-T-04 / UXA-05: preserve text size through canonical reload and return.
+    if (width === 768) await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => { document.documentElement.style.fontSize = '200%'; }, { once: true });
+    });
     await page.goto(`/app/${org}`);
-    if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    if (width === 768) expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px');
     await expect(page.getByRole('heading', { name: 'Draft recovery Organization', exact: true })).toBeVisible();
     await expect.poll(() => !!socket).toBe(true);
     const dialog = page.getByRole('dialog');
@@ -87,11 +91,23 @@ for (const width of [1280, 768, 390, 320]) {
     expect(canonical.status()).toBe(200);
     expect((await canonical.json()).board).toMatchObject({ organizationId: org, name: 'Recovered planning Board', description: 'Keep this unsent draft', visibility: 'PRIVATE' });
     await page.reload();
+    if (width === 768) expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px');
     await expect(page.getByRole('heading', { name: 'Recovered planning Board', exact: true })).toBeVisible();
+    if (width === 768) {
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      await page.screenshot({ path: test.info().outputPath('recovered-board-canonical-text-768.png'), fullPage: true });
+    }
     const menu = page.getByRole('button', { name: 'Open navigation', exact: true });
     if (await menu.isVisible()) await menu.click();
     await page.getByRole('link', { name: 'Work', exact: true }).click();
     await expect(page.getByRole('link', { name: 'Recovered planning Board', exact: true })).toBeVisible();
+    if (width === 768) {
+      expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe('32px');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
+      await page.screenshot({ path: test.info().outputPath('recovered-board-directory-text-768.png'), fullPage: true });
+    }
     const directory = await context.request.get(`/organizations/${org}/boards/directory`);
     expect(directory.status()).toBe(200);
     expect((await directory.json()).items).toHaveLength(1);
