@@ -3,6 +3,49 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { trackInvitationAdmission, trackBoardHistoryChanges, trackArchivedBoardChanges } from './invitationAdmissionTracker.ts';
 
+function independentMetadataFixture() {
+  const page = new EventEmitter(), frame = {}; let path = '/app/org/invite';
+  page.url = () => 'https://example.test' + path; page.mainFrame = () => frame;
+  const tracker = trackInvitationAdmission(page, 'org', 'actor', undefined, '/app/org/invite');
+  const socket = () => {
+    const value = new EventEmitter(); value.url = () => 'https://example.test/organizations/live/metadata'; page.emit('websocket', value);
+    const head = id => {
+      value.emit('framesent', { payload: JSON.stringify({ type: 4, target: 'Watch', arguments: ['org'], invocationId: id }) });
+      value.emit('framereceived', { payload: JSON.stringify({ type: 2, invocationId: id,
+        item: { organizationId: 'org', userId: 'actor', page: { cursor: 'opaque-' + id, resetRequired: false, events: [] } } }) });
+    };
+    return { value, head };
+  };
+  const request = () => { const value = { method: () => 'GET', url: () => 'https://example.test/organizations/org/members/actor' }; page.emit('request', value); return value; };
+  const response = value => page.emit('response', { request: () => value, status: () => 200 });
+  const navigate = next => { path = next; page.emit('framenavigated', frame); };
+  return { page, tracker, socket, request, response, navigate };
+}
+
+test('independently owned metadata stream cannot fence another live stream own fresh protected read', () => {
+  const f = independentMetadataFixture(), form = f.socket(); form.head('form'); const read = f.request();
+  const caption = f.socket(); caption.head('caption'); f.response(read);
+  assert.equal(f.tracker.ready(), true);
+  caption.value.emit('close'); assert.equal(f.tracker.ready(), true);
+  form.head('form-recovered'); assert.equal(f.tracker.ready(), false);
+  f.response(f.request()); assert.equal(f.tracker.ready(), true);
+});
+
+test('closing the only admitted stream retires its protected read proof', () => {
+  const f = independentMetadataFixture(), form = f.socket(); form.head('form'); f.response(f.request());
+  assert.equal(f.tracker.ready(), true); form.value.emit('close'); assert.equal(f.tracker.ready(), false);
+});
+
+test('new document cannot inherit old stream or in-flight protected read admission', () => {
+  const f = independentMetadataFixture(), old = f.socket(); old.head('old'); f.response(f.request()); const held = f.request();
+  f.navigate('/login'); f.navigate('/app/org/invite'); f.response(held);
+  assert.equal(f.tracker.ready(), false);
+  old.head('late-old');
+  assert.equal(f.tracker.ready(), false);
+  const current = f.socket(); current.head('current'); assert.equal(f.tracker.ready(), false);
+  f.response(f.request()); assert.equal(f.tracker.ready(), true);
+});
+
 function fixture(board, protectedReadPath) {
   const page = new EventEmitter(); let path = '/previous'; page.url = () => `https://example.test${path}`;
   const target = board ? '/app/org/boards/board/invite' : '/app/org/invite';
