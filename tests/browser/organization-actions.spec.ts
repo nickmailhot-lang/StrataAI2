@@ -79,7 +79,7 @@ for (const width of [1280, 768, 390, 320]) {
           await client.keyboard.press('Tab');
           await expect(client.getByRole('link', { name: 'Permitted action Board', exact: true })).toBeFocused();
           await client.keyboard.press('Shift+Tab'); await expect(summary).toBeFocused();
-          await client.keyboard.press('Enter');
+          await openOrganizationActions(client, permitted);
           await expect(details).toHaveJSProperty('open', true); await expect(permitted).toBeVisible();
         }
         const focusTarget = rollback ? permitted : summary;
