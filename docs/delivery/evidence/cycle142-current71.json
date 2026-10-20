@@ -1,0 +1,445 @@
+{
+  "at": "2026-10-20T22:50:31.182Z",
+  "source": "2d31338680fca49cd67b5f018e4da1d8fa89fa7a",
+  "session": 63673,
+  "exit": 0,
+  "passed": 71,
+  "failed": 0,
+  "skipped": 0,
+  "files": 3,
+  "reportSha256": "c1d27cde5ec6b8b8ce811b22cb33317aaeafb37d996295736c14932afcba36bb",
+  "rawTranscriptUtf8": "JSON report written to C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle142-current-three-files.json\r\n",
+  "rawTranscriptSha256": "65c9152242aa5a62f163f72c7a42783f681595f8049cb9642113ae5ceb2418a2",
+  "cases": [
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03/18 account deactivation requires explicit confirmation and focuses the safe cancellation action",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03/18 account deactivation preserves edits on organization_owner_required and reuses the refused intent after fresh confirmation",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03/18 account deactivation preserves edits on ownership_changed and reuses the refused intent after fresh confirmation",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03/18 account deactivation preserves a lost acknowledgment retry while suppressing reads and private profile details",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03/18 account deactivation does not treat an unexpected successful response as a deactivation acknowledgment",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03/18 account deactivation clears protected details on current authorization denial without claiming deactivation",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03/18 account deactivation bounds an abort-ignoring request and ignores a late deactivation acknowledgment after unmount",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03: pairs a deactivation refusal or uncertain response with its own reference (409)",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03: pairs a deactivation refusal or uncertain response with its own reference (503)",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03: reveals an accessible focused recovery action when the uncertainty reference is announced",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows PRD-01-TC-11 returns focus to the opened Card after browser history Back",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows PRD-01-TC-11 returns focus to the latest Card after replacing the open detail route",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows rechecks protected Board admission after the first validated live head even without new events",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows keeps mutation admission busy across a queued refresh until the final read withdraws edit access",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows fences competing Board commands while recovering an original metadata save after newer canonical data",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows recovers a Board archive after canonical read-only state without releasing competing commands",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows fences competing mutations during unresolved attachment lifecycle and recovers its original request after a newer Card snapshot",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows locks competing Card mutations during unconfirmed file upload and recovers the same original request after a newer snapshot",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows updates canvas due descriptions on live completion and removes them when dates clear",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows hides assignee names while refreshing and clears them on revoked Board access",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows updates the card face on acknowledgement and ignores an older refresh without resurrecting a removed card",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows preserves a dirty draft through a hung live read and retries after its deadline",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows retries a failed live snapshot without requiring another event",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows preserves dirty fields and focus on a live update, then clears protected state on revoked access",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows loads authoritative data and hides write actions for read-only access",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows does not display a board returned for a different organization",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows creates a list and refreshes from the server only after acknowledgment",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows retains conflicting edits until explicit discard and sends the current version",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows does not carry one card conflict into another card editor",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows preserves a dirty editor through an unavailable refresh and a newer authoritative snapshot",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows clears the scoped board and its draft on a 401 refresh denial",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows clears the scoped board and its draft on a 403 refresh denial",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows clears the scoped board and its draft on a 404 refresh denial",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows cannot restore scoped data from an older read after a denied save",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows does not resurrect an old save confirmation after access loss and a fresh authorized load",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows ignores an in-flight save acknowledgment after a read revokes access",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows omits movement when current permission admission is unavailable",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows omits movement when current board admission is unavailable",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows omits movement when current list admission is unavailable",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows reloads canonical placement after a bound append acknowledgment",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows shows provisional list order before persistence and restores canonical order after an uncertain result",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows clears the previous board while a new organization is loading",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows keeps Card archive recovery outside the removed canonical editor and returns to the Board",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows keeps cross-Board recovery after source removal without treating the moved Card as denied archived detail",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows fences competing Card changes for an unresolved cover receipt and permits only its original retry after a newer snapshot",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows fences competing changes and Card closure while recovering an original comment acknowledgment",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows renders only admitted cover hints on the Card face/detail and retires images during live refresh/removal",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "checks account and destination move authority, submits the original source/revision/key, and returns focus after acknowledgment",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "keeps the same move request after reply loss and canonical source removal, excluding replacement actions",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "retains recovery for an acknowledgment with wrong id",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "retains recovery for an acknowledgment with wrong organizationId",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "retains recovery for an acknowledgment with wrong boardId",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "retains recovery for an acknowledgment with wrong name",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "retains recovery for an acknowledgment with wrong version",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "retains recovery for an acknowledgment with wrong lifecycleState",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "retains recovery for an acknowledgment with wrong rank",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "preserves the destination draft but requires a renewed review after source changes or pending Board reads",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "refuses a target lacking move rights without rendering its protected name or submitting",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "discloses the reviewed PRIVATE destination visibility before confirmation",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "discloses the reviewed ORGANIZATION destination visibility before confirmation",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "discloses the reviewed PUBLIC destination visibility before confirmation",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "refuses an unrecognized destination visibility instead of presenting an incomplete review",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "withdraws a reviewed request on account change before writing",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "does not submit after a late account check resolves following permission withdrawal",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "aborts a pending move after permission loss and ignores a late acknowledgment",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "refuses conflict details and requires another review",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "bounds a stalled write and retains recovery",
+      "status": "passed",
+      "message": null
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "isolates recovery by Board scope and ignores late discovery after navigation",
+      "status": "passed",
+      "message": null
+    }
+  ],
+  "scope": "All71cases in completeProfileDeactivation/BoardScreen/ListMoveControlfiles passed63673exit0, original5s/10s expectations unchanged, no retries/filter/skip. The originalfull2951/12/24 remainsFailed; these targeted71passes are separate. This permits continued draftvalidation work only, not fullacceptance/merge.",
+  "implementationSource": "dc40d9963a9d13606d232be9678ebcd020c7eb71",
+  "appsTree": "2928c5889fab491bc82da7d5a1c9d7af84da4aa1",
+  "sourceBinding": "Current2d313main-reconciledhead has identicalapps tree to fdab/dc. Only NavigationConfirmation runtime/test changed from publishedP3; all3previouslyfailedtestfiles unchanged. All12earlierfailedcaseidentities included amongcurrent71passingcases."
+}
