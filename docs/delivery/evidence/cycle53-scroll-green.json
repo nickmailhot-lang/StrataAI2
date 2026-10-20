@@ -1,0 +1,182 @@
+{
+  "at": "2026-10-20T07:03:56.861Z",
+  "source": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "passed": 38,
+  "failed": 0,
+  "reportSha256": "eb1a8b5ca1cf5741bdb8ad8f0afbf978871526220780180f6f4bb72806752096",
+  "cases": [
+    {
+      "name": "App.test.tsx",
+      "cases": [
+        {
+          "title": "StrataAI2 application shell renders the internal application shell",
+          "status": "passed"
+        },
+        {
+          "title": "StrataAI2 application shell keeps the owner portal visually and navigationally separate",
+          "status": "passed"
+        },
+        {
+          "title": "retains deletion recovery after normal surface access is withdrawn",
+          "status": "passed"
+        },
+        {
+          "title": "admits protected terminal recovery on a fresh Organization route after ordinary surface withdrawal",
+          "status": "passed"
+        },
+        {
+          "title": "retains departure confirmation and original recovery when leaving withdraws Organization surface access",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "name": "InternalAppShell.scroll-context.test.tsx",
+      "cases": [
+        {
+          "title": "UXA-05/06: entering a Board from Organization home resets the previous page scroll",
+          "status": "passed"
+        },
+        {
+          "title": "UXA-04: opening and returning from Card details preserves the same Board document scroll",
+          "status": "passed"
+        },
+        {
+          "title": "UXA-04/05: moving to another Board resets scroll while Card changes within it do not",
+          "status": "passed"
+        },
+        {
+          "title": "UXA-03/05: returning to Work or switching Organization resets only the page context",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "name": "InternalAppShell.test.tsx",
+      "cases": [
+        {
+          "title": "UX-001-AC-02: shares destinations and current Board context in the mobile drawer",
+          "status": "passed"
+        },
+        {
+          "title": "UX-001-AC-03: skip navigation focuses the single main landmark",
+          "status": "passed"
+        },
+        {
+          "title": "UX-001-AC-02: closing navigation preserves the deep link",
+          "status": "passed"
+        },
+        {
+          "title": "UX-002: unavailable modules are omitted under the live Work-navigation amendment",
+          "status": "passed"
+        },
+        {
+          "title": "UX-003: content offset follows the actual header after text or viewport reflow",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "name": "OrganizationContextLabel.test.tsx",
+      "cases": [
+        {
+          "title": "PRD-03-VS-01-T-02: identifies the current Organization by its authorized name rather than a technical identifier",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: never discloses a name from another Organization",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: never discloses a name from an invalid Organization identity",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: never discloses a name from an inactive Organization",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: never discloses a name from a role outside the authorized contract",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: never discloses a name from a blank name",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: never discloses a name from an oversized name",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 401",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 403",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 404",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 503",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: refuses a name when the signed-in account changes between admission reads",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: ignores an obsolete response after the new Organization is admitted",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: metadata invalidate removes the old name before fresh authority returns",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: metadata reset removes the old name before fresh authority returns",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: metadata unavailable removes the old name before fresh authority returns",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: preserves the full canonical long name without clipping it",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: legacy or invalid route identifiers remain neutral without a protected lookup",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: identifies the canonical Organization for authorized role 0",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: identifies the canonical Organization for authorized role 1",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: reentering a previous Organization requires fresh authority rather than its old name",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: a hidden document withdraws context and resumes with a fresh canonical name",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: uses a neutral label while current authorized context is unknown",
+          "status": "passed"
+        },
+        {
+          "title": "PRD-03-VS-01-T-02: cannot transfer the previous name into another Organization route while its read is pending",
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "scope": "38 targeted cases only. Full frontend, native, CI and main still required."
+}

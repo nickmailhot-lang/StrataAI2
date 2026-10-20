@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-20T06:22:15.659Z",
+  "sourceCommit": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "browserTypes": {
+    "command": "node node_modules/typescript/bin/tsc -p tsconfig.browser.json",
+    "exit": 0,
+    "method": "Observed original tool terminal result with empty stdout; no separate rawlog was captured.",
+    "sourceSha256": "4f9b6824dd2aa467b5193dade66fc208996b94a2db535c0d2bf461f3360fb2c9"
+  },
+  "collection": {
+    "command": "node scripts/ci/verify-browser-shards.mjs",
+    "exit": 0,
+    "method": "Observed original tool terminal result; no redundant collection rerun solely for a rawlog.",
+    "stdout": "Browser shard coverage: 483 cases in 170 intact files; 121/122/125/115 cases across all four shards.",
+    "cases": 483,
+    "files": 170,
+    "partitions": [
+      121,
+      122,
+      125,
+      115
+    ],
+    "originalFileOwnershipDeadlinesExpectedOutcomesAndZeroRetriesVerified": true
+  },
+  "runtime": "Not Run; collection and types are not execution."
+}

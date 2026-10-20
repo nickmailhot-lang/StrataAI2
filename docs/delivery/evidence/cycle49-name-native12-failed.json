@@ -1,0 +1,73 @@
+{
+  "at": "2026-10-20T06:48:51.569Z",
+  "startedAt": "2026-10-20T06:35:59.568Z",
+  "project": "strataai-mvp-browser-2ccabdd52bb56a1a",
+  "exit": 1,
+  "stats": {
+    "startTime": "2026-10-20T06:36:49.175Z",
+    "duration": 717870.211,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "frontendSource": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "result": "Failed",
+  "phases": [
+    {
+      "name": "Start exclusive fixture database",
+      "exit": 0
+    },
+    {
+      "name": "Apply packaged migrations without application build",
+      "exit": 0
+    },
+    {
+      "name": "Provision canonical restricted runtime roles",
+      "exit": 0
+    },
+    {
+      "name": "Provision original disposable identity CI role",
+      "exit": 0
+    },
+    {
+      "name": "Start retained images with original browser-full account fixture",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned api container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned worker container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned web container",
+      "exit": 0
+    },
+    {
+      "name": "Original eight and new four native cases",
+      "exit": 1
+    },
+    {
+      "name": "Clean only exclusive fixture resources",
+      "exit": 0
+    }
+  ],
+  "primaryError": null,
+  "cleanupError": null,
+  "stockUnchanged": true,
+  "ownedRemaining": {
+    "containers": "",
+    "volumes": "",
+    "networks": ""
+  },
+  "privateSettingsRemoved": true,
+  "logSha256": "2fec69fa4c3fa3ba6dd5fd7c3e3d14944e0a7006a8e90328a4d57d46c9068465",
+  "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "scope": "Complete twelve-case execution on owned retainedAPI/Worker/PG plus currentR6frontend. Originaleight cases/assertions/deadlines and zero retries preserved. Localfixture only, not currentimmutableCI; earlierfailed aggregates remainretained.",
+  "diagnosis": "Original 390px work case destination Enter did not open Scheduled option. Trace shows enabled focused destination then disabled during protected foreground read. Exact exclusive cause remains unproven. Four new name workflows passed; full aggregate Failed. No mutation retry or deadline change.",
+  "traceDiagnosticSha256": "e804676d9a926996c1f9e097752004262d61f3a52bdba4d13e66d746300d16d9"
+}

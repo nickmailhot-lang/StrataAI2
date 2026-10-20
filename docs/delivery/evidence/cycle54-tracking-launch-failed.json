@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-20T07:45:17.174Z",
+  "result": "Failed",
+  "runnerStarted": false,
+  "originalToolExit": 0,
+  "reason": "PowerShell output redirection used incorrect relative path; Out-File refused before node test runner launched. LASTEXITCODE was empty and command wrapper returned0, which is not a test pass.",
+  "resolution": "Use existing captured runner with task-root absolute paths and original36 contracts plus full validation. No tests disabled or assertion/deadline changes.",
+  "scope": "Harness launch failure before tests, retained independently from executed test results."
+}

@@ -1,0 +1,28 @@
+{
+  "startedAt": "2026-10-20T07:07:19.445Z",
+  "finishedAt": "2026-10-20T07:07:39.242Z",
+  "head": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "ledgerSha256": "6368946a355bec62495578eca4f3b095eda68497dd765d95753f4b916c46d09a",
+  "items": 1603,
+  "done": 66,
+  "evidence": 829,
+  "result": "Failed",
+  "results": [
+    {
+      "name": "contracts",
+      "exit": 1,
+      "signal": null,
+      "artifact": "work/cycle53-tracking-contracts-native.txt",
+      "sha256": "278547221c1835c7e910cbe2388ffab9e8dc50eb1470f14bceea22f647026e52"
+    },
+    {
+      "name": "validation",
+      "exit": 1,
+      "signal": null,
+      "artifact": "work/cycle53-tracking-validation-native.txt",
+      "sha256": "c97b8051ed8eaccbb518c968a64817ffce3919f08c2cd490373dc7c564f94fff"
+    }
+  ],
+  "cause": "Implementation advanced to R7 while controlled privacy criterion still referenced only R6 proof; validator correctly refused stale evidence.",
+  "resolution": "Retain prior verification and failed checks; bind criterion to actual current 24-case subset inside exact R7 38-pass run and current static proof. No validator/test/assertion weakening."
+}

@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-20T06:38:09.713Z",
+  "source": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "originalScriptExit": 1,
+  "bundlerExit": 0,
+  "productBuildFailed": false,
+  "error": "Initialpost-build verifier expected a nonexistent service property; actualmaintained createBuildIdentity returns onlyrevision/version.",
+  "resolution": "Imported actualmaintained contract and verified exacttwo-field identity and allfourbuiltasset lengths/hashes without rebuilding.",
+  "originalBuildProofSha256": "a6e0f7191c0ab6144a5a22c1fce51a4528dc15047aa8a6586da2f36aeff18793",
+  "originalBuildNativeSha256": "764a7c310a321429a9f338a938a787d20071f75dc636b4b4424c7727af5f7d0c",
+  "scope": "Harnesscontract mistake retained. Not a failedbundler/product test; not silentlyrewritten."
+}

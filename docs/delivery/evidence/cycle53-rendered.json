@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-20T07:15:08.707Z",
+  "source": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "result": "Passed",
+  "method": "Actual local captured pixels inspected with view_image; 768x900 pre-fullpage viewport extracted unaltered from completed exact-source native trace.",
+  "captures": [
+    {
+      "path": "work/cycle53-owned-production-browser-output/organization-context-name--031a9-ontext-withdrawal-at-1280px/named-board.png",
+      "sha256": "3772380c6d18f012f5322796653885524ccc0a29329b3c9e73c469d0a9be40da"
+    },
+    {
+      "path": "work/cycle53-owned-production-browser-output/organization-context-name--99582-context-withdrawal-at-768px/named-board.png",
+      "sha256": "ad7ecc7c1710c74d145b176ea88121d1fa8acf7fb31f96b4a33a5fbc29b9c53c"
+    },
+    {
+      "path": "work/cycle53-owned-production-browser-output/organization-context-name--99582-context-withdrawal-at-768px/named-card.png",
+      "sha256": "b4e67af631ee7933380ac2e9f2ea58235a2d21653c8d327ed3b75398c4e6b6fa"
+    },
+    {
+      "path": "work/cycle53-owned-production-browser-output/organization-context-name--1bceb-context-withdrawal-at-390px/named-board.png",
+      "sha256": "7de07fcf2293c4cbc4d23a089132809a3f47e3c8275781fe203e7af90b752238"
+    },
+    {
+      "path": "work/cycle53-owned-production-browser-output/organization-context-name--1bceb-context-withdrawal-at-390px/named-card.png",
+      "sha256": "7e350ca75345a87d4c37a2cd1eea47fdba00233fb230791f6bbbfb465bded53e"
+    },
+    {
+      "path": "work/cycle53-owned-production-browser-output/organization-context-name--1bceb-context-withdrawal-at-390px/context-withdrawn.png",
+      "sha256": "3fe5a8fdd33e4970b6ea006b6f29d3e59250d9d8f09406ea991a84bae08652c3"
+    },
+    {
+      "path": "work/cycle53-owned-production-browser-output/organization-context-name--0563e-context-withdrawal-at-320px/named-board.png",
+      "sha256": "a331e06cb4f0ed33dd2fc8b73178cbc025e97f03fa7fb4d08d9d7f9f76b1f94a"
+    },
+    {
+      "path": "work/cycle53-768-actual-viewport-before-board.jpeg",
+      "sha256": "5f57af2dada9c3ea11982459e0436bd3d0177702b3b75bad4a0bef5ddad37042"
+    }
+  ],
+  "viewportProof": {
+    "actionTime": 245456.814,
+    "frame": {
+      "type": "screencast-frame",
+      "pageId": "page@01430f555852a64ecabc9cee98b11a97",
+      "file": "screencast/page@01430f555852a64ecabc9cee98b11a97-1792480203472.jpeg",
+      "width": 768,
+      "height": 900,
+      "timestamp": 245073.325,
+      "frameSwapWallTime": 1792480203466.827
+    },
+    "resource": "screencast/page@01430f555852a64ecabc9cee98b11a97-1792480203472.jpeg",
+    "path": "work\\cycle53-768-actual-viewport-before-board.jpeg",
+    "scope": "Actual768x900 trace viewport immediatelybefore fullpage capture; full-page composition alone is not unobscured-heading evidence."
+  },
+  "observations": [
+    "Board heading fully below fixed header at actual768x900 with200% root text; original R6 obscured-heading capture retained.",
+    "Full long Organization name wraps within current shared header; no clipped name or page-width overflow in reviewed1280/768/390/320 Board captures.",
+    "Card title focus visibly outlined at768/390; full modalviewport and persistent footer present. Scrollable detail content is not claimed simultaneously visible.",
+    "390px access-withdrawal capture removes old Organization name and shared navigation, shows generic denial/retry."
+  ],
+  "limits": [
+    "Selected manual captures are separate from automated results; no full native aggregate or CI/main acceptance inferred while runs are active.",
+    "Fullpage compositions alone do not certify sticky header position; actual768x900 trace frame is the viewport proof.",
+    "Return-to-Board document scroll equality and canonical state are automated assertions, not inferred from static pictures."
+  ]
+}

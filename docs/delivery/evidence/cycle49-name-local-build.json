@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-20T06:33:48.014Z",
+  "result": "Passed",
+  "source": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "version": "0.1.0-local-org-context",
+  "metadata": {
+    "revision": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+    "version": "0.1.0-local-org-context"
+  },
+  "files": [
+    {
+      "path": "assets/index-Bw_GsyDn.css",
+      "size": 561,
+      "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+    },
+    {
+      "path": "assets/index-CBJJQ7Pd.js",
+      "size": 1636481,
+      "sha256": "a2e370d7f53ecce261f94ab7d5397f53de673620b2fa9e3889eb33d910e46da5"
+    },
+    {
+      "path": "build-metadata.json",
+      "size": 91,
+      "sha256": "e444a56b034e213f99a031beeb9872eec67651f1c22c0ec7c97561b78a7d1e18"
+    },
+    {
+      "path": "index.html",
+      "size": 561,
+      "sha256": "d89a51b95ac089cbd7f51c8d257bc723b662a18db9d7d1118fcac5ef442fe511"
+    }
+  ],
+  "dist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle49-organization-context\\apps\\web\\dist",
+  "bundlerExit": 0,
+  "originalPostVerifier": {
+    "exit": 1,
+    "case": "Expected nonexistent servicefield; actualprimary createBuildIdentity returns exactlyrevision/version.",
+    "productBuildFailed": false,
+    "retained": true
+  },
+  "verification": "Import actualmaintained createBuildIdentity and compare exactobject; verify all4built filelengths/hashes and ownisolateddist path. Reuse originals, no rebuild or contract weakening.",
+  "scope": "Ownlocal frontend build only; supportingmixedclient real-service validation must verify servedassets/clientR6 and retainedAPI/Workerh separately. NoCI/main/productiondeployment qualification."
+}

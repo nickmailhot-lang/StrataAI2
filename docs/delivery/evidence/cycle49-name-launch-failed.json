@@ -1,0 +1,20 @@
+{
+  "startedAt": "2026-10-20T05:30:52.102Z",
+  "finishedAt": "2026-10-20T05:30:52.201Z",
+  "base": "bd1215f79587d64082afc6ebfe0a716f1ed83b90",
+  "sourceState": "Exact working-tree hashes; new component/control source is not yet committed.",
+  "source": {
+    "apps/web/src/app/OrganizationContextLabel.tsx": "601e4ab564e0c2ac45188f92e85b1c549c5ec350c3169a8e5ed172027e2f0be1",
+    "apps/web/src/app/OrganizationContextLabel.test.tsx": "ff7a1205e786c11c46e3117a7ec7bb3121aa9fff3b2f15252e292d848e392b4b",
+    "apps/web/src/app/InternalAppShell.tsx": "d04f600ea2436a499227d162fc5f61764fb896973c43c3b089c1cdbdf4161d1a",
+    "apps/web/src/app/App.test.tsx": "f4d5fa1cfbf6bb275096ded500234ecf15e1fe5aff75e5410d05273d343481e1"
+  },
+  "exit": 1,
+  "signal": null,
+  "result": "Failed",
+  "summary": null,
+  "reportSha256": null,
+  "nativeLogSha256": "8494d69e60b2fa9f29b7cdb906112f52134cb49054b32ceab4f4777d96f117ab",
+  "scope": "Targeted actual newheader/negative controls plus existingInternalAppShell/App tests. No fullfrontend, nativebrowser, integration or featureacceptance inferred.",
+  "interpretation": "Wrong executable path caused MODULE_NOT_FOUND before any suite or case ran. Corrected root runner path; originalfailed launch retained."
+}

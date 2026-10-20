@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-20T06:58:03.793Z",
+  "source": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "result": "Failed",
+  "finding": "Actual 768x900 viewport at 200% text before full-page screenshot shows Context work heading partly under fixed header after whole-page Organization to Board navigation.",
+  "viewportProof": {
+    "actionTime": 243669.659,
+    "frame": {
+      "type": "screencast-frame",
+      "pageId": "page@9ceaad77fe71a1f46e49ea60ed2dc735",
+      "file": "screencast/page@9ceaad77fe71a1f46e49ea60ed2dc735-1792478451306.jpeg",
+      "width": 768,
+      "height": 900,
+      "timestamp": 243406.173,
+      "frameSwapWallTime": 1792478451304.369
+    },
+    "resource": "screencast/page@9ceaad77fe71a1f46e49ea60ed2dc735-1792478451306.jpeg",
+    "path": "work\\cycle49-768-actual-viewport-before-board.jpeg",
+    "scope": "Actual768x900 trace viewport immediatelybefore fullpage capture; full-page composition alone is not unobscured-heading evidence."
+  },
+  "imageSha256": "255392c5a933702ff26c62733078d34332fff539acb7ecd1eff05d577538fcd1",
+  "scope": "Manual rendered review. Passing header-offset checks did not verify unobscured heading. Add regression and fix page scroll context while retaining Board/Card context."
+}

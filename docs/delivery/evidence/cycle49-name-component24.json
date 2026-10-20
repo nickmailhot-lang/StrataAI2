@@ -1,0 +1,144 @@
+{
+  "at": "2026-10-20T06:22:15.659Z",
+  "sourceCommit": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "source": {
+    "apps/web/src/app/OrganizationContextLabel.tsx": "d316c712962623f96fb1a4830c3837bcc4284dfcf42c9acac4e18ed13d2b52c0",
+    "apps/web/src/app/OrganizationContextLabel.test.tsx": "3f198012c74e77466719d5d1e3cfb32453ab8c859def640f5a8126f623b530f9",
+    "apps/web/src/app/InternalAppShell.tsx": "d04f600ea2436a499227d162fc5f61764fb896973c43c3b089c1cdbdf4161d1a",
+    "apps/web/src/app/App.test.tsx": "f4d5fa1cfbf6bb275096ded500234ecf15e1fe5aff75e5410d05273d343481e1"
+  },
+  "originalWorkingTreeBase": "bd1215f79587d64082afc6ebfe0a716f1ed83b90",
+  "committedSourceHashesExactlyMatchExecutedWorkingTree": true,
+  "scope": "Only this actual24case caption/privacy component file passed. Parent full-suite result is Failed and remains separate.",
+  "parentFullReport": {
+    "sha256": "4d543c1fb994f5dd22dc1a91f224bf1fc27fc866de714adc50f9d4c5d467a416",
+    "total": 2959,
+    "passed": 2916,
+    "failed": 19,
+    "pending": 24
+  },
+  "cases": [
+    {
+      "name": "PRD-03-VS-01-T-02: identifies the current Organization by its authorized name rather than a technical identifier",
+      "status": "passed",
+      "duration": 1371.453800000003
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: never discloses a name from another Organization",
+      "status": "passed",
+      "duration": 491.28050000000076
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: never discloses a name from an invalid Organization identity",
+      "status": "passed",
+      "duration": 300.44750000000204
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: never discloses a name from an inactive Organization",
+      "status": "passed",
+      "duration": 277.08940000000075
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: never discloses a name from a role outside the authorized contract",
+      "status": "passed",
+      "duration": 374.01580000000104
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: never discloses a name from a blank name",
+      "status": "passed",
+      "duration": 400.47119999999995
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: never discloses a name from an oversized name",
+      "status": "passed",
+      "duration": 323.2008999999998
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 401",
+      "status": "passed",
+      "duration": 395.2387000000017
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 403",
+      "status": "passed",
+      "duration": 387.1196999999993
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 404",
+      "status": "passed",
+      "duration": 389.53739999999743
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 503",
+      "status": "passed",
+      "duration": 346.3626000000004
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: refuses a name when the signed-in account changes between admission reads",
+      "status": "passed",
+      "duration": 223.5015999999996
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: ignores an obsolete response after the new Organization is admitted",
+      "status": "passed",
+      "duration": 415.9711000000025
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: metadata invalidate removes the old name before fresh authority returns",
+      "status": "passed",
+      "duration": 411.9330000000009
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: metadata reset removes the old name before fresh authority returns",
+      "status": "passed",
+      "duration": 424.83890000000247
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: metadata unavailable removes the old name before fresh authority returns",
+      "status": "passed",
+      "duration": 346.0652000000009
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: preserves the full canonical long name without clipping it",
+      "status": "passed",
+      "duration": 188.7969000000012
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: legacy or invalid route identifiers remain neutral without a protected lookup",
+      "status": "passed",
+      "duration": 157.84179999999833
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: identifies the canonical Organization for authorized role 0",
+      "status": "passed",
+      "duration": 192.4307000000008
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: identifies the canonical Organization for authorized role 1",
+      "status": "passed",
+      "duration": 356.52679999999964
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: reentering a previous Organization requires fresh authority rather than its old name",
+      "status": "passed",
+      "duration": 411.8150000000023
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: a hidden document withdraws context and resumes with a fresh canonical name",
+      "status": "passed",
+      "duration": 245.01870000000054
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: uses a neutral label while current authorized context is unknown",
+      "status": "passed",
+      "duration": 189.31359999999768
+    },
+    {
+      "name": "PRD-03-VS-01-T-02: cannot transfer the previous name into another Organization route while its read is pending",
+      "status": "passed",
+      "duration": 461.45679999999993
+    }
+  ],
+  "subsetPassed": 24,
+  "subsetFailed": 0
+}
