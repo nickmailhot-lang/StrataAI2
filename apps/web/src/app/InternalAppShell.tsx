@@ -33,6 +33,7 @@ import { SurfaceAdmission } from './SurfaceAdmission';
 import { NavigationConfirmation } from './NavigationConfirmation';
 import { internalNavigation } from './navigationModel';
 import { designTokens } from '../theme/designTokens';
+import { OrganizationContextLabel } from './OrganizationContextLabel';
 
 const drawerWidth = designTokens.navigationWidth;
 const navigationIcons = {
@@ -113,12 +114,7 @@ function InternalLayout() {
           <Typography variant="h6" component="h1" sx={{ flexGrow: 1, minWidth: 'max-content', flexShrink: 0, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
             StrataAI2
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ mr: 1, display: { xs: "none", sm: "block" } }}
-          >
-            Organization: {organizationId ?? "Unknown"}
-          </Typography>
+          <OrganizationContextLabel />
           <Tooltip title="Search Cards">
             <IconButton component={Link} to={`/app/${organizationId}/search`} color="inherit" aria-label="Search Cards">
               <SearchOutlinedIcon />
