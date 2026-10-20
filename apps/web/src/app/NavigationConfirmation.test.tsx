@@ -152,6 +152,28 @@ it('PRD-01 recovers a lost confirmation after returning to the same Board with a
   expect(new Headers(requests[0][1].headers).get('Idempotency-Key')).toBe(new Headers(requests[1][1].headers).get('Idempotency-Key'));
 });
 
+it('PRD-01 foreground admission cannot retry a lost confirmation without explicit recovery', async () => {
+  const writes: { path: string; init: RequestInit }[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/me') return response({ id: actor });
+    writes.push({ path, init: init! });
+    if (writes.length === 1) throw new TypeError('Lost original reply');
+    return response(source);
+  }));
+  const view = render(<NavigationConfirmation target={target} />);
+  await screen.findByRole('button', { name: 'Retry navigation confirmation' });
+  expect(writes).toHaveLength(1); const original = sessionStorage.getItem(Object.keys(sessionStorage)[0]);
+  await act(async () => view.rerender(<NavigationConfirmation target={target} admitted={false} />));
+  expect(screen.queryByRole('button', { name: 'Retry navigation confirmation' })).toBeNull();
+  await act(async () => view.rerender(<NavigationConfirmation target={{ ...target, version: 4 }} admitted />));
+  expect(writes).toHaveLength(1);
+  expect(sessionStorage.getItem(Object.keys(sessionStorage)[0])).toBe(original);
+  fireEvent.click(screen.getByRole('button', { name: 'Retry navigation confirmation' }));
+  await waitFor(() => expect(sessionStorage.length).toBe(0));
+  expect(writes).toHaveLength(2); expect(writes[1].path).toBe(writes[0].path);
+  expect(new Headers(writes[1].init.headers).get('Idempotency-Key')).toBe(new Headers(writes[0].init.headers).get('Idempotency-Key'));
+});
+
 async function pendingReturnedOriginal() {
   let currentActor = actor;
   let finish!: (value: Response) => void;
