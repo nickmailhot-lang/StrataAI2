@@ -1,0 +1,125 @@
+{
+  "at": "2026-10-20T00:04:52.450Z",
+  "result": "Passed",
+  "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "synthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "run": 39279332124,
+  "currentMain": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "currentRuntimeAndTestCodeIdentical": true,
+  "inspectionRefusals": [
+    {
+      "result": "Failed",
+      "scope": "Initial ledger reader used acceptanceCriteria at root; canonical root key is criteria. Read-only lookup corrected, no ledger or gate change."
+    },
+    {
+      "result": "Failed",
+      "scope": "Independent clone did not contain supporting f3ca synthetic. Complete src/db/deploy blob inventories were read from the retained source repository and matched current main; no branch or user checkout changed."
+    },
+    {
+      "result": "Failed",
+      "scope": "Supporting web /readyz returns SPA HTML, not API readiness. It is not used as a health pass. Runtime metadata and exact served assets are verified separately."
+    }
+  ],
+  "native": {
+    "recovery": [
+      "2026-10-19T16:55:31.0795091Z   ✓   36 tests/browser/board-creation-recovery.spec.ts:8:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (3.8s)",
+      "2026-10-19T16:55:59.8300759Z   ✓   37 tests/browser/board-creation-recovery.spec.ts:8:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (3.7s)",
+      "2026-10-19T16:56:29.2790830Z   ✓   38 tests/browser/board-creation-recovery.spec.ts:8:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (4.4s)",
+      "2026-10-19T16:56:58.3511908Z   ✓   39 tests/browser/board-creation-recovery.spec.ts:8:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (4.1s)"
+    ],
+    "account": [
+      "2026-10-19T16:54:35.3593981Z   ✓   34 tests/browser/board-creation-account.spec.ts:7:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px (2.0s)",
+      "2026-10-19T16:55:02.2198048Z   ✓   35 tests/browser/board-creation-account.spec.ts:7:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px (1.8s)"
+    ],
+    "liveDirectory": [
+      "2026-10-19T17:25:23.8214772Z   ✓   13 tests/browser/organization-board-live.spec.ts:7:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 1280px (21.0s)",
+      "2026-10-19T17:26:09.3774692Z   ✓   14 tests/browser/organization-board-live.spec.ts:7:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 768px (20.5s)",
+      "2026-10-19T17:26:55.6295921Z   ✓   15 tests/browser/organization-board-live.spec.ts:7:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 390px (21.2s)",
+      "2026-10-19T17:27:41.8679216Z   ✓   16 tests/browser/organization-board-live.spec.ts:7:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 320px (21.2s)",
+      "2026-10-19T17:28:37.2551330Z   ✓   17 tests/browser/organization-board-live.spec.ts:131:7 › PRD-04/18: archive directory consumes original Worker events and recovers private scope at 1280px (30.4s)",
+      "2026-10-19T17:29:31.5080318Z   ✓   18 tests/browser/organization-board-live.spec.ts:131:7 › PRD-04/18: archive directory consumes original Worker events and recovers private scope at 390px (29.2s)",
+      "2026-10-19T17:30:13.8719711Z   ✓   19 tests/browser/organization-board-live.spec.ts:219:5 › PRD-04/05: phone archive scope excludes other Boards and withdraws review after Organization membership removal (17.3s)"
+    ]
+  },
+  "hostedJobs": [
+    {
+      "id": 118168916119,
+      "inputSha256": "0259c614b94d306b7ff5a271e7ce94157dacd94909ac96b038db6c6d05497f4b"
+    },
+    {
+      "id": 118168915171,
+      "inputSha256": "15b0179fc75a011f1f004c161ec0d9c341603865f5dbb4bb509c49239794d770"
+    },
+    {
+      "id": 118150879859,
+      "inputSha256": "f86a1eae98ab139a044cb60ef412d9f7e07a3a0c16c353841b148dc44a0f8aea"
+    }
+  ],
+  "components": [
+    {
+      "file": "OrganizationHome.test.tsx",
+      "passed": 69,
+      "record": "2026-10-19T15:41:42.8131929Z  ✓ src/features/organizations/OrganizationHome.test.tsx (69 tests) 6399ms"
+    },
+    {
+      "file": "OrganizationHome.focus.test.tsx",
+      "passed": 2,
+      "record": "2026-10-19T15:45:13.1594066Z  ✓ src/features/organizations/OrganizationHome.focus.test.tsx (2 tests) 1015ms"
+    },
+    {
+      "file": "OrganizationHome.actions.test.tsx",
+      "passed": 7,
+      "record": "2026-10-19T15:44:35.3455060Z  ✓ src/features/organizations/OrganizationHome.actions.test.tsx (7 tests) 1157ms"
+    },
+    {
+      "file": "organizationBoardLive.test.ts",
+      "passed": 17,
+      "record": "2026-10-19T15:44:31.2958283Z  ✓ src/features/kanban/organizationBoardLive.test.ts (17 tests) 15ms"
+    }
+  ],
+  "api": {
+    "artifactId": 12201243899,
+    "zipSha256": "3f908e621bf230f051156fa1c479c521338735bec6f10182fc227d9f9f070a4a",
+    "jsonSha256": "9e63762e54454d81d4ad117c1469a8795768ec2c6e7db80ffaf6046860198f3b",
+    "cases": [
+      {
+        "caseId": "b7f6afccf745e8924946f82621d446ea6e7f7f214e6905d2508114f2ee2781c7",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_original_Board_creation_actor_survives_account_replacement_and_legacy_replay",
+        "outcome": "passed",
+        "durationMs": 1954
+      },
+      {
+        "caseId": "08f13c95ff23304ac73e2fa58b8a6a04e3960ce9db46e0f15b6627df467e874a",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation",
+        "outcome": "passed",
+        "durationMs": 1936
+      },
+      {
+        "caseId": "35e9076cfacbf938aaa9ff9bbc3e4d7a7dc9dea9cc7bc21d347bfdc4311ceb85",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation",
+        "outcome": "passed",
+        "durationMs": 1947
+      },
+      {
+        "caseId": "07f7766bea1e76cfab12642361cdd3f65d434cbe080d9ce4ed6d4c3f959e5b79",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation",
+        "outcome": "passed",
+        "durationMs": 1925
+      },
+      {
+        "caseId": "c059304b0f20090346ccd6ea2dfb5657c3d92b2d4560e5703aec98ac4fe7d45a",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation",
+        "outcome": "passed",
+        "durationMs": 1953
+      },
+      {
+        "caseId": "c8ffef9d28e40b84f62c9050ee0725eb2b2479265634c244a6a7115b57d9093d",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_without_expected_actor_preserves_legacy_receipt",
+        "outcome": "passed",
+        "durationMs": 2267
+      }
+    ],
+    "originalFiveSourceSkipsPreserved": true
+  },
+  "scope": "Exact immutable8c68 six original-account/recovery and seven directory native cases, current95 scoped components, six actual actor API cases and full22 checks. Current main runtime/test code equals qualified source; main integration separately verified. Supporting Demo render run is additional evidence and cannot replace Production/RLS, strict verified-account or managed-provider acceptance."
+}

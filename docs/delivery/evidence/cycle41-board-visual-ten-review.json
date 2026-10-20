@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-20T00:15:26.419Z",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "qualifiedImplementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "executedTestSource": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "actualClient": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+  "actualApi": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+  "screenshots": [
+    {
+      "path": "docs/delivery/evidence/cycle41-account-replacement-refused-1280.png",
+      "sha256": "ed30e2ad06f0844b2d05dbe0722976a9e57ff2a9f50671ce839e70ba9e5e7eed"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-account-replacement-refused-390.png",
+      "sha256": "b1bdf517d31603cd0f57bc9b785e8f148d783b02e9f81246b7b3124ca283c7ef"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-recovered-board-draft-768.png",
+      "sha256": "4ed6390dc48b71f1cdac955408bb8bd06da08a4bdea36a0b590e70dc93e76560"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-recovered-board-return-768.png",
+      "sha256": "69b5fa94b7418af5027161bd3b6395f7c1d62d5ae3859567a0dc32da94a502a7"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-recovered-board-draft-390.png",
+      "sha256": "386f0cc46f730a35186aef1c39a29f2595478f9a322d6734948f91d5b3398fc6"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-recovered-board-return-390.png",
+      "sha256": "d64df870146a6a96e6cebd0de8e6eb484840738462a58620f1ba2c267e092468"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-recovered-board-draft-320.png",
+      "sha256": "c5846467a060bbefeb46a297703ef194df059ad26b38e2ec9a1b05270d714ec2"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-recovered-board-return-320.png",
+      "sha256": "642b1619e04550696f7ee3af4a8aacb8a05f76055bb1f0e8b32635cf6a6ee341"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-recovered-board-draft-1280.png",
+      "sha256": "c9d845f918d3155f6a455e90de29eb81fb9f2ac6797e2d44cfeb908acc5d2257"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-recovered-board-return-1280.png",
+      "sha256": "1bffcebe8971cfb8671a9054d3625d21181d4f764275a774fbd1567e49251759"
+    }
+  ],
+  "manualObservations": [
+    "All four recovered dialogs preserve their original name/description and Private selection; focused Create remains unobscured and within the dialog.",
+    "Cancel/Escape returns a visible focus indicator to current Create Board, including320/390phone and768tablet200%text; page content reflows without horizontal page overflow. At320 the single-line name field scrolls its long editable value within its field.",
+    "Both replacement-account outcomes show the neutral sign-in page with no original private Board or draft content.",
+    "Shared MUI shell, current Work navigation, role-gated Organization disclosure and existing routes remain; automated keyboard/Axe/layout assertions passed in the unchanged workflow."
+  ],
+  "limits": "Ten actual local Demo captures manually inspected. Supports source-equivalent visual acceptance alongside the actual current immutable passes. No physical-device, screen-reader, full-app WCAG or managed-provider certification inferred."
+}

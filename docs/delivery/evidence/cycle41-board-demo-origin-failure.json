@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-20T00:11:03.055Z",
+  "result": "Failed",
+  "testSource": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "stats": {
+    "startTime": "2026-10-20T00:05:45.929Z",
+    "duration": 190383.221,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  },
+  "rawReportSha256": "30c704ca55ae3496c06f69a8887b0964cdc0fffd6eb68e10fca711384d93ab0c",
+  "configuredOrigin": "http://127.0.0.1:15188",
+  "probes": [
+    {
+      "origin": "http://localhost:15188",
+      "status": 403,
+      "code": "realtime_origin_denied"
+    },
+    {
+      "origin": "http://127.0.0.1:15188",
+      "status": 401,
+      "code": "authentication_required"
+    }
+  ],
+  "classification": "Wrong supplemental browser origin: localhost and127.0.0.1 are separate origins. All four recovery cases fail before the creation workflow at unchanged5s lifecycle-socket admission predicate because negotiation receives403realtime_origin_denied. Both original-account replacement cases pass separately; no whole-run pass inferred.",
+  "owner": "Delivery lead",
+  "correction": "Keep application/container/security settings and all original tests, assertions, durations, retries and rate pacing unchanged. Run the complete six cases against the actually configured127.0.0.1 origin with the original ordinary Demo account fixture. Source-equivalent local UX remains supporting; exact immutable Production evidence remains separately required."
+}

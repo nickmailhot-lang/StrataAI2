@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-20T00:31:57.279Z",
+  "head": "acdc8b0aecee1efa76b9b9599b3a498f739f6ce1",
+  "parent": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "file": "tests/browser/board-creation-recovery.spec.ts",
+  "sha256": "360d9d313a73839cbb006fc9272fae09253d0f13ad368dcfed9004b745931324",
+  "removedFixtureLine": "-    if (width === 768) await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });",
+  "originalAssertionsRemoved": false,
+  "applicationApiDatabaseWorkerAndWorkflowChanges": false,
+  "localNative": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "retries": 0,
+    "executedTestSourceSha256": "360d9d313a73839cbb006fc9272fae09253d0f13ad368dcfed9004b745931324",
+    "reportSha256": "ef84a03b85dba6cba43267b3b00bb36e4db328d76fb4c300a9c401949cb6dc85"
+  },
+  "red": {
+    "failed": 1,
+    "actual": "16px",
+    "required": "32px",
+    "reportSha256": "5d8d627acd63eadba2455e5806d15ebd412460739f3e8cb482fa915085be25f7"
+  },
+  "browserTypecheckExit": 0,
+  "browserRegistryExit": 0,
+  "registry": {
+    "cases": 479,
+    "files": 169,
+    "partitions": [
+      121,
+      120,
+      123,
+      115
+    ]
+  },
+  "scope": "Exact source-only commit for Task04/Test. Local supporting Demo verification and types/registration passed. Fresh source requiredCI and actualmain integration still pending; no parentPRD/MVP completion."
+}

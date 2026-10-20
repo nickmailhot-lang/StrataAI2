@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-20T00:22:32.937Z",
+  "result": "Failed",
+  "revision": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "scope": "Final completion audit refused unsupported full-journey200%text verification; original six actualpasses,10captures and production qualification preserved. No item markedDone.",
+  "evidenceGap": {
+    "test": "tests/browser/board-creation-recovery.spec.ts",
+    "initialFont": "line24 page.evaluate sets200%only on currentdocument",
+    "reload": "line89 reload replacesdocument",
+    "missing": "Persistent200%text and explicit assertions at canonicalBoard reload and final Workdirectoryreturn"
+  },
+  "affectedCriteria": [
+    "PRD-04-VS-05/AC-04",
+    "PRD-04-VS-05-T-01/AC-01",
+    "PRD-04-VS-05-T-01-TEST-01/AC-01",
+    "PRD-04-VS-01-T-03/AC-04",
+    "PRD-04-VS-01-T-03-TEST-01/AC-01"
+  ],
+  "newWork": [
+    "PRD-04-VS-05-T-04",
+    "PRD-04-VS-05-T-04-TEST-01"
+  ],
+  "requiredNext": "Add post-reload32px assertion first and demonstrate failure with existing fixture; use existing project addInitScript pattern for persistent200%text before navigation, preservingall original assertions/deadlines. Run complete six cases,current requiredCI and actualintegration before final Done."
+}

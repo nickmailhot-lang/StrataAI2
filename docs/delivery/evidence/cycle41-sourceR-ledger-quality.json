@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-20T00:41:33.574Z",
+  "result": "Passed",
+  "source": "acdc8b0aecee1efa76b9b9599b3a498f739f6ce1",
+  "sourceFileSha256": "360d9d313a73839cbb006fc9272fae09253d0f13ad368dcfed9004b745931324",
+  "ledgerInputSha256": "90730882f089dcee8b8013fe0f91936260c84fb756335b67a368a39cb923a57c",
+  "items": 1595,
+  "done": 33,
+  "evidence": 744,
+  "states": "ParentInProgress,newTask/TestTesting; no newDone",
+  "results": [
+    {
+      "name": "contracts",
+      "exit": 0,
+      "artifact": "work/cycle41-board-sourceR-contracts.txt",
+      "sha256": "a26107331be0b2a612da98db90f6d63384f0195aecef5ee0999024b6509cb392"
+    },
+    {
+      "name": "evolution-main",
+      "exit": 0,
+      "artifact": "work/cycle41-board-sourceR-evolution-main.txt",
+      "sha256": "9e27eae6d6e3c58d46b6b6bf73ebc94fc0a41f4ab31bd0dbd92bff671f854c0a"
+    }
+  ],
+  "nestedActuallyReviewedCaptureHashesPassed": true,
+  "scope": "Current enriched1595-item/33Done/744evidence dataset at exactsourceacdc: whole36contracts and actualsource/evidence/hash/Git/baseline/append-only evolution against fetchedmain. Localpublicationquality; currentcandidate immutableCI and actualtargetintegration remainpending.",
+  "canonicalResults": [
+    {
+      "name": "contracts",
+      "exit": 0,
+      "artifact": "docs/delivery/evidence/cycle41-sourceR-contracts.txt",
+      "sha256": "a26107331be0b2a612da98db90f6d63384f0195aecef5ee0999024b6509cb392",
+      "originalPrivateArtifact": "work/cycle41-board-sourceR-contracts.txt"
+    },
+    {
+      "name": "evolution-main",
+      "exit": 0,
+      "artifact": "docs/delivery/evidence/cycle41-sourceR-evolution-main.txt",
+      "sha256": "9e27eae6d6e3c58d46b6b6bf73ebc94fc0a41f4ab31bd0dbd92bff671f854c0a",
+      "originalPrivateArtifact": "work/cycle41-board-sourceR-evolution-main.txt"
+    }
+  ],
+  "originalExecutedProofSha256": "8fe7628455c7b8abdafb0b616dcd0d641bfd1da8d3a0d292740257165f2c00de",
+  "publication": "Local currentcandidate quality; newsourceCI/actualmainintegrationstillpending"
+}

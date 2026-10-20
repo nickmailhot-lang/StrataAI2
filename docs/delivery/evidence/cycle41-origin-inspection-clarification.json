@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-20T00:15:26.419Z",
+  "result": "Passed",
+  "inspection": "The earlier origin-failure evidence command retained the mistaken shorthand allowed-origin200. Its actual JSON probes show allowed-origin401 authentication_required, which is correct for the anonymous diagnostic. The initial auxiliary probe assertion expecting200 was Failed and corrected before publication. This does not waive authentication or establish an anonymous connection; the complete authenticated six-case native run now actually passes.",
+  "originalEvidence": "EVID-CYCLE-41-BOARD-ORIGIN-FAILED",
+  "actualAnonymousOutcomes": [
+    {
+      "origin": "http://localhost:15188",
+      "status": 403,
+      "code": "realtime_origin_denied"
+    },
+    {
+      "origin": "http://127.0.0.1:15188",
+      "status": 401,
+      "code": "authentication_required"
+    }
+  ]
+}

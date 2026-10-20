@@ -1,0 +1,73 @@
+{
+  "at": "2026-10-20T00:33:59.166Z",
+  "result": "Passed",
+  "revision": "acdc8b0aecee1efa76b9b9599b3a498f739f6ce1",
+  "executedBeforeCommitWithExactSourceHash": true,
+  "testSourceSha256": "360d9d313a73839cbb006fc9272fae09253d0f13ad368dcfed9004b745931324",
+  "input": {
+    "at": "2026-10-20T00:27:32.735Z",
+    "phase": "green",
+    "baseRevision": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+    "dirtyTestSource": true,
+    "testPath": "tests/browser/board-creation-recovery.spec.ts",
+    "testSha256": "360d9d313a73839cbb006fc9272fae09253d0f13ad368dcfed9004b745931324",
+    "configSha256": "a2065cb838763498cb511c466191d1db49c9fc876baf3cb845e6e0cd5c259ee1",
+    "scope": "Original full6account/recovery cases plus persistent200%tablet font,overflow,Axe and real captures at canonicalreload/Workreturn. Existing assertions/deadlines/retries/pace retained; no application/security/configuration change."
+  },
+  "stats": {
+    "startTime": "2026-10-20T00:27:34.657Z",
+    "duration": 192022.669,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px",
+      "status": "Passed",
+      "attempts": 1
+    }
+  ],
+  "rawReportSha256": "ef84a03b85dba6cba43267b3b00bb36e4db328d76fb4c300a9c401949cb6dc85",
+  "runtimeClient": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+  "runtimeApi": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+  "runtimeApplicability": "Source-equivalent supporting Demo. Application/API/schema/deployment code unchanged; fresh immutable source CI is stillrequired. OrdinaryDemo account fixture and configured127origin preserved.",
+  "newAssertions": [
+    "32px at initial Organization entry",
+    "32px after canonicalBoardreload",
+    "No pageoverflow and no applicable Axe violations afterreload",
+    "32px at finalWorkdirectoryreturn",
+    "No pageoverflow and no applicable Axe violations at finalreturn"
+  ],
+  "originalCaseCount": 6,
+  "retries": 0,
+  "workers": 1,
+  "ratePacingSeconds": 25,
+  "originalDeadlinesPreserved": true
+}
