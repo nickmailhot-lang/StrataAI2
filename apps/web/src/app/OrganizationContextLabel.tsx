@@ -32,7 +32,7 @@ function AuthorizedName({ scope }: { scope?: string }) {
 
   useEffect(() => {
     if (!scope) return;
-    let disposed = false, generation = 0;
+    let disposed = false, generation = 0, networkAvailable = navigator.onLine !== false;
     let request: AbortController | undefined;
     let subscribedActor: string | undefined;
     let stopMetadata: (() => void) | undefined;
@@ -44,7 +44,7 @@ function AuthorizedName({ scope }: { scope?: string }) {
       const active = ++generation;
       request?.abort();
       setContext(undefined);
-      if (document.visibilityState === 'hidden') return;
+      if (!networkAvailable || navigator.onLine === false || document.visibilityState === 'hidden') return;
       const controller = new AbortController(); request = controller;
       try {
         const admitted = await boundedWorkRead(async signal => {
@@ -74,17 +74,26 @@ function AuthorizedName({ scope }: { scope?: string }) {
       }
     }
     const focus = () => { stop(); void refresh(); };
+    const withdraw = () => {
+      ++generation; request?.abort(); stop(); setContext(undefined);
+    };
+    const offline = () => { networkAvailable = false; withdraw(); };
+    const online = () => { networkAvailable = true; stop(); void refresh(); };
     const visibility = () => {
       if (document.visibilityState === 'hidden') {
-        ++generation; request?.abort(); stop(); setContext(undefined);
+        withdraw();
       } else { void refresh(); }
     };
     window.addEventListener('focus', focus);
+    window.addEventListener('offline', offline);
+    window.addEventListener('online', online);
     document.addEventListener('visibilitychange', visibility);
     void refresh();
     return () => {
       disposed = true; ++generation; request?.abort(); stop();
       window.removeEventListener('focus', focus);
+      window.removeEventListener('offline', offline);
+      window.removeEventListener('online', online);
       document.removeEventListener('visibilitychange', visibility);
     };
   }, [scope]);
