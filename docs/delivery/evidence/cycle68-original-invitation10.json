@@ -1,0 +1,72 @@
+{
+  "at": "2026-10-20T13:46:57.942Z",
+  "startedAt": "2026-10-20T13:40:00.836Z",
+  "project": "strataai-mvp-browser-e5ed7b451ca0e863",
+  "exit": 0,
+  "stats": {
+    "startTime": "2026-10-20T13:40:50.141Z",
+    "duration": 363468.226,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "frontendSource": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "testSource": "6ff123b066541f1053765b9c29d90f4d26619bde",
+  "result": "Passed",
+  "phases": [
+    {
+      "name": "Start exclusive fixture database",
+      "exit": 0
+    },
+    {
+      "name": "Apply packaged migrations without application build",
+      "exit": 0
+    },
+    {
+      "name": "Provision canonical restricted runtime roles",
+      "exit": 0
+    },
+    {
+      "name": "Provision original disposable identity CI role",
+      "exit": 0
+    },
+    {
+      "name": "Start retained images with original browser-full account fixture",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned api container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned worker container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned web container",
+      "exit": 0
+    },
+    {
+      "name": "Original ten invitation cases",
+      "exit": 0
+    },
+    {
+      "name": "Clean only exclusive fixture resources",
+      "exit": 0
+    }
+  ],
+  "primaryError": null,
+  "cleanupError": null,
+  "stockUnchanged": true,
+  "ownedRemaining": {
+    "containers": "",
+    "volumes": "",
+    "networks": ""
+  },
+  "privateSettingsRemoved": true,
+  "logSha256": "e07fc707e547b91e7e28f8a4d74956074d4f239bc6c4ce76ee920ffd9d8260e9",
+  "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "scope": "Actual original ten invitation cases at F with zero failures/skips/retries; owned services cleaned, StockWorker unchanged. Both previously failing rendered end states manually inspected. F2 retains exact four original invocation files and same admission function body; this is a ten-case local result, never whole current-head CI qualification."
+}
