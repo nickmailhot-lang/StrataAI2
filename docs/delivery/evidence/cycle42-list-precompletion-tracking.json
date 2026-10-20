@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-20T01:22:00.569Z",
+  "result": "Passed",
+  "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "checkout": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "ledgerInputSha256": "728d0eb6b733be1ead71a45ded733d95b4a16225f4c92f06390601a59672eede",
+  "items": 1595,
+  "done": 33,
+  "evidence": 755,
+  "currentValidation": {
+    "exit": 0,
+    "command": "node scripts/delivery-progress.mjs validate --base-ref origin/main",
+    "artifactSha256": "02a49630362ef61791efaa235b743ea4bc7725cd5ef670b6b13df8d902912d43",
+    "scope": "Enriched755evidence acceptance dataset: source paths, artifact hashes, actual Git integration, baseline and append-only evolution against freshmainM3."
+  },
+  "contracts": {
+    "exit": 0,
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "artifactSha256": "3bb46495aead0bca9289c23cc4a67eb28fd34d4812d9395345957e6a2cba2369",
+    "scope": "Whole36contracts on earlier752evidence audit dataset before three acceptance metadata records; not a claim that finalcompleted dataset was already exercised. Wholecontracts will run after legal completion."
+  },
+  "scope": "Precompletion tracking gate for existing9integrated List records. Legal CLI childfirst transitions and finalcompleted quality/report/publication remain required."
+}

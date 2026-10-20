@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-20T01:16:32.419Z",
+  "result": "Passed",
+  "qualifiedSource": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "currentCandidate": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "actualMain": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "sourcePaths": [
+    {
+      "path": "apps/web/src/features/kanban/BoardScreen.tsx",
+      "sha256": "e7680a58253e7d60b3e02d132a704fc2131c5890623e205bb13937f4778c46ba"
+    },
+    {
+      "path": "src/StrataAI.Api/WorkManagement/WorkManagementEndpoints.cs",
+      "sha256": "068c5b495cfacf5572a9fa443e88055f274262e4e7d3de1cfb6799f941be061a"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/ListCreationActorTests.cs",
+      "sha256": "6ee5c846aec11666f27947b1a5b6fbeb8b18fe9c3f8cbaec5680c1dfc143b55b"
+    },
+    {
+      "path": "apps/web/src/features/kanban/ListCreationActor.test.tsx",
+      "sha256": "9e2527051e19d010c16c1bfbf49cecef7c7c7c58cd61a22eb341bec00176b430"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardScreen.drag.test.tsx",
+      "sha256": "aa732f528c4be4771bb72980d463e8ca717d720ecbb3cdb8f64335df867b0115"
+    },
+    {
+      "path": "tests/browser/list-creation-account.spec.ts",
+      "sha256": "90c4c2a6fbfaee24a1fc388729d9fa042144aa3405617044587f4cf0e62fcd6e"
+    },
+    {
+      "path": "tests/browser/list-creation-recovery.spec.ts",
+      "sha256": "f0b0f74c1a87d23095820037db762b63bf145948c916ff90dfdc6a73c7803232"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CreationAdmissionBusy.test.tsx",
+      "sha256": "577dbc6356a0be49f4adbc84a02269aa2106ff013e78c86a2b1cdb0838145212"
+    }
+  ],
+  "scopedSourceUnchanged": true,
+  "entireApiDatabaseDeploymentInventoriesUnchanged": true,
+  "qualifiedSourceInMain": true,
+  "scope": "Source/path equality and actual Git ancestry inspection. Historical exact8c68 qualified tests remain explicitly historical; currentPR115 release and target integration are pending. List code already exists; no restart or new feature implementation."
+}

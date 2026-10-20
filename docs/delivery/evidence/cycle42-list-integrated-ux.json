@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-20T01:21:01.912Z",
+  "result": "Passed",
+  "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "executedNativeTestSource": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "sourcePathsUnchanged": true,
+  "native": {
+    "id": "EVID-CYCLE-42-LIST-NATIVE6",
+    "path": "docs/delivery/evidence/cycle42-list-native6.json",
+    "sha256": "fd28d399e242617824f25a08cae1082c080ba6ae0fa5dadf6fb59c4ff47beece",
+    "revision": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00"
+  },
+  "visual": {
+    "id": "EVID-CYCLE-42-LIST-VISUAL10",
+    "path": "docs/delivery/evidence/cycle42-list-visual10.json",
+    "sha256": "0fd9774444ff41ebb3458459d8f4dd2b4a8bc973002bcae64c3562fee0a582de",
+    "revision": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00"
+  },
+  "scope": "Supplemental unchanged-source supporting Demo6native/10actuallyinspectedcaptures at four widths and persistent200%tablet. Mixed runtime metadata/served bytes explicitly retained; these are not immutable8c68 screenshots or newly executed8c68 CI. Actual immutable List passes remain separately referenced. All nativeoriginalassertions/keyboard/privacy/receipt/reload/Cardreturn/bounds and initialdialogAxe preserved."
+}
