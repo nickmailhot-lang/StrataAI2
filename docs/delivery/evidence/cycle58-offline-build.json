@@ -1,0 +1,37 @@
+{
+  "startedAt": "2026-10-20T09:44:33.680Z",
+  "finishedAt": "2026-10-20T09:45:32.146Z",
+  "result": "Passed",
+  "source": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "version": "0.1.0-local-offline-withdrawal",
+  "metadata": {
+    "revision": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+    "version": "0.1.0-local-offline-withdrawal"
+  },
+  "files": [
+    {
+      "path": "build-metadata.json",
+      "size": 98,
+      "sha256": "0d08f1d9a6c364e35810072589d3053ec4484c64c957fb7f9729cdcb6842100f"
+    },
+    {
+      "path": "index.html",
+      "size": 561,
+      "sha256": "e30a1a07daa85b63761734607518827901564a270a5743757b6a0c72ca7c8976"
+    },
+    {
+      "path": "assets/index-Bw_GsyDn.css",
+      "size": 561,
+      "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+    },
+    {
+      "path": "assets/index-D5raH-tU.js",
+      "size": 1636949,
+      "sha256": "e1d32a922158f92d8ff523051fa6139168929e4715996aa945c5e66b2c9a397f"
+    }
+  ],
+  "dist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle58-organization-offline-fix/apps/web/dist-cycle58",
+  "bundlerExit": 0,
+  "logSha256": "3fc7724f7b5652f856e35a45f080e500b193a288443d6de7f0bdeb06eb5fa623",
+  "scope": "One new isolated frontend build for actual offline privacy fix. Retained API/Worker unchanged; no protected Demo-mounted dist or production deployment."
+}

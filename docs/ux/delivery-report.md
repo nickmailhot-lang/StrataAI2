@@ -713,3 +713,24 @@ All five profiles passed once with zero skips/retries on the exact retainedAPI/W
 Allsix new viewport captures were inspected separately. The [320px](../delivery/evidence/cycle57-first-use-320.png) and [200%text](../delivery/evidence/cycle57-first-use-200.png) captures show the created Organization and primary Board action clearly. Saved Card fields/actions and public read-only controls were also reviewed. No independent newAxe run is claimed. Owned services, volumes, network, provider and private settings were cleaned, and the unrelated Worker stayed unchanged.
 
 Task03/Test are Testing; the auditTask01/TRACE remain InProgress. Own currentCI, final review, main integration and final tracking remain required. No new Done item, parent PRD or MVP completion is claimed.
+
+
+## Offline Organization context repair — 2026-10-20
+
+Published PR117 exposed two original offline member lifecycle failures: the protected page withdrew names but the new header retained the Organization name. The failure and original verification history remain recorded. Source `c940a6501e64c96bb90ee2ce42a0396059c97d56` now withdraws the header immediately on disconnection, cancels late authority, refuses offline refresh and reads fresh authority on reconnect.
+
+Three dedicated controls failed before repair. All 27 caption controls passed after it. The complete original four lifecycle and four Organization/Board/Card context browser cases passed with zero failures, skips or retries, including both previously failing cases. Original 150-second lifecycle and 90-second context deadlines, five-second name assertion, role/receipt/Axe checks and retries remain unchanged. One new isolated frontend build passed, and all eight selected captures were inspected with explicit pending/neutral-capture limits. The isolated runtime cleaned up and the protected Worker was unchanged.
+
+The wider frontend suite is still running; no full pass, new published CI pass or main integration is inferred. The caption records return through Implemented and Testing with these limits. PR116 has separately merged with all 22 checks and exact source/tested/main tree equality; no parent PRD or MVP is closed.
+
+
+## First-use confirmation after the offline repair — 2026-10-20
+
+The original five first-use profiles passed against the fixed client `c940a6501e64c96bb90ee2ce42a0396059c97d56` with test source `47745b34a4c2970d9c6168d85ffd4941313d4aeb`: zero failures, skips or retries. All six 320px and 200% text captures were inspected separately. Original sign-in, canonical Organization fields/ownership, Board/List/Card creation, uncertain-outcome recovery, saved edit/reload/return and public/foreign-scope assertions remain. The native source and all browser static inputs are unchanged from the previously validated test commit; frontend assets are reused only because their complete source inputs are identical to the fixed build.
+
+The original configured 30-second test limit and release fixtures remain unchanged. Exact reported durations, including totals above 30 seconds, are retained without claiming fixture/cleanup wall time below 30 seconds. The owned fixture and private settings were removed and the protected Worker stayed unchanged. Full frontend, current immutable CI, review and main integration remain pending; no parent PRD or MVP completion is claimed.
+
+
+## Complete frontend verification after offline repair — 2026-10-20
+
+The actual current-source full frontend run passed: 2,942 passing tests, zero failures and the same 24 original capacity deferrals. All 2,963 earlier case identities and outcomes remain; the only additions are the three dedicated offline controls. All 31 caption/scroll controls passed, as did types and lint. Source inputs match the repaired published branch and first-use branch exactly; metadata changes during execution do not change that binding. Current published-head CI, final review and main integration remain independently pending. The controlled-test criterion is verified; no parent PRD or MVP is complete.

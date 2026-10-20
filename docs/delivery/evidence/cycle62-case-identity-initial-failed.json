@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-20T10:30:27.046Z",
+  "result": "Failed",
+  "source": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "phase": "Post-run identity verifier",
+  "expectedUniqueTitles": 2963,
+  "actualUniqueTitles": 2773,
+  "actualTestCases": 2963,
+  "productSuiteResult": "Passed:2942/0/24",
+  "cause": "Parameterized cases can repeat the same file/fullName. Treating titles as unique was an incorrect postprocessing assumption; the test suite did not fail.",
+  "resolution": "Preserve every actual case using file, per-file report ordinal and fullName, with unchanged source verification. Keep original2963 and new2966 case counts; do not lower a count, change test assertions, or rerun the suite.",
+  "initialVerifierSha256": "9b2a505ee860ea7c7ae249c7aadea42f1b6cdd8e9fef470e5eed5c25f362c52f"
+}

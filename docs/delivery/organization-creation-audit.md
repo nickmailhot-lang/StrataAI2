@@ -32,3 +32,8 @@ The actual PR116 normalized TRX artifact (run 39376779095, artifact 12245655552,
 The WS-FR-007 mapping now cites `OrganizationDirectoryTests.cs`, whose actual `/organizations/directory` case checks bounded pagination, no private name disclosure, removed memberships, deleting Organizations, invalid cursors and anonymous refusal. The earlier Board-directory reference covers a different consumer and remains visible in Git history. No implementation was restarted.
 
 The audit task and all five business criteria remain open. PR117 also requires the offline header repair and fresh qualification; PR118 requires the inherited fix and its own required checks and integration. The 320px and 200% first-use profiles remain preserved. No parent PRD or MVP completion is asserted.
+
+
+## First-use run after inherited source repair
+
+All five unchanged first-use tests passed against offline-fixed frontend `c940a6501e64c96bb90ee2ce42a0396059c97d56` and test source `47745b34a4c2970d9c6168d85ffd4941313d4aeb`, with zero failures/skips/retries. This supersedes no historical result: the original R7-client execution remains separate. The exact configured 30-second limit and original release fixtures remain; reported complete-case durations above 30 seconds are retained. Six current captures were inspected and owned cleanup/protected Worker checks passed. New published-head checks and actual integration remain pending.
