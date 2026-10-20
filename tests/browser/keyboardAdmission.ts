@@ -20,6 +20,19 @@ export async function pressAdmittedAction(button: Locator, key: 'Enter' | 'Space
   await button.press(key);
 }
 
+// A protected foreground read can retire either end of keyboard traversal.
+// Re-establish only the origin and send the real traversal key; never focus
+// the destination to make a keyboard-order assertion pass.
+export async function tabAdmittedFocus(origin: Locator, destination: Locator, key: 'Tab' | 'Shift+Tab') {
+  await expect(async () => {
+    await expect(origin).toBeEnabled({ timeout: 500 });
+    await origin.focus({ timeout: 500 });
+    await expect(origin).toBeFocused({ timeout: 500 });
+    await origin.press(key, { timeout: 500 });
+    await expect(destination).toBeFocused({ timeout: 500 });
+  }).toPass({ timeout: 5_000 });
+}
+
 // Local validation has no HTTP request to observe. Retry only an ignored key
 // until the original form emits one native submit; never retry its result.
 // Mutation callers must keep their HTTP request/receipt observations instead.
