@@ -1,0 +1,810 @@
+{
+  "at": "2026-10-20T03:55:39.036Z",
+  "result": "Passed",
+  "download": {
+    "at": "2026-10-20T03:34:05.376Z",
+    "artifactId": 12215108146,
+    "workflowRun": 39279332124,
+    "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "artifactName": "strataai2-docker-bundle-c3e495e184f4094b5467e1390572a536fb80669f",
+    "bytes": 518910311,
+    "sha256": "4f3c797d76795a9afb61aaabcb50bb7be2864eb654b7420a3981550bd4fa828e",
+    "digestVerified": true,
+    "file": "work/cycle47-qualified-bundle.zip",
+    "scope": "Authenticated retained fully-qualified PR113 operator bundle downloaded unchanged. No images loaded, containers created or production deployment performed."
+  },
+  "extraction": {
+    "artifactId": 12215108146,
+    "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "entries": 196,
+    "pathBoundaryVerified": true,
+    "payloadChecksumsVerified": 195,
+    "checksums": [
+      {
+        "path": "./.env.demo.example",
+        "sha256": "30f171b65d6cdabb3418c893e94424bad55b7c031af51383238276136d008bb6"
+      },
+      {
+        "path": "./.env.release.example",
+        "sha256": "e5673fc845a77b882915f74f2a37d1bc7f196f5cf051ab5214fa65cce71e80db"
+      },
+      {
+        "path": "./README.md",
+        "sha256": "c594647b76c319bfd38bbff44f9c28b2d640dd82b83ffe436e94749b8f9173d3"
+      },
+      {
+        "path": "./apply-migrations.sh",
+        "sha256": "71559e32d0e1c14f10a1d1457982962e4ad67da7d22d85e211bd0fd057dfb811"
+      },
+      {
+        "path": "./backup-postgres.sh",
+        "sha256": "920dff6c51b532074d14bed0aa452fae033193c89166089405420e441217de72"
+      },
+      {
+        "path": "./build-metadata.json",
+        "sha256": "1e3f27e9bd7cc7d0ef805e799b279473e0047606c09e3329fb040f5c8a123667"
+      },
+      {
+        "path": "./compose.attachments.yml",
+        "sha256": "b3fd72b6e205d2736c9b737c8354033c15eb026e2e90856a7e354e8a0db7eee1"
+      },
+      {
+        "path": "./compose.demo.release.yml",
+        "sha256": "4c7d69e4f11efa7f405eb37d4bedea37bd2da19f8559b69d8cf0565b30ff80b5"
+      },
+      {
+        "path": "./compose.https.yml",
+        "sha256": "ef962e1ea92aa2ddf99bc4c6732eb0fbc2128b76496ec3b19844ffc53e75e2c4"
+      },
+      {
+        "path": "./compose.metrics.yml",
+        "sha256": "45178a4c06bb2ec9d594d254430d85be47d6da33edce8dd9ec69d75597605496"
+      },
+      {
+        "path": "./compose.release.yml",
+        "sha256": "05c50091b01217d535340cc1ee1bc6d3e060e789a2492e00aa16fd1e84dcb0c7"
+      },
+      {
+        "path": "./db/migrations/001_foundation.sql",
+        "sha256": "b5989396ea0ea151c23f37e919d03c25d8b98540bca2c473e0ddc19ef13295c6"
+      },
+      {
+        "path": "./db/migrations/002_audit_runtime.sql",
+        "sha256": "b013ae03147046e801a80f88a21622ae292caa68f87705d0dda3d4fcb605013f"
+      },
+      {
+        "path": "./db/migrations/003_identity.sql",
+        "sha256": "301fc86671aad242c4641291ef72f1201ae91d4a80f922505d9807a80f16e545"
+      },
+      {
+        "path": "./db/migrations/004_organization_access_routing.sql",
+        "sha256": "78bf77bce00a122a6ea7ffe6af82007b104f949de8c8489f36e16a30ebd84a97"
+      },
+      {
+        "path": "./db/migrations/005_invitation_routing.sql",
+        "sha256": "3eb5baaa1756b25ab446c48cd2d84c8997928267c35e896b1ced457acab6d332"
+      },
+      {
+        "path": "./db/migrations/006_work_management.sql",
+        "sha256": "e3265b0f4e9bb6a3e6ace0b1d3f9f3c8011f3d147cb2a0d36b24d28d6f9240b6"
+      },
+      {
+        "path": "./db/migrations/007_background_jobs.sql",
+        "sha256": "37ccecf1a4d472920f6a68cd978331f5ddc018ee0d9bafe2a4a64837ef570850"
+      },
+      {
+        "path": "./db/migrations/008_identity_delivery.sql",
+        "sha256": "a25f01d8fead3ae89fabce3f77e9d3ce7d891172ebb7e5c153f898fc6c19fdcf"
+      },
+      {
+        "path": "./db/migrations/009_runtime_role_guard.sql",
+        "sha256": "a8bca7256ebe83416a5f3c6e5cff4f2291750288f5b95303bff6edb7d6a8f0ea"
+      },
+      {
+        "path": "./db/migrations/010_work_command_replays.sql",
+        "sha256": "116dc478a467e65eefdbda7f7f276047efdb4057a198f7d11be60e3ccb114459"
+      },
+      {
+        "path": "./db/migrations/011_work_events.sql",
+        "sha256": "494d23733749208e0e7a0d249f966cbf5f876d849c4a0dbcf76d82c171f7c5ef"
+      },
+      {
+        "path": "./db/migrations/012_identity_events.sql",
+        "sha256": "600ad37c6c895b08acbfd490f7b138bbb7d7601bfd6dde48e8638ffa3bfbc63c"
+      },
+      {
+        "path": "./db/migrations/013_identity_profile_replays.sql",
+        "sha256": "57b5625a025727cd208dc2c5d6ac88b54fab83750531a8c9f0394e5ebcae51ff"
+      },
+      {
+        "path": "./db/migrations/014_identity_retry_retention.sql",
+        "sha256": "31cef2b4d81b59b76231fa0afb2c81d5a4844d810be4344e634322f98dc7c7ba"
+      },
+      {
+        "path": "./db/migrations/015_identity_revocation_replays.sql",
+        "sha256": "078ab8a6de56d91cb64d124482dade77d46c72324b72d8f42286651c817d3afc"
+      },
+      {
+        "path": "./db/migrations/016_invitation_discovery.sql",
+        "sha256": "5170832441ef70d4fc3c115f3847e80d3c1b1f7b7b9fd1df48a28754047ce232"
+      },
+      {
+        "path": "./db/migrations/017_identity_login_replays.sql",
+        "sha256": "3b6a274a8bebe928994331bdf729b2e137d30397617ad2935fd48e9718efdf5a"
+      },
+      {
+        "path": "./db/migrations/018_identity_registration_replays.sql",
+        "sha256": "c37fd438d8e96b64f36d893a53d6e9e9a20c6f2c9a8b5e5c8a7b57ebb00882ac"
+      },
+      {
+        "path": "./db/migrations/019_identity_recovery_request_replays.sql",
+        "sha256": "ec6ce7812dd8009a8d4127056d53b13f25eed830d65268adcfeeada8f18fded4"
+      },
+      {
+        "path": "./db/migrations/020_identity_token_consumption_replays.sql",
+        "sha256": "fc7051746ac0dbdedb03f6380d50cce1b5db6a2847c2f2f47ee9e2a60340faa5"
+      },
+      {
+        "path": "./db/migrations/021_organization_access_integrity.sql",
+        "sha256": "8639f5b4884bce99ee1a827414940012de92bd8fb9766369247b908bf13fcfb4"
+      },
+      {
+        "path": "./db/migrations/022_invitation_creation_replays.sql",
+        "sha256": "af856d17812fa67863c8af4c9ab7dc25b90950a2558d358439675263e41746f3"
+      },
+      {
+        "path": "./db/migrations/023_invitation_mail_intents.sql",
+        "sha256": "de831b7e30318cc15a362a5a0bf03456d02e6e48ab1118dd60b29aa84d5e882e"
+      },
+      {
+        "path": "./db/migrations/024_invitation_history.sql",
+        "sha256": "bc5f56de21b0630000c51ec85bed86aff29c9bc203c833568ac2268050a86ead"
+      },
+      {
+        "path": "./db/migrations/025_board_invitation_targets.sql",
+        "sha256": "dbff684e1356e3722fb705e3dd63c0065f9c8776db5620226d61c145dad6dd53"
+      },
+      {
+        "path": "./db/migrations/026_board_invitation_mail.sql",
+        "sha256": "606aef99f0a4d19ecea95a27118f2c7d5745d6828af92b7d37697f0717e6e3c6"
+      },
+      {
+        "path": "./db/migrations/027_routing_isolation.sql",
+        "sha256": "27a75f9c0cae241dd7462a8871ddb1b479e7db5bfed072e9eee97e8596602cea"
+      },
+      {
+        "path": "./db/migrations/028_board_labels.sql",
+        "sha256": "fea5323101c2c28b70672ff6d6a0cd3cfe45e81c85ed24d9f5f44ecba025dc7d"
+      },
+      {
+        "path": "./db/migrations/029_label_routing.sql",
+        "sha256": "09f32a99a1c4cee163779f3bcd42ca758e065f00e6731667e253ad63a3e76539"
+      },
+      {
+        "path": "./db/migrations/030_card_members.sql",
+        "sha256": "155c8bc4262e9e323e379e6d08480d6d6f878c1e9e250dd93c7786ad62058e18"
+      },
+      {
+        "path": "./db/migrations/031_card_assignment_notifications.sql",
+        "sha256": "0c03fa01cf746af3ec7d77bbf4d0209518c343bf5b270a34b73f4c58839181cc"
+      },
+      {
+        "path": "./db/migrations/032_notification_inbox.sql",
+        "sha256": "5726dd37926c30e0fbfb29118b45f6fde6ae718dab49a82f9ec6f13d967f9cbe"
+      },
+      {
+        "path": "./db/migrations/033_watch_subscriptions.sql",
+        "sha256": "576803dde62c4b0646073d293fe87ab01948bfebdad810c0ae4ff689cdbfc5ce"
+      },
+      {
+        "path": "./db/migrations/034_watch_events.sql",
+        "sha256": "2c4e482a841bb55b87ec5f9f167ba9a3c0098caa6adc649cdb565910eb46de8f"
+      },
+      {
+        "path": "./db/migrations/035_watch_activity_notifications.sql",
+        "sha256": "7d5b12743b55e8c59049d321b088b2260a733f721e4c68c2e555cb194261ea89"
+      },
+      {
+        "path": "./db/migrations/036_card_dates.sql",
+        "sha256": "fbd10fd52cd85064f293fd1bf9375a9fd7283c67a9142413338c004ceb6efc86"
+      },
+      {
+        "path": "./db/migrations/037_card_reminders.sql",
+        "sha256": "2e0f2d7938b248045e8ae3f51709c54994bee878c368d0aad19fba7ea206d9e5"
+      },
+      {
+        "path": "./db/migrations/038_card_reminder_delivery.sql",
+        "sha256": "455b9569a6bba7c173d57782f53c2d9dcd030e5bdf8497324b98b6cca9fe3504"
+      },
+      {
+        "path": "./db/migrations/039_board_date_policy.sql",
+        "sha256": "8cedd65647cfb431a6a0ad305d4be25ce5f93493bb298958d54a9a0f26fd9f7a"
+      },
+      {
+        "path": "./db/migrations/040_checklists.sql",
+        "sha256": "826cd6a36c786cea092fc4c129f204348621bdd3c3f9cec6d3a1da2dd7eb3d64"
+      },
+      {
+        "path": "./db/migrations/041_attachments.sql",
+        "sha256": "a3cfc1e4ce55ecc7bb03c6ea183a34b3eb7e42ec13fcf994c4f711074ce70913"
+      },
+      {
+        "path": "./db/migrations/042_attachment_integrity.sql",
+        "sha256": "1db7d67499f249daf4e9c9e87711e724c4e29c7ee334ea48730eac44b48824b6"
+      },
+      {
+        "path": "./db/migrations/043_attachment_upload_intents.sql",
+        "sha256": "f5d817ae4a2b97c33f5c18ccd8575ddb9880999ace3434920669c5b8e89fb234"
+      },
+      {
+        "path": "./db/migrations/044_attachment_scan_delivery.sql",
+        "sha256": "c08629c659273057bd458a1eecd801783bca50f529e659e7b4e19e7f85ab1e88"
+      },
+      {
+        "path": "./db/migrations/045_attachment_preview_intents.sql",
+        "sha256": "26aaff7ba7836a0cd810a9a9ebedc77adf2626ca9fd9c2e269ebadee95e02c42"
+      },
+      {
+        "path": "./db/migrations/046_attachment_preview_publication.sql",
+        "sha256": "a9c8f06291ff1b0861f08e73308517b81bdb01b34fd739aeeae7e168c8b0ca6f"
+      },
+      {
+        "path": "./db/migrations/047_attachment_preview_activation.sql",
+        "sha256": "0298973ffc4495066104b7a9ce657a2f334ba876077e225a4a8d4f5d1b13484f"
+      },
+      {
+        "path": "./db/migrations/048_attachment_preview_reads.sql",
+        "sha256": "e7a82bca3bdc932ad6941a303801f15cb1329e7f54336f2efe5d00292a8d1b96"
+      },
+      {
+        "path": "./db/migrations/049_attachment_preview_backfill.sql",
+        "sha256": "73158d88989856ee2a806daf025a9642fa401b5b5028dbd43cfb2712035a26a3"
+      },
+      {
+        "path": "./db/migrations/050_attachment_scan_recovery.sql",
+        "sha256": "4f77bc975f4492ac5230b695ba595e48316ecea3c7e90d6d180b5aaeab367841"
+      },
+      {
+        "path": "./db/migrations/051_attachment_lifecycle.sql",
+        "sha256": "3174a8f62346c9ed2bfdd27d5d9686ff753a04f75db7742d63a2ae2aac83fa94"
+      },
+      {
+        "path": "./db/migrations/052_attachment_lifecycle_scan.sql",
+        "sha256": "060761db20ce6a64dfcaab338a0fab19ee7d559715a73ebeff296de973e10692"
+      },
+      {
+        "path": "./db/migrations/053_card_attachment_covers.sql",
+        "sha256": "09e58ad1728e2f60e223165e59e77a321c6e9f5f745c3bbc02ebf5187b4f3cc4"
+      },
+      {
+        "path": "./db/migrations/054_card_cover_deferred_guard.sql",
+        "sha256": "fcf890b233aa847221f499b19a76ad80276467b75a3071f8377fde9962959b2c"
+      },
+      {
+        "path": "./db/migrations/055_card_comments.sql",
+        "sha256": "3f76bf009a8203303d02e403014a985c828ef636e9f3c3ca5474fca5a0b819c4"
+      },
+      {
+        "path": "./db/migrations/056_mention_handles.sql",
+        "sha256": "b5414efd7cecc2f9ddf523a1011d338898453546d298004a1553de0c28d07100"
+      },
+      {
+        "path": "./db/migrations/057_identity_handle_claim_replays.sql",
+        "sha256": "a4990e9cb1f399f1f36352bd74452ac31c4ff7022c61fe2e8c353ff485c7114c"
+      },
+      {
+        "path": "./db/migrations/058_comment_mention_snapshots.sql",
+        "sha256": "c69e92afc7b9dc0e7c5e46719deca3813e42dc77a2b64a930f069b6ae8897f5c"
+      },
+      {
+        "path": "./db/migrations/059_comment_mention_notifications.sql",
+        "sha256": "21b7f48d8af109adc6979e079e660af54d2cc4b082251dde7fedd8f4ab7203c0"
+      },
+      {
+        "path": "./db/migrations/060_mass_mention_recipient_history.sql",
+        "sha256": "5d419c17a549235792acf53ff52452d3df12017a7b13e3f5103ca6992ba85d9e"
+      },
+      {
+        "path": "./db/migrations/061_mass_mention_quota.sql",
+        "sha256": "cdb76fcd89e8df45074f1b22721c614d0304c6a4cbf525f0a3009f891db8b3ec"
+      },
+      {
+        "path": "./db/migrations/062_activity_attribution.sql",
+        "sha256": "de1e722beec50119e4465ed7ae87c528bd276597187df1f3f268d3271e77789f"
+      },
+      {
+        "path": "./db/migrations/063_activity_generated_source_guard.sql",
+        "sha256": "9225bc9e1c7b727ce394532ae4f0d11d1b5ce3bad662192a73e57949347a7e5e"
+      },
+      {
+        "path": "./db/migrations/064_private_activity_identity.sql",
+        "sha256": "fec07401b2567f3e17706168bcbcb0975a8eed9fbdf44561d7985e32c26c6171"
+      },
+      {
+        "path": "./db/migrations/065_activity_history_indexes.sql",
+        "sha256": "5a748b2d2a665ca11df0eaf6c24cff0947a2be66a90fcff818f09be8f5e0eb06"
+      },
+      {
+        "path": "./db/migrations/066_notification_historical_card.sql",
+        "sha256": "0706102ed00f917e0c43e0845f9f2733970921e4f75b33338a023ac6b056df30"
+      },
+      {
+        "path": "./db/migrations/067_card_copy_notifications.sql",
+        "sha256": "a61c9208abbe202e25dc8e0f7cd07058db9c0e25c3fffea2c38c5611e9324937"
+      },
+      {
+        "path": "./db/migrations/068_notification_private_journal.sql",
+        "sha256": "9419a10bb3b850596847ae0510ab6fc473764649d478caf01461ab89a3b6a30a"
+      },
+      {
+        "path": "./db/migrations/069_work_deletion_actor.sql",
+        "sha256": "15deffb341774afc81c8f9977c4cd2e9a00e26164334889e98b1ac94cf50857f"
+      },
+      {
+        "path": "./db/migrations/070_board_star_revisions.sql",
+        "sha256": "a08d297c781d530ffdf77b11c71737c5bfd851a91bb2b6de4ede8298ccd7ee92"
+      },
+      {
+        "path": "./db/migrations/071_board_star_private_journal.sql",
+        "sha256": "845bb1705d6cd005afb7e8bc39675d1cc51e295fae65435f6daa0ea7eb7a39b7"
+      },
+      {
+        "path": "./db/migrations/072_board_background_images.sql",
+        "sha256": "8d56fc8addf518635eaccf53b075ef8bf9a1c6f106ade59baf319f3e0ec917b0"
+      },
+      {
+        "path": "./db/migrations/073_organization_board_journal.sql",
+        "sha256": "6b7584f0831105c49fb8adf6deb375321eebba874b96d739565047c02862b1d8"
+      },
+      {
+        "path": "./db/migrations/074_organization_board_directory_epochs.sql",
+        "sha256": "ff5a6b94daa1b15227d5e1763d00ca98e2ce55b6d23d4f32731ad9852388b275"
+      },
+      {
+        "path": "./db/migrations/075_organization_board_reader_epochs.sql",
+        "sha256": "23fbf12f509909f627f6949302feb54ab553cad76c000c1a8380cec09f40bb81"
+      },
+      {
+        "path": "./db/migrations/076_search_interaction_sources.sql",
+        "sha256": "4d22feaf667bd9cb7ee344fb13df533eceaeae1d348676c66c2d5b21efc9ef19"
+      },
+      {
+        "path": "./db/migrations/077_board_filter_interaction_replays.sql",
+        "sha256": "d54cc5c8abaccca4503f921b53141a99bf7055910a0c2a02c513ca7a369f38f5"
+      },
+      {
+        "path": "./db/migrations/078_navigation_interaction_sources.sql",
+        "sha256": "5468b05bc99bde97726d94b2624b7bd778c12d5615b188c987c059da27b96783"
+      },
+      {
+        "path": "./db/migrations/079_navigation_tenant_admission.sql",
+        "sha256": "32aeaa7d596a156850f3a36f324a9ed4388f8e0277141bc8fe1cd67ff039906a"
+      },
+      {
+        "path": "./db/migrations/080_navigation_interaction_replays.sql",
+        "sha256": "5b51a6364f868c7051118bfaf8ccedc2105ee74c49ab872b10bb0ce8e1f5c39e"
+      },
+      {
+        "path": "./db/migrations/081_navigation_original_recovery.sql",
+        "sha256": "cc3ea78d8aded08b2d41acbe5b428750cc47c7516add4db5a066056f2122b940"
+      },
+      {
+        "path": "./db/migrations/082_organization_metadata_replays.sql",
+        "sha256": "6d80c9467be53c7be07dd3a1ee27bf85ff5079a5e23ca9345df118d780bd842f"
+      },
+      {
+        "path": "./db/migrations/083_organization_departure_replays.sql",
+        "sha256": "65e43a71afcbc2633cc6f08b41f6d2cad5365c72a0a50d982ba29a13da1e5293"
+      },
+      {
+        "path": "./db/migrations/084_organization_removal_replays.sql",
+        "sha256": "129486d9a2186fda02e5feab448576f0ce943df6c4b8378b382e8ae4af4dd15a"
+      },
+      {
+        "path": "./db/migrations/085_interaction_actor_lock_order.sql",
+        "sha256": "61a4fd36b56cbaa97ec6243a3829267146012303c000d2e175819fb095c7b9af"
+      },
+      {
+        "path": "./db/migrations/086_organization_creation_replays.sql",
+        "sha256": "d19ccc1c58ad600e56480800814c40b1be2f6ecc024dd7c3db9e5620fdc22879"
+      },
+      {
+        "path": "./db/migrations/087_organization_deletion_replays.sql",
+        "sha256": "65b85d2f12808629c82af00be296d0f650d12ba42eaf8f4d77ab4727a407cd3a"
+      },
+      {
+        "path": "./db/migrations/088_organization_deletion_progress.sql",
+        "sha256": "5d0866a6588c6831abf308a7e3963dff836214fc23952968b84c96a05ca014bc"
+      },
+      {
+        "path": "./db/migrations/089_organization_deletion_terminal.sql",
+        "sha256": "c1c642f7c37ddde21b5586cafebb5a37f8676a663eef3b1dc96f7df4cc485a72"
+      },
+      {
+        "path": "./db/migrations/090_organization_lifecycle_delivery.sql",
+        "sha256": "d5eade4b5b8a672f4330971c5be59c7fdd0a55a9bf46a2262f1d35fe760e43d7"
+      },
+      {
+        "path": "./db/migrations/091_organization_deletion_candidates.sql",
+        "sha256": "5cd232159c681c14c7933206a21aebf7c327ce4717b3974114c55c49fe47bbf6"
+      },
+      {
+        "path": "./db/migrations/092_organization_deletion_pages.sql",
+        "sha256": "4d07c09de99a19b3ec64dabbeb4d449cf8d21bd0d55309af91604e31234c5340"
+      },
+      {
+        "path": "./db/migrations/093_organization_deletion_discovery.sql",
+        "sha256": "21a2f5216d7f18e3baf57fa723a30c266a2aadf8135a82e92a4c81616b71ba3a"
+      },
+      {
+        "path": "./db/migrations/094_organization_metadata_events.sql",
+        "sha256": "c0184456f488b08a034462e8074e09fc7dc453fdaed4e31e877f51124f72ee08"
+      },
+      {
+        "path": "./db/migrations/095_organization_metadata_delivery.sql",
+        "sha256": "80f682dc7773f6e37f5409b435d719f4958d6ba3ac5034831e31c8bf5b9dc10e"
+      },
+      {
+        "path": "./db/migrations/096_organization_metadata_discovery.sql",
+        "sha256": "50c0ecd291a09fafa86f3dd530c3654bb2a12197285e3d8c7c21f424c53ad148"
+      },
+      {
+        "path": "./db/migrations/097_organization_member_addition_events.sql",
+        "sha256": "723a019ddd5f2c2561105571f90e245aa5321a83ad6f74cd7ea92ae165cdaf21"
+      },
+      {
+        "path": "./db/migrations/098_organization_member_removal_events.sql",
+        "sha256": "0acd76741dae9f1874d4803351e9d705fa368a6c52a1f5bf44067079af132f85"
+      },
+      {
+        "path": "./db/migrations/099_organization_member_invitation_events.sql",
+        "sha256": "f1332d47d2f9a0c42230879acb3c616cf1f173268e46ffb9dbcbd2e9cfb709c7"
+      },
+      {
+        "path": "./db/migrations/100_organization_invitation_revocation_events.sql",
+        "sha256": "81daaa726112508d4d8ee3726cba86a7db5e3cbaf27662202d657b374e329bdc"
+      },
+      {
+        "path": "./db/migrations/101_organization_invitation_acceptance_events.sql",
+        "sha256": "20c902a7c0b8c21ce7d9ae9c59e673ffc1897eaa3922e8defe1095e0640b178a"
+      },
+      {
+        "path": "./db/migrations/102_invitation_recipient_events.sql",
+        "sha256": "94f59c18db13b96006cfac0cc3e5d0f9b71932155a429fca2823ff0eea0a6dbd"
+      },
+      {
+        "path": "./db/migrations/103_invitation_recipient_unpublished_cleanup.sql",
+        "sha256": "9e1da04ddf6a5d2a2ccb20cbf7cc3a6e524663e3fbe868c1ad2b0f95c3f1107b"
+      },
+      {
+        "path": "./db/migrations/104_invitation_recipient_retained_board_admin.sql",
+        "sha256": "ea1a461957108421a4094f943d685a64217b8a80eb42a102c6d5f4f9c4c7d461"
+      },
+      {
+        "path": "./db/migrations/105_invitation_recipient_authority.sql",
+        "sha256": "b43320178d63623263458777744bcdbe1d4ac7bd32d84a9e5495ce4bff0fd45a"
+      },
+      {
+        "path": "./db/migrations/106_invitation_recipient_authority_discovery.sql",
+        "sha256": "12f3dc00ba574b9ae90f99d221d500d9ca51c88218ce8d9dbb8dea66a1568f0b"
+      },
+      {
+        "path": "./db/migrations/107_invitation_recipient_board_authority.sql",
+        "sha256": "b3f62005a29055f2502a5e3f09155b1f868aaafd9db18d6120b802470020c511"
+      },
+      {
+        "path": "./db/migrations/108_invitation_recipient_organization_lifecycle.sql",
+        "sha256": "8a683b8710183003d4a57aca390c31f92dcf6fc36b530c9c226b562374effd84"
+      },
+      {
+        "path": "./db/migrations/109_invitation_issuer_account_authority.sql",
+        "sha256": "e51a520ec932de30052dbc2c38cae119f87efd5e3f69cbaa26615cd07dbb4ca0"
+      },
+      {
+        "path": "./db/migrations/110_invitation_issuer_authority_exhaustion.sql",
+        "sha256": "e0a851694c88f5817c0c77728e27e4ada537d0c1d4b0d2c096573f57d380f48f"
+      },
+      {
+        "path": "./db/migrations/111_notification_batch_source_guard.sql",
+        "sha256": "6a65c71260822ddb4278f4bb7d9c54a5783230bfd5667c8669dbbbfa28ccbfe6"
+      },
+      {
+        "path": "./db/migrations/112_work_archive_history.sql",
+        "sha256": "7ab4cae27123160623b8728e09ae83d842bf782160b6f976db51f959d44ba872"
+      },
+      {
+        "path": "./db/migrations/113_invitation_recipient_membership_authority.sql",
+        "sha256": "808e62b034f252d431661af18308669700dd0083db211e7923845095b258008f"
+      },
+      {
+        "path": "./db/migrations/114_identity_lifecycle_clocks.sql",
+        "sha256": "238205ea5ef9922d621e6a4d4180160f7bd61b557c7538ac456723ea00ff5dee"
+      },
+      {
+        "path": "./db/migrations/115_invitation_issuer_job_clocks.sql",
+        "sha256": "fef7f10726bb691bced5b6188fb623dd93a1772ac6c7d17b8265c00895fdd988"
+      },
+      {
+        "path": "./db/migrations/116_invitation_authority_page_clocks.sql",
+        "sha256": "154c71302cbc010cd97174d093b07164932f5806903eacb6b9e8bd69a068c787"
+      },
+      {
+        "path": "./db/migrations/117_entity_route_clocks.sql",
+        "sha256": "c685415a2d45ab982b46ba67c63f3e0200f5599c457cc661ca05fcd74d31707b"
+      },
+      {
+        "path": "./db/migrations/118_entity_route_clock_admission.sql",
+        "sha256": "a63bde399de14f698bbfc0e2159bcfb9e31533e59671043152a0d836287f6b2a"
+      },
+      {
+        "path": "./db/migrations/119_invitation_route_clocks.sql",
+        "sha256": "02b3e1095eeefe94ff815f8f355cf6f92a54df7aa4b90578e836b30d01362d29"
+      },
+      {
+        "path": "./db/migrations/120_organization_access_route_clocks.sql",
+        "sha256": "d1ec9c30c4b433e18b12f17676cbc394ca448b00141b55090706557406fa2727"
+      },
+      {
+        "path": "./db/migrations/121_organization_event_delivery_clocks.sql",
+        "sha256": "5262d689b56f63c74c2370f4fb53c6dc82eae65e51fc57d36c6db6a84d5689c3"
+      },
+      {
+        "path": "./db/migrations/122_organization_metadata_stream_clocks.sql",
+        "sha256": "e2bcd89e97bd82984fde9dcd7230fd683510e9be93fcfbdc17d53456884052b0"
+      },
+      {
+        "path": "./db/migrations/123_invitation_recipient_stream_clocks.sql",
+        "sha256": "1d81f25a9f0efc9120cd40db504917642bd035066b9b01f2c7ddd5956a9fa33f"
+      },
+      {
+        "path": "./db/migrations/124_organization_deletion_progress_clocks.sql",
+        "sha256": "c6c8175d1538be36175483ab61f2ffbb5db17b053d38c8a44bf1f1976bc0927f"
+      },
+      {
+        "path": "./db/migrations/125_card_route_clock_identity_lookup.sql",
+        "sha256": "a65e0073629ac294f78983b8b52c5120d85907772d5e4a9e98947320125b23a6"
+      },
+      {
+        "path": "./db/migrations/126_notification_stream_clocks.sql",
+        "sha256": "48eafa84cfc430e3b63bd864b6b68d3dac768255eca4f0e88df42d5727df530c"
+      },
+      {
+        "path": "./db/migrations/127_notification_event_history.sql",
+        "sha256": "90234cbb5196f1671c086dfa2e1b15d6cf39c30702f8fd666c031f52977f51b0"
+      },
+      {
+        "path": "./db/migrations/128_work_replay_update_clocks.sql",
+        "sha256": "4e21cb4a2d5f37b3a733cb4628e996c46ecbbaba0c0240056dc73ff7f513b046"
+      },
+      {
+        "path": "./db/migrations/129_attachment_sweep_audit_clocks.sql",
+        "sha256": "fc77f996a7f5b4d9b3be854edfb1f77b4cb88826dcbb7a83b2b4459508aa0a53"
+      },
+      {
+        "path": "./db/migrations/130_work_event_update_clocks.sql",
+        "sha256": "742c3a26e2ceac7cd261ac2f8ed863af6565e97953a3e3750b9b0d7338e562e3"
+      },
+      {
+        "path": "./db/migrations/131_invitation_mail_update_clocks.sql",
+        "sha256": "528e5b027567d5af6bb0ef3879098bb47464d0e7e91546e4683d0649f9358478"
+      },
+      {
+        "path": "./db/migrations/132_invitation_authority_revision_clocks.sql",
+        "sha256": "c9428902dd6dead072dc5f56ce0a20f049993a5d8ece757b40c29a0f34ce600f"
+      },
+      {
+        "path": "./db/migrations/133_card_route_statement_projection.sql",
+        "sha256": "4d0a8a1ff7db89f0a27189e7074d1c69cbdec2b45ae0c86df9f641d6c3eb8bec"
+      },
+      {
+        "path": "./db/migrations/134_invitation_recipient_authority_dependencies.sql",
+        "sha256": "bc60a83d8dd15d7d275ff0584231b2c59bdb08539fde8c6e4ae4596b357ebbb3"
+      },
+      {
+        "path": "./db/migrations/135_card_route_clock_index_plan.sql",
+        "sha256": "56a7979593793f5702935c71e77268b040482286102b94b2a52572831f0b97ee"
+      },
+      {
+        "path": "./db/migrations/136_organization_types.sql",
+        "sha256": "cbccc3f5900da469b6607cd3cf2b8f0063a653dfa539b3f28afe03abecc14e87"
+      },
+      {
+        "path": "./db/migrations/137_organization_configuration.sql",
+        "sha256": "49b8968356a65b0a8620b2192cf3895c346633aa282256f0b9d3a30c748b071d"
+      },
+      {
+        "path": "./db/migrations/138_organization_configuration_delivery.sql",
+        "sha256": "01f143bd1deea73b3f96e501dbdf1b58db9147f7f61b1dc15ce16e4c5b0d0eea"
+      },
+      {
+        "path": "./db/migrations/139_organization_configuration_attribution.sql",
+        "sha256": "b62149ccc273d02daa88082bb0a94199ca769e85426914145e697f67043f17d9"
+      },
+      {
+        "path": "./db/migrations/140_organization_operational_lifecycle.sql",
+        "sha256": "4c77e0f6c787a2f3b467f3e196bcc8bd2bf246fcbcb2eab147cf05b587ffe136"
+      },
+      {
+        "path": "./db/migrations/141_organization_operational_lifecycle_delivery.sql",
+        "sha256": "8edb0616aaea4c81a3fe48e2c907c21d839f7935843313908a7694d546fae904"
+      },
+      {
+        "path": "./db/migrations/142_record_retention_policies.sql",
+        "sha256": "bb35d3717a9331ff02ee41c43862190b8b62c6ba76e9350b72e7a4622dda3819"
+      },
+      {
+        "path": "./db/migrations/143_record_retention_sources.sql",
+        "sha256": "7bb4f14400d345bbf94d3cb2100fbc8b52a4bf7cb30e1a0a8f24eeadc26d36ff"
+      },
+      {
+        "path": "./db/migrations/144_record_retention_holds.sql",
+        "sha256": "ba2d68879832c9fe664f807a9768c0efc76868f92b70e7c9cfb450c4b38c850f"
+      },
+      {
+        "path": "./db/migrations/145_record_retention_authorization_context.sql",
+        "sha256": "743e78031fcecd4dba01169b94452b1e6920f933ab2176789b6ec26d4c1a38de"
+      },
+      {
+        "path": "./db/migrations/146_record_retention_source_receipts.sql",
+        "sha256": "3d94b8f6a9fdd8e7409dc5c07ebb6d6987ce69820b86a5c58e2f7aaef97110f4"
+      },
+      {
+        "path": "./db/migrations/147_list_board_move_parent_integrity.sql",
+        "sha256": "f3038e96f116bc45dff09fe4f339c0608792807921cd106c20bfa7b0dabaf9a6"
+      },
+      {
+        "path": "./db/migrations/148_configuration_historical_list_identity.sql",
+        "sha256": "9022e5b9885d90a1dddffa3067a82b4b0dfb0ceeb5ab3d5952177254cb806132"
+      },
+      {
+        "path": "./db/migrations/149_card_reference_parent_indexes.sql",
+        "sha256": "c9b0871fc9a77abc5b45a79fd6d7424edf7a04fec12945197a203012e3539ff7"
+      },
+      {
+        "path": "./db/migrations/150_interaction_board_parent_order.sql",
+        "sha256": "0665e64940ec1addd5bf20b7532d9d778b153e1e7d5442e89b080400574b3c04"
+      },
+      {
+        "path": "./db/provision-identity-mail-role.sql",
+        "sha256": "5a8f43a0364f809b1c99d953c4de8b5a3f053fd5582e76c0fe6d7b547346524c"
+      },
+      {
+        "path": "./db/provision-runtime-roles.sql",
+        "sha256": "729f5d9cd5e9b413a76bdb83307ce7da35b1a06331738d6dfcc67be36f34e420"
+      },
+      {
+        "path": "./deploy/https/nginx-tls.inc",
+        "sha256": "8da3c5f83456df9504c5aafd7a0190b8027eebe911d4591b1f063f9bd93cdfaf"
+      },
+      {
+        "path": "./deploy/metrics/alerts.yml",
+        "sha256": "298175aa21f3c30ac2c2d86534248e62026e93f0d3415b674e4527113d06270d"
+      },
+      {
+        "path": "./deploy/metrics/collector.yml",
+        "sha256": "20ba08df5b32148ddc4da5a0932124d13d64da1624afea3bc031969a2556e1b9"
+      },
+      {
+        "path": "./deploy/metrics/prometheus.example.yml",
+        "sha256": "fca3242cc804da6e578ddaa6d23489db5b2696544ec100399603905c9a547aed"
+      },
+      {
+        "path": "./health-check.sh",
+        "sha256": "aa2ba138bf110aa9aea69762d86f969112c28e27c982730d412680e8c4192810"
+      },
+      {
+        "path": "./images/SHA256SUMS",
+        "sha256": "409f51102ff0c41fe34b0b75216ebc35155805b111cd022e762bdb3e45ada52a"
+      },
+      {
+        "path": "./images/build-metadata.json",
+        "sha256": "1e3f27e9bd7cc7d0ef805e799b279473e0047606c09e3329fb040f5c8a123667"
+      },
+      {
+        "path": "./images/image-provenance.json",
+        "sha256": "ac6af7cf33dded8f9ec5566019e8a54052a1285897842e9154bf4b202397afdf"
+      },
+      {
+        "path": "./images/strataai-api.tar.gz",
+        "sha256": "c835a35188f160df55b12bd81ecc3f91068953a9810ddd33e7835765282960bf"
+      },
+      {
+        "path": "./images/strataai-web.tar.gz",
+        "sha256": "97e73b3ac13f3a16a068ee6f984c80333a1f414dfd53b6fb8acca860d51a9660"
+      },
+      {
+        "path": "./images/strataai-worker.tar.gz",
+        "sha256": "56dfdf75d2d232472c9ad9d999bab1d83fa69abaf16fd748dbd7453a9e7f0955"
+      },
+      {
+        "path": "./migration-stream.sh",
+        "sha256": "ecee451eacb6109e1e42fe88ea63355d21a6ac80878bfac624145371b1ab1d82"
+      },
+      {
+        "path": "./promotion-and-rollback.md",
+        "sha256": "9a59ebc765754f6d3a3920f5faf3d7b6224fff59a301dbb2437c579f239a9dd9"
+      },
+      {
+        "path": "./provision-identity-mail-role.sh",
+        "sha256": "2ac3bba39be6dece3e35a1a8ffbd7da8a2b268794273f5da064a9a754f1439fa"
+      },
+      {
+        "path": "./provision-runtime-roles.sh",
+        "sha256": "540e9a99428dd74e4cdfb0703a33d560a693c9d523c32f97b02cd4666f85174b"
+      },
+      {
+        "path": "./record-release.py",
+        "sha256": "a5d590c11cb0d705e618ed1513d2e012df38d421f4ef797bc145312ab8e1441b"
+      },
+      {
+        "path": "./restore-postgres.sh",
+        "sha256": "56d4d8374cee8cff9a32b89a29de6b420640925886747415d9a47a40ba97a7f9"
+      },
+      {
+        "path": "./sbom/metrics-collector.cdx.json",
+        "sha256": "ab67b636e5bf495a863e88482ae7a1de7d1d321c6187dc1888f6dfeb32ff7e55"
+      },
+      {
+        "path": "./sbom/strataai-api.cdx.json",
+        "sha256": "a22d72f9044f7ca677a65e2a9d0358d151febd5bb0a302002bdd401f37604e68"
+      },
+      {
+        "path": "./sbom/strataai-web.cdx.json",
+        "sha256": "4e99d85c037ec4fc71ba7a2811824958a23273d25d5349b9f7888942d611cfa2"
+      },
+      {
+        "path": "./sbom/strataai-worker.cdx.json",
+        "sha256": "cbce97b29ae4b4a0cc8f7e1879cff0b3d4c52f8da1e64af1c658ec293401799c"
+      },
+      {
+        "path": "./security/SHA256SUMS",
+        "sha256": "b754dcf0a116bdb096c2b4309c163eb94c7593cec145cf5a25ef592a23c21679"
+      },
+      {
+        "path": "./security/build-metadata.json",
+        "sha256": "1e3f27e9bd7cc7d0ef805e799b279473e0047606c09e3329fb040f5c8a123667"
+      },
+      {
+        "path": "./security/image-provenance.json",
+        "sha256": "ac6af7cf33dded8f9ec5566019e8a54052a1285897842e9154bf4b202397afdf"
+      },
+      {
+        "path": "./security/metrics-collector.cdx.json",
+        "sha256": "ab67b636e5bf495a863e88482ae7a1de7d1d321c6187dc1888f6dfeb32ff7e55"
+      },
+      {
+        "path": "./security/strataai-api.cdx.json",
+        "sha256": "a22d72f9044f7ca677a65e2a9d0358d151febd5bb0a302002bdd401f37604e68"
+      },
+      {
+        "path": "./security/strataai-web.cdx.json",
+        "sha256": "4e99d85c037ec4fc71ba7a2811824958a23273d25d5349b9f7888942d611cfa2"
+      },
+      {
+        "path": "./security/strataai-worker.cdx.json",
+        "sha256": "cbce97b29ae4b4a0cc8f7e1879cff0b3d4c52f8da1e64af1c658ec293401799c"
+      },
+      {
+        "path": "./verify-backup-record.py",
+        "sha256": "184f516afe7f6d0118076f183a5b5baecdb198511df896ff6f22eb095c8bc472"
+      },
+      {
+        "path": "./verify-https-certificate.sh",
+        "sha256": "95b28d7c11cf0261f47b0f2da7d292cd52490066b120d1303784cfe3d92f0128"
+      },
+      {
+        "path": "./verify-image-labels.py",
+        "sha256": "c8dd6ed113dd3cc3999eb8c15601f71ce9180d2fe722dc1f51a97e3e6f614417"
+      },
+      {
+        "path": "./verify-release-runtime.sh",
+        "sha256": "13e79c9da87b63ec04f72787ed0ee9bc50aa5fb1c36b79cd7e2cf1c9957e7b7d"
+      }
+    ],
+    "sourceFree": true,
+    "imagesLoaded": false,
+    "containersCreated": false
+  },
+  "scope": "Authenticated fully-qualified/integratedPR113 retained operator payload; exact artifact SHA/size,196safeentries and195checksums verified. Signed reference, credentials and binary archives remain private in work."
+}

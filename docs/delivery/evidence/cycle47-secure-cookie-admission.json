@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-20T03:54:56.231Z",
+  "result": "Passed",
+  "origin": "http://localhost:15302",
+  "registration": 201,
+  "login": 200,
+  "secureHttpOnlyCookieRetained": true,
+  "authenticatedProfile": 200,
+  "organizationCreated": 201,
+  "scope": "Disposable own-fixture diagnostic; Secure-cookie and server admission remain unchanged. No bearer proof or cookie value retained."
+}

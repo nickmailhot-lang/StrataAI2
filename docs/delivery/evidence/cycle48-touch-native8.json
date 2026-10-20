@@ -1,0 +1,272 @@
+{
+  "at": "2026-10-20T04:22:29.756Z",
+  "result": "Passed",
+  "sourceCommit": {
+    "at": "2026-10-20T04:17:26.000Z",
+    "head": "ac969dcdc395350ba38b1bc8827476d5997ecb48",
+    "parent": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15",
+    "branch": "delivery/touch-delivery-fixture-20261020",
+    "file": "tests/browser/kanban-touch.spec.ts",
+    "sha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5",
+    "originalAssertionActionDeadlineLinesPreserved": 45,
+    "native": {
+      "session": 97870,
+      "exit": 0,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "workers": 1,
+      "touchDurationMs": 27265
+    },
+    "browserTypes": {
+      "session": 34180,
+      "exit": 0,
+      "command": "node node_modules/typescript/bin/tsc -p tsconfig.browser.json",
+      "sourceSha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5"
+    },
+    "runtime": {
+      "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "realPostgreSQL": true,
+      "ownCleanup": true,
+      "stockWorkerUnchanged": true
+    },
+    "published": false,
+    "visualReview": "Pending actual final capture review",
+    "wholeCurrentCI": "Pending",
+    "mainIntegration": "Pending",
+    "scope": "Source-only one-file commit after exact executed file SHA/original full8cases and browsertypes pass. Existing compiled application images unchanged; no source rebuild, test retry/deadline/role/permission changes. Native touchMove admission only; originaltwo touchEnd/drops/mutations retained. Newsource requires owncurrentcandidate qualification/main beforeDone."
+  },
+  "exactExecutedTestSha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5",
+  "testSourceChanged": true,
+  "originalCaseSetAndAssertionsUnchanged": true,
+  "input": {
+    "at": "2026-10-20T04:03:53.852Z",
+    "root": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle48-owned-browser-fixture",
+    "project": "strataai-mvp-browser-4568e1e042577de2",
+    "ports": {
+      "api": 15300,
+      "worker": 15301,
+      "web": 15302,
+      "identity": 19090
+    },
+    "providerInstance": "beb716d2-2653-48fd-aadc-9bdc10b54451",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "testPaths": [
+      {
+        "path": "tests/browser/work-usability.spec.ts",
+        "sha256": "9cd85012b6b4c0e451c80233f2398953231373cc9719694255d69d7a38d7de96"
+      },
+      {
+        "path": "tests/browser/kanban-scroll.spec.ts",
+        "sha256": "926db525e31231a4f765fa8a91d67f80ba5e06eecf2eb5fe8648537f68675651"
+      },
+      {
+        "path": "tests/browser/kanban-touch.spec.ts",
+        "sha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5"
+      }
+    ],
+    "fixtureChanges": [
+      {
+        "path": "compose.release.yml",
+        "originalSha256": "05c50091b01217d535340cc1ee1bc6d3e060e789a2492e00aa16fd1e84dcb0c7",
+        "fixtureSha256": "2b575667a08160741afdcda76f7500800f41e1da5398baba998a756e2eac57d3",
+        "edits": [
+          {
+            "from": "\"8080:8080\"",
+            "to": "\"127.0.0.1:15300:8080\""
+          },
+          {
+            "from": "\"8081:8081\"",
+            "to": "\"127.0.0.1:15301:8081\""
+          },
+          {
+            "from": "\"8088:80\"",
+            "to": "\"127.0.0.1:15302:80\""
+          }
+        ]
+      },
+      {
+        "path": "scripts/ci/compose.auth-test.yml",
+        "originalSha256": "a96d0dba516a5d295a8e823d6fb264c2f609e79458768bd8b1b98fc7f534f4e3",
+        "fixtureSha256": "ed0b9ded6c89c159e580eb5dcee112cf39a17b6a73f0e2005f1743686802fb89",
+        "edits": [
+          {
+            "from": "http://localhost:8088",
+            "to": "http://localhost:15302"
+          }
+        ]
+      }
+    ],
+    "scope": "Disposable matching original browser-full Production fixture. Runtime files from verified retained bundle; original auth/identity/scoped-event fixtures retained. Only loopback ports and matching allowed browser origin adjusted. CI=true is explicitly local fixture mode for original guarded disposable-account SQL and own Worker scoping, never a hosted CI claim. Every helper operates from this exclusive project directory; no source/test/assertion/deadline/permission changes. Identity provider is an owned fake transport; managed-provider readiness remains separate.",
+    "testSourceBase": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15",
+    "intentionalWorkingSourceChange": "tests/browser/kanban-touch.spec.ts only: own original scoped delivery plus native same-touch neutral/edge destination admission; original drops/writes/canonical/reload/geometry/deadline remain"
+  },
+  "runtime": {
+    "at": "2026-10-20T04:07:53.954Z",
+    "project": "strataai-mvp-browser-4568e1e042577de2",
+    "api": {
+      "service": "strataai-api",
+      "mode": "production",
+      "revision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "version": "0.1.0-1937"
+    },
+    "client": {
+      "revision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "version": "0.1.0-1937"
+    },
+    "containers": [
+      {
+        "service": "api",
+        "id": "dd8a138ba98d95325d3af2b36998090d29d9718023d12b100272e4b06f68ac1d",
+        "image": "sha256:6843e40e15b93bc190d6a1d8ea7a0dd7859cecb8cdb2c3bba301e7f2430a2c27",
+        "startedAt": "2026-10-20T04:07:36.99774826Z"
+      },
+      {
+        "service": "worker",
+        "id": "db994ff79ddcf1fcd081356f60215f47fca6487e42e8052c84217c3fd0a1553a",
+        "image": "sha256:ffde817b2729a1dd1d3b74c6c704b0127b9477d782d61c359fa4dde8d1d54897",
+        "startedAt": "2026-10-20T04:07:37.461642113Z"
+      },
+      {
+        "service": "web",
+        "id": "2b8695002430db4f34affb8adcf0b75f08632c168bbec19acb9166cab753f47d",
+        "image": "sha256:6e0ecd1435c3b7e150109c74413dd992e0bd5c0ed0f062fc05f21cf365ec23c8",
+        "startedAt": "2026-10-20T04:07:44.477615544Z"
+      }
+    ],
+    "scope": "Exact retained images and real PostgreSQL Production fixture; local fake identity provider and browser-full unverified-email admission profile, required Work users verified by original guarded fixture. No managed provider or hosted CI claim."
+  },
+  "execution": {
+    "at": "2026-10-20T04:15:48.031Z",
+    "startedAt": "2026-10-20T04:07:02.242Z",
+    "project": "strataai-mvp-browser-4568e1e042577de2",
+    "exit": 0,
+    "result": "Passed",
+    "phases": [
+      {
+        "name": "Start exclusive fixture database",
+        "exit": 0
+      },
+      {
+        "name": "Apply packaged migrations without application build",
+        "exit": 0
+      },
+      {
+        "name": "Provision canonical restricted runtime roles",
+        "exit": 0
+      },
+      {
+        "name": "Provision original disposable identity CI role",
+        "exit": 0
+      },
+      {
+        "name": "Start retained images with original browser-full account fixture",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned api container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned worker container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned web container",
+        "exit": 0
+      },
+      {
+        "name": "Original eight native cases",
+        "exit": 0
+      },
+      {
+        "name": "Clean only exclusive fixture resources",
+        "exit": 0
+      }
+    ],
+    "primaryError": null,
+    "cleanupError": null,
+    "stockUnchanged": true,
+    "ownedRemaining": {
+      "containers": "",
+      "volumes": "",
+      "networks": ""
+    },
+    "privateSettingsRemoved": true,
+    "logSha256": "96a8a0944618f72e0498e00450a35e8b7c6da4728d7c239d91d1b19e5e5ca45a",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "scope": "Full unchanged eight-case execution on correctly isolated original Production browser fixture. Local fixture mode only; do not inherit its result as currentPR115 hosted qualification. Earlier Demo4/4Failed retained separately."
+  },
+  "stats": {
+    "startTime": "2026-10-20T04:07:57.823Z",
+    "duration": 464701.329,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px",
+      "status": "Passed",
+      "attempts": 1,
+      "durationMs": 10542
+    },
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "status": "Passed",
+      "attempts": 1,
+      "durationMs": 7184
+    },
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "status": "Passed",
+      "attempts": 1,
+      "durationMs": 7628
+    },
+    {
+      "file": "kanban-touch.spec.ts",
+      "title": "PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move persist",
+      "status": "Passed",
+      "attempts": 1,
+      "durationMs": 27265
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 1280px",
+      "status": "Passed",
+      "attempts": 1,
+      "durationMs": 46753
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 768px",
+      "status": "Passed",
+      "attempts": 1,
+      "durationMs": 46270
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 390px",
+      "status": "Passed",
+      "attempts": 1,
+      "durationMs": 44348
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 320px",
+      "status": "Passed",
+      "attempts": 1,
+      "durationMs": 48167
+    }
+  ],
+  "rawReportSha256": "8658b5cc5004a20b94b212f6bab8f7c6cf3a5ae9b2546a77925b75149d37db8e",
+  "scope": "All original eight cases, original60sTouch/120sWork/default30s deadlines, workers1/retries0. Newfixture code at ac969 matches exactexecuted SHA; compiledapp/API/Worker are retained qualifiedh/c3e images with realPostgreSQL. Currentcoherentcandidate CI and actualmain integration remain required; no oldCIqualification inherited bynewtestsource."
+}

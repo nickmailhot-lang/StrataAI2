@@ -1,0 +1,174 @@
+{
+  "at": "2026-10-20T04:10:41.751Z",
+  "result": "Failed",
+  "attempt": {
+    "at": "2026-10-20T04:02:55.494Z",
+    "startedAt": "2026-10-20T03:54:11.040Z",
+    "project": "strataai-mvp-browser-262690d3581fc554",
+    "exit": 1,
+    "result": "Failed",
+    "phases": [
+      {
+        "name": "Start exclusive fixture database",
+        "exit": 0
+      },
+      {
+        "name": "Apply packaged migrations without application build",
+        "exit": 0
+      },
+      {
+        "name": "Provision canonical restricted runtime roles",
+        "exit": 0
+      },
+      {
+        "name": "Provision original disposable identity CI role",
+        "exit": 0
+      },
+      {
+        "name": "Start retained images with original browser-full account fixture",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned api container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned worker container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned web container",
+        "exit": 0
+      },
+      {
+        "name": "Original eight native cases",
+        "exit": 1
+      },
+      {
+        "name": "Clean only exclusive fixture resources",
+        "exit": 0
+      }
+    ],
+    "primaryError": null,
+    "cleanupError": null,
+    "stockUnchanged": true,
+    "ownedRemaining": {
+      "containers": "",
+      "volumes": "",
+      "networks": ""
+    },
+    "privateSettingsRemoved": true,
+    "logSha256": "284b75848b809d96472db96a4f303b2f916b9a7efa06748c51b8d222ec150de4",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "scope": "Full unchanged eight-case execution on correctly isolated original Production browser fixture. Local fixture mode only; do not inherit its result as currentPR115 hosted qualification. Earlier Demo4/4Failed retained separately."
+  },
+  "stats": {
+    "startTime": "2026-10-20T03:54:57.221Z",
+    "duration": 471144.881,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "kanban-touch.spec.ts",
+      "title": "PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move persist",
+      "ok": false,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "failed",
+          "error": "Error: expect(received).toBeGreaterThan(expected)\n\nExpected: > 0\nReceived:   -129.3046875"
+        }
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 1280px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 768px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 390px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 320px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "rawReportSha256": "a086a0c63fb91f0f9b21d717499caf89531885ab2990b39d6d79dc451676871a",
+  "actuallyViewedFailureCapture": {
+    "path": "docs/delivery/evidence/cycle47b-touch-target-refusal.png",
+    "sha256": "7ea0929bc136fefe9d3cf86e126374acb0be9c22e057f8afb67ce89ac4c66925"
+  },
+  "observation": "Correctlocalhost Secure-cookie admission and sevenfullscenarios pass. Touch same-list firstdrop succeeds; beforesecondrelease originaltargetcenterX=-129.3046875 violatesunchangedviewportbound. Capturedcanvas isatfar-rightDropListtarget; clientreportsRecoveringboardupdates/dragcancelled. Targetfirstvisibility sample precedes subsequentgeometry read while native touchholdsedge.",
+  "causalLimits": "Negativecoordinate is horizontalX, notY. Retainedtrace doesnotincludehubframes, so pendingdelivery isnot establishedas solecause. Existingnativeedge autoscroll continues untilpointermovesaway; fixturemust ownProductiondelivery and admitneutral sametouchgeometry. No productrole,timeout or viewportassertion isweakened.",
+  "resolution": "Twoexisting fixture contracts addedin source-onlydraft: ownscopedBoardWorker/delivery beforetouch, restorefinally; move/recenter samenative touch withoutdrop untiltargetposition admitted. Fulloriginal8case changed-source run97870 islive; no passinferred.",
+  "cleanup": "Ownresources/settings removed, unrelatedstockWorker unchanged; all earlierDemo/IPfailures retained."
+}

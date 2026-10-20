@@ -1,0 +1,65 @@
+{
+  "at": "2026-10-20T04:22:29.756Z",
+  "result": "Passed",
+  "reviewer": "Delivery lead (agent)",
+  "source": "ac969dcdc395350ba38b1bc8827476d5997ecb48",
+  "sourceCommit": {
+    "at": "2026-10-20T04:17:26.000Z",
+    "head": "ac969dcdc395350ba38b1bc8827476d5997ecb48",
+    "parent": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15",
+    "branch": "delivery/touch-delivery-fixture-20261020",
+    "file": "tests/browser/kanban-touch.spec.ts",
+    "sha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5",
+    "originalAssertionActionDeadlineLinesPreserved": 45,
+    "native": {
+      "session": 97870,
+      "exit": 0,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "retries": 0,
+      "workers": 1,
+      "touchDurationMs": 27265
+    },
+    "browserTypes": {
+      "session": 34180,
+      "exit": 0,
+      "command": "node node_modules/typescript/bin/tsc -p tsconfig.browser.json",
+      "sourceSha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5"
+    },
+    "runtime": {
+      "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "realPostgreSQL": true,
+      "ownCleanup": true,
+      "stockWorkerUnchanged": true
+    },
+    "published": false,
+    "visualReview": "Pending actual final capture review",
+    "wholeCurrentCI": "Pending",
+    "mainIntegration": "Pending",
+    "scope": "Source-only one-file commit after exact executed file SHA/original full8cases and browsertypes pass. Existing compiled application images unchanged; no source rebuild, test retry/deadline/role/permission changes. Native touchMove admission only; originaltwo touchEnd/drops/mutations retained. Newsource requires owncurrentcandidate qualification/main beforeDone."
+  },
+  "testPath": "tests/browser/kanban-touch.spec.ts",
+  "testSha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5",
+  "baseline": {
+    "source": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15",
+    "native": "EVID-CYCLE-47-LOCALHOST-NATIVE-FAILED",
+    "passed": 7,
+    "failed": 1,
+    "originalViewportFailure": "endX=-129.3046875; firstdrop succeeded, secondnotreleased"
+  },
+  "changes": [
+    "Own originalOrganization-scoped Worker/delivery beforetouch and restorefinally; no stockWorker/globaldiscovery or applicationWorker change.",
+    "Move the sameactive native touch awayfromedge beforefinaltargetmeasure; use oppositeedge iftargethaspassed. Newbounded5s touchMove admission usesno touchEnd/command. Originaltwo drops/exactwrites/canonicalunchangedneighbor/versions/rank/two reloads/scroll/viewport/collision checks and60sdeadline retained.",
+    "Onlyonebrowserfilechanged28insertions/1coordinate-expressionreplacement; all45originalassertion/action/deadlinelines mechanicallyretained. Application/schema/API/security/roles/dependencies/workflow source unchanged."
+  ],
+  "evidence": [
+    "EVID-CYCLE-48-TOUCH-NATIVE8",
+    "EVID-CYCLE-48-TOUCH-BROWSER-TYPES",
+    "EVID-CYCLE-48-TOUCH-SECURE-ADMISSION",
+    "EVID-CYCLE-48-TOUCH-WORK-VISUAL12"
+  ],
+  "causalLimits": "Baselinecapturealso showed recovery/cancellation but hubframeswere notretained, so pendingdeliveryisnot claimedas solecause. RequiredProductionfixtureownership and directheld-edge geometryadmission are independently justified; actualchanged full8Passed retainedwithoutrewriting priorfailedruns.",
+  "scope": "Scopedresponsibleagent source/results/manualreview. Wholecurrentcandidate CI/security/roles/build/review andactualmainintegration stillpending; no humanapproval or broadMVP acceptance invented."
+}

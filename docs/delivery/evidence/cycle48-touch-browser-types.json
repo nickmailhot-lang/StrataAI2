@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-20T04:22:29.756Z",
+  "result": "Passed",
+  "source": "ac969dcdc395350ba38b1bc8827476d5997ecb48",
+  "testPath": "tests/browser/kanban-touch.spec.ts",
+  "testSha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5",
+  "command": "node node_modules/typescript/bin/tsc -p tsconfig.browser.json",
+  "session": 34180,
+  "exit": 0,
+  "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "scope": "Actual finalsource browserTScompile exit0, nooutput. Earlier intermediate7-line source session33675 alsoPassed but isnot usedalone toqualifythefinalfixture. No dependency/build/runtimechange."
+}

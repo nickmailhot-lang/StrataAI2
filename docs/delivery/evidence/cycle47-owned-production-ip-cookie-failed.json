@@ -1,0 +1,155 @@
+{
+  "at": "2026-10-20T03:55:39.036Z",
+  "result": "Failed",
+  "attempt": {
+    "at": "2026-10-20T03:53:27.488Z",
+    "startedAt": "2026-10-20T03:48:58.464Z",
+    "project": "strataai-mvp-browser-1260ec23b9f94243",
+    "exit": 1,
+    "result": "Failed",
+    "phases": [
+      {
+        "name": "Start exclusive fixture database",
+        "exit": 0
+      },
+      {
+        "name": "Apply packaged migrations without application build",
+        "exit": 0
+      },
+      {
+        "name": "Provision canonical restricted runtime roles",
+        "exit": 0
+      },
+      {
+        "name": "Provision original disposable identity CI role",
+        "exit": 0
+      },
+      {
+        "name": "Start retained images with original browser-full account fixture",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned api container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned worker container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned web container",
+        "exit": 0
+      },
+      {
+        "name": "Original eight native cases",
+        "exit": 1
+      },
+      {
+        "name": "Clean only exclusive fixture resources",
+        "exit": 0
+      }
+    ],
+    "primaryError": null,
+    "cleanupError": null,
+    "stockUnchanged": true,
+    "ownedRemaining": {
+      "containers": "",
+      "volumes": "",
+      "networks": ""
+    },
+    "privateSettingsRemoved": true,
+    "logSha256": "3e2f8eccd717ce5f7707f124aef092b3f632c9928dfe0baf0ea59f15d97450f2",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "scope": "Full unchanged eight-case execution on correctly isolated original Production browser fixture. Local fixture mode only; do not inherit its result as currentPR115 hosted qualification. Earlier Demo4/4Failed retained separately."
+  },
+  "stats": {
+    "startTime": "2026-10-20T03:49:43.289Z",
+    "duration": 220060.411,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 8,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px",
+      "attempts": 1,
+      "statuses": [
+        "failed"
+      ]
+    },
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "attempts": 1,
+      "statuses": [
+        "failed"
+      ]
+    },
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "attempts": 1,
+      "statuses": [
+        "failed"
+      ]
+    },
+    {
+      "file": "kanban-touch.spec.ts",
+      "title": "PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move persist",
+      "attempts": 1,
+      "statuses": [
+        "failed"
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 1280px",
+      "attempts": 1,
+      "statuses": [
+        "failed"
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 768px",
+      "attempts": 1,
+      "statuses": [
+        "failed"
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 390px",
+      "attempts": 1,
+      "statuses": [
+        "failed"
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 320px",
+      "attempts": 1,
+      "statuses": [
+        "failed"
+      ]
+    }
+  ],
+  "rawReportSha256": "2e08acfc9882acabe530acf55a948d7ebbef05ea6ec5aaeefeae10de2ed5b559",
+  "controlledTraceObservation": {
+    "login": {
+      "status": 200,
+      "setsSecureCookie": true
+    },
+    "organization": {
+      "status": 401,
+      "requestHasCookie": false
+    },
+    "secretValuesRetained": false
+  },
+  "cause": "HTTP loopbackIP fixture does not retain/send original ProductionSecure cookie in Playwright requestcontext. All8stop at unauthorizedOrganizationcreate beforeBoardsetup; verified-account SQLguard correctlyexecutes onlyinsideownnewProductionDB.",
+  "resolution": "Fresh separate owned fixture uses documentedlocalhost origin and extraoriginal Secure-cookie/profile/Organization preflight. Original8cases/security/deadlines/roles remain unchanged; active33349 is notyet a pass.",
+  "cleanup": "Allownedcontainers/volume/network/private settings removed; unrelatedstockWorker unchanged. EarlierDemo4/4Failed remainsseparate."
+}
