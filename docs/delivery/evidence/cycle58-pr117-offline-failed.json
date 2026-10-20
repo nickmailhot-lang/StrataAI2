@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-20T09:43:16.503Z",
+  "revision": "ee5ac6f339f22a260e112821656a5a8cb2902486",
+  "pullRequest": 117,
+  "run": 39390313449,
+  "job": 118538978022,
+  "result": "Failed",
+  "passed": 26,
+  "failed": 2,
+  "scope": "Original browser-foundation suite; offline member lifecycle at1280 and390 fails original exact name withdrawal assertion at line60 with original5000ms timeout. No selector/deadline/retry changes.",
+  "diagnosis": "Downloaded error-context snapshots show protected page names withdrawn while OrganizationContextLabel retains Member lifecycle council in banner. Mobile failure pixels inspected. New header lacks offline listener; existing metadata connection alone does not withdraw it.",
+  "artifact": {
+    "id": 12253776190,
+    "bytes": 1854009,
+    "sha256": "4e7455fbc7ccce51a895b1c2fab9a3f4b6e20b4c54a4e629c9bba64f9e25500b",
+    "build": "c46c08ae09b17d025ad8b0faf0bfd82fef4af3e2"
+  },
+  "limits": [
+    "Job log was truncated; snapshot artifact independently read. No claim that full log was untruncated.",
+    "Original local positive tests remain historical; actual published failure requires rework. PR118 inherits this source and cannot qualify by its five happy-path passes."
+  ],
+  "owner": "Principal product architect / engineering delivery lead",
+  "next": "Three dedicated offline controls reproduce againstR10, repair immediate withdrawal/cancellation and fresh reconnect reads; build new owned frontend and run original lifecycle/privacy cases. Keep drafts until exact new-head allrequired checks and review pass."
+}

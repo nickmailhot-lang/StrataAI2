@@ -1,0 +1,205 @@
+{
+  "result": "Passed",
+  "qualifiedHead": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+  "testedMerge": "c5e1eb1d065c5a05fdfbb48974f5e02bd70c21aa",
+  "integratedMain": "db5762265b3dfd19aa28b03ed24ceec2fe2ec265",
+  "auditSource": "ee5ac6f339f22a260e112821656a5a8cb2902486",
+  "run": 39376779095,
+  "artifactId": 12245655552,
+  "artifactSha256": "df4bdf06e58d28cff5e5da7972de0fc7ac28e0933d6758bbf08787539ba45704",
+  "sourceFiles": [
+    {
+      "path": "tests/StrataAI.Api.Tests/OrganizationCreationReplayTests.cs",
+      "sha256": "225e13801e1a6e53df0ea3159abc60ee4805b6105fa39d6f7c9e3208c71b4c76",
+      "methods": [
+        "Concurrent_Organization_creation_retries_preserve_later_metadata_and_reject_changed_intent",
+        "Organization_creation_replay_requires_current_access_and_original_account",
+        "Organization_creation_invalid_retry_key_creates_no_parent_or_owner",
+        "Organization_creation_final_session_expiry_rolls_back_parent_owner_and_receipt"
+      ],
+      "cases": [
+        {
+          "caseId": "d0fea70e078b516fe525ee36bbabbcea19ceba9b94530a9ea208c1d2dd125f3d",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Concurrent_Organization_creation_retries_preserve_later_metadata_and_reject_changed_intent",
+          "outcome": "passed",
+          "durationMs": 3798,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "61b5e50aa46a609702d44f99931eafbbc7980b3de631e1795bd4a97a758ee04d",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Organization_creation_replay_requires_current_access_and_original_account",
+          "outcome": "passed",
+          "durationMs": 3921,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "f4d8db1ef4e0aa2c0e27798c5aa948a713a222249647447a723b30d6b1704e56",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Organization_creation_invalid_retry_key_creates_no_parent_or_owner",
+          "outcome": "passed",
+          "durationMs": 2771,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "1d44b2f11277c8439e86b5504bb905e047f160585c496a85cedd4c3f47409082",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Organization_creation_invalid_retry_key_creates_no_parent_or_owner",
+          "outcome": "passed",
+          "durationMs": 2743,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "4c5e5edb9d13c9a5c33bf5398ff4d5d0a99473cfeaaca6a4ae4aed5508ba4cbc",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Organization_creation_invalid_retry_key_creates_no_parent_or_owner",
+          "outcome": "passed",
+          "durationMs": 2821,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "7bc97527b0445fc10b39055270d7a9609ed35ad6122c244f33d40aa178520c01",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Organization_creation_final_session_expiry_rolls_back_parent_owner_and_receipt",
+          "outcome": "passed",
+          "durationMs": 4514,
+          "reportIndex": 1
+        }
+      ],
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/OrganizationDirectoryTests.cs",
+      "sha256": "071e316500f09c02071ed54b122838eff21cff71b9924dd02c58c92739fdc500",
+      "methods": [
+        "PRD_03_directory_bounds_routes_and_rechecks_membership_before_disclosure"
+      ],
+      "cases": [
+        {
+          "caseId": "783e3b00aa90c0707434caf7449062bd1a9dd5907dfa3479c23302112ef40849",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD_03_directory_bounds_routes_and_rechecks_membership_before_disclosure",
+          "outcome": "passed",
+          "durationMs": 4223,
+          "reportIndex": 1
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/OrganizationMemberDirectoryTests.cs",
+      "sha256": "4983468a224c9f79e457d33490644f6c89dc4247d93a96bea656201a0f2708fc",
+      "methods": [
+        "PRD03_exact_member_review_distinguishes_current_absence_only_for_authorized_administrators",
+        "PRD03_member_removal_rejects_stale_consent_after_role_change",
+        "PRD03_admin_member_directory_is_bounded_and_contiguous_without_private_identity_fields",
+        "PRD03_member_directory_rejects_unrelated_members_and_demoted_administrators",
+        "PRD03_directory_retains_historical_membership_without_counting_an_inactive_owner"
+      ],
+      "cases": [
+        {
+          "caseId": "c12025a66e9181a5f90ff4b29435c46ae19154cb21aba746b872db564537e6c5",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD03_exact_member_review_distinguishes_current_absence_only_for_authorized_administrators",
+          "outcome": "passed",
+          "durationMs": 3266,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "599ce5847378d8efb5e047acc9fa0394295e01722958ef0f4bb2c34a4b8a56df",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD03_member_removal_rejects_stale_consent_after_role_change",
+          "outcome": "passed",
+          "durationMs": 1977,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "10ad371b2335e4ae411986350ac801c6b5a7c3a933ab7c5eabebfacd5e742c77",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD03_admin_member_directory_is_bounded_and_contiguous_without_private_identity_fields",
+          "outcome": "passed",
+          "durationMs": 2783,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "c9def540fbd584fda14b949d696c6eed84bae2acd56df108dac96b7383a58137",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD03_member_directory_rejects_unrelated_members_and_demoted_administrators",
+          "outcome": "passed",
+          "durationMs": 1800,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "90cdf1c07f62e1d690450d56a2c3d44607ef240847cfb7d82da02dd7c519ec7a",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD03_directory_retains_historical_membership_without_counting_an_inactive_owner",
+          "outcome": "passed",
+          "durationMs": 4403,
+          "reportIndex": 1
+        }
+      ],
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/OrganizationCommandTests.cs",
+      "sha256": "d4edf7679b9df66999100c1162653785f4966310cf9d8907490b2fa27a6c8eea",
+      "methods": [
+        "Organization_logo_validation_preserves_metadata_and_masks_unauthorized_input",
+        "Concurrent_owner_departures_preserve_one_active_owner",
+        "Deleting_organization_rejects_metadata_changes_and_departure"
+      ],
+      "cases": [
+        {
+          "caseId": "01ad910219a96fe3f9f8684cc5ddbd914c4163c44755fba40d717e198dbbf202",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Organization_logo_validation_preserves_metadata_and_masks_unauthorized_input",
+          "outcome": "passed",
+          "durationMs": 4123,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "390fc5e52c1c044e03ea366a9e3731815578f69f1251dc5cd0ac7dd0718a4d2a",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Organization_logo_validation_preserves_metadata_and_masks_unauthorized_input",
+          "outcome": "passed",
+          "durationMs": 4154,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "7e18757dd5eae578f8fa7fb896c10659bf44abd68db1688b28ff91a8124d5930",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Organization_logo_validation_preserves_metadata_and_masks_unauthorized_input",
+          "outcome": "passed",
+          "durationMs": 4128,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "d7bbd6b72f0a7d4ed63bf448f50ff3a7deca14f176190a61d4b15f9143fba02a",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Organization_logo_validation_preserves_metadata_and_masks_unauthorized_input",
+          "outcome": "passed",
+          "durationMs": 4316,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "b87d3c24d6ab16d785e5d59721e8f7e31f63ba4f7f98869c39d45fe56b2b4906",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Concurrent_owner_departures_preserve_one_active_owner",
+          "outcome": "passed",
+          "durationMs": 3570,
+          "reportIndex": 1
+        },
+        {
+          "caseId": "9d453c2e05c97ac408ab70f05cdf7818c00e884384d9865acbfa501e32f92010",
+          "source": "StrataAI.Api.Tests.ApiHostTests.Deleting_organization_rejects_metadata_changes_and_departure",
+          "outcome": "passed",
+          "durationMs": 2993,
+          "reportIndex": 1
+        }
+      ],
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "passed": 18,
+  "failed": 0,
+  "skipped": 0,
+  "scope": "Existing qualified and integrated backend case results extracted from the actual retained normalized TRX artifact. These four exact test files are byte-identical at qualified Q, the PRD03 audit source and the working audit tree. This is reused execution evidence, not a new test run or inherited PR117/118 check status.",
+  "limits": [
+    "Only exact method matches in the four selected files are attributed; broad Organization name matches and unrelated backlog/worker tests are excluded.",
+    "The full .NET report has five separate skips, retained outside this selected passing scope.",
+    "Board directory evidence is separate from the actual /organizations/directory contract. Parent PRD03 acceptance and frontend fix qualification remain incomplete."
+  ],
+  "at": "2026-10-20T10:02:39.415Z"
+}

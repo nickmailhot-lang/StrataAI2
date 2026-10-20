@@ -1,0 +1,287 @@
+{
+  "at": "2026-10-20T09:52:16.455Z",
+  "result": "Passed",
+  "source": "ff6c81abfc6900fe46c479e4dd4a32d2c5a0fbe9",
+  "qualifiedHead": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+  "integration": {
+    "branch": "origin/main",
+    "commit": "db5762265b3dfd19aa28b03ed24ceec2fe2ec265"
+  },
+  "pullRequest": 116,
+  "currentCi4": {
+    "at": "2026-10-20",
+    "result": "Passed",
+    "source": "ff6c81abfc6900fe46c479e4dd4a32d2c5a0fbe9",
+    "qualifiedHead": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+    "testedMerge": "c5e1eb1d065c5a05fdfbb48974f5e02bd70c21aa",
+    "run": 39376779095,
+    "artifactId": 12245655552,
+    "artifactSha256": "df4bdf06e58d28cff5e5da7972de0fc7ac28e0933d6758bbf08787539ba45704",
+    "cases": [
+      {
+        "caseId": "1eb4ba36c5e3dae1e994581bdba5fd7cc2d76480bf8ab0a289bcaa9e040fb330",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_creation_rejects_blank_title_without_persisting_a_Card",
+        "outcome": "passed",
+        "durationMs": 2035,
+        "reportIndex": 1
+      },
+      {
+        "caseId": "c325e788f41226dc3a53696239552f76c3d65c492d762a5329782f610e1c3d09",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_creation_rejects_blank_title_without_persisting_a_Card",
+        "outcome": "passed",
+        "durationMs": 2059,
+        "reportIndex": 1
+      },
+      {
+        "caseId": "8e707244b556f77373cd683a070d7ece9134ef917a058839cb4d30e605b47147",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_rename_rejects_blank_title_without_changing_the_original_Card",
+        "outcome": "passed",
+        "durationMs": 3444,
+        "reportIndex": 1
+      },
+      {
+        "caseId": "09d20b1eec3d8b7174c478b64e63b1db16eb241ed2b14160cb6bea03d36c0bd9",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_rename_rejects_blank_title_without_changing_the_original_Card",
+        "outcome": "passed",
+        "durationMs": 3484,
+        "reportIndex": 1
+      }
+    ],
+    "reports": [
+      {
+        "index": 0,
+        "status": "complete",
+        "counts": {
+          "passed": 1086,
+          "failed": 0,
+          "skipped": 3,
+          "error": 0
+        }
+      },
+      {
+        "index": 1,
+        "status": "complete",
+        "counts": {
+          "passed": 1433,
+          "failed": 0,
+          "skipped": 2,
+          "error": 0
+        }
+      }
+    ],
+    "scope": "Exact retained currentPR116 .NET normalized TRX artifact: four actual blank-title creation/rename cases all passed. Full report skipped cases remain separate; unchanged test/backend source identity must be verified before attribution to implementation source."
+  },
+  "allChecks": {
+    "observedAt": "2026-10-20 09:38:01 UTC",
+    "number": 116,
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/116",
+    "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+    "ciRun": 39376779095,
+    "codeqlRun": 39376776999,
+    "passed": 22,
+    "reported": 22,
+    "expectedRequired": 22,
+    "notYetReported": [],
+    "checks": [
+      {
+        "id": 118555238825,
+        "name": "release-bundle",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118555238825"
+      },
+      {
+        "id": 118555205758,
+        "name": "required-ci",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118555205758"
+      },
+      {
+        "id": 118491634553,
+        "name": "container-integration (browser-foundation, 1/1)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118491634553"
+      },
+      {
+        "id": 118491634542,
+        "name": "container-integration (commands, 1/1)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118491634542"
+      },
+      {
+        "id": 118491634530,
+        "name": "container-integration (browser-full, 1/4)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118491634530"
+      },
+      {
+        "id": 118491634481,
+        "name": "container-integration (browser-full, 4/4)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118491634481"
+      },
+      {
+        "id": 118491634454,
+        "name": "container-integration (browser-full, 3/4)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118491634454"
+      },
+      {
+        "id": 118491634435,
+        "name": "container-integration (browser-full, 2/4)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118491634435"
+      },
+      {
+        "id": 118491634415,
+        "name": "security",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118491634415"
+      },
+      {
+        "id": 118491634401,
+        "name": "container-integration (browser-notifications, 1/1)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118491634401"
+      },
+      {
+        "id": 118490811868,
+        "name": "build-images-once",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118490811868"
+      },
+      {
+        "id": 118490789424,
+        "name": "source-quality-gate",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118490789424"
+      },
+      {
+        "id": 118476711875,
+        "name": "CodeQL",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/runs/118476711875"
+      },
+      {
+        "id": 118476697597,
+        "name": "dotnet-quality",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118476697597"
+      },
+      {
+        "id": 118476697460,
+        "name": "web-quality",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118476697460"
+      },
+      {
+        "id": 118476697456,
+        "name": "postgres-integration",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118476697456"
+      },
+      {
+        "id": 118476582962,
+        "name": "metadata",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376779095/job/118476582962"
+      },
+      {
+        "id": 118476579833,
+        "name": "Analyze (javascript-typescript)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376776999/job/118476579833"
+      },
+      {
+        "id": 118476579829,
+        "name": "Analyze (csharp)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376776999/job/118476579829"
+      },
+      {
+        "id": 118476579745,
+        "name": "Analyze (python)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376776999/job/118476579745"
+      },
+      {
+        "id": 118476579692,
+        "name": "Analyze (actions)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376776999/job/118476579692"
+      },
+      {
+        "id": 118476579413,
+        "name": "Analyze (c-cpp)",
+        "head": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39376776999/job/118476579413"
+      }
+    ],
+    "statuses": [],
+    "merged": false,
+    "scope": "Complete current root/workflow discovery and every check individually read at exactPR116head. No previoushead conclusion inherited. Final merge also requires all22andanyadditionalgateSuccess,freshmain/head/reviews/testedtree and actualnormalintegration."
+  },
+  "sourceIdentity": {
+    "backendFrontendDatabaseApiTestsUnchanged": true,
+    "testPath": "tests/StrataAI.Api.Tests/CardTitleValidationTests.cs",
+    "testBlob": "c161f35cbc93932163646005e60989056943578e",
+    "integratedTree": "3d173ca65ff199d7c34cccbfcff351beb019914d"
+  },
+  "review": {
+    "at": "2026-10-20T09:52:16.455Z",
+    "reviewer": "Principal product architect / engineering delivery lead (agent)",
+    "result": "Passed",
+    "findings": [],
+    "scope": "Reviewed exact89line authenticated blank-title create/rename tests and currentCI case results. Fourcases preserve no-side-effects, subsequent valid command and canonical rank/version/content assertions. No product/runtime/schema/dependency/CI change."
+  },
+  "scope": "Acceptance only for PRD08Task02 and its two test children: blank title create/rename rejection without persistence side effects. Exact currentCI artifact has2create+2rename passes, all22PR116 gates and normalmainintegration; full frontend/backend/test source identity verified against original test commit. Earlier local fourcase execution and original failure retained. No parentCardPRD or broaderMVP completion.",
+  "uxApplicability": "Test-only change adds no interface or product behavior. Existing Production Work/Card native8,12capture review and currentPR116 complete browser/security/RLS gates remain applicable and passed. PR117 offlineheader regression exists only in later unmerged source; not part of currentmain tree.",
+  "limits": [
+    "NormalizedTRX strips parameter display text; four distinct caseIDs and2cases per method match source InlineData empty/whitespace. No duration or outcome invented.",
+    "Full .NET report3+2skips retained; those are separate from these four passed cases.",
+    "BroaderCard fields, collaboration, release-provider acceptance and parentPRD obligations remain unverified where previously unverified."
+  ]
+}
