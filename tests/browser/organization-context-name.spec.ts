@@ -64,10 +64,18 @@ for (const width of [1280, 768, 390, 320]) {
       await expect(page).toHaveURL(new RegExp(`/app/${org}/boards/${board}$`));
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
       await assertContext(page, name, org);
+      await expect.poll(async () => {
+        const heading = await page.getByRole('heading', { name: 'Context work', exact: true }).boundingBox();
+        const header = await page.getByRole('banner').boundingBox();
+        return !!heading && !!header && heading.y >= header.y + header.height
+          && heading.y + heading.height <= 900;
+      }).toBe(true);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
       await page.screenshot({ path: info.outputPath('named-board.png'), fullPage: true });
       const face = page.getByRole('link', { name: 'Inspect entrance', exact: true });
-      await focusAdmittedControl(face); await face.press('Enter');
+      await focusAdmittedControl(face);
+      const boardScroll = await page.evaluate(() => ({ x: scrollX, y: scrollY }));
+      await face.press('Enter');
       const detail = page.getByRole('dialog', { name: 'Card details', exact: true });
       await expect(detail).toBeVisible();
       await expect(detail.getByRole('textbox', { name: 'Card title', exact: false })).toHaveValue('Inspect entrance');
@@ -76,6 +84,7 @@ for (const width of [1280, 768, 390, 320]) {
       const close = detail.getByRole('button', { name: 'Close', exact: true });
       await focusAdmittedControl(close); await close.press('Enter');
       await expect(detail).toHaveCount(0); await expect(face).toBeFocused();
+      expect(await page.evaluate(() => ({ x: scrollX, y: scrollY }))).toEqual(boardScroll);
       await assertContext(page, name, org);
       if (width < 600) {
         const trigger = page.getByRole('button', { name: 'Open navigation', exact: true });

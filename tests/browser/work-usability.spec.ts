@@ -124,7 +124,7 @@ for (const width of [1280, 768, 390, 320]) {
     await page.unroute(`**/cards/${cardId}`);
     await openAdmittedReview(detail.getByRole('button', { name: 'Move card', exact: true }), detail.getByRole('combobox', { name: 'Destination list', exact: true }));
     const destination = detail.getByRole('combobox', { name: 'Destination list', exact: true });
-    await destination.press('Enter');
+    await openAdmittedReview(destination, page.getByRole('option', { name: 'Scheduled', exact: true }));
     await page.getByRole('option', { name: 'Scheduled', exact: true }).press('Enter');
     await expect(destination).toHaveText('Scheduled');
     await activate('Confirm card move', detail);
