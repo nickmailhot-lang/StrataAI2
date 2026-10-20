@@ -174,6 +174,24 @@ it('PRD-01 foreground admission cannot retry a lost confirmation without explici
   expect(new Headers(writes[1].init.headers).get('Idempotency-Key')).toBe(new Headers(writes[0].init.headers).get('Idempotency-Key'));
 });
 
+it('PRD-01 protects an admitted first original during live reads and retains its lost reply for explicit retry', async () => {
+  let rejectOriginal!: (reason: unknown) => void;
+  const writes: RequestInit[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/me') return response({ id: actor });
+    writes.push(init!);
+    return new Promise<Response>((_resolve, reject) => { rejectOriginal = reject; });
+  }));
+  const view = render(<NavigationConfirmation target={target} />);
+  await waitFor(() => expect(writes).toHaveLength(1));
+  await act(async () => view.rerender(<NavigationConfirmation target={target} admitted={false} />));
+  expect(writes[0].signal?.aborted).toBe(false);
+  await act(async () => rejectOriginal(new TypeError('Lost original reply')));
+  await act(async () => view.rerender(<NavigationConfirmation target={{ ...target, version: 4 }} admitted />));
+  expect(writes).toHaveLength(1); expect(sessionStorage.length).toBe(1);
+  expect(screen.getByRole('button', { name: 'Retry navigation confirmation' })).toBeVisible();
+});
+
 async function pendingReturnedOriginal() {
   let currentActor = actor;
   let finish!: (value: Response) => void;

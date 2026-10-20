@@ -44,7 +44,7 @@ export function NavigationConfirmation({ target, admitted = true }: { target: Na
           const retained = restoreNavigationIntent(sessionStorage, profile.id, originalTarget);
           const original = retained ?? createNavigationIntent(profile.id, originalTarget);
           retainNavigationIntent(sessionStorage, original);
-          intent.current = original; recovering.current = !!retained;
+          intent.current = original; recovering.current = true;
         }
         await submitNavigationIntent(intent.current, controller.signal, consumer);
         completeNavigationIntent(sessionStorage, intent.current);
@@ -61,7 +61,8 @@ export function NavigationConfirmation({ target, admitted = true }: { target: Na
     void observe().finally(() => { if (pending.current === controller) pending.current = undefined; });
     // A protected read withdraws presentation, but does not revoke an admitted
     // original receipt. Its server/final-actor checks can finish without a
-    // cancellation and duplicate POST. First observations still cancel.
+    // cancellation and duplicate POST. Reads before an original is admitted
+    // still cancel; actual scope retirement always cancels above.
     return () => { if (!recovering.current) controller.abort(); };
   }, [admitted, originalTarget, consumer, retry, action, status]);
   if (!admitted || status !== 'retry') return null;
