@@ -1,0 +1,106 @@
+{
+  "at": "2026-10-20T22:50:31.182Z",
+  "proof": {
+    "startedAt": "2026-10-20T21:49:09.373Z",
+    "finishedAt": "2026-10-20T22:38:05.628Z",
+    "source": "fdab59a23df80b7ca5df18bbe3821c5075c74750",
+    "appsTree": "2928c5889fab491bc82da7d5a1c9d7af84da4aa1",
+    "exit": 1,
+    "signal": null,
+    "result": "Failed",
+    "localProfile": "Complete original suite, local maxWorkers1; no repository/CI concurrency or assertion/timeout/deferredcase changes.",
+    "summary": {
+      "total": 2987,
+      "passed": 2951,
+      "failed": 12,
+      "pending": 24,
+      "suites": 276
+    },
+    "reportSha256": "e948cec7255410cb395e41c5f8e16626ca5512882bf1d0cfa61cf3e3d88f43de",
+    "nativeLogSha256": "40f114c117ee19d49a0110a39f838fc4306879fb85b0dc6f773166ad0ea12a61",
+    "scope": "Actual complete frontend regression with two new meaningful navigation-original controls. Preserves original24capacitydeferrals; all other functional tests run. Supporting local gate, not ownimmutableCI/main acceptance."
+  },
+  "failedCases": [
+    {
+      "file": "src/features/auth/ProfileDeactivation.test.tsx",
+      "title": "PRD-02/03/18 account deactivation requires explicit confirmation and focuses the safe cancellation action",
+      "status": "failed",
+      "message": "Error: Test timed out in 5000ms."
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows fences competing mutations during unresolved attachment lifecycle and recovers its original request after a newer Card snapshot",
+      "status": "failed",
+      "message": "Error: Test timed out in 10000ms."
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows locks competing Card mutations during unconfirmed file upload and recovers the same original request after a newer snapshot",
+      "status": "failed",
+      "message": "Error: Test timed out in 10000ms."
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows updates canvas due descriptions on live completion and removes them when dates clear",
+      "status": "failed",
+      "message": "Error: expect(element).toHaveAccessibleDescription()"
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows does not resurrect an old save confirmation after access loss and a fresh authorized load",
+      "status": "failed",
+      "message": "Error: Test timed out in 5000ms."
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows reloads canonical placement after a bound append acknowledgment",
+      "status": "failed",
+      "message": "Error: Test timed out in 5000ms."
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows keeps Card archive recovery outside the removed canonical editor and returns to the Board",
+      "status": "failed",
+      "message": "Error: Test timed out in 5000ms."
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows keeps cross-Board recovery after source removal without treating the moved Card as denied archived detail",
+      "status": "failed",
+      "message": "Error: Test timed out in 10000ms."
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery",
+      "status": "failed",
+      "message": "Error: Test timed out in 5000ms."
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery",
+      "status": "failed",
+      "message": "Error: Test timed out in 5000ms."
+    },
+    {
+      "file": "src/features/kanban/BoardScreen.test.tsx",
+      "title": "PRD-01/04/07/08/09 persisted board flows fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot",
+      "status": "failed",
+      "message": "Error: Test timed out in 5000ms."
+    },
+    {
+      "file": "src/features/kanban/ListMoveControl.test.tsx",
+      "title": "checks account and destination move authority, submits the original source/revision/key, and returns focus after acknowledgment",
+      "status": "failed",
+      "message": "Error: Test timed out in 5000ms."
+    }
+  ],
+  "newNavigationFile": {
+    "passed": 15,
+    "failed": 0
+  },
+  "appsChangedFromPublishedBaseline": [
+    "apps/web/src/app/NavigationConfirmation.test.tsx",
+    "apps/web/src/app/NavigationConfirmation.tsx"
+  ],
+  "scope": "Actual complete2987test frontend run84012terminal1:2951passed/12failed/24originalcapacitydeferrals,49minutes.11timeouts plus due-description loading assertion across3unchangedtestfiles; no testdisabled/deadlinechange. New15NavigationConfirmationtests passed within this full run. Failedfullreport/log retained at recordedhashes. Later71case targetedpasses do not erase or supersede this Failedaggregate. CompletefreshrequiredCI must validate entire repaired frontend beforemerge."
+}
