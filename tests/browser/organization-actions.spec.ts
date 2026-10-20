@@ -139,8 +139,11 @@ for (const width of [1280, 768, 390, 320]) {
       await participantPage.goBack(); await expect(participantPage).toHaveURL(new RegExp(directoryPath + '$'));
       if (width === 768) await participantPage.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
       const boardLink = participantPage.getByRole('link', { name: 'Permitted action Board', exact: true });
-      await boardLink.focus(); await boardLink.press('Enter'); await expect(participantPage).toHaveURL(new RegExp(boardPath + '$'));
       const cardLink = participantPage.getByRole('link', { name: 'Permitted action Card', exact: true });
+      // Foreground reads can replace the directory link between focus and Enter.
+      // Admit only this read-only opening until its real Board target appears.
+      await openAdmittedReview(boardLink, cardLink);
+      await expect(participantPage).toHaveURL(new RegExp(boardPath + '$'));
       await cardLink.focus(); await cardLink.press('Enter');
       await expect(participantPage.getByRole('dialog', { name: 'Card details', exact: true })).toBeVisible();
       await expect(participantPage.getByRole('textbox', { name: 'Card title', exact: true })).toHaveValue('Permitted action Card');
