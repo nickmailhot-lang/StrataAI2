@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { expect } from '@playwright/test';
-import { fillAdmittedInput, openAdmittedReview, pressObservedRequest, pressObservedValidation } from './keyboardAdmission.ts';
+import { fillAdmittedInput, openAdmittedReview, pressObservedRequest, pressObservedValidation, tabAdmittedFocus } from './keyboardAdmission.ts';
 
 // The real Playwright expectations/polling drive this isolated Locator protocol
 // fixture. Product browser cases separately prove native UI and HTTP behavior.
@@ -66,6 +66,44 @@ test('an unexpected initial observation cannot trigger another Enter', async () 
   const button = new Locator('normal'); button.count = 2;
   await assert.rejects(pressObservedRequest(button, () => button.count, 2));
   assert.equal(button.focuses, 0); assert.equal(button.presses, 0);
+});
+
+class TraversalDestination {
+  _apiName = 'Locator';
+  focused = false;
+  async focus() { assert.fail('Keyboard traversal must never focus its destination'); }
+  async _expect() { return { matches: this.focused, received: this.focused, log: [], timedOut: !this.focused }; }
+}
+class TraversalOrigin {
+  _apiName = 'Locator';
+  focused = false;
+  presses = 0;
+  constructor(destination, key, mode = 'normal') { Object.assign(this, { destination, key, mode }); }
+  async focus() { this.focused = true; this.destination.focused = false; }
+  async _expect(expression) {
+    const matches = expression !== 'to.be.focused' || this.focused;
+    return { matches, received: matches, log: [], timedOut: !matches };
+  }
+  async press(key) {
+    assert.equal(key, this.key); this.presses++;
+    if (this.mode === 'never-arrives' || this.mode === 'ignored-first' && this.presses === 1) return;
+    this.focused = false; this.destination.focused = true;
+  }
+}
+test('read-only Tab proves native traversal without focusing its destination', async () => {
+  const destination = new TraversalDestination(), origin = new TraversalOrigin(destination, 'Tab');
+  await tabAdmittedFocus(origin, destination, 'Tab');
+  assert.equal(destination.focused, true); assert.equal(origin.presses, 1);
+});
+test('an unobserved Shift+Tab repeats from its admitted origin only', async () => {
+  const destination = new TraversalDestination(), origin = new TraversalOrigin(destination, 'Shift+Tab', 'ignored-first');
+  await tabAdmittedFocus(origin, destination, 'Shift+Tab');
+  assert.equal(destination.focused, true); assert.equal(origin.presses, 2);
+});
+test('broken keyboard order still fails within the original five-second budget', { timeout: 10_000 }, async () => {
+  const destination = new TraversalDestination(), origin = new TraversalOrigin(destination, 'Tab', 'never-arrives');
+  await assert.rejects(tabAdmittedFocus(origin, destination, 'Tab'));
+  assert.equal(destination.focused, false); assert.ok(origin.presses > 0);
 });
 
 class ReviewRegion {
