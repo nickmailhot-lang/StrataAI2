@@ -1,0 +1,179 @@
+{
+  "at": "2026-10-20T03:29:49.658Z",
+  "result": "Failed",
+  "source": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d",
+  "input": {
+    "at": "2026-10-20T03:22:19.046Z",
+    "source": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d",
+    "qualifiedUnchangedSource": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "tests": [
+      {
+        "path": "tests/browser/work-usability.spec.ts",
+        "sha256": "9cd85012b6b4c0e451c80233f2398953231373cc9719694255d69d7a38d7de96"
+      },
+      {
+        "path": "tests/browser/kanban-touch.spec.ts",
+        "sha256": "17a4bbc8b0729995e979020bf61a8f06c2a2f941d05eaf92f77e3d3dccbbee7c"
+      },
+      {
+        "path": "tests/browser/kanban-scroll.spec.ts",
+        "sha256": "926db525e31231a4f765fa8a91d67f80ba5e06eecf2eb5fe8648537f68675651"
+      }
+    ],
+    "configSha256": "9cc4db5e811518070904bc4fd049fd9065c7f41e501585a43951261a0c2fc95f",
+    "api": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "client": {
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "version": "0.1.0-local-card-focus"
+    },
+    "assets": [
+      {
+        "path": "/assets/index-WokoLKxv.js",
+        "sha256": "ba653f509a0fab4071718578b1fc832e4ce641ad700ff037e8d1dc7a3e814256"
+      },
+      {
+        "path": "/assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+      }
+    ],
+    "baseURL": "http://127.0.0.1:15188",
+    "cases": 8,
+    "workers": 1,
+    "retries": 0,
+    "deadlines": {
+      "default": 30000,
+      "workUsability": 120000,
+      "touch": 60000
+    },
+    "ordinaryDemoFixture": true,
+    "ratePacing": true,
+    "scope": "All original four-width full work usability cases, complete phone touch reorder/empty-list persisted move and three mouse/touch scroll/cancel cases. Existing assertions, source, retries and deadlines unchanged. Separate supporting source-equivalent Demo; not new immutable/provider qualification. No global Worker discovery or user-data mutation; only disposable fixture accounts/organizations."
+  },
+  "session": 29533,
+  "exit": 1,
+  "stats": {
+    "startTime": "2026-10-20T03:22:31.064Z",
+    "duration": 229760.847,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "kanban-scroll.spec.ts",
+      "title": "PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "kanban-touch.spec.ts",
+      "title": "PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move persist",
+      "ok": true,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 1280px",
+      "ok": false,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "failed",
+          "error": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"true\"\nReceived: undefined"
+        }
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 768px",
+      "ok": false,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "failed",
+          "error": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"true\"\nReceived: undefined"
+        }
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 390px",
+      "ok": false,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "failed",
+          "error": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"true\"\nReceived: undefined"
+        }
+      ]
+    },
+    {
+      "file": "work-usability.spec.ts",
+      "title": "UXA-02/04/05/06: real work create assign edit filter and return at 320px",
+      "ok": false,
+      "attempts": 1,
+      "results": [
+        {
+          "status": "failed",
+          "error": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"true\"\nReceived: undefined"
+        }
+      ]
+    }
+  ],
+  "rawReportSha256": "b0af173495483a76665f33d73b982fdf50724d0813e216e00d8ccf159c16f96c",
+  "cause": "Delivery lead selected verified-account Worker workflows against a supporting in-memory Demo without that fixture. All four work-usability cases stopped at notificationAccountFixture.ts:24, before Organization/Board setup. CI was undefined; no fallback SQL or Worker-scope operation executed.",
+  "impact": "Not evidence of a product regression and not a green aggregate. Four independent complete touch/scroll cases passed; four full-work cases remain failed locally. Actual separately qualified unchanged8c68 Production cases above remain distinct.",
+  "resolution": "Preserve original requireVerifiedWorkerAccount and CI/SQL safeguards. Do not fabricate CI identity, modify user database or swap Worker. Full verified-account workflow requires an isolated appropriate Production fixture; no narrowed rerun or pass relabeling performed.",
+  "owner": "delivery-lead",
+  "runtimeAfter": {
+    "api": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "client": {
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "version": "0.1.0-local-card-focus"
+    },
+    "servedAssetsUnchanged": true
+  }
+}

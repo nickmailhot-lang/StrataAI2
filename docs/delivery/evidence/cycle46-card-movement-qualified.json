@@ -1,0 +1,294 @@
+{
+  "at": "2026-10-20T03:29:49.658Z",
+  "result": "Passed",
+  "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "integration": "677a0a7d7a3cd186d1b7a67d286119fcc12ba925",
+  "currentBase": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d",
+  "sourcePaths": [
+    {
+      "path": "apps/web/src/features/kanban/CardMoveControls.test.tsx",
+      "blob": "60bd46f63d15010645e412fd8338c5aca5455f83",
+      "sha256": "dc25e21b963c2a1c3b5c3bccc27e30f72469210b8bfecca613132190993717fa"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardScreen.drag.test.tsx",
+      "blob": "d275478cf3f2d52641163a7ecc5c4e8214a1af7d",
+      "sha256": "aa732f528c4be4771bb72980d463e8ca717d720ecbb3cdb8f64335df867b0115"
+    },
+    {
+      "path": "apps/web/src/features/kanban/DragHandleFocus.test.tsx",
+      "blob": "5d8fb1dedf45a6afd3fcc0efe7ae2b9f2bec9731",
+      "sha256": "df71e3ded38443607ffbe152252f31d93109d49f40bc74d0bc64fdc90d773b04"
+    },
+    {
+      "path": "apps/web/src/features/kanban/cardMovePreview.test.ts",
+      "blob": "1b212200d39962030918250b90bdff6e72da8078",
+      "sha256": "5c706ba14a3bcb6f69f47045ab50b664886c22627aa55d366e2b7d951b8d2e37"
+    },
+    {
+      "path": "apps/web/src/features/kanban/kanbanDragMeasurement.test.ts",
+      "blob": "e82111cf0fa5998157ac4cb5eb0e6fb470a62ffe",
+      "sha256": "49813948ddbff5b1cbebee453f04f24fb0bb34c256b498507256bed07de1db42"
+    },
+    {
+      "path": "apps/web/src/features/kanban/DragNodeRegistration.test.tsx",
+      "blob": "6152212da16377ae625ea5b62405441dfb1a31dd",
+      "sha256": "0f5201b4b1efae91f025a1d573f12f0d844669f3a834342fbfbb482005a4789a"
+    },
+    {
+      "path": "apps/web/src/features/kanban/ListMoveControl.test.tsx",
+      "blob": "57303f7195f2005c8cf722b0c50a49f6f981fe09",
+      "sha256": "4c5f41abb375ec5e34ac520bfc148ef942d5ec340c06f55766d4b974a79f59b9"
+    },
+    {
+      "path": "apps/web/src/features/kanban/listMovePreview.test.ts",
+      "blob": "5d034434b1b87512d6a5cc893b2d02dda6b435aa",
+      "sha256": "951b234be592c429167f3194fb72eec56cba5168df2748a42c01622244b36ffd"
+    },
+    {
+      "path": "tests/browser/work-usability.spec.ts",
+      "blob": "e8d958234740363bc338e5d0645253dd0c024e45",
+      "sha256": "9cd85012b6b4c0e451c80233f2398953231373cc9719694255d69d7a38d7de96"
+    },
+    {
+      "path": "tests/browser/kanban-scroll.spec.ts",
+      "blob": "77ee9fe49de3ce547e4d4e53a170821166548cae",
+      "sha256": "926db525e31231a4f765fa8a91d67f80ba5e06eecf2eb5fe8648537f68675651"
+    },
+    {
+      "path": "tests/browser/kanban-touch.spec.ts",
+      "blob": "455a2d14cbdcb7f8ab38b8a2986b6dd39b05984b",
+      "sha256": "17a4bbc8b0729995e979020bf61a8f06c2a2f941d05eaf92f77e3d3dccbbee7c"
+    },
+    {
+      "path": "tests/browser/kanban-performance.spec.ts",
+      "blob": "cfe4c075fd29d0249107b07b180dfff47bcea112",
+      "sha256": "ac44e02cadb923b633b251b7f4dbf8b612ff3f604f237724fcb2bd46426efde8"
+    },
+    {
+      "path": "tests/browser/card-append-move.spec.ts",
+      "blob": "ab8203acbf01712613cdecaf1567b8ced6a2cd98",
+      "sha256": "fcf8991d816b66c38c56dec9fc40234cca9442edf4d1e0e663d6afb8c2f455c4"
+    },
+    {
+      "path": "tests/browser/board-screen-reflow.spec.ts",
+      "blob": "b94225399eb82b80ea50b234a46c66b88a23e37e",
+      "sha256": "83443ae4877412d98f6fdb3959bf9a47ea2b3ea6316bb05b45ca64e695102461"
+    },
+    {
+      "path": "tests/browser/board-live.spec.ts",
+      "blob": "9ea8c84759c18e780c92edac9dbca5bf5e1e7646",
+      "sha256": "f9b92bbf15f12f76371d561e44fb666d7bfea4e9981aa63337c8d3c811f59ea4"
+    },
+    {
+      "path": "tests/browser/notificationAccountFixture.ts",
+      "blob": "54fce3de3d67336eef6fbc7204af03bce49a9b46",
+      "sha256": "1e513c1e99bf7f0e8a1c3742ac748504f92da118a807235a616f7ac284e8204d"
+    },
+    {
+      "path": "tests/browser/scopedBoardWorker.ts",
+      "blob": "00e738e84a7cde453905b3656724f96aa0bd4a55",
+      "sha256": "e626bbe37e8dd0bec4e6fed81e70a8ff4c0b7a3b078a914a7bce072dae01fce0"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/CardAppendMoveTests.cs",
+      "blob": "28a1732ecf9cd538e4315488d2a13efa347dd90f",
+      "sha256": "f9aed8a8c23cfb6b9cffb59b9710999f63dee4a75e7dbd5676093d3f1448e396"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/CardRelativeMoveTests.cs",
+      "blob": "15b5c5dd9d93c98da77ae5955d57f5ee50765d97",
+      "sha256": "020622000c59837926c0b8ce61db1a315d833006899489a8bceba4a2f644456d"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/CardMoveSourceScopeTests.cs",
+      "blob": "0f0ee2fa8d7c557b52b3179adc37c89f7969cb42",
+      "sha256": "83637eb7a52705b32af64ff6ec3ca41bf6e16954c000661a99d1e72d267ea5af"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/KanbanTelemetryTests.cs",
+      "blob": "b6c49df8963b02d7b2bed215e4feb502060dba93",
+      "sha256": "cdcbbcf852fda83a2ca86728801b8ae0b1ed7aa8e9762be48761d8e364564970"
+    },
+    {
+      "path": "tests/StrataAI.Domain.Tests/RankTokenTests.cs",
+      "blob": "c06251cdf61684959716e63bcb4e5e4aed9a1fb1",
+      "sha256": "390b985cde07a76dd0b4f98700b41aeea1fe6e467779d06b393fcc601e84d428"
+    },
+    {
+      "path": "tests/StrataAI.Domain.Tests/CanonicalMutationAtomicityTests.cs",
+      "blob": "7af55955c108fb91532d7dc3e856a94dbb963d8b",
+      "sha256": "d5bb40a0e171d7bd618276ad06a4010d5197a534124f05ff79eda59e5ec67665"
+    },
+    {
+      "path": "src/StrataAI.Application/WorkManagement/WorkManagementService.cs",
+      "blob": "129a3500699223d7ab214732604d96f5d631a5c9",
+      "sha256": "9386788451ea638625eb863a08f4d606a60cd29828159fcf57aadb9e13a47e10"
+    },
+    {
+      "path": "src/StrataAI.Application/WorkManagement/TransactionalWorkManagementService.cs",
+      "blob": "343b6f49ed800989ef57de28e7d2b5bc1788bbc6",
+      "sha256": "adb5f678f757ab449852c9e2f8f02e3a9894e33742ab2074aca31d0c887fce1b"
+    }
+  ],
+  "artifact": {
+    "id": 12201243899,
+    "bytes": 150644,
+    "sha256": "3f908e621bf230f051156fa1c479c521338735bec6f10182fc227d9f9f070a4a",
+    "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "workflowRunId": 39279332124,
+    "name": "source-test-results-dotnet-c3e495e184f4094b5467e1390572a536fb80669f",
+    "createdAt": "2026-10-19T16:21:10Z",
+    "digestVerified": true,
+    "jsonSha256": "9e63762e54454d81d4ad117c1469a8795768ec2c6e7db80ffaf6046860198f3b"
+  },
+  "apiCases": [
+    {
+      "caseId": "7a330e47b911b5b8a7a5313eb987bafcb2d2b15fe2887ba0ec85f36a3e8791a4",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Move_source_scope_does_not_admit_foreign_Organization_or_ungranted_destination",
+      "outcome": "passed",
+      "durationMs": 1968
+    },
+    {
+      "caseId": "74a92616d77b412ef9800cf29e16a5f0a9868370fbb9b852d14648a7a1640211",
+      "source": "StrataAI.Api.Tests.ApiHostTests.Default_card_move_appends_and_replays_the_original_ack_without_reapplying_after_a_later_move",
+      "outcome": "passed",
+      "durationMs": 2234
+    },
+    {
+      "caseId": "110343ef2e81d43b6499e9e2f23c4cee17c559ae13f7a33997845318d40f88e3",
+      "source": "StrataAI.Api.Tests.ApiHostTests.Relative_card_moves_use_current_neighbors_and_bind_the_anchor_in_retry_receipts",
+      "outcome": "passed",
+      "durationMs": 2371
+    },
+    {
+      "caseId": "1888cbea2f44723b59b53e71dabf6f808ac1efee0b6057bce1b3e04197482fbd",
+      "source": "StrataAI.Api.Tests.ApiHostTests.Exhausted_relative_positions_reject_without_moving_or_advancing_the_card",
+      "outcome": "passed",
+      "durationMs": 3090
+    },
+    {
+      "caseId": "af43b97ea093f934f8e78d96e973febb25e7fea3ed4d4a4df855a18324437b7e",
+      "source": "StrataAI.Api.Tests.ApiHostTests.Kanban_metrics_measure_moves_conflicts_and_denials_without_private_labels",
+      "outcome": "passed",
+      "durationMs": 3451
+    },
+    {
+      "caseId": "ec6a18850904a3411e28202aa96bb39bd403ed60a607c258d8ee06b3bed6151e",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Move_preserves_legacy_and_explicit_source_receipts_and_refuses_revoked_actor",
+      "outcome": "passed",
+      "durationMs": 4075
+    },
+    {
+      "caseId": "c1ef23d7e67fd9591c95ee3b1b8e38d9b7714b07e522063d16b9052e0b136c85",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Move_preserves_legacy_and_explicit_source_receipts_and_refuses_revoked_actor",
+      "outcome": "passed",
+      "durationMs": 3942
+    }
+  ],
+  "domainCases": [
+    {
+      "caseId": "24efc41caa5c863993de31255d41728a58acfdf3e33bd60b0211c7c373014629",
+      "source": "StrataAI.Domain.Tests.CanonicalMutationAtomicityTests.PRD_01_CardMoveInvalidRankPreservesCompleteCanonicalState",
+      "outcome": "passed",
+      "durationMs": 4
+    },
+    {
+      "caseId": "8fb889ce96872375a35152549d88a3eb2ceb48b7b14af97c7679c53df29ebf3c",
+      "source": "StrataAI.Domain.Tests.CanonicalMutationAtomicityTests.PRD_01_CardMoveInvalidRankPreservesCompleteCanonicalState",
+      "outcome": "passed",
+      "durationMs": 0
+    },
+    {
+      "caseId": "c00c19b316625aebc8967ce1f877acacd95d6c85856f96c7d9cfed4a4464f120",
+      "source": "StrataAI.Domain.Tests.CanonicalMutationAtomicityTests.PRD_01_CardMoveInvalidRankPreservesCompleteCanonicalState",
+      "outcome": "passed",
+      "durationMs": 0
+    },
+    {
+      "caseId": "c343bbf76c856ae7efb7e14eb191080a1adce36ba11053935955f23175891adb",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportSmallSequences",
+      "outcome": "passed",
+      "durationMs": 15
+    },
+    {
+      "caseId": "c711a9824cba16b0d989b056d3dfbdcd4bf52612b98a9ff6f99706a9b8abab08",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportSmallSequences",
+      "outcome": "passed",
+      "durationMs": 0
+    },
+    {
+      "caseId": "10baffe0b3233b721173ed09a436a90cb588f5f8d90079908ee37f07da3afc11",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.PRD_06_TC_08_RankUsesFixedWidthAddressSpace",
+      "outcome": "passed",
+      "durationMs": 0
+    },
+    {
+      "caseId": "5596f3a3206f5cc2b2b3d9c549a70d20a849c541473e34b413572a0bb2aab1ad",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+      "outcome": "skipped",
+      "durationMs": 0
+    },
+    {
+      "caseId": "55b4b0923d009b8aa9e22fd70cb9294f50b74fab3e8bbf70d6ecc6adb414f51a",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+      "outcome": "skipped",
+      "durationMs": 0
+    },
+    {
+      "caseId": "0d178d8177ad8fd428d16218a5ef1b1b96a33de0aa52bda06cecd0b0c233fc38",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.PRD_06_TC_01_RankBetweenSortsLexicographically",
+      "outcome": "passed",
+      "durationMs": 0
+    },
+    {
+      "caseId": "9bbc143934782ba7d52ceb18da915bbe0514f167b702c264de627a15339e6669",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.PRD_06_TC_12_InvalidSiblingOrderIsRejected",
+      "outcome": "passed",
+      "durationMs": 0
+    },
+    {
+      "caseId": "3d5edfbd39564d5e0ad6e5c0be2f3e04a98682925aa2ddba32ba3b2e269c214a",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.ExistingBoundaryRanksRetainMidpointFallbackAndExplicitExhaustion",
+      "outcome": "passed",
+      "durationMs": 0
+    }
+  ],
+  "components": {
+    "passed": 65,
+    "rows": [
+      "2026-10-19T15:42:42.3723929Z  ✓ src/features/kanban/CardMoveControls.test.tsx (22 tests) 2443ms",
+      "2026-10-19T15:43:28.1437593Z  ✓ src/features/kanban/ListMoveControl.test.tsx (21 tests) 6584ms",
+      "2026-10-19T15:44:01.9746209Z  ✓ src/features/kanban/BoardScreen.drag.test.tsx (3 tests) 3075ms",
+      "2026-10-19T15:45:04.6160572Z  ✓ src/features/kanban/DragHandleFocus.test.tsx (10 tests) 542ms",
+      "2026-10-19T15:45:16.0479919Z  ✓ src/features/kanban/cardMovePreview.test.ts (3 tests) 5ms",
+      "2026-10-19T15:45:21.3570994Z  ✓ src/features/kanban/kanbanDragMeasurement.test.ts (2 tests) 100ms",
+      "2026-10-19T15:45:22.2455886Z  ✓ src/features/kanban/listMovePreview.test.ts (2 tests) 5ms",
+      "2026-10-19T15:45:22.5500680Z  ✓ src/features/kanban/DragNodeRegistration.test.tsx (2 tests) 233ms"
+    ]
+  },
+  "native": {
+    "passed": 17,
+    "rows": [
+      "2026-10-19T17:08:21.3901011Z   ✓   54 tests/browser/board-live.spec.ts:4:5 › PRD-22: desktop and phone boards consume live changes, preserve drafts, recover and clear revoked scope (36.9s)",
+      "2026-10-19T17:13:04.8579746Z   ✓   61 tests/browser/board-screen-reflow.spec.ts:12:7 › PRD-01/04: Board and Card reflow with long canonical labels at 1280px (14.8s)",
+      "2026-10-19T17:13:44.6185894Z   ✓   62 tests/browser/board-screen-reflow.spec.ts:12:7 › PRD-01/04: Board and Card reflow with long canonical labels at 768px (14.7s)",
+      "2026-10-19T17:14:24.5001722Z   ✓   63 tests/browser/board-screen-reflow.spec.ts:12:7 › PRD-01/04: Board and Card reflow with long canonical labels at 390px (14.8s)",
+      "2026-10-19T17:15:04.2960496Z   ✓   64 tests/browser/board-screen-reflow.spec.ts:12:7 › PRD-01/04: Board and Card reflow with long canonical labels at 320px (14.8s)",
+      "2026-10-19T17:20:23.3231283Z   ✓   72 tests/browser/card-append-move.spec.ts:7:7 › PRD-06/08: keyboard append move recovers a lost acknowledgment and updates another client at 1280px (21.1s)",
+      "2026-10-19T17:21:06.8531280Z   ✓   73 tests/browser/card-append-move.spec.ts:7:7 › PRD-06/08: keyboard relative move recovers a lost acknowledgment and updates another client at 390px (18.5s)",
+      "2026-10-19T18:07:35.2961645Z   ✓   92 tests/browser/kanban-scroll.spec.ts:7:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px (3.0s)",
+      "2026-10-19T18:08:03.2538461Z   ✓   93 tests/browser/kanban-scroll.spec.ts:7:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px (2.9s)",
+      "2026-10-19T18:08:31.1693911Z   ✓   94 tests/browser/kanban-scroll.spec.ts:7:7 › PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px (2.9s)",
+      "2026-10-19T18:09:00.2206266Z   ✓   95 tests/browser/kanban-touch.spec.ts:5:5 › PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move persist (4.0s)",
+      "2026-10-19T18:08:50.0223113Z   ✓    3 tests/browser/kanban-performance.spec.ts:10:5 › PRD-06: normal Board readiness, cached detail and mutation latency meet budgets at 1280px (5.0s)",
+      "2026-10-19T18:09:20.4193364Z   ✓    4 tests/browser/kanban-performance.spec.ts:10:5 › PRD-06: normal Board readiness, cached detail and mutation latency meet budgets at 390px (5.4s)",
+      "2026-10-19T19:13:50.1822945Z   ✓  112 tests/browser/work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 1280px (22.7s)",
+      "2026-10-19T19:14:37.3292341Z   ✓  113 tests/browser/work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 768px (22.1s)",
+      "2026-10-19T19:15:24.4190111Z   ✓  114 tests/browser/work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 390px (22.1s)",
+      "2026-10-19T19:16:11.3420453Z   ✓  115 tests/browser/work-usability.spec.ts:9:7 › UXA-02/04/05/06: real work create assign edit filter and return at 320px (21.9s)"
+    ]
+  },
+  "checks": 22,
+  "scope": "Actual already-qualified and integrated source evidence; skipped two capacity cases remain skipped. Current supporting Demo and PR115 qualification are separate. No parentPRD or broad large-load acceptance inferred."
+}

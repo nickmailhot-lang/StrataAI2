@@ -1,0 +1,92 @@
+{
+  "at": "2026-10-20T03:29:49.658Z",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "base": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d",
+  "existingImplementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "ids": [
+    "PRD-06-VS-01",
+    "PRD-06-VS-01-T-01",
+    "PRD-06-VS-01-T-01-TEST-01"
+  ],
+  "criteria": [
+    {
+      "id": "PRD-06-VS-01/KANBAN-FR-001",
+      "text": "The board canvas SHALL render ordered lists horizontally.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01/KANBAN-FR-002",
+      "text": "Cards SHALL render in rank order within each list.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01/KANBAN-FR-003",
+      "text": "Users with move permission SHALL be able to drag a card within the same list.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01/KANBAN-FR-004",
+      "text": "Users with move permission SHALL be able to drag a card to another list including an empty list.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01/KANBAN-FR-006",
+      "text": "The client SHALL provide optimistic visual feedback for card/list movement.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01/KANBAN-FR-007",
+      "text": "Failed move persistence SHALL roll the UI back or reconcile to authoritative server state.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01/KANBAN-FR-008",
+      "text": "Ordering SHALL use a scalable rank strategy such as fractional indexing or LexoRank-style values, not renumber every sibling on each move.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01/KANBAN-FR-011",
+      "text": "Move results SHALL persist after refresh.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01/KANBAN-FR-012",
+      "text": "Concurrent movement SHALL be resolved using version/revision checks and authoritative rank reconciliation.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01/EXIT",
+      "text": "Demonstrate the scoped authorized workflow and applicable denial, retry/lifecycle and UXA-01–08 checks; retain exact revision results and integrate with no known critical regression.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01-T-01/AUDIT",
+      "text": "Record exact existing code/test paths and revision; execute the smallest relevant check or record why it is blocked; enumerate remaining behavior and one-cycle gap tasks without discarding history.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-06-VS-01-T-01-TEST-01/TRACE",
+      "text": "Reviewer can follow every scoped requirement to an existing result or an explicit unverified gap; no source-reference match is counted as a passing test.",
+      "status": "Unverified"
+    }
+  ],
+  "mapping": {
+    "KANBAN-FR-001/002": "Board ordered horizontal columns and rank-ordered Cards; touch reorder plus source/API rank and native reflow checks.",
+    "KANBAN-FR-003/004/011": "Touch same-list move and empty destination retain complete neighbor, exact write counts, incremented moved revision and canonical result across two reloads;17qualified native rows include keyboard equivalent/peer recovery.",
+    "KANBAN-FR-006/007": "BoardScreen.drag3 verifies provisional destination before fetch and rollback on uncertain result; CardMoveControls22/cardMovePreview3 and ListMoveControl21/listMovePreview2 preserve original command and canonical lists.",
+    "KANBAN-FR-008/012": "RankToken9/2skipped Domain controls, relative/append/exhaustion API cases and stale-version rejection; service rechecks both active contexts and CanMove before atomic store call and emits CARD_MOVED. Qualified keyboard two-client lost-ack cases and live recovery remain intact.",
+    "EXIT/UXA": "Current PRD06/UXA/backlog row reviewed. Qualified four-width work/reflow/Axe/native permissions and normal performance2 retained; current supporting mixed run Failed. All criteria remain Unverified until responsible final reconciliation/current audit-work-product integration."
+  },
+  "evidence": [
+    "EVID-CYCLE-46-MOVE-QUALIFIED",
+    "EVID-CYCLE-46-NATIVE-INITIAL-FAILED",
+    "EVID-CYCLE-46-MOVE-VISUAL4"
+  ],
+  "decisions": [
+    "Preserve all original IDs, requirements, completed implementation, tests and historical failures. No new runtime/source/dependency/permission changes are needed based on current evidence.",
+    "Audit source package is a new work product and must actually integrate before its audit Task/Test can be Done. Underlying product code is already in main; do not substitute that ancestry for new audit output.",
+    "Local full-work verified-account execution is a fixture blocker, owner delivery-lead, resolved only by an isolated matching Production fixture. Keep scope at full original workflows and retain their actual immutable passes separately. No user resources or stockWorker are touched."
+  ],
+  "scope": "Bounded three-record existing capability audit. Twelve scoped criteria remain Unverified; no new Done or parent closure. BroadPRD06 list reorder, capacity/deferredload and fullMVP acceptance remain separate."
+}
