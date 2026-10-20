@@ -701,3 +701,15 @@ Acceptance remains pending. The new feature still needs its own current CI, fina
 
 
 The focused change is published as draft [PR #117](https://github.com/nickmailhot-lang/StrataAI2/pull/117). Its initial stacked target did not match the maintained CI filter, so the target was corrected to main with no source or workflow change. It depends on #116; inherited #116 changes will leave the diff after that PR merges. The normal publication-ledger update starts eligible current-head CI. All three feature records remain Testing until their own required checks, final review and actual main integration pass.
+
+### Cycles 56–57 — Complete first-use coverage at320px and200%text
+
+The Organization creation audit preserved the existing implementation and its continuous first-use test. The canonical OrganizationRecord already includes name, description, logo URL, owner, status and timestamps, with Owner/Admin/Member roles. Existing source-reference matches remain distinct from executed tests. The actual unchanged OrganizationHome/action/focus subset contains78passing controlled cases; the original five business criteria remain Unverified pending their complete evidence and integration.
+
+Task `PRD-03-VS-01-T-03` adds only two missing profiles to the existing Organization → Board → List → Card consumer. Its original three1280/768/390 profiles and all72assertion chains remain. The added320px and768px/200%text profiles perform real UI sign-in and creation, assert canonical fields/ownership, and retain original lost-response recovery, peer conflict, persisted edits/reload, Back/Forward/focus, wrong-scope denial and public read-only behaviour. New verified cases own the existing Organization-scoped Worker fixture and restore it in finally. Product code, API, schema, permissions and dependencies are unchanged.
+
+All five profiles passed once with zero skips/retries on the exact retainedAPI/Worker, fresh restricted PostgreSQL and verified R7client/R11test source. The base30-second configuration and original rate-pacing fixture are unchanged; observed total durations, including30531ms, are retained without claiming fixture/cleanup wall time below30seconds. Browser types,485-case/170-intact-file coverage and collection pass. No application rebuild or repeat frontend run was needed because the application source is byte-identical to the previously verified build.
+
+Allsix new viewport captures were inspected separately. The [320px](../delivery/evidence/cycle57-first-use-320.png) and [200%text](../delivery/evidence/cycle57-first-use-200.png) captures show the created Organization and primary Board action clearly. Saved Card fields/actions and public read-only controls were also reviewed. No independent newAxe run is claimed. Owned services, volumes, network, provider and private settings were cleaned, and the unrelated Worker stayed unchanged.
+
+Task03/Test are Testing; the auditTask01/TRACE remain InProgress. Own currentCI, final review, main integration and final tracking remain required. No new Done item, parent PRD or MVP completion is claimed.

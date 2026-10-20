@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-20T08:54:57.455Z",
+  "source": "73c846da2f313251689783ce4f2fea37c1ab1850",
+  "client": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "result": "Passed",
+  "method": "All six new320/200%viewport captures actually inspected with view_image, independently from native results.",
+  "captures": [
+    {
+      "path": "work/cycle57-owned-production-browser-output/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-organization.png",
+      "sha256": "7b2f4fea9d86c039777b12f4fbefb91109f31315a773a87fe20d11298aa65236"
+    },
+    {
+      "path": "work/cycle57-owned-production-browser-output/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/first-card-saved.png",
+      "sha256": "66f1c73be2689c987ed0fd3884757a52660f4427906e5916917ab5954574eae0"
+    },
+    {
+      "path": "work/cycle57-owned-production-browser-output/board-PRD-01-04-07-08-09-p-56a74-nd-isolation-narrow-mobile-/public-card-readonly.png",
+      "sha256": "3b66653b9a2b46c3d4c6d2b3a6ef4740dcbc151243dd2e3efac4ef5bfa07b57a"
+    },
+    {
+      "path": "work/cycle57-owned-production-browser-output/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-organization.png",
+      "sha256": "dd0de8ea3d875a23dabce96e4594cfbcf759c0e9d955bfda69d4fd360005c21d"
+    },
+    {
+      "path": "work/cycle57-owned-production-browser-output/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/first-card-saved.png",
+      "sha256": "a476478802ee9566425e11e62d9055d05f769d0aa94a826e0ac6a3e463ef25b4"
+    },
+    {
+      "path": "work/cycle57-owned-production-browser-output/board-PRD-01-04-07-08-09-p-0b4bb--isolation-tablet-200-text-/public-card-readonly.png",
+      "sha256": "b2ac75127fef6db5f58c77c41f78c0d36be8a1707ad70e573692dacba47ec5a3"
+    }
+  ],
+  "observations": [
+    "Created Organization name/type/description, fully visible heading and Create Board affordance fit320px and200%text.",
+    "Saved Card title/description and Save/Close controls are readable in320px and200%text captures.",
+    "Public Card values are disabled/read-only and no Save control appears; Close is visible. Protected Organization shell/name is not disclosed in public fallback."
+  ],
+  "limits": [
+    "These are selected actualviewport captures; not an independent new Axe run or a complete parentPRD/MVP accessibility certification.",
+    "The existing product frontend is byte-identical to R7; prior separate Axe evidence remains distinct. Current ownCI/review/targetmain remain required."
+  ]
+}
