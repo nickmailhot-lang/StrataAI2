@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-20T00:48:25.892Z",
+  "result": "Failed",
+  "metadataCommit": "ec0d76b893acb2e6f9d6e9f4b2c7f184c0eb400f",
+  "published": false,
+  "prePushGuard": {
+    "operation": "Read complete committed ledger after normal metadata commit",
+    "error": "ENOBUFS: auxiliary git-show call used default1MiBbuffer",
+    "ledgerBytes": 3979469,
+    "correction": "Read complete proof data with explicit32MiBbuffer; no ledger truncation or count reduction."
+  },
+  "evidenceStorage": [
+    {
+      "path": "docs/delivery/evidence/cycle41-board-zoom-browser-registry.txt",
+      "capturedBytes": 102,
+      "storedBytes": 101,
+      "capturedSha256": "4f925e687d81f8df7ed5320837407a2809e1fe7a4490b1e74e3c9762226301de",
+      "storedSha256": "a69eb6892cb4851c16134b855988a0f439e8a4c3faf3fc1a0234a05914d8b453"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle41-board-zoom-browser-types.txt",
+      "capturedBytes": 95,
+      "storedBytes": 93,
+      "capturedSha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "storedSha256": "145ebe9bc978d476e2c914fb1e13afb0de163e4c4c97fc4d1bf7f7621a33b1ab"
+    }
+  ],
+  "classification": "Auxiliary pre-publication storage/reader failures; source test and localruntime/test results remain unchanged. Metadata commit completed locally, but no push or PR was attempted.",
+  "correction": "Preserve original captured rawoutputs and all recorded SHA256s. Add two narrow -text/-eol attributes and restage exact captured bytes. Verify every committed ledger artifact and every new nested artifact hash, then revalidate finalcurrentreport before normalpush. Never waive a hash or reinterpret partialJSON as complete."
+}

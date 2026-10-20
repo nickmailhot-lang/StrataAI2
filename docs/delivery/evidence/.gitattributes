@@ -1,0 +1,3 @@
+# These hashed raw command outputs retain their captured bytes across checkouts.
+cycle41-board-zoom-browser-registry.txt -text -eol
+cycle41-board-zoom-browser-types.txt -text -eol
