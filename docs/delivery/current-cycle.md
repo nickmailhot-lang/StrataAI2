@@ -445,3 +445,81 @@ PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (20
 HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
 HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
 HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
+### Cycle 45 — Accept evidence-backed delivery reporting
+
+The existing progress module, its workflow enforcement and agent instructions are byte-identical to the qualified implementation already integrated through PR113. The retained PR114 hosted run separately proves all 36 contracts and validation against an actual retained main ledger. Current enriched-ledger validation covers source references, artifact hashes, Git ancestry and append-only history.
+
+Nine existing records completed through eleven legal child-first transitions; the two previously completed Task05 records remain unchanged. All 17 scoped acceptance criteria are verified, including two previously unverified hosted-execution criteria. The completed 1,598-item ledger has 51 Done and passes all 36 contracts with zero failures or skips. The 776th evidence record preserves that completed-ledger validation. Acceptance metadata remains unpublished; the main ledger still records 33 Done. The six new Card/navigation records remain Testing until their own work products integrate. Parent PRD25 and the broader MVP remain open.
+
+This development-system capability changes no product screens or user permissions. Its recorded UX, security and role applicability reasons remain scoped to repository-local reporting. No test, CI gate, deadline, dependency or runtime implementation is changed.
+
+# Incremental delivery progress
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 51/1598 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2398. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 469 | 4 |
+| Task | 501 | 20 |
+| Test | 520 | 27 |
+
+Implemented but unvalidated: 51. Blocked: 0. Known MVP-critical outstanding: 96; unclassified records: 1284. Weighted progress: not measured.
+
+## 1. Work completed
+
+Existingreportingmodule/workflow/agent/snapshot code is byte-identical acrossqualifiedh, fullymergedfa01/mainM3 and currentworkingtree; preserve completedimplementation.
+DirectfullymergedPR114 metadatajob verifies36positive/negative contracts and actualretainedM2baseline/history, eliminating oldhostedexecution uncertainty. All22h/hostedfa01 checks passed and normalmainintegration verified.
+Current1598/42Done/772evidence localmodule contracts/CLI/source/hash/Git/history/report passed; actualcounts and unknownMVP/weightednotmeasured preserved.
+Remainingnine existing Module records/17criteria reconciled; twoAC06unknowns now have actualhostedevidence. TwoalreadyDoneT5records untouched; no newDone untilcurrenttrackingvalidation/legaltransitions.
+Current1598/42Done/774evidence enrichedacceptance validates actualsource/hash/Git/baseline/evolution againstmainM3; legalcompletion remainsnext.
+Nine existing reporting verification records completed through eleven legal child-first transitions. Their implementation 8c68 is already integrated through PR113; two previously completed Task05 records remain unchanged.
+Completed 51-Done ledger passes all 36 contracts and actual source/hash/Git/retained-baseline/history validation. The original PRD remains open.
+
+## 2. Implemented, awaiting validation
+
+PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-04-VS-05-T-04, PRD-04-VS-05-T-04-TEST-01, PRD-08-VS-01-T-02, PRD-08-VS-01-T-02-TEST-01, PRD-08-VS-01-T-02-TEST-02
+
+## 3. Current work in progress
+
+Final evidence-enriched ledger report and focused metadata commit.
+
+## 4. Blockers and dependencies
+
+
+## 5. Next highest-priority deliverable
+
+Complete the final 776-evidence CLI report and commit this focused metadata. Keep PR115 frozen until all required checks pass; then review and integrate normally. Publish the preserved adjacent workflow verification commits with their own fresh qualification. No parent PRD or MVP completion is claimed.
+
+## 6. PRD progress changes
+
+No newworkitemIDs/criteria or codeimplementation; 1598total preserved.
+TwoexistingAC06 criteria nowVerified byactualhostedretainedbaseexecution; broadPRD25obligations and MVPnotclosed.
+PRD-25-VS-03 and four Tasks/four Tests are Done after verified acceptance of existing integrated code. Parent PRD25 remains In Progress.
+
+## 7. Completion evidence
+
+EVID-CYCLE-45-REPORTING-HOSTED
+EVID-CYCLE-45-REPORTING-ACCEPTANCE
+EVID-CYCLE-40-8C68-CI22
+EVID-CYCLE-40-113-MAIN
+EVID-CYCLE-45-REPORTING-TRACKING
+EVID-CYCLE-45-REPORTING-COMPLETED-QUALITY
+
+## Recent verified completed increments
+
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-08-VS-04: Recover Card creation under its original authenticated account (2026-10-19T20:02:52.809Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.

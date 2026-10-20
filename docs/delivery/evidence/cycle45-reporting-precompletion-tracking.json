@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-20T02:55:59.786Z",
+  "result": "Passed",
+  "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "ledgerInputSha256": "a456481ad15b640a39d9ec198faec4ae36b72452fb07244974f695f49ec8c080",
+  "items": 1598,
+  "done": 42,
+  "evidence": 774,
+  "currentValidation": {
+    "exit": 0,
+    "command": "node scripts/delivery-progress.mjs validate --base-ref origin/main",
+    "consoleSha256": "1ee15091450bd03f19c407ac3c1c2f40e23501176895a40ed8341b19924cc35b",
+    "scope": "Currentenriched774evidence acceptance dataset source/paths/hashes/Git/baseline/appendonlyevolution atactualmainM3 validates; all9Module records notyetDone."
+  },
+  "scope": "Precompletiontracking for existingalready-integrated reportingcode. Legalchildfirstninecompletion and completed51Donewhole36/report/publication remainrequired. NewCard/Navwork staysTesting/unintegrated."
+}

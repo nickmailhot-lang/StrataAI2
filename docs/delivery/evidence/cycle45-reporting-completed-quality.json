@@ -1,0 +1,46 @@
+{
+  "at": "2026-10-20T03:18:44.767Z",
+  "result": "Passed",
+  "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "checkout": "5a3a1f833762cad6937cf161a1d1902bfdcf385a",
+  "ledgerInputSha256": "440c85e199ac001e07bd790e4e7b5bf9f0a75308443337448130e9082a271c02",
+  "items": 1598,
+  "done": 51,
+  "evidence": 775,
+  "transitions": {
+    "at": "2026-10-20T03:07:06.572Z",
+    "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "plan": [
+      "PRD-25-VS-03-T-01-TEST-01",
+      "PRD-25-VS-03-T-01",
+      "PRD-25-VS-03-T-02-TEST-01",
+      "PRD-25-VS-03-T-02",
+      "PRD-25-VS-03-T-03-TEST-01",
+      "PRD-25-VS-03-T-03",
+      "PRD-25-VS-03-T-04-TEST-01",
+      "PRD-25-VS-03-T-04",
+      "PRD-25-VS-03"
+    ],
+    "transitions": 11,
+    "done": 51,
+    "alreadyDoneT5Untouched": true,
+    "newCardAndNav": "Testing/unintegrated",
+    "parentPRDState": "In Progress",
+    "acceptanceMetadataPublicationPending": true
+  },
+  "results": [
+    {
+      "name": "contracts",
+      "exit": 0,
+      "artifact": "work/cycle45-reporting-completed-contracts.txt",
+      "sha256": "6b8aa13df0b81eeeead63e53af22053b8fdc4bd9bc1f9dcd691e7c78a10877a9"
+    },
+    {
+      "name": "evolution-main",
+      "exit": 0,
+      "artifact": "work/cycle45-reporting-completed-evolution-main.txt",
+      "sha256": "443c80dd44f9e77f1cdd75008a4e53ab14a0f51e9e061461f1a2803e98b9da8c"
+    }
+  ],
+  "scope": "Actual completed51Done dataset: nineexistingalready-integrated reportingrecords legallyDone, previous42retained. Original36contracts/source/hash/Git/baseline/evolutionPassed; sixnewCard/Navrecords remainTesting/unintegrated. ParentPRD25/MVP andcurrentPR115 qualification remainopen; acceptance metadata publicationpending."
+}

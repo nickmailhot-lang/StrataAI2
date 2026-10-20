@@ -1,0 +1,229 @@
+{
+  "at": "2026-10-20T02:53:41.308Z",
+  "result": "Passed",
+  "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "actualMain": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "reviewer": "Delivery lead",
+  "items": [
+    "PRD-25-VS-03",
+    "PRD-25-VS-03-T-01",
+    "PRD-25-VS-03-T-01-TEST-01",
+    "PRD-25-VS-03-T-02",
+    "PRD-25-VS-03-T-02-TEST-01",
+    "PRD-25-VS-03-T-03",
+    "PRD-25-VS-03-T-03-TEST-01",
+    "PRD-25-VS-03-T-04",
+    "PRD-25-VS-03-T-04-TEST-01"
+  ],
+  "sourceBlobs": [
+    {
+      "path": "scripts/delivery-progress.mjs",
+      "gitBlob": "7cb5e9ffc9142c6698bd47ef40c2b81ec773d4d2",
+      "workingSha256": "9d07ce50c9b08b229a09d2d1df44da168e022ac0dfdc57f7c78c41b8ab8f8df0"
+    },
+    {
+      "path": "tests/delivery-progress.test.mjs",
+      "gitBlob": "42550de31f762cefdd8f0966107be961317602a5",
+      "workingSha256": "6e4d8b90b62987ed2576529d31ba9c2758891c019f82487475ae57cc13610d0a"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "gitBlob": "f5a75408f0344bbf81d6df7993157f3cdc446af1",
+      "workingSha256": "bcbda2abeb881172b62b68f5307cd3aa27795efe9a3d0cbcb78e013ad5f03380"
+    },
+    {
+      "path": "AGENTS.md",
+      "gitBlob": "4bbe70831fe214b9d4cfb5b7b0ea4d8ba88de513",
+      "workingSha256": "a69bb7c7e93fa9abce047d8c3bd3626e9a119602dc029c9d2900548eb76de401"
+    },
+    {
+      "path": "docs/delivery/README.md",
+      "gitBlob": "64f07e824513b1bcc26fed5e346d51b74f03824b",
+      "workingSha256": "925149a022eac12728203104ee522332d3017046d7bfd25003cd3614621e6600"
+    },
+    {
+      "path": "docs/delivery/requirements-snapshot.json",
+      "gitBlob": "7b0e495754c234ab235883108586e9c465ec5e26",
+      "workingSha256": "06a7d2d7d5b7e6348568756c81c5f084b9d990b8450c9e0c0a9e966013c9eb41"
+    },
+    {
+      "path": "docs/delivery/baseline-audit.json",
+      "gitBlob": "283a510c04510c18cca84d08d49f7e1fe06cf251",
+      "workingSha256": "1027a15574fe00aeb21a5f381486814718da2e6691ff43bcb3cc9709d34035be"
+    }
+  ],
+  "actualCI22": "EVID-CYCLE-40-8C68-CI22",
+  "actualIntegration": "EVID-CYCLE-40-113-MAIN",
+  "hosted": "EVID-CYCLE-45-REPORTING-HOSTED",
+  "contractGroups": {
+    "01": [
+      "2026-10-19T20:15:19.7666490Z ✔ PRD-25-VS-03/AC-01: complete real backlog retains all 100 definitions, obligations and parent links (1074.497071ms)",
+      "2026-10-19T20:15:19.7668243Z ✔ PRD-25-VS-03/AC-01: losing a PRD or architecture definition fails closed (78.224184ms)",
+      "2026-10-19T20:15:19.7670021Z ✔ PRD-25-VS-03/AC-01: losing original FR or AC cannot shrink acceptance denominator (22.871375ms)",
+      "2026-10-19T20:15:19.7671565Z ✔ PRD-25-VS-03/AC-01: source mutation cannot inherit frozen audit (4.500597ms)",
+      "2026-10-19T20:15:19.7672975Z ✔ PRD-25-VS-03/AC-01: missing slice requirement mapping is rejected (20.625654ms)"
+    ],
+    "02": [
+      "2026-10-19T20:15:19.7674248Z ✔ PRD-25-VS-03/AC-02: duplicate item IDs, orphan items and acceptance are refused (0.826495ms)",
+      "2026-10-19T20:15:19.7675584Z ✔ PRD-25-VS-03/AC-02: untraced test and unknown dependencies are refused (0.269555ms)",
+      "2026-10-19T20:15:19.7676820Z ✔ PRD-25-VS-03/AC-02: lifecycle runs in order and does not skip validation (0.649909ms)",
+      "2026-10-19T20:15:19.7678132Z ✔ PRD-25-VS-03/AC-02: Blocked requires reason, owner and exact prior-state resume (0.555797ms)",
+      "2026-10-19T20:15:19.7679615Z ✔ PRD-25-VS-03/AC-02: Implemented needs source identity, never just a state label (0.458841ms)",
+      "2026-10-19T20:15:19.7680966Z ✔ PRD-25-VS-03/AC-02: state and append-only history must agree (0.2523ms)",
+      "2026-10-19T20:15:19.7682153Z ✔ PRD-25-VS-03/AC-02: a new item cannot start at Done to bypass lifecycle (0.436827ms)"
+    ],
+    "03": [
+      "2026-10-19T20:15:19.7694738Z ✔ PRD-25-VS-03/AC-03: a Test cannot claim Passed without executed evidence (0.212019ms)",
+      "2026-10-19T20:15:19.7750230Z ✔ PRD-25-VS-03/AC-03: complete synthetic evidence passes all gates (0.21273ms)",
+      "2026-10-19T20:15:19.7760678Z ✔ PRD-25-VS-03/AC-03: missing tests blocks Done (0.255315ms)",
+      "2026-10-19T20:15:19.7761747Z ✔ PRD-25-VS-03/AC-03: missing acceptance blocks Done (0.186711ms)",
+      "2026-10-19T20:15:19.7762638Z ✔ PRD-25-VS-03/AC-03: missing security blocks Done (0.169335ms)",
+      "2026-10-19T20:15:19.7768963Z ✔ PRD-25-VS-03/AC-03: missing roles blocks Done (0.167793ms)",
+      "2026-10-19T20:15:19.7770081Z ✔ PRD-25-VS-03/AC-03: missing regressions blocks Done (0.181704ms)",
+      "2026-10-19T20:15:19.7770988Z ✔ PRD-25-VS-03/AC-03: missing integration blocks Done (0.16605ms)",
+      "2026-10-19T20:15:19.7771710Z ✔ PRD-25-VS-03/AC-03: missing tracking blocks Done (0.175384ms)",
+      "2026-10-19T20:15:19.7772363Z ✔ PRD-25-VS-03/AC-03: missing review blocks Done (0.206631ms)",
+      "2026-10-19T20:15:19.7773013Z ✔ PRD-25-VS-03/AC-03: missing ux blocks Done (0.231979ms)",
+      "2026-10-19T20:15:19.7773691Z ✔ PRD-25-VS-03/AC-03: missing build blocks Done (0.176856ms)",
+      "2026-10-19T20:15:19.7774519Z ✔ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (0.227082ms)",
+      "2026-10-19T20:15:19.7775687Z ✔ PRD-25-VS-03/AC-03: unverified, stale, failed or skipped evidence cannot satisfy acceptance (0.480313ms)",
+      "2026-10-19T20:15:19.7776757Z ✔ PRD-25-VS-03/AC-03: unknown critical regressions and unpassed test block completion (0.367623ms)",
+      "2026-10-19T20:15:19.7777890Z ✔ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (0.299621ms)",
+      "2026-10-19T20:15:19.7782806Z ✔ PRD-25-VS-03/AC-03: exact Git integration, evidence hashes and repository path boundaries (106.952397ms)"
+    ],
+    "04": [
+      "2026-10-19T20:15:19.7779077Z ✔ PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unvalidated work (0.794326ms)",
+      "2026-10-19T20:15:19.7780644Z ✔ PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done (0.319901ms)",
+      "2026-10-19T20:15:19.7781383Z ✔ PRD-25-VS-03/AC-04: validated Done work contributes completion counts and recent increments (0.251259ms)",
+      "2026-10-19T20:15:19.7783553Z ✔ PRD-25-VS-03/AC-04: real CLI reports machine-readable progress and exits nonzero for bad action (2239.841406ms)"
+    ],
+    "05": [
+      "2026-10-19T20:15:19.7782097Z ✔ PRD-25-VS-03/AC-05: prior states, criteria and failed evidence cannot be rewritten or deleted (1.13516ms)",
+      "2026-10-19T20:15:19.7824053Z ✔ PRD-25-VS-03/AC-05: CLI can validate evolution against the actual retained ledger in Git (1229.133315ms)"
+    ],
+    "06": [
+      "2026-10-19T20:15:19.7822993Z ✔ PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its refusal tests (0.357438ms)"
+    ]
+  },
+  "currentLocalQuality": {
+    "at": "2026-10-20T02:32:48.315Z",
+    "result": "Passed",
+    "source": "57bded1a0d0e55aa001607a2f0b15b0b2f416161",
+    "ledgerInputSha256": "279d6c4ace79f7504b602d3f27653df0df012a7ae54a9561e4a39c5e628150d0",
+    "items": 1598,
+    "done": 42,
+    "evidence": 771,
+    "states": "ThreeNavverificationrecordsTesting; fiveoriginalcriteriaUnverified; no newDone",
+    "results": [
+      {
+        "name": "contracts",
+        "exit": 0,
+        "artifact": "work/cycle44-work-navigation-ledger-contracts.txt",
+        "sha256": "ff4d729b7405cd3a272ec37ef85030f4121fb4405cab8c6549ce8d6148e3b04c"
+      },
+      {
+        "name": "evolution-main",
+        "exit": 0,
+        "artifact": "work/cycle44-work-navigation-ledger-evolution-main.txt",
+        "sha256": "443c80dd44f9e77f1cdd75008a4e53ab14a0f51e9e061461f1a2803e98b9da8c"
+      }
+    ],
+    "nestedCaptureHashesVerified": 12,
+    "scope": "Currentenriched1598/42Done/771evidence whole36contracts and exactsource/artifacthash/Git/baseline/evolutionPassed. Already-integratedunderlyingUI andnewauditoutput areseparate; newauditoutput ownCI/review/targetintegration remainsrequired. CardthreeTesting andPR115currentU pendingqualification unchanged."
+  },
+  "currentReportProof": {
+    "at": "2026-10-20T02:39:28.836Z",
+    "sourceHead": "57bded1a0d0e55aa001607a2f0b15b0b2f416161",
+    "canonicalLedger": "work/cycle44-work-navigation/docs/delivery/progress.json",
+    "ledgerSha256": "50ad60fe634506519465e4b61c00993104e141948ff47bc998f4380a8e882963",
+    "evidence": 772,
+    "uncommittedChanges": true,
+    "candidateNotYetPublished": true,
+    "mainLedger": {
+      "revision": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+      "items": 1593,
+      "done": 33,
+      "evidence": 725
+    },
+    "localListMetadata": {
+      "head": "48bc8ab66c91c5aa9ee8ebe694374fcd702425ef",
+      "done": 42,
+      "published": false
+    },
+    "localCardMetadata": {
+      "head": "fba339dbba2fb35a8539634f707da54d0c48de57",
+      "states": "ThreeTesting",
+      "newApiPassed": 4,
+      "published": false
+    },
+    "nav": {
+      "source": "57bded1a0d0e55aa001607a2f0b15b0b2f416161",
+      "states": "ThreeTesting",
+      "currentNativePassed": 4,
+      "actualCapturesReviewed": 12,
+      "underlyingMainSource": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "newAuditOutputIntegration": "Pending"
+    },
+    "quality": {
+      "contracts": 36,
+      "failed": 0,
+      "skipped": 0,
+      "currentSourceHashGitHistory": "Passed",
+      "final772EvidenceCliReportEvolution": "Passed"
+    },
+    "scope": "Currentworking ledger. NewCard/Navwork is implemented/scopedtested but requires wholecandidateCI/review/actualmainintegration;42Done coversalready-integratedacceptedcode. Actualmainledger33Done untilmetadata publication. No parentPRD/MVP complete.",
+    "reportSha256": "a20bc6ff26c4f24fcc0c8d618a7c9db84495f0fd0f2036667196b562e7b979fe",
+    "cliExit": 0
+  },
+  "currentObservedCounts": {
+    "prds": 88,
+    "features": 80,
+    "ux": 8,
+    "architecture": 12,
+    "workItems": 1598,
+    "done": 42,
+    "byKind": {
+      "Epic": {
+        "total": 8,
+        "done": 0
+      },
+      "PRD": {
+        "total": 100,
+        "done": 0
+      },
+      "Vertical Slice": {
+        "total": 469,
+        "done": 3
+      },
+      "Task": {
+        "total": 501,
+        "done": 16
+      },
+      "Test": {
+        "total": 520,
+        "done": 23
+      }
+    },
+    "unvalidated": 60,
+    "blocked": 0,
+    "mvpCriticalOutstanding": 105,
+    "mvpUnknown": 1284,
+    "weightedProgress": null,
+    "remaining": {
+      "canonicalNumbered": 391,
+      "canonicalFunctionalRequirements": 951,
+      "childCriteria": 2400
+    }
+  },
+  "mapping": {
+    "AC01": "Complete100source inventory/FR/AC/hash/parent positives and loss refusals; frozen snapshot/audit byte-identical to h, current report preserves80feature/8UX/12architecture distinctions.",
+    "AC02": "Allstates/IDs/parents/testmapping/history/Blockedowner+resume and noReady→Done bypass contracts; realCLI transitions used throughout currentcycles.",
+    "AC03": "Failed/stale/missingevidence, source/path/symlink boundary, actualGit targetintegration, incompletechildren/criteria/gates/regressions and unpassedtests refuseDone.",
+    "AC04": "Actual readable/JSON CLIreport roundtrip, earnedDone42/currentmain33 distinction in contextualreporting, hierarchy/counts/unknownMVP/unvalidated/remainingAC/recentincrements; no inventedpercentages/weights.",
+    "AC05": "Append-onlyrefusal cases and actualretainedM2hosted/currentM3localevolution; originalfailed/skip/historyevidence remains.",
+    "AC06": "Actualfullymergedfa01metadata job runsledgervalidate, all36contracts and realretainedbasehistory; workflow/agent/README sameh/main, noARCH11gate/test/budget/retry change."
+  },
+  "review": "Reviewed full validation/path-realpath/hash/Gitsource/Done checks, baseline/evolution guards, count/report calculations, lifecycle and atomicCLI write/locking. Positive/negative36 and actualCLI/source/history output substantiate scope; no code implementationrestart or policywaiver. Existing T5/Test alreadyDone remain unchanged.",
+  "knownCriticalRegressions": 0,
+  "limits": "Reporting/dev-system capability only. No applicationrole/UI/managedprovider/sourcefreeMVP acceptance inferred. Nine existing module records notyetDonepending currentacceptance tracking and legalchild-firstCLI transitions; parentPRD25/MVP remainopen."
+}
