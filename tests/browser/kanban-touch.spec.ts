@@ -1,6 +1,7 @@
 import { expect, test } from './releaseTest';
 import { trackBoardReads } from './boardReadTracker';
 import { focusAdmittedControl } from './keyboardAdmission';
+import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
 test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move persist', async ({ page, context }) => {
   test.setTimeout(60_000);
@@ -22,6 +23,11 @@ test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move pe
     const response = await context.request.post(`/lists/${list}/cards`, { headers, data: { title } });
     expect(response.status()).toBe(201); cards.push((await response.json()).id);
   }
+  // PRD-06-VS-01-T-02: Production owns this new Board's delivery before touch
+  // interaction; its original pending/recovery admission must remain intact.
+  const restoreWorker = scopedBoardWorker(org);
+  try {
+  await waitForBoardDelivery(context.request, board);
   const baselineResponse = await context.request.get(`/boards/${board}`); expect(baselineResponse.status()).toBe(200);
   const baseline = await baselineResponse.json(); const anchor = baseline.lists[0].cards[0];
   const reads = trackBoardReads(page, board, `/app/${org}/boards/${board}`);
@@ -80,10 +86,12 @@ test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move pe
     await expect(handle).toBeEnabled();
     const canvas = page.locator('[aria-label="Kanban board"]');
     await canvas.evaluate(node => node.scrollIntoView({ block: 'center' }));
+    let boundaryTouchY = 0;
     await startDrag(async () => {
       const source = await handle.boundingBox(); const boundary = await canvas.boundingBox();
       expect(source).not.toBeNull(); expect(boundary).not.toBeNull();
-      return { x: boundary!.x + boundary!.width - 10, y: source!.y + source!.height / 2 };
+      boundaryTouchY = source!.y + source!.height / 2;
+      return { x: boundary!.x + boundary!.width - 10, y: boundaryTouchY };
     });
     const destination = page.getByText('Drop card at end of Empty touch destination', { exact: true });
     // The trailing list-drop target is another column. Scrolling to the canvas
@@ -92,6 +100,24 @@ test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move pe
       const box = await destination.boundingBox();
       return await canvas.evaluate(node => node.scrollLeft > 0) && Boolean(box && box.x + box.width / 2 > 0 && box.x + box.width / 2 < 390);
     }).toBe(true);
+    // Holding the edge keeps scrolling after the first visible-target sample.
+    // Move the same native touch to neutral before measuring the final drop;
+    // if it has passed the target, use the opposite edge to bring it back.
+    // No touchEnd or second write occurs during this bounded admission.
+    const boundary = await canvas.boundingBox(); expect(boundary).not.toBeNull();
+    const left = Math.max(0, boundary!.x), right = Math.min(390, boundary!.x + boundary!.width);
+    const neutral = (left + right) / 2, margin = (right - left) / 3;
+    await expect(async () => {
+      const box = await destination.boundingBox(); expect(box).not.toBeNull();
+      const center = box!.x + box!.width / 2;
+      const x = center < left + margin ? left + 10 : center > right - margin ? right - 10 : neutral;
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: boundaryTouchY, id: 1 }] });
+      expect(center).toBeGreaterThan(left + margin); expect(center).toBeLessThan(right - margin);
+      await expect(handle).toHaveAttribute('aria-pressed', 'true');
+      const stopped = await destination.boundingBox(); expect(stopped).not.toBeNull();
+      expect(stopped!.x + stopped!.width / 2).toBeGreaterThan(0);
+      expect(stopped!.x + stopped!.width / 2).toBeLessThan(390);
+    }).toPass({ timeout: 5_000, intervals: [5] });
     expect(writes).toBe(1);
     const end = await destination.boundingBox();
     expect(end).not.toBeNull();
@@ -120,4 +146,5 @@ test('PRD-06-TC-12: phone touch reorder and boundary-scrolled empty-list move pe
     if (touching) await touch.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
     await touch.detach();
   }
+  } finally { restoreWorker(); }
 });

@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-20T01:36:10.832Z",
+  "result": "Failed",
+  "command": "git diff --check ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "exitCode": 2,
+  "diagnostic": "docs/delivery/current-cycle.md:289: new blank line at EOF.",
+  "stage": "Local auxiliary precommit format guard, before staging/commit/push",
+  "cause": "The generated Markdown report already ended with a newline; finalizer appended another newline.",
+  "owner": "Delivery lead",
+  "productImpact": "No software/test/CI/runtime/permission change; intended metadata commit was refused.",
+  "resolution": "Remove only excess terminal whitespace in the generated Markdown report. Preserve all report content and quality gates. Rerun original whitespace/source/hash/index preflight and current ledger report before commit.",
+  "reportBeforeSha256": "ddca5345c66df969a55ce62d9ad0760d912f0e8c77c152a99ad36494b4ae445b",
+  "reportAfterSha256": "4241db68c089f7014ad7e32f3cd681fb665c6d0fce30cada4f0079b31127f7ba",
+  "scope": "A failed local publication-format check is retained separately from passing acceptance/contracts/source checks. No failure counted as pass and no whitespace rule relaxed."
+}

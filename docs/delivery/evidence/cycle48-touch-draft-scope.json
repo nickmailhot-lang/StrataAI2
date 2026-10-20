@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-20T04:10:41.751Z",
+  "result": "Passed",
+  "base": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15",
+  "draft": {
+    "path": "tests/browser/kanban-touch.spec.ts",
+    "sha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5",
+    "uncommitted": true
+  },
+  "originalAssertionActionDeadlineLinesPreserved": 45,
+  "scope": "One existing browser-file source draft only; no runtime/API/schema/provider/security changes. Exact olddrop counts/neighbor/rank/version/reload/scroll/viewport/collision/pickup checks and60sdeadline remain. Newbounded5s native-touchMove admission emitsno touchEnd/write. No outertest retry added; originalworkers1/retries0/full8scope retained. Browsertypes34180exit0. Currentrun97870 mustfinish and exactsourcecommit/qualification/integration stillrequired."
+}

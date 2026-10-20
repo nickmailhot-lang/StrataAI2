@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-20T01:44:38.065Z",
+  "result": "Failed",
+  "baseRevision": "48bc8ab66c91c5aa9ee8ebe694374fcd702425ef",
+  "uncommittedNewTestSource": true,
+  "testSourceSha256": "72cd380d906a0e96b0a66412060536f19361291f19322eeea635fd29ed085e6a",
+  "sourceSnapshot": {
+    "path": "docs/delivery/evidence/cycle43-card-title-initial-source.cs.txt",
+    "sha256": "72cd380d906a0e96b0a66412060536f19361291f19322eeea635fd29ed085e6a"
+  },
+  "exitCode": 2,
+  "total": 4,
+  "passed": 2,
+  "failed": 2,
+  "skipped": 0,
+  "failedCases": "Both empty/whitespace rename variants",
+  "cause": "New test compared raw POST CardRecord response to Board Card projection. Board projection correctly includes hasCover:false absent from POST response; string equality failed at that projection difference after expected400 invalid_card_title.",
+  "classification": "New test fixture representation mismatch, not a demonstrated productvalidation failure. Bothcreatecases passed and bothrenamecases reached expectedvalidationerror before faulty comparison.",
+  "owner": "Delivery lead",
+  "resolution": "Read the canonical Board Card before rejectedrename and compare its complete sameprojection after rejection, retaining all identity/title/description/version/rank and correctedvalidrename assertions. No field exclusion, assertion skip, deadline/retry or runtime change.",
+  "rawTrxSha256": "c1e585285e3681e0ddde4f26bc03dd8e4585df9887e5cf18dfdcec7975b4b5c9",
+  "consoleSha256": "14fe4b9fa6c287c7930878dd5b6d97d8a168054bf119877f51d276efe4eef576",
+  "scope": "Actual initialfourcase localMTP result retained; cannot serve as passing verification. Original3case supportingbrowserworkflow remains separatelyPassed."
+}

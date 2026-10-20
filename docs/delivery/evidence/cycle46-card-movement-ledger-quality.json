@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-20T03:42:43.002Z",
+  "result": "Passed",
+  "source": "7a0417b31a81f7c453a292b82d8f8754c9aba8ae",
+  "ledgerInputSha256": "f1a1679608f95d42ab7a48f1848a48f1cb550894b23fcdfce02fa059c956cef6",
+  "items": 1598,
+  "done": 51,
+  "evidence": 783,
+  "results": [
+    {
+      "name": "contracts",
+      "exit": 0,
+      "artifact": "work/cycle46-card-movement-contracts.txt",
+      "sha256": "d214bb284ce06c2284b4546e353d03a7fd3baf0ca03f554143c3d09f5fbc7d0f"
+    },
+    {
+      "name": "evolution-main",
+      "exit": 0,
+      "artifact": "work/cycle46-card-movement-evolution-main.txt",
+      "sha256": "443c80dd44f9e77f1cdd75008a4e53ab14a0f51e9e061461f1a2803e98b9da8c"
+    }
+  ],
+  "captureHashesVerified": 4,
+  "scope": "Ledger integrity only: preserves local4Passed/4Failed native aggregate, tests gate Pending, Test result Failed and12Unverified criteria. Three audit records Testing; no new Done. Actual current audit candidate qualification and main integration remain pending."
+}

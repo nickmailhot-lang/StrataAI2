@@ -1,0 +1,149 @@
+{
+  "at": "2026-10-20T04:28:55.843Z",
+  "result": "Passed",
+  "auditImplementation": "a453ac2866f5c7bcb22b2e1af509e83d6dd36083",
+  "sourceCommit": {
+    "at": "2026-10-20T04:27:36.739Z",
+    "head": "a453ac2866f5c7bcb22b2e1af509e83d6dd36083",
+    "parent": "ac969dcdc395350ba38b1bc8827476d5997ecb48",
+    "paths": [
+      "docs/delivery/card-movement-production-followup.md",
+      "docs/delivery/evidence/cycle47-arch11-live-source.json",
+      "docs/delivery/evidence/cycle47-localhost-native-failed.json",
+      "docs/delivery/evidence/cycle47-owned-production-ip-cookie-failed.json",
+      "docs/delivery/evidence/cycle47-qualified-bundle-identity.json",
+      "docs/delivery/evidence/cycle47-secure-cookie-admission.json",
+      "docs/delivery/evidence/cycle47-sourcefree-native.json",
+      "docs/delivery/evidence/cycle47-startup-source-review.json",
+      "docs/delivery/evidence/cycle47b-touch-target-refusal.png",
+      "docs/delivery/evidence/cycle48-touch-browser-types.json",
+      "docs/delivery/evidence/cycle48-touch-draft-scope.json",
+      "docs/delivery/evidence/cycle48-touch-native8.json",
+      "docs/delivery/evidence/cycle48-touch-secure-admission.json",
+      "docs/delivery/evidence/cycle48-touch-source-review.json",
+      "docs/delivery/evidence/cycle48-touch-work-01.png",
+      "docs/delivery/evidence/cycle48-touch-work-02.png",
+      "docs/delivery/evidence/cycle48-touch-work-03.png",
+      "docs/delivery/evidence/cycle48-touch-work-04.png",
+      "docs/delivery/evidence/cycle48-touch-work-05.png",
+      "docs/delivery/evidence/cycle48-touch-work-06.png",
+      "docs/delivery/evidence/cycle48-touch-work-07.png",
+      "docs/delivery/evidence/cycle48-touch-work-08.png",
+      "docs/delivery/evidence/cycle48-touch-work-09.png",
+      "docs/delivery/evidence/cycle48-touch-work-10.png",
+      "docs/delivery/evidence/cycle48-touch-work-11.png",
+      "docs/delivery/evidence/cycle48-touch-work-12.png",
+      "docs/delivery/evidence/cycle48-touch-work-visual12.json",
+      "docs/delivery/release-runtime-rehearsal.md"
+    ],
+    "files": 28,
+    "allFilesystemEvidenceHashesVerified": 797,
+    "newIndexEvidenceHashesVerified": 13,
+    "nestedCaptureHashesVerified": 13,
+    "unchangedIndexArtifactsPreserved": true,
+    "sourceFix": "ac969dcdc395350ba38b1bc8827476d5997ecb48",
+    "softwareChangesInThisCommit": false,
+    "sourceFreeNative": "Passed/owned cleanup",
+    "touchNative": "8Passed/0Failed/0Skipped/0Retry",
+    "historicalFailedAggregatesPreserved": true,
+    "published": false,
+    "wholeCurrentCI": "Pending",
+    "mainIntegration": "Pending",
+    "scope": "New source-free/workflow audit output, source-only touch fix ac969 already parent. Existing implementation not restarted; new evidence output and source fix require own current qualification/actualmain beforeDone."
+  },
+  "scopedEvidence": [
+    {
+      "id": "EVID-CYCLE-47-ARCH11-LIVE",
+      "path": "docs/delivery/evidence/cycle47-arch11-live-source.json",
+      "sha256": "67218932e7f49707c85c8c940e16d33e2b7ee78f9a1a3f9a247fe5176e3cddb7",
+      "result": "Passed",
+      "observationContext": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15"
+    },
+    {
+      "id": "EVID-CYCLE-47-QUALIFIED-BUNDLE",
+      "path": "docs/delivery/evidence/cycle47-qualified-bundle-identity.json",
+      "sha256": "f1533bd805517ef54c4f96515ef2bf028653fd107e8bc1a13c97a1ad33901556",
+      "result": "Passed",
+      "observationContext": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15"
+    },
+    {
+      "id": "EVID-CYCLE-47-SOURCEFREE-NATIVE",
+      "path": "docs/delivery/evidence/cycle47-sourcefree-native.json",
+      "sha256": "3e59c3d59f787ad6329aa4c3d266743200e36f88700d7c9e8d6b15f5f333600c",
+      "result": "Passed",
+      "observationContext": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15"
+    },
+    {
+      "id": "EVID-CYCLE-47-STARTUP-SOURCE-REVIEW",
+      "path": "docs/delivery/evidence/cycle47-startup-source-review.json",
+      "sha256": "cd651b05e95e9aae70047079fc30f0eb3794ad428f7914f1e1c8d5ff3ff6ae61",
+      "result": "Passed",
+      "observationContext": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15"
+    },
+    {
+      "id": "EVID-CYCLE-47-IP-COOKIE-FAILED",
+      "path": "docs/delivery/evidence/cycle47-owned-production-ip-cookie-failed.json",
+      "sha256": "d73a4ee8b9e2b497eea1c8d2cfeb0a2c6e7bb761f9fb2db9f2d26667deaa2fee",
+      "result": "Failed",
+      "observationContext": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15"
+    },
+    {
+      "id": "EVID-CYCLE-47-LOCALHOST-NATIVE-FAILED",
+      "path": "docs/delivery/evidence/cycle47-localhost-native-failed.json",
+      "sha256": "71a2b600c31f49df74f8d043e0a61891025ce7eb9216262af0848b24f8f7c2f1",
+      "result": "Failed",
+      "observationContext": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15"
+    },
+    {
+      "id": "EVID-CYCLE-47-SECURE-COOKIE-ADMISSION",
+      "path": "docs/delivery/evidence/cycle47-secure-cookie-admission.json",
+      "sha256": "5ad255e42b0f8ab564382cf26a12bd479cb37162865beda31f5995dc774156a4",
+      "result": "Passed",
+      "observationContext": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15"
+    },
+    {
+      "id": "EVID-CYCLE-48-TOUCH-DRAFT-SCOPE",
+      "path": "docs/delivery/evidence/cycle48-touch-draft-scope.json",
+      "sha256": "43a21235369a9b87fdbc0055a5917fa04dbe5d549d7955b04e72564e40f0e145",
+      "result": "Passed",
+      "observationContext": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15"
+    },
+    {
+      "id": "EVID-CYCLE-48-TOUCH-NATIVE8",
+      "path": "docs/delivery/evidence/cycle48-touch-native8.json",
+      "sha256": "5129b00f4cab9ca18c622b45a3ebd3c47c2597eeeeea98419690e10f5837c545",
+      "result": "Passed",
+      "observationContext": "ac969dcdc395350ba38b1bc8827476d5997ecb48"
+    },
+    {
+      "id": "EVID-CYCLE-48-TOUCH-BROWSER-TYPES",
+      "path": "docs/delivery/evidence/cycle48-touch-browser-types.json",
+      "sha256": "a559b1fdebcebd5c3e521d041e0ec02c504f3882540b303eab7d916b6ee98598",
+      "result": "Passed",
+      "observationContext": "ac969dcdc395350ba38b1bc8827476d5997ecb48"
+    },
+    {
+      "id": "EVID-CYCLE-48-TOUCH-SECURE-ADMISSION",
+      "path": "docs/delivery/evidence/cycle48-touch-secure-admission.json",
+      "sha256": "72f591571822a12bd9f0d1477399a9f2fdd00416db1123d5c262d686cbfb96bf",
+      "result": "Passed",
+      "observationContext": "ac969dcdc395350ba38b1bc8827476d5997ecb48"
+    },
+    {
+      "id": "EVID-CYCLE-48-TOUCH-WORK-VISUAL12",
+      "path": "docs/delivery/evidence/cycle48-touch-work-visual12.json",
+      "sha256": "f036c6dfd6d004f986cecf5a49649406e7f569b9d6a785d36384ccf8ab5e121e",
+      "result": "Passed",
+      "observationContext": "ac969dcdc395350ba38b1bc8827476d5997ecb48"
+    },
+    {
+      "id": "EVID-CYCLE-48-TOUCH-SOURCE-REVIEW",
+      "path": "docs/delivery/evidence/cycle48-touch-source-review.json",
+      "sha256": "ef2f9c877d75828e5c31999b9fbf7efe04200f94ab3f256dc94baa5560d1fe78",
+      "result": "Passed",
+      "observationContext": "ac969dcdc395350ba38b1bc8827476d5997ecb48"
+    }
+  ],
+  "traceabilityScope": "New committed audit output verified by actual source/object/hash checks and preserved outcome separation. Runtime source-free execution used retained qualifiedh images and unchanged driver before this documentation commit. The host is not independently physically clean; managed providers/currentwholecandidateCI/mainintegration remain unproved. No claim this documentation commit already passed release CI or integrated.",
+  "sourceOnlyTouchFix": "ac969dcdc395350ba38b1bc8827476d5997ecb48"
+}

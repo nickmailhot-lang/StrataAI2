@@ -1,0 +1,83 @@
+{
+  "at": "2026-10-20T02:21:22.509Z",
+  "result": "Passed",
+  "auditImplementation": "57bded1a0d0e55aa001607a2f0b15b0b2f416161",
+  "sourceCommit": {
+    "at": "2026-10-20T02:16:56.186Z",
+    "head": "57bded1a0d0e55aa001607a2f0b15b0b2f416161",
+    "parent": "fba339dbba2fb35a8539634f707da54d0c48de57",
+    "paths": [
+      "docs/delivery/evidence/cycle44-live-issue3.json",
+      "docs/delivery/evidence/cycle44-live-issue5.json",
+      "docs/delivery/evidence/cycle44-navigation-qualified-source.json",
+      "docs/delivery/evidence/cycle44-work-navigation-01.png",
+      "docs/delivery/evidence/cycle44-work-navigation-02.png",
+      "docs/delivery/evidence/cycle44-work-navigation-03.png",
+      "docs/delivery/evidence/cycle44-work-navigation-04.png",
+      "docs/delivery/evidence/cycle44-work-navigation-05.png",
+      "docs/delivery/evidence/cycle44-work-navigation-06.png",
+      "docs/delivery/evidence/cycle44-work-navigation-07.png",
+      "docs/delivery/evidence/cycle44-work-navigation-08.png",
+      "docs/delivery/evidence/cycle44-work-navigation-09.png",
+      "docs/delivery/evidence/cycle44-work-navigation-10.png",
+      "docs/delivery/evidence/cycle44-work-navigation-11.png",
+      "docs/delivery/evidence/cycle44-work-navigation-12.png",
+      "docs/delivery/evidence/cycle44-work-navigation-native4.json",
+      "docs/delivery/evidence/cycle44-work-navigation-source-review.json",
+      "docs/delivery/evidence/cycle44-work-navigation-visual12.json",
+      "docs/delivery/work-navigation-adoption.md"
+    ],
+    "files": 19,
+    "auditOutputPathsPresent": true,
+    "indexArtifactHashesVerified": 770,
+    "captureHashesVerified": 12,
+    "existingUnderlyingImplementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "nativeActual": {
+      "qualifiedProductionCompatible": 8,
+      "currentSupportingDemo": 4
+    },
+    "currentManualCaptures": 12,
+    "softwareTestWorkflowChanges": false,
+    "scope": "Sourcepackage for newlyperformed auditactivity, not a newUIimplementation. Existingfeature code alreadymain; thisauditoutput is local/unpublished andrequires currenttracking/ownCI/actualmain beforeDone. No newDone."
+  },
+  "existingProductImplementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "actualScopedEvidence": [
+    {
+      "id": "EVID-CYCLE-44-LIVE-ISSUE3",
+      "path": "docs/delivery/evidence/cycle44-live-issue3.json",
+      "sha256": "61a0dcda1b7eb2a08a947095abe523a31486a099be9134d7460382419d644024",
+      "observationContext": "fba339dbba2fb35a8539634f707da54d0c48de57"
+    },
+    {
+      "id": "EVID-CYCLE-44-LIVE-ISSUE5",
+      "path": "docs/delivery/evidence/cycle44-live-issue5.json",
+      "sha256": "a99224491ca01167954b4cb1540a154482d249c325c18f748d9dbe3acc720d65",
+      "observationContext": "fba339dbba2fb35a8539634f707da54d0c48de57"
+    },
+    {
+      "id": "EVID-CYCLE-44-NAV-QUALIFIED-SOURCE",
+      "path": "docs/delivery/evidence/cycle44-navigation-qualified-source.json",
+      "sha256": "14a08e4c95247c6b88f159de02231bb812d1af121b6b30b8744b6a7b95ddb845",
+      "observationContext": "fba339dbba2fb35a8539634f707da54d0c48de57"
+    },
+    {
+      "id": "EVID-CYCLE-44-WORK-NATIVE4",
+      "path": "docs/delivery/evidence/cycle44-work-navigation-native4.json",
+      "sha256": "cff9889eb3a26b0da7ff21509f87175b8f205ed12516646a5621315e26d3d061",
+      "observationContext": "fba339dbba2fb35a8539634f707da54d0c48de57"
+    },
+    {
+      "id": "EVID-CYCLE-44-WORK-VISUAL12",
+      "path": "docs/delivery/evidence/cycle44-work-navigation-visual12.json",
+      "sha256": "73e812276a4d27ceddb13d1a96d9701230232a4f8fb99b23c41c32aefb0384db",
+      "observationContext": "fba339dbba2fb35a8539634f707da54d0c48de57"
+    },
+    {
+      "id": "EVID-CYCLE-44-NAV-SOURCE-REVIEW",
+      "path": "docs/delivery/evidence/cycle44-work-navigation-source-review.json",
+      "sha256": "b645f560410e78b3a62e1f582f1874226a49562fd3ba681e26429434ff641d7c",
+      "observationContext": "fba339dbba2fb35a8539634f707da54d0c48de57"
+    }
+  ],
+  "scope": "Newauditoutput is committedat57bd; underlyingunchangedUI is already inmain via113. Exactactualqualifiedh8native/47controls and freshsource-equivalentDemo4/12visual substantiate the scopedverification. No claim that57bdwasalreadyexecuted bywholeCI orintegrated; everyoriginalPRDobligation remains. No newruntime/test/workflowbehavior."
+}

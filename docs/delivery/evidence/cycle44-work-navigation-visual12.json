@@ -1,0 +1,76 @@
+{
+  "at": "2026-10-20T02:08:40.982Z",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "executedSource": "ff6c81abfc6900fe46c479e4dd4a32d2c5a0fbe9",
+  "auditBase": "fba339dbba2fb35a8539634f707da54d0c48de57",
+  "actuallyInspectedCaptures": [
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-01.png",
+      "sha256": "a6fe5a483ca62ddca78e31515425e1fc909ed97b852ca777fe3a8d5ce3b764e7",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--31662--→-keyboard-return-at-320px/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-02.png",
+      "sha256": "d9789573c96bb7c1067e08a61afe389bc597260b127beeb9576ff306f5156432",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--31662--→-keyboard-return-at-320px/work-navigation-320.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-03.png",
+      "sha256": "2526cb40ab29355ae7fbbdd8ec07bff03147198b22196f7af3f9de6c7724b118",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--31662--→-keyboard-return-at-320px/work-navigation-viewport-320.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-04.png",
+      "sha256": "ed30e2ad06f0844b2d05dbe0722976a9e57ff2a9f50671ce839e70ba9e5e7eed",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--42a34-→-keyboard-return-at-1280px/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-05.png",
+      "sha256": "ed5860e09f8dc3cc7f5f51e2622dae3ca72d86cdaa938427826cb4cca9534eed",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--42a34-→-keyboard-return-at-1280px/work-navigation-1280.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-06.png",
+      "sha256": "08a09cf9e02caf32bc47a8c1f9a90e8e5277bf81c431f9cf0123c13b513e5942",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--42a34-→-keyboard-return-at-1280px/work-navigation-viewport-1280.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-07.png",
+      "sha256": "e29b476aee2bb74db6b969200913b1ceb70eae3b01dab02a311b3d1a82c22709",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--8f4a6--→-keyboard-return-at-390px/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-08.png",
+      "sha256": "6db0942957d6903d540f0f62ab4d2ff5ad3edf437a95bbebfd89fac15736d3ea",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--8f4a6--→-keyboard-return-at-390px/work-navigation-390.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-09.png",
+      "sha256": "1b094d3f593d3b9b715d40c2b5472bec906e0572ab546e41878d4cc8a9163836",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--8f4a6--→-keyboard-return-at-390px/work-navigation-viewport-390.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-10.png",
+      "sha256": "550e14ff3df51518c23287b17c12110806680e379dddf89c11627370e8a66b7e",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--ac017--→-keyboard-return-at-768px/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-11.png",
+      "sha256": "e656c11b411733b7d038598b8d54e2b8a79f15ce27136e21c07b29bea928a5e1",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--ac017--→-keyboard-return-at-768px/work-navigation-768.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle44-work-navigation-12.png",
+      "sha256": "4f68541adf49274af934536a3118b79fd6162b758639b561ed28c97de0ca2b0d",
+      "originalRelativeCapture": "work-navigation-PRD-03-VS--ac017--→-keyboard-return-at-768px/work-navigation-viewport-768.png"
+    }
+  ],
+  "observations": [
+    "Bothphonewidths show a focused currentWork link inside the modal navigation with usableclosecontrol; actualviewport captures distinguish fullpagebackground belowdrawer.",
+    "Desktop currentWorklink remains prominent and focused in standardsharedMUI shell.",
+    "Tablet200%text visiblypersists withinSPA navigation; Worktarget stays entirelyvisible belowheader and pagecontentreflows without horizontalpageoverflow.",
+    "Allfourlogout captures show only neutral Signin UI; protectednav/Board/Cardnames withdrawn."
+  ],
+  "limits": "Twelve actual supportingDemo final/navigationcaptures. Separate automatedAxe/keyboard/role/geometry assertions and actualqualifiedProduction rolecases retained. No fullappWCAG/physicaldevice/screenreader/provider certification; no newlyexecutedProductionOrgactions inferred."
+}

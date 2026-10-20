@@ -1,0 +1,93 @@
+{
+  "at": "2026-10-20T02:08:40.982Z",
+  "result": "Passed",
+  "executedSource": "ff6c81abfc6900fe46c479e4dd4a32d2c5a0fbe9",
+  "auditBase": "fba339dbba2fb35a8539634f707da54d0c48de57",
+  "input": {
+    "at": "2026-10-20T01:56:03.419Z",
+    "source": "ff6c81abfc6900fe46c479e4dd4a32d2c5a0fbe9",
+    "qualifiedUnchangedSource": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "testPath": "tests/browser/work-navigation.spec.ts",
+    "testSha256": "6153e2d5127a9f7152df990e832680660fee1cf86dfcf1d68b37fe4b496f37db",
+    "configSha256": "e6dbcda2082c57fef65fda251aae25b4d9b6135c577e46b1c6eb875b86db4418",
+    "api": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "client": {
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "version": "0.1.0-local-card-focus"
+    },
+    "assets": [
+      {
+        "path": "/assets/index-WokoLKxv.js",
+        "sha256": "ba653f509a0fab4071718578b1fc832e4ce641ad700ff037e8d1dc7a3e814256"
+      },
+      {
+        "path": "/assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+      }
+    ],
+    "baseURL": "http://127.0.0.1:15188",
+    "cases": 4,
+    "workers": 1,
+    "retries": 0,
+    "originalPerCaseDeadlineMs": 120000,
+    "originalDefaultDeadlineMs": 30000,
+    "ordinaryDemoFixture": true,
+    "ratePacing": true,
+    "scope": "Original complete four-width Work directory→Board→Card keyboardnavigation/Back/return/logout-withdrawal/Axe/reflow scope;200%tablet within sameSPA document. No code/assertion/deadline/runtime/Worker change. Companion organization-actions.spec.ts explicitlyrequiresProduction and is not run or weakened against Demo; its current immutable/evidence remains separate. This is a supportingexistingWorknavigation audit; Cardledgerquality process remains solewriter."
+  },
+  "stats": {
+    "startTime": "2026-10-20T01:56:05.471Z",
+    "duration": 133389.13199999998,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 1280px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 768px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 390px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-03-VS-06-T-02: authorized Work directory → Board → Card → keyboard return at 320px",
+      "status": "Passed",
+      "attempts": 1
+    }
+  ],
+  "session": 18140,
+  "exit": 0,
+  "workers": 1,
+  "retries": 0,
+  "originalPerCaseDeadlineMs": 120000,
+  "rawReportSha256": "29e5c951a354559450af198277b05ff7fb583aa320486d9f454d3b3a892ef495",
+  "runtimeAfter": {
+    "api": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "client": {
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "version": "0.1.0-local-card-focus"
+    },
+    "servedAssetsUnchanged": true
+  },
+  "scope": "Full original four-width Work directory→Board→Card keyboardnavigation/Back/return/logoutwithdrawal/Axe/reflow supportingDemo scope; persistent200%within sameSPA document. No automatic protectedgraphwrites. Production-onlyOrgactions remains separatelyactuallyqualified8c68 evidence; notrun/weakenedagainstDemo."
+}

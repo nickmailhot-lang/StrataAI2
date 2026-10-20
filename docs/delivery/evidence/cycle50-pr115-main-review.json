@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-20T04:54:14.543Z",
+  "head": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "integration": {
+    "observedAt": "2026-10-20T04:52:00.525Z",
+    "pullRequest": 115,
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/115",
+    "head": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+    "mainBefore": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+    "mergeCommit": "0c9fea7d66d238262223a12bc86a4f3861eb7b10",
+    "mergedAt": "2026-10-20T04:51:21Z",
+    "parents": [
+      "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+      "ebcbe01f5847615a54b2ae488fd2ec06eca5de00"
+    ],
+    "qualifiedTree": "dd265cc69482329c6c0cd837f39e022ae16a76a8",
+    "synthetic": "31061e602f303c52eaa29bcded26e8ed57fc0d6e",
+    "qualifiedTreeEqualsActualMain": true,
+    "normalMerge": true,
+    "fullHistoryVerified": true,
+    "heldSourcesExcluded": true,
+    "requiredChecks": {
+      "passed": 22,
+      "total": 22,
+      "head": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+      "artifact": "StrataAI2-PR115-required-checks.json",
+      "sha256": "c80ba2783ffa5c61711314b1398f68381a13200a696e86c5f7b514f484ea234d"
+    },
+    "native": {
+      "browserPassed": 477,
+      "notificationPassed": 93,
+      "boardCreationAndRecoveryPassed": 6,
+      "originalMailProfileSkips": 2,
+      "strictCorrespondingMailPasses": 2
+    },
+    "mainLedger": {
+      "items": 1595,
+      "done": 33,
+      "evidence": 747
+    },
+    "acceptance": "Merge verified. Scoped acceptance reconciliation is separate; no parent PRD or MVP closure claimed."
+  },
+  "review": {
+    "at": "2026-10-20T04:50:25.730Z",
+    "number": 115,
+    "head": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+    "mainBefore": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+    "synthetic": "31061e602f303c52eaa29bcded26e8ed57fc0d6e",
+    "parents": [
+      "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+      "ebcbe01f5847615a54b2ae488fd2ec06eca5de00"
+    ],
+    "tree": "dd265cc69482329c6c0cd837f39e022ae16a76a8",
+    "all22OwnRequiredChecksPassed": true,
+    "checksObservedAt": "2026-10-20 04:45:31 UTC",
+    "checksSha256": "c80ba2783ffa5c61711314b1398f68381a13200a696e86c5f7b514f484ea234d",
+    "reviews": 0,
+    "unresolvedThreads": 0,
+    "sourceReview": {
+      "reviewer": "Delivery lead (agent)",
+      "result": "Passed",
+      "paths": 44,
+      "codeScope": "18line browser-only change persists200% acrossreload/return and checks32px/Axe/overflow. Existingnative roles/actions/denial/deadline/retries unchanged.",
+      "attributes": "Four exact immutable command-byte artifacts declaredbinary/-eol to preserve recordedCRLF/terminalblank bytes; no source/test/security/CI gate bypass.",
+      "historicalFailuresRetained": true,
+      "newUnsupportedDone": false,
+      "runtimeSchemaAPIWorkerDependenciesChanged": false
+    },
+    "native": {
+      "board": 6,
+      "browser": 477,
+      "profileMailSkips": 2,
+      "strictMatchingMailPasses": 2,
+      "notification": 93
+    },
+    "fullHistoryHeldSourcesExcluded": true,
+    "ledger": {
+      "items": 1595,
+      "done": 33,
+      "evidence": 747
+    },
+    "readyForNormalExpectedHeadMerge": true,
+    "actualIntegration": "Pending"
+  },
+  "scope": "Agent source/review/tree/ancestry inspection; no human approval invented. Normal expected-head merge, actual main parents/tree and held-source exclusion verified. Scoped task acceptance only; parentPRD remains open."
+}

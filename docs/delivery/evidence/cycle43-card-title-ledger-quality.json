@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-20T01:56:33.129Z",
+  "result": "Passed",
+  "source": "ff6c81abfc6900fe46c479e4dd4a32d2c5a0fbe9",
+  "sourceSha256": "2d254f8359ebf390d6b929eb71a0979c8bfcf91cfd53245c04d10cc577726698",
+  "ledgerInputSha256": "11cf6972ec899081d03b6fcbe1c4ece573b259808fd78b43533bbb141282fb6a",
+  "items": 1598,
+  "done": 42,
+  "evidence": 763,
+  "states": "NewCardTask/twoTestsTesting; originalparentcriteriaUnverified; no newDone",
+  "results": [
+    {
+      "name": "contracts",
+      "exit": 0,
+      "artifact": "work/cycle43-card-title-ledger-contracts.txt",
+      "sha256": "9a61a085446cabf5253f732e95b49ac93c29921d34d1b51833c872dd0515bec9"
+    },
+    {
+      "name": "evolution-main",
+      "exit": 0,
+      "artifact": "work/cycle43-card-title-ledger-evolution-main.txt",
+      "sha256": "443c80dd44f9e77f1cdd75008a4e53ab14a0f51e9e061461f1a2803e98b9da8c"
+    }
+  ],
+  "nestedCaptureAndFailureSourceHashesVerified": 10,
+  "scope": "Current enriched1598/42Done/763evidence actualsource, artifacthashes, GitintegrationofexistingDone, baseline and append-only evolution plus original36contracts passed. CurrentnewCardsource wholeCI/security/roles/review/actualtargetintegration remainpending. Listmetadata and PR115 publication/qualification remain distinct."
+}

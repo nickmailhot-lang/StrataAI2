@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-20T03:55:39.036Z",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "existingImplementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "auditBase": "4a30164284b6ee44ba2a50e6ec2e38fce0352e15",
+  "sourcePaths": [
+    {
+      "path": "scripts/ci/test-release-bundle-startup.sh",
+      "blob": "4db1a37ec317a393491a9383b00d04ba319710ac",
+      "sha256": "2e1b43124d0f00ddf9dc2376f2a95b6d194bd6b18f4f88bff20367687f988242"
+    },
+    {
+      "path": "scripts/ci/verify-image-labels.py",
+      "blob": "8e51e897b18dd636717eefe845e8abec345e42d2",
+      "sha256": "c8dd6ed113dd3cc3999eb8c15601f71ce9180d2fe722dc1f51a97e3e6f614417"
+    },
+    {
+      "path": "scripts/record-release.py",
+      "blob": "30317720576bcc03875304c419b662493d3159e1",
+      "sha256": "a5d590c11cb0d705e618ed1513d2e012df38d421f4ef797bc145312ab8e1441b"
+    },
+    {
+      "path": "scripts/verify-release-runtime.sh",
+      "blob": "df51e9b2b1ec825a6af8c33de1cc5bc542564acf",
+      "sha256": "13e79c9da87b63ec04f72787ed0ee9bc50aa5fb1c36b79cd7e2cf1c9957e7b7d"
+    },
+    {
+      "path": "compose.release.yml",
+      "blob": "19703889aca2e2d8781150c1092552595122bc63",
+      "sha256": "05c50091b01217d535340cc1ee1bc6d3e060e789a2492e00aa16fd1e84dcb0c7"
+    }
+  ],
+  "mapping": {
+    "ARCH-11-FR-052": "Original full driver checks graceful API/Worker exits withoutOOM, same container/image restart, actualreadiness and acceptance-record refusal whileWorkerstopped.",
+    "ARCH-11-FR-082/AC-012": "Authenticated retained payload has no .git/apps/src, loads original three images, applies packagedmigrations/provisioners and uses bundled runtime commands without source build. Freshlocalnamespace/datavolume proves deployablepayload consumer workflow; separate physicallycleanhost certification notclaimed.",
+    "Audit/trace": "Original qualified h22/mainintegration remain canonical; new rehearsal/audit output is new work and must integrate before its verificationrecordsDone."
+  },
+  "uxApplicability": "Operator/system workflow with literal documented entry→image load→migrations→health/readiness→outage/restart/rotation→cleanup. No productUI change; UXA consumerresult demonstrated. Product role/responsive/a11y obligations remain separate.",
+  "securityRoles": "Original restricted runtime roles, safe health errors, previous-password refusal, exact-image and unavailable-Worker acceptance refusal execute against ownfreshProduction database. No existingusers/data/grants/Worker changed.",
+  "limits": "No real two-version application rollback, managedcredentials/providers, physicallycleanmachine or broadARCH11/MVPclosure."
+}

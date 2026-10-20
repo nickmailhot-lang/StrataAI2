@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-20T02:32:48.315Z",
+  "result": "Passed",
+  "source": "57bded1a0d0e55aa001607a2f0b15b0b2f416161",
+  "ledgerInputSha256": "279d6c4ace79f7504b602d3f27653df0df012a7ae54a9561e4a39c5e628150d0",
+  "items": 1598,
+  "done": 42,
+  "evidence": 771,
+  "states": "ThreeNavverificationrecordsTesting; fiveoriginalcriteriaUnverified; no newDone",
+  "results": [
+    {
+      "name": "contracts",
+      "exit": 0,
+      "artifact": "work/cycle44-work-navigation-ledger-contracts.txt",
+      "sha256": "ff4d729b7405cd3a272ec37ef85030f4121fb4405cab8c6549ce8d6148e3b04c"
+    },
+    {
+      "name": "evolution-main",
+      "exit": 0,
+      "artifact": "work/cycle44-work-navigation-ledger-evolution-main.txt",
+      "sha256": "443c80dd44f9e77f1cdd75008a4e53ab14a0f51e9e061461f1a2803e98b9da8c"
+    }
+  ],
+  "nestedCaptureHashesVerified": 12,
+  "scope": "Currentenriched1598/42Done/771evidence whole36contracts and exactsource/artifacthash/Git/baseline/evolutionPassed. Already-integratedunderlyingUI andnewauditoutput areseparate; newauditoutput ownCI/review/targetintegration remainsrequired. CardthreeTesting andPR115currentU pendingqualification unchanged."
+}

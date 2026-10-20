@@ -1,0 +1,1019 @@
+{
+  "at": "2026-10-20T05:01:11.446Z",
+  "result": "Passed",
+  "qualifiedHead": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "run": 39351044510,
+  "passed": 16,
+  "categories": {
+    "recovery": [
+      {
+        "tag": "full1",
+        "job": 118408004569,
+        "line": "2026-10-20T02:16:07.3835711Z   ✓   36 tests/browser/board-creation-recovery.spec.ts:8:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 1280px (4.0s)"
+      },
+      {
+        "tag": "full1",
+        "job": 118408004569,
+        "line": "2026-10-20T02:16:36.7112610Z   ✓   37 tests/browser/board-creation-recovery.spec.ts:8:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 768px (4.3s)"
+      },
+      {
+        "tag": "full1",
+        "job": 118408004569,
+        "line": "2026-10-20T02:17:05.0984175Z   ✓   38 tests/browser/board-creation-recovery.spec.ts:8:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 390px (3.4s)"
+      },
+      {
+        "tag": "full1",
+        "job": 118408004569,
+        "line": "2026-10-20T02:17:34.6111315Z   ✓   39 tests/browser/board-creation-recovery.spec.ts:8:7 › PRD-04-VS-01: Board draft survives lifecycle transport loss and explicit original-key retry at 320px (4.5s)"
+      }
+    ],
+    "account": [
+      {
+        "tag": "full1",
+        "job": 118408004569,
+        "line": "2026-10-20T02:15:11.6778901Z   ✓   34 tests/browser/board-creation-account.spec.ts:7:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 1280px (1.9s)"
+      },
+      {
+        "tag": "full1",
+        "job": 118408004569,
+        "line": "2026-10-20T02:15:38.3982021Z   ✓   35 tests/browser/board-creation-account.spec.ts:7:7 › PRD-04-VS-05/AC-05: account replacement cannot turn original Board retry into another actor's creation at 390px (1.7s)"
+      }
+    ],
+    "directory": [
+      {
+        "tag": "full3",
+        "job": 118408004505,
+        "line": "2026-10-20T02:42:22.3038363Z   ✓   13 tests/browser/organization-board-live.spec.ts:7:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 1280px (21.0s)"
+      },
+      {
+        "tag": "full3",
+        "job": 118408004505,
+        "line": "2026-10-20T02:43:08.8434810Z   ✓   14 tests/browser/organization-board-live.spec.ts:7:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 768px (21.5s)"
+      },
+      {
+        "tag": "full3",
+        "job": 118408004505,
+        "line": "2026-10-20T02:43:55.0851736Z   ✓   15 tests/browser/organization-board-live.spec.ts:7:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 390px (21.2s)"
+      },
+      {
+        "tag": "full3",
+        "job": 118408004505,
+        "line": "2026-10-20T02:44:40.7735906Z   ✓   16 tests/browser/organization-board-live.spec.ts:7:7 › PRD-04/18: ordinary directory replays genuine sources and withdraws private MEMBER access at 320px (20.7s)"
+      },
+      {
+        "tag": "full3",
+        "job": 118408004505,
+        "line": "2026-10-20T02:45:35.8024143Z   ✓   17 tests/browser/organization-board-live.spec.ts:131:7 › PRD-04/18: archive directory consumes original Worker events and recovers private scope at 1280px (30.0s)"
+      },
+      {
+        "tag": "full3",
+        "job": 118408004505,
+        "line": "2026-10-20T02:46:29.6997183Z   ✓   18 tests/browser/organization-board-live.spec.ts:131:7 › PRD-04/18: archive directory consumes original Worker events and recovers private scope at 390px (28.9s)"
+      },
+      {
+        "tag": "full3",
+        "job": 118408004505,
+        "line": "2026-10-20T02:47:11.6842723Z   ✓   19 tests/browser/organization-board-live.spec.ts:219:5 › PRD-04/05: phone archive scope excludes other Boards and withdraws review after Organization membership removal (17.0s)"
+      }
+    ],
+    "broad": [
+      {
+        "tag": "full1",
+        "job": 118408004569,
+        "line": "2026-10-20T02:38:56.6961353Z   ✓   69 tests/browser/board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (6.5s)"
+      },
+      {
+        "tag": "full1",
+        "job": 118408004569,
+        "line": "2026-10-20T02:39:28.1306775Z   ✓   70 tests/browser/board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (6.4s)"
+      },
+      {
+        "tag": "full1",
+        "job": 118408004569,
+        "line": "2026-10-20T02:39:59.1044354Z   ✓   71 tests/browser/board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (5.9s)"
+      }
+    ]
+  },
+  "sourceIdentity": {
+    "runtimeAndSecurityCodeUnchangedFromIntegratedH": true,
+    "accountDirectoryBroadTestBlobsIdentical": true,
+    "recoveryFixture": "Original assertions retained; sourceU adds persistent200% and post-reload/return checks in separately integrated Task04. Do not call entire h/U recovery fixture byte-identical."
+  },
+  "sourceQualification": {
+    "at": "2026-10-20T01:51:48.601Z",
+    "result": "Passed",
+    "head": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+    "synthetic": "31061e602f303c52eaa29bcded26e8ed57fc0d6e",
+    "run": "39351044510",
+    "actualArtifactMetadata": [
+      {
+        "at": "2026-10-20T01:49:19.524Z",
+        "id": 12234237910,
+        "name": "source-test-results-dotnet-31061e602f303c52eaa29bcded26e8ed57fc0d6e",
+        "size": 150362,
+        "digest": "sha256:0eaa887a26dbb720b79c60b5d9793b21df4153ab90add3411dbed2af0d4b7c76",
+        "run": 39351044510,
+        "head": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+        "sha256": "0eaa887a26dbb720b79c60b5d9793b21df4153ab90add3411dbed2af0d4b7c76",
+        "verifiedBytes": 150362,
+        "scope": "ActualcurrentPR115U source-results ZIP obtained through connectedGitHub artifactdownload, provider digest/size/run/head verified; temporaryURL excluded."
+      },
+      {
+        "at": "2026-10-20T01:50:15.008Z",
+        "id": 12232589845,
+        "name": "source-test-results-web-31061e602f303c52eaa29bcded26e8ed57fc0d6e",
+        "size": 133221,
+        "digest": "sha256:c695f599b2c7544eeb339fac9b404a1962130679aa879b51eaa0bc653e24d0e3",
+        "run": 39351044510,
+        "head": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+        "sha256": "c695f599b2c7544eeb339fac9b404a1962130679aa879b51eaa0bc653e24d0e3",
+        "verifiedBytes": 133221,
+        "scope": "ActualcurrentPR115U source-results ZIP obtained through connectedGitHub artifactdownload, provider digest/size/run/head verified; temporaryURL excluded."
+      }
+    ],
+    "rawDotnetJsonSha256": "4bf2c53dd9efa2b6f85ed2cfa941f33936e6071b66e36e08c1dcb74298d80239",
+    "rawWebJsonSha256": "0de62119200530f2f51f076e74cea25d36aefe9fb5a9ae65e4d9567db930f59e",
+    "boardApiCases": [
+      {
+        "caseId": "b7f6afccf745e8924946f82621d446ea6e7f7f214e6905d2508114f2ee2781c7",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_original_Board_creation_actor_survives_account_replacement_and_legacy_replay",
+        "outcome": "passed",
+        "durationMs": 1762
+      },
+      {
+        "caseId": "08f13c95ff23304ac73e2fa58b8a6a04e3960ce9db46e0f15b6627df467e874a",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation",
+        "outcome": "passed",
+        "durationMs": 1804
+      },
+      {
+        "caseId": "35e9076cfacbf938aaa9ff9bbc3e4d7a7dc9dea9cc7bc21d347bfdc4311ceb85",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation",
+        "outcome": "passed",
+        "durationMs": 1791
+      },
+      {
+        "caseId": "07f7766bea1e76cfab12642361cdd3f65d434cbe080d9ce4ed6d4c3f959e5b79",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation",
+        "outcome": "passed",
+        "durationMs": 1773
+      },
+      {
+        "caseId": "c059304b0f20090346ccd6ea2dfb5657c3d92b2d4560e5703aec98ac4fe7d45a",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_expected_actor_refusal_precedes_graph_mutation",
+        "outcome": "passed",
+        "durationMs": 1790
+      },
+      {
+        "caseId": "c8ffef9d28e40b84f62c9050ee0725eb2b2479265634c244a6a7115b57d9093d",
+        "source": "StrataAI.Api.Tests.ApiHostTests.PRD_04_creation_without_expected_actor_preserves_legacy_receipt",
+        "outcome": "passed",
+        "durationMs": 2121
+      }
+    ],
+    "boardComponentGroups": [
+      {
+        "file": "src/features/organizations/OrganizationHome.test.tsx",
+        "passed": 69,
+        "cases": [
+          {
+            "caseId": "9d7f9f3a486b93f9e52e9d3e14f8326a97592cbac0229d2d226e42dce9b281e6",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 678.776
+          },
+          {
+            "caseId": "e4f40b13bf81deaac9d2dc367eae750ed5dc192a447e223431fe3cb54d394fae",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 291.541
+          },
+          {
+            "caseId": "e81df8d531a24fe6d80981f4754c075b9abf35f429327bd6d8107631b9a96da1",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 268.006
+          },
+          {
+            "caseId": "6de41337d30839a1ca323b635cae32dfa211f042a6a03a80772973795b8739f4",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 352.963
+          },
+          {
+            "caseId": "82fd515efff586fe34fd144958cb417a457a2d01005c439847e29dd335b93e16",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 232.58
+          },
+          {
+            "caseId": "99293b5c05db6b63e111d0233165d146487a835914a30e1dbcfc8e750f44315c",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 195.249
+          },
+          {
+            "caseId": "8cc85aa2e67be3644765185e12ccecf41dcde158259007535220a3cbb4157a72",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 206.013
+          },
+          {
+            "caseId": "d5fd6cf5fdd6b05702590a4380110b1211eedf58a0587852bb3437e7f056aabf",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 148.096
+          },
+          {
+            "caseId": "ad50a592c946e20f1706e256f652d32cd5d0c44551b38bf96760399c349024db",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 173.589
+          },
+          {
+            "caseId": "e9751ae21174d564e0bade773c3800cd5ee31794c1c61088c11a482ce5f354a9",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 305.634
+          },
+          {
+            "caseId": "b31bf3b3ad6cb0f4ac81a7058146370adead6422fe59354dd638494124097811",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 14.981
+          },
+          {
+            "caseId": "59a0fa2b0bc2cffe862c77660e13a29347f502ba97c9ff76e316e3ef69505d51",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 13.295
+          },
+          {
+            "caseId": "2f8ca9d742aa81a28e8cc67702ba7226576490948957189e3146af3b3621b159",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 13.809
+          },
+          {
+            "caseId": "dfee0594b9e3aa1df62d7ca3421fed837916dab7b7f594440a3c6dad0ae20f9a",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 14.534
+          },
+          {
+            "caseId": "dbd458d19cc285aa5f736b4c9b5e86955a5ce23483cfcee7d17d57022f2818fa",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 16.588
+          },
+          {
+            "caseId": "7dd29426ffa6f1d668725fb7301b583f973a77df06ce8dc932516cddaa9eb83c",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 22.571
+          },
+          {
+            "caseId": "41085846facee35967e779c933f852370be5fe15bb3783fc61189a5e350a8c21",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 20.149
+          },
+          {
+            "caseId": "b8eb00148de11c07d912cfdfe6329f7594c11261dd8e04b2d2e0a95ea364eeb8",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 118.754
+          },
+          {
+            "caseId": "0ee8726324a007b36b8dd4d64031e8a52e9278417b363f460af774ee26cd371a",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 88.097
+          },
+          {
+            "caseId": "c15bdb3a0fc43a110a175f890a4f73f0e1b52b9cea66f0bcce380d97de23d7fb",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 37.236
+          },
+          {
+            "caseId": "7dd4f334343b073d0af480d2dff7d8ae13c2ef497bcbd85d5aaad1eff11ffba8",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 38.723
+          },
+          {
+            "caseId": "77643a85bb8a8eaabbc5f7a014fbdf5aaf24f45b43ce20e86831481c89815bd4",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 78.907
+          },
+          {
+            "caseId": "f35c0a4b235c039e04699f7c9d3a10c6d088cae8fb617c4a2d58b55bedd60bc0",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 36.144
+          },
+          {
+            "caseId": "373e3a2712f4a4dfc27e81cc05a0f4ea72811b68e10d7dee1707faa1ac8ef7d4",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 40.199
+          },
+          {
+            "caseId": "5d5674f88f645fcc9cec2aca3c5421060f1aeb8389452c005811191bc7965f76",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 103.457
+          },
+          {
+            "caseId": "3a6f34d7411b41b7500bd7bfd29eab8a718003e7c5783972eb7d7c367c2eff20",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 113.993
+          },
+          {
+            "caseId": "f42a197338c25a16373a13081051c316a831b9b3e8a641e9c36571582b90d6ab",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 44.323
+          },
+          {
+            "caseId": "5827d1a6259d8a7eb9bdc17a1043523c243e7b218997f3a0a62baa6d2d459d22",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 89.829
+          },
+          {
+            "caseId": "8de62680ea347d3b1ab99ef6c42cac2a0416d81b3302f53276cf0d9de4eb0e15",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 28.036
+          },
+          {
+            "caseId": "d63efb83266421df116c7cbe3a5022754cdb454d7914e157ea2665724fd0ac0e",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 20.381
+          },
+          {
+            "caseId": "41cc4294d12f81aaf73926e84a5be4537a5e588926df6f82abf129ae09b0e8e5",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 22.127
+          },
+          {
+            "caseId": "67079bf784dc020a2deec0551f6e14d5883f6bad3556fc5bda93cfe0123fb744",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 21.594
+          },
+          {
+            "caseId": "593e002c376ba913d3ec887865ee53429c51ed3f0b692332eb5407e06430f08e",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 137.966
+          },
+          {
+            "caseId": "018fa400cb82379d8abcc6634d16bb5e4a4bb4cc9c83dceb315e54b6a2a10f09",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 192.464
+          },
+          {
+            "caseId": "b277229b8f30e253273864692e47ba4c9a71982fad26af9e32d9286745958ba7",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 19.04
+          },
+          {
+            "caseId": "6e77b466cbd99b96fe4c8708ff2414c9d0be03cce25ad05e50c8a98ebe91a41b",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 56.943
+          },
+          {
+            "caseId": "694389b20907d0ddea843bebcbcf4e5ed52f2cbf221b747267fc9a8da0f15637",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 202.989
+          },
+          {
+            "caseId": "48b0f5add8621271ad625809834d2e09f7ee8ec5a6ac757e1d2099f6d3f7d74d",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 189.441
+          },
+          {
+            "caseId": "a723da863daf3a20c72fce6e409c3a63d29b7edcaa2537cf26fd72a061549db9",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 88.497
+          },
+          {
+            "caseId": "93588646baa30ac112965f096844a6aa208af507e2fcfceb4b1f3940e3778e05",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 88.493
+          },
+          {
+            "caseId": "d0e6e0b6be45d0b36d623e4f18f7ba09e422797659a699d5eb0d58f69a1aec7f",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 84.195
+          },
+          {
+            "caseId": "f8a2e6cff6809f6457cc78d11ac54dffaaa5fafe8a4d0cc36f5a4906483264bf",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 78.829
+          },
+          {
+            "caseId": "87d6ac6302e6e0bf970f4f305893fc02aedda1494a05060e34f2988956834268",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 182.9
+          },
+          {
+            "caseId": "26da54cae4c3eaed7d101547548dae58b9110943f27e72e0def33e8cfd3c0c8b",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 117.117
+          },
+          {
+            "caseId": "f80dd2d08d1141d6f61ed8f0b77a98213af2c5068559ff6bc4bd1f52a101bd8a",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 63.045
+          },
+          {
+            "caseId": "0c2a2a6e78d6707203fd7f8ef0a3d7dc114452474fa8c24792e2fcf7476e7431",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 191.658
+          },
+          {
+            "caseId": "888ffbddad37d21ca496c19e6eb772e96effd275c4ada7dbaf6b73ad1f030b87",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 84.883
+          },
+          {
+            "caseId": "18a607c0ddda025e089c1e136a06f31ebd9f9f34e7e5f9bd979334aa4fcee5be",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 12.91
+          },
+          {
+            "caseId": "723b1461cc8e5d18a338aff6d43e0827ad2a2da13e09c669b948cfb6c8396946",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 17.101
+          },
+          {
+            "caseId": "8cc57869b9cc52c16ac4b546d018b8788dec14c8f1de2f5a405381d851db710c",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 12.689
+          },
+          {
+            "caseId": "48b640a0ae6b2d524a55f22d43862ca19a27f9dcfd42ac66d7075813e81aa089",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 19.123
+          },
+          {
+            "caseId": "8ec14abfbc2a302c5d257ee2fa61708914f609bf524f991ee672da9fbd675787",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 16.635
+          },
+          {
+            "caseId": "814c3fefdc33aa541f2f58329e338f792d94e10630acec91d53c965d994f2642",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 12.785
+          },
+          {
+            "caseId": "1ee2c34e0e94dd456d8d3240c669f479a01d44c40d93af35f9cc346efc9ee4d6",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 12.619
+          },
+          {
+            "caseId": "2c497926a9aa4a6880a4a5d1b406123d832d6fedbf1a2eaef6fb488aea92168d",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 11.755
+          },
+          {
+            "caseId": "63c98a9f4d4a35371d7ca31700fa3af4c56d0f735cba49a89bdb4748435e2c49",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 29.051
+          },
+          {
+            "caseId": "d1ea6bad22e4f8921c0483122e448f6b4a4df49db11ba77526c395a3e07eb5a7",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 166.591
+          },
+          {
+            "caseId": "c1c7179d0d6a009cd561707baa60dac5b8e0b9a12d40850de387eb04bf910b41",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 142.92
+          },
+          {
+            "caseId": "495dd633b253e89b1638328fd7ee736f9e8e6750c265b440b341ac87b2cee6b9",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 11.882
+          },
+          {
+            "caseId": "a8726e004a3e17c752822b4ec01e35714cbbe8c53ac8389c3fdc5f56fd1ad997",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 167.802
+          },
+          {
+            "caseId": "4d35edfd9d2f6d7e0be5ebd3dc6d6fa107c137cfca18a8fb4aafb8f10c2530a9",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 19.617
+          },
+          {
+            "caseId": "d2c84dafdf81960b88e43001574941825e60a3b728502f03f575c2944042df50",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 48.145
+          },
+          {
+            "caseId": "5e9c5de9b823ddc362c3a3e883dec018916d60ea8031a43a4c27086f91fe244e",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 75.604
+          },
+          {
+            "caseId": "40988bdc72a3bd21d2f70db80806a63a3360a82fdf86c333327b648693d4f136",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 40.567
+          },
+          {
+            "caseId": "82b7dff431c37450d2a86476a0ea79ef0589188c2c92de4f3018e33b2507e773",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 37.43
+          },
+          {
+            "caseId": "b5e4694e5f3cf96562c5b48008cfbebaa6cff14e85f0dba7d5564f391a83b7d2",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 25.929
+          },
+          {
+            "caseId": "13f565555a9090c806b563b5e995bb86d520c8d65cf4afac2b6ac3edf532ce0e",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 14.986
+          },
+          {
+            "caseId": "6740e91717068c7843351d79d0e94117e8e03fcbb71538a0bed04a7e5c4294d0",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 16.092
+          },
+          {
+            "caseId": "0016985b62bfe6faebdb1c707c1851ffa8994465501f84281dacacb80ab3c57d",
+            "source": "src/features/organizations/OrganizationHome.test.tsx",
+            "outcome": "passed",
+            "durationMs": 110.054
+          }
+        ]
+      },
+      {
+        "file": "src/features/organizations/OrganizationHome.focus.test.tsx",
+        "passed": 2,
+        "cases": [
+          {
+            "caseId": "25f793429d36c4dedf03ea49d3cb21521b1e726a5ecf1122ab649e981f850ca0",
+            "source": "src/features/organizations/OrganizationHome.focus.test.tsx",
+            "outcome": "passed",
+            "durationMs": 751.677
+          },
+          {
+            "caseId": "d7b99edfb5b75933e7f6336fb9f51b15a0ea990a903f7d1bd34eb33574163a11",
+            "source": "src/features/organizations/OrganizationHome.focus.test.tsx",
+            "outcome": "passed",
+            "durationMs": 307.482
+          }
+        ]
+      },
+      {
+        "file": "src/features/organizations/OrganizationHome.actions.test.tsx",
+        "passed": 7,
+        "cases": [
+          {
+            "caseId": "e809b276d4da81863bc10b3a471467f61c706c9f5ac33494e609c0f07207264a",
+            "source": "src/features/organizations/OrganizationHome.actions.test.tsx",
+            "outcome": "passed",
+            "durationMs": 402.089
+          },
+          {
+            "caseId": "66cf5f8569da291192b026c68793911241f7bb593a82802d67859a56c0776fb1",
+            "source": "src/features/organizations/OrganizationHome.actions.test.tsx",
+            "outcome": "passed",
+            "durationMs": 111.613
+          },
+          {
+            "caseId": "0534ed4ccd07f89f425af50caf0cf1c4e1d3e1be121a2482ca33a16eb5f39434",
+            "source": "src/features/organizations/OrganizationHome.actions.test.tsx",
+            "outcome": "passed",
+            "durationMs": 75.034
+          },
+          {
+            "caseId": "c28a031687c8396693bce2048a740cc8d1fe7df325fe27731007166522fdf6a9",
+            "source": "src/features/organizations/OrganizationHome.actions.test.tsx",
+            "outcome": "passed",
+            "durationMs": 40.246
+          },
+          {
+            "caseId": "16b989117ce07cbc5c9457cdeca95917ce5aea7697cd3c77e335dd9d0f6baa51",
+            "source": "src/features/organizations/OrganizationHome.actions.test.tsx",
+            "outcome": "passed",
+            "durationMs": 118.355
+          },
+          {
+            "caseId": "a4b938b9a6b28f1405b3e21a33a998ac7bd36b586277eb545a7b659b1b7440b4",
+            "source": "src/features/organizations/OrganizationHome.actions.test.tsx",
+            "outcome": "passed",
+            "durationMs": 108.481
+          },
+          {
+            "caseId": "6b6223dda450c044225698d3f72da7c839d69a7a6cfd9f46a82f11e9c58919c5",
+            "source": "src/features/organizations/OrganizationHome.actions.test.tsx",
+            "outcome": "passed",
+            "durationMs": 371.466
+          }
+        ]
+      },
+      {
+        "file": "src/features/kanban/organizationBoardLive.test.ts",
+        "passed": 17,
+        "cases": [
+          {
+            "caseId": "097bf3399b8ec3d51cfdfb6790f9a5f5f72a5cd6561d1cd35bc1a2b7510c0001",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 7.872
+          },
+          {
+            "caseId": "097adc32ee89c7b8ca71d9c2547a246370f4e520c2bee3d39d9a2821bd2f4a70",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 1.904
+          },
+          {
+            "caseId": "8f8233570b0e2d1a483679d777de0842defdfb31bf6aa80913311b709f9fe6bb",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.948
+          },
+          {
+            "caseId": "c4be6f20c7af16887738da1667c1168a131960f0b4717b00dbe5c37ca867e2ff",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 1.187
+          },
+          {
+            "caseId": "1e55b870165c239c27c3fe09bb1d89fa644a70f81b513eb9037a4aaf6aca94e9",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.375
+          },
+          {
+            "caseId": "77455828b10d09c325432d9cb1cfd580511a52973a9b15ec9c51428ec3bfa2b6",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.211
+          },
+          {
+            "caseId": "c165c03e7276163c4c3bd172dbc540159fe8736bbcf7f7eda914901641b0efc5",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.196
+          },
+          {
+            "caseId": "c3ae07670892f355f3275f527099ecf60fb0aff0fb1736d19724edca42316237",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.158
+          },
+          {
+            "caseId": "d1d5367beefea679ece410b1ad0e3c1eae7dc0ef905edca52fd7b2e354540ee5",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.206
+          },
+          {
+            "caseId": "dd7ade09247d7ce491a0aa72004c484d699eeac34cbf017b9867e8681c2f1504",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.323
+          },
+          {
+            "caseId": "317d98045ad47b25e6af9969291b45bbf3ad4215ea46559ee2e2bed3965f872b",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.227
+          },
+          {
+            "caseId": "ba3a6a8b9a0635b5d60ae126dff7f7756f6f3a9fcc7254c96f5ed74f0b0c54ca",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.162
+          },
+          {
+            "caseId": "ecb623889d44b2e2ba10162d288a7cb9cd881810000041199245b919f7a33b4d",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.12
+          },
+          {
+            "caseId": "bc3442f81d510ba21bf102819e48f3ba2efec16636c297eb518317b687a2c7c8",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.114
+          },
+          {
+            "caseId": "1893a28ea9e05004b5968e9be99f65ffde0cd6b7eb5e7772971518a146b061b9",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.306
+          },
+          {
+            "caseId": "67bdda8105761b62818a6d8ecb3045473636efd170c4120013bcea2e295931df",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.593
+          },
+          {
+            "caseId": "724e104411215fc213a531d0b62ac5723fa140fbd4a0078cfdb862eee9c6c3e2",
+            "source": "src/features/kanban/organizationBoardLive.test.ts",
+            "outcome": "passed",
+            "durationMs": 0.492
+          }
+        ]
+      }
+    ],
+    "boardComponentPassed": 95,
+    "wholeSourceReports": {
+      "dotnet": [
+        {
+          "passed": 1086,
+          "failed": 0,
+          "skipped": 3,
+          "error": 0
+        },
+        {
+          "passed": 1429,
+          "failed": 0,
+          "skipped": 2,
+          "error": 0
+        }
+      ],
+      "web": [
+        {
+          "passed": 2911,
+          "failed": 0,
+          "skipped": 24,
+          "error": 0
+        }
+      ]
+    },
+    "originalSkippedCases": {
+      "dotnet": [
+        {
+          "caseId": "a37a0aa86793709f05f140035cb10ccb027610b47016f60148f22fe42bcc605c",
+          "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "d6482b829de7a83d40e9885d30faae19e6846059047fb1c3dca53e233544ecc8",
+          "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "12759bd6720d3d4c1be2b3e783788adc470f4ae5f8552ed6c8f7256a7129c64c",
+          "source": "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "921b28ab8fb3b4b027dde7ae4d831ddcad16317d96a46c1bbb0701df8a94984d",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "66b14a5cef2b615c6d7c2272a1d4cd31f7f02487e0146748e1420c91ac39153b",
+          "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition",
+          "outcome": "skipped",
+          "durationMs": 0
+        }
+      ],
+      "web": [
+        {
+          "caseId": "1d36b1b775fd3ea85345166a716748181a9b8d42bc3788151a4c260b3ec81aea",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "763d94ddf21399590d73d6629aacfdc04f91f0a0c7006b552534cfbedda79bb9",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "623e445a538195eb1473987c099873a9034cf675b79e1ee0b5afd5b0abc8818c",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "b6648fd70b36a6752088db2d8b2ac91838a1dc2116a8f9b1681dcd13f8fbfc09",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "61e7e52d10fd7ee7b6ee7eaf9bbdefeb5eb7609f5db46fd69499b883c1dee358",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "01cf7b6dacc487b6a0ce742fd73f4fbac586c04174985eb8673ac8b7a13f4d94",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "2dc467ba07306f99fdc3359a6c4fa440a1defbb625a30443c5f666556264f3e1",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "7f32a8b49430ce3f565a8f273c6dc9d087f857e58641039d54e26cab0cbf59ce",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "0aa5dbe499d4c464b63fb5fa7ce81c90f1c87a8f9a1d1d866c850eab00257490",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "36c985f7605b492e906816405264b0cb1c49435efd60baec44ecf9de6ab303ca",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "6d4b1a2b34b368894a4063daf6aa54c318ac1cbd48d2e2854945a58a5857fb77",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "19d514db507f789e87b3ac7b3546a54a82118b68f6bb0198024bd01471759d55",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "58b9a2fe829197b69261116c2a75d1e10477ec76561e907b368693617263d290",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "c8d022374b13c508661360b2b8c94f407338dafb0e265f855a609475989fa5a2",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "ed4434e0fd0399ff2f975b2fb3e14af51cb0b9ff8d7b9badbd4c44fe6d36a5ef",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "a25866ad43f95b386b041b0a5efadb2ae8f2b887729f5d6949d200b352e1348d",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "cf2bd105a3f5895c86385b5d8498a0261035dac7a6b714f7bad9b561c2dac2c1",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "94d6b73f94a5cdb88ddcbfa7d55ae852e82e99f52dc936765352be359dd54a0d",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "21054d9c2ebb321f6cf77e2ef5f182dbb67c39394cf0acb43e89e745a65fa837",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "2bd5204ede0671feb783bdc32ad38a788ec96fad579d5ee10a865ff699384949",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "2787efc3c927fd48d2ba9bdda9e7f40586dcd646eb94db754c041c4b16d4d60d",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "36f19c19a41559c198cbbbde50c41f7e0aaf247c5231dc784f37264d0efb0c56",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "6a3aa1d2d06fe915803ceb9972ab26a90677ee7a79b391d845e5ff0e048aa198",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        },
+        {
+          "caseId": "629523aad26ec8c6d684bbac2d820ebd8f52ca0dcc2e3caf31cb53f5f14a3d2c",
+          "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+          "outcome": "skipped",
+          "durationMs": 0
+        }
+      ]
+    },
+    "newCardTitleFf6cTestsIncluded": false,
+    "scope": "Actual currentPR115U source artifacts, verified providerZIPdigest/size/run/head and testedmerge identity. Six Board APIcases and95relevantcomponents directlyPassed. Original5sourcecapacityskips and24webdeferrals remain separate. Current immutable browser/commands/foundation/notifications/requiredCI/release, actualtargetintegration and finalacceptance remainpending. No priorhead conclusion or newCardlocal4 pass inherited."
+  },
+  "integration": {
+    "observedAt": "2026-10-20T04:52:00.525Z",
+    "pullRequest": 115,
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/115",
+    "head": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+    "mainBefore": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+    "mergeCommit": "0c9fea7d66d238262223a12bc86a4f3861eb7b10",
+    "mergedAt": "2026-10-20T04:51:21Z",
+    "parents": [
+      "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+      "ebcbe01f5847615a54b2ae488fd2ec06eca5de00"
+    ],
+    "qualifiedTree": "dd265cc69482329c6c0cd837f39e022ae16a76a8",
+    "synthetic": "31061e602f303c52eaa29bcded26e8ed57fc0d6e",
+    "qualifiedTreeEqualsActualMain": true,
+    "normalMerge": true,
+    "fullHistoryVerified": true,
+    "heldSourcesExcluded": true,
+    "requiredChecks": {
+      "passed": 22,
+      "total": 22,
+      "head": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+      "artifact": "StrataAI2-PR115-required-checks.json",
+      "sha256": "c80ba2783ffa5c61711314b1398f68381a13200a696e86c5f7b514f484ea234d"
+    },
+    "native": {
+      "browserPassed": 477,
+      "notificationPassed": 93,
+      "boardCreationAndRecoveryPassed": 6,
+      "originalMailProfileSkips": 2,
+      "strictCorrespondingMailPasses": 2
+    },
+    "mainLedger": {
+      "items": 1595,
+      "done": 33,
+      "evidence": 747
+    },
+    "acceptance": "Merge verified. Scoped acceptance reconciliation is separate; no parent PRD or MVP closure claimed."
+  },
+  "scope": "Fresh completed actualcurrentU cases re-extracted from hash-verified full logs. This is scoped Board workflow evidence; no source rebuild, test rerun, fullPRD closure or new managed-provider claim."
+}

@@ -1,0 +1,112 @@
+{
+  "at": "2026-10-20T01:21:01.912Z",
+  "result": "Passed",
+  "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "actualMain": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+  "reviewer": "Delivery lead",
+  "items": [
+    "PRD-07-VS-05",
+    "PRD-07-VS-05-T-01",
+    "PRD-07-VS-05-T-01-TEST-01",
+    "PRD-07-VS-05-T-01-TEST-02",
+    "PRD-07-VS-05-T-01-TEST-03",
+    "PRD-07-VS-05-T-02",
+    "PRD-07-VS-05-T-02-TEST-01",
+    "PRD-07-VS-05-T-03",
+    "PRD-07-VS-05-T-03-TEST-01"
+  ],
+  "liveRequirements": {
+    "id": "EVID-CYCLE-42-PRD07-LIVE",
+    "path": "docs/delivery/evidence/cycle42-prd07-live.json",
+    "sha256": "d3fb3277d70600fbeeeab659d0bb99e3d0d30992dba24dc097fe2d0c3876b4f9",
+    "revision": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00"
+  },
+  "criteria": [
+    {
+      "id": "PRD-07-VS-05/AC-01",
+      "text": "An authorized List creation and unchanged uncertain-response retry remain bound to the account admitted when the form opened. A replacement authorized actor is refused before mutation, leaving one original canonical List."
+    },
+    {
+      "id": "PRD-07-VS-05/AC-02",
+      "text": "An explicit same-account retry keeps its key/body and recovers exactly one named, persistently ranked List; legacy API clients and existing role/tenant/lifecycle authorization remain compatible."
+    },
+    {
+      "id": "PRD-07-VS-05/AC-03",
+      "text": "List entry confirms its actor in a bounded read before showing a mutable form. Transport failure permits explicit entry retry; confirmed denial withdraws protected work and restores visible feedback/focus without stealing independent navigation."
+    },
+    {
+      "id": "PRD-07-VS-05/AC-04",
+      "text": "Complete Board entry → List creation/recovery → canonical reload → create/open/return from a Card at320/390/768/1280px with persistent200% tablet text, keyboard/focus, no page overflow and applicable Axe; inspect actual rendered screens separately."
+    },
+    {
+      "id": "PRD-07-VS-05-T-01/AC-01",
+      "text": "Implement only the demonstrated actor-bound List creation recovery gap, retaining current source, original command semantics and applicable test evidence."
+    },
+    {
+      "id": "PRD-07-VS-05-T-01-TEST-01/AC-01",
+      "text": "Execute this scoped validation and retain exact source/results; distinguish its coverage from sibling and release/integration gates."
+    },
+    {
+      "id": "PRD-07-VS-05-T-01-TEST-02/AC-01",
+      "text": "Execute this scoped validation and retain exact source/results; distinguish its coverage from sibling and release/integration gates."
+    },
+    {
+      "id": "PRD-07-VS-05-T-01-TEST-03/AC-01",
+      "text": "Execute this scoped validation and retain exact source/results; distinguish its coverage from sibling and release/integration gates."
+    },
+    {
+      "id": "PRD-07-VS-05-T-02/AC-01",
+      "text": "Closing Card details restores the complete current Card inside local scroll containers and below the fixed header, including long titles at persistent200% tablet text, without changing independent navigation or Board schemas."
+    },
+    {
+      "id": "PRD-07-VS-05-T-02-TEST-01/AC-01",
+      "text": "Run actual rendered four-width original-account List-to-Card return; verify focus, browser bounds and every clipping ancestor, retain failed and passing source/results separately."
+    },
+    {
+      "id": "PRD-07-VS-05-T-03/AC-01",
+      "text": "A pending explicit List/Card identity admission keeps its controls unavailable even when another toolbar operation releases shared busy state. The form remains hidden until validated actor confirmation; bounded error/abort permits safe explicit retry."
+    },
+    {
+      "id": "PRD-07-VS-05-T-03-TEST-01/AC-01",
+      "text": "Hold the real consumer profile read, release a sibling toolbar busy callback and verify both creation launchers remain disabled with no mutable form or writes; then explicit valid-profile completion opens the correct form. Preserve existing Card admission regression unchanged."
+    }
+  ],
+  "mapping": {
+    "AC01": "Original actor admission/refusal controlled8: pending, invalid/unavailable retry, routeabort, lateprotectedrefusal, independentfocus and readonly launcher withdrawal. Actual6API include receipt replacement rejection, malformed/empty/multiple beforemutation and legacy command replay.",
+    "AC02": "Two genuine account replacement nativecases plus four lostreply recovery workflows prove sameactor/key/body, exactlyone ranked canonical List and real Card consumer.",
+    "AC03": "Controlled8 and two ownbusy regressions verify bounded explicit admission, hidden form/no writes whilepending, independenttoolbar release protection, safe feedback/privacy and no stolen navigation.",
+    "AC04": "Actual immutablefourwidth original List workflows and current supplementalfourwidth captures: persistent200%tablet acrossreload, keyboard/Axe, canonical Carddetailsreload/Close, fullfocusedCard belowheader and everyclippingancestor."
+  },
+  "sourceReviewed": [
+    "BoardScreen explicit bounded /me read binds form to original actor; accessEpoch and abort refuse late/changed-context admission; checkingCreation remains independent of sharedbusy.",
+    "List POST carries expectedActorId; server rejects mismatch before service mutation, preserving existing authenticated service role/tenant/lifecycle authorization and idempotent body/key.",
+    "Protected refusal withdraws original List/Board data; focus recovery respects independent navigation.",
+    "Original Card-close focus restoration uses existing Board local-scroll geometry and stable routes; no new design system, API/schema/event/provider change."
+  ],
+  "qualifiedEvidence": [
+    "EVID-CYCLE-42-LIST-INTEGRATED-QUALIFICATION",
+    "EVID-CYCLE-42-LIST-INTEGRATED-UX",
+    "EVID-CYCLE-40-8C68-CI22",
+    "EVID-CYCLE-40-8C68-FULL2",
+    "EVID-CYCLE-40-8C68-SOURCE-WEB",
+    "EVID-CYCLE-40-113-MAIN"
+  ],
+  "premergeReview": {
+    "at": "2026-10-19T19:27:37.876Z",
+    "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "mainBefore": "596f4ccb080dcc0fdf316649eb90a174d6de94b9",
+    "qualifiedSynthetic": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedTree": "8db2c813a317b547d55ff5e2b9fac76f3c6544ac",
+    "refreshedMergeTreeIdentical": true,
+    "heldSourcesExcluded": true,
+    "blockingReview": false,
+    "unresolvedThreads": [],
+    "providerReviewSubmissions": 0,
+    "providerThreads": 0,
+    "reviewer": "Codex acting as assigned delivery lead",
+    "sourceReview": "The owning-dialog focus boundary is captured before await within the original guarded definitive-refusal path. Actor/epoch/original key-body/privacy/permission/independent navigation checks remain. Native validation admission observes original submit or actual HTTP initiation, stops on the first admission and preserves all outcome/mutation assertions. The rich-detail observer requires complete source/preview plus focused visible enabled title and stable following paint at the same 200ms limit; original controller measurements and failures remain separately identified. All current22 checks and exact original native/API/control scenarios passed. No actionable issue found in the scoped change.",
+    "scope": "Responsible agent source review plus fresh actual provider metadata. No human approval invented; actual integration is still required."
+  },
+  "knownCriticalRegressions": 0,
+  "scope": "Scoped delivery-agent product/UX/source/acceptance review of the existing nine-record List recovery capability. Not a human reviewer approval, parentListPRD completion, fullMVP completion or configured-provider/sourcefree-startup certification. Existing Board dependency capability is implemented/tested/inmain; its open metadata parent and separate new Board font fixture task do not block this unchanged List capability. PR115 qualification remains separate."
+}

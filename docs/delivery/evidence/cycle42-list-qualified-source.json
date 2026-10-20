@@ -1,0 +1,109 @@
+{
+  "at": "2026-10-20T01:16:32.419Z",
+  "result": "Passed",
+  "qualifiedSource": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "ciRun": "39279332124",
+  "testedBuild": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "actualApiCases": [
+    {
+      "caseId": "a10bdc181cd3785bf740814c8af67d691f1b4d332e4c6045ebce67664d6da2f7",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_original_List_creation_actor_preserves_receipt_and_refuses_replacement",
+      "outcome": "passed",
+      "durationMs": 2164
+    },
+    {
+      "caseId": "52339e03012f5088d0d4df80b57aa0f145ae875aaba3d09119ac5e944b4c0ffd",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_creation_expected_actor_rejects_before_List_mutation",
+      "outcome": "passed",
+      "durationMs": 2764
+    },
+    {
+      "caseId": "cdeea1b0370fd1c2d068a309985e7a48ba71b94978a563cc5e48803d16ebd291",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_creation_expected_actor_rejects_before_List_mutation",
+      "outcome": "passed",
+      "durationMs": 2734
+    },
+    {
+      "caseId": "7b6e3ae8acc1dc261707bcc2059c5cf000be833683ba6e8ff9c9b2d68338c04b",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_creation_expected_actor_rejects_before_List_mutation",
+      "outcome": "passed",
+      "durationMs": 2726
+    },
+    {
+      "caseId": "6cafc273d97e5006ae3907698c532aa920fbfec71331c04873bdc2e72f7b2536",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_creation_expected_actor_rejects_before_List_mutation",
+      "outcome": "passed",
+      "durationMs": 2776
+    },
+    {
+      "caseId": "699973bba3bf54dd1f0eaac37b04b4c22ade11cecd856ea5bcf700fef1617384",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_creation_without_expected_actor_preserves_legacy_List_receipt",
+      "outcome": "passed",
+      "durationMs": 2710
+    }
+  ],
+  "apiCounts": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "sourceOriginalSkips": [
+    {
+      "caseId": "5596f3a3206f5cc2b2b3d9c549a70d20a849c541473e34b413572a0bb2aab1ad",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+      "outcome": "skipped",
+      "durationMs": 0
+    },
+    {
+      "caseId": "55b4b0923d009b8aa9e22fd70cb9294f50b74fab3e8bbf70d6ecc6adb414f51a",
+      "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+      "outcome": "skipped",
+      "durationMs": 0
+    },
+    {
+      "caseId": "826b81f75452edcff192854390c6e989f2126f4cc12ad1e79f996961f2560615",
+      "source": "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+      "outcome": "skipped",
+      "durationMs": 0
+    },
+    {
+      "caseId": "921b28ab8fb3b4b027dde7ae4d831ddcad16317d96a46c1bbb0701df8a94984d",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+      "outcome": "skipped",
+      "durationMs": 0
+    },
+    {
+      "caseId": "66b14a5cef2b615c6d7c2272a1d4cd31f7f02487e0146748e1420c91ac39153b",
+      "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition",
+      "outcome": "skipped",
+      "durationMs": 0
+    }
+  ],
+  "nativeRows": [
+    "2026-10-19T18:16:04.5448182Z   ✓  105 tests/browser/list-creation-account.spec.ts:9:7 › PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 1280px (1.8s)",
+    "2026-10-19T18:16:31.2774354Z   ✓  106 tests/browser/list-creation-account.spec.ts:9:7 › PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 390px (1.7s)",
+    "2026-10-19T18:17:00.5029401Z   ✓  107 tests/browser/list-creation-recovery.spec.ts:8:7 › PRD-07-VS-05/AC-02/04: original-account List recovery continues into a canonical Card at 1280px (4.2s)",
+    "2026-10-19T18:17:29.4248335Z   ✓  108 tests/browser/list-creation-recovery.spec.ts:8:7 › PRD-07-VS-05/AC-02/04: original-account List recovery continues into a canonical Card at 768px (3.9s)",
+    "2026-10-19T18:17:58.3522833Z   ✓  109 tests/browser/list-creation-recovery.spec.ts:8:7 › PRD-07-VS-05/AC-02/04: original-account List recovery continues into a canonical Card at 390px (3.9s)",
+    "2026-10-19T18:18:27.2508847Z   ✓  110 tests/browser/list-creation-recovery.spec.ts:8:7 › PRD-07-VS-05/AC-02/04: original-account List recovery continues into a canonical Card at 320px (3.9s)"
+  ],
+  "nativeCounts": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "componentRows": [
+    "2026-10-19T15:44:01.9746209Z  ✓ src/features/kanban/BoardScreen.drag.test.tsx (3 tests) 3075ms",
+    "2026-10-19T15:44:16.2092302Z  ✓ src/features/kanban/ListCreationActor.test.tsx (8 tests) 2144ms",
+    "2026-10-19T15:45:10.3270715Z  ✓ src/features/kanban/CreationAdmissionBusy.test.tsx (2 tests) 1198ms"
+  ],
+  "componentCounts": {
+    "passed": 13,
+    "failed": 0
+  },
+  "sourceResultsSha256": "9e63762e54454d81d4ad117c1469a8795768ec2c6e7db80ffaf6046860198f3b",
+  "sourceZipSha256": "3f908e621bf230f051156fa1c479c521338735bec6f10182fc227d9f9f070a4a",
+  "rawNativeJobSha256": "4a6f5190879a073fe3dac6c29dc4d291413d7e1ff177a60a524270a6c8fed6a6",
+  "rawWebJobSha256": "f86a1eae98ab139a044cb60ef412d9f7e07a3a0c16c353841b148dc44a0f8aea",
+  "scope": "Actual previously qualified CI rows for unchanged List source, not newly executed currentPR115 passes. Full2 original two mail-profile skips and source five capacity skips retain their separate historical results; no skipped case counted as pass."
+}

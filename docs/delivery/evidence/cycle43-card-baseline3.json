@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-20T01:48:07.829Z",
+  "result": "Passed",
+  "implementationContext": "ff6c81abfc6900fe46c479e4dd4a32d2c5a0fbe9",
+  "executedSource": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "originalInput": {
+    "at": "2026-10-20T01:26:53.519Z",
+    "source": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+    "qualifiedUnchangedSource": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "testSources": [
+      {
+        "path": "tests/browser/board.spec.ts",
+        "sha256": "b17a74cbd9c36d20cf79a04284305eeb6a9602f106b42a9ab31999638812a078"
+      },
+      {
+        "path": "tests/browser/releaseTest.ts",
+        "sha256": "ab2ea4ef38482df067d458c3d83aff8fbfffe5cbb25f4f4d6534e96bafb5cd9c"
+      },
+      {
+        "path": "tests/browser/notificationAccountFixture.ts",
+        "sha256": "1e513c1e99bf7f0e8a1c3742ac748504f92da118a807235a616f7ac284e8204d"
+      }
+    ],
+    "configurationSha256": "f6f910bdd26da1d5e336587f74e55665604c00d2b953c10e562d36cda5b53f66",
+    "baseURL": "http://127.0.0.1:15188",
+    "runtime": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "client": {
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "version": "0.1.0-local-card-focus"
+    },
+    "assets": [
+      {
+        "path": "/assets/index-WokoLKxv.js",
+        "sha256": "ba653f509a0fab4071718578b1fc832e4ce641ad700ff037e8d1dc7a3e814256"
+      },
+      {
+        "path": "/assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+      }
+    ],
+    "ordinaryDemoFixture": true,
+    "ratePacing": true,
+    "workers": 1,
+    "retries": 0,
+    "originalDeadlineMs": 30000,
+    "scope": "Original complete desktop/tablet/mobile persisted Board/List/Card create/rename/conflict/reload/denial/public-readonly workflow; no test/source assertion/deadline or runtime/Worker change. Supplemental source-equivalent Demo, not a new immutable or provider qualification."
+  },
+  "stats": {
+    "startTime": "2026-10-20T01:26:56.123Z",
+    "duration": 116380.55200000001,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "PRD-01/04/07/08/09: persisted board workflow and isolation (desktop)",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-01/04/07/08/09: persisted board workflow and isolation (tablet)",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-01/04/07/08/09: persisted board workflow and isolation (mobile)",
+      "status": "Passed",
+      "attempts": 1
+    }
+  ],
+  "session": 42473,
+  "exit": 0,
+  "workers": 1,
+  "retries": 0,
+  "originalDeadlineMs": 30000,
+  "rawReportSha256": "334285ebd34651ae3ceea5dbc691bba35051894b694feaff4aafa7511cf2e682",
+  "scopedRuntimeAndTestSourceUnchanged": true,
+  "scope": "Complete originaldesktop/tablet/mobile persisted Organization→Board→List→Cardcreate/lostreply/reload/rename/conflict/recovery/Back/Close/crossOrganizationdenial/publicreadonly supportingDemo scope. ActualsourceU/runtimeC055/f3ca identities preserved. No new320/200%/Axe/immutable/provider run inferred; those parentfeaturegates remain separatelytracked."
+}

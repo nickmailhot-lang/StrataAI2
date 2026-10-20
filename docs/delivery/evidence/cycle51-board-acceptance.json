@@ -1,0 +1,490 @@
+{
+  "at": "2026-10-20T05:06:18.929Z",
+  "reviewer": "Delivery lead (agent)",
+  "implementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "qualifiedHead": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "integrationCommit": "0c9fea7d66d238262223a12bc86a4f3861eb7b10",
+  "priorAcceptance": {
+    "at": "2026-10-20T00:15:26.419Z",
+    "result": "Passed",
+    "reviewer": "Delivery lead",
+    "head": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "currentMain": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+    "items": [
+      "PRD-04-VS-05",
+      "PRD-04-VS-05-T-01",
+      "PRD-04-VS-05-T-01-TEST-01",
+      "PRD-04-VS-05-T-02",
+      "PRD-04-VS-05-T-02-TEST-01",
+      "PRD-04-VS-05-T-02-TEST-02",
+      "PRD-04-VS-05-T-03",
+      "PRD-04-VS-05-T-03-TEST-01",
+      "PRD-04-VS-05-T-03-TEST-02",
+      "PRD-04-VS-01-T-03",
+      "PRD-04-VS-01-T-03-TEST-01",
+      "PRD-04-VS-01-T-04",
+      "PRD-04-VS-01-T-04-TEST-01"
+    ],
+    "liveRequirement": "EVID-CYCLE-41-PRD04-LIVE",
+    "criteria": [
+      {
+        "id": "PRD-04-VS-01-T-03/AC-01",
+        "text": "Board, metadata and lifecycle transport rechecks withdraw presentation and writes, then restore the original draft and keyboard focus only after same-actor authorized discovery; no automatic mutation occurs."
+      },
+      {
+        "id": "PRD-04-VS-01-T-03/AC-02",
+        "text": "Definitive access refusal, account change and pending/completed deletion retire the draft; restored membership does not resurrect it."
+      },
+      {
+        "id": "PRD-04-VS-01-T-03/AC-03",
+        "text": "Explicit unchanged retry after an uncertain save retains the original request body and idempotency key; exactly one canonical private Board is present after reload and return."
+      },
+      {
+        "id": "PRD-04-VS-01-T-03/AC-04",
+        "text": "The affected workflow is usable at 320/390/768/1280px, 200% tablet text and keyboard, with no page overflow and passing applicable accessibility checks; original broad workflow assertions and deadlines remain unchanged."
+      },
+      {
+        "id": "PRD-04-VS-01-T-03-TEST-01/AC-01",
+        "text": "Controlled tests prove the original failure and repaired reset/disconnect, denial, lifecycle and retry behavior; actual Demo API browser workflows prove canonical persistence and return with visual evidence."
+      },
+      {
+        "id": "PRD-04-VS-01-T-04/AC-01",
+        "text": "After same-actor access recovery replaces the Board launcher, both Cancel and Escape restore focus to the current permitted launcher. Reopening starts an empty unsent draft; no Board is created by cancel/reopen. Existing access withdrawal and original-command retry behavior remain intact."
+      },
+      {
+        "id": "PRD-04-VS-01-T-04-TEST-01/AC-01",
+        "text": "Controlled Cancel/Escape cases fail before the repair and pass after it; the four-width running workflow verifies current focus and empty reopening before explicit canonical Board creation, with unchanged assertions, zero automatic replay and retained original-key recovery."
+      },
+      {
+        "id": "PRD-04-VS-05/AC-01",
+        "text": "An admitted user opens Organization home, enters a Board draft, survives Board/metadata/lifecycle transport rechecks with protected presentation withdrawn, and recovers the original fields and current keyboard focus only after same-actor authorized discovery."
+      },
+      {
+        "id": "PRD-04-VS-05/AC-02",
+        "text": "Confirmed account/access refusal or pending/completed deletion retires the draft; subsequent access does not resurrect it. No mutation is sent while admission is uncertain."
+      },
+      {
+        "id": "PRD-04-VS-05/AC-03",
+        "text": "Explicit unchanged retry after a lost committed reply uses the original key and request body, creates exactly one private Board, and reaches canonical read/reload and Organization directory return."
+      },
+      {
+        "id": "PRD-04-VS-05/AC-04",
+        "text": "At 320/390/768/1280px and 200% tablet text, native keyboard, responsive navigation, applicable accessibility checks and visible focus work. Cancel/Escape after recovery focus the current visible launcher; reopening starts empty before a fresh explicit submission."
+      },
+      {
+        "id": "PRD-04-VS-05-T-01/AC-01",
+        "text": "Reconcile the retained implementation and tests, validate this slice’s four business/UX criteria with exact current evidence, retain all failed/skipped checks, and prepare a reviewable integration without closing the broader creation/edit or parent PRD scope."
+      },
+      {
+        "id": "PRD-04-VS-05-T-01-TEST-01/AC-01",
+        "text": "Executed current controlled and native tests validate all four slice criteria; broad regression and target integration remain separate required gates, with no skipped case promoted to a pass."
+      },
+      {
+        "id": "PRD-04-VS-05/AC-05",
+        "text": "A recovered Board creation remains bound to the account that opened the command. Replacing the browser account cannot execute its unchanged retry as another actor, even when that actor is independently an Organization member; the server refuses before mutation and the original canonical Board remains unchanged."
+      },
+      {
+        "id": "PRD-04-VS-05-T-02/AC-01",
+        "text": "A stale foreground command opened by A cannot create or replay under B after browser account replacement, including when B can normally create Boards in the same Organization; refusal does not mutate the protected graph."
+      },
+      {
+        "id": "PRD-04-VS-05-T-02/AC-02",
+        "text": "Use existing optional expectedActorId API conventions, preserve legacy POST clients and successful original key/body receipts, and allow a fresh properly bound authorized actor command without adding permissions or changing schemas/events."
+      },
+      {
+        "id": "PRD-04-VS-05-T-02/AC-03",
+        "text": "Current genuine native account-replacement and four-width recovery workflows pass with unchanged original deadlines/assertions and explicit withdrawal after refusal; final full regression and release/integration gates remain required."
+      },
+      {
+        "id": "PRD-04-VS-05-T-02-TEST-01/AC-01",
+        "text": "Real endpoint tests verify changed/malformed expected actor refusal, unchanged state, valid current actor creation, successful same-key replay and unchanged legacy-client behavior."
+      },
+      {
+        "id": "PRD-04-VS-05-T-02-TEST-02/AC-01",
+        "text": "Two current accounts with real membership, genuine transport delay and a committed lost reply prove that unchanged retry cannot become a replacement-actor Board; current actor, keys/body, canonical counts, original Board and protected UI withdrawal are checked."
+      },
+      {
+        "id": "PRD-04-VS-05/AC-06",
+        "text": "An established ordinary Board-directory authority reset retires an unsubmitted Board-creation review and its consent/draft. A newly permitted launcher starts a fresh empty review. Bootstrap or transport uncertainty and submitted original-command recovery retain their bounded same-account behavior, without automatic replay or discarding an uncertain receipt."
+      },
+      {
+        "id": "PRD-04-VS-05-T-03/AC-01",
+        "text": "Retire only unsubmitted Board creation reviews after established validated directory reset, preserve initial/transport draft and submitted original-key recovery, canonical authorization and visible permitted return. Reuse current UI/protocol without changing wire/API/event schemas."
+      },
+      {
+        "id": "PRD-04-VS-05-T-03-TEST-01/AC-01",
+        "text": "Run this bounded current validation with original assertions, exact source/results and failed/pass evidence; preserve sibling recovery, role/tenant/Portal, responsive/focus and release gates."
+      },
+      {
+        "id": "PRD-04-VS-05-T-03-TEST-02/AC-01",
+        "text": "Run this bounded current validation with original assertions, exact source/results and failed/pass evidence; preserve sibling recovery, role/tenant/Portal, responsive/focus and release gates."
+      }
+    ],
+    "criteriaMapping": {
+      "AC01/transport recovery": "Current controlled69Home/17live and four exact immutable recovery cases plus full supporting four-width run.",
+      "AC02/retirement": "Current components cover403/404/account/deletion; genuine immutable actor and ordinary-directory withdrawal cases preserve privacy and zero automatic mutation.",
+      "AC03/original command": "Each current native recovery verifies same key/body,exactlyone private canonical Board,reload and Work-directory return; six API actor/legacy/refusal cases passed.",
+      "AC04/UX": "Current immutablefourwidth workflows and supporting6/10actuallyviewed captures at320/390/768/1280,200%tablettext,keyboard/focus/Axe and unchanged timing.",
+      "AC05/original actor": "Six actual SHA-verified API cases plus two genuine immutable and two separately supporting native account replacements.",
+      "AC06/authority reset": "Controlled empty/draft/independent navigation reset and submitted-original-receipt cases; four original immutable ordinary-directory scenarios with canonical source/role withdrawal.",
+      "Reused recovery/focus work": "Same complete criteria remain under their original parents. Original red/counterfactual evidence retained from historical cycles; current component/recovery and original broad Board consumers pass."
+    },
+    "originalBroadBoardCases": [
+      "2026-10-19T17:18:34.3710799Z   ✓   69 tests/browser/board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (desktop) (7.0s)",
+      "2026-10-19T17:19:05.8986640Z   ✓   70 tests/browser/board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (tablet) (6.5s)",
+      "2026-10-19T17:19:37.1770634Z   ✓   71 tests/browser/board.spec.ts:9:7 › PRD-01/04/07/08/09: persisted board workflow and isolation (mobile) (6.2s)"
+    ],
+    "historicalCounterfactualsPreserved": true,
+    "sourceReview": "Current OrganizationHome retains presentation withdrawal during uncertainty, same-actor re-admission, definitive refusal/route/deletion retirement, explicit original key/body recovery and current permitted focus return. Optional expectedActorId is checked before mutation; omitted legacy API clients and domain/RLS permissions remain. No actionable scoped defect found after current tests and source/role/UX review.",
+    "retainedFailures": "Strict supplemental6Failed at setup; wrong-origin supplemental2Passed/4Failed before recovery; current complete correctly configured supporting6Passed. All previous product/test failures remain. No security allowlist, production email verification, assertions, retries, budgets or deadlines changed.",
+    "scope": "One independently demonstrated Board recovery capability plus four reused task/test records; broad PRD04/create-edit and full MVP remain open. Existing required tests/build/security/immutable gates passed at exact8c68, with current main runtime/test equivalence."
+  },
+  "criteria": [
+    {
+      "criterion": "PRD-04-VS-01-T-03/AC-01",
+      "originalStatus": "Verified",
+      "text": "Board, metadata and lifecycle transport rechecks withdraw presentation and writes, then restore the original draft and keyboard focus only after same-actor authorized discovery; no automatic mutation occurs.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-01-T-03/AC-02",
+      "originalStatus": "Verified",
+      "text": "Definitive access refusal, account change and pending/completed deletion retire the draft; restored membership does not resurrect it.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-01-T-03/AC-03",
+      "originalStatus": "Verified",
+      "text": "Explicit unchanged retry after an uncertain save retains the original request body and idempotency key; exactly one canonical private Board is present after reload and return.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-01-T-03/AC-04",
+      "originalStatus": "Unverified",
+      "text": "The affected workflow is usable at 320/390/768/1280px, 200% tablet text and keyboard, with no page overflow and passing applicable accessibility checks; original broad workflow assertions and deadlines remain unchanged.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-01-T-03-TEST-01/AC-01",
+      "originalStatus": "Unverified",
+      "text": "Controlled tests prove the original failure and repaired reset/disconnect, denial, lifecycle and retry behavior; actual Demo API browser workflows prove canonical persistence and return with visual evidence.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-01-T-04/AC-01",
+      "originalStatus": "Verified",
+      "text": "After same-actor access recovery replaces the Board launcher, both Cancel and Escape restore focus to the current permitted launcher. Reopening starts an empty unsent draft; no Board is created by cancel/reopen. Existing access withdrawal and original-command retry behavior remain intact.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-01-T-04-TEST-01/AC-01",
+      "originalStatus": "Verified",
+      "text": "Controlled Cancel/Escape cases fail before the repair and pass after it; the four-width running workflow verifies current focus and empty reopening before explicit canonical Board creation, with unchanged assertions, zero automatic replay and retained original-key recovery.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05/AC-01",
+      "originalStatus": "Verified",
+      "text": "An admitted user opens Organization home, enters a Board draft, survives Board/metadata/lifecycle transport rechecks with protected presentation withdrawn, and recovers the original fields and current keyboard focus only after same-actor authorized discovery.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05/AC-02",
+      "originalStatus": "Verified",
+      "text": "Confirmed account/access refusal or pending/completed deletion retires the draft; subsequent access does not resurrect it. No mutation is sent while admission is uncertain.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05/AC-03",
+      "originalStatus": "Verified",
+      "text": "Explicit unchanged retry after a lost committed reply uses the original key and request body, creates exactly one private Board, and reaches canonical read/reload and Organization directory return.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05/AC-04",
+      "originalStatus": "Unverified",
+      "text": "At 320/390/768/1280px and 200% tablet text, native keyboard, responsive navigation, applicable accessibility checks and visible focus work. Cancel/Escape after recovery focus the current visible launcher; reopening starts empty before a fresh explicit submission.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-01/AC-01",
+      "originalStatus": "Unverified",
+      "text": "Reconcile the retained implementation and tests, validate this slice’s four business/UX criteria with exact current evidence, retain all failed/skipped checks, and prepare a reviewable integration without closing the broader creation/edit or parent PRD scope.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-01-TEST-01/AC-01",
+      "originalStatus": "Unverified",
+      "text": "Executed current controlled and native tests validate all four slice criteria; broad regression and target integration remain separate required gates, with no skipped case promoted to a pass.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05/AC-05",
+      "originalStatus": "Verified",
+      "text": "A recovered Board creation remains bound to the account that opened the command. Replacing the browser account cannot execute its unchanged retry as another actor, even when that actor is independently an Organization member; the server refuses before mutation and the original canonical Board remains unchanged.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-02/AC-01",
+      "originalStatus": "Verified",
+      "text": "A stale foreground command opened by A cannot create or replay under B after browser account replacement, including when B can normally create Boards in the same Organization; refusal does not mutate the protected graph.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-02/AC-02",
+      "originalStatus": "Verified",
+      "text": "Use existing optional expectedActorId API conventions, preserve legacy POST clients and successful original key/body receipts, and allow a fresh properly bound authorized actor command without adding permissions or changing schemas/events.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-02/AC-03",
+      "originalStatus": "Verified",
+      "text": "Current genuine native account-replacement and four-width recovery workflows pass with unchanged original deadlines/assertions and explicit withdrawal after refusal; final full regression and release/integration gates remain required.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-02-TEST-01/AC-01",
+      "originalStatus": "Verified",
+      "text": "Real endpoint tests verify changed/malformed expected actor refusal, unchanged state, valid current actor creation, successful same-key replay and unchanged legacy-client behavior.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-02-TEST-02/AC-01",
+      "originalStatus": "Verified",
+      "text": "Two current accounts with real membership, genuine transport delay and a committed lost reply prove that unchanged retry cannot become a replacement-actor Board; current actor, keys/body, canonical counts, original Board and protected UI withdrawal are checked.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05/AC-06",
+      "originalStatus": "Verified",
+      "text": "An established ordinary Board-directory authority reset retires an unsubmitted Board-creation review and its consent/draft. A newly permitted launcher starts a fresh empty review. Bootstrap or transport uncertainty and submitted original-command recovery retain their bounded same-account behavior, without automatic replay or discarding an uncertain receipt.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-03/AC-01",
+      "originalStatus": "Verified",
+      "text": "Retire only unsubmitted Board creation reviews after established validated directory reset, preserve initial/transport draft and submitted original-key recovery, canonical authorization and visible permitted return. Reuse current UI/protocol without changing wire/API/event schemas.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-03-TEST-01/AC-01",
+      "originalStatus": "Verified",
+      "text": "Run this bounded current validation with original assertions, exact source/results and failed/pass evidence; preserve sibling recovery, role/tenant/Portal, responsive/focus and release gates.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    },
+    {
+      "criterion": "PRD-04-VS-05-T-03-TEST-02/AC-01",
+      "originalStatus": "Verified",
+      "text": "Run this bounded current validation with original assertions, exact source/results and failed/pass evidence; preserve sibling recovery, role/tenant/Portal, responsive/focus and release gates.",
+      "decision": "Verified against retained controlled/rendered evidence plus actualcurrentU native/source/security/release and mainintegration; originalsourceh runtime unchanged. Task04U supplies separatelyqualified persistent200% test extension.",
+      "currentEvidence": {
+        "native16": 16,
+        "actorAPI": 6,
+        "relatedComponents": 95,
+        "requiredChecks": 22
+      },
+      "scope": "Only this retained criterion; no broadercreation/edit or parentPRD closure."
+    }
+  ],
+  "retainedVisualEvidence": [
+    {
+      "id": "EVID-CYCLE-41-BOARD-CURRENT-QUALIFICATION",
+      "kind": "test",
+      "revision": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "at": "2026-10-20T00:06:30.273Z",
+      "result": "Passed",
+      "command": "Read actual immutable8c68 qualified jobs:13 Board-related native passes,95 components,six current source API rows from SHA-verified artifact; verify complete22checks and unchanged runtime/test trees in actualmainM3.",
+      "path": "docs/delivery/evidence/cycle41-board-current-qualification.json",
+      "sha256": "78d9cb76195b2b98ee3fd8189a724821dd090f104990fca828346e8e6d5d6353"
+    },
+    {
+      "id": "EVID-CYCLE-41-BOARD-ZOOM-RED",
+      "kind": "test",
+      "revision": "f5cd4683e7e3e9ef5e03ca54823c94700a55d2b9",
+      "at": "2026-10-20T00:33:59.166Z",
+      "result": "Failed",
+      "command": "One768px additivepostreload32px assertion Failed with actual16px under originalnonpersistentfixture. ExactbaseM3 plusdirtysourceSHA/snapshot retained; no product failure inferred.",
+      "path": "docs/delivery/evidence/cycle41-board-zoom-red-proof.json",
+      "sha256": "8c94a1ede95923ae048482161b00d6ec5af6644c6ff850b30b493e074cb82f8a"
+    },
+    {
+      "id": "EVID-CYCLE-41-BOARD-ZOOM-GREEN6",
+      "kind": "test",
+      "revision": "acdc8b0aecee1efa76b9b9599b3a498f739f6ce1",
+      "at": "2026-10-20T00:33:59.166Z",
+      "result": "Passed",
+      "command": "Fulloriginal6case supportingDemo scope passed after persistentfontfixture; exactsourcehashmatches committedacdc. All nativeactor/receipt/privacy/keyboard/Axe/assertions/deadlines retained; freshimmutableCIpending.",
+      "path": "docs/delivery/evidence/cycle41-board-zoom-green-proof.json",
+      "sha256": "226e975032d869ae4496a40a6a61e815564212db442bb6ba11825ad8f66b8e35"
+    },
+    {
+      "id": "EVID-CYCLE-41-BOARD-ZOOM-VISUAL",
+      "kind": "inspection",
+      "revision": "acdc8b0aecee1efa76b9b9599b3a498f739f6ce1",
+      "at": "2026-10-20T00:33:59.166Z",
+      "result": "Passed",
+      "command": "Actualred16px capture and two newgreen200%canonicalreload/finaldirectorycaptures viewed; prior10currentappcaptures separatelyretained.",
+      "path": "docs/delivery/evidence/cycle41-board-zoom-visual-review.json",
+      "sha256": "77f03b7687abf450448d794c24534e9055cde73f434371432ab517cc6794615a"
+    }
+  ],
+  "noNewSourceOrPermissions": true,
+  "historicalFailuresPreserved": true,
+  "knownCriticalRegressions": 0,
+  "review": "Agent evidence/source/UX review only; no human approval invented.",
+  "scope": "Complete retained independent Boardrecovery capability and reused narrowlyscoped children. BroadPRD04 remainsopen; physicallycleanhost/managedproviders and fullMVP remainunproven."
+}

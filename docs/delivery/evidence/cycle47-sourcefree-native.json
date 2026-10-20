@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-20T03:43:32.943Z",
+  "startedAt": "2026-10-20T03:37:20.111Z",
+  "exit": 0,
+  "result": "Passed",
+  "bundleArtifact": 12215108146,
+  "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "imageBefore": {
+    "web": null,
+    "api": null,
+    "worker": null
+  },
+  "stockUnchanged": true,
+  "stockAfter": "d892a40b08190562efb3f061084c5eb0dac69a192d3985b1a8415ac822232bbd 2026-10-18T11:55:57.435785219Z",
+  "ownedNamespaces": [
+    {
+      "project": "strataai-bundle-smoke-6d19602b312e1f7f",
+      "containers": "",
+      "volumes": "",
+      "networks": ""
+    }
+  ],
+  "temporaryEnvRemoved": true,
+  "logSha256": "111c33fec45137a2c25c10775b46f3c0f99abf23e3e4c4f8cb8a0c00d0b5982e",
+  "logFile": "work/cycle47-sourcefree-native.txt",
+  "finalSuccessObserved": true,
+  "scope": "Original source-free full driver on retained qualified images. Any failure is retained; no edited assertions, deadlines, providers or currentPR115 qualification inferred. Temporary diagnostic/acceptance artifacts stay private in work.",
+  "consumerProof": {
+    "observedAt": "2026-10-20T03:43:32.943Z",
+    "result": "Passed",
+    "bundle": {
+      "artifactId": 12215108146,
+      "workflowRun": 39279332124,
+      "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+      "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "bytes": 518910311,
+      "sha256": "4f3c797d76795a9afb61aaabcb50bb7be2864eb654b7420a3981550bd4fa828e",
+      "payloadChecksumsVerified": 195
+    },
+    "driver": "Unmodified scripts/ci/test-release-bundle-startup.sh at integrated8c68",
+    "exit": 0,
+    "checks": [
+      "All ordered migrations on a new PostgreSQL database",
+      "Restricted runtime roles and exact retained-image provenance",
+      "Production health, readiness and web/API proxy",
+      "Database outage refuses readiness and preserves existing processes on recovery",
+      "Graceful same-container/image API and Worker restart",
+      "Runtime-role secret rotation rejects previous credentials",
+      "Acceptance record identity, unavailable-Worker refusal and same-image recovery"
+    ],
+    "ownedCleanupPassed": true,
+    "temporaryCredentialsRemoved": true,
+    "unrelatedStockWorkerUnchanged": true,
+    "rawLogSha256": "111c33fec45137a2c25c10775b46f3c0f99abf23e3e4c4f8cb8a0c00d0b5982e",
+    "scope": "Source-free local rehearsal of a fully qualified integrated bundle. No production deployment, currentPR115 qualification, managed-provider acceptance, full user-journey completion or MVP completion inferred."
+  },
+  "limits": "Exact local source-free payload workflow and fresh disposable PostgreSQL namespace. Host has development tools installed but runtime commands use only the packaged payload and retained images; no source/runtime compilation occurs. Not a separate physically clean host, managed-provider certification, currentPR115 qualification or completeMVP acceptance."
+}

@@ -1,0 +1,90 @@
+{
+  "at": "2026-10-20T01:16:32.419Z",
+  "result": "Passed",
+  "executedSource": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "testSources": [
+    {
+      "path": "tests/browser/list-creation-account.spec.ts",
+      "sha256": "90c4c2a6fbfaee24a1fc388729d9fa042144aa3405617044587f4cf0e62fcd6e"
+    },
+    {
+      "path": "tests/browser/list-creation-recovery.spec.ts",
+      "sha256": "f0b0f74c1a87d23095820037db762b63bf145948c916ff90dfdc6a73c7803232"
+    }
+  ],
+  "baseURL": "http://127.0.0.1:15188",
+  "runtime": {
+    "api": {
+      "service": "strataai-api",
+      "mode": "demo",
+      "revision": "f3ca3f474d106684e77d57af4f4bc1d7107e9514",
+      "version": "0.1.0-1927"
+    },
+    "client": {
+      "revision": "c0556a6f00f95a595bc78676b39aa856c1eaeab6",
+      "version": "0.1.0-local-card-focus"
+    },
+    "assets": [
+      {
+        "path": "/assets/index-WokoLKxv.js",
+        "sha256": "ba653f509a0fab4071718578b1fc832e4ce641ad700ff037e8d1dc7a3e814256"
+      },
+      {
+        "path": "/assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+      }
+    ]
+  },
+  "sourceEquivalentSupportingDemo": true,
+  "stats": {
+    "startTime": "2026-10-20T01:09:59.685Z",
+    "duration": 186012.168,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 1280px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-07-VS-01-T-01/ACCOUNT: original List creation retry cannot execute as a replacement account at 390px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-07-VS-05/AC-02/04: original-account List recovery continues into a canonical Card at 1280px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-07-VS-05/AC-02/04: original-account List recovery continues into a canonical Card at 768px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-07-VS-05/AC-02/04: original-account List recovery continues into a canonical Card at 390px",
+      "status": "Passed",
+      "attempts": 1
+    },
+    {
+      "title": "PRD-07-VS-05/AC-02/04: original-account List recovery continues into a canonical Card at 320px",
+      "status": "Passed",
+      "attempts": 1
+    }
+  ],
+  "workers": 1,
+  "retries": 0,
+  "originalNinetySecondDeadlines": true,
+  "ordinaryDemoFixture": true,
+  "ratePacing": true,
+  "rawReportSha256": "9149c68c380367bc21962ae05381491f2d805a7d93518c0372ef4612a4071447",
+  "configSha256": "07f5d33602b71e11acd5eacd481c5f177e874b3d9087f843843901b0f190ccdf",
+  "consoleSha256": "fda7482d953c682651b5976a97a77d91f5b7f39d716ffabf46a185f4cc5f9f31",
+  "processSession": 70475,
+  "exitCode": 0,
+  "scope": "Full original two-account/four-recovery List scope. Same key/body/actor after lost reply, exactlyone canonical ranked List, reload, create/open/reload Card, keyboard Close and complete focused Card inside every clipping ancestor; no pageoverflow. Initial dialog Axe and persistent200%tablet font afterBoardreload validated. Does not replace immutable Production/RLS/strict-account/provider acceptance."
+}

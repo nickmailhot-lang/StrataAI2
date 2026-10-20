@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-20T01:16:32.419Z",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "source": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "actuallyInspectedCaptures": [
+    {
+      "path": "docs/delivery/evidence/cycle42-list-account-refusal-1280.png",
+      "sha256": "54932f5e2111a3f7cc4ac600e9e529e526a91944ec04387f4e4b989a6030d690"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle42-list-account-refusal-390.png",
+      "sha256": "297131c72b1a1316ae6b2e736dce08ef2e5a9817d8a3d0393ca0814fcd772f54"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle42-list-creation-draft-390.png",
+      "sha256": "99becace41eead17c207f6a7390f397e739dda2a8c94d8d98b56bc401b1a78d4"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle42-list-to-card-return-390.png",
+      "sha256": "e8c53232a540017630299aac99b37f280eeb098334d7ca8624b3061cde1f02ef"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle42-list-creation-draft-768.png",
+      "sha256": "667be78381dfba888c0a667472f407976a7db9c19dc0583323b64e4d5d219857"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle42-list-to-card-return-768.png",
+      "sha256": "cba252a0801935b0e8e681e00eb9770ea1b37207b953107191d44bf87110d2d4"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle42-list-creation-draft-1280.png",
+      "sha256": "872624aae19eb91dbe335059b0c86507442b7ff2706bbf0dc26066fa2fcbe26d"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle42-list-to-card-return-1280.png",
+      "sha256": "3f6f66c00ec2201d0bf3fac10eb0cc76f01fc63b58f85170eba94d415af3df4c"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle42-list-creation-draft-320.png",
+      "sha256": "93d49776f93a8e48d460f548765ea7e5c709f07710ea5d09bb50569704e4fcfe"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle42-list-to-card-return-320.png",
+      "sha256": "e22ca17d178bdabb31616b3bf4763e4920e1b511ef6cec5a3c4294463b3f07b9"
+    }
+  ],
+  "observations": [
+    "Desktop/mobile replacement account shows neutral sign-in feedback and no original List draft or Board name.",
+    "All four widths retain editable recovered List name, visible keyboard Create focus and usable modal controls.",
+    "All four final Card returns show whole focused Card below fixed header, reflowed long title and local canvas scrolling without horizontal pageoverflow.",
+    "768px captures visibly retain200%text through canonical reload and final Card return; automated font assertion and every-clipping-ancestor bounds support manual observation.",
+    "Existing MUI theme/shared navigation/Board and Card routes preserved."
+  ],
+  "limits": "Ten actual supporting Demo screenshots manually inspected. Initialdialog Axe and native keyboard/bounds assertions remain distinct from manual review; no full-app WCAG, physical device, screen-reader or managed-provider certification."
+}

@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-20T03:29:49.658Z",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "actuallyInspectedCaptures": [
+    {
+      "path": "docs/delivery/evidence/cycle46-card-movement-01.png",
+      "sha256": "23f2cac023927fd2b5cded9ed215490dd46f1de8fb5306c4169a3bf99c3ba27f",
+      "originalRelativeCapture": "kanban-scroll-PRD-06-mouse-241b9-ion-makes-no-write-at-390px/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle46-card-movement-02.png",
+      "sha256": "bc2446c262498dd7375fa1d362b3ac0e4b6b82a978e8f3ae578ed0e996f13fd6",
+      "originalRelativeCapture": "kanban-scroll-PRD-06-mouse-84ff7-on-makes-no-write-at-1280px/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle46-card-movement-03.png",
+      "sha256": "23f2cac023927fd2b5cded9ed215490dd46f1de8fb5306c4169a3bf99c3ba27f",
+      "originalRelativeCapture": "kanban-scroll-PRD-06-touch-cd5dd-ion-makes-no-write-at-390px/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle46-card-movement-04.png",
+      "sha256": "fcfd374f69b640ca116c91e392159e3964ac16d428dccf91ed909d3b8d1beddf",
+      "originalRelativeCapture": "kanban-touch-PRD-06-TC-12--cb2d7-led-empty-list-move-persist/test-finished-1.png"
+    }
+  ],
+  "observations": [
+    "Desktop and phone canvas retain separate local vertical/horizontal scrolling after cancellation and Card-detail return; original exact offsets and focused-link checks passed.",
+    "Phone touch Board reload shows retained source anchor and normal shared controls. The moved destination is off-canvas after reload, so canonical API and attached-target assertions, rather than this screenshot, prove destination persistence.",
+    "Unknown assignee preview says Assignees unavailable and missing date says No due date; no false zero-assignment or due-date state inferred."
+  ],
+  "limits": "Four final supporting captures at1280/390 only; no fresh successful320/768 work-usability or200% movement assertion. Qualified unchanged-source reflow/four-width work cases are separately identified. No physical device/screen-reader/fullWCAG or provider certification."
+}
