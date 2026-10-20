@@ -1,0 +1,117 @@
+{
+  "at": "2026-10-20T01:48:07.829Z",
+  "result": "Passed",
+  "sourceCommit": {
+    "at": "2026-10-20T01:46:48.471Z",
+    "head": "ff6c81abfc6900fe46c479e4dd4a32d2c5a0fbe9",
+    "parent": "48bc8ab66c91c5aa9ee8ebe694374fcd702425ef",
+    "testPath": "tests/StrataAI.Api.Tests/CardTitleValidationTests.cs",
+    "testSha256": "2d254f8359ebf390d6b929eb71a0979c8bfcf91cfd53245c04d10cc577726698",
+    "sourceOnlyTestCommit": true,
+    "applicationApiDatabaseWorkerWorkflowChanges": false,
+    "localBuild": {
+      "exit": 0,
+      "warnings": 0,
+      "errors": 0,
+      "sha256": "57c394cc89a7153b8a962ec7eb79f658eabb08316e6984af1a02787e287c5a9f"
+    },
+    "localTests": {
+      "exit": 0,
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_rename_rejects_blank_title_without_changing_the_original_Card(title: \"\")",
+          "outcome": "Passed",
+          "duration": "00:00:03.4940000"
+        },
+        {
+          "name": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_rename_rejects_blank_title_without_changing_the_original_Card(title: \" \\t\\r\\n \")",
+          "outcome": "Passed",
+          "duration": "00:00:02.7780000"
+        },
+        {
+          "name": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_creation_rejects_blank_title_without_persisting_a_Card(title: \" \\t\\r\\n \")",
+          "outcome": "Passed",
+          "duration": "00:00:02.7400000"
+        },
+        {
+          "name": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_creation_rejects_blank_title_without_persisting_a_Card(title: \"\")",
+          "outcome": "Passed",
+          "duration": "00:00:02.7340000"
+        }
+      ],
+      "rawTrxSha256": "409cba0c5e2e68c6dea9e1dfebe5986bbdf5f8e40b23291d5c3f611ab4c37106",
+      "consoleSha256": "203bde11aa9d9307a341219e5edfd6bea32cf0218505e7b5de30d25bfc06742c",
+      "executedBeforeCommitWithExactSourceHash": true
+    },
+    "initial": {
+      "exit": 2,
+      "passed": 2,
+      "failed": 2,
+      "skipped": 0,
+      "sourceSha256": "72cd380d906a0e96b0a66412060536f19361291f19322eeea635fd29ed085e6a",
+      "preserved": true,
+      "cause": "POST/Board projection mismatch corrected by comparing fullcanonicalbefore/after including hasCover; no fieldexcluded or assertionwaived."
+    },
+    "qualification": "Local narrow4case verification only; requiredexactsourceCI and actualtargetintegration remainpending; no newDone."
+  },
+  "input": {
+    "at": "2026-10-20T01:45:03.290Z",
+    "base": "48bc8ab66c91c5aa9ee8ebe694374fcd702425ef",
+    "testPath": "tests/StrataAI.Api.Tests/CardTitleValidationTests.cs",
+    "testSha256": "2d254f8359ebf390d6b929eb71a0979c8bfcf91cfd53245c04d10cc577726698",
+    "initialTestSha256": "72cd380d906a0e96b0a66412060536f19361291f19322eeea635fd29ed085e6a",
+    "change": "Compare complete canonical Board Card projection before and after invalidrename; preserve extra hasCover and all other fields instead of comparing different POST/Board representations.",
+    "originalNewScopeCases": 4,
+    "initialRun": {
+      "passed": 2,
+      "failed": 2,
+      "skipped": 0
+    },
+    "applicationChanges": false
+  },
+  "actualResults": {
+    "at": "2026-10-20T01:46:08.7757061Z",
+    "total": 4,
+    "cases": [
+      {
+        "name": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_rename_rejects_blank_title_without_changing_the_original_Card(title: \"\")",
+        "outcome": "Passed",
+        "duration": "00:00:03.4940000"
+      },
+      {
+        "name": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_rename_rejects_blank_title_without_changing_the_original_Card(title: \" \\t\\r\\n \")",
+        "outcome": "Passed",
+        "duration": "00:00:02.7780000"
+      },
+      {
+        "name": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_creation_rejects_blank_title_without_persisting_a_Card(title: \" \\t\\r\\n \")",
+        "outcome": "Passed",
+        "duration": "00:00:02.7400000"
+      },
+      {
+        "name": "StrataAI.Api.Tests.ApiHostTests.PRD_08_Card_creation_rejects_blank_title_without_persisting_a_Card(title: \"\")",
+        "outcome": "Passed",
+        "duration": "00:00:02.7340000"
+      }
+    ],
+    "counters": "<Counters total=\"4\" executed=\"4\" passed=\"4\" failed=\"0\" error=\"0\" timeout=\"0\" aborted=\"0\" inconclusive=\"0\" passedButRunAborted=\"0\" notRunnable=\"0\" notExecuted=\"0\" disconnected=\"0\" warning=\"0\" completed=\"0\" inProgress=\"0\" pending=\"0\" xmlns=\"http://microsoft.com/schemas/VisualStudio/TeamTest/2010\" />"
+  },
+  "restore": {
+    "exit": 0,
+    "locked": true,
+    "artifactSha256": "36b7f0b20bf10c685508ff758de4621670bf30579b829c5c61de95cadee87df6"
+  },
+  "build": {
+    "exit": 0,
+    "warnings": 0,
+    "errors": 0,
+    "artifactSha256": "57c394cc89a7153b8a962ec7eb79f658eabb08316e6984af1a02787e287c5a9f"
+  },
+  "reviewer": "Delivery lead",
+  "sourceReview": "Two data variants each for create/rename exercise the real authenticated endpoint pipeline and canonical Board persistence. Empty/whitespace requests yield400 invalid_card_title. Rejected creation leaves no Card; rejected rename preserves the complete same canonical projection, including hasCover, content,version andrank. Valid correction succeeds with exactlyone persisted ranked Card or one version advance on sameID/rank/description. Initial incorrect POST-vs-Board equality was replaced by stronger fullcanonicalbefore/after proof; all originalfourcases/otherassertions remain. No runtime,API,permission,CI/deadline or dependency implementation changed.",
+  "scope": "Actual narrow4/0/0 local source tests plus Releasebuild0warnings/errors, committed exactpassedsourcehash. Initial2/2/0 failure retained separately. Fresh wholecandidate CI,actualmain integration and finalreview remainpending; no newDone."
+}

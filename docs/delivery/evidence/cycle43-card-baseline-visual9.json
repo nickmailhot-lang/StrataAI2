@@ -1,0 +1,60 @@
+{
+  "at": "2026-10-20T01:48:07.829Z",
+  "result": "Passed",
+  "reviewer": "Delivery lead",
+  "implementationContext": "ff6c81abfc6900fe46c479e4dd4a32d2c5a0fbe9",
+  "executedSource": "ebcbe01f5847615a54b2ae488fd2ec06eca5de00",
+  "actuallyInspectedCaptures": [
+    {
+      "path": "docs/delivery/evidence/cycle43-card-baseline-01.png",
+      "sha256": "dfc28488bdf6bd77476ef8a18d85a1e7319d1737b2bf5d3cc28bbb4ed3b441e7",
+      "originalRelativeCapture": "board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle43-card-baseline-02.png",
+      "sha256": "37e9dd6b0d737e4c2f54a8dfafa1a7f76d8c1f0a3c8938de4ee92a5a0545d089",
+      "originalRelativeCapture": "board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-/test-finished-2.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle43-card-baseline-03.png",
+      "sha256": "0d0f92e07e2463be3f087e42d9a7751c0d28f37c5d036cd4e927715a606a48f3",
+      "originalRelativeCapture": "board-PRD-01-04-07-08-09-p-26aee-flow-and-isolation-desktop-/test-finished-3.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle43-card-baseline-04.png",
+      "sha256": "0fd489b37cbcfc020c3c04be0f28e7cb2c8c68d0a4bb7397da3561f00a1e6afc",
+      "originalRelativeCapture": "board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle43-card-baseline-05.png",
+      "sha256": "27518f40b060a3b1c839c6d592b3b417b453961af84a4f566dc5d07e6cedbb77",
+      "originalRelativeCapture": "board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-/test-finished-2.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle43-card-baseline-06.png",
+      "sha256": "efaf2a43f97ef2432315632da2aa8afaf684353b698cb413c84118c0f3a3c4b2",
+      "originalRelativeCapture": "board-PRD-01-04-07-08-09-p-c101d-kflow-and-isolation-mobile-/test-finished-3.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle43-card-baseline-07.png",
+      "sha256": "753163c030267e58cd0d0657b4dac8a934eab4ddf8370e0ad7af8de32656b666",
+      "originalRelativeCapture": "board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-/test-finished-1.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle43-card-baseline-08.png",
+      "sha256": "0206c98dc1a97d63c2d4b622b50c76e0e6b7f8a8da8ed2e9246c5a7eacec9108",
+      "originalRelativeCapture": "board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-/test-finished-2.png"
+    },
+    {
+      "path": "docs/delivery/evidence/cycle43-card-baseline-09.png",
+      "sha256": "4f95015db41de9d295e2a7dd3f4ffbb6b28c443b5ea92fd0611cf2a6dc777484",
+      "originalRelativeCapture": "board-PRD-01-04-07-08-09-p-c17c7-kflow-and-isolation-tablet-/test-finished-3.png"
+    }
+  ],
+  "observations": [
+    "All three denied crossOrganization routes show neutral unavailable feedback and no original protectedBoard/Card content.",
+    "All three persisted Board return captures show the renamed Card and original description in the existing MUI canvas/shell; responsive phone menu and action wrapping remain.",
+    "All three anonymous publicdetail captures show the persisted renamedtitle/description in disabled fields, no Saveaction and usable Close; content uses local verticalscroll."
+  ],
+  "limits": "Nine actual finalstate supportingDemo captures, threeviewports only. They do not show every intermediate owneredit state, fullparent320/200%acceptance or wholeappAxe/screenreader/physicaldevice/provider certification. Test-onlysource change adds no productUI."
+}
