@@ -1,0 +1,82 @@
+{
+  "at": "2026-10-20T03:32:00.796Z",
+  "result": "Passed",
+  "auditImplementation": "7a0417b31a81f7c453a292b82d8f8754c9aba8ae",
+  "sourceCommit": {
+    "at": "2026-10-20T03:31:18.753Z",
+    "head": "7a0417b31a81f7c453a292b82d8f8754c9aba8ae",
+    "parent": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d",
+    "paths": [
+      "docs/delivery/card-movement-acceptance.md",
+      "docs/delivery/evidence/cycle46-card-movement-01.png",
+      "docs/delivery/evidence/cycle46-card-movement-02.png",
+      "docs/delivery/evidence/cycle46-card-movement-03.png",
+      "docs/delivery/evidence/cycle46-card-movement-04.png",
+      "docs/delivery/evidence/cycle46-card-movement-audit.json",
+      "docs/delivery/evidence/cycle46-card-movement-input.json",
+      "docs/delivery/evidence/cycle46-card-movement-native-initial-failed.json",
+      "docs/delivery/evidence/cycle46-card-movement-qualified.json",
+      "docs/delivery/evidence/cycle46-card-movement-visual4.json",
+      "docs/delivery/evidence/cycle46-prd06-live-source.json"
+    ],
+    "files": 11,
+    "artifactFilesystemHashesVerified": 782,
+    "newIndexEvidenceHashesVerified": 6,
+    "indexCaptureHashesVerified": 4,
+    "unchangedIndexArtifactsPreserved": true,
+    "softwareTestWorkflowChanges": false,
+    "currentLocalRun": {
+      "passed": 4,
+      "failed": 4,
+      "result": "Failed"
+    },
+    "existingQualifiedImplementation": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "published": false,
+    "scope": "New bounded audit output committed; original local failed fixture aggregate preserved, actual integrated immutable evidence separate. No new Done. Audit output qualification and main integration still required."
+  },
+  "scopedEvidence": [
+    {
+      "id": "EVID-CYCLE-46-PRD06-LIVE",
+      "path": "docs/delivery/evidence/cycle46-prd06-live-source.json",
+      "sha256": "cbbf014365caaa66da997a3e7f49388962c8aeb07763d6349f5d7d01f16fd8fc",
+      "result": "Passed",
+      "observationContext": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d"
+    },
+    {
+      "id": "EVID-CYCLE-46-MOVE-INPUT",
+      "path": "docs/delivery/evidence/cycle46-card-movement-input.json",
+      "sha256": "27ff2427cdb213513749ee77f452904b6146d1323b7206dceccc980675267775",
+      "result": "Passed",
+      "observationContext": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d"
+    },
+    {
+      "id": "EVID-CYCLE-46-MOVE-QUALIFIED",
+      "path": "docs/delivery/evidence/cycle46-card-movement-qualified.json",
+      "sha256": "ab181664c39ecc8f50f34e5bb0b9134e52d9e86e0336e0fb48293d4f2eb2f5c9",
+      "result": "Passed",
+      "observationContext": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d"
+    },
+    {
+      "id": "EVID-CYCLE-46-NATIVE-INITIAL-FAILED",
+      "path": "docs/delivery/evidence/cycle46-card-movement-native-initial-failed.json",
+      "sha256": "5dd3e330a65bb108093d097b69cbef26b922bad7f4da889d93d7774ee05a9ee9",
+      "result": "Failed",
+      "observationContext": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d"
+    },
+    {
+      "id": "EVID-CYCLE-46-MOVE-VISUAL4",
+      "path": "docs/delivery/evidence/cycle46-card-movement-visual4.json",
+      "sha256": "4c8290cf90bd31513016d5a136ded7d620dd109e463321df48c0702d45ac3e3f",
+      "result": "Passed",
+      "observationContext": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d"
+    },
+    {
+      "id": "EVID-CYCLE-46-MOVE-AUDIT",
+      "path": "docs/delivery/evidence/cycle46-card-movement-audit.json",
+      "sha256": "e8a7c6f1cad7dc4476db265d7cff40388a82299d320e55c5d2ecc313ddb20437",
+      "result": "Passed",
+      "observationContext": "ce38c27a37cbc6ba492494c00314c1b2b05ce08d"
+    }
+  ],
+  "scope": "Only verifies exact committed audit package and honest result separation. It does not turn the local4Passed/4Failed run into a passing test gate, nor qualify or integrate this new audit output. Existing product8c68 is separately qualified and in main."
+}

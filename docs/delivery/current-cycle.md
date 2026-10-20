@@ -523,3 +523,83 @@ PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (20
 HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
 HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
 HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
+
+### Cycle 46 — Reconcile Card movement without restarting implementation
+
+Current PRD06 and its additive Work UX criteria map to existing integrated8c68 code. SHA-verified source evidence contains7API and9Domain passes, with2original capacity skips retained; actual qualified results include65related components,17native workflows and22required checks. The audit covers canonical rank/order, same-list and empty-destination movement, exact original-command retries, both-context permission checks, optimistic rollback, version conflicts, peer recovery and scoped normal-performance/reflow cases. Existing code and tests remain unchanged.
+
+A new original eight-case supporting Demo run finished4Passed/4Failed withzero skips/retries. The touch reorder/empty-list persistence and all3scroll/cancel cases passed; four full-work cases stopped at the unchanged verified-account fixture guard before Board setup. The delivery lead selected an unsuitable fixture. This failed aggregate remains retained; no narrowed rerun, fabricated CI identity, SQL/Worker fallback, deadline change or pass relabeling was used. The four actual qualified immutable full-work passes remain separate. All4successful finalcaptures were inspected; after reload the moved destination is off-canvas, and canonical API/attached-target assertions establish persistence.
+
+The11file audit work product is committed at7a0417b31a81f7c453a292b82d8f8754c9aba8ae. Three existing records legally advanced toTesting. Their tests gate remainsPending, the Test resultFailed and all12criteriaUnverified; new audit output still requires qualification and actual main integration. Completed work remains51Done; main ledger remains33Done until metadata publication. All36ledger contracts and current source/hash/Git/baseline/history validation pass. The784th evidence record certifies integrity, not feature acceptance. ParentPRD06 and the MVP remainopen.
+
+# Incremental delivery progress
+
+Baseline: `e90c6442ccc0b928a38db8793853ef03abe1bf3d`. Counts describe the ledger, not product completion percentages.
+
+PRDs: 0/88 verified Done (80 feature + 8 UX); 12 architecture tickets tracked separately.
+Work items: 51/1598 Done. Remaining canonical numbered acceptance criteria: 391; functional obligations: 951; child criteria: 2398. Unverified includes unknown and partially tested work; it does not assert code is absent.
+
+| Kind | Total | Done |
+| --- | ---: | ---: |
+| Epic | 8 | 0 |
+| PRD | 100 | 0 |
+| Vertical Slice | 469 | 4 |
+| Task | 501 | 20 |
+| Test | 520 | 27 |
+
+Implemented but unvalidated: 54. Blocked: 0. Known MVP-critical outstanding: 96; unclassified records: 1284. Weighted progress: not measured.
+
+## 1. Work completed
+
+Previous reporting acceptance metadata committed cleanly with51Done; implementation already integrated. New Card/navigation work stays Testing.
+Current PRD06 and UXA/backlog mapping reviewed. Existing Card move/rank/rollback/permission/recovery tests found; preserve implementation. Supporting Demo source/runtime/assets verified before native execution.
+Three existing records legally started. Existing integrated8c68 evidence reverified:7API/9Domain passes plus2capacity skips,65components,17native and22required checks.
+Current local8case run completed exit1:4complete touch/scroll cases Passed;4verified-account setup failures retained. All4successful rendered captures actually inspected.
+Focused11file source audit committed at 7a0417b31a81f7c453a292b82d8f8754c9aba8ae; all782artifact hashes,6newindex evidence and4capture hashes verified. OriginalFailed run remains unchanged.
+Six legal transitions completed; three existing records Testing, tests Pending, TestFailed and12criteriaUnverified.51Done unchanged.
+Current783-evidence ledger passes36contracts withzero failures/skips and actual source/hash/Git/baseline/history checks. New784th record certifies ledger integrity only.
+
+## 2. Implemented, awaiting validation
+
+PRD-06-VS-01, PRD-06-VS-01-T-01, PRD-06-VS-01-T-01-TEST-01, PRD-07-VS-01, PRD-07-VS-01-T-01, PRD-07-VS-01-T-01-TEST-01, PRD-04-VS-01-T-02, PRD-04-VS-01-T-02-TEST-01, PRD-04-VS-01-T-03, PRD-04-VS-01-T-03-TEST-01, PRD-04-VS-05, PRD-04-VS-05-T-01, PRD-04-VS-05-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-02, PRD-04-VS-06, PRD-04-VS-06-T-01, PRD-04-VS-06-T-01-TEST-01, PRD-07-VS-01-T-01-TEST-03, PRD-07-VS-01-T-02, PRD-07-VS-01-T-02-TEST-01, PRD-07-VS-01-T-03, PRD-07-VS-01-T-03-TEST-01, PRD-03-VS-06, PRD-03-VS-05, PRD-03-VS-05-T-01, PRD-03-VS-05-T-01-TEST-01, PRD-03-VS-05-T-02, PRD-03-VS-05-T-02-TEST-01, PRD-18-VS-01-T-02, PRD-18-VS-01-T-02-TEST-01, PRD-18-VS-01-T-02-TEST-02, PRD-03-VS-06-T-02, PRD-03-VS-06-T-02-TEST-01, PRD-03-VS-06-T-02-TEST-02, PRD-09-VS-01-T-02, PRD-09-VS-01-T-02-TEST-01, PRD-09-VS-01-T-02-TEST-02, PRD-03-VS-06-T-03, PRD-03-VS-06-T-03-TEST-01, PRD-03-VS-06-T-03-TEST-02, PRD-01-VS-05-T-01, PRD-01-VS-05-T-01-TEST-01, PRD-01-VS-05-T-01-TEST-02, PRD-01-VS-05-T-01-TEST-03, PRD-09-VS-01-T-03, PRD-09-VS-01-T-03-TEST-01, PRD-09-VS-01-T-03-TEST-02, PRD-25-VS-02-T-02, PRD-25-VS-02-T-02-TEST-01, PRD-04-VS-05-T-04, PRD-04-VS-05-T-04-TEST-01, PRD-08-VS-01-T-02, PRD-08-VS-01-T-02-TEST-01, PRD-08-VS-01-T-02-TEST-02
+
+## 3. Current work in progress
+
+Final784-evidence report and focused metadata commit.
+Independent retained-bundle source-free startup/restart rehearsal; acceptance requires terminal result, owned cleanup and unchanged stockWorker.
+
+## 4. Blockers and dependencies
+
+[object Object]
+
+## 5. Next highest-priority deliverable
+
+Finish784-evidence CLI report and metadata commit. Then record exact source-free rehearsal result and prepare a separate isolated matching Production fixture for original full-work8case execution, keeping verified-account guards and scoped Worker ownership. PR115 requires remaining exact-head checks and fresh review/main/tested-tree before normal integration.
+
+## 6. PRD progress changes
+
+No new work item IDs or criteria; three existing Ready audit/slice/test records start through the original lifecycle. No new Done.
+
+## 7. Completion evidence
+
+EVID-CYCLE-46-PRD06-LIVE
+EVID-CYCLE-46-MOVE-INPUT
+EVID-CYCLE-46-MOVE-QUALIFIED
+EVID-CYCLE-46-NATIVE-INITIAL-FAILED
+EVID-CYCLE-46-MOVE-VISUAL4
+EVID-CYCLE-46-MOVE-AUDIT
+EVID-CYCLE-46-MOVE-AUDIT-SOURCE
+EVID-CYCLE-46-MOVE-LEDGER-QUALITY
+
+## Recent verified completed increments
+
+PRD-25-VS-03: Reproduce delivery progress and refuse unsupported completion claims (2026-10-20T03:06:36.833Z)
+PRD-07-VS-05: Recover List creation under its original authenticated account (2026-10-20T01:30:17.621Z)
+PRD-08-VS-04: Recover Card creation under its original authenticated account (2026-10-19T20:02:52.809Z)
+PRD-01-VS-04: Resume an authorized Board or Card link after explicit sign-in (2026-10-19T03:08:27.727Z)
+
+## Preserved historical evidence
+
+HIST-UX-94: 2800 component cases passed; 24 deferred cases; 24 production-runtime browser cases passed at recorded implementation. Not rerun or promoted to current acceptance. Source: docs/ux/delivery-report.md. Full UX PRD and current release acceptance remain unverified.
+HIST-DEVELOPMENT-REFUSALS: Prefreeze fixture and decomposition failures retained and evaluated; final frozen 364-case suite passed without skips or relaxed assertions. Source: docs/delivery/evidence/failure-evaluation.md. Development diagnostics are not release or product acceptance.
+HIST-CYCLE-02-PREFREEZE: Initial probes: 3 failed / 14 passed return components; private Card sign-in entry absent in browser. A test-only TypeScript matcher option was corrected. Original/current broad Board creation failures retained. Source: docs/delivery/evidence/cycle-02-failure-evaluation.md. Historical diagnostics and counterfactual results do not establish current full-workflow acceptance.
