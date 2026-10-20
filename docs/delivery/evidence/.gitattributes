@@ -1,3 +1,6 @@
-# These hashed raw command outputs retain their captured bytes across checkouts.
-cycle41-board-zoom-browser-registry.txt -text -eol
-cycle41-board-zoom-browser-types.txt -text -eol
+# These immutable command byte streams are data artifacts, not source text.
+# Their recorded hashes require exact carriage returns and terminal blank lines.
+cycle41-board-zoom-browser-registry.txt binary -eol
+cycle41-board-zoom-browser-types.txt binary -eol
+cycle41-sourceR-contracts.txt binary -eol
+cycle41-sourceR-evolution-main.txt binary -eol
