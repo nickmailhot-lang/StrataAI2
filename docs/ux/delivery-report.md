@@ -733,3 +733,8 @@ Implemented: dc40d996 (runtime4bc16f8; Ysourcea54e2f2). Tested:28navigationcontr
 ### Cycle142: full regression remains unqualified
 
 The complete local frontend run finished with2951passes,12failures andtheoriginal24capacitydeferrals. All71cases in thethreepreviouslyfailingfiles thenpassed onbothrepairedsourceandunchangedpublishedbaseline, withoriginalassertions/deadlines. These targetedpasses do not replace the failedfullrun orproveexclusivecause. CurrentrequiredCI must independentlyvalidate theentirefrontend andBoard5 beforemerge; regressionsgate remainsFailed andTask/TestrecordsTesting. Evidence:EVID-CYCLE-142-FULL-FRONTEND-FAILED,CURRENT71,BASELINE71.
+
+
+### Cycle152: patched build-tool verification
+
+Exact Vite8.3.4 and required locked build-tool transitives pass supported npm11.19.1 fresh install, audit0, web/browser types, complete15 NavigationConfirmation cases and production compilation. Compiler verification uses default local metadata and is not an identified release bundle. Original security failures and the separate native7/4 aggregate remain Failed. New-head complete CI and integration remain required; no UX/product acceptance is inferred. Evidence:EVID-CYCLE-152-PATCHED-VITE-LOCAL.
