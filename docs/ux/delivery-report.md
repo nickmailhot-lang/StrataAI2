@@ -1,5 +1,54 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Card/Search reconciled with the repaired foundation
+
+PR121 is frozen at1730b891; fresh complete CI39674641269 is running against tested merge e0dbff49, tree599bc9ff. Its main dependency117 is resolved, but no121 acceptance or merge is claimed. The original failed native runs and their repairs remain below.
+
+The Card/Search branch now combines its actual ebb04eb5 history, including119/120 and the text-zoom repair, with actual parent1730 through a normal local merge. Both parent ledger histories, evidence, acceptance definitions and report sections are preserved and validated: **1619 items /3915 criteria /963 evidence /69 Done**. This is side-branch reconciliation; main remains unchanged. Combined Card/Search and native pointer checks are next. Existing scoped results retain their own source identities; the combined tree needs its own tests and full qualification before integration.
+
+---
+
+## 2026-10-21 — Original qualification complete; repaired candidate ready for fresh CI
+
+Original PR121 head951e6fdb run39646826188 has completed: **17 successful checks,4 failed checks,1 skipped release check**. Full browser matrix: **482 passed /3 failed /2 existing mail-profile skips**; the separate strict-account group has one additional metadata recovery failure. Last full group passes119. The required-ci failure and skipped release correctly prevent integration. All four failed native cases are evaluated and retained in the failure records below.
+
+Prepared source87dd2d0b addresses the pointer edge turn and keyboard admission. Fresh committed admission contracts pass31 atf485d5d8, and the enriched ledger including the final scoped proof passes root/Git/hash/main-history validation: **1611 items /3906 criteria /923 evidence records /69 Done**. These local checks do not replace complete current candidate CI, real-service roles/security, release validation, source/UX review or main integration. Publish one replacement candidate now and freeze it through that qualification. PR117 is already merged; PR121 and Card/Search122 remain draft/unmerged. Functional, UX, test and MVP acceptance stay separate; no parent closure or product percentage.
+
+---
+
+## 2026-10-21 — Native regression repairs prepared; full qualification remains mandatory
+
+Original951 CI is Failed: strict-account phone metadata retry acknowledgment; full2 phone mouse/touch horizontal edge scrolling (118passed/2failed/2existingmail skips); full3 desktop settings draft discard (122passed/1failed). Full1 passes123; full4 continues. Every failure and trace artifact identity is retained; no native assertions, five-second deadlines, retries or security/role checks changed. PR117 is integrated37656975; PR121 remains draft/unmerged.
+
+Source87dd2d0b fixes compact-handle bent pointer edge progression using only visible owned fallback surfaces when preferred travel has no progress; speed/clipping/center-stop/keyboard handling remain. New regression reproduces the old defect9/1 and passes10/10 after repair. Native keyboard callers observe their exact request or one original local control activation; no replay after observed activation, duplicate tolerance, replacement-control transfer or consumer-result retry.
+
+Scoped checks: **107 affected components;31 admission positive/refusal contracts;7default+7rollback browsers;web/browser types;strict lint;11 architecture/capacity guards;490 cases/172 intact browser files;local compiler8.80s** Passed. Browser runs identify1ebd inputs equal87dd; admission run used the new working-tree inputs later committed87dd. Compiler identifies87dd/0.1.0-local and retains the existing chunk warning. Controlled HTTP/Vite runs do not certify real services, RLS, Production CSP, immutable images or release. Fresh complete final-head gates are mandatory.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities and data/API/tenant contracts preserved; existing pointer edge behavior repaired. |
+| UX completion | Scoped default/rollback Board geometry, keyboard return, reflow and Axe pass; full own workflow acceptance pending. |
+| Test completion | Narrow107+31+7+7 and source gates pass; actual original native failures remain Failed, complete repaired-head CI pending. |
+| MVP readiness | Not accepted globally; bounded Task/Test stay Testing, criteriaUnverified,69Done unchanged. No product percentage. |
+
+Card/Search polish remains preserved in draft122 with its scoped97+8+8 results and original text-zoom red retained. Reconcile this work after121 safely integrates, then require122 own complete qualification. Independent118 and119/120 histories remain intact.
+
+---
+
+## 2026-10-21 — PR121 native phone recovery failure retained; admission rework
+
+PR117 dependency is resolved by its ordinary main merge37656975. Current PR121951 native strict-account Board metadata phone recovery failed its original5000ms exact acknowledgment assertion. Trace shows only the initial lost-ack PATCH and an ignored Retry Enter; the original unconfirmed draft remains. Reuse the existing request-observed admission helper for initial save, original-key retry and reviewed save; stop once each exact request begins. All payload/key/count/receipt/focus/persistence/role assertions, original deadlines and zero test retries remain intact. No application, API, schema or helper semantics changed. The original failed job and screenshot are retained; narrower helper checks cannot qualify the full native scenario.
+
+Functional/UI implementation remains present; test acceptance is failed and bounded Task/Test returned legally from Testing to In Progress. Merge is blocked until the repaired final head passes every required gate. Other current-run browser groups may finish to expose additional failures. Card/Search source remains preserved independently in draft122; it is not accepted or merged. No parent PRD closure or product percentage.
+
+---
+
+
+
+---
+
+Preserved independent Card and Search checkpoint:
+
 ## 2026-10-21 — Text-zoom repair verified; Card/Search follow-up ready for full qualification
 
 Current source `ff0350c3` corrects selected-filter clipping by making the existing Search grid follow text size. No request, field, cursor, actor check or action changed. The same expanded browser file now passes **8/8 default + 8/8 rollback**, including the original768px/200% selected-value assertion, Card pending/failed/denied context, dirty cancel/return, Search unsent draft/applied scope/cursor/error/denial, keyboard and Axe. No failure/skips/retries or widened deadline. The original **7 passed/1 failed** run and red screenshot remain Failed evidence, alongside earlier narrower passing scopes.

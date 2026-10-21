@@ -3,7 +3,7 @@ import { registerNotificationAccount as registerVerifiedAccountFixture } from '.
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads } from './boardReadTracker';
-import { openAdmittedReview, pressAdmittedAction } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-04: metadata save recovery, concurrent draft review and responsive background at ${width}px`, async ({ page, context }) => {
@@ -38,14 +38,14 @@ for (const width of [1280, 390]) {
       await page.getByRole('textbox', { name: 'Board description', exact: true }).fill(description);
       await page.getByRole('combobox', { name: 'Board background', exact: true }).focus(); await page.keyboard.press('Enter');
       await page.getByRole('option', { name: 'Purple', exact: true }).focus(); await page.keyboard.press('Enter');
-      await pressAdmittedAction(page.getByRole('button', { name: 'Save Board details', exact: true }));
+      await pressObservedRequest(page.getByRole('button', { name: 'Save Board details', exact: true }), () => requests.length, 1);
       await expect(page.getByRole('button', { name: 'Retry this Board save', exact: true })).toBeEnabled();
       await expect(page.getByRole('textbox', { name: 'Board name', exact: true })).toHaveValue(longName);
       await expect(page.getByRole('textbox', { name: 'Board name', exact: true })).toBeDisabled();
       await expect(page.getByRole('button', { name: 'Cancel Board changes', exact: true })).toHaveCount(0);
       await expect(other.getByRole('heading', { name: longName, exact: true })).toBeVisible();
       await expect(other.getByRole('region', { name: 'Board workspace', exact: true })).toHaveCSS('background-color', 'rgb(250, 245, 255)');
-      await pressAdmittedAction(page.getByRole('button', { name: 'Retry this Board save', exact: true }));
+      await pressObservedRequest(page.getByRole('button', { name: 'Retry this Board save', exact: true }), () => requests.length, 2);
       await expect(page.getByText('Board changes acknowledged. Current Board state is being checked.', { exact: true })).toBeVisible();
       await expect((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Edit Board details', exact: true }))).toBeFocused();
       expect(requests).toHaveLength(2); expect(requests[1]).toEqual(requests[0]); expect(requests[0].key).toMatch(/^[0-9a-f-]{36}$/);
@@ -66,7 +66,7 @@ for (const width of [1280, 390]) {
       await expect(other.getByRole('heading', { name: 'Concurrent Board', exact: true })).toBeVisible();
       await pressAdmittedAction(page.getByRole('button', { name: 'Review current Board revision', exact: true }));
       await page.getByRole('textbox', { name: 'Board description', exact: true }).fill('Reviewed draft description');
-      await pressAdmittedAction(page.getByRole('button', { name: 'Save Board details', exact: true }));
+      await pressObservedRequest(page.getByRole('button', { name: 'Save Board details', exact: true }), () => requests.length, 3);
       await expect((await disclosedWorkControl(page, 'Board actions', 'button', { name: 'Edit Board details', exact: true }))).toBeFocused();
       await expect(other.getByRole('heading', { name: 'Retained draft', exact: true })).toBeVisible();
       expect(requests).toHaveLength(3); expect(requests[2].key).not.toBe(requests[0].key);

@@ -1,0 +1,763 @@
+{
+  "at": "2026-10-21T20:44:10.876Z",
+  "result": "Passed",
+  "revision": "87dd2d0bc8302d5319a2f1047958bfd86022b198",
+  "scope": "Scoped current repair qualification only: affected107 components,31 admission contracts,7default+7rollback controlled browsers, types/lint,11architecture/capacity guards,490/172 registry and local compiler. All current complete native/security/role/release gates remain mandatory.",
+  "logs": [
+    {
+      "name": "trello-121-edge-green.log",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/kanbanAutoScroll.test.ts\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  1 passed (1)\r\n      Tests  10 passed (10)\r\n   Start at  13:32:01\r\n   Duration  2.74s (environment 77%, setup 16%, transform 4%, tests 2%, worker 1%, import 1%)\r\n\r\n"
+    },
+    {
+      "name": "trello-121-repair-all-admission.log",
+      "content": "(node:36320) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ an admitted action dispatches exactly one Enter and stops at the expected request (15.9203ms)\r\n✔ an ignored keypress admits one request and stops once that request starts (484.9705ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-enabled (2.6528ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-focus (2.2331ms)\r\n✔ an extra request remains a failure even when the launcher has retired (5001.5472ms)\r\n✔ an unexpected initial observation cannot trigger another Enter (1.0718ms)\r\n✔ local action observes one native activation and removes its listener (14.7278ms)\r\n✔ only an ignored local keypress is readmitted (487.819ms)\r\n✔ local activation during focus cannot send another Enter to a retired control (4.3281ms)\r\n✔ a wrong consumer result after activation is not repaired by another activation (4.9354ms)\r\n✔ duplicate local activations remain a failure (5015.0891ms)\r\n✔ a replacement local control cannot receive the original activation (4926.7233ms)\r\n✔ read-only Tab proves native traversal without focusing its destination (4.11ms)\r\n✔ an unobserved Shift+Tab repeats from its admitted origin only (113.4102ms)\r\n✔ broken keyboard order still fails within the original five-second budget (4937.1695ms)\r\n✔ nonmutating activity review observes its inline region before returning (2.0129ms)\r\n✔ an ignored review activation is retried only until its region opens (106.7828ms)\r\n✔ an already-open region does not require its retired launcher (0.5065ms)\r\n✔ review opening during focus cannot activate the retired launcher (106.4427ms)\r\n✔ an unopened review remains a failure within the original admission budget (4932.9301ms)\r\n✔ admitted text dispatches one native input event and one insertion (4.3456ms)\r\n✔ only an ignored insertion with no input event can be attempted again (480.9125ms)\r\n✔ a draft cleared after native input still fails its value assertion without refilling (5.5792ms)\r\n✔ a replacement control cannot receive the earlier input intent (4940.4633ms)\r\n✔ extra native input remains a failure and cannot trigger another insertion (5016.2522ms)\r\n✔ local validation observes one native submit and removes its listener (7.6707ms)\r\n✔ local validation retries only a keypress that emitted no submit (494.1684ms)\r\n✔ an observed validation submit during focus cannot dispatch another Enter (107.049ms)\r\n✔ a submit that retires its form is not replayed while its result is pending (2.3586ms)\r\n✔ a retired validation form cannot send a key to a replacement control (4927.3548ms)\r\n✔ duplicate native submits remain a failure without another activation (5013.1981ms)\r\nℹ tests 31\r\nℹ suites 0\r\nℹ pass 31\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 48256.2698\r\n"
+    },
+    {
+      "name": "trello-121-repair-affected-unit.log",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/kanbanAutoScroll.test.ts src/features/kanban/kanbanPointerScrollFrame.test.ts src/features/kanban/BoardScreen.drag.test.tsx src/features/kanban/BoardScreen.test.tsx src/features/kanban/DragHandleFocus.test.tsx src/features/kanban/ListDragColumn.test.tsx src/features/organizations/OrganizationSettingsPage.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  7 passed (7)\r\n      Tests  107 passed (107)\r\n   Start at  13:38:05\r\n   Duration  168.86s (environment 42%, import 28%, tests 18%, setup 10%, transform 2%)\r\n\r\n"
+    },
+    {
+      "name": "trello-121-repair-web-types.log",
+      "content": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\n"
+    },
+    {
+      "name": "trello-121-repair-browser-types.log",
+      "content": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "name": "trello-121-repair-lint.log",
+      "content": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "name": "trello-121-repair-architecture.log",
+      "content": "✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (459.0692ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (70.353ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (295.8347ms)\r\n✔ phase guard detects eager allocation and accidental default activation (95.0825ms)\r\n✔ ARCH-02-FR-009 rejects direct and aliased browser fetch in feature clients (21463.0689ms)\r\n✔ ARCH-02-FR-009 allows the shared transport and isolated test fixtures (46.0184ms)\r\n✔ ARCH-02-FR-009 permits feature requests through apiFetch (9.4236ms)\r\n✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (612.8781ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (58.1357ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (275.7664ms)\r\n✔ phase guard detects eager allocation and accidental default activation (83.9213ms)\r\nℹ tests 11\r\nℹ suites 0\r\nℹ pass 11\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 30305.0419\r\n"
+    },
+    {
+      "name": "trello-121-repair-registry.log",
+      "content": "Browser shard coverage: 490 cases in 172 intact files; 123/123/125/119 cases across all four shards.\r\n"
+    },
+    {
+      "name": "trello-121-repair-compiler.log",
+      "content": "vite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12060 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/build-metadata.json            0.07 kB │ gzip:   0.09 kB\r\ndist/index.html                     0.57 kB │ gzip:   0.34 kB\r\ndist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\ndist/assets/index-CKpuZ4KH.js   1,641.80 kB │ gzip: 457.72 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 8.80s\r\n"
+    }
+  ],
+  "browser": [
+    {
+      "mode": "default",
+      "executionBase": "1ebd192b",
+      "stats": {
+        "startTime": "2026-10-21T20:33:49.944Z",
+        "duration": 86822.175,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/kanban-edge-turn.spec.ts",
+            "tests/browser/trello-work-polish.spec.ts",
+            "--output",
+            "../trello-121-edge-default-results",
+            "--reporter=json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-121-edge-default-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "kanban-edge-turn.spec.ts",
+            "file": "kanban-edge-turn.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-003/PRD-06: native mouse turns from List to Board edge at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 13781,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:33:51.764Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-371f23f52568a9324398",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              },
+              {
+                "title": "UX-003/PRD-06: native mouse turns from List to Board edge at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9081,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:34:05.900Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-4cd8f2264890d7164e37",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              },
+              {
+                "title": "UX-003/PRD-06: native touch turns from List to Board edge at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 8257,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:34:15.004Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-5f7b650a5def0d7c2272",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              }
+            ]
+          },
+          {
+            "title": "trello-work-polish.spec.ts",
+            "file": "trello-work-polish.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 13924,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:34:23.811Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-59041cc67e1261328d65",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 12670,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:34:37.760Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-a327dbe292eda816c562",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 13828,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:34:50.462Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-828d8c028fe3041bcfec",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 11879,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:35:04.308Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-59d39c0b4f415fb4366e",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-21T20:33:49.944Z",
+          "duration": 86822.175,
+          "expected": 7,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    },
+    {
+      "mode": "rollback",
+      "executionBase": "1ebd192b",
+      "stats": {
+        "startTime": "2026-10-21T20:36:10.745Z",
+        "duration": 77687.962,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/kanban-edge-turn.spec.ts",
+            "tests/browser/trello-work-polish.spec.ts",
+            "--output",
+            "../trello-121-edge-rollback-results",
+            "--reporter=json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-121-edge-rollback-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "kanban-edge-turn.spec.ts",
+            "file": "kanban-edge-turn.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-003/PRD-06: native mouse turns from List to Board edge at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 10416,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:36:11.806Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-371f23f52568a9324398",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              },
+              {
+                "title": "UX-003/PRD-06: native mouse turns from List to Board edge at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7836,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:36:22.480Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-4cd8f2264890d7164e37",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              },
+              {
+                "title": "UX-003/PRD-06: native touch turns from List to Board edge at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7835,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:36:30.335Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-5f7b650a5def0d7c2272",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              }
+            ]
+          },
+          {
+            "title": "trello-work-polish.spec.ts",
+            "file": "trello-work-polish.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 12198,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:36:38.290Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-59041cc67e1261328d65",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 12203,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:36:50.509Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-a327dbe292eda816c562",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 13038,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:37:02.738Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-828d8c028fe3041bcfec",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 12194,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T20:37:15.798Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-59d39c0b4f415fb4366e",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-21T20:36:10.745Z",
+          "duration": 77687.962,
+          "expected": 7,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    }
+  ],
+  "browserInputEquivalence": [
+    {
+      "path": "apps/web/src/features/kanban/kanbanAutoScroll.ts",
+      "sha256": "db877b412d6cf628d0c1e0609d8c2aed30fe887ff4fd306088e905cd5f4920cd"
+    },
+    {
+      "path": "apps/web/src/features/kanban/kanbanAutoScroll.test.ts",
+      "sha256": "7bda54616270487f657ce2fbf948d9fe1ef9c148caa978446e6b4dfd93943a15"
+    },
+    {
+      "path": "tests/browser/kanban-edge-turn.spec.ts",
+      "sha256": "c78dc5d72587ccff601a1c58403cd19868179e1f40450ff3ac148d1f1bd31ee2"
+    },
+    {
+      "path": "tests/browser/trello-work-polish.spec.ts",
+      "sha256": "b3847879242d88f46b00c29834b5da677528ca9b307a9b99cfa38c8bbc41216f"
+    }
+  ],
+  "admissionExecution": {
+    "base": "1ebd192b",
+    "workingTreeInputs": "New helper/test/caller later committed87dd2d0b;31contract run before that source commit. Do not relabel it as an exact committed execution.",
+    "helperSha256": "6916ed36ba1c55968963518a39b66f97528665f8576b71ac93d03801522923eb",
+    "testsSha256": "de414bf24471e8f488653a0a84d12b1cdbd783152d340d0ff84960e50acd5e64"
+  },
+  "compiler": {
+    "revision": "87dd2d0bc8302d5319a2f1047958bfd86022b198",
+    "version": "0.1.0-local",
+    "seconds": 8.8,
+    "warning": "Existing chunk-size warning retained; no budget changed.",
+    "limit": "Local compiler is not immutable image/CSP/HTTPS/release qualification."
+  },
+  "limits": [
+    "Browser fixtures control HTTP and quiet transport; existing native production workflows remain required.",
+    "Older951 successes and earlier36 delivery contracts are separate actual executions; no final-head full CI or acceptance claim."
+  ]
+}

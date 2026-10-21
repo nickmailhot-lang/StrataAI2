@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { expect } from '@playwright/test';
-import { fillAdmittedInput, openAdmittedReview, pressObservedRequest, pressObservedValidation, tabAdmittedFocus } from './keyboardAdmission.ts';
+import { fillAdmittedInput, openAdmittedReview, pressObservedLocalAction, pressObservedRequest, pressObservedValidation, tabAdmittedFocus } from './keyboardAdmission.ts';
 
 // The real Playwright expectations/polling drive this isolated Locator protocol
 // fixture. Product browser cases separately prove native UI and HTTP behavior.
@@ -66,6 +66,55 @@ test('an unexpected initial observation cannot trigger another Enter', async () 
   const button = new Locator('normal'); button.count = 2;
   await assert.rejects(pressObservedRequest(button, () => button.count, 2));
   assert.equal(button.focuses, 0); assert.equal(button.presses, 0);
+});
+
+class LocalAction extends Locator {
+  node = Object.assign(new EventTarget(), { isConnected: true });
+  observation;
+  disposed = false;
+  result = 'original';
+  async evaluateHandle(callback) {
+    const observed = callback(this.node); this.observation = observed;
+    return { evaluate: async fn => fn(observed), dispose: async () => { this.disposed = true; } };
+  }
+  async focus() {
+    this.focuses++;
+    if (this.mode === 'replaced') this.node.isConnected = false;
+    if (this.mode === 'activated-during-focus') { this.node.dispatchEvent(new Event('click')); this.retired = true; }
+  }
+  async press(key) {
+    assert.equal(key, 'Enter'); assert.equal(this.node.isConnected, true); this.presses++;
+    if (this.mode === 'ignored-first' && this.presses === 1) return;
+    this.node.dispatchEvent(new Event('click'));
+    if (this.mode === 'duplicate') this.node.dispatchEvent(new Event('click'));
+    if (this.mode !== 'wrong-result') this.result = 'current';
+    this.retired = true;
+  }
+}
+test('local action observes one native activation and removes its listener', async () => {
+  const button = new LocalAction('normal'); await pressObservedLocalAction(button);
+  assert.equal(button.presses, 1); assert.equal(button.observation.state.count, 1); assert.equal(button.disposed, true);
+  button.node.dispatchEvent(new Event('click')); assert.equal(button.observation.state.count, 1);
+});
+test('only an ignored local keypress is readmitted', { timeout: 10_000 }, async () => {
+  const button = new LocalAction('ignored-first'); await pressObservedLocalAction(button);
+  assert.equal(button.presses, 2); assert.equal(button.observation.state.count, 1);
+});
+test('local activation during focus cannot send another Enter to a retired control', async () => {
+  const button = new LocalAction('activated-during-focus'); await pressObservedLocalAction(button);
+  assert.equal(button.presses, 0); assert.equal(button.observation.state.count, 1);
+});
+test('a wrong consumer result after activation is not repaired by another activation', async () => {
+  const button = new LocalAction('wrong-result'); await pressObservedLocalAction(button);
+  assert.throws(() => assert.equal(button.result, 'current')); assert.equal(button.presses, 1);
+});
+test('duplicate local activations remain a failure', { timeout: 10_000 }, async () => {
+  const button = new LocalAction('duplicate'); await assert.rejects(pressObservedLocalAction(button));
+  assert.equal(button.presses, 1); assert.equal(button.observation.state.count, 2);
+});
+test('a replacement local control cannot receive the original activation', { timeout: 10_000 }, async () => {
+  const button = new LocalAction('replaced'); await assert.rejects(pressObservedLocalAction(button));
+  assert.equal(button.presses, 0); assert.equal(button.observation.state.count, 0);
 });
 
 class TraversalDestination {
