@@ -762,3 +762,9 @@ The complete local frontend run finished with2951passes,12failures andtheorigina
 ### Cycle152: patched build-tool verification
 
 Exact Vite8.3.4 and required locked build-tool transitives pass supported npm11.19.1 fresh install, audit0, web/browser types, complete15 NavigationConfirmation cases and production compilation. Compiler verification uses default local metadata and is not an identified release bundle. Original security failures and the separate native7/4 aggregate remain Failed. New-head complete CI and integration remain required; no UX/product acceptance is inferred. Evidence:EVID-CYCLE-152-PATCHED-VITE-LOCAL.
+
+
+### Cycle162: accessible Card refusal observation
+
+Current50fd changes only the final Card actor test observation to await the same accessible focused alert after MUI dialog withdrawal. All other bytes/assertions and runtime remain unchanged. Complete10 actor/refusal cases pass with patched dependencies, web types and scoped lint. Original f28 full frontend1failed/2962passed/24capacity deferrals remains Failed; scoped10 does not replace fresh complete CI and release/main qualification. No product or UX acceptance is inferred from this test-only repair.
+
