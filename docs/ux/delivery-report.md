@@ -1,5 +1,23 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — PR #117 dependency resolved; PR #121 full qualification active
+
+PR #117 merged normally as `37656975f491352a3b9e5dc4ea0b124b546318c4` after all **22 exact-head checks passed**. Current hosted frontend: **2,963 passed / 24 original capacity deferrals**; complete full browsers: **481 passed / 2 existing mail-profile skips**, no failures. Foundation, commands, notifications, tenant/role/security and immutable bundle/startup/HTTPS checks pass. Source and empty review-thread/submission state were inspected. Actual merged tree `f9e682ddc1b843c7358a3c56e400b7047059076a` equals qualified synthetic merge `afb994ee`; main/head parents and historical failures are preserved. Complete hosted qualification is separate from earlier failed local aggregates and does not erase them.
+
+PR #121 now targets main. Local reconciliation `26ce5e9a` changes no application/test tree. Prior scoped **198 component / 4 default / 4 rollback browser** passes retain their original source identities. Freeze the tracking checkpoint for its **own fresh full CI**; parent results never substitute for child qualification. Keep #121 draft and unmerged until every applicable gate, current tested-tree/release evidence and review pass. Independent PR #118 recovery and PR #119/#120 Search branches remain untouched.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing business capabilities preserved; parent Organization context integrated. No new business scope or parent PRD closure. |
+| UX completion | Organization/Work presentation implemented and scoped desktop/mobile evidence retained; child integration remains pending. Card/Search polish follows after #121 qualifies and merges. |
+| Test completion | Parent22 complete; child full current checks pending, scoped198+4+4 pass. Original browser/unit failures stay recorded; no assertion/deadline/retry/capacity waiver. |
+| MVP readiness | Not accepted globally; 69 inherited Done unchanged, two new UX records remain Testing, criteria Unverified. No combined percentage. |
+
+Ledger: **1,611 items / 3,906 criteria / 916 evidence records**. Evidence: `EVID-TRELLO-POLISH-117-REVIEW` and `EVID-TRELLO-POLISH-117-MERGE`. Next: finish/fix #121's complete CI, verify current review/main/tested-tree and merge normally; then bounded Card details and Search polish with separate acceptance and report updates.
+
+---
+
+
 ## 2026-10-20 — Trello-style Organization and Work presentation
 
 Current application/test source: `49c5bbce0c420561da549bc36395f61dc646de79` (presentation at `efd44858`; final commit adds rollback expectations to the new browser spec). This small child increment reuses PR #117's admitted Organization-name header and existing navigation. Organization/Board links become readable surfaces; lists and Cards use compact MUI styling, labels before titles and visible 44px drag handles with their original accessible names. Existing command, recovery, permissions, focus, canvas, background and lifecycle owners are preserved. No domain/API/schema/subscription changes or invented preview data. Existing Work UX flag `0` restores the previous presentation.
