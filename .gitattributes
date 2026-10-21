@@ -9,3 +9,6 @@ docs/delivery/evidence/cycle18*.txt -whitespace
 docs/delivery/evidence/cycle19* -text
 docs/delivery/evidence/cycle20* -text
 docs/delivery/evidence/merge17* -text
+
+# This polish cycle records exact hashed result bytes, independent of checkout OS.
+docs/delivery/evidence/ux-polish-* -text

@@ -1,5 +1,10 @@
 # StrataAI2 delivery rules
 
+## Current priority: polish the working MVP
+
+The 2026-10-20 user-approved UX-first milestone takes priority over expanding visible product scope. Follow `docs/ux/polish-milestone.md`: polish existing priority workflows before starting net-new user-facing features. Continue necessary security/reliability fixes, tests and independent backend work that supports this milestone. Preserve the approved backlog and all implementation; do not restart, duplicate or silently drop work. Keep functional, UX, test and MVP acceptance separate.
+
+
 Continue the approved PRD/ARCH backlog and operational task-management MVP. GitHub requirements and existing architecture contracts remain authoritative.
 
 For every new or active feature, read `docs/ux/feature-acceptance.md` and its row in `docs/ux/backlog-map.md`. Include the applicable UX acceptance criteria in implementation and PR evidence. New PRDs must include the authoring checklist there.

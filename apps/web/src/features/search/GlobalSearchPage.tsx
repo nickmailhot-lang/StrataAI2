@@ -68,6 +68,7 @@ export function GlobalSearchPage() {
   }, [load]);
   return <Stack spacing={2} component="section" aria-label="Global Card search">
     <PageHeader title="Search Cards" variant="h5" description="Search across your accessible Organizations and Boards." />
+    {!page && !busy && !notice && <Typography>Choose filters, then select Search. Leave filters empty to browse Cards you can access.</Typography>}
     <Stack component="form" spacing={2} onSubmit={event => { event.preventDefault(); actor.current = undefined;
       void load({ ...draft, q: draft.q.trim(), label: draft.label.trim(), member: draft.member.trim() }); }}>
       <TextField label="Card text" value={draft.q} onChange={e => setDraft({ ...draft, q: e.target.value })} slotProps={{ htmlInput: { maxLength: 160 } }} />
@@ -86,6 +87,14 @@ export function GlobalSearchPage() {
       {page && <Typography>{page.items.length} results on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
       {acknowledged && <Typography>Search acknowledged.</Typography>}
     </Stack>
+    {page && !busy && !notice && page.items.length === 0 && <Paper component="section" aria-label="Search guidance" variant="outlined" sx={{ p: 2 }}>
+      <Stack spacing={1}>
+        <Typography component="h3" variant="h6">{page.nextCursor ? 'Keep searching' : 'No matches on this page'}</Typography>
+        <Typography>{page.nextCursor
+          ? 'Search is not finished. Select Next search page to continue checking work you can access.'
+          : 'This search has reached the last page. Try fewer filters, or choose Archived work in Search scope for archived Cards.'}</Typography>
+      </Stack>
+    </Paper>}
     {page?.items.map(item => <Paper key={item.id} variant="outlined" sx={{ p: 2 }}>
       <Typography component={Link} to={`/app/${item.organizationId}/boards/${item.boardId}/cards/${item.id}`}>{item.title}</Typography>
       <Typography>{item.boardName} / {item.listName}</Typography>

@@ -39,6 +39,10 @@ MVP classification is deliberately tri-state. Known critical slices have a recor
 
 No completion percentage is generated. Estimates are currently absent. Weighted progress remains unmeasured until a reviewed scope baseline and all required estimates exist; counts cannot substitute for effort weights.
 
+## Current UX-first priority
+
+Follow the user-approved [current-build polish milestone](../ux/polish-milestone.md) before selecting net-new user-facing capabilities. Choose actual gaps in existing priority MVP journeys, preserve implemented work and independent supporting fixes, and keep all existing lifecycle, evidence and integration gates. UX completion does not imply functional or MVP acceptance.
+
 ## Development cycle and integration
 
 1. Choose the highest-priority incomplete operational-MVP capability, reconcile its evidence and define one observable outcome.
