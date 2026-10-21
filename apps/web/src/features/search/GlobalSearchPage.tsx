@@ -66,6 +66,7 @@ export function GlobalSearchPage() {
     return () => { alive.current = false; epoch.current++; pending.current?.abort(); clearInterval(interval);
       window.removeEventListener('focus', refresh); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', refresh); };
   }, [load]);
+  const searchedWithFilters = Boolean(applied.current.q || applied.current.label || applied.current.member);
   return <Stack spacing={2} component="section" aria-label="Global Card search">
     <PageHeader title="Search Cards" variant="h5" description="Search across your accessible Organizations and Boards." />
     {!page && !busy && !notice && <Typography>Choose filters, then select Search. Leave filters empty to browse Cards you can access.</Typography>}
@@ -92,7 +93,7 @@ export function GlobalSearchPage() {
         <Typography component="h3" variant="h6">{page.nextCursor ? 'Keep searching' : 'No matches on this page'}</Typography>
         <Typography>{page.nextCursor
           ? 'Search is not finished. Select Next search page to continue checking work you can access.'
-          : 'This search has reached the last page. Try fewer filters, or choose Archived work in Search scope for archived Cards.'}</Typography>
+          : `This search has reached the last page. ${searchedWithFilters ? 'Try fewer filters, or choose' : 'Choose'} ${applied.current.scope === 'archived' ? 'Active work in Search scope for current Cards.' : 'Archived work in Search scope for archived Cards.'}`}</Typography>
       </Stack>
     </Paper>}
     {page?.items.map(item => <Paper key={item.id} variant="outlined" sx={{ p: 2 }}>

@@ -229,3 +229,20 @@ it('UX-007 never treats a malformed successful HTTP body as an admitted empty re
   fireEvent.click(screen.getByRole('button', { name: 'Search' })); await screen.findByText(/Search is unavailable/);
   expect(screen.queryByRole('region', { name: 'Search guidance' })).not.toBeInTheDocument();
 });
+
+
+it('UX-007 describes the applied archived scope and does not mistake unsent scope edits for a new search', async () => {
+  const request = vi.mocked(workRequest);
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce({ items: [], nextCursor: null, interaction: interaction() }).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Search scope' }));
+  fireEvent.click(screen.getByRole('option', { name: 'Archived work' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+  const hint = 'This search has reached the last page. Choose Active work in Search scope for current Cards.';
+  await screen.findByText(hint);
+  expect(request.mock.calls.some(([url]) => String(url).includes('scope=archived'))).toBe(true);
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Search scope' }));
+  fireEvent.click(screen.getByRole('option', { name: 'Active work' }));
+  expect(screen.getByText(hint)).toBeInTheDocument();
+  expect(request).toHaveBeenCalledTimes(3);
+});

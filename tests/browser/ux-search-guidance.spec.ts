@@ -50,6 +50,14 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(query).toHaveValue('Council minutes');
     await expect(page.getByRole('button', { name: 'Next search page', exact: true })).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath(`ux-search-final-${width}.png`), fullPage: true });
+    await page.getByRole('combobox', { name: 'Search scope', exact: true }).press('Enter');
+    await page.getByRole('option', { name: 'Archived work', exact: true }).press('Enter');
+    await query.press('Enter');
+    await expect(page.getByRole('heading', { name: 'Keep searching', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');
+    await expect(page.getByText('This search has reached the last page. Try fewer filters, or choose Active work in Search scope for current Cards.', { exact: true })).toBeVisible();
+    expect(source.requests.some(value => value.includes('scope=archived') && value.includes('after=guidance-next'))).toBe(true);
+    await expect(query).toHaveValue('Council minutes');
     source.failure = 503;
     await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
     await expect(page.getByText('Search is unavailable. Check your account and access, then search again.', { exact: true })).toBeVisible();
