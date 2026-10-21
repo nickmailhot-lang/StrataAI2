@@ -21,7 +21,14 @@ export function GlobalSearchPage() {
   const applied = useRef<Criteria>(empty()); const cursor = useRef<string | undefined>(undefined);
   const actor = useRef<string | undefined>(undefined); const pending = useRef<AbortController | undefined>(undefined);
   const epoch = useRef(0); const alive = useRef(false);
+  const feedback = useRef<HTMLDivElement>(null); const paging = useRef<HTMLDivElement>(null);
   const load = useCallback(async (criteria: Criteria, after?: string, kind: 'use' | 'retry' | 'reconnect' = 'use') => {
+    // Move focus before a paging control retires. Reads must not interrupt an
+    // edited filter or reclaim focus later when an asynchronous result arrives.
+    if (paging.current?.contains(document.activeElement)) {
+      feedback.current?.focus({ preventScroll: true });
+      feedback.current?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
+    }
     pending.current?.abort(); const controller = new AbortController(); pending.current = controller;
     const ticket = ++epoch.current; setBusy(true); setPage(undefined); setNotice(undefined); setAcknowledged(false);
     const started = performance.now(); activityEvent('search_read', kind);
@@ -83,7 +90,8 @@ export function GlobalSearchPage() {
       </TextField>
       <Button type="submit" variant="contained" disabled={busy}>Search</Button>
     </Stack>
-    <Stack role="status" aria-live="polite">{busy && <Typography>Searching…</Typography>}
+    <Stack ref={feedback} role="status" aria-live="polite" tabIndex={-1}
+      sx={{ '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 4, borderRadius: 1 } }}>{busy && <Typography>Searching…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}
       {page && <Typography>{page.items.length} results on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
       {acknowledged && <Typography>Search acknowledged.</Typography>}
@@ -105,7 +113,9 @@ export function GlobalSearchPage() {
         ? formatUserDateTime(item.dueAt, { locale: page.locale, timezone: item.boardDateTimezone ?? page.timezone }) ?? 'Date unavailable'
         : formatCardDate(item.dueAt, false, page.locale, item.boardDateTimezone ?? page.timezone)}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
     </Paper>)}
-    {page?.nextCursor && <Button disabled={busy} onClick={() => void load(applied.current, page.nextCursor!)}>Next search page</Button>}
-    {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current, 'retry')}>Refresh results</Button>}
+    <Stack ref={paging} spacing={2}>
+      {page?.nextCursor && <Button disabled={busy} onClick={() => void load(applied.current, page.nextCursor!)}>Next search page</Button>}
+      {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current, 'retry')}>Refresh results</Button>}
+    </Stack>
   </Stack>;
 }
