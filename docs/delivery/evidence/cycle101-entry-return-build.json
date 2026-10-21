@@ -1,0 +1,37 @@
+{
+  "startedAt": "2026-10-20T17:57:51.010Z",
+  "finishedAt": "2026-10-20T17:58:03.749Z",
+  "result": "Passed",
+  "source": "271da4900f99e2c97e42d99932ec424b2b705a75",
+  "version": "0.1.0-local-card-entry-return",
+  "metadata": {
+    "revision": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "version": "0.1.0-local-card-entry-return"
+  },
+  "files": [
+    {
+      "path": "build-metadata.json",
+      "size": 97,
+      "sha256": "c7c679845f1b13e91ead1102db93e38a536ced433998af8582aa987066e38157"
+    },
+    {
+      "path": "index.html",
+      "size": 561,
+      "sha256": "61975a71b02a699ad14b34fa6eafa665553238e6e24c61bb39c9e53120a6a2f6"
+    },
+    {
+      "path": "assets/index-Bw_GsyDn.css",
+      "size": 561,
+      "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+    },
+    {
+      "path": "assets/index-BywiCvdp.js",
+      "size": 1638573,
+      "sha256": "0d48abb6c10a6174674a836421150b3eb2031119db9193b34e985a74464dbce7"
+    }
+  ],
+  "dist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle67-invitation-ci-repair/apps/web/dist-cycle101",
+  "bundlerExit": 0,
+  "logSha256": "3d62d14ab2a614fd9c10a847ded70977c509fc0a8ba2a7a24f019edff1b2dea8",
+  "scope": "One isolated frontend build for Card entry/return policy normalization. Existing C58/dist and protected shared Demo mount untouched. Retained h API/Worker inputs unchanged/reused; no production deployment or immutableCI claim."
+}

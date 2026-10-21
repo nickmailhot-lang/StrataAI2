@@ -1,8 +1,34 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
-import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
+import { openAdmittedReview } from './keyboardAdmission';
+import type { Locator } from '@playwright/test';
 import { trackInvitationAdmission } from './invitationAdmissionTracker';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
+
+// A live permission read can retire consent between opening and focusing it.
+// Reopen a current review only before the first observed DELETE. Every native
+// action retains the original500ms bound and the whole admission remains5s.
+async function confirmCurrentReview(trigger: Locator, review: Locator, confirm: Locator, writes: () => number, expected: number) {
+  expect(writes()).toBe(expected - 1);
+  await expect(async () => {
+    if (writes() === expected - 1) {
+      if (!await review.isVisible()) {
+        await expect(trigger).toBeEnabled({ timeout: 500 });
+        await trigger.focus({ timeout: 500 }); await expect(trigger).toBeFocused({ timeout: 500 });
+        await expect(trigger).toBeEnabled({ timeout: 500 });
+        if (writes() === expected - 1) await trigger.press('Enter', { timeout: 500 });
+      }
+      if (writes() === expected - 1) {
+        await expect(review).toBeVisible({ timeout: 500 });
+        await expect(confirm).toBeEnabled({ timeout: 500 });
+        await confirm.focus({ timeout: 500 }); await expect(confirm).toBeFocused({ timeout: 500 });
+        await expect(confirm).toBeEnabled({ timeout: 500 });
+        if (writes() === expected - 1) await confirm.press('Enter', { timeout: 500 });
+      }
+    }
+    await expect.poll(writes, { timeout: 500 }).toBe(expected);
+  }).toPass({ timeout: 5_000 });
+}
 
 for (const width of [1280, 390]) {
   test(`PRD-03/04/60-TC-01/11/12: invitation history and confirmed revocation report private-data-free outcomes at ${width}px`, async ({ page, context }) => {
@@ -44,8 +70,7 @@ for (const width of [1280, 390]) {
         await openAdmittedReview(revoke, dialog); await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
         expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
         await page.keyboard.press('Enter'); await expect(dialog).toHaveCount(0); expect(writes).toBe(before);
-        await openAdmittedReview(revoke, dialog);
-        await pressObservedRequest(page.getByRole('button', { name: 'Confirm revocation', exact: true }), () => writes, before + 1);
+        await confirmCurrentReview(revoke, dialog, page.getByRole('button', { name: 'Confirm revocation', exact: true }), () => writes, before + 1);
         await expect(page.getByText('Invitation revocation confirmed.', { exact: true })).toBeVisible();
         await expect(page.getByText('Revoked', { exact: true })).toBeVisible();
         await expect.poll(() => observed(prefix + '_revoke', 'success'), { timeout: 15_000 }).toBe(1);

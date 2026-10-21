@@ -1,0 +1,79 @@
+{
+  "at": "2026-10-20T06:31:45.599Z",
+  "root": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle49-owned-browser-fixture",
+  "project": "strataai-mvp-browser-2ccabdd52bb56a1a",
+  "ports": {
+    "api": 15300,
+    "worker": 15301,
+    "web": 15302,
+    "identity": 19090
+  },
+  "providerInstance": "043842fc-e6f1-4845-9887-89dec0eb15ab",
+  "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "qualifiedServerHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "frontendSource": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "frontendDist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle49-organization-context\\apps\\web\\dist",
+  "frontendBuild": "OneR6build verified; source, API/Workerh and servedasset binding required by activecontroller51585.",
+  "testPaths": [
+    {
+      "path": "tests/browser/organization-context-name.spec.ts",
+      "sha256": "4f9b6824dd2aa467b5193dade66fc208996b94a2db535c0d2bf461f3360fb2c9"
+    },
+    {
+      "path": "tests/browser/work-usability.spec.ts",
+      "sha256": "9cd85012b6b4c0e451c80233f2398953231373cc9719694255d69d7a38d7de96"
+    },
+    {
+      "path": "tests/browser/kanban-scroll.spec.ts",
+      "sha256": "926db525e31231a4f765fa8a91d67f80ba5e06eecf2eb5fe8648537f68675651"
+    },
+    {
+      "path": "tests/browser/kanban-touch.spec.ts",
+      "sha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5"
+    }
+  ],
+  "fixtureChanges": [
+    {
+      "path": "compose.release.yml",
+      "originalSha256": "05c50091b01217d535340cc1ee1bc6d3e060e789a2492e00aa16fd1e84dcb0c7",
+      "fixtureSha256": "2b575667a08160741afdcda76f7500800f41e1da5398baba998a756e2eac57d3",
+      "edits": [
+        {
+          "from": "\"8080:8080\"",
+          "to": "\"127.0.0.1:15300:8080\""
+        },
+        {
+          "from": "\"8081:8081\"",
+          "to": "\"127.0.0.1:15301:8081\""
+        },
+        {
+          "from": "\"8088:80\"",
+          "to": "\"127.0.0.1:15302:80\""
+        }
+      ]
+    },
+    {
+      "path": "scripts/ci/compose.auth-test.yml",
+      "originalSha256": "a96d0dba516a5d295a8e823d6fb264c2f609e79458768bd8b1b98fc7f534f4e3",
+      "fixtureSha256": "ed0b9ded6c89c159e580eb5dcee112cf39a17b6a73f0e2005f1743686802fb89",
+      "edits": [
+        {
+          "from": "http://localhost:8088",
+          "to": "http://localhost:15302"
+        }
+      ]
+    }
+  ],
+  "localClientOverrideSha256": "e9fcd989a5633630bbc4f5a37a8e153530472a12cb1f689088367be688a98a19",
+  "expectedCases": 12,
+  "scope": "Preparation and guard verification only. FreshisolatedPG/runtime/client fixture started; do not imply a nativepass beforeactualterminalresult/cleanup.",
+  "currentRun": {
+    "session": 51585,
+    "status": "Running",
+    "result": "Not yet known",
+    "expectedCases": 12,
+    "originalCases": 8,
+    "newCases": 4,
+    "retries": 0
+  }
+}

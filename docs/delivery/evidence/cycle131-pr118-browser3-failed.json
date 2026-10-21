@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-20T21:42:02.613Z",
+  "result": "Failed",
+  "number": 118,
+  "head": "a40e36ce96f3afb2874504e1a507eb31808498d2",
+  "build": "f3718143ca0e5bbffcb6ed6461411e9d62481de5",
+  "run": 39477187950,
+  "job": 118832850625,
+  "passed": 126,
+  "failed": 1,
+  "artifact": 12299024060,
+  "sha256": "2514858af8bf5595bdd1b84e2560dde6eb7c7a7acb88809f7960e162f1db5402",
+  "innerChecksums": 64,
+  "item": "PRD-03-VS-06-T-03-TEST-02",
+  "finding": "Original Organization actions390px Board entry URL assertion failed. Native Enter resolved valid Board href but participant never navigated to Board and no Board detail request followed; foreground current-account/directory reads overlapped. This establishes an unobserved keyboard opening, not an exclusive proven root cause. Apply existing bounded read-only opening admission and preserve120s/URL5s/role/canonical/no-write/focus checks; fresh full4+rollback4 required.",
+  "zip": "work/cycle130-y3-browser3-diagnostics.zip",
+  "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39477187950/job/118832850625",
+  "owner": "Current integration owner",
+  "scope": "Exact current-head official terminal CI failure retained independently from prior local passes. Outer archive SHA256 and all listed inner file checksums verified; metadata binds actual immutable CI build. No manual CI rerun, skip, timeout increase, acceptance reduction, new Done or merge qualification."
+}

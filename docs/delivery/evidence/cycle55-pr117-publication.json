@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-20T07:55:43.200Z",
+  "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/117",
+  "number": 117,
+  "initialPublishedHead": "5b867e2e46712255d9c22a043edc98dd262c6ac4",
+  "headBranch": "delivery/organization-context-name-20261020",
+  "base": "main",
+  "baseRevision": "0c9fea7d66d238262223a12bc86a4f3861eb7b10",
+  "draft": true,
+  "previousBase": "delivery/release-runtime-acceptance-20261020",
+  "previousBaseRevision": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+  "normalRetarget": true,
+  "attachedToTask": true,
+  "initialCheckDiscovery": {
+    "head": "5b867e2e46712255d9c22a043edc98dd262c6ac4",
+    "checks": 0,
+    "hasMore": false,
+    "scope": "Root discovery before base correction; no checks started or completion inferred."
+  },
+  "workflow": {
+    "path": ".github/workflows/ci.yml",
+    "blob": "f5a75408f0344bbf81d6df7993157f3cdc446af1",
+    "pullRequestBranches": [
+      "main"
+    ],
+    "changed": false
+  },
+  "correction": "Initial stacked base was ineligible for maintained PR CI. Corrected base to main, preserving source/head. Publish this real ledger receipt normally; ensuing source update is eligible for normal CI. No CI policy change, forced rerun, bypass or test weakening.",
+  "scope": "Publication and CI eligibility correction only. Own exact-current-head checks, review and main integration remain pending; no newDone or parent/MVP completion."
+}

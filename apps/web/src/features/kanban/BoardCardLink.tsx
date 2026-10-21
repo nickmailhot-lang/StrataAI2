@@ -21,6 +21,7 @@ export const BoardCardLink = memo(function BoardCardLink({ card, boardPath, link
     ref={(node: HTMLAnchorElement | null) => { if (node) links.set(card.id, node); else links.delete(card.id); }}
     to={`${boardPath}/cards/${card.id}`} state={{ cardOverlay: true }}
     sx={{ display: 'block', minWidth: 0, color: 'inherit', textDecoration: 'none', border: '1px solid', borderColor: 'divider', boxShadow: 'none',
+      scrollMarginBlock: '4px',
       '&:hover': { borderColor: 'primary.main' }, '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main' } }}>
     {organizationId && boardId && <CardCoverImage organizationId={organizationId} boardId={boardId} card={card} unavailable={coverUnavailable !== false} />}
     <CardContent>

@@ -1,0 +1,356 @@
+{
+  "reports": [
+    {
+      "artifact": "work/cycle101-focus-green.json",
+      "sha256": "42948306ca5f8818382cc1e40a967c38e0ce0b750ad4c099197b0400b8a7a116",
+      "total": 24,
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "keeps the focused outline clear of the fixed header without changing List scroll",
+          "result": "passed"
+        },
+        {
+          "name": "keeps the focused outline inside the document bottom edge",
+          "result": "passed"
+        },
+        {
+          "name": "keeps outline clearance inside the local List viewport before moving the document",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-09-VS-01-T-02: visible Card return preserves exact canvas and List scroll even when its edge is partly clipped",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-09-VS-01-T-02: reveal below the viewport moves only the document and preserves local context",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-09-VS-01-T-02: reveal above the fixed header preserves canvas and List scroll",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-09-VS-01-T-02: a wholly hidden relocated Card can still reveal its local container",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-09-VS-01-T-02: absent fallback has no focus or scroll side effect",
+          "result": "passed"
+        },
+        {
+          "name": "uses identical entry/return reveal policy at a fractional { edge: 'viewport bottom', …(2) } boundary",
+          "result": "passed"
+        },
+        {
+          "name": "uses identical entry/return reveal policy at a fractional { edge: 'fixed header', y: 79.25, …(1) } boundary",
+          "result": "passed"
+        },
+        {
+          "name": "does not undo the return helper’s deliberate preservation of a partly clipped horizontal context",
+          "result": "passed"
+        },
+        {
+          "name": "reveals growing metadata inside the List with outline clearance while preserving horizontal context",
+          "result": "passed"
+        },
+        {
+          "name": "keeps the owned focused Card clear when the fixed header grows after metadata admission",
+          "result": "passed"
+        },
+        {
+          "name": "keeps the owned focused Card clear when its List viewport shrinks without changing Card size",
+          "result": "passed"
+        },
+        {
+          "name": "rechecks the owned Card when the viewport resizes without a Card size notification",
+          "result": "passed"
+        },
+        {
+          "name": "reveals only the focused registered Card on metadata resize without moving focus",
+          "result": "passed"
+        },
+        {
+          "name": "ignores queued resize after focus moves elsewhere, removal, or cleanup",
+          "result": "passed"
+        },
+        {
+          "name": "does not compete with an active Card or List drag",
+          "result": "passed"
+        },
+        {
+          "name": "yields to manual wheel until the Card is focused again",
+          "result": "passed"
+        },
+        {
+          "name": "yields to manual touchmove until the Card is focused again",
+          "result": "passed"
+        },
+        {
+          "name": "yields to manual pointerdown until the Card is focused again",
+          "result": "passed"
+        },
+        {
+          "name": "yields to manual keydown until the Card is focused again",
+          "result": "passed"
+        },
+        {
+          "name": "supports initial focus without ResizeObserver and removes all handlers on cleanup",
+          "result": "passed"
+        },
+        {
+          "name": "cancels a queued viewport paint after manual scrolling and ignores an already delivered callback",
+          "result": "passed"
+        }
+      ]
+    },
+    {
+      "artifact": "work/cycle101-context-drag-regression.json",
+      "sha256": "9e3b704298a4666dc9b15b1043ede2642a6b45f7b5ed96de1f47b96047e88eec",
+      "total": 56,
+      "passed": 56,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "name": "PRD-03-VS-01-T-02: immediately withdraws the header name and its subscription when the browser goes offline",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: an in-flight canonical response cannot restore a name after disconnection",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: refuses offline refreshes and requires fresh authorized reads on reconnection",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: identifies the current Organization by its authorized name rather than a technical identifier",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: never discloses a name from another Organization",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: never discloses a name from an invalid Organization identity",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: never discloses a name from an inactive Organization",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: never discloses a name from a role outside the authorized contract",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: never discloses a name from a blank name",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: never discloses a name from an oversized name",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 401",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 403",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 404",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 503",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: refuses a name when the signed-in account changes between admission reads",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: ignores an obsolete response after the new Organization is admitted",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: metadata invalidate removes the old name before fresh authority returns",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: metadata reset removes the old name before fresh authority returns",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: metadata unavailable removes the old name before fresh authority returns",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: preserves the full canonical long name without clipping it",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: legacy or invalid route identifiers remain neutral without a protected lookup",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: identifies the canonical Organization for authorized role 0",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: identifies the canonical Organization for authorized role 1",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: reentering a previous Organization requires fresh authority rather than its old name",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: a hidden document withdraws context and resumes with a fresh canonical name",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: uses a neutral label while current authorized context is unknown",
+          "result": "passed"
+        },
+        {
+          "name": "PRD-03-VS-01-T-02: cannot transfer the previous name into another Organization route while its read is pending",
+          "result": "passed"
+        },
+        {
+          "name": "UX-CARD-01/02 keeps the complete long title accessible, metadata explicit and description inside detail",
+          "result": "passed"
+        },
+        {
+          "name": "UX-CARD-02 never reports a stale or absent member preview as unassigned",
+          "result": "passed"
+        },
+        {
+          "name": "UX-CARD-03 shows a concrete due date and textual state from the existing timezone policy",
+          "result": "passed"
+        },
+        {
+          "name": "moves vertically within the list and skips disabled, unmeasured and list targets",
+          "result": "passed"
+        },
+        {
+          "name": "chooses the nearest vertical position in the next column",
+          "result": "passed"
+        },
+        {
+          "name": "supports the shorter end target and stops at vertical boundaries",
+          "result": "passed"
+        },
+        {
+          "name": "uses committed target positions after virtual row refinement and excludes the translated source",
+          "result": "passed"
+        },
+        {
+          "name": "advances beyond the already reached target when smooth scrolling leaves a fractional pixel remainder",
+          "result": "passed"
+        },
+        {
+          "name": "Card restores its owned handle after temporary admission disables and native blur",
+          "result": "passed"
+        },
+        {
+          "name": "Card does not reclaim focus from another control during admission",
+          "result": "passed"
+        },
+        {
+          "name": "Card retires focus when current movement permission removes the handle",
+          "result": "passed"
+        },
+        {
+          "name": "Card respects a pointer choice outside its handle even without a focusable destination",
+          "result": "passed"
+        },
+        {
+          "name": "Card does not transfer an old focus request to a replacement identity",
+          "result": "passed"
+        },
+        {
+          "name": "List restores its owned handle after temporary admission disables and native blur",
+          "result": "passed"
+        },
+        {
+          "name": "List does not reclaim focus from another control during admission",
+          "result": "passed"
+        },
+        {
+          "name": "List retires focus when current movement permission removes the handle",
+          "result": "passed"
+        },
+        {
+          "name": "List respects a pointer choice outside its handle even without a focusable destination",
+          "result": "passed"
+        },
+        {
+          "name": "List does not transfer an old focus request to a replacement identity",
+          "result": "passed"
+        },
+        {
+          "name": "keeps the Card drag node registered across a disabled-state render and cleans it up on unmount",
+          "result": "passed"
+        },
+        {
+          "name": "keeps the List drag node registered across a disabled-state render and cleans it up on unmount",
+          "result": "passed"
+        },
+        {
+          "name": "retains a windowed drag origin through intermediate scroll measurements and resets on the next drag",
+          "result": "passed"
+        },
+        {
+          "name": "measures ordinary sources, unrelated targets, replacement nodes and dimension changes freshly",
+          "result": "passed"
+        },
+        {
+          "name": "keyboard list targets advances from the previous keyboard target when the rendered source temporarily lags smooth scrolling",
+          "result": "passed"
+        },
+        {
+          "name": "keyboard list targets moves to the next enabled measured column instead of a fixed pixel increment",
+          "result": "passed"
+        },
+        {
+          "name": "keyboard list targets centers on the narrower end target and stops at the boundary",
+          "result": "passed"
+        },
+        {
+          "name": "keyboard list targets uses committed column positions after scrolling instead of stale cached targets",
+          "result": "passed"
+        },
+        {
+          "name": "keyboard list targets advances past an already aligned destination during fractional phone scrolling",
+          "result": "passed"
+        },
+        {
+          "name": "keyboard list targets uses the rendered source center when its collision rect lags horizontal and vertical scroll",
+          "result": "passed"
+        },
+        {
+          "name": "keyboard list targets leaves unrelated keys and missing measurements alone",
+          "result": "passed"
+        }
+      ]
+    }
+  ],
+  "source": "271da4900f99e2c97e42d99932ec424b2b705a75",
+  "inputHashes": {
+    "apps/web/src/features/kanban/BoardCardLink.tsx": "8a1e9443951a2aaa834db8018c7192a855f24b62851effc950f409122e6e004b",
+    "apps/web/src/features/kanban/BoardScreen.tsx": "fee4c5d0834bfbfaa06e3de8ca46e7456bcbe4e271b074dfcf2078c90ecb8129",
+    "apps/web/src/features/kanban/focusBoardReturn.ts": "fb0e495fd96668ec92b0ec367695fb4e13f5a059ba6be20f377834ef9573bf9b",
+    "apps/web/src/features/kanban/focusedCardVisibility.ts": "b2d8a28c3c1870726042c11b9a1b35bdf3cd6c45f540e1f4651a12ccd345ddd6",
+    "apps/web/src/features/kanban/focusedCardVisibility.test.ts": "20e856077c7e72c997d435e72a45589b35dcc69259386513b8dad46d32bce8fb",
+    "apps/web/src/features/kanban/focusedCardVisibility.scroll-context.test.ts": "40f440e968de88a3acf994992426e158ef59adb83d4a003f85ec99a76dc8e0f0",
+    "apps/web/src/features/kanban/focusBoardReturn.clearance.test.ts": "1134cd3ba8c0dc94d31494ffad14308120f40d0163707eff2eac34e90662512f",
+    "apps/web/src/features/kanban/focusedCardVisibility.entry-stability.test.ts": "02e70c54e02dd73146beafbfc0c0bdb57b4d67a29879bedeaab9a61ba92505ec"
+  },
+  "scope": "24 focused controls plus original caption/keyboard/drag regression cases pass with one worker and no retries/skips. Focus24 executed the repaired working tree before commit; all production/test inputs are byte-identical to271da. Caption/drag executed committed271da. Original cases, comparison, deadlines and assertions unchanged. Web types and scoped lint separately exited0; full regression, real-service UX, CI and main still required."
+}

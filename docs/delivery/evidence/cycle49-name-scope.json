@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-20T05:23:04.985Z",
+  "parent": "PRD-03-VS-01",
+  "ids": [
+    "PRD-03-VS-01-T-02",
+    "PRD-03-VS-01-T-02-TEST-01",
+    "PRD-03-VS-01-T-02-TEST-02"
+  ],
+  "source": "bd1215f79587d64082afc6ebfe0a716f1ed83b90",
+  "problem": "Shared internal header exposes rawOrganizationUUID instead of identifying the current authorizedOrganization by name.",
+  "contract": [
+    "Reuse sharedMUI shell and existingauthorizedSummaryAPI; no Portal/schema/API/rolechanges.",
+    "Read current/me, use ExpectedActor for Organization read, confirm current/me actor again; reject mismatches, foreign/malformed/inactive summaries and stale responses.",
+    "Neutral Organization label while unknown/error/denied; synchronous route-scope withdrawal, abort/generation control, currentmetadata/focus recovery.",
+    "Friendlyname remains readable at320/390/768/1280 with longname/reflow support; existing dynamic header measurement preserves content/focus and navigation.",
+    "Keep caption reads independent of protected Outlet rendering and original command recovery; label does not grant authority."
+  ],
+  "acceptance": "Unitnegative controls plus actual four-width runningworkflow, currentroles/access-withdrawal and currentfullrequiredgates beforeDone.",
+  "baseline": "Three actual failed controls retained; testsource hash72af... exactfullsnapshot retained.",
+  "integration": "Current sharedlayout integration owner is root; isolated branch only. Other centralC51 lifecycle writer is separate and must not be edited."
+}

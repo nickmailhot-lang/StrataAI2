@@ -1,0 +1,26 @@
+{
+  "startedAt": "2026-10-20T05:31:46.110Z",
+  "finishedAt": "2026-10-20T05:33:30.341Z",
+  "base": "bd1215f79587d64082afc6ebfe0a716f1ed83b90",
+  "sourceState": "Exact working-tree hashes; new component/control source is not yet committed.",
+  "source": {
+    "apps/web/src/app/OrganizationContextLabel.tsx": "601e4ab564e0c2ac45188f92e85b1c549c5ec350c3169a8e5ed172027e2f0be1",
+    "apps/web/src/app/OrganizationContextLabel.test.tsx": "ff7a1205e786c11c46e3117a7ec7bb3121aa9fff3b2f15252e292d848e392b4b",
+    "apps/web/src/app/InternalAppShell.tsx": "d04f600ea2436a499227d162fc5f61764fb896973c43c3b089c1cdbdf4161d1a",
+    "apps/web/src/app/App.test.tsx": "f4d5fa1cfbf6bb275096ded500234ecf15e1fe5aff75e5410d05273d343481e1"
+  },
+  "exit": 1,
+  "signal": null,
+  "result": "Failed",
+  "summary": {
+    "total": 32,
+    "passed": 31,
+    "failed": 1,
+    "pending": 0,
+    "suites": 4
+  },
+  "reportSha256": "6ad4e8bdd3638b49bbaf3aaf6b672203d4eba0857ca9c4030ec67d932be56c56",
+  "nativeLogSha256": "792104933c2185c6b14960326bafb404dc244ea480870bfb095699c9b4e20dd3",
+  "scope": "Targeted actual newheader/negative controls plus existingInternalAppShell/App tests. No fullfrontend, nativebrowser, integration or featureacceptance inferred.",
+  "interpretation": "31/32 passed on earlier working-tree Link prototype; long-name fixture had a trailing-space accessible-name expectation. Currentcanonical160-character fixture and theme-compliant full-name wrapping supersede that unrequested Link prototype. All original useracceptance remains."
+}

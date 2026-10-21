@@ -24,7 +24,10 @@ export function NavigationConfirmation({ target, admitted = true }: { target: Na
   // Scope retirement always cancels, including an admitted original replay.
   useEffect(() => () => pending.current?.abort(), []);
   useEffect(() => {
-    if (!admitted || confirmed.current || pending.current && !pending.current.signal.aborted) return;
+    // A foreground read can withdraw and restore admission in the same visit.
+    // Only explicit Retry may resume a failed original; a new visit can still
+    // restore it through the existing retained-intent path below.
+    if (!admitted || status !== 'pending' || confirmed.current || pending.current && !pending.current.signal.aborted) return;
     const controller = new AbortController();
     pending.current = controller; recovering.current = !!intent.current;
     async function observe() {
@@ -41,7 +44,7 @@ export function NavigationConfirmation({ target, admitted = true }: { target: Na
           const retained = restoreNavigationIntent(sessionStorage, profile.id, originalTarget);
           const original = retained ?? createNavigationIntent(profile.id, originalTarget);
           retainNavigationIntent(sessionStorage, original);
-          intent.current = original; recovering.current = !!retained;
+          intent.current = original; recovering.current = true;
         }
         await submitNavigationIntent(intent.current, controller.signal, consumer);
         completeNavigationIntent(sessionStorage, intent.current);
@@ -58,9 +61,10 @@ export function NavigationConfirmation({ target, admitted = true }: { target: Na
     void observe().finally(() => { if (pending.current === controller) pending.current = undefined; });
     // A protected read withdraws presentation, but does not revoke an admitted
     // original receipt. Its server/final-actor checks can finish without a
-    // cancellation and duplicate POST. First observations still cancel.
+    // cancellation and duplicate POST. Reads before an original is admitted
+    // still cancel; actual scope retirement always cancels above.
     return () => { if (!recovering.current) controller.abort(); };
-  }, [admitted, originalTarget, consumer, retry, action]);
+  }, [admitted, originalTarget, consumer, retry, action, status]);
   if (!admitted || status !== 'retry') return null;
   return <Alert severity="info" action={<Button color="inherit" onClick={() => { activityEvent(action, 'retry'); setStatus('pending'); setRetry(value => value + 1); }}>Retry navigation confirmation</Button>}>
     Navigation could not be confirmed. You can retry.

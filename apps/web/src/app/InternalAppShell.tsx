@@ -33,6 +33,7 @@ import { SurfaceAdmission } from './SurfaceAdmission';
 import { NavigationConfirmation } from './NavigationConfirmation';
 import { internalNavigation } from './navigationModel';
 import { designTokens } from '../theme/designTokens';
+import { OrganizationContextLabel } from './OrganizationContextLabel';
 
 const drawerWidth = designTokens.navigationWidth;
 const navigationIcons = {
@@ -56,6 +57,15 @@ function InternalLayout() {
   const { organizationId } = useParams();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Card details belong to their Board's scroll context. Whole-page navigation
+  // must not carry the previous page's scroll underneath the fixed header.
+  const pageContext = pathname.match(/^(\/app\/[^/]+\/boards\/[^/]+)(?:\/cards\/[^/]+)?\/?$/)?.[1] ?? pathname;
+  const previousPageContext = useRef(pageContext);
+  useLayoutEffect(() => {
+    if (previousPageContext.current === pageContext) return;
+    previousPageContext.current = pageContext;
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pageContext]);
   const appBar = useRef<HTMLElement | null>(null);
   const [headerHeight, setHeaderHeight] = useState<number>();
   useLayoutEffect(() => {
@@ -113,12 +123,7 @@ function InternalLayout() {
           <Typography variant="h6" component="h1" sx={{ flexGrow: 1, minWidth: 'max-content', flexShrink: 0, fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
             StrataAI2
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ mr: 1, display: { xs: "none", sm: "block" } }}
-          >
-            Organization: {organizationId ?? "Unknown"}
-          </Typography>
+          <OrganizationContextLabel />
           <Tooltip title="Search Cards">
             <IconButton component={Link} to={`/app/${organizationId}/search`} color="inherit" aria-label="Search Cards">
               <SearchOutlinedIcon />

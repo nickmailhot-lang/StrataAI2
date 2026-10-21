@@ -1,0 +1,162 @@
+{
+  "at": "2026-10-20T23:47:09.907Z",
+  "startedAt": "2026-10-20T23:34:05.209Z",
+  "finishedAt": "2026-10-20T23:45:42.177Z",
+  "source": "c99d1a7d9760eab218606e13003e127687e14833",
+  "result": "Passed",
+  "npmVersion": "11.19.1",
+  "viteVersion": "8.3.4",
+  "results": [
+    {
+      "name": "npm-version",
+      "exit": 0,
+      "path": "work/cycle150-npm-version.json",
+      "sha256": "fe7548d732a182d2e68220f68d6b486259380b98188d346770903d0217bb1072"
+    },
+    {
+      "name": "locked-install",
+      "exit": 0,
+      "path": "work/cycle150-locked-install.json",
+      "sha256": "2f9fec085f58706b058f9a2ada3720ae6dec6a7860a256d23b2ff6422d3ae36c"
+    },
+    {
+      "name": "dependency-audit",
+      "exit": 0,
+      "path": "work/cycle150-dependency-audit.json",
+      "sha256": "31abaf7a1c100cc7f033b44b3c545570ac3460ad16553f21277262ec40e0a1da"
+    },
+    {
+      "name": "web-types",
+      "exit": 0,
+      "path": "work/cycle150-web-types.json",
+      "sha256": "2ca8784eeda312903b5deaa0250fd0899fa44a86177d34abaef29f749567b009"
+    },
+    {
+      "name": "browser-types",
+      "exit": 0,
+      "path": "work/cycle150-browser-types.json",
+      "sha256": "5d7341e73b7e7bccb2f61a359a9445bcf53a6125a5f719a7c40fbced36d52418"
+    },
+    {
+      "name": "navigation-tests",
+      "exit": 0,
+      "path": "work/cycle150-navigation-tests.json",
+      "sha256": "63ea1420e725a8e5ccd407eb5ca856de5fbdff569f9e4a5c8768b06980eb7c30"
+    },
+    {
+      "name": "production-build",
+      "exit": 0,
+      "path": "work/cycle150-production-build.json",
+      "sha256": "f72e56cee138c73700ddd5406fbd68b45c9c0027de81d23968a5bca493515d1c"
+    }
+  ],
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "scope": "Supported npm11.19.1 fresh locked install, unchanged high audit0, both types, complete15-case NavigationConfirmation and Vite8.3.4 production compilation all passed at c99d1a7. Build metadata uses default local identity: this is compiler-consumer verification only, not an identified deployable bundle. Original security failures remain Failed; complete new-head CI/native/security/immutable release/integration pending. No bypasses or new Done.",
+  "transcripts": [
+    {
+      "name": "npm-version",
+      "exit": 0,
+      "path": "work/cycle150-npm-version.json",
+      "sha256": "fe7548d732a182d2e68220f68d6b486259380b98188d346770903d0217bb1072",
+      "transcript": {
+        "source": "c99d1a7d9760eab218606e13003e127687e14833",
+        "startedAt": "2026-10-20T23:34:05.491Z",
+        "finishedAt": "2026-10-20T23:34:07.030Z",
+        "exit": 0,
+        "stdout": "11.19.1\n",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "locked-install",
+      "exit": 0,
+      "path": "work/cycle150-locked-install.json",
+      "sha256": "2f9fec085f58706b058f9a2ada3720ae6dec6a7860a256d23b2ff6422d3ae36c",
+      "transcript": {
+        "source": "c99d1a7d9760eab218606e13003e127687e14833",
+        "startedAt": "2026-10-20T23:34:07.055Z",
+        "finishedAt": "2026-10-20T23:43:07.719Z",
+        "exit": 0,
+        "stdout": "\nadded 376 packages, and audited 378 packages in 9m\n\nfound 0 vulnerabilities\n",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "dependency-audit",
+      "exit": 0,
+      "path": "work/cycle150-dependency-audit.json",
+      "sha256": "31abaf7a1c100cc7f033b44b3c545570ac3460ad16553f21277262ec40e0a1da",
+      "transcript": {
+        "source": "c99d1a7d9760eab218606e13003e127687e14833",
+        "startedAt": "2026-10-20T23:43:07.738Z",
+        "finishedAt": "2026-10-20T23:43:11.032Z",
+        "exit": 0,
+        "stdout": "{\n  \"auditReportVersion\": 2,\n  \"vulnerabilities\": {},\n  \"metadata\": {\n    \"vulnerabilities\": {\n      \"info\": 0,\n      \"low\": 0,\n      \"moderate\": 0,\n      \"high\": 0,\n      \"critical\": 0,\n      \"total\": 0\n    },\n    \"dependencies\": {\n      \"prod\": 195,\n      \"dev\": 208,\n      \"optional\": 27,\n      \"peer\": 8,\n      \"peerOptional\": 0,\n      \"total\": 402\n    }\n  }\n}\n",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "web-types",
+      "exit": 0,
+      "path": "work/cycle150-web-types.json",
+      "sha256": "2ca8784eeda312903b5deaa0250fd0899fa44a86177d34abaef29f749567b009",
+      "transcript": {
+        "source": "c99d1a7d9760eab218606e13003e127687e14833",
+        "startedAt": "2026-10-20T23:43:11.054Z",
+        "finishedAt": "2026-10-20T23:44:25.031Z",
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "browser-types",
+      "exit": 0,
+      "path": "work/cycle150-browser-types.json",
+      "sha256": "5d7341e73b7e7bccb2f61a359a9445bcf53a6125a5f719a7c40fbced36d52418",
+      "transcript": {
+        "source": "c99d1a7d9760eab218606e13003e127687e14833",
+        "startedAt": "2026-10-20T23:44:25.056Z",
+        "finishedAt": "2026-10-20T23:44:46.783Z",
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "navigation-tests",
+      "exit": 0,
+      "path": "work/cycle150-navigation-tests.json",
+      "sha256": "63ea1420e725a8e5ccd407eb5ca856de5fbdff569f9e4a5c8768b06980eb7c30",
+      "transcript": {
+        "source": "c99d1a7d9760eab218606e13003e127687e14833",
+        "startedAt": "2026-10-20T23:44:46.814Z",
+        "finishedAt": "2026-10-20T23:45:05.486Z",
+        "exit": 0,
+        "stdout": "\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-17/strataai2-incremental-prd-delivery-and-progress/work/cycle150-vite-validation/apps/web\n\n\n Test Files  1 passed (1)\n      Tests  15 passed (15)\n   Start at  16:44:49\n   Duration  16.17s (import 43%, environment 26%, tests 18%, setup 8%, transform 3%)\n\n",
+        "stderr": ""
+      }
+    },
+    {
+      "name": "production-build",
+      "exit": 0,
+      "path": "work/cycle150-production-build.json",
+      "sha256": "f72e56cee138c73700ddd5406fbd68b45c9c0027de81d23968a5bca493515d1c",
+      "transcript": {
+        "source": "c99d1a7d9760eab218606e13003e127687e14833",
+        "startedAt": "2026-10-20T23:45:05.511Z",
+        "finishedAt": "2026-10-20T23:45:42.142Z",
+        "exit": 0,
+        "stdout": "vite v8.3.4 building client environment for production...\ntransforming...\n✓ 12060 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist-cycle150/build-metadata.json            0.04 kB │ gzip:   0.06 kB\ndist-cycle150/index.html                     0.56 kB │ gzip:   0.33 kB\ndist-cycle150/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\ndist-cycle150/assets/index-DhUWFEAc.js   1,638.03 kB │ gzip: 456.62 kB\n\n✓ built in 35.25s\n",
+        "stderr": "[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+      }
+    }
+  ]
+}

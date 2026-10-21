@@ -1,0 +1,211 @@
+{
+  "at": "2026-10-20T21:53:52.914Z",
+  "native": {
+    "at": "2026-10-20T21:52:41.000Z",
+    "startedAt": "2026-10-20T21:45:48.100Z",
+    "project": "strataai-mvp-browser-65704acc17fe1671",
+    "exit": 0,
+    "stats": {
+      "startTime": "2026-10-20T21:47:22.787Z",
+      "duration": 312393.311,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "frontendSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "testSource": "6ffc1a749dc2c9a6f4ce3ee935147bc2a878f24e",
+    "result": "Passed",
+    "phases": [
+      {
+        "name": "Start exclusive fixture database",
+        "exit": 0
+      },
+      {
+        "name": "Apply packaged migrations without application build",
+        "exit": 0
+      },
+      {
+        "name": "Provision canonical restricted runtime roles",
+        "exit": 0
+      },
+      {
+        "name": "Provision original disposable identity CI role",
+        "exit": 0
+      },
+      {
+        "name": "Start retained images with original browser-full account fixture",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned api container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned worker container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned web container",
+        "exit": 0
+      },
+      {
+        "name": "Original five additional affected cases",
+        "exit": 0
+      },
+      {
+        "name": "Clean only exclusive fixture resources",
+        "exit": 0
+      }
+    ],
+    "primaryError": null,
+    "cleanupError": null,
+    "stockUnchanged": true,
+    "ownedRemaining": {
+      "containers": "",
+      "volumes": "",
+      "networks": ""
+    },
+    "privateSettingsRemoved": true,
+    "logSha256": "4ed66391446ecb2a07e59c722f79a166202ee41944f2aaafed08e91ee8fb2f1b",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "scope": "Complete four-width Organization action workflows at6ffc1a with existing read-only admission for Board entry and disclosure reopening. Original120s/URL5s/role/withdrawal/no-write/canonical/focus/Axe assertions retained; retries0. Retained hAPI/Worker and271da frontend production inputs unchanged. Supporting mixed-client local verification only. Prior132three-pass/one-failure remainsFailed; its copied five-case description is inaccurate and superseded by actual four-case report."
+  },
+  "fixture": {
+    "at": "2026-10-20T21:45:47.353Z",
+    "root": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle134-owned-browser-fixture",
+    "project": "strataai-mvp-browser-65704acc17fe1671",
+    "ports": {
+      "api": 15300,
+      "worker": 15301,
+      "web": 15302,
+      "identity": 19090
+    },
+    "providerInstance": "63a08ff3-5a38-4410-bad5-e409a472e0a1",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedServerHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "frontendSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "testSource": "6ffc1a749dc2c9a6f4ce3ee935147bc2a878f24e",
+    "frontendDist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle67-invitation-ci-repair\\apps\\web\\dist-cycle101",
+    "frontendBuild": "Passed exact new client metadata and four assets; controller must verify actual served hashes.",
+    "testPaths": [
+      {
+        "path": "tests/browser/organization-actions.spec.ts",
+        "sha256": "35d904593ce0e42f24fec6bd32f7ea0e897159bf6653d618ace8ec844684dc3e"
+      },
+      {
+        "path": "tests/browser/keyboardAdmission.ts",
+        "sha256": "07ea047b74e8bdec85321d287ae124f9d35d1592fbe275f8cc574c31a5e9283d"
+      },
+      {
+        "path": "tests/browser/organizationActionAdmission.ts",
+        "sha256": "521a392fbf22f06dc15a779b7ef4f5e090abcd9131c86c5665911689880c27e2"
+      },
+      {
+        "path": "tests/browser/releaseTest.ts",
+        "sha256": "ab2ea4ef38482df067d458c3d83aff8fbfffe5cbb25f4f4d6534e96bafb5cd9c"
+      },
+      {
+        "path": "tests/browser/scopedBoardWorker.ts",
+        "sha256": "e626bbe37e8dd0bec4e6fed81e70a8ff4c0b7a3b078a914a7bce072dae01fce0"
+      }
+    ],
+    "fixtureChanges": [
+      {
+        "path": "compose.release.yml",
+        "originalSha256": "05c50091b01217d535340cc1ee1bc6d3e060e789a2492e00aa16fd1e84dcb0c7",
+        "fixtureSha256": "2b575667a08160741afdcda76f7500800f41e1da5398baba998a756e2eac57d3",
+        "edits": [
+          {
+            "from": "\"8080:8080\"",
+            "to": "\"127.0.0.1:15300:8080\""
+          },
+          {
+            "from": "\"8081:8081\"",
+            "to": "\"127.0.0.1:15301:8081\""
+          },
+          {
+            "from": "\"8088:80\"",
+            "to": "\"127.0.0.1:15302:80\""
+          }
+        ]
+      },
+      {
+        "path": "scripts/ci/compose.auth-test.yml",
+        "originalSha256": "a96d0dba516a5d295a8e823d6fb264c2f609e79458768bd8b1b98fc7f534f4e3",
+        "fixtureSha256": "ed0b9ded6c89c159e580eb5dcee112cf39a17b6a73f0e2005f1743686802fb89",
+        "edits": [
+          {
+            "from": "http://localhost:8088",
+            "to": "http://localhost:15302"
+          }
+        ]
+      }
+    ],
+    "localClientOverrideSha256": "a5d51130ffe444ea9f0c6609ce63750219e21ccb0a00d8e356df25251fe2a5a6",
+    "expectedCases": 4,
+    "scope": "Four complete original Organization action workflows after read-only Board entry admission repair. Original120s scenario and URL/role/no-write/canonical/focus checks retained; separate rollback run still needed. Supporting retained code-equivalent mixed-client validation, not immutableCI. Freshowned source-free retainedAPI/Worker/PG browser-full fixture plus readonly localentry-return client and unchanged first-use Organization/Board/List/Card tests frontend. API/Workerimages remain c3e/h; cliententry-return client and unchanged first-use Organization/Board/List/Card tests is separatelybound, so thisis supporting mixed-client validation, never currentimmutableCI certification. No productiondeployment or originalDemo/stockWorker change. Originalguarded fixture uses CI=true as explicitlocalmode only. Credentials in privatework only; no services started by preparation."
+  },
+  "runtime": {
+    "at": "2026-10-20T21:47:18.223Z",
+    "project": "strataai-mvp-browser-65704acc17fe1671",
+    "api": {
+      "service": "strataai-api",
+      "mode": "production",
+      "revision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "version": "0.1.0-1937"
+    },
+    "client": {
+      "revision": "271da4900f99e2c97e42d99932ec424b2b705a75",
+      "version": "0.1.0-local-card-entry-return"
+    },
+    "servedAssets": [
+      {
+        "path": "build-metadata.json",
+        "sha256": "c7c679845f1b13e91ead1102db93e38a536ced433998af8582aa987066e38157",
+        "size": 97
+      },
+      {
+        "path": "index.html",
+        "sha256": "61975a71b02a699ad14b34fa6eafa665553238e6e24c61bb39c9e53120a6a2f6",
+        "size": 561
+      },
+      {
+        "path": "assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666",
+        "size": 561
+      },
+      {
+        "path": "assets/index-BywiCvdp.js",
+        "sha256": "0d48abb6c10a6174674a836421150b3eb2031119db9193b34e985a74464dbce7",
+        "size": 1638573
+      }
+    ],
+    "frontendSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "testSource": "6ffc1a749dc2c9a6f4ce3ee935147bc2a878f24e",
+    "containers": [
+      {
+        "service": "api",
+        "id": "c18c5a092d8a7dda44bb0b1a255191f76f279788180c8b3dec586349ec525b84",
+        "image": "sha256:6843e40e15b93bc190d6a1d8ea7a0dd7859cecb8cdb2c3bba301e7f2430a2c27",
+        "startedAt": "2026-10-20T21:46:39.581468447Z"
+      },
+      {
+        "service": "worker",
+        "id": "d995fc6814f2b479322f4b7f8ef27316f6c23adcf058a578026b36a5454f43d5",
+        "image": "sha256:ffde817b2729a1dd1d3b74c6c704b0127b9477d782d61c359fa4dde8d1d54897",
+        "startedAt": "2026-10-20T21:46:41.621419126Z"
+      },
+      {
+        "service": "web",
+        "id": "37375e74e1630c0c5903e80ee63d5414a820e89fbb0f17b4e7f714a131f4dcfd",
+        "image": "sha256:6e0ecd1435c3b7e150109c74413dd992e0bd5c0ed0f062fc05f21cf365ec23c8",
+        "startedAt": "2026-10-20T21:47:08.124999757Z"
+      }
+    ],
+    "scope": "Retainedh API/Worker images with exact offline-fixed readonlyfrontend override and hashverifiedservedassets, real isolatedPG and originalauth/identityprofile. Supporting mixed-client runtime only, not immutableCI or productiondeployment."
+  },
+  "reportSha256": "6f30ad77ac46172b1e63b289924ae36f6622904b2686ff1c71d1e32ebccfeae6",
+  "scope": "Actual complete original4defaultwidths1280/768200%/390/320 at6ffc1a Passed0failures/skips/retries, terminal84722exit0. Source-specific tests use existing bounded read-only destination admission for Board entry and disclosure reopening; all original assertions/deadlines/mutation counts retained. TwelveOwner/Admin/Member viewport captures produced; actual320/390Memberrenders viewed, readableforeground focus/primaryCreateBoard/permittedLeaveBoard actions/nooverflow. Runtime271da frontend plus code-equivalent hAPI/Worker/isolatedPG. This predates currentnavigation4bc productfix; does not certify a33combinedsource, rollback, ownimmutableCI/main/review or parentacceptance."
+}

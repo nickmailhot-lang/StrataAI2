@@ -1,0 +1,147 @@
+{
+  "at": "2026-10-20T09:57:43.073Z",
+  "result": "Passed",
+  "source": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "total": 27,
+  "passed": 27,
+  "failed": 0,
+  "cases": [
+    {
+      "file": "OrganizationContextLabel.offline.test.tsx",
+      "title": "PRD-03-VS-01-T-02: immediately withdraws the header name and its subscription when the browser goes offline",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.offline.test.tsx",
+      "title": "PRD-03-VS-01-T-02: an in-flight canonical response cannot restore a name after disconnection",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.offline.test.tsx",
+      "title": "PRD-03-VS-01-T-02: refuses offline refreshes and requires fresh authorized reads on reconnection",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: identifies the current Organization by its authorized name rather than a technical identifier",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: never discloses a name from another Organization",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: never discloses a name from an invalid Organization identity",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: never discloses a name from an inactive Organization",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: never discloses a name from a role outside the authorized contract",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: never discloses a name from a blank name",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: never discloses a name from an oversized name",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 401",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 403",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 404",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: withdraws the name after a canonical read refuses with 503",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: refuses a name when the signed-in account changes between admission reads",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: ignores an obsolete response after the new Organization is admitted",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: metadata invalidate removes the old name before fresh authority returns",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: metadata reset removes the old name before fresh authority returns",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: metadata unavailable removes the old name before fresh authority returns",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: preserves the full canonical long name without clipping it",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: legacy or invalid route identifiers remain neutral without a protected lookup",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: identifies the canonical Organization for authorized role 0",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: identifies the canonical Organization for authorized role 1",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: reentering a previous Organization requires fresh authority rather than its old name",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: a hidden document withdraws context and resumes with a fresh canonical name",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: uses a neutral label while current authorized context is unknown",
+      "status": "passed"
+    },
+    {
+      "file": "OrganizationContextLabel.test.tsx",
+      "title": "PRD-03-VS-01-T-02: cannot transfer the previous name into another Organization route while its read is pending",
+      "status": "passed"
+    }
+  ],
+  "reportSha256": "855773188da8b027b62a862be0f65702d888b61002421b9336e77d81035e3505",
+  "scope": "All 24 existing Organization caption tests and three new offline tests passed after repair. This selected run did not include the four scroll-context cases; the full frontend suite remains running."
+}

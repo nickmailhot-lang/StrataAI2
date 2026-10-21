@@ -1,0 +1,200 @@
+{
+  "at": "2026-10-20T18:27:42.621Z",
+  "source": "271da4900f99e2c97e42d99932ec424b2b705a75",
+  "baseline": {
+    "source": "ac40cca303bb12fc5edaaaa568905aa5dc1fd635",
+    "total": 40,
+    "passed": 30,
+    "failed": 10,
+    "skipped": 0,
+    "reportSha256": "8a26ee393289b2868d1835c0c0dcecfb0392c66d12d2a885f4f311d8075ee1de",
+    "failures": [
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows fences competing Board commands while recovering an original metadata save after newer canonical data",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows fences competing mutations during unresolved attachment lifecycle and recovers its original request after a newer Card snapshot",
+        "message": [
+          "Error: Test timed out in 10000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows locks competing Card mutations during unconfirmed file upload and recovers the same original request after a newer snapshot",
+        "message": [
+          "Error: Test timed out in 10000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows updates canvas due descriptions on live completion and removes them when dates clear",
+        "message": [
+          "Error: expect(element).toHaveAccessibleDescription()"
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows updates the card face on acknowledgement and ignores an older refresh without resurrecting a removed card",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows preserves a dirty editor through an unavailable refresh and a newer authoritative snapshot",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows does not resurrect an old save confirmation after access loss and a fresh authorized load",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows keeps Card archive recovery outside the removed canonical editor and returns to the Board",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      }
+    ]
+  },
+  "repaired": {
+    "startedAt": "2026-10-20T18:21:36.850Z",
+    "finishedAt": "2026-10-20T18:25:10.903Z",
+    "source": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "metadataHeadAtFinish": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "baseline": "ac40cca303bb12fc5edaaaa568905aa5dc1fd635",
+    "exit": 1,
+    "total": 40,
+    "passed": 30,
+    "failed": 10,
+    "skipped": 0,
+    "reportSha256": "6b85546f257cccf32e88e361e6cf4b610f5eae5e83be60be578036cadf7f9615",
+    "result": "Failed",
+    "scope": "Controlled original40-case repaired source comparison after originalnative12 fixture cleanlyterminated. Prior40baseline30Pass/10Fail and earlierrepaired19Pass/21Fail retained. No production/test/config/predicate/deadline changes, retries or skips. Source271da remains byteidentical; metadata-only descendant commits allowed while running. This bounded run doesnot certify fullfrontend or CI.",
+    "failures": [
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows retains conflicting edits until explicit discard and sends the current version",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows preserves a dirty editor through an unavailable refresh and a newer authoritative snapshot",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows reloads canonical placement after a bound append acknowledgment",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows keeps Card archive recovery outside the removed canonical editor and returns to the Board",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows keeps cross-Board recovery after source removal without treating the moved Card as denied archived detail",
+        "message": [
+          "Error: Test timed out in 10000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot",
+        "message": [
+          "Error: Test timed out in 5000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows fences competing Card changes for an unresolved cover receipt and permits only its original retry after a newer snapshot",
+        "message": [
+          "Error: Test timed out in 10000ms."
+        ]
+      },
+      {
+        "name": "PRD-01/04/07/08/09 persisted board flows fences competing changes and Card closure while recovering an original comment acknowledgment",
+        "message": [
+          "Error: Test timed out in 10000ms."
+        ]
+      }
+    ]
+  },
+  "sharedFailures": [
+    "PRD-01/04/07/08/09 persisted board flows preserves a dirty editor through an unavailable refresh and a newer authoritative snapshot",
+    "PRD-01/04/07/08/09 persisted board flows keeps Card archive recovery outside the removed canonical editor and returns to the Board",
+    "PRD-01/04/07/08/09 persisted board flows keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery",
+    "PRD-01/04/07/08/09 persisted board flows fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot"
+  ],
+  "repairOnly": [
+    "PRD-01/04/07/08/09 persisted board flows retains conflicting edits until explicit discard and sends the current version",
+    "PRD-01/04/07/08/09 persisted board flows reloads canonical placement after a bound append acknowledgment",
+    "PRD-01/04/07/08/09 persisted board flows keeps cross-Board recovery after source removal without treating the moved Card as denied archived detail",
+    "PRD-01/04/07/08/09 persisted board flows retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery",
+    "PRD-01/04/07/08/09 persisted board flows fences competing Card changes for an unresolved cover receipt and permits only its original retry after a newer snapshot",
+    "PRD-01/04/07/08/09 persisted board flows fences competing changes and Card closure while recovering an original comment acknowledgment"
+  ],
+  "baselineOnly": [
+    "PRD-01/04/07/08/09 persisted board flows fences competing Board commands while recovering an original metadata save after newer canonical data",
+    "PRD-01/04/07/08/09 persisted board flows fences competing mutations during unresolved attachment lifecycle and recovers its original request after a newer Card snapshot",
+    "PRD-01/04/07/08/09 persisted board flows locks competing Card mutations during unconfirmed file upload and recovers the same original request after a newer snapshot",
+    "PRD-01/04/07/08/09 persisted board flows updates canvas due descriptions on live completion and removes them when dates clear",
+    "PRD-01/04/07/08/09 persisted board flows updates the card face on acknowledgement and ignores an older refresh without resurrecting a removed card",
+    "PRD-01/04/07/08/09 persisted board flows does not resurrect an old save confirmation after access loss and a fresh authorized load"
+  ],
+  "tracking882": {
+    "startedAt": "2026-10-20T18:20:30.631Z",
+    "finishedAt": "2026-10-20T18:26:35.204Z",
+    "head": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "ledgerSha256": "a64f7fd628e76911b83780469ccb8b6eca0a3ff46117cbc4916e432f46351fd8",
+    "evidence": 882,
+    "items": 1607,
+    "main": "db5762265b3dfd19aa28b03ed24ceec2fe2ec265",
+    "results": [
+      {
+        "name": "original36contracts",
+        "exit": 0,
+        "path": "work/cycle103-original36contracts-native.txt",
+        "sha256": "b0524fc5c470fa58effa9b433da9e16a38ecf48bf3b1f159b5e204ee1d880a54"
+      },
+      {
+        "name": "fullLedgerAndPublishedEvolution",
+        "exit": 0,
+        "path": "work/cycle103-fullLedgerAndPublishedEvolution-native.txt",
+        "sha256": "21cddf4d2ba35beba66e6749cb63aa510e99e505d5d23608eb2d76b680aa9adf"
+      }
+    ],
+    "mainEvolution": "Passed",
+    "result": "Passed",
+    "scope": "Unmodified36 delivery contracts and full structural/evidence/sourceGit/baseline validation against prior publishedP2; additive targetmain evolution separately verified. No product acceptance or newCI pass inferred. Native12/80targeted controls pass; localBoard21failures retained."
+  },
+  "scope": "Original40-case unchanged baseline and repaired control each30Pass/10Fail with varying failure identities (four shared, six unique each). Earlierrepaired19Pass/21Fail retained separately. Bounded duecasefailedboth, thenpassed inlaterrepaired40. No sole cause established or environment waiver; no deadline/assertion/skip changes. Own completefreshCI and main integration remain required. Original36trackingcontracts and full882ledger validation/P2/main evolution passed separately, final883validation next."
+}

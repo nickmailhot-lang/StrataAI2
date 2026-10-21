@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-20T13:24:42.763Z",
+  "source": "3024b2af7d5c594c4327e4148211d15a81f7b5cf",
+  "result": "Passed",
+  "scope": "Repair two actual immutable P invitation browser admission failures without changing product, permissions, original requests or mandatory CI policy. Keep same-source fresh-head fencing and actor/scope/failed-read refusal; independently owned metadata connections must not invalidate another connection own current protected-read proof. Retire old document/closed-stream proofs. Revocation confirmation must explicitly reopen a withdrawn review only while no DELETE has been sent.",
+  "acceptance": [
+    "Deterministically reproduce independent-stream/document/closed-source observer failures before repair; all original invitation admission controls pass unchanged afterward, including same-source fresh-head fences, wrong scope/actor, failed/early reads and source-event checks.",
+    "Original8 account-bound creation and2 telemetry history cases pass with original120s/500ms/5s bounds, same-key/body/exact2 creation requests, one canonical invite, cancellation/noDELETE, explicit fresh confirmation/exactoneDELETE,204 telemetry and privacy. No retry after an observed mutation.",
+    "Own complete current-head CI plus final review/main integration and tracking beforeDone. Preserve118passes/2failures/2skips and actual screenshots/traces; no reused prior-head overall qualification."
+  ],
+  "consumer": "Actual existing invitation UI/server workflows against exact unchanged client and owned real services, not only an observer mock.",
+  "ux": "UXA01–08: existing desktop/phone keyboard/privacy/current-role workflows preserved. Test-harness-only source intent; no product UI redesign, new API/schema/dependency or public exposure.",
+  "limits": [
+    "Opaque cursor ciphertext cannot identify canonical equality and must not be decoded or hashed as authority.",
+    "C66 empty-assignee producer defect and Profile14 increment are separate unpublished work, retained on their branches.",
+    "Both P failures are kept while old P full3/full4 and Y checks continue; collect further actual failures before publishing a consolidated fix."
+  ],
+  "next": "Add deterministic observer controls and run them red against unchanged P helper. Implement per-independent-stream/document-lifetime read fencing, preserve original same-source fences, and reopen fresh revocation review before an unsent confirmation. Typecheck and run all original controls plus original10 running workflows on an exclusive fixture."
+}

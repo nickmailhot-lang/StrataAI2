@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-20T09:57:43.073Z",
+  "result": "Passed",
+  "source": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "types": {
+    "exit": 0,
+    "logSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  },
+  "lint": {
+    "exit": 0,
+    "logSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  },
+  "scope": "Actual source verifier completed separate TypeScript and lint children with exit0 before entering the still-running full frontend child. Full regression result is pending; no application source changed after these checks."
+}

@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-20T07:02:33.884Z",
+  "head": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "parent": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "paths": [
+    "apps/web/src/app/InternalAppShell.tsx",
+    "apps/web/src/app/InternalAppShell.scroll-context.test.tsx",
+    "tests/browser/organization-context-name.spec.ts",
+    "tests/browser/work-usability.spec.ts"
+  ],
+  "source": {
+    "apps/web/src/app/InternalAppShell.tsx": "292287bfcef9fd4984007697b776acfde6d1da5b0dc290a29cf7cf0d03155832",
+    "apps/web/src/app/InternalAppShell.scroll-context.test.tsx": "ea9415e60b39ee09306c9d26dd2b9c5c9957f1f7ec47858b0c00083c754c524a",
+    "tests/browser/organization-context-name.spec.ts": "d0b39e855997bdadddd28756e3ef08247f6722b9e394788828b554bab58f88a0",
+    "tests/browser/work-usability.spec.ts": "10ce0ff3e0432cad0cdd8d360eedc02fd1ecd11ce46b6d3caac7fa484b0a70af"
+  },
+  "controlledRed": {
+    "passed": 1,
+    "failed": 3,
+    "reportSha256": "edd43494d0ed71bcdfb7683b68a972baf0023b95090b2aed25190e71439b8003",
+    "source": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+    "newTestSnapshotSha256": "ea9415e60b39ee09306c9d26dd2b9c5c9957f1f7ec47858b0c00083c754c524a"
+  },
+  "targetedGreen": {
+    "passed": 38,
+    "failed": 0,
+    "reportSha256": "eb1a8b5ca1cf5741bdb8ad8f0afbf978871526220780180f6f4bb72806752096"
+  },
+  "nativeAdmission": "Reuse existing openAdmittedReview only for read-only Destination options; original selection/move/receipt/canonical/count/idempotency/deadline assertions retained.",
+  "scope": "Focused source commit, unpushed. Full regression/types/build/native/manual/CI/review/main remain required; no Done."
+}

@@ -1,0 +1,110 @@
+{
+  "at": "2026-10-20T22:28:49.395Z",
+  "native": {
+    "at": "2026-10-20T22:20:36.256Z",
+    "startedAt": "2026-10-20T22:07:30.314Z",
+    "project": "strataai-mvp-browser-513f54c6c7848759",
+    "exit": 1,
+    "stats": {
+      "startTime": "2026-10-20T22:08:33.977Z",
+      "duration": 717535.602,
+      "expected": 11,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "frontendSource": "4bc16f8c27a3613d8f5622d4d37a795958ab48f6",
+    "testSource": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+    "result": "Failed",
+    "phases": [
+      {
+        "name": "Start exclusive fixture database",
+        "exit": 0
+      },
+      {
+        "name": "Apply packaged migrations without application build",
+        "exit": 0
+      },
+      {
+        "name": "Provision canonical restricted runtime roles",
+        "exit": 0
+      },
+      {
+        "name": "Provision original disposable identity CI role",
+        "exit": 0
+      },
+      {
+        "name": "Start retained images with original browser-full account fixture",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned api container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned worker container",
+        "exit": 0
+      },
+      {
+        "name": "Verify owned web container",
+        "exit": 0
+      },
+      {
+        "name": "Original five additional affected cases",
+        "exit": 1
+      },
+      {
+        "name": "Clean only exclusive fixture resources",
+        "exit": 0
+      }
+    ],
+    "primaryError": null,
+    "cleanupError": null,
+    "stockUnchanged": true,
+    "ownedRemaining": {
+      "containers": "",
+      "volumes": "",
+      "networks": ""
+    },
+    "privateSettingsRemoved": true,
+    "logSha256": "c95271e5da51483ad1b8d392d49b71d819c3049fa1883edddc5814cfb5850ecf",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "scope": "Complete12case combined first-use Board5, native navigation recovery3 and Organization actions4 at a54e2f2. Actual frontend build4bc16f8 has identical production/unit inputs; real isolated PostgreSQL and retained code-equivalent hAPI/Worker. Original assertions/deadlines/retries0/actor-key-version receipts, lost-response recovery, canonical persistence, UX/Axe and access-withdrawal checks unchanged. Scoped supporting mixed-client local verification; never immutableCI/main acceptance. Earlier CI,132and135failures retained separately. BoundednativeTabadmissionneverfocusesdestination;all original focus/order assertions preserved."
+  },
+  "failedCase": "PRD-01/04/07/08/09: persisted board workflow and isolation (tablet 200% text)",
+  "deadlineMs": 30000,
+  "reportedDurationMs": 43902,
+  "reportSha256": "1b7a77fb24a68df84062e7c350e8615f80c5413ff6ff7917a29e4fadc1aca172",
+  "boardInputs": {
+    "at": "2026-10-20T22:23:21.810Z",
+    "result": "Passed",
+    "old": "a33bc64bf07387a34041adeac15aebc165d6d909",
+    "current": "a54e2f28e00a1c71031ce53c1e2f3340a52c3f43",
+    "productionAndUnitInputs": "Byte unchanged",
+    "unchangedDirectFiles": [
+      {
+        "path": "tests/browser/board.spec.ts",
+        "sha256": "ca57e547828f14057deba85a6072273a2bb7bdbbf2a110d516ac3b437e63b86d"
+      },
+      {
+        "path": "tests/browser/notificationAccountFixture.ts",
+        "sha256": "1e513c1e99bf7f0e8a1c3742ac748504f92da118a807235a616f7ac284e8204d"
+      },
+      {
+        "path": "tests/browser/releaseTest.ts",
+        "sha256": "ab2ea4ef38482df067d458c3d83aff8fbfffe5cbb25f4f4d6534e96bafb5cd9c"
+      },
+      {
+        "path": "tests/browser/scopedBoardWorker.ts",
+        "sha256": "e626bbe37e8dd0bec4e6fed81e70a8ff4c0b7a3b078a914a7bce072dae01fce0"
+      }
+    ],
+    "keyboardModule": {
+      "comparison": "Every original top-level statement/import/function unchanged after removing only the new unused-by-Board tabAdmittedFocus export.",
+      "canonicalSha256": "ee7ccc5365cbb99e5c91593b643f64eb47032b83939d2a961f962ac1a2f6908b"
+    },
+    "scope": "Input equivalence supports retaining earlier actual Board5passes at a33 as historical current-code evidence. It never turns later137timedOut into a pass or proves its exclusive cause. Current full137aggregate remainsFailed and currentownCI must independently validate all5Boardprofiles with original30s deadline before merge."
+  },
+  "scope": "Complete current12case run137 finished11passed/1timeout/0skip/retry,14141terminal1. Failure is original30s tablet200%Board case. Trace records successful functional assertions and publicCardcapture before timeout/finalization; no functional assertion failure reported. Context.close itself completed44ms during afterhooks; do not attribute all reported43.9s solely to context.close or claim exclusive resource cause. Original30s deadline unchanged. EarlieractualBoard5pass at a33 is retained separately with proven unchanged product/directfixtures/original keyboard-module statements; it does not relabel this Failedaggregate. OwnfreshCI must independently validate all5Boardprofiles before merge."
+}

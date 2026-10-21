@@ -1,0 +1,26 @@
+{
+  "startedAt": "2026-10-20T07:45:19.028Z",
+  "finishedAt": "2026-10-20T07:48:27.890Z",
+  "head": "99298c53b4cdaa1528fa2655938561b429796733",
+  "ledgerSha256": "4474419af81adeb728e3a74e65c5b8941048b2d09c564c81649758f56eab0556",
+  "items": 1603,
+  "done": 66,
+  "evidence": 844,
+  "result": "Passed",
+  "results": [
+    {
+      "name": "contracts",
+      "exit": 0,
+      "signal": null,
+      "artifact": "work/cycle53-tracking-final-contracts-native.txt",
+      "sha256": "da6b13672f17b93105e33bd4ac384f62c77a5f06e7425bab11d8f395adf98f11"
+    },
+    {
+      "name": "validation",
+      "exit": 0,
+      "signal": null,
+      "artifact": "work/cycle53-tracking-final-validation-native.txt",
+      "sha256": "73335f11fd707eccb93e9b393f42209b0d009fe1c578d7837a2ea558aa6a3b84"
+    }
+  ]
+}

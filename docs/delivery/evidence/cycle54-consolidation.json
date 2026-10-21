@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-20T07:45:17.174Z",
+  "source": "99298c53b4cdaa1528fa2655938561b429796733",
+  "parent": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "normalFastForward": true,
+  "onlyChange": "tests/browser/work-usability.spec.ts",
+  "preservedDirtyTrackingAndUxReport": true,
+  "frontendAPIWorkerSchemaDependenciesAndCIUnchanged": true,
+  "originalFullFrontend61741": "Terminal0 before fast-forward; exact original sourcehashes and case sets verified.",
+  "lifecycle": {
+    "at": "2026-10-20T07:42:14.533Z",
+    "evidence": 840,
+    "done": 66,
+    "transitions": [
+      {
+        "id": "PRD-03-VS-01-T-02",
+        "next": "Implemented",
+        "exit": 0,
+        "artifact": "work/cycle54-transition-PRD-03-VS-01-T-02-Implemented.txt"
+      },
+      {
+        "id": "PRD-03-VS-01-T-02",
+        "next": "Testing",
+        "exit": 0,
+        "artifact": "work/cycle54-transition-PRD-03-VS-01-T-02-Testing.txt"
+      },
+      {
+        "id": "PRD-03-VS-01-T-02-TEST-01",
+        "next": "Implemented",
+        "exit": 0,
+        "artifact": "work/cycle54-transition-PRD-03-VS-01-T-02-TEST-01-Implemented.txt"
+      },
+      {
+        "id": "PRD-03-VS-01-T-02-TEST-01",
+        "next": "Testing",
+        "exit": 0,
+        "artifact": "work/cycle54-transition-PRD-03-VS-01-T-02-TEST-01-Testing.txt"
+      },
+      {
+        "id": "PRD-03-VS-01-T-02-TEST-02",
+        "next": "Implemented",
+        "exit": 0,
+        "artifact": "work/cycle54-transition-PRD-03-VS-01-T-02-TEST-02-Implemented.txt"
+      },
+      {
+        "id": "PRD-03-VS-01-T-02-TEST-02",
+        "next": "Testing",
+        "exit": 0,
+        "artifact": "work/cycle54-transition-PRD-03-VS-01-T-02-TEST-02-Testing.txt"
+      }
+    ],
+    "scope": "ThreeTesting; native12Passed, fullfrontend/currentCI/review/main pending. No newDone."
+  },
+  "scope": "Source consolidation only; current metadata publication/CI/review/targetmain still pending."
+}

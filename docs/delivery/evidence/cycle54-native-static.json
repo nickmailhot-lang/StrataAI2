@@ -1,0 +1,43 @@
+{
+  "startedAt": "2026-10-20T07:18:42.072Z",
+  "finishedAt": "2026-10-20T07:19:50.648Z",
+  "head": "99298c53b4cdaa1528fa2655938561b429796733",
+  "sourceSha256": "8e29d40932f7dde6e4a1898eaea197ac3a5a791f7692152370760163d7585e3d",
+  "result": "Passed",
+  "results": [
+    {
+      "name": "browser-types",
+      "exit": 0,
+      "signal": null,
+      "artifact": "work/cycle54-browser-types-native.txt",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "name": "admission-contracts",
+      "exit": 0,
+      "signal": null,
+      "artifact": "work/cycle54-admission-contracts-native.txt",
+      "sha256": "1252f8dc52b84cba9fdc37a94fb78d54d0217d311c3fc25860aabf5e31d59aea"
+    },
+    {
+      "name": "coverage",
+      "exit": 0,
+      "signal": null,
+      "artifact": "work/cycle54-coverage-native.txt",
+      "sha256": "9131c2945708299db309eec1b3f71710f796284f1d7fe4c314ea03ae7ab054da"
+    }
+  ],
+  "scope": "Only native test admission changed; original user flows, confirmation/receipt/canonical/idempotency/count assertions, deadlines/retries preserved. Whole native rerun required; no runtime acceptance inferred.",
+  "admissionContracts": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 0
+  },
+  "coverage": "483 cases/170 intact files; original case identities/deadlines/retries unchanged.",
+  "trackingMethodCorrection": {
+    "at": "2026-10-20T07:22:45.178Z",
+    "previous": "Actual36 original tracking contracts and full source/hash/Git/baseline validation at exact833-evidence ledger; allPassed, prior failed runs retained.",
+    "corrected": "Actual source Git comparison: R7 to R8 changes only tests/browser/work-usability.spec.ts; entire frontend/API/Worker/schema/dependency/CI diff empty. Reuse exact verified R7 client asset hashes; distinguish test source R8. No runtime/current-CI or36contract pass inferred from this inspection.",
+    "reason": "Unpublished record writer used the tracking-proof fallback method label for the source-binding inspection. Artifact content was correct and unchanged; retain previous label here and correct current method."
+  }
+}

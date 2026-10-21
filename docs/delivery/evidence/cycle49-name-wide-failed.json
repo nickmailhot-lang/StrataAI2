@@ -1,0 +1,165 @@
+{
+  "startedAt": "2026-10-20T05:44:01.739Z",
+  "finishedAt": "2026-10-20T05:53:11.579Z",
+  "base": "bd1215f79587d64082afc6ebfe0a716f1ed83b90",
+  "sourceState": "Exact working-tree hashes before sourcecommit; full unchanged-source ancestry is separately verified.",
+  "source": {
+    "apps/web/src/app/OrganizationContextLabel.tsx": "d316c712962623f96fb1a4830c3837bcc4284dfcf42c9acac4e18ed13d2b52c0",
+    "apps/web/src/app/OrganizationContextLabel.test.tsx": "3f198012c74e77466719d5d1e3cfb32453ab8c859def640f5a8126f623b530f9",
+    "apps/web/src/app/InternalAppShell.tsx": "d04f600ea2436a499227d162fc5f61764fb896973c43c3b089c1cdbdf4161d1a",
+    "apps/web/src/app/App.test.tsx": "f4d5fa1cfbf6bb275096ded500234ecf15e1fe5aff75e5410d05273d343481e1"
+  },
+  "exit": 1,
+  "signal": null,
+  "result": "Failed",
+  "summary": {
+    "total": 2959,
+    "passed": 2916,
+    "failed": 19,
+    "pending": 24,
+    "suites": 270
+  },
+  "reportSha256": "4d543c1fb994f5dd22dc1a91f224bf1fc27fc866de714adc50f9d4c5d467a416",
+  "nativeLogSha256": "da123d5aa9f0ac6548fa10a8c6a3e38cf645e93144d36a6a8b434f29ba87dc21",
+  "scope": "Actual complete existing frontend suite with newcaption/privacy controls. Original deferred/skipped cases stay separately reported; no browser or productacceptance inferred.",
+  "sourceCommit": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "committedSourceHashesExactlyMatchExecutedWorkingTree": true,
+  "failures": [
+    {
+      "file": "app/App.test.tsx",
+      "name": "StrataAI2 application shell renders the internal application shell",
+      "reasons": [
+        "Error: Unable to find role=\"heading\" and name \"Council Operations\"\n\nIgnored nodes: comments, script, style\n<body>\n  <div>\n    <div\n      class=\"MuiBox-root css-1obf64m\"\n    >\n      <div\n        class=\"MuiBox-root css-ogmp5q\"\n      >\n        <a\n          class="
+      ]
+    },
+    {
+      "file": "features/auth/InvitationRecipientTelemetry.test.tsx",
+      "name": "invitation_recipient: reports only admitted disclosure and protected read/review",
+      "reasons": [
+        "Error: Unable to find role=\"heading\" and name \"Private recipient council\"\n\nIgnored nodes: comments, script, style\n<body>\n  <div>\n    <main\n      class=\"MuiContainer-root MuiContainer-maxWidthSm css-1s4nmbk-MuiContainer-root\"\n    >\n      <div\n        class=\"Mui"
+      ]
+    },
+    {
+      "file": "features/kanban/BoardFilterControl.test.tsx",
+      "name": "keeps the filter scroll region keyboard accessible while Board admission disables its controls",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/kanban/BoardFilterControl.test.tsx",
+      "name": "keeps selected IDs while paging label choices",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/kanban/BoardFilterInteractionControl.test.tsx",
+      "name": "admits Apply/Clear originals through the actual same-origin transport without emitting for read refresh",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/kanban/BoardScreen.drag.test.tsx",
+      "name": "opens cached Card detail and retires the modal with focus restored to its canvas link",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/kanban/BoardScreen.test.tsx",
+      "name": "PRD-01/04/07/08/09 persisted board flows preserves a dirty editor through an unavailable refresh and a newer authoritative snapshot",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/kanban/BoardScreen.test.tsx",
+      "name": "PRD-01/04/07/08/09 persisted board flows does not resurrect an old save confirmation after access loss and a fresh authorized load",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/kanban/BoardScreen.test.tsx",
+      "name": "PRD-01/04/07/08/09 persisted board flows keeps Card archive recovery outside the removed canonical editor and returns to the Board",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/kanban/BoardScreen.test.tsx",
+      "name": "PRD-01/04/07/08/09 persisted board flows retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/kanban/BoardScreen.test.tsx",
+      "name": "PRD-01/04/07/08/09 persisted board flows keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/kanban/ListMoveControl.test.tsx",
+      "name": "checks account and destination move authority, submits the original source/revision/key, and returns focus after acknowledgment",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/organizations/OrganizationConfigurationPage.test.tsx",
+      "name": "PRD-27 configuration form, human review and recovery keeps an uncertain original account, bytes and key through private-stream reset and requires explicit retry",
+      "reasons": [
+        "Error: Unable to find role=\"button\" and name \"Retry original submission\"\n\nIgnored nodes: comments, script, style\n<body\n  style=\"padding-right: 1024px; overflow: hidden;\"\n>\n  <div\n    aria-hidden=\"true\"\n  >\n    <div\n      class=\"MuiContainer-root MuiContainer-m"
+      ]
+    },
+    {
+      "file": "features/organizations/OrganizationConfigurationPage.test.tsx",
+      "name": "PRD-27 configuration form, human review and recovery pages Lists without losing the verified selected destination or retaining every prior page",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/organizations/OrganizationConfigurationPage.test.tsx",
+      "name": "PRD-27 configuration form, human review and recovery requires explicit review, displays policy sources and all proposed values, then refreshes authoritative state",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/organizations/OrganizationConfigurationTelemetry.test.tsx",
+      "name": "records admitted opening, explicit read retry, history and retained-stream recovery with fixed fields",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/organizations/OrganizationHome.test.tsx",
+      "name": "PRD-01/03/04 organization discovery PRD-04-VS-05/AC-06 retires an unsubmitted empty review on established authority reset",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/organizations/OrganizationLeavePage.test.tsx",
+      "name": "PRD-03-TC-01/11 requires confirmation and leaves only on an authoritative 204",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    },
+    {
+      "file": "features/records/RetentionHoldsPage.test.tsx",
+      "name": "PRD-70 confirmed MUI holds requires classified Card review and submits its actual relationship evidence",
+      "reasons": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/wo"
+      ]
+    }
+  ],
+  "timeoutFailures": 16,
+  "diagnosis": "Most failures are preexisting component timeouts under default local parallel execution; exclusivecause is not established. Currentcaption24cases passed. Separatecomplete single-worker rerun is active with same assertions,5000ms deadlines and original24deferrals; repository/CI config untouched.",
+  "retestSession": 61232
+}
