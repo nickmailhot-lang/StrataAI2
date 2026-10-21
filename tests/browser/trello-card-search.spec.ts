@@ -49,7 +49,7 @@ async function sourceFor(page: Page) {
     if (path === '/search') {
       source.searches.push(url.search);
       return route.fulfill({ status: source.searchFailure || 200, json: { nextCursor: url.searchParams.has('after') ? null : 'detail-search-next',
-        items: [{ sourceKind: 'CARD', card: { id: card, organizationId: org, boardId: board, listId: list, title, version: 1, lifecycleState: 'active', dueAt: null, dueHasTime: false, dueComplete: false },
+        items: [{ sourceKind: 'CARD', card: { id: card, organizationId: org, boardId: board, listId: list, title, version: 1, lifecycleState: url.searchParams.get('scope') === 'archived' ? 'archived' : 'active', dueAt: null, dueHasTime: false, dueComplete: false },
           boardName: 'Council operations', listName: 'To do', boardDateTimezone: null, labels: [], members: [], hasMoreLabels: false, hasMoreMembers: false }],
         interaction: { eventId: event, entityId: event, actorId: actor, version: 1, eventType: 'SEARCH_EXECUTED', entityType: 'Search', organizationId: null, boardId: null, metadata: {}, createdAt: '2026-10-21T12:00:00Z' },
       } });
@@ -117,11 +117,18 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(page.getByText('1 result on this page. More work can be searched.', { exact: true })).toBeVisible();
     await fit(page, width); await page.screenshot({ path: info.outputPath(`search-results-${width}.png`), fullPage: true });
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; }); await fit(page, width); await axe(page);
+    const scope = page.getByRole('combobox', { name: 'Search scope', exact: true });
+    await openAdmittedReview(scope, page.getByRole('option', { name: 'Archived work', exact: true }));
+    await page.getByRole('option', { name: 'Archived work', exact: true }).press('Enter');
+    await expect(scope).toHaveText('Archived work');
+    await page.screenshot({ path: info.outputPath(`search-zoom-scope-${width}.png`), fullPage: true });
+    expect(await scope.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     await query.fill('unsent draft'); await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');
     const feedback = page.getByRole('region', { name: 'Global Card search', exact: true }).getByRole('status');
     await expect(feedback).toBeFocused(); await expect(query).toHaveValue('unsent draft');
     expect(new URLSearchParams(source.searches.at(-1)).get('q')).toBe('roof');
     expect(new URLSearchParams(source.searches.at(-1)).get('after')).toBe('detail-search-next');
+    expect(new URLSearchParams(source.searches.at(-1)).get('scope')).toBe('active');
     source.searchFailure = 503; await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
     await expect(page.getByText('Search is unavailable. Check your account and access, then search again.', { exact: true })).toBeVisible();
     await expect(feedback).toBeFocused(); await expect(query).toHaveValue('unsent draft'); await expect(result).toHaveCount(0);
