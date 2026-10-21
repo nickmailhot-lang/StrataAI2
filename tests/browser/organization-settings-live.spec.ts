@@ -1,6 +1,7 @@
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker } from './scopedBoardWorker';
 import AxeBuilder from '@axe-core/playwright';
+import { pressObservedLocalAction, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-03-TC-06/08/09/11/12: live settings preserves drafts and original receipts at ${width}px`, async ({ page, context }) => {
@@ -41,7 +42,7 @@ for (const width of [1280, 390]) {
       await expect(input).toHaveValue('Original unsaved draft');
       const save = mirror.getByRole('button', { name: 'Save Organization settings', exact: true });
       await expect(save).toBeDisabled();
-      await mirror.getByRole('button', { name: 'Keep draft after review', exact: true }).focus(); await mirror.keyboard.press('Enter');
+      await pressObservedLocalAction(mirror.getByRole('button', { name: 'Keep draft after review', exact: true }));
       const originals: { key: string; body: string }[] = [];
       await mirror.route(`**/organizations/${org}`, async route => {
         if (route.request().method() !== 'PATCH') { await route.continue(); return; }
@@ -49,7 +50,7 @@ for (const width of [1280, 390]) {
         const acknowledgment = await route.fetch(); expect(acknowledgment.status()).toBe(200);
         if (originals.length === 1) await route.abort('failed'); else await route.fulfill({ response: acknowledgment });
       });
-      await save.focus(); await mirror.keyboard.press('Enter');
+      await pressObservedRequest(save, () => originals.length, 1);
       await expect(mirror.getByText(/Your save could not be confirmed/)).toBeVisible();
       await expect.poll(() => deliveredVersion, { timeout: 30_000 }).toBe(3);
       expect((await context.request.patch(`/organizations/${org}`, { headers, data: { name: 'Later saved version', version: 3 } })).status()).toBe(200);
@@ -58,12 +59,12 @@ for (const width of [1280, 390]) {
       await expect(input).toHaveValue('Original unsaved draft'); await expect(input).toBeDisabled();
       await expect(mirror.getByRole('button', { name: 'Keep draft after review', exact: true })).toBeDisabled();
       const retry = mirror.getByRole('button', { name: 'Retry original save', exact: true });
-      await expect(retry).toBeEnabled(); await retry.focus(); await mirror.keyboard.press('Enter');
+      await expect(retry).toBeEnabled(); await pressObservedRequest(retry, () => originals.length, 2);
       await expect(mirror.getByText(/Original save acknowledgment recovered/)).toBeVisible();
       expect(originals).toHaveLength(2); expect(originals[0].key).toMatch(/^[0-9a-f-]{36}$/);
       expect(originals[1]).toEqual(originals[0]); expect(JSON.parse(originals[0].body).version).toBe(2);
-      await mirror.getByRole('button', { name: 'Discard draft and use current settings', exact: true }).focus();
-      await mirror.keyboard.press('Enter'); await expect(input).toHaveValue('Later saved version');
+      await pressObservedLocalAction(mirror.getByRole('button', { name: 'Discard draft and use current settings', exact: true }));
+      await expect(input).toHaveValue('Later saved version');
       expect((await new AxeBuilder({ page: mirror }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
       expect(await mirror.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     } finally { await mirror.close(); restoreWorker(); }
