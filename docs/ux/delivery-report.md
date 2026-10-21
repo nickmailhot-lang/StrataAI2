@@ -767,4 +767,3 @@ Exact Vite8.3.4 and required locked build-tool transitives pass supported npm11.
 ### Cycle162: accessible Card refusal observation
 
 Current50fd changes only the final Card actor test observation to await the same accessible focused alert after MUI dialog withdrawal. All other bytes/assertions and runtime remain unchanged. Complete10 actor/refusal cases pass with patched dependencies, web types and scoped lint. Original f28 full frontend1failed/2962passed/24capacity deferrals remains Failed; scoped10 does not replace fresh complete CI and release/main qualification. No product or UX acceptance is inferred from this test-only repair.
-
