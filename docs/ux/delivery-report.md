@@ -2,7 +2,7 @@
 
 ## Keyboard paging and Organization-context coordination — 2026-10-20
 
-Current follow-up: `ux/search-keyboard-paging`, application/browser source `66bee0439fdfca53ddc30bcf71770eef76c86019`, based on PR #119 patched head `42b02c60`. PR #119 is still draft and unmerged while fresh required gates run. Its original security failure remains retained; reuse of exact Vite 8.3.4 passed a fresh isolated locked install, zero-vulnerability audit, both TypeScript checks, 67 affected tests and production compilation. The compiler output uses local development identity and is not immutable release evidence.
+Current follow-up: [draft PR #120](https://github.com/nickmailhot-lang/StrataAI2/pull/120), branch `ux/search-keyboard-paging`, application/browser source `66bee0439fdfca53ddc30bcf71770eef76c86019`, based on PR #119 patched head `42b02c60`. PR #119 is still draft and unmerged while fresh required gates run. Its original security failure remains retained; reuse of exact Vite 8.3.4 passed a fresh isolated locked install, zero-vulnerability audit, both TypeScript checks, 67 affected tests and production compilation. The compiler output uses local development identity and is not immutable release evidence.
 
 | Metric | Current scoped result |
 | --- | --- |
