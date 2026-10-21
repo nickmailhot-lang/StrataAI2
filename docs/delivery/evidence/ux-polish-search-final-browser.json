@@ -1,0 +1,46 @@
+{
+  "sourceRevision": "547a6e0518d500e36ca3d54b5078825fcc7b792d",
+  "at": "2026-10-21T02:31:20.432384+00:00",
+  "sourceBlobs": {
+    "apps/web/src/features/search/GlobalSearchPage.tsx": "dfdfa30ba19eae2f094486ed7db3d5934e6da8e0",
+    "apps/web/src/features/search/GlobalSearchPage.test.tsx": "3b49979cbbb3579a279ef862992193098da8c9a9",
+    "tests/browser/ux-search-guidance.spec.ts": "a5a0fa1a30646ce3d11d908253d4906ad38000dd"
+  },
+  "result": "Passed",
+  "scope": "Actual routed consumers, development Vite/controlled HTTP and quiet transport. Existing native real-service tests remain required in fresh CI.",
+  "stats": {
+    "startTime": "2026-10-21T02:28:05.619Z",
+    "duration": 45889.990999999995,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "errors": [],
+  "widths": [
+    320,
+    390,
+    768,
+    1280
+  ],
+  "rootTextSize": "200%",
+  "checks": [
+    "Notifications \u2192 header Search \u2192 Back",
+    "no initial or typing request",
+    "native Enter",
+    "empty continuation/final page",
+    "active and archived scope guidance",
+    "canonical cursor and criteria",
+    "retained draft after503",
+    "definitive403 clears criteria/help",
+    "overflow and Axe"
+  ],
+  "sourceChange": "Refine only new explanatory text after inspection found already-selected archive guidance confusing. No query/admission/timeout/retry/assertion weakened.",
+  "logs": [
+    {
+      "name": "ux-polish-final-browser-console.log",
+      "sha256": "9e824b31a1fb8523391821b7e1776130f00b385183ddc1b30d4530a8a5307cab",
+      "rawBase64": "DQpSdW5uaW5nIDQgdGVzdHMgdXNpbmcgMSB3b3JrZXINCg0KDQoNCihub2RlOjIyNjcyKSBXYXJuaW5nOiBUaGUgJ05PX0NPTE9SJyBlbnYgaXMgaWdub3JlZCBkdWUgdG8gdGhlICdGT1JDRV9DT0xPUicgZW52IGJlaW5nIHNldC4NCihVc2UgYG5vZGUgLS10cmFjZS13YXJuaW5ncyAuLi5gIHRvIHNob3cgd2hlcmUgdGhlIHdhcm5pbmcgd2FzIGNyZWF0ZWQpDQpbMS80XSB0ZXN0c1xicm93c2VyXHV4LXNlYXJjaC1ndWlkYW5jZS5zcGVjLnRzOjExOjcg4oC6IFVYLTAwNyBTZWFyY2ggZmlyc3QtdXNlLCBlbXB0eSBjb250aW51YXRpb24gYW5kIHNhZmUgcmVjb3ZlcnkgYXQgMTI4MHB4DQpbMi80XSB0ZXN0c1xicm93c2VyXHV4LXNlYXJjaC1ndWlkYW5jZS5zcGVjLnRzOjExOjcg4oC6IFVYLTAwNyBTZWFyY2ggZmlyc3QtdXNlLCBlbXB0eSBjb250aW51YXRpb24gYW5kIHNhZmUgcmVjb3ZlcnkgYXQgNzY4cHgNClszLzRdIHRlc3RzXGJyb3dzZXJcdXgtc2VhcmNoLWd1aWRhbmNlLnNwZWMudHM6MTE6NyDigLogVVgtMDA3IFNlYXJjaCBmaXJzdC11c2UsIGVtcHR5IGNvbnRpbnVhdGlvbiBhbmQgc2FmZSByZWNvdmVyeSBhdCAzOTBweA0KWzQvNF0gdGVzdHNcYnJvd3Nlclx1eC1zZWFyY2gtZ3VpZGFuY2Uuc3BlYy50czoxMTo3IOKAuiBVWC0wMDcgU2VhcmNoIGZpcnN0LXVzZSwgZW1wdHkgY29udGludWF0aW9uIGFuZCBzYWZlIHJlY292ZXJ5IGF0IDMyMHB4DQogIDQgcGFzc2VkICg0NS45cykNCg=="
+    }
+  ]
+}

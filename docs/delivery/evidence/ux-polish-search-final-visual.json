@@ -1,0 +1,50 @@
+{
+  "sourceRevision": "547a6e0518d500e36ca3d54b5078825fcc7b792d",
+  "at": "2026-10-21T02:32:30.306439+00:00",
+  "sourceBlobs": {
+    "apps/web/src/features/search/GlobalSearchPage.tsx": "dfdfa30ba19eae2f094486ed7db3d5934e6da8e0",
+    "apps/web/src/features/search/GlobalSearchPage.test.tsx": "3b49979cbbb3579a279ef862992193098da8c9a9",
+    "tests/browser/ux-search-guidance.spec.ts": "a5a0fa1a30646ce3d11d908253d4906ad38000dd"
+  },
+  "result": "Passed",
+  "scope": "Bounded developer review of guidance text/reflow at 200% text; not whole-workflow, approved-baseline, assistive-technology or device acceptance. Full-page screenshots capture fixed chrome at the current viewport scroll offset. Follow-up paging-focus audit remains explicit.",
+  "inspected": [
+    "ux-search-final-320.png",
+    "ux-search-continuation-768.png"
+  ],
+  "captures": [
+    {
+      "name": "ux-search-continuation-1280.png",
+      "sha256": "cc6e561c9471923cdba19ef76dad555eb2a40c6bfc43015c853a8de9952d1126"
+    },
+    {
+      "name": "ux-search-continuation-320.png",
+      "sha256": "e4f3755ca562c6ee3b39997e2a74f9c6a02a52cfbf5b113c675f77c9b6222339"
+    },
+    {
+      "name": "ux-search-continuation-390.png",
+      "sha256": "64377ab32a35588ce5731b117ae8abd49c526a3527f9ff3576c2053d8724c338"
+    },
+    {
+      "name": "ux-search-continuation-768.png",
+      "sha256": "f4b0bc58b38aa9a91345e429a34bc4e283ee827a29daf875dfea4f3c96702aee"
+    },
+    {
+      "name": "ux-search-final-1280.png",
+      "sha256": "2ae3cfb8e7b678fad83fdff6e217546ee6cdc6045041d5cec73318598f38a66c"
+    },
+    {
+      "name": "ux-search-final-320.png",
+      "sha256": "816f905e9c158d007e3231430f24065f0a9c8097c2868e3ae6496d4807a64e27"
+    },
+    {
+      "name": "ux-search-final-390.png",
+      "sha256": "ebbfe588ca07255b0caef1ef1013e78c5023c713468e36c4962acc1d0b042aea"
+    },
+    {
+      "name": "ux-search-final-768.png",
+      "sha256": "0c76d6330742901c0761561fe3abec5155247da5c385aff65831a2e2ebb7ea8a"
+    }
+  ],
+  "logs": []
+}

@@ -1,5 +1,7 @@
 # UX Foundation workstream
 
+Current priority: [polish the working MVP before expanding visible scope](polish-milestone.md), per the 2026-10-20 user instruction. Reuse implemented workflows and preserve the approved backlog; supporting security/reliability/backend work continues. Current source/test/integration states remain in the single delivery report and machine ledger.
+
 [Single consolidated delivery report](delivery-report.md) · [80-PRD dependency/discovery audit](backlog-map.md) · [Feature acceptance criteria](feature-acceptance.md)
 
 This workstream evolves the existing React/TypeScript/Vite/MUI application. It preserves the approved backlog, operational task-management MVP, canonical Organization → Board → List → Card model, stable APIs/schemas and tenant boundaries. The eight PRDs add delivery detail to canonical feature owners; their specification does not claim implementation or acceptance.

@@ -1,0 +1,45 @@
+{
+  "sourceRevision": "e1187ecfafa9e486e6c3f4e47827ac193c9f8a88",
+  "at": "2026-10-21T02:24:02.944513+00:00",
+  "sourceBlobs": {
+    "apps/web/src/features/search/GlobalSearchPage.tsx": "bd05b3b9784ae288f15c6b6d27a091d644233cc0",
+    "apps/web/src/features/search/GlobalSearchPage.test.tsx": "774e4721ea99c952a749b91b8aa053e4767c7537",
+    "tests/browser/ux-search-guidance.spec.ts": "c36e463c9e1892b06ee59037a7851e0039562143"
+  },
+  "result": "Passed",
+  "scope": "Development Vite and controlled HTTP/quiet transport, actual routed Notifications \u2192 header Search \u2192 native query \u2192 empty continuation \u2192 final empty \u2192 transient failure \u2192 definite denial \u2192 browser Back. Not real-service role/persistence or production-CSP proof.",
+  "stats": {
+    "startTime": "2026-10-21T02:16:34.135Z",
+    "duration": 40517.663,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "errors": [],
+  "widths": [
+    320,
+    390,
+    768,
+    1280
+  ],
+  "textSize": "200%",
+  "checks": [
+    "native Enter",
+    "no initial/typing search request",
+    "retained criteria",
+    "canonical cursor in next request",
+    "failure is not empty success",
+    "definitive refusal clears query",
+    "return route",
+    "page overflow",
+    "Axe WCAG2/2.1/2.2"
+  ],
+  "logs": [
+    {
+      "name": "ux-polish-search-browser-console.log",
+      "sha256": "4ee26fd0ba06dc4eed93f95f8d5e3bf1ae2b0d3798501ddbef3f2413e16ff1d1",
+      "rawBase64": "DQpSdW5uaW5nIDQgdGVzdHMgdXNpbmcgMSB3b3JrZXINCg0KDQoNCihub2RlOjM1OTI4KSBXYXJuaW5nOiBUaGUgJ05PX0NPTE9SJyBlbnYgaXMgaWdub3JlZCBkdWUgdG8gdGhlICdGT1JDRV9DT0xPUicgZW52IGJlaW5nIHNldC4NCihVc2UgYG5vZGUgLS10cmFjZS13YXJuaW5ncyAuLi5gIHRvIHNob3cgd2hlcmUgdGhlIHdhcm5pbmcgd2FzIGNyZWF0ZWQpDQpbMS80XSB0ZXN0c1xicm93c2VyXHV4LXNlYXJjaC1ndWlkYW5jZS5zcGVjLnRzOjExOjcg4oC6IFVYLTAwNyBTZWFyY2ggZmlyc3QtdXNlLCBlbXB0eSBjb250aW51YXRpb24gYW5kIHNhZmUgcmVjb3ZlcnkgYXQgMTI4MHB4DQpbMi80XSB0ZXN0c1xicm93c2VyXHV4LXNlYXJjaC1ndWlkYW5jZS5zcGVjLnRzOjExOjcg4oC6IFVYLTAwNyBTZWFyY2ggZmlyc3QtdXNlLCBlbXB0eSBjb250aW51YXRpb24gYW5kIHNhZmUgcmVjb3ZlcnkgYXQgNzY4cHgNClszLzRdIHRlc3RzXGJyb3dzZXJcdXgtc2VhcmNoLWd1aWRhbmNlLnNwZWMudHM6MTE6NyDigLogVVgtMDA3IFNlYXJjaCBmaXJzdC11c2UsIGVtcHR5IGNvbnRpbnVhdGlvbiBhbmQgc2FmZSByZWNvdmVyeSBhdCAzOTBweA0KWzQvNF0gdGVzdHNcYnJvd3Nlclx1eC1zZWFyY2gtZ3VpZGFuY2Uuc3BlYy50czoxMTo3IOKAuiBVWC0wMDcgU2VhcmNoIGZpcnN0LXVzZSwgZW1wdHkgY29udGludWF0aW9uIGFuZCBzYWZlIHJlY292ZXJ5IGF0IDMyMHB4DQogIDQgcGFzc2VkICg0MC41cykNCg=="
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "sourceRevision": "e1187ecfafa9e486e6c3f4e47827ac193c9f8a88",
+  "at": "2026-10-21T02:24:02.944513+00:00",
+  "sourceBlobs": {
+    "apps/web/src/features/search/GlobalSearchPage.tsx": "bd05b3b9784ae288f15c6b6d27a091d644233cc0",
+    "apps/web/src/features/search/GlobalSearchPage.test.tsx": "774e4721ea99c952a749b91b8aa053e4767c7537",
+    "tests/browser/ux-search-guidance.spec.ts": "c36e463c9e1892b06ee59037a7851e0039562143"
+  },
+  "result": "Passed",
+  "scope": "Developer inspection of 320px continuation and 768px final-page guidance text/wrapping at 200% text; current controlled captures only. Whole-page images include fixed chrome at the current scroll position. No approved screenshot baseline, real-device or assistive-technology acceptance claimed.",
+  "inspected": [
+    "ux-search-continuation-320.png",
+    "ux-search-final-768.png"
+  ],
+  "captured": [
+    {
+      "name": "ux-search-continuation-1280.png",
+      "sha256": "cc6e561c9471923cdba19ef76dad555eb2a40c6bfc43015c853a8de9952d1126"
+    },
+    {
+      "name": "ux-search-continuation-320.png",
+      "sha256": "8fdcd137e25d17d328f4372474bd2c97946d56460b9ff5b5ae25cdb306642481"
+    },
+    {
+      "name": "ux-search-continuation-390.png",
+      "sha256": "64377ab32a35588ce5731b117ae8abd49c526a3527f9ff3576c2053d8724c338"
+    },
+    {
+      "name": "ux-search-continuation-768.png",
+      "sha256": "f4b0bc58b38aa9a91345e429a34bc4e283ee827a29daf875dfea4f3c96702aee"
+    },
+    {
+      "name": "ux-search-final-1280.png",
+      "sha256": "3148420171b41795cce0a10e123b9c7fa0e9d8c25a1f895600bc37dc99dff06e"
+    },
+    {
+      "name": "ux-search-final-320.png",
+      "sha256": "af7fa07d7f5761457d04a402cace814c2d4e0b8efea30de2761c799988f299d9"
+    },
+    {
+      "name": "ux-search-final-390.png",
+      "sha256": "4a86b333c0f624655eeaf1304df47d5f0513e4ff522b539bef53acfcd1258794"
+    },
+    {
+      "name": "ux-search-final-768.png",
+      "sha256": "ac872e67cab2c80ab7b8b7d86adcae34a83755999917188b5cdeb698e92ca5c0"
+    }
+  ],
+  "logs": []
+}

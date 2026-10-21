@@ -1,5 +1,59 @@
 # Consolidated PRD delivery report
 
+## Current-build UX-first polish — 2026-10-20
+
+User-approved priority: polish existing priority MVP journeys before expanding visible functionality. [Polish milestone and ordered gaps](polish-milestone.md) now govern AGENTS and the delivery procedure. Existing implementation, approved backlog, original requirements and historical results remain intact. Independent security/reliability and supporting backend work may continue.
+
+Current branch: `ux/current-build-search-polish`; inspected main baseline `db576226`; final application/browser source `547a6e0518d500e36ca3d54b5078825fcc7b792d`. All 22 checks on merged PR #116's head `6dc9a223` were verified successful; that baseline does not qualify this new revision. Earlier dated failure checkpoints below retain their original scope and are not current aggregate completion claims.
+
+| Metric | Current scoped result |
+| --- | --- |
+| Functional completion | Existing business capabilities preserved; no new business FR or domain capability accepted in this cycle |
+| UX completion | Existing Search Cards now explains first use, empty continuation and final-page options using the completed search's active/archive scope; wider polish milestone remains open |
+| Test completion | Final 67 affected tests and 4 controlled browser scenarios passed; current source types/lint, 7 architecture guards and 483-case registration passed. Delivery contracts: 36 passed on the unchanged reporting inputs; updated ledger validation recorded separately. Full fresh CI/integration remains required |
+| MVP readiness | Prior accepted main capabilities preserved; this follow-up is not integrated or accepted. No full UX PRD, new Done increment, overall MVP or percentage claim |
+
+### Current highest-impact polish queue
+
+1. **Organization/Work context:** replace opaque identifiers with authorized readable context and retain immediate role/actor withdrawal. Keep one shared-shell owner; this slice does not introduce competing metadata reads or header edits.
+2. **Search continuation and empty-state clarity (implemented here):** bounded server traversal can return a valid empty page with a cursor. Explain that searching can continue; do not confuse zero rows on this page with completion or with inaccessible data.
+3. **Keyboard paging/failure return and remaining forms:** audit focus when paging controls retire during loading, plus current conflict/original-command feedback, before the next consumer migration. Developer text/reflow inspection is not whole-workflow focus or device acceptance.
+4. **Supported width/zoom review:** every touched journey retains 320/390/768/1280px, keyboard, role-loss and accessibility checks. Wider human/assistive-technology review remains open.
+
+### UX-007-VS-02-T-02 — Search guidance slice
+
+Owner: PRD-16 (live issue #17 inspected), linked UX-003/005/006/007/008 and UXA-01–08. This polishes existing authorized Card search; it does not implement broader PRD-56 search or another navigation system.
+
+Entry remains Notifications/current header → Search Cards. The component gives first-use instructions without a request. A validated empty continuation says **Keep searching**; a final empty page says **No matches on this page**, preserving what may have appeared on earlier pages. Hints use the successfully applied scope/filter presence, so an already archived search suggests Active work; unsent edits do not silently change the meaning of the result. Current cursor, native submit, acknowledgment, filter drafts, actor checks, error behavior and browser Back are unchanged.
+
+| Required check | Result / scope |
+| --- | --- |
+| Web and browser TypeScript; lint | Passed on frozen final source |
+| Unit/component/admission | 67/67 passed across all five affected files; zero failures/skips; 85.86s |
+| Playwright / responsive / automated accessibility | 4/4 passed at 1280/768/390/320px and 200% root text; zero failures, skips, flaky cases or reporter errors; 45.89s. Actual routed consumers with controlled HTTP/transport in Vite |
+| Covered behavior | No initial/typing query, native Enter, cursor continuation, final empty page, active/archive guidance, retained draft after 503, definite 403 withdrawal, browser Back, page overflow and Axe |
+| Architecture and capacity phase | 7/7 passed; original protected 24-case counterparts/deferrals preserved |
+| Browser registration | Passed: 483 cases / 170 intact files across all four shards; registration is not execution of every case |
+| Delivery contracts | 36/36 passed; zero failures/skips, 203.29s. Executed at `e1187ecf`; reporting script/test/package/initial-ledger blobs are identical at `547a6e05`; no redundant rerun claimed |
+| Updated ledger / history / cycle report | Passed: 1,602 work items / 3,894 criteria, all 821 evidence hashes, exact source paths/Git ancestry and append-only evolution against origin/main; actual cycle report generated. No unsupported new Done claims |
+| Developer visual inspection | Current 320px final-page and 768px continuation text/reflow inspected. Full-page captures include fixed chrome at the scroll position; no approved baseline or full focus/device/assistive-technology acceptance claimed |
+| Fresh full regression / real-service roles / production CSP / immutable release | Pending on the final published head; unchanged existing global-search native scenarios remain mandatory. Local controlled fixtures do not replace them |
+| Integration / review | Draft and unmerged until all applicable required gates and review pass. Task/Test enter Testing with hashed source-bound evidence; broader audit and original parent acceptance stay open |
+
+### Retained failures and evaluation
+
+- Initial baseline delivery validation rejected 83 CRLF-converted Windows evidence files. Each was restored from exact Git bytes only after matching its unchanged recorded SHA-256; strict validation then passed (1,600 baseline items / 3,891 criteria). No evidence record, result, hash, validator or prior source was changed.
+- The initial red Search regression run had six missing-guidance failures and thirteen passes. The final entire affected-file run passes all 67 cases. New deferred-fixture sequencing waits for the existing in-flight read before releasing its response; original assertions, retries and deadlines remain intact.
+- Initial 66-case / four-browser passes remain bound to `e1187ecf`; inspection then identified an ambiguous already-selected archive suggestion. The final scope-aware source and 67-case / four-browser results are retained separately at `547a6e05`.
+
+Hashed manifests (including exact retained stdout), source Git blobs, baseline CI inspection and scoped visual review live under `docs/delivery/evidence/ux-polish-*`. The machine ledger appends a cycle without rewriting earlier history or promoting old evidence to current acceptance.
+
+**Next deliverable:** qualify this exact slice through a draft PR and all required fresh checks. Continue the Organization-context and keyboard-paging/remaining-form audits within the polish milestone. Net-new user-facing scope stays behind its acceptance gate.
+
+---
+
+## Earlier retained delivery checkpoints
+
 Final published903 results (2026-10-18T21:53:08.147Z):22 checks complete,18success/3failure/1skip. Full browser476passed/1failed/2original mail-profile skips; full4=115passed. Notifications57passed/1failed with four later scopes not run. All6 actual903 normal-performance records meet original budgets; artifact provider/inner hashes and synthetic/run identity verified. Local1f1c fix and preceding365 keyboard readiness await fresh final-head qualification. Both qualification items are Testing; global result remains Failed. Only96merged;16pending. Next: Validate final ledger evolution/hashes, commit one metadata checkpoint, then fast-forward existing PR111 branch to the corrected candidate. Freeze that exact head for all22 required checks; merge only after fresh main/head/reviews and successful gates.
 
 Current checkpoint (2026-10-18T21:48:13.434Z): local 1f1c2a6cc3a54afce1683d41788d9b775d806d96 preserves pending revocation feedback through a failed background read. Deterministic red2/green100, web types/lint and identified build Passed. Supporting UI: Board desktop/mobile2Passed with inspected screens; Organization2Failed before any DELETE; original-stream Demo adapter4Failed before revocation. All failures retained. Published903 has two failed browser groups, with full4 still running. Only PR96 merged;16pending. Next: collect last903 diagnostics, validate one metadata checkpoint, publish corrected PR111 head, then require all22 fresh checks before merge.

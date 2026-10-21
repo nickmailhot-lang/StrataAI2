@@ -1,0 +1,54 @@
+{
+  "sourceRevision": "e1187ecfafa9e486e6c3f4e47827ac193c9f8a88",
+  "at": "2026-10-21T02:24:02.944513+00:00",
+  "sourceBlobs": {
+    "apps/web/src/features/search/GlobalSearchPage.tsx": "bd05b3b9784ae288f15c6b6d27a091d644233cc0",
+    "apps/web/src/features/search/GlobalSearchPage.test.tsx": "774e4721ea99c952a749b91b8aa053e4767c7537",
+    "tests/browser/ux-search-guidance.spec.ts": "c36e463c9e1892b06ee59037a7851e0039562143"
+  },
+  "result": "Passed",
+  "scope": "Web/browser TypeScript, lint, architecture and complete browser collection registration",
+  "architecture": {
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0
+  },
+  "registration": {
+    "cases": 483,
+    "files": 170,
+    "shards": [
+      121,
+      122,
+      121,
+      119
+    ]
+  },
+  "allCommandsExitCode": 0,
+  "logs": [
+    {
+      "name": "ux-polish-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624",
+      "rawBase64": "bnBtIG5vdGljZSBydW4gc3RyYXRhYWkyQDAuMS4wIHR5cGVjaGVjaw0KbnBtIG5vdGljZSBydW4gbnBtIC0td29ya3NwYWNlIEBzdHJhdGFhaS93ZWIgcnVuIHR5cGVjaGVjaw0KbnBtIG5vdGljZSBydW4gQHN0cmF0YWFpL3dlYkAwLjEuMCB0eXBlY2hlY2sNCm5wbSBub3RpY2UgcnVuIHRzYyAtLW5vRW1pdA0K"
+    },
+    {
+      "name": "ux-polish-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "rawBase64": "bnBtIG5vdGljZSBydW4gc3RyYXRhYWkyQDAuMS4wIHR5cGVjaGVjazpicm93c2VyDQpucG0gbm90aWNlIHJ1biB0c2MgLXAgdHNjb25maWcuYnJvd3Nlci5qc29uDQo="
+    },
+    {
+      "name": "ux-polish-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "rawBase64": "bnBtIG5vdGljZSBydW4gc3RyYXRhYWkyQDAuMS4wIGxpbnQNCm5wbSBub3RpY2UgcnVuIG5wbSAtLXdvcmtzcGFjZSBAc3RyYXRhYWkvd2ViIHJ1biBsaW50DQpucG0gbm90aWNlIHJ1biBAc3RyYXRhYWkvd2ViQDAuMS4wIGxpbnQNCm5wbSBub3RpY2UgcnVuIGVzbGludCBzcmMgLS1tYXgtd2FybmluZ3M9MA0K"
+    },
+    {
+      "name": "ux-polish-architecture.log",
+      "sha256": "63129934ff25887f61858b74a5ee714122011b9fcb3cd40731e5106ebe1d37f0",
+      "rawBase64": "4pyUIE1WUCBzb3VyY2UgZGlzY292ZXJ5IGRlZmVycyBhbGwgb3JpZ2luYWwgQm9hcmQgY2FwYWNpdHkgY2FzZXMgd2l0aG91dCBhbGxvY2F0aW5nIHRoZWlyIGRhdGFzZXRzICg0NjcuMTQ0M21zKQ0K4pyUIHBvc3QtTVZQIGV4cGxpY2l0IG9wdC1pbiBjb2xsZWN0cyB0aGUgb3JpZ2luYWwgY2FwYWNpdHkgY2FzZXMgd2l0aG91dCBleGVjdXRpbmcgdGhlbSAoNjIuNjY1OG1zKQ0K4pyUIHNtYWxsIHZpcnR1YWxpemF0aW9uIGFuZCBrZXlib2FyZCBjb3JyZWN0bmVzcyBjYXNlcyByZW1haW4gYWN0aXZlIGluIGV2ZXJ5IHBoYXNlICgyNjEuOTU3N21zKQ0K4pyUIHBoYXNlIGd1YXJkIGRldGVjdHMgZWFnZXIgYWxsb2NhdGlvbiBhbmQgYWNjaWRlbnRhbCBkZWZhdWx0IGFjdGl2YXRpb24gKDkyLjAwMTltcykNCuKclCBBUkNILTAyLUZSLTAwOSByZWplY3RzIGRpcmVjdCBhbmQgYWxpYXNlZCBicm93c2VyIGZldGNoIGluIGZlYXR1cmUgY2xpZW50cyAoMTk5MS45MTEybXMpDQrinJQgQVJDSC0wMi1GUi0wMDkgYWxsb3dzIHRoZSBzaGFyZWQgdHJhbnNwb3J0IGFuZCBpc29sYXRlZCB0ZXN0IGZpeHR1cmVzICg0NS43OTY4bXMpDQrinJQgQVJDSC0wMi1GUi0wMDkgcGVybWl0cyBmZWF0dXJlIHJlcXVlc3RzIHRocm91Z2ggYXBpRmV0Y2ggKDEwLjI4ODRtcykNCuKEuSB0ZXN0cyA3DQrihLkgc3VpdGVzIDANCuKEuSBwYXNzIDcNCuKEuSBmYWlsIDANCuKEuSBjYW5jZWxsZWQgMA0K4oS5IHNraXBwZWQgMA0K4oS5IHRvZG8gMA0K4oS5IGR1cmF0aW9uX21zIDQxOTcuMDEyMg0K"
+    },
+    {
+      "name": "ux-polish-shards.log",
+      "sha256": "75a4c55add7debd30c7ff87330ddcc82339c5d742dbc06f9b8dc8af3b3e468aa",
+      "rawBase64": "QnJvd3NlciBzaGFyZCBjb3ZlcmFnZTogNDgzIGNhc2VzIGluIDE3MCBpbnRhY3QgZmlsZXM7IDEyMS8xMjIvMTIxLzExOSBjYXNlcyBhY3Jvc3MgYWxsIGZvdXIgc2hhcmRzLg0K"
+    }
+  ]
+}
