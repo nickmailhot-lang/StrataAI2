@@ -1,0 +1,203 @@
+{
+  "at": "2026-10-20T18:17:02.766Z",
+  "startedAt": "2026-10-20T17:59:22.250Z",
+  "project": "strataai-mvp-browser-bebc12d9822e3239",
+  "exit": 0,
+  "stats": {
+    "startTime": "2026-10-20T18:02:24.313Z",
+    "duration": 865962.8230000001,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "frontendSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+  "testSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+  "result": "Passed",
+  "phases": [
+    {
+      "name": "Start exclusive fixture database",
+      "exit": 0
+    },
+    {
+      "name": "Apply packaged migrations without application build",
+      "exit": 0
+    },
+    {
+      "name": "Provision canonical restricted runtime roles",
+      "exit": 0
+    },
+    {
+      "name": "Provision original disposable identity CI role",
+      "exit": 0
+    },
+    {
+      "name": "Start retained images with original browser-full account fixture",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned api container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned worker container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned web container",
+      "exit": 0
+    },
+    {
+      "name": "Original twelve additional affected cases",
+      "exit": 0
+    },
+    {
+      "name": "Clean only exclusive fixture resources",
+      "exit": 0
+    }
+  ],
+  "primaryError": null,
+  "cleanupError": null,
+  "stockUnchanged": true,
+  "ownedRemaining": {
+    "containers": "",
+    "volumes": "",
+    "networks": ""
+  },
+  "privateSettingsRemoved": true,
+  "logSha256": "21073dd3bd633cb8ad6faa352d3004fe2d334722d14aaf765d79aaf66c0102d6",
+  "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "scope": "Original twelve cases: four sign-in/namedOrganization/Board/Card/exactreturn/privatewithdrawal profiles1280/768200%/390/320; three mouse/touch scrolling cancellation cases; original persisted phone touch reorder; four Work create/assign/edit/filter/return profiles. All original predicates/assertions/deadlines retained, retries0/skips0. Exact271da client/test inputs hash-bound; retained unchanged hAPI/Worker and exclusive restricted PostgreSQL. Own resources/private credentials removed, protectedStock unchanged. Supporting mixed-client run, not immutableCI or production deployment.",
+  "fixture": {
+    "at": "2026-10-20T17:59:09.983Z",
+    "root": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle101-owned-browser-fixture",
+    "project": "strataai-mvp-browser-bebc12d9822e3239",
+    "ports": {
+      "api": 15300,
+      "worker": 15301,
+      "web": 15302,
+      "identity": 19090
+    },
+    "providerInstance": "b2eb2bb4-8c5d-41ea-99a0-5aa7a08bfcdf",
+    "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+    "qualifiedServerHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+    "frontendSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "testSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "frontendDist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle67-invitation-ci-repair\\apps\\web\\dist-cycle101",
+    "frontendBuild": "Passed exact new client metadata and four assets; controller must verify actual served hashes.",
+    "testPaths": [
+      {
+        "path": "tests/browser/organization-context-name.spec.ts",
+        "sha256": "ff8f5af8736b47eab1ff2df6bdb52a0a9b5755f76ba054edbdc3e4eb0e867742"
+      },
+      {
+        "path": "tests/browser/work-usability.spec.ts",
+        "sha256": "8e29d40932f7dde6e4a1898eaea197ac3a5a791f7692152370760163d7585e3d"
+      },
+      {
+        "path": "tests/browser/kanban-touch.spec.ts",
+        "sha256": "a94349269bd150a180b903fc25e7bc32e12dd302af691b53029378ed9cd403e5"
+      },
+      {
+        "path": "tests/browser/kanban-scroll.spec.ts",
+        "sha256": "926db525e31231a4f765fa8a91d67f80ba5e06eecf2eb5fe8648537f68675651"
+      }
+    ],
+    "fixtureChanges": [
+      {
+        "path": "compose.release.yml",
+        "originalSha256": "05c50091b01217d535340cc1ee1bc6d3e060e789a2492e00aa16fd1e84dcb0c7",
+        "fixtureSha256": "2b575667a08160741afdcda76f7500800f41e1da5398baba998a756e2eac57d3",
+        "edits": [
+          {
+            "from": "\"8080:8080\"",
+            "to": "\"127.0.0.1:15300:8080\""
+          },
+          {
+            "from": "\"8081:8081\"",
+            "to": "\"127.0.0.1:15301:8081\""
+          },
+          {
+            "from": "\"8088:80\"",
+            "to": "\"127.0.0.1:15302:80\""
+          }
+        ]
+      },
+      {
+        "path": "scripts/ci/compose.auth-test.yml",
+        "originalSha256": "a96d0dba516a5d295a8e823d6fb264c2f609e79458768bd8b1b98fc7f534f4e3",
+        "fixtureSha256": "ed0b9ded6c89c159e580eb5dcee112cf39a17b6a73f0e2005f1743686802fb89",
+        "edits": [
+          {
+            "from": "http://localhost:8088",
+            "to": "http://localhost:15302"
+          }
+        ]
+      }
+    ],
+    "localClientOverrideSha256": "a5d51130ffe444ea9f0c6609ce63750219e21ccb0a00d8e356df25251fe2a5a6",
+    "expectedCases": 12,
+    "scope": "Freshowned source-free retainedAPI/Worker/PG browser-full fixture plus readonly localentry-return client and unchanged context/work/scroll/touch tests frontend. API/Workerimages remain c3e/h; cliententry-return client and unchanged context/work/scroll/touch tests is separatelybound, so thisis supporting mixed-client validation, never currentimmutableCI certification. No productiondeployment or originalDemo/stockWorker change. Originalguarded fixture uses CI=true as explicitlocalmode only. Credentials in privatework only; no services started by preparation."
+  },
+  "runtime": {
+    "at": "2026-10-20T18:02:12.248Z",
+    "project": "strataai-mvp-browser-bebc12d9822e3239",
+    "api": {
+      "service": "strataai-api",
+      "mode": "production",
+      "revision": "c3e495e184f4094b5467e1390572a536fb80669f",
+      "version": "0.1.0-1937"
+    },
+    "client": {
+      "revision": "271da4900f99e2c97e42d99932ec424b2b705a75",
+      "version": "0.1.0-local-card-entry-return"
+    },
+    "servedAssets": [
+      {
+        "path": "build-metadata.json",
+        "sha256": "c7c679845f1b13e91ead1102db93e38a536ced433998af8582aa987066e38157",
+        "size": 97
+      },
+      {
+        "path": "index.html",
+        "sha256": "61975a71b02a699ad14b34fa6eafa665553238e6e24c61bb39c9e53120a6a2f6",
+        "size": 561
+      },
+      {
+        "path": "assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666",
+        "size": 561
+      },
+      {
+        "path": "assets/index-BywiCvdp.js",
+        "sha256": "0d48abb6c10a6174674a836421150b3eb2031119db9193b34e985a74464dbce7",
+        "size": 1638573
+      }
+    ],
+    "frontendSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "testSource": "271da4900f99e2c97e42d99932ec424b2b705a75",
+    "containers": [
+      {
+        "service": "api",
+        "id": "313ceff3d5f13d26fdd85682fe49ea5276c98fa16363b606305d80d7c77fc4c0",
+        "image": "sha256:6843e40e15b93bc190d6a1d8ea7a0dd7859cecb8cdb2c3bba301e7f2430a2c27",
+        "startedAt": "2026-10-20T18:01:06.443878202Z"
+      },
+      {
+        "service": "worker",
+        "id": "e36e0fe2f2106fdd08cf53fac55a945e3ec7f87f084a7196eff75710c4be7afc",
+        "image": "sha256:ffde817b2729a1dd1d3b74c6c704b0127b9477d782d61c359fa4dde8d1d54897",
+        "startedAt": "2026-10-20T18:01:04.911939061Z"
+      },
+      {
+        "service": "web",
+        "id": "feed6231074062578c96039d8f187359796f73e2a79df77b6d1da22738dd2234",
+        "image": "sha256:6e0ecd1435c3b7e150109c74413dd992e0bd5c0ed0f062fc05f21cf365ec23c8",
+        "startedAt": "2026-10-20T18:01:50.564578403Z"
+      }
+    ],
+    "scope": "Retainedh API/Worker images with exact offline-fixed readonlyfrontend override and hashverifiedservedassets, real isolatedPG and originalauth/identityprofile. Supporting mixed-client runtime only, not immutableCI or productiondeployment."
+  },
+  "reportSha256": "134bc79148e2927b92c4822632b27f4e1b537aca0097e35ce58c3368c1d5f9ce"
+}

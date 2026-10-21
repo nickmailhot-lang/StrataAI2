@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-20T10:31:32.780Z",
+  "result": "Passed",
+  "source": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+  "quality": {
+    "startedAt": "2026-10-20T09:44:23.526Z",
+    "at": "2026-10-20T10:22:44.070Z",
+    "source": "c940a6501e64c96bb90ee2ce42a0396059c97d56",
+    "result": "Passed",
+    "results": [
+      {
+        "name": "types",
+        "exit": 0,
+        "signal": null,
+        "path": "work/cycle58-types-native.txt",
+        "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "name": "lint",
+        "exit": 0,
+        "signal": null,
+        "path": "work/cycle58-lint-native.txt",
+        "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      {
+        "name": "regressions",
+        "exit": 0,
+        "signal": null,
+        "path": "work/cycle58-regressions-native.txt",
+        "sha256": "16ae7a144c6ac36a888c41b5a83df2940c2f7e2573d124d24d13be0c51a280db"
+      }
+    ]
+  },
+  "summary": {
+    "total": 2966,
+    "passed": 2942,
+    "failed": 0,
+    "pending": 24
+  },
+  "caseIdentity": {
+    "original": 2963,
+    "originalStatusesUnchanged": true,
+    "added": [
+      {
+        "id": "src/app/OrganizationContextLabel.offline.test.tsx::PRD-03-VS-01-T-02: immediately withdraws the header name and its subscription when the browser goes offline::report-case-0",
+        "status": "passed"
+      },
+      {
+        "id": "src/app/OrganizationContextLabel.offline.test.tsx::PRD-03-VS-01-T-02: an in-flight canonical response cannot restore a name after disconnection::report-case-1",
+        "status": "passed"
+      },
+      {
+        "id": "src/app/OrganizationContextLabel.offline.test.tsx::PRD-03-VS-01-T-02: refuses offline refreshes and requires fresh authorized reads on reconnection::report-case-2",
+        "status": "passed"
+      }
+    ],
+    "originalDeferred": [
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity bounds mounted work for 5000 Cards and renders the canonical end after scrolling::report-case-0",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity bounds mounted Lists at 200 and restores a retained Board scroll position after remount::report-case-1",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity keeps admitted open work mounted and makes its focus visible after a detail closes::report-case-2",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity preserves active drag identities while their original row scrolls out of view::report-case-3",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity keeps the drag viewport when source focus is restored in cards::report-case-4",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity keeps the drag viewport when source focus is restored in lists::report-case-5",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity keeps the horizontal drag viewport when focus returns inside its owning List::report-case-6",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity still reveals a different focused row while another Card is being dragged::report-case-7",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity keeps the sensor source anchored while earlier row estimates refine, then restores canonical layout::report-case-8",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity refreshes moved drop positions after measured window layout changes only during a drag: false::report-case-9",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity refreshes moved drop positions after measured window layout changes only during a drag: true::report-case-10",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity keeps the List owning an active Card drag mounted::report-case-11",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity tabs forward and backward across a window boundary in canonical order::report-case-12",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity waits for the canonical boundary handle instead of skipping it during temporary disablement::report-case-13",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity retires pending boundary focus after a user focus choice elsewhere::report-case-14",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity retires pending boundary focus after a user pointer choice elsewhere::report-case-15",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity preserves normal Board markup and all Cards below the virtualization threshold::report-case-16",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity bounds work and clamps the viewport after a canonical snapshot removes most rows::report-case-17",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity does not skip offscreen Cards when a readonly List is nested in the horizontal window::report-case-18",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity remeasures variable-height Cards without moving the retained scroll anchor::report-case-19",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity restores the same canonical Card range using measured heights after a List unmounts::report-case-20",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity invalidates another width’s row heights while retaining the canonical Card anchor::report-case-21",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity uses resolved CSS-variable theme spacing to mount the actual distant List::report-case-22",
+      "src/features/kanban/BoardWindow.capacity.test.tsx::Post-MVP Board capacity reuses mounted content across scroll frames and still renders authoritative item changes::report-case-23"
+    ],
+    "currentCaptionAndScrollControls": 31,
+    "method": "Derived keys use file, fullName and per-file report ordinal.190 parameterized titles repeat; all existing test source files and locked framework inputs are unchanged, so no original case count is reduced or case reordered.",
+    "originalDeferredStatus": "skipped (the original24 explicit capacity deferrals, also reported by Vitest as numPendingTests24)"
+  },
+  "reportSha256": "790e5d2590a4a29bbb6701c655a0c46666ace1355b24b15f4c52ebda2ffd9244",
+  "baselineReportSha256": "92e18c4c129f6350dc348984a8ce28d8783b8cea7b4cc425fab3592e517e5d5d",
+  "sourceBinding": {
+    "published117": "3024b2af7d5c594c4327e4148211d15a81f7b5cf",
+    "firstUseSource": "47745b34a4c2970d9c6168d85ffd4941313d4aeb",
+    "frontendInputsUnchanged": true,
+    "scope": "Application source remained frozen while metadata was committed. Exact complete frontend and locked dependency inputs match both source branches. No current-head CI status is inherited."
+  },
+  "scope": "Actual new complete frontend execution at the offline fix:2942 passed,0 failed,24 original capacity deferrals. All2963 original case identities/outcomes and24 deferrals preserved; only three dedicated offline controls added. All31 caption/scroll controls passed. Type and lint children also exited0. Original earlier failed runs remain retained; no parent PRD/MVP or current CI/main acceptance inferred."
+}

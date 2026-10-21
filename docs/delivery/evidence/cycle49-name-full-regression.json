@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-20T06:32:47.305Z",
+  "head": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "result": "Passed",
+  "source": {
+    "apps/web/src/app/OrganizationContextLabel.tsx": "d316c712962623f96fb1a4830c3837bcc4284dfcf42c9acac4e18ed13d2b52c0",
+    "apps/web/src/app/OrganizationContextLabel.test.tsx": "3f198012c74e77466719d5d1e3cfb32453ab8c859def640f5a8126f623b530f9",
+    "apps/web/src/app/InternalAppShell.tsx": "d04f600ea2436a499227d162fc5f61764fb896973c43c3b089c1cdbdf4161d1a",
+    "apps/web/src/app/App.test.tsx": "f4d5fa1cfbf6bb275096ded500234ecf15e1fe5aff75e5410d05273d343481e1"
+  },
+  "fullSuite": {
+    "total": 2959,
+    "passed": 2935,
+    "failed": 0,
+    "pending": 24
+  },
+  "all2959CaseIdentitiesUnchanged": true,
+  "original24DeferralIdentitiesUnchanged": true,
+  "original5000msDeadlinesAssertionsAndZeroRetriesUnchanged": true,
+  "repositoryAndCIGatesUnchanged": true,
+  "execution": {
+    "startedAt": "2026-10-20T05:56:37.248Z",
+    "finishedAt": "2026-10-20T06:31:04.898Z",
+    "base": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+    "sourceState": "Exact working-tree hashes before sourcecommit; full unchanged-source ancestry is separately verified.",
+    "source": {
+      "apps/web/src/app/OrganizationContextLabel.tsx": "d316c712962623f96fb1a4830c3837bcc4284dfcf42c9acac4e18ed13d2b52c0",
+      "apps/web/src/app/OrganizationContextLabel.test.tsx": "3f198012c74e77466719d5d1e3cfb32453ab8c859def640f5a8126f623b530f9",
+      "apps/web/src/app/InternalAppShell.tsx": "d04f600ea2436a499227d162fc5f61764fb896973c43c3b089c1cdbdf4161d1a",
+      "apps/web/src/app/App.test.tsx": "f4d5fa1cfbf6bb275096ded500234ecf15e1fe5aff75e5410d05273d343481e1"
+    },
+    "localExecutionProfile": "single-worker",
+    "originalAssertionsDeadlinesAndSkipsUnchanged": true,
+    "repositoryOrCIConcurrencyChanged": false,
+    "exit": 0,
+    "signal": null,
+    "result": "Passed",
+    "summary": {
+      "total": 2959,
+      "passed": 2935,
+      "failed": 0,
+      "pending": 24,
+      "suites": 270
+    },
+    "reportSha256": "4f9174c60eb467d855593de9c574300a2af51a00b55cc5ee784dc5861ea957ef",
+    "nativeLogSha256": "d39dd866622df055bd6f44ab70b93f4c7f418f0e618c084a6ac9b1e71f18919f",
+    "scope": "Actual complete existing frontend suite with newcaption/privacy controls. Original deferred/skipped cases stay separately reported; no browser or productacceptance inferred. Default-profile19failures remainretained; separatelocal single-worker execution does not establishtheir exclusivecause or waive future immutableCI."
+  },
+  "historicalDefaultAggregate": {
+    "passed": 2916,
+    "failed": 19,
+    "pending": 24,
+    "artifactSha256": "4d543c1fb994f5dd22dc1a91f224bf1fc27fc866de714adc50f9d4c5d467a416",
+    "preserved": true,
+    "cause": "Exclusivecause unproven; no softwarefix or passrelabel asserted. Documented complete isolatedlocal profile passed without source/assertion/deadline/skip changes. NewimmutableCI remains required."
+  },
+  "provenance": "Execution began atbd121 plus exactworkingtree app/test bytes, preservedbyte-identically throughQtracking adoption and R6sourcecommit. No app code changed during either execution. Source/hashes prove scope even though finalreport records currentHEADR6.",
+  "scope": "Complete localfrontend regression only. Actualnative12/currentimmutableCI/review/mainintegration remainrequired before featureDone."
+}

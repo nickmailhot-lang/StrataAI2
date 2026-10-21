@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-20T21:42:02.613Z",
+  "result": "Failed",
+  "number": 117,
+  "head": "aaf66a29c068b670a20647e5bdbd02834f8e1cbf",
+  "build": "ebbc65261cd6d6e9b48515fc2bf9b30ac64444e6",
+  "run": 39475252622,
+  "job": 118834676158,
+  "passed": 124,
+  "failed": 1,
+  "artifact": 12299229319,
+  "sha256": "3c650ce461580b08d0d9c16b2bab91c723791d3d9acdfa60545e24c2f719890e",
+  "innerChecksums": 62,
+  "item": "PRD-01-VS-05-T-01-TEST-02",
+  "finding": "Original native navigation recovery at1280px fails to find Retry navigation confirmation. Official trace shows aborted first Card observation followed by another successful same-query POST within the same visit while live Card detail updated. Foreground admission may resume a failed original without explicit retry; regression reproduction and product correction required. Rendered actual failure screenshot inspected; original assertions retained.",
+  "zip": "work/cycle131-p3-browser3.zip",
+  "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39475252622/job/118834676158",
+  "owner": "Current integration owner",
+  "scope": "Exact current-head official terminal CI failure retained independently from prior local passes. Outer archive SHA256 and all listed inner file checksums verified; metadata binds actual immutable CI build. No manual CI rerun, skip, timeout increase, acceptance reduction, new Done or merge qualification."
+}

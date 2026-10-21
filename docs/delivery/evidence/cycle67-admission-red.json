@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-20T13:38:34.592Z",
+  "result": "Failed",
+  "source": "1666ec9779c6ff7ae52c1b485c4b1aa1ce88b346",
+  "passed": 25,
+  "failed": 3,
+  "skipped": 0,
+  "originalControlsPassed": 25,
+  "newRegressionsFailed": 3,
+  "helperAtRedByteIdenticalToPublishedP": true,
+  "redNativeSha256": "8489bd21fce1c36993520731808e7cdc74be5cef5abb1dc2ad06b8ba20e903ec",
+  "sourceHelperSha256": "12d0dd964706a5741867142f142209f882e318d734deecc184b164259293867a",
+  "scope": "Actual committed red source retains old P helper. All25 original admission controls passed; three new independent-stream, closed-stream and new-document regressions failed. Initial narrower closed/document probe25/2plus1Passed retained separately; no red case counted as passing."
+}

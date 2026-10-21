@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-20T13:57:38.577Z",
+  "result": "Passed",
+  "source": "ac55be7025ad1df93c09fed8f68b679517516486",
+  "passed": 31,
+  "failed": 0,
+  "skipped": 0,
+  "nativeSha256": "dc1fd79317f1d2d2a636740b1d9d498a1d7f7a33f5ca6d763834538784397b45",
+  "originalAssertionsPreserved": {
+    "organization-context-name.spec.ts": 78,
+    "organization-invitation-role-live.spec.ts": 88,
+    "organization-member-live.spec.ts": 158
+  },
+  "prior10MethodBodiesUnchanged": true,
+  "browserTypesExit": 0,
+  "scope": "31 admission and canonical-event controls pass at F2. Identical canonical IDs/full payload collapse across independent connections; distinct IDs retain exact-count failures, conflicting or unidentified events throw. All original 324 assertions in three affected live/context files and original invitation invocation method bodies retained. Exact scroll equality retained; sample baseline after fonts/two animation frames. Product/server/dependency/CI policy unchanged. Additional original fourteen running workflows pending."
+}

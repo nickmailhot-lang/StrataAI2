@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-21T04:57:24.987Z",
+  "revision": "49c5bbce0c420561da549bc36395f61dc646de79",
+  "candidateRevision": "49c5bbce0c420561da549bc36395f61dc646de79",
+  "note": "Retained supporting development results, not exact-head qualification: 143 component cases in seven files and 45 in four canvas/indicator files passed before final presentation refinements. A requested nonexistent useDragHandleFocus.test.tsx was not executed; actual DragHandleFocus.test.tsx is included in final twelve-file qualification. Original BoardWindow24 functional counterpart unchanged.",
+  "artifacts": [
+    {
+      "name": "trello-polish-unit.log",
+      "sha256": "de7719486e49f463b162a2d65d3429fd65ab628dc9e87387ef6a7683722cb196",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/organizations/OrganizationHome.test.tsx src/app/OrganizationContextLabel.test.tsx src/app/OrganizationContextLabel.offline.test.tsx src/features/kanban/BoardCardLink.test.tsx src/features/kanban/ListDragColumn.test.tsx src/features/kanban/BoardScreen.drag.test.tsx src/features/kanban/BoardScreen.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\nNot implemented: Window's scrollTo() method\r\nNot implemented: Window's scrollTo() method\r\nNot implemented: Window's scrollTo() method\r\nNot implemented: Window's scrollTo() method\r\n\r\n Test Files  7 passed (7)\r\n      Tests  143 passed (143)\r\n   Start at  21:35:16\r\n   Duration  178.34s (environment 39%, import 37%, tests 17%, setup 6%, transform 2%)\r\n\r\n"
+    },
+    {
+      "name": "trello-polish-canvas-regressions.log",
+      "sha256": "2e322a717d886af01bee2563d86151bd99a314d91bcf89e07a25c896ffbcf37c",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/BoardWindow.test.tsx src/features/kanban/useDragHandleFocus.test.tsx src/features/kanban/CardMemberIndicators.test.tsx src/features/kanban/CardLabelIndicators.test.tsx src/features/kanban/ListPositionControls.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  4 passed (4)\r\n      Tests  45 passed (45)\r\n   Start at  21:39:03\r\n   Duration  17.40s (import 47%, environment 27%, tests 20%, setup 5%, transform 1%)\r\n\r\n"
+    }
+  ]
+}

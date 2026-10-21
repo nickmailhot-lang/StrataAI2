@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-21T04:57:24.987Z",
+  "revision": "efd448582ad4c7c3aa2561b2d12d2a6031eca0fa",
+  "candidateRevision": "49c5bbce0c420561da549bc36395f61dc646de79",
+  "note": "At efd44858 web/browser TypeScript, strict lint, architecture7 and browser registry487/171 all passed; compiler passed13.32s with existing chunk warning and development identity. Delivery contracts36 passed. Candidate changes only new browser rollback expectations; application/unit/config blobs identical. These results retain actual execution revision and are not immutable release qualification.",
+  "artifacts": [
+    {
+      "name": "trello-polish-final-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624",
+      "content": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\n"
+    },
+    {
+      "name": "trello-polish-final-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "content": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "name": "trello-polish-final-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "content": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "name": "trello-polish-final-architecture.log",
+      "sha256": "9aa017edeee8d1b5b4c9f21206160a2eae316bc7c783db182b88e6f30cc09bc0",
+      "content": "✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (526.1735ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (69.8474ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (354.7776ms)\r\n✔ phase guard detects eager allocation and accidental default activation (113.8317ms)\r\n✔ ARCH-02-FR-009 rejects direct and aliased browser fetch in feature clients (2216.3865ms)\r\n✔ ARCH-02-FR-009 allows the shared transport and isolated test fixtures (62.3381ms)\r\n✔ ARCH-02-FR-009 permits feature requests through apiFetch (13.7959ms)\r\nℹ tests 7\r\nℹ suites 0\r\nℹ pass 7\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 4558.7859\r\n"
+    },
+    {
+      "name": "trello-polish-final-shards.log",
+      "sha256": "fe876b114c0d8d5a0b073b2075d01d5e95555ddded8f9ef1be67cac8e17e8825",
+      "content": "Browser shard coverage: 487 cases in 171 intact files; 123/122/123/119 cases across all four shards.\r\n"
+    },
+    {
+      "name": "trello-polish-production-compile.log",
+      "sha256": "be76c3fb3548a8e90525331222a09f061047836105e8f84842d5b73cfb18e565",
+      "content": "vite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12060 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/build-metadata.json            0.04 kB │ gzip:   0.06 kB\r\ndist/index.html                     0.57 kB │ gzip:   0.34 kB\r\ndist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\ndist/assets/index-BHks08r9.js   1,641.54 kB │ gzip: 457.62 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 13.32s\r\n"
+    },
+    {
+      "name": "trello-polish-delivery-tests.log",
+      "sha256": "20ff801f11ae4ce45cb2390a5646d30b25810ea624833fba8719b0713adf9b68",
+      "content": "npm notice run strataai2@0.1.0 delivery:test\r\nnpm notice run node --test tests/delivery-progress.test.mjs\r\n✔ PRD-25-VS-03/AC-01: complete real backlog retains all 100 definitions, obligations and parent links (105414.6943ms)\r\n✔ PRD-25-VS-03/AC-01: losing a PRD or architecture definition fails closed (291.5378ms)\r\n✔ PRD-25-VS-03/AC-01: losing original FR or AC cannot shrink acceptance denominator (94.2697ms)\r\n✔ PRD-25-VS-03/AC-01: source mutation cannot inherit frozen audit (11.3991ms)\r\n✔ PRD-25-VS-03/AC-01: missing slice requirement mapping is rejected (117.2873ms)\r\n✔ PRD-25-VS-03/AC-02: duplicate item IDs, orphan items and acceptance are refused (2.4988ms)\r\n✔ PRD-25-VS-03/AC-02: untraced test and unknown dependencies are refused (0.7441ms)\r\n✔ PRD-25-VS-03/AC-02: lifecycle runs in order and does not skip validation (3.3803ms)\r\n✔ PRD-25-VS-03/AC-02: Blocked requires reason, owner and exact prior-state resume (1.3231ms)\r\n✔ PRD-25-VS-03/AC-02: Implemented needs source identity, never just a state label (1.5188ms)\r\n✔ PRD-25-VS-03/AC-02: state and append-only history must agree (1.1454ms)\r\n✔ PRD-25-VS-03/AC-02: a new item cannot start at Done to bypass lifecycle (1.152ms)\r\n✔ PRD-25-VS-03/AC-03: a Test cannot claim Passed without executed evidence (1.0538ms)\r\n✔ PRD-25-VS-03/AC-03: complete synthetic evidence passes all gates (0.6034ms)\r\n✔ PRD-25-VS-03/AC-03: missing tests blocks Done (1.3111ms)\r\n✔ PRD-25-VS-03/AC-03: missing acceptance blocks Done (0.6647ms)\r\n✔ PRD-25-VS-03/AC-03: missing security blocks Done (1.0095ms)\r\n✔ PRD-25-VS-03/AC-03: missing roles blocks Done (0.3883ms)\r\n✔ PRD-25-VS-03/AC-03: missing regressions blocks Done (0.4216ms)\r\n✔ PRD-25-VS-03/AC-03: missing integration blocks Done (0.3443ms)\r\n✔ PRD-25-VS-03/AC-03: missing tracking blocks Done (0.3687ms)\r\n✔ PRD-25-VS-03/AC-03: missing review blocks Done (0.3453ms)\r\n✔ PRD-25-VS-03/AC-03: missing ux blocks Done (0.3853ms)\r\n✔ PRD-25-VS-03/AC-03: missing build blocks Done (0.3956ms)\r\n✔ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (0.4513ms)\r\n✔ PRD-25-VS-03/AC-03: unverified, stale, failed or skipped evidence cannot satisfy acceptance (0.7897ms)\r\n✔ PRD-25-VS-03/AC-03: unknown critical regressions and unpassed test block completion (0.7868ms)\r\n✔ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (0.591ms)\r\n✔ PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unvalidated work (1.5795ms)\r\n✔ PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done (1.0452ms)\r\n✔ PRD-25-VS-03/AC-04: validated Done work contributes completion counts and recent increments (0.5877ms)\r\n✔ PRD-25-VS-03/AC-05: prior states, criteria and failed evidence cannot be rewritten or deleted (2.316ms)\r\n✔ PRD-25-VS-03/AC-03: exact Git integration, evidence hashes and repository path boundaries (3560.5028ms)\r\n✔ PRD-25-VS-03/AC-04: real CLI reports machine-readable progress and exits nonzero for bad action (124685.6084ms)\r\n✔ PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its refusal tests (1.931ms)\r\n✔ PRD-25-VS-03/AC-05: CLI can validate evolution against the actual retained ledger in Git (52667.9317ms)\r\nℹ tests 36\r\nℹ suites 0\r\nℹ pass 36\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 288868.7879\r\n"
+    }
+  ]
+}

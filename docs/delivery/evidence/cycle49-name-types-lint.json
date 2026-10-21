@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-20T05:46:24.495Z",
+  "result": "Passed",
+  "sourceState": "Exact current working-tree hashes; no commit/main acceptance inferred.",
+  "source": {
+    "src/app/OrganizationContextLabel.tsx": "d316c712962623f96fb1a4830c3837bcc4284dfcf42c9acac4e18ed13d2b52c0",
+    "src/app/OrganizationContextLabel.test.tsx": "3f198012c74e77466719d5d1e3cfb32453ab8c859def640f5a8126f623b530f9",
+    "src/app/InternalAppShell.tsx": "d04f600ea2436a499227d162fc5f61764fb896973c43c3b089c1cdbdf4161d1a",
+    "src/app/App.test.tsx": "f4d5fa1cfbf6bb275096ded500234ecf15e1fe5aff75e5410d05273d343481e1"
+  },
+  "results": [
+    {
+      "name": "types",
+      "startedAt": "2026-10-20T05:44:01.666Z",
+      "finishedAt": "2026-10-20T05:46:15.715Z",
+      "exit": 0,
+      "signal": null,
+      "artifact": "work/cycle49-name-final-types-native.txt",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "command": [
+        "--noEmit"
+      ]
+    },
+    {
+      "name": "lint",
+      "startedAt": "2026-10-20T05:46:15.716Z",
+      "finishedAt": "2026-10-20T05:46:24.493Z",
+      "exit": 0,
+      "signal": null,
+      "artifact": "work/cycle49-name-final-lint-native.txt",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "command": [
+        "src/app/OrganizationContextLabel.tsx",
+        "src/app/OrganizationContextLabel.test.tsx",
+        "src/app/InternalAppShell.tsx",
+        "src/app/App.test.tsx",
+        "--max-warnings=0"
+      ]
+    }
+  ],
+  "sourceCommit": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+  "committedSourceHashesExactlyMatchExecutedWorkingTree": true
+}

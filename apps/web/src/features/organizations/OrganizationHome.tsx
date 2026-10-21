@@ -32,6 +32,8 @@ import { OrganizationCreationDialog } from './OrganizationCreationDialog';
 import { organizationTypeLabel } from './organizationTypes';
 import { SecondaryActions } from '../../app/SecondaryActions';
 import { NavigationConfirmation } from '../../app/NavigationConfirmation';
+import { workExperienceEnabled } from '../../app/workExperience';
+import ViewKanbanOutlinedIcon from '@mui/icons-material/ViewKanbanOutlined';
 
 type OrganizationSummary = {
   organization: {
@@ -332,7 +334,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   }
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Stack spacing={2} sx={{ overflowWrap: "anywhere" }}>
+      <Stack spacing={2} sx={{ overflowWrap: 'anywhere', ...(workExperienceEnabled && { '& .MuiButton-root': { textTransform: 'none' } }) }}>
         {!organizationId && data && liveActor && !loadError &&
           <NavigationConfirmation key={`navigation-global-${liveActor}`} target={{ kind: 'context', organization: null }} />}
         {liveNotice && <Typography role="status" aria-live="polite" aria-atomic="true">{liveNotice}</Typography>}
@@ -346,6 +348,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
           <Button component={Link} to="/app/invitations">Invitations</Button>
           {!organizationId && <Button component={Link} to="/app/lifecycle">Organization lifecycle management</Button>}
         </Stack>
+        {organizationId && workExperienceEnabled && <Typography variant="overline" color="text.secondary">Work</Typography>}
         <Typography variant="h4" component="h1" ref={heading} tabIndex={-1}>
           {organizationId
             ? (organization?.name ?? "Organization boards")
@@ -364,6 +367,9 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
           <CircularProgress aria-label={organizationId ? "Loading boards" : "Loading organizations"} />
         ) : (
           <>
+            {organizationId && currentOrganization && workExperienceEnabled && <Typography variant="body2" color="text.secondary">
+              Boards in this Organization · {['Owner', 'Admin', 'Member'][currentOrganization.role]}
+            </Typography>}
             {organization && organizationTypeLabel(organization.type) && (
               <Typography>Organization type: {organizationTypeLabel(organization.type)}</Typography>
             )}
@@ -400,33 +406,66 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
               data.boards.length === 0 ? (
                 <Typography>{cursor ? "No accessible boards on this page. Return to the first page to check earlier boards." : "No accessible boards yet."}</Typography>
               ) : (
-                data.boards.map((board) => (
+                <Box component="section" aria-label="Boards in this Organization" sx={workExperienceEnabled ? {
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap: 2,
+                } : { display: 'contents' }}>
+                {data.boards.map((board) => (
                   <Button
                     key={board.id}
                     component={Link}
                     to={`/app/${organizationId}/boards/${board.id}`}
                     aria-label={board.name.replace(/\s+/g, " ").trim()}
-                    sx={{ justifyContent: "flex-start" }}
+                    sx={workExperienceEnabled ? {
+                      display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start',
+                      textAlign: 'left', textTransform: 'none', p: 0, minWidth: 0, overflow: 'hidden',
+                      border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'background.paper', color: 'text.primary',
+                      '&:hover': { borderColor: 'primary.main', bgcolor: 'background.paper' },
+                      '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 2 },
+                    } : { justifyContent: 'flex-start' }}
                   >
-                    {board.name}
+                    {workExperienceEnabled ? <>
+                      <Box component="span" aria-hidden="true" sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'action.hover', p: 2 }}>
+                        <ViewKanbanOutlinedIcon /><Typography component="span" variant="body2">Board</Typography>
+                      </Box>
+                      <Box component="span" sx={{ display: 'block', p: 2, minWidth: 0 }}>
+                        <Typography component="span" sx={{ display: 'block', fontWeight: 600, overflowWrap: 'anywhere' }}>{board.name}</Typography>
+                        <Typography component="span" variant="body2" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>{organization?.name}</Typography>
+                      </Box>
+                    </> : board.name}
                   </Button>
-                ))
+                ))}
+                </Box>
               )
             ) : data.organizations.length === 0 ? (
               <Typography>
                 {cursor || data.nextCursor ? "No available organizations on this page. Continue to check later organizations." : "You have no organizations yet. Create one to begin."}
               </Typography>
             ) : (
-              data.organizations.map((item) => (
+              <Box component="section" aria-label="Organizations you can access" sx={workExperienceEnabled ? { display: 'grid', gap: 1.5 } : { display: 'contents' }}>
+              {data.organizations.map((item) => (
                 <Button
                   key={item.organization.id}
                   component={Link}
                   to={`/app/${item.organization.id}`}
-                  sx={{ justifyContent: "flex-start" }}
+                  aria-label={item.organization.name}
+                  aria-describedby={workExperienceEnabled ? `organization-role-${item.organization.id}` : undefined}
+                  sx={workExperienceEnabled ? {
+                    display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', textTransform: 'none',
+                    p: 2, minWidth: 0, border: '1px solid', borderColor: 'divider', borderRadius: 2,
+                    bgcolor: 'background.paper', color: 'text.primary',
+                    '&:hover': { borderColor: 'primary.main', bgcolor: 'background.paper' },
+                    '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 2 },
+                  } : { justifyContent: 'flex-start' }}
                 >
-                  {item.organization.name}
+                  {workExperienceEnabled ? <>
+                    <Typography component="span" sx={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{item.organization.name}</Typography>
+                    <Typography component="span" id={`organization-role-${item.organization.id}`} variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      {['Owner', 'Admin', 'Member'][item.role]}
+                    </Typography>
+                  </> : item.organization.name}
                 </Button>
-              ))
+              ))}
+              </Box>
             )}
           </>
         )}

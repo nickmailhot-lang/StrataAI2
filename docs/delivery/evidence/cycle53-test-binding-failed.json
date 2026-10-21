@@ -1,0 +1,28 @@
+{
+  "startedAt": "2026-10-20T07:09:36.576Z",
+  "finishedAt": "2026-10-20T07:12:53.364Z",
+  "head": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "ledgerSha256": "d70f03332d5a73aa2d8de66ce50d5f443279cca50669a26ec41cb06bd9d93689",
+  "items": 1603,
+  "done": 66,
+  "evidence": 831,
+  "result": "Failed",
+  "results": [
+    {
+      "name": "contracts",
+      "exit": 1,
+      "signal": null,
+      "artifact": "work/cycle53-tracking-current-contracts-native.txt",
+      "sha256": "b4725e7e15e41487e1e7e79d40a9bd032622c7c725a4f33c70f08b29e8080415"
+    },
+    {
+      "name": "validation",
+      "exit": 1,
+      "signal": null,
+      "artifact": "work/cycle53-tracking-current-validation-native.txt",
+      "sha256": "1c9f5fb20202571fc4bd7103743a1cc33efac2a37046a76a010fd9c0a6b36d2e"
+    }
+  ],
+  "cause": "Criterion was rebound but Test01 tests gate still referenced R6. Original validator correctly refused the stale Passed test gate.",
+  "resolution": "Preserve original R6 gate and failure; bind tests gate to actual R7 38-case pass. No test or validator changes."
+}

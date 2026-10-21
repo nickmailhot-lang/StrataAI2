@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-20T07:18:52.517Z",
+  "testHead": "99298c53b4cdaa1528fa2655938561b429796733",
+  "clientHead": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "changedPaths": [
+    "tests/browser/work-usability.spec.ts"
+  ],
+  "frontendAPIWorkerSchemaDependenciesAndCIUnchanged": true,
+  "buildReuse": "Use exact already verified R7 four-asset dist and client revision; new test source R8 recorded separately. No new application build.",
+  "fullFrontend": "Original R7 session61741 still running with frozen original source; do not change its checkout/HEAD. R8 changes only native test; no full pass inferred."
+}

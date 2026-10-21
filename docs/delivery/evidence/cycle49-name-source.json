@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-20T06:22:15.659Z",
+  "sourceCommit": {
+    "at": "2026-10-20T06:16:41.074Z",
+    "head": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+    "parent": "6dc9a223d0d5ff9da40e6203c8bf3ffc6228d090",
+    "paths": [
+      "apps/web/src/app/App.test.tsx",
+      "apps/web/src/app/InternalAppShell.tsx",
+      "apps/web/src/app/OrganizationContextLabel.test.tsx",
+      "apps/web/src/app/OrganizationContextLabel.tsx",
+      "docs/delivery/evidence/cycle49-name-initial-failed.json",
+      "docs/delivery/evidence/cycle49-name-scope.json",
+      "docs/delivery/evidence/cycle49-prd03-live.json",
+      "tests/browser/organization-context-name.spec.ts"
+    ],
+    "source": {
+      "apps/web/src/app/OrganizationContextLabel.tsx": "d316c712962623f96fb1a4830c3837bcc4284dfcf42c9acac4e18ed13d2b52c0",
+      "apps/web/src/app/OrganizationContextLabel.test.tsx": "3f198012c74e77466719d5d1e3cfb32453ab8c859def640f5a8126f623b530f9",
+      "apps/web/src/app/InternalAppShell.tsx": "d04f600ea2436a499227d162fc5f61764fb896973c43c3b089c1cdbdf4161d1a",
+      "apps/web/src/app/App.test.tsx": "f4d5fa1cfbf6bb275096ded500234ecf15e1fe5aff75e5410d05273d343481e1",
+      "tests/browser/organization-context-name.spec.ts": "4f9b6824dd2aa467b5193dade66fc208996b94a2db535c0d2bf461f3360fb2c9"
+    },
+    "componentCases": {
+      "total": 24,
+      "passed": 24,
+      "failed": 0,
+      "sourceReport": "work/cycle49-name-full-frontend.json",
+      "scope": "Actual passing component subset inside retained overallfailedrun; not whole-regression acceptance."
+    },
+    "webTypesAndChangedFileLint": "Passed at exactsource hashes",
+    "browserTypes": "Observed original command exit0 with empty stdout; dedicatedcaptured verification remains beforeacceptance.",
+    "initialFullFrontend": {
+      "total": 2959,
+      "passed": 2916,
+      "failed": 19,
+      "pending": 24,
+      "artifact": "work/cycle49-name-full-frontend.json",
+      "sha256": "4d543c1fb994f5dd22dc1a91f224bf1fc27fc866de714adc50f9d4c5d467a416"
+    },
+    "isolatedCompleteSingleWorkerRetest": "Live session61232; same assertions/deadlines/skips, repository/CI config unchanged. Never inferaPass beforeactualterminal result.",
+    "native": "Four newcases implemented/typechecked; actualfour-width+eightoriginal real-service execution notyet run.",
+    "runtimeAPIWorkerSchemaDependenciesOrCIGatesChanged": false,
+    "published": false,
+    "wholeCurrentCI": "Not Run",
+    "mainIntegration": "Pending",
+    "scope": "Focused source-only WIP commit. Three ownfeature records remainInProgress; no newDone, fullregression acceptance or MVP completion claimed. Initialred3, wrongrunner launch and31/32intermediate failure retained separately."
+  },
+  "webApplicationChanged": true,
+  "apiWorkerSchemaDependenciesAndCIGatesChanged": false,
+  "scopeClarification": "Originalsource helper server-runtime flag refers to unchanged API/Worker; the new frontend runtime is changed and unaccepted pending fullregression/native/currentCI/main.",
+  "decisions": [
+    "Keep context as text with complete canonical names wrapping under existingappTheme; no new truncation, contextselector or navigation/focus behavior.",
+    "Use existingheader measurement for the phonecontext row and allreflow; verify actual four-width/200%workflow before acceptance.",
+    "Use currentactor-bound canonical read/metadata and keyedscope cancellation; no storage/name-based grants or extra permissions."
+  ],
+  "history": "Original3redcontrols, wrongrunner launch,31/32intermediate and defaultfull19failures remain retained. No featureDone or parentPRD closure."
+}

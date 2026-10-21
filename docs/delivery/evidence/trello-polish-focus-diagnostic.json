@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-21T04:57:24.987Z",
+  "revision": "49c5bbce0c420561da549bc36395f61dc646de79",
+  "candidateRevision": "49c5bbce0c420561da549bc36395f61dc646de79",
+  "note": "Complete original BoardScreen.drag file passed3 under unchanged5000ms timeout. Narrow pass diagnoses but does not replace failed twelve-file aggregate or establish its exclusive cause.",
+  "artifacts": [
+    {
+      "name": "trello-polish-focus-diagnostic.log",
+      "sha256": "3b42c5fa97cb5958896bbc283b13409ae6d4c6247a009453c7e4d727a0c8cca5",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/BoardScreen.drag.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  1 passed (1)\r\n      Tests  3 passed (3)\r\n   Start at  21:52:17\r\n   Duration  46.79s (import 79%, tests 11%, transform 5%, environment 4%, setup 1%)\r\n\r\n"
+    }
+  ]
+}

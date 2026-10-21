@@ -51,6 +51,7 @@ import { ChecklistManageControl } from './ChecklistManageControl';
 import { CardDateDisplay } from './CardDateDisplay';
 import { BoardDateProvider } from './BoardDateBadges';
 import { BoardCardLink } from './BoardCardLink';
+import { observeFocusedCardVisibility } from './focusedCardVisibility';
 import { BoardWindow, type BoardWindowHeights } from './BoardWindow';
 import { CardDateEditor } from './CardDateEditor';
 import { CardLabels } from './CardLabels';
@@ -211,6 +212,8 @@ function BoardContent() {
   const reading = useRef(false);
   const [snapshotReading, setSnapshotReading] = useState(true);
   const cardLinks = useRef(new Map<string, HTMLAnchorElement>());
+  useLayoutEffect(() => observeFocusedCardVisibility(cardLinks.current,
+    () => !dragCard.current && !dragList.current), [key]);
   const windowMemory = useRef(new Map<string, number>());
   const windowHeights = useRef<BoardWindowHeights>(new Map());
   const closeFocusCard = useRef<string | undefined>(undefined);
@@ -584,7 +587,7 @@ function BoardContent() {
     );
   if (!snapshot) return <CircularProgress aria-label="Loading board" />;
   return (
-    <Stack role="region" aria-label="Board workspace" aria-busy={snapshotReading} spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode), borderRadius: 2, p: 1, position: 'relative', isolation: 'isolate' }}>
+    <Stack role="region" aria-label="Board workspace" aria-busy={snapshotReading} spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode) ?? (workExperienceEnabled ? 'action.hover' : undefined), borderRadius: 2, p: workExperienceEnabled ? { xs: 1, sm: 2 } : 1, position: 'relative', isolation: 'isolate', ...(workExperienceEnabled && { '& .MuiButton-root': { textTransform: 'none' } }) }}>
       <UnsavedChangesGuard dirty={draftState.dirty || Boolean(creation && creationDirty)} />
       <BoardBackgroundImage snapshot={snapshot} unavailable={snapshotReading || !!loadError} />
       {snapshot.board.lifecycleState === 'active' && snapshot.board.version !== undefined &&
@@ -606,7 +609,7 @@ function BoardContent() {
         sx={{ justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}
       >
         <Box sx={{ minWidth: 0, maxWidth: '100%', overflowWrap: 'anywhere' }}>
-          <Typography variant="h4" component="h2" sx={{ overflowWrap: 'anywhere' }}>
+          <Typography variant={workExperienceEnabled ? 'h5' : 'h4'} component="h2" sx={{ overflowWrap: 'anywhere', fontWeight: workExperienceEnabled ? 600 : undefined }}>
             {snapshot.board.name}
           </Typography>
           <Typography sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{snapshot.board.description}</Typography>
@@ -697,11 +700,13 @@ function BoardContent() {
         </Stack>
       </Stack>
       {saved && <Typography role="status">Changes saved.</Typography>}
+      <Stack direction="row" useFlexGap sx={workExperienceEnabled ? { flexWrap: 'wrap', gap: 1 } : { display: 'contents' }}>
       <ActivityHistoryControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
         kind="BOARD" targetId={snapshot.board.id} unavailable={snapshotReading || !!loadError}
         refreshSequence={`${reload}/${reconnectSequence}`} onDenied={clearDeniedScope} />
       <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0}
         onRefresh={refreshFilteredBoard} onCanvasChange={setCanvasFilter} />
+      </Stack>
       {snapshot.board.lifecycleState !== "active" && (
         <Alert severity="info">
           This board is archived. Editing is unavailable.
@@ -764,8 +769,8 @@ function BoardContent() {
             disabled={busy || snapshotReading || !!loadError || listRecovery.has(column.list.id) || renameRecovery.has(column.list.id)}
             available={!canvasFilter && snapshot.access.canMove && snapshot.board.lifecycleState === 'active' && column.list.lifecycleState === 'active' && Number.isSafeInteger(column.list.version) && Number(column.list.version) > 0}
           >
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
-            <Typography id={`list-name-${column.list.id}`} variant="h6" component="h3" sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
+            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap', pr: workExperienceEnabled ? 4.5 : 0 }}>
+            <Typography id={`list-name-${column.list.id}`} variant={workExperienceEnabled ? 'subtitle1' : 'h6'} component="h3" sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere', fontWeight: workExperienceEnabled ? 600 : undefined }}>
               {column.list.name}
             </Typography>
             <ListRenameControl list={column.list} snapshot={snapshot}

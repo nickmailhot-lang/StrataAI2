@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-20T17:26:20.937156+00:00",
+  "artifactId": 12283916030,
+  "run": 39437165240,
+  "head": "e052a4ee1c3615f4fe181af73acae4d8536907ec",
+  "testedRevision": "c4ae4fc5f50d21016680e7273c7e8715a1f24f2d",
+  "outerSha256": "9c70407145f51e7e43af187e644af2d0291ae183cd7f9788963ad6878d479d73",
+  "internalChecksumsVerified": 60,
+  "metadata": {
+    "repository": "nickmailhot-lang/StrataAI2",
+    "commitSha": "c4ae4fc5f50d21016680e7273c7e8715a1f24f2d",
+    "shortSha": "c4ae4fc5f50d",
+    "workflowRunId": "39437165240",
+    "workflowRunNumber": "1951",
+    "workflowRunAttempt": "1",
+    "version": "0.1.0-1951",
+    "releaseVersion": null,
+    "imageTag": "c4ae4fc5f50d21016680e7273c7e8715a1f24f2d",
+    "createdAt": "2026-10-20T14:14:44.675Z",
+    "images": {
+      "web": "strataai-web:c4ae4fc5f50d21016680e7273c7e8715a1f24f2d",
+      "api": "strataai-api:c4ae4fc5f50d21016680e7273c7e8715a1f24f2d",
+      "worker": "strataai-worker:c4ae4fc5f50d21016680e7273c7e8715a1f24f2d"
+    }
+  },
+  "copied": [
+    {
+      "archivePath": "build-metadata.json",
+      "path": "work\\c100-failure\\build-metadata.json",
+      "sha256": "784f3fe5ab469a88c2d1053156922ef389123d23d3cfee1cbd2538e5f4c03d16"
+    },
+    {
+      "archivePath": "SHA256SUMS",
+      "path": "work\\c100-failure\\SHA256SUMS",
+      "sha256": "0d7b7600ec9295584b71bae25e252dfe1cbc9851d6e9c20a0011ca06791451a2"
+    },
+    {
+      "archivePath": "test-results/organization-context-name--0563e-context-withdrawal-at-320px/error-context.md",
+      "path": "work\\c100-failure\\error-context.md",
+      "sha256": "81a818bb48b6cf4a80b9ba93035ea167acd6796dbf8629f774508091a2094cc2"
+    },
+    {
+      "archivePath": "test-results/organization-context-name--0563e-context-withdrawal-at-320px/named-board.png",
+      "path": "work\\c100-failure\\named-board.png",
+      "sha256": "18837f8185e465d36d1a2b6d21f27ae5832c1453b1ae3757afa749225be3eec3"
+    },
+    {
+      "archivePath": "test-results/organization-context-name--0563e-context-withdrawal-at-320px/named-card.png",
+      "path": "work\\c100-failure\\named-card.png",
+      "sha256": "930e8db8b24cf5c5a13e4697ee5570730251a925a53827937aafcc636cd94dd6"
+    },
+    {
+      "archivePath": "test-results/organization-context-name--0563e-context-withdrawal-at-320px/test-failed-1.png",
+      "path": "work\\c100-failure\\test-failed-1.png",
+      "sha256": "3c3100ad5c7ef2b88be031fc8a29d5f8c882e02722765fffc0a9f6862a93150e"
+    },
+    {
+      "archivePath": "test-results/organization-context-name--0563e-context-withdrawal-at-320px/trace.zip",
+      "path": "work\\c100-failure\\trace.zip",
+      "sha256": "a122736c4113dc27b8c1a73950edee517c74963000d3013f6106365ea1d0d65b"
+    }
+  ],
+  "scope": "Official connector artifact ZIP verified againstGitHubdigest9c70407145f51e7e43af187e644af2d0291ae183cd7f9788963ad6878d479d73, exactsize7283817 andall60innerchecksums. Metadata bindsrun39437165240/testedc4ae/headY2. Selectedtrace/screenshot/sourceexcerpt inspected; no reportHTML/script executed. IntegrityPassed does not mean productworkflowPassed."
+}

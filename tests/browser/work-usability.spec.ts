@@ -124,10 +124,14 @@ for (const width of [1280, 768, 390, 320]) {
     await page.unroute(`**/cards/${cardId}`);
     await openAdmittedReview(detail.getByRole('button', { name: 'Move card', exact: true }), detail.getByRole('combobox', { name: 'Destination list', exact: true }));
     const destination = detail.getByRole('combobox', { name: 'Destination list', exact: true });
-    await destination.press('Enter');
+    await openAdmittedReview(destination, page.getByRole('option', { name: 'Scheduled', exact: true }));
     await page.getByRole('option', { name: 'Scheduled', exact: true }).press('Enter');
     await expect(destination).toHaveText('Scheduled');
-    await activate('Confirm card move', detail);
+    let moveWrites = 0;
+    page.on('request', request => {
+      if (request.method() === 'POST' && new URL(request.url()).pathname === `/cards/${cardId}/move`) moveWrites++;
+    });
+    await pressObservedRequest(detail.getByRole('button', { name: 'Confirm card move', exact: true }), () => moveWrites, 1);
     await expect(detail.getByText('Move acknowledged. Current placement is being checked.', { exact: true })).toBeVisible();
     await activate('Close', detail);
     await expect(page.getByRole('link', { name: 'Inspect roof and gutters', exact: true })).toBeFocused();
@@ -137,6 +141,7 @@ for (const width of [1280, 768, 390, 320]) {
     expect(filterChanges()).toBe(2);
     const canonical = await (await context.request.get(`/boards/${board}`)).json();
     expect(canonical.lists.find((column: { list: { id: string } }) => column.list.id === listIds[1]).cards.some((card: { id: string }) => card.id === cardId)).toBe(true);
+    expect(moveWrites).toBe(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
     await page.getByRole('link', { name: 'Inspect roof and gutters', exact: true }).press('Enter');

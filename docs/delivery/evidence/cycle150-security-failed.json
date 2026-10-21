@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-20T23:33:45.667Z",
+  "failures": [
+    {
+      "number": 117,
+      "head": "ae210124f8510e5f78fa92eaa4504073889892ce",
+      "job": {
+        "id": 118944861223,
+        "head_sha": "ae210124f8510e5f78fa92eaa4504073889892ce",
+        "name": "security",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      "logTruncated": false,
+      "originalAuditFailure": "# npm audit report\n2026-10-20T23:26:41.3170161Z \n2026-10-20T23:26:41.3170648Z vite  8.3.0 - 8.3.2\n2026-10-20T23:26:41.3171046Z Severity: high\n2026-10-20T23:26:41.3171834Z launch-editor: escapeCmdArgs() omits % escaping on Windows - https://github.com/advisories/GHSA-698v-4r3x-3vcv\n2026-10-20T23:26:41.3173051Z launch-editor: Editor CLI flag misinterpretation causing arbitrary command execution for some editors - https://github.com/advisories/GHSA-r825-w8mm-5pxw\n2026-10-20T23:26:41.3174607Z launch-editor: `fs.existsSync()` existence check can be bypassed on Windows - https://github.com/advisories/GHSA-587h-7wmj-h5pm\n2026-10-20T23:26:41.3175517Z fix available via `npm audit fix --force`\n2026-10-20T23:26:41.3176114Z Will install vite@8.3.4, which is outside the stated dependency range\n2026-10-20T23:26:41.3176588Z node_modules/vite\n2026-10-20T23:26:41.3176831Z \n2026-10-20T23:26:41.3177159Z 1 high severity vulnerability\n2026-10-20T23:26:41.3177427Z \n2026-10-20T23:26:41.3177688Z To address all issues, run:\n2026-10-20T23:26:41.3178046Z   npm audit fix --force\n2026-10-20T23:26:41.3286132Z ##[error]Process completed with exit code 1."
+    },
+    {
+      "number": 118,
+      "head": "8e31f63190acb9fde76eae18cce4d0f743d57aa6",
+      "job": {
+        "id": 118944981208,
+        "head_sha": "8e31f63190acb9fde76eae18cce4d0f743d57aa6",
+        "name": "security",
+        "status": "completed",
+        "conclusion": "failure"
+      },
+      "logTruncated": false,
+      "originalAuditFailure": "# npm audit report\n2026-10-20T23:27:01.9815280Z \n2026-10-20T23:27:01.9815735Z vite  8.3.0 - 8.3.2\n2026-10-20T23:27:01.9816159Z Severity: high\n2026-10-20T23:27:01.9817149Z launch-editor: escapeCmdArgs() omits % escaping on Windows - https://github.com/advisories/GHSA-698v-4r3x-3vcv\n2026-10-20T23:27:01.9818917Z launch-editor: Editor CLI flag misinterpretation causing arbitrary command execution for some editors - https://github.com/advisories/GHSA-r825-w8mm-5pxw\n2026-10-20T23:27:01.9822064Z launch-editor: `fs.existsSync()` existence check can be bypassed on Windows - https://github.com/advisories/GHSA-587h-7wmj-h5pm\n2026-10-20T23:27:01.9823175Z fix available via `npm audit fix --force`\n2026-10-20T23:27:01.9823920Z Will install vite@8.3.4, which is outside the stated dependency range\n2026-10-20T23:27:01.9824530Z node_modules/vite\n2026-10-20T23:27:01.9824790Z \n2026-10-20T23:27:01.9825055Z 1 high severity vulnerability\n2026-10-20T23:27:01.9825361Z \n2026-10-20T23:27:01.9825621Z To address all issues, run:\n2026-10-20T23:27:01.9826063Z   npm audit fix --force\n2026-10-20T23:27:01.9921845Z ##[error]Process completed with exit code 1."
+    }
+  ],
+  "advisories": [
+    "https://github.com/advisories/GHSA-698v-4r3x-3vcv",
+    "https://github.com/advisories/GHSA-r825-w8mm-5pxw",
+    "https://github.com/advisories/GHSA-587h-7wmj-h5pm"
+  ],
+  "patchSource": "c99d1a7d9760eab218606e13003e127687e14833",
+  "scope": "Both frozen current heads failed the unchanged high-severity npm audit after successful image builds. Complete Code Review job logs confirmed the Vite 8.3.0–8.3.2 advisory and exit1. No security waiver, rerun or merge. Patch source c99d1a7 upgrades exact Vite8.3.4 and required locked build-tool transitive versions; isolated supported-toolchain validation and fresh complete CI remain required."
+}

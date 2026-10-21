@@ -1,0 +1,67 @@
+{
+  "at": "2026-10-20T07:44:09.520Z",
+  "result": "Passed",
+  "source": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "testFollowup": "99298c53b4cdaa1528fa2655938561b429796733",
+  "fullFrontend": {
+    "startedAt": "2026-10-20T07:03:00.673Z",
+    "finishedAt": "2026-10-20T07:43:44.333Z",
+    "head": "1a253fef0e736662445fbb72673aad6520257ad4",
+    "source": {
+      "apps/web/src/app/InternalAppShell.tsx": "292287bfcef9fd4984007697b776acfde6d1da5b0dc290a29cf7cf0d03155832",
+      "apps/web/src/app/InternalAppShell.scroll-context.test.tsx": "ea9415e60b39ee09306c9d26dd2b9c5c9957f1f7ec47858b0c00083c754c524a",
+      "tests/browser/organization-context-name.spec.ts": "d0b39e855997bdadddd28756e3ef08247f6722b9e394788828b554bab58f88a0",
+      "tests/browser/work-usability.spec.ts": "10ce0ff3e0432cad0cdd8d360eedc02fd1ecd11ce46b6d3caac7fa484b0a70af",
+      "apps/web/src/app/OrganizationContextLabel.tsx": "d316c712962623f96fb1a4830c3837bcc4284dfcf42c9acac4e18ed13d2b52c0",
+      "apps/web/src/app/OrganizationContextLabel.test.tsx": "3f198012c74e77466719d5d1e3cfb32453ab8c859def640f5a8126f623b530f9",
+      "apps/web/src/app/App.test.tsx": "f4d5fa1cfbf6bb275096ded500234ecf15e1fe5aff75e5410d05273d343481e1"
+    },
+    "result": "Passed",
+    "results": [
+      {
+        "name": "frontend",
+        "startedAt": "2026-10-20T07:03:00.675Z",
+        "finishedAt": "2026-10-20T07:43:44.199Z",
+        "exit": 0,
+        "signal": null,
+        "artifact": "work/cycle53-full-frontend-native.txt",
+        "sha256": "24c2e74714e2afb0a27e93cfbd34eb9ea28ad85597e1a97071756875effb7c46",
+        "args": [
+          "run",
+          "--maxWorkers=1",
+          "--reporter=json",
+          "--outputFile=C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle53-full-report.json"
+        ]
+      }
+    ],
+    "summary": {
+      "total": 2963,
+      "passed": 2939,
+      "failed": 0,
+      "pending": 24
+    },
+    "scope": "Exact new source. Original cases/assertions/deadlines/retries/24 capacity deferrals and repository CI config unchanged. Single worker is local profile only; no native/CI/integration acceptance inferred."
+  },
+  "caseIdentity": {
+    "original": 2959,
+    "newControlledScroll": 4,
+    "total": 2963,
+    "passed": 2939,
+    "failed": 0,
+    "originalDeferred": 24,
+    "allOriginalCaseIdsAndDeferralsUnchanged": true
+  },
+  "reportSha256": "92e18c4c129f6350dc348984a8ce28d8783b8cea7b4cc425fab3592e517e5d5d",
+  "binding": {
+    "at": "2026-10-20T07:18:52.517Z",
+    "testHead": "99298c53b4cdaa1528fa2655938561b429796733",
+    "clientHead": "1a253fef0e736662445fbb72673aad6520257ad4",
+    "changedPaths": [
+      "tests/browser/work-usability.spec.ts"
+    ],
+    "frontendAPIWorkerSchemaDependenciesAndCIUnchanged": true,
+    "buildReuse": "Use exact already verified R7 four-asset dist and client revision; new test source R8 recorded separately. No new application build.",
+    "fullFrontend": "Original R7 session61741 still running with frozen original source; do not change its checkout/HEAD. R8 changes only native test; no full pass inferred."
+  },
+  "scope": "Actual complete R7 frontend passed with original case set/assertions/deadlines/retries/24deferrals; R8 changes only one native test, complete frontend/source modules byte-identical. Supporting local single-worker profile, repository/CI unchanged. Original default19failures remain, own current CI/review/main still required."
+}

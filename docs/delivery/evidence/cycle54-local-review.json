@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-20T07:50:04.772Z",
+  "source": "99298c53b4cdaa1528fa2655938561b429796733",
+  "reviewer": "Principal product architect / delivery lead (agent)",
+  "result": "Passed",
+  "scope": "Focused local source review only; exact current immutableCI, final PR review and targetmain acceptance remain pending.",
+  "reviewedPaths": [
+    "apps/web/src/app/OrganizationContextLabel.tsx",
+    "apps/web/src/app/InternalAppShell.tsx",
+    "apps/web/src/app/OrganizationContextLabel.test.tsx",
+    "apps/web/src/app/InternalAppShell.scroll-context.test.tsx",
+    "apps/web/src/app/App.test.tsx",
+    "tests/browser/organization-context-name.spec.ts",
+    "tests/browser/work-usability.spec.ts"
+  ],
+  "findings": [],
+  "verified": [
+    "Name comes only from actor-bound before/me, expected-actor Organization read and after/me, with strict scope/status/role/name validation. No new permission inference or local name cache.",
+    "Keyed scope/cancellation/generation and metadata/focus/visibility recovery withdraw obsolete names. Component privacy controls and actual account replacement/404 validate withdrawal.",
+    "Whole-page scroll context resets only after page change; Board/Card transitions retain document position, existing canvas/column scroll remains local. Actual200% heading viewport and native return assertions pass.",
+    "Read-only Destination opening uses existing helper; Confirm observes exactly firstPOST and never reactivates after requeststarts. All original receipt/canonical/idempotency/deadline/retry assertions retained, exactlyone move count added.",
+    "All2959 original frontend case identities plus4new controls and original24 deferrals preserved. Actual2939 frontend passes and full12 localnative passes are source-bound, with original failures retained.",
+    "Only local fixture settings/resources used; inspected runtime proof contains only service/id/image/startedAt container fields, no environment/credentials. Allowned cleanup/stockWorker invariance verified."
+  ],
+  "limitations": [
+    "Supporting mixedlocalclient/API/Worker run is not immutableCI or production-provider certification.",
+    "Full standardCI for the new published head, finalreview/main integration and parent/MVP acceptance remain required.",
+    "Earlier default-profile failures remain recorded; no exclusive resource-cause claim or assertion/timeout/retry weakening."
+  ]
+}

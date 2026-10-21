@@ -1,0 +1,183 @@
+{
+  "observedAt": "2026-10-20 17:43:16 UTC",
+  "repository": "nickmailhot-lang/StrataAI2",
+  "pr": 118,
+  "head": "e052a4ee1c3615f4fe181af73acae4d8536907ec",
+  "testedRevision": "c4ae4fc5f50d21016680e7273c7e8715a1f24f2d",
+  "run": 39437165240,
+  "jobId": 118695973123,
+  "url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39437165240/job/118695973123",
+  "result": "Failed",
+  "passed": 126,
+  "failed": 1,
+  "logTruncated": true,
+  "scope": "Complete job conclusion and retained summary126Pass/1Fail. Exact320px Organization→Board→Card return compares scrollY35 versus36 at native line93. Later320private-withdrawal assertions were not reached; no source/permission diagnosis inferred beyond trace evidence.",
+  "excerpt": "  1) tests/browser/organization-context-name.spec.ts:27:7 › PRD-03-VS-01-T-02-TEST-02: sign-in, named Organization, Board, Card and private-context withdrawal at 320px \n2026-10-20T17:01:27.7210414Z \n2026-10-20T17:01:27.7211127Z     Error: expect(received).toEqual(expected) // deep equality\n2026-10-20T17:01:27.7211716Z \n2026-10-20T17:01:27.7211949Z     - Expected  - 1\n2026-10-20T17:01:27.7212404Z     + Received  + 1\n2026-10-20T17:01:27.7212626Z \n2026-10-20T17:01:27.7212798Z       Object {\n2026-10-20T17:01:27.7214107Z         \"x\": 0,\n2026-10-20T17:01:27.7214581Z     -   \"y\": 35,\n2026-10-20T17:01:27.7215031Z     +   \"y\": 36,\n2026-10-20T17:01:27.7215462Z       }\n2026-10-20T17:01:27.7215693Z \n2026-10-20T17:01:27.7216247Z       91 |       await focusAdmittedControl(close); await close.press('Enter');\n2026-10-20T17:01:27.7217423Z       92 |       await expect(detail).toHaveCount(0); await expect(face).toBeFocused();\n2026-10-20T17:01:27.7218768Z     > 93 |       expect(await page.evaluate(() => ({ x: scrollX, y: scrollY }))).toEqual(boardScroll);\n2026-10-20T17:01:27.7219882Z          |                                                                       ^\n2026-10-20T17:01:27.7220712Z       94 |       await assertContext(page, name, org);\n2026-10-20T17:01:27.7221407Z       95 |       if (width < 600) {\n2026-10-20T17:01:27.7222838Z       96 |         const trigger = page.getByRole('button', { name: 'Open navigation', exact: true });\n2026-10-20T17:01:27.7224518Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/organization-context-name.spec.ts:93:71\n2026-10-20T17:01:27.7225276Z \n2026-10-20T17:01:27.7226457Z     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n2026-10-20T17:01:27.7227893Z     test-results/organization-context-name--0563e-context-withdrawal-at-320px/test-failed-1.png\n2026-10-20T17:01:27.7229419Z     ────────────────────────────────────────────────────────────────────────────────────────────────\n2026-10-20T17:01:27.7230000Z \n2026-10-20T17:01:27.7230811Z     Error Context: test-results/organization-context-name--0563e-context-withdrawal-at-320px/error-context.md\n2026-10-20T17:01:27.7231675Z \n2026-10-20T17:01:27.7232467Z     attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\n2026-10-20T17:01:27.7234246Z     test-results/organization-context-name--0563e-context-withdrawal-at-320px/trace.zip\n2026-10-20T17:01:27.7235217Z     Usage:\n2026-10-20T17:01:27.7235433Z \n2026-10-20T17:01:27.7236296Z         npx playwright show-trace test-results/organization-context-name--0563e-context-withdrawal-at-320px/trace.zip\n2026-10-20T17:01:27.7237235Z \n2026-10-20T1",
+  "trace": {
+    "calls": [
+      {
+        "id": "call@10085",
+        "method": "focus",
+        "start": 1685586.079,
+        "selector": "internal:role=button[name=\"Sign in\"s]",
+        "key": null,
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10091",
+        "method": "press",
+        "start": 1685617.72,
+        "selector": "internal:role=button[name=\"Sign in\"s]",
+        "key": "Enter",
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10099",
+        "method": "focus",
+        "start": 1685861.567,
+        "selector": "internal:role=link[name=\"Context 320 North garden North garden North garden North garden North garden North garden North garden North garden North garden North garden North garden NortX\"s]",
+        "key": null,
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10105",
+        "method": "press",
+        "start": 1685879.276,
+        "selector": "internal:role=link[name=\"Context 320 North garden North garden North garden North garden North garden North garden North garden North garden North garden North garden North garden NortX\"s]",
+        "key": "Enter",
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10131",
+        "method": "focus",
+        "start": 1686336.438,
+        "selector": "internal:role=link[name=\"Context work\"s]",
+        "key": null,
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10137",
+        "method": "press",
+        "start": 1686353.145,
+        "selector": "internal:role=link[name=\"Context work\"s]",
+        "key": "Enter",
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10197",
+        "method": "focus",
+        "start": 1687297.95,
+        "selector": "internal:role=link[name=\"Inspect entrance\"s]",
+        "key": null,
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10223",
+        "method": "evaluateExpression",
+        "start": 1687355.576,
+        "selector": null,
+        "key": null,
+        "expression": "async () => {\n        await document.fonts.ready;\n        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));\n      }",
+        "result": null
+      },
+      {
+        "id": "call@10225",
+        "method": "evaluateExpression",
+        "start": 1687383.713,
+        "selector": null,
+        "key": null,
+        "expression": "() => ({\n        x: scrollX,\n        y: scrollY\n      })",
+        "result": {
+          "value": {
+            "o": [
+              {
+                "k": "x",
+                "v": {
+                  "n": 0
+                }
+              },
+              {
+                "k": "y",
+                "v": {
+                  "n": 35
+                }
+              }
+            ],
+            "id": 1
+          }
+        }
+      },
+      {
+        "id": "call@10227",
+        "method": "press",
+        "start": 1687387.05,
+        "selector": "internal:role=link[name=\"Inspect entrance\"s]",
+        "key": "Enter",
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10239",
+        "method": "focus",
+        "start": 1687592.148,
+        "selector": "internal:role=dialog[name=\"Card details\"s] >> internal:role=button[name=\"Close\"s]",
+        "key": null,
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10245",
+        "method": "press",
+        "start": 1687619.132,
+        "selector": "internal:role=dialog[name=\"Card details\"s] >> internal:role=button[name=\"Close\"s]",
+        "key": "Enter",
+        "expression": "",
+        "result": null
+      },
+      {
+        "id": "call@10251",
+        "method": "evaluateExpression",
+        "start": 1687682.56,
+        "selector": null,
+        "key": null,
+        "expression": "() => ({\n        x: scrollX,\n        y: scrollY\n      })",
+        "result": {
+          "value": {
+            "o": [
+              {
+                "k": "x",
+                "v": {
+                  "n": 0
+                }
+              },
+              {
+                "k": "y",
+                "v": {
+                  "n": 36
+                }
+              }
+            ],
+            "id": 1
+          }
+        }
+      }
+    ],
+    "scrollTransition": {
+      "beforeClose": 35,
+      "afterClose": 36,
+      "callId": "call@10245"
+    }
+  },
+  "image": {
+    "path": "docs/delivery/evidence/cycle100-y320-scroll-failure.png",
+    "sha256": "3c3100ad5c7ef2b88be031fc8a29d5f8c882e02722765fffc0a9f6862a93150e"
+  },
+  "sourceRelation": "PublishedP2 andY2 production inputs and exact organization-context native source are byte-identical. This is actual failedY qualification, not inferred failedP qualification. Trace shows35throughopening,36afterClose; no fractional rectangle values are retained, so no solecause is asserted."
+}

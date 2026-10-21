@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import { appendCanonicalEvents } from './invitationAdmissionTracker';
 import { expect, test } from './releaseTest';
 import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 import { scopedBoardWorker } from './scopedBoardWorker';
@@ -32,9 +33,9 @@ for (const width of [1280, 390]) {
           for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
             const message = JSON.parse(raw);
             if (message.type === 2 && message.item?.organizationId === org) {
-              removals.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_REMOVED'));
-              invitations.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_INVITED'));
-              revocations.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'INVITATION_REVOKED'));
+              appendCanonicalEvents(removals, message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_REMOVED'));
+              appendCanonicalEvents(invitations, message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_INVITED'));
+              appendCanonicalEvents(revocations, message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'INVITATION_REVOKED'));
             }
           }
         });
@@ -46,7 +47,7 @@ for (const width of [1280, 390]) {
           for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
             const message = JSON.parse(raw);
             if (message.type === 2 && message.item?.organizationId === org)
-              delivered.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_ADDED'));
+              appendCanonicalEvents(delivered, message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_ADDED'));
           }
         });
       });

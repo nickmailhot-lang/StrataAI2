@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-21T17:44:38.607Z",
+  "parent": {
+    "url": "https://github.com/nickmailhot-lang/StrataAI2/pull/117",
+    "number": 117,
+    "state": "closed",
+    "merged": true,
+    "mergeable": false,
+    "draft": false,
+    "body": "Shows the current Organization through sign-in → Organization → Board → Card, withdraws stale/private context on offline or access changes, and preserves Card focus and exact Board scroll on return.\n\nNavigation confirmations now keep an admitted original request through a protected foreground read. A lost response remains available for explicit recovery instead of being resubmitted automatically when presentation returns. Scope retirement and final-account checks remain effective. Organization keyboard validation observes real read-only destinations and native Tab order without focusing the destination directly.\n\nPublished head: ae210124f8510e5f78fa92eaa4504073889892ce. Runtime repair: 4bc16f8c; keyboard traversal: dc40d996. Both reproduced navigation counterexamples are retained. Current local checks passed 28 navigation controls, 25 keyboard protocol controls, browser types, scoped lint, complete native navigation3/default Organization4/compiled rollback4, and six inspected rendered resources. All original assertions, deadlines, retry policy and role/canonical/no-write checks remain.\n\nThe complete local frontend run remains **Failed**: 2,951 passed, 12 failed, and the original 24 capacity deferrals. Complete targeted runs of the three failing files passed all71 cases on both repaired code and the unchanged published baseline; those passes do not replace the failed full run or prove its exclusive cause. The latest complete native12 aggregate also remains Failed (11 passes and an unchanged30-second Board200%-text timeout after functional checks/capture). Earlier complete Board5 passes and source-input equivalence remain separate evidence.\n\nAll36 delivery contracts and final900-evidence ledger/source/baseline validation passed. Both parent histories, failed results and prior implementation are preserved. The three active repair records remain Testing; the local regressions gate is explicitly Failed, and no PRD/MVP completion is claimed.\n\nFresh CI39511319206 and CodeQL39511317103 must independently qualify this exact head. This remains draft until all22 required checks and any additional gates, complete frontend/Board5, immutable tested-tree/release evidence, review and normal target-main integration qualify. Old-head checks do not qualify this source.\n\nTracking: docs/delivery/progress.json; docs/ux/delivery-report.md; cycle131–142 evidence. Existing API/schema, role, event-payload and consent contracts remain.\n\nCurrent dependency-security update: the prior ae210124 / 8e31f631 required security jobs failed the unchanged high-severity npm audit for Vite8.3.1. Preserve both original failures. Patch c99d1a7 upgrades exact Vite8.3.4 and its required locked build-tool transitive versions. Fresh isolated supported npm11.19.1 locked install, audit (zero vulnerabilities), both types, complete15 NavigationConfirmation cases and production compilation passed. Compiler verification used default local build identity and is not a qualified release bundle. Current published head b6a30cc084d2ac93a2e42b657b3763c72549297d must pass its own complete22 required checks and any additional gates, immutable release/tested-tree verification and review before normal expected-head integration. Security work item ARCH-11-VS-62-T-02 is Implemented; its complete CI verification remains in progress. No new Done or parent closure. The separate unpublished Board/Card candidate has native7passed/4failed; those results are not acceptance evidence for this head.\n\n## Final dependency qualification — 2026-10-21\n\nExact head b6a30cc084d2ac93a2e42b657b3763c72549297d has all22 checks successful (CI39518420127 / CodeQL39518414924). Hosted complete frontend:2963passed with original24capacity deferrals. Complete full browser shards:481passed,2existing mail-profile skips, no failures; Foundation, notifications, commands, roles/security and immutable release/bundle/HTTPS startup also pass. These fresh complete hosted results remain distinct from the retained failed local aggregates; none of that history is erased or relabeled.\n\nVerified tested merge afb994eec08f9263a8cba18fef5d9535a1448a3f has exact current main db576226 and this head as parents, tree f9e682ddc1b843c7358a3c56e400b7047059076a. Reviewed bounded application/context/navigation/focus and helper changes; no outstanding submitted reviews, review threads or requested reviewers. Ordinary expected-head merge requested to resolve child PR121 dependency; no PRD/MVP closure or production deployment. Child121 still requires its own full checks after retargeting to main.",
+    "title": "Show the current Organization and withdraw stale context safely",
+    "base": "main",
+    "base_sha": "db5762265b3dfd19aa28b03ed24ceec2fe2ec265",
+    "head": "delivery/organization-context-name-20261020",
+    "head_sha": "b6a30cc084d2ac93a2e42b657b3763c72549297d",
+    "head_repo_id": 1396912372,
+    "head_repo_full_name": "nickmailhot-lang/StrataAI2",
+    "merge_commit_sha": "37656975f491352a3b9e5dc4ea0b124b546318c4",
+    "user": {
+      "login": "nickmailhot-lang",
+      "name": "nickmailhot-lang",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/313625286?v=4",
+      "id": 313625286
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-10-20T07:52:53Z",
+    "updated_at": "2026-10-21T17:43:52Z",
+    "closed_at": "2026-10-21T17:43:49Z",
+    "merged_at": "2026-10-21T17:43:49Z",
+    "commits": 25,
+    "changed_files": 146,
+    "additions": 10717,
+    "deletions": 142,
+    "display_url": "https://github.com/nickmailhot-lang/StrataAI2/pull/117",
+    "display_title": "Show the current Organization and withdraw stale context safely"
+  },
+  "tested": {
+    "revision": "afb994eec08f9263a8cba18fef5d9535a1448a3f",
+    "tree": "f9e682ddc1b843c7358a3c56e400b7047059076a"
+  },
+  "actualMerge": {
+    "revision": "37656975f491352a3b9e5dc4ea0b124b546318c4",
+    "parents": [
+      "db5762265b3dfd19aa28b03ed24ceec2fe2ec265",
+      "b6a30cc084d2ac93a2e42b657b3763c72549297d"
+    ],
+    "tree": "f9e682ddc1b843c7358a3c56e400b7047059076a"
+  },
+  "childReconciliation": "26ce5e9a0c10aa94348845ecc4d1525fd9a29500",
+  "treeUnchangedFromPublished121": true,
+  "scope": "Parent dependency integration only; child application/test inputs unchanged. Child121 retargetedmain and must pass independent complete current gates. No newDone or parentPRD/MVP acceptance."
+}

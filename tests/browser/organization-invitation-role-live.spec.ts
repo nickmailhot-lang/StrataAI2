@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import { appendCanonicalEvents } from './invitationAdmissionTracker';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker } from './scopedBoardWorker';
 
@@ -25,8 +26,8 @@ for (const width of [1280, 390]) {
           for (const raw of frame.payload.toString().split('\x1e').filter(Boolean)) {
             const message = JSON.parse(raw);
             if (message.type === 2 && message.item?.organizationId === org) {
-              accepted.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'INVITATION_ACCEPTED'));
-              additions.push(...message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_ADDED'));
+              appendCanonicalEvents(accepted, message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'INVITATION_ACCEPTED'));
+              appendCanonicalEvents(additions, message.item.page.events.filter((row: Record<string, unknown>) => row.eventType === 'ORGANIZATION_MEMBER_ADDED'));
             }
           }
         });

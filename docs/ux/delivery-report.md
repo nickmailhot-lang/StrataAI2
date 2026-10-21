@@ -1,5 +1,56 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — PR #117 dependency resolved; PR #121 full qualification active
+
+PR #117 merged normally as `37656975f491352a3b9e5dc4ea0b124b546318c4` after all **22 exact-head checks passed**. Current hosted frontend: **2,963 passed / 24 original capacity deferrals**; complete full browsers: **481 passed / 2 existing mail-profile skips**, no failures. Foundation, commands, notifications, tenant/role/security and immutable bundle/startup/HTTPS checks pass. Source and empty review-thread/submission state were inspected. Actual merged tree `f9e682ddc1b843c7358a3c56e400b7047059076a` equals qualified synthetic merge `afb994ee`; main/head parents and historical failures are preserved. Complete hosted qualification is separate from earlier failed local aggregates and does not erase them.
+
+PR #121 now targets main. Local reconciliation `26ce5e9a` changes no application/test tree. Prior scoped **198 component / 4 default / 4 rollback browser** passes retain their original source identities. Freeze the tracking checkpoint for its **own fresh full CI**; parent results never substitute for child qualification. Keep #121 draft and unmerged until every applicable gate, current tested-tree/release evidence and review pass. Independent PR #118 recovery and PR #119/#120 Search branches remain untouched.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing business capabilities preserved; parent Organization context integrated. No new business scope or parent PRD closure. |
+| UX completion | Organization/Work presentation implemented and scoped desktop/mobile evidence retained; child integration remains pending. Card/Search polish follows after #121 qualifies and merges. |
+| Test completion | Parent22 complete; child full current checks pending, scoped198+4+4 pass. Original browser/unit failures stay recorded; no assertion/deadline/retry/capacity waiver. |
+| MVP readiness | Not accepted globally; 69 inherited Done unchanged, two new UX records remain Testing, criteria Unverified. No combined percentage. |
+
+Ledger: **1,611 items / 3,906 criteria / 916 evidence records**. Evidence: `EVID-TRELLO-POLISH-117-REVIEW` and `EVID-TRELLO-POLISH-117-MERGE`. Next: finish/fix #121's complete CI, verify current review/main/tested-tree and merge normally; then bounded Card details and Search polish with separate acceptance and report updates.
+
+---
+
+
+## 2026-10-20 — Trello-style Organization and Work presentation
+
+Current application/test source: `49c5bbce0c420561da549bc36395f61dc646de79` (presentation at `efd44858`; final commit adds rollback expectations to the new browser spec). This small child increment reuses PR #117's admitted Organization-name header and existing navigation. Organization/Board links become readable surfaces; lists and Cards use compact MUI styling, labels before titles and visible 44px drag handles with their original accessible names. Existing command, recovery, permissions, focus, canvas, background and lifecycle owners are preserved. No domain/API/schema/subscription changes or invented preview data. Existing Work UX flag `0` restores the previous presentation.
+
+| Metric | Current evidence and limit |
+| --- | --- |
+| Functional completion | Existing Organization → Board → Card routes and operations retained. This increment changes presentation, adds no business capability and certifies no parent PRD. |
+| UX completion | Organization/Board presentation implemented and inspected on desktop/mobile; four-width keyboard, reflow, 200% text and applicable Axe checks pass in controlled-source scope. Card-detail/Search visual adoption remains a later bounded increment. |
+| Test completion | Complete affected suite **198/198** and default **4/4** plus rollback **4/4** browser cases pass without skips/retries. Web/browser types, strict lint, architecture **7/7**, browser registration **487 cases/171 files**, production compilation and delivery contracts **36/36** pass in their recorded scope. Fresh complete candidate CI, whole frontend, real-service integration/roles/RLS/security and immutable release checks remain pending. |
+| MVP readiness | **Not accepted for integration.** Two new Task/Test records are Testing, criteria remain Unverified; 69 inherited Done records remain unchanged. No new Done, merged increment, product percentage or MVP acceptance claim. |
+
+| PRD / work item | Functional / UX status | Dependencies and remaining validation |
+| --- | --- | --- |
+| PRD-03 / PRD-04: Organization and Board discovery | Existing capabilities retained; admitted names, role description and Board tiles polished | Reuse UX-001/002 and PR #117 header; preserve directory pagination, errors, commands and access withdrawal. |
+| PRD-06: Work canvas | Existing List/Card operations retained; compact surfaces and discoverable handles implemented | UX-003/005/006/008; original drag listeners, role checks, command receipts and 24-case BoardWindow functional/capacity counterparts unchanged. Complete real-service regressions remain required. |
+| UX-003-VS-03-T-02 / TEST-01 | Implemented → Testing; scoped results pass, full acceptance open | Parent PR #117 qualification/review/integration, latest-main reconciliation, every required candidate check and final review. UX-001/002/003 foundation PRDs remain partial. |
+
+Retained failures and evaluation: the first controlled browser run failed all four cases: a cold lazy icon invalidated the development React graph, then three cases exposed a new fixture counter counting SignalR negotiation as a domain write. Prebundling the new icon and classifying only that transport request corrected those causes; warm and fresh cold runs each passed four. All business-write assertions, deadlines and retries remain unchanged. The first complete affected unit aggregate remains **Failed: 197 passed/1 failed**, an existing cached-Card close/focus test exceeding its original 5-second whole-test deadline. The complete file subsequently passed 3/3 and a fresh complete twelve-file suite passed 198/198. Its exclusive cause is unproven; a narrower pass never replaces that failed aggregate. Historical parent failures are also retained.
+
+Branch `ux/trello-org-work-polish` is isolated on PR #117's `b6a30cc0` head, not an overwrite of independent PR #118 recovery or PR #119/#120 Search work. Parent #117 currently has 22 successful checks and remains draft/unmerged; these checks do not qualify this child. Publish this increment as a stacked draft on `delivery/organization-context-name-20261020`. The existing main-only CI trigger does not automatically run full CI for that stacked base. Keep it unmerged, then reconcile the qualified parent/latest main and require fresh complete checks at the final child head. No workflow or protection is relaxed. The next UX increment is bounded Card-detail/Search presentation after this foundation is reviewed.
+
+Evidence: `docs/delivery/evidence/trello-polish-*` preserves source identities, live requirements, original failures, successful scoped runs, rollback, inspected captures and parent-only CI. Ledger: **1,611 work items / 3,906 criteria**, with functional, UX, test and acceptance status separate. Compiler output has development identity and is supporting compilation evidence, not a qualified release bundle. Controlled HTTP/quiet transport does not establish actual persistence, collaboration, tenant security or full device/screen-reader acceptance.
+
+The dated entries below preserve earlier checkpoint history; they do not describe the current Trello-style candidate.
+
+---
+
+
+
+---
+
+Preserved independent Search checkpoint:
+
 ## Keyboard paging and Organization-context coordination — 2026-10-20
 
 Current follow-up: [draft PR #120](https://github.com/nickmailhot-lang/StrataAI2/pull/120), branch `ux/search-keyboard-paging`, application/browser source `66bee0439fdfca53ddc30bcf71770eef76c86019`, based on PR #119 patched head `42b02c60`. PR #119 is still draft and unmerged while fresh required gates run. Its original security failure remains retained; reuse of exact Vite 8.3.4 passed a fresh isolated locked install, zero-vulnerability audit, both TypeScript checks, 67 affected tests and production compilation. The compiler output uses local development identity and is not immutable release evidence.
@@ -776,3 +827,57 @@ Fresh PRD-04 matches the retained requirement body and timestamp. The latest qua
 All original scoped criteria are reconciled without changing their wording or ownership. Five previously unverified criteria now have current acceptance evidence. Twelve retained records remain Review and the Board recovery slice remains In Progress until current tracking validates and the original legal child-first lifecycle completes. The broader creation/edit capability and PRD-04 remain open. This acceptance adds no runtime code, schema, permissions, retries or deadline changes.
 
 The original CLI completed all 16 child-first transitions. Seven retained Tests, five Tasks and the independent Board recovery slice are Done, with all required children, acceptance, source, checks, security, UX, review, actual main integration and tracking verified. Together with the previously completed Task04/Test, working totals are 66 Done of 1,600 work items. Published main remains separately reported until metadata publication. Parent PRD-04 and the MVP remain open.
+
+### Cycles 49, 53 and 54 — Current Organization name and usable Board entry
+
+Implemented: `PRD-03-VS-01-T-02` and its two Test children identify the current authorized Organization by name in the shared internal shell. Unknown, failed, malformed, foreign, replaced-account and withdrawn contexts use neutral feedback. Before/after actor reads, cancellation and metadata/focus recovery preserve the existing permission boundary. The name wraps at phone widths and enlarged text. Whole-page navigation resets the previous page's document scroll; opening and returning from Card details preserves the same Board context. Source `1a253fef0e736662445fbb72673aad6520257ad4` changes the frontend; API, Worker, schema and permissions remain unchanged.
+
+Tested locally: all 38 targeted caption/shell/scroll/App cases pass, including three reset controls that failed before repair and the passing Board/Card preservation control. Current web/browser types, lint, the original 483-case/170-file browser coverage check and one isolated frontend build pass. All 22 existing keyboard-admission contracts pass for native test source `99298c53b4cdaa1528fa2655938561b429796733`. This follow-up observes the first move request using the existing helper and checks exactly one move; it preserves the original receipt, canonical state, idempotency, timeout and retry assertions.
+
+The complete real-service browser run passes 12/12 with zero retries and skips: the original eight work/scroll/touch cases plus four sign-in → Organization → Board → Card → return/name-withdrawal cases at 1280/768/390/320px. The 768px name case retains 200% text through reload. The served frontend is the exact four-asset R7 build; test source R8 changes only one browser file. The retained API/Worker images, fresh restricted PostgreSQL, original guarded account and scoped Worker fixtures are recorded separately. Cleanup removed owned resources and credentials; the unrelated Worker stayed unchanged. This local mixed-client run supports verification and does not certify the future immutable release.
+
+Manual review: eight selected captures were inspected separately from automated results, including an unaltered 768×900 trace viewport proving the Board heading is below the fixed header at 200% text. The original obscured-heading viewport, two failed 11/1 native aggregates, initial default frontend failures and two stale tracking-evidence refusals are retained. The earlier 390px destination opening and later 768px zero-request confirmation failures now pass without relaxing assertions or replaying a dispatched write. Original tracking contracts subsequently pass 36/36 with full source/hash/Git/baseline validation on the recorded 833-evidence input.
+
+The complete current frontend run subsequently passed: 2,939 passed, zero failed, and the original 24 capacity deferrals. All 2,959 original case identities plus the four new scroll regressions were verified unchanged. After that original run terminated, a normal fast-forward consolidated the one-file native test follow-up while preserving the ledger and report. All three feature records are Testing. Current tracking contracts pass 36/36 on the recorded 844-evidence input; the final 846-record source/hash/Git/baseline/history validation is recorded separately.
+
+Acceptance remains pending. The new feature still needs its own current CI, final review and target-branch integration. PR #116 is a separate frozen tracking/runtime-test candidate and cannot supply checks for this UI source. No new feature item, parent PRD or MVP is marked Done. The next action is to publish the focused draft with current evidence, inspect its own checks, and integrate only after all required gates pass.
+
+
+The focused change is published as draft [PR #117](https://github.com/nickmailhot-lang/StrataAI2/pull/117). Its initial stacked target did not match the maintained CI filter, so the target was corrected to main with no source or workflow change. It depends on #116; inherited #116 changes will leave the diff after that PR merges. The normal publication-ledger update starts eligible current-head CI. All three feature records remain Testing until their own required checks, final review and actual main integration pass.
+
+
+## Offline Organization context repair — 2026-10-20
+
+Published PR117 exposed two original offline member lifecycle failures: the protected page withdrew names but the new header retained the Organization name. The failure and original verification history remain recorded. Source `c940a6501e64c96bb90ee2ce42a0396059c97d56` now withdraws the header immediately on disconnection, cancels late authority, refuses offline refresh and reads fresh authority on reconnect.
+
+Three dedicated controls failed before repair. All 27 caption controls passed after it. The complete original four lifecycle and four Organization/Board/Card context browser cases passed with zero failures, skips or retries, including both previously failing cases. Original 150-second lifecycle and 90-second context deadlines, five-second name assertion, role/receipt/Axe checks and retries remain unchanged. One new isolated frontend build passed, and all eight selected captures were inspected with explicit pending/neutral-capture limits. The isolated runtime cleaned up and the protected Worker was unchanged.
+
+The wider frontend suite is still running; no full pass, new published CI pass or main integration is inferred. The caption records return through Implemented and Testing with these limits. PR116 has separately merged with all 22 checks and exact source/tested/main tree equality; no parent PRD or MVP is closed.
+
+
+CI repair validation at ac55be7025ad1df93c09fed8f68b679517516486: original invitation10 passed at F and additional14 affected original cases passed at F2, separately bound runs with zero skips/retries. Named Organization/Board/Card at1280/768200%/390/320 preserves exact scroll and focus return, private context withdrawal and Axe checks. Canonical event collectors preserve actor/version/private metadata and distinct producer effects across independent connections. Six actual320/200% captures inspected; neutral pending header withdrawal remains intentional. Original frontend2942Pass/24deferred sourceC result retained; current repaired-head immutable CI and main integration remain pending. No product/schema/API/permission/CI-policy change or parent closure.
+
+
+## Card entry and return context — 2026-10-20
+
+Actual PR117 and118 third browser partitions fail the original320px exact return-scroll assertion35→36. The official118 trace shows the shift after Close; all60 retained artifact checksums were verified. Two deterministic fractional policy controls fail before repair. Source 271da4900f99e2c97e42d99932ec424b2b705a75 reuses the existing reveal policy for initial focus and return, observes only the focused Card/layout, preserves horizontal context, and yields to manual scrolling and drags. No API, role, event, schema or native test comparison changes.
+
+Tested locally:24 focus controls, 56 original caption/keyboard/drag cases, web types, scoped lint and one isolated frontend build pass. Original12 real-service context/work/scroll/touch scenarios and BoardScreen regression remain pending. Responsive/keyboard/Axe/manual visual, full required CI, review and main integration remain required. No product acceptance or new Done.
+
+
+Current271da real-service validation passed12/12 withzero skips/retries: originalfour named-context/exactreturn/privatewithdrawal profiles, four Work journeys, three scroll cancellation cases and originaltouch persistence. Nine selected rendered resources inspected, including320native focused return frame; neutral pending return captures do not prove settled names. Own fixture cleanup and protectedWorker invariant pass. Separately, original40-case localBoardScreen suite failed19Pass/21Fail; a bounded unchangedP2/repaired comparison reproduces the due-description failure onboth. Full baseline comparison and own newimmutableCI remain required; no localfullpass, acceptance, integration or Done claimed.
+
+
+### Cycle139: navigation originals and Organization keyboard admission
+
+Implemented: dc40d996 (runtime4bc16f8; Ysourcea54e2f2). Tested:28navigationcontrols,25keyboardprotocolcontrols, currentnativeNavigation3/defaultOrganization4/compiledrollback4 andalloriginalassertionpreservation. Sixactualrendered resources inspected, including desktop/phoneRetry andOwner/Admin/Member reflow. The complete localdefault12run remainsFailed (11passes andone unchanged30sBoard200%timeout); priorBoard5pass andexactinput-equivalence proof remainseparate. Fullfrontend/currentimmutableCI/review/mainintegration andoverallacceptance are pending. ExistingTask/TestrecordsremainTesting; no PRD/MVPcompletion claimed. Evidence: EVID-CYCLE-139-NATIVE137-FAILED, NAVIGATION-ORGANIZATION7, ROLLBACK4, RENDERED6.
+
+
+### Cycle142: full regression remains unqualified
+
+The complete local frontend run finished with2951passes,12failures andtheoriginal24capacitydeferrals. All71cases in thethreepreviouslyfailingfiles thenpassed onbothrepairedsourceandunchangedpublishedbaseline, withoriginalassertions/deadlines. These targetedpasses do not replace the failedfullrun orproveexclusivecause. CurrentrequiredCI must independentlyvalidate theentirefrontend andBoard5 beforemerge; regressionsgate remainsFailed andTask/TestrecordsTesting. Evidence:EVID-CYCLE-142-FULL-FRONTEND-FAILED,CURRENT71,BASELINE71.
+
+
+### Cycle152: patched build-tool verification
+
+Exact Vite8.3.4 and required locked build-tool transitives pass supported npm11.19.1 fresh install, audit0, web/browser types, complete15 NavigationConfirmation cases and production compilation. Compiler verification uses default local metadata and is not an identified release bundle. Original security failures and the separate native7/4 aggregate remain Failed. New-head complete CI and integration remain required; no UX/product acceptance is inferred. Evidence:EVID-CYCLE-152-PATCHED-VITE-LOCAL.

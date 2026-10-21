@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
       this.emitFile({ type: 'asset', fileName: 'build-metadata.json', source: JSON.stringify(buildIdentity) });
     },
   }],
+  // The lazy Board consumer must share the initial optimized React graph.
+  // Discovering its new icon mid-navigation can invalidate a cold dev graph.
+  optimizeDeps: { include: ['@mui/icons-material/DragIndicator'] },
   server: {
     port: 5173,
     proxy: {

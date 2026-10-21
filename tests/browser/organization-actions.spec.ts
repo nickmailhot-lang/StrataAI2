@@ -4,7 +4,7 @@ import { expect, test } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { openOrganizationActions } from './organizationActionAdmission';
-import { openAdmittedReview } from './keyboardAdmission';
+import { openAdmittedReview, tabAdmittedFocus } from './keyboardAdmission';
 
 const rollback = process.env.STRATAAI_E2E_WORK_UX_ROLLBACK === '1';
 for (const width of [1280, 768, 390, 320]) {
@@ -76,10 +76,11 @@ for (const width of [1280, 768, 390, 320]) {
           await expect(client.getByRole('link', { name: permittedName, exact: true, includeHidden: true })).toHaveCount(1);
           await expect(permitted).toHaveCount(0);
           await summary.focus(); await expect(summary).toBeFocused();
-          await client.keyboard.press('Tab');
+          const nextBoard = client.getByRole('link', { name: 'Permitted action Board', exact: true });
+          await tabAdmittedFocus(summary, nextBoard, 'Tab');
           await expect(client.getByRole('link', { name: 'Permitted action Board', exact: true })).toBeFocused();
-          await client.keyboard.press('Shift+Tab'); await expect(summary).toBeFocused();
-          await client.keyboard.press('Enter');
+          await tabAdmittedFocus(nextBoard, summary, 'Shift+Tab'); await expect(summary).toBeFocused();
+          await openOrganizationActions(client, permitted);
           await expect(details).toHaveJSProperty('open', true); await expect(permitted).toBeVisible();
         }
         const focusTarget = rollback ? permitted : summary;
@@ -139,8 +140,11 @@ for (const width of [1280, 768, 390, 320]) {
       await participantPage.goBack(); await expect(participantPage).toHaveURL(new RegExp(directoryPath + '$'));
       if (width === 768) await participantPage.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
       const boardLink = participantPage.getByRole('link', { name: 'Permitted action Board', exact: true });
-      await boardLink.focus(); await boardLink.press('Enter'); await expect(participantPage).toHaveURL(new RegExp(boardPath + '$'));
       const cardLink = participantPage.getByRole('link', { name: 'Permitted action Card', exact: true });
+      // Foreground reads can replace the directory link between focus and Enter.
+      // Admit only this read-only opening until its real Board target appears.
+      await openAdmittedReview(boardLink, cardLink);
+      await expect(participantPage).toHaveURL(new RegExp(boardPath + '$'));
       await cardLink.focus(); await cardLink.press('Enter');
       await expect(participantPage.getByRole('dialog', { name: 'Card details', exact: true })).toBeVisible();
       await expect(participantPage.getByRole('textbox', { name: 'Card title', exact: true })).toHaveValue('Permitted action Card');

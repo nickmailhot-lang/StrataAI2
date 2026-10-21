@@ -38,7 +38,8 @@ describe("StrataAI2 application shell", () => {
     expect(
       await screen.findByRole("heading", { name: "Council Operations" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Organization: demo/)).toBeInTheDocument();
+    expect(screen.getByText('Organization', { exact: true })).toBeInTheDocument();
+    expect(screen.getByRole('banner')).not.toHaveTextContent('Organization: demo');
     const navigation = screen.getByRole('navigation', { name: 'Internal application navigation' });
     expect(within(navigation).getByRole('link', { name: 'Organizations' })).toHaveAttribute('href', '/app');
     expect(within(navigation).getByRole('link', { name: 'Work' })).toHaveAttribute('href', '/app/demo');

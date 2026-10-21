@@ -1,0 +1,136 @@
+{
+  "total": 40,
+  "passed": 19,
+  "failed": 21,
+  "skipped": 0,
+  "failures": [
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows fences competing Board commands while recovering an original metadata save after newer canonical data",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows fences competing mutations during unresolved attachment lifecycle and recovers its original request after a newer Card snapshot",
+      "message": [
+        "Error: Test timed out in 10000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows locks competing Card mutations during unconfirmed file upload and recovers the same original request after a newer snapshot",
+      "message": [
+        "Error: Test timed out in 10000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows updates canvas due descriptions on live completion and removes them when dates clear",
+      "message": [
+        "Error: expect(element).toHaveAccessibleDescription()\n\nExpected element to have accessible description:\n  Upcoming\nReceived:"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows updates the card face on acknowledgement and ignores an older refresh without resurrecting a removed card",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows preserves a dirty draft through a hung live read and retries after its deadline",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows preserves dirty fields and focus on a live update, then clears protected state on revoked access",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows creates a list and refreshes from the server only after acknowledgment",
+      "message": [
+        "Error: Unable to find role=\"heading\" and name \"Completed\"\n\nIgnored nodes: comments, script, style\n\u001b[36m<body\u001b[39m\n  \u001b[33mstyle\u001b[39m=\u001b[32m\"padding-right: 1024px; overflow: hidden;\"\u001b[39m"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows retains conflicting edits until explicit discard and sends the current version",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows does not carry one card conflict into another card editor",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows preserves a dirty editor through an unavailable refresh and a newer authoritative snapshot",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows cannot restore scoped data from an older read after a denied save",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows does not resurrect an old save confirmation after access loss and a fresh authorized load",
+      "message": [
+        "Error: Found multiple elements with the role \"status\"\n\nHere are the matching elements:\n\nIgnored nodes: comments, script, style"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows reloads canonical placement after a bound append acknowledgment",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows keeps Card archive recovery outside the removed canonical editor and returns to the Board",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows keeps cross-Board recovery after source removal without treating the moved Card as denied archived detail",
+      "message": [
+        "Error: Test timed out in 10000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows retains a lost whole-List move after source removal, fences other commands and restores focus after original receipt recovery",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows keeps a lost List copy bound through a canonical source revision and returns focus after receipt recovery",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows fences other Board mutations while URL attachment receipt is unresolved but permits its original retry after newer snapshot",
+      "message": [
+        "Error: Test timed out in 5000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows fences competing Card changes for an unresolved cover receipt and permits only its original retry after a newer snapshot",
+      "message": [
+        "Error: Test timed out in 10000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    },
+    {
+      "name": "PRD-01/04/07/08/09 persisted board flows fences competing changes and Card closure while recovering an original comment acknowledgment",
+      "message": [
+        "Error: Test timed out in 10000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n    at task (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2681:43)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2698:16)\n    at Object.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-09-29/referenced-chatgpt-conversation-this-is-an/work/StrataAI2/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2471:28)"
+      ]
+    }
+  ],
+  "reportSha256": "3637f5fc1172fbb10636d323da7214f82dd47411a607144aa244b1830f66c769",
+  "scope": "Actual current271da local original40-case BoardScreen suite:19Pass/21Fail, including20 originaldeadline failures and one due-description readiness failure. Cause not established. Focus24/native12 passes do not replace this result; unchanged published baseline comparison ongoing. No timeout/predicate/skip changes."
+}

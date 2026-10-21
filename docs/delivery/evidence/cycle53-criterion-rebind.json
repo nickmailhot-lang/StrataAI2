@@ -1,0 +1,72 @@
+{
+  "at": "2026-10-20T07:09:26.316Z",
+  "source": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "previous": {
+    "id": "PRD-03-VS-01-T-02-TEST-01/AC-01",
+    "ownerId": "PRD-03-VS-01-T-02-TEST-01",
+    "sourceId": "AC-01",
+    "text": "Actual controlled regressions fail before repair and pass after it: friendlyname/neutralfallback, synchronous scopewithdrawal, actor-bound before/afterread, denial/foreign/malformeddata, obsolete responses and metadata/focus recovery. Preserve original failures and exactsource/results; no weakened assertions or fabricated passes.",
+    "sourceRefs": [
+      "PRD-03/WS-FR-002",
+      "PRD-03/WS-FR-003",
+      "PRD-03/UXA-01",
+      "PRD-03/UXA-02",
+      "PRD-03/UXA-03",
+      "PRD-03/UXA-04",
+      "PRD-03/UXA-05",
+      "PRD-03/UXA-06",
+      "PRD-03/UXA-08"
+    ],
+    "status": "Verified",
+    "evidenceIds": [
+      "EVID-CYCLE-49-NAME-COMPONENT24",
+      "EVID-CYCLE-49-NAME-TYPES-LINT"
+    ],
+    "reviewer": "Delivery lead (agent)",
+    "verifiedAt": "2026-10-20T06:22:15.659Z"
+  },
+  "current": {
+    "id": "PRD-03-VS-01-T-02-TEST-01/AC-01",
+    "ownerId": "PRD-03-VS-01-T-02-TEST-01",
+    "sourceId": "AC-01",
+    "text": "Actual controlled regressions fail before repair and pass after it: friendlyname/neutralfallback, synchronous scopewithdrawal, actor-bound before/afterread, denial/foreign/malformeddata, obsolete responses and metadata/focus recovery. Preserve original failures and exactsource/results; no weakened assertions or fabricated passes.",
+    "sourceRefs": [
+      "PRD-03/WS-FR-002",
+      "PRD-03/WS-FR-003",
+      "PRD-03/UXA-01",
+      "PRD-03/UXA-02",
+      "PRD-03/UXA-03",
+      "PRD-03/UXA-04",
+      "PRD-03/UXA-05",
+      "PRD-03/UXA-06",
+      "PRD-03/UXA-08"
+    ],
+    "status": "Verified",
+    "evidenceIds": [
+      "EVID-CYCLE-53-SCROLL-GREEN",
+      "EVID-CYCLE-53-STATIC"
+    ],
+    "reviewer": "Delivery lead (agent)",
+    "verifiedAt": "2026-10-20T07:09:26.316Z",
+    "verificationHistory": [
+      {
+        "at": "2026-10-20T06:22:15.659Z",
+        "status": "Verified",
+        "evidenceIds": [
+          "EVID-CYCLE-49-NAME-COMPONENT24",
+          "EVID-CYCLE-49-NAME-TYPES-LINT"
+        ],
+        "reviewer": "Delivery lead (agent)",
+        "source": "ddbac5a841f4effc10f9d4677a65315a43ac51af",
+        "retainedReason": "Exact implementation revision changed; original scoped pass retained, current evidence rebound only after same24 tests actually passed."
+      }
+    ]
+  },
+  "controlledPrivacyCases": {
+    "passed": 24,
+    "failed": 0,
+    "withinTargetedTotal": 38,
+    "reportSha256": "eb1a8b5ca1cf5741bdb8ad8f0afbf978871526220780180f6f4bb72806752096"
+  },
+  "scope": "Privacy-only criterion revalidation at current source; no native/whole-regression/CI/main or parent acceptance inferred."
+}

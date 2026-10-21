@@ -1,0 +1,37 @@
+{
+  "startedAt": "2026-10-20T07:04:41.472Z",
+  "finishedAt": "2026-10-20T07:04:50.019Z",
+  "result": "Passed",
+  "source": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "version": "0.1.0-local-scroll-context",
+  "metadata": {
+    "revision": "1a253fef0e736662445fbb72673aad6520257ad4",
+    "version": "0.1.0-local-scroll-context"
+  },
+  "files": [
+    {
+      "path": "assets/index-BWyWBXex.js",
+      "size": 1636694,
+      "sha256": "e372ccf19a2e35dadf5ee9fb2b097804581d6349ff4b9f946660e6d663b7db2c"
+    },
+    {
+      "path": "assets/index-Bw_GsyDn.css",
+      "size": 561,
+      "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+    },
+    {
+      "path": "build-metadata.json",
+      "size": 94,
+      "sha256": "b362474fe365f7a4164488543e094649a51da5d27e9764cea1b7fe480a01480b"
+    },
+    {
+      "path": "index.html",
+      "size": 561,
+      "sha256": "26f09673315042766b8ed790381ab1b599a2c6fb69a9009aa73fa2b7cab8ed8f"
+    }
+  ],
+  "dist": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-17\\strataai2-incremental-prd-delivery-and-progress\\work\\cycle49-organization-context\\apps\\web\\dist-cycle53",
+  "bundlerExit": 0,
+  "logSha256": "31c2d26c204e9de4fc17d7900c064359359db2dc4d343776d0897cc4d0b9bd52",
+  "scope": "One new isolated frontend build after current static pass. Full frontend/native/manual/CI/main remain pending. Retained API/Worker unchanged; no shared mount or production deployment."
+}

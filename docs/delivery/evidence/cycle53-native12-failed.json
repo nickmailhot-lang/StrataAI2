@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-20T07:16:55.058Z",
+  "startedAt": "2026-10-20T07:05:09.568Z",
+  "project": "strataai-mvp-browser-2f3046197005a0df",
+  "exit": 1,
+  "stats": {
+    "startTime": "2026-10-20T07:05:59.372Z",
+    "duration": 650848.083,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "frontendSource": "1a253fef0e736662445fbb72673aad6520257ad4",
+  "result": "Failed",
+  "phases": [
+    {
+      "name": "Start exclusive fixture database",
+      "exit": 0
+    },
+    {
+      "name": "Apply packaged migrations without application build",
+      "exit": 0
+    },
+    {
+      "name": "Provision canonical restricted runtime roles",
+      "exit": 0
+    },
+    {
+      "name": "Provision original disposable identity CI role",
+      "exit": 0
+    },
+    {
+      "name": "Start retained images with original browser-full account fixture",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned api container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned worker container",
+      "exit": 0
+    },
+    {
+      "name": "Verify owned web container",
+      "exit": 0
+    },
+    {
+      "name": "Original eight and new four native cases",
+      "exit": 1
+    },
+    {
+      "name": "Clean only exclusive fixture resources",
+      "exit": 0
+    }
+  ],
+  "primaryError": null,
+  "cleanupError": null,
+  "stockUnchanged": true,
+  "ownedRemaining": {
+    "containers": "",
+    "volumes": "",
+    "networks": ""
+  },
+  "privateSettingsRemoved": true,
+  "logSha256": "8f391fb2f832f81cb92b8d9b273847d2b32b4cd05948f95882191e188beaff5c",
+  "buildRevision": "c3e495e184f4094b5467e1390572a536fb80669f",
+  "qualifiedHead": "8c68b032bb963b64b37b66b122f7e377e9e58e3a",
+  "scope": "ExactR7 full12 native11Passed/1Failed/0Skipped/0Retry. Name4 and original390 destination now pass; original768 confirmation sent0movePOST and original receipt assertion failed. Retain all results; original fixturecleanup fully passed.",
+  "diagnostic": {
+    "source": "1a253fef0e736662445fbb72673aad6520257ad4",
+    "case": "original work768",
+    "result": "Failed",
+    "failure": "Original move acknowledged assertion absent after confirmation Enter, unchanged5000ms assertion timeout.",
+    "observed": {
+      "movePost": 0,
+      "cardPatchStatuses": [
+        503,
+        200
+      ]
+    },
+    "traceSha256": "473f74779e93bbf4722100841f793256dba74ebd2d6193fcb42a638ed7f84251",
+    "scope": "No move mutation dispatched. Read-only admission diagnosis only; no exclusive timing cause claimed, no actual write replay. Reuse existing first-request observer and retain original receipt/canonical/count assertions."
+  }
+}
