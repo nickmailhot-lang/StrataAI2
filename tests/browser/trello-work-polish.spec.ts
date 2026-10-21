@@ -28,6 +28,15 @@ for (const width of [1280, 768, 390, 320]) {
       if (!['GET', 'HEAD'].includes(route.request().method())) source.writes.push(path);
       if (path === '/api/runtime') return route.fulfill({ json: { service: 'strataai-api', mode: 'production', version: '0.1.0', revision: 'a'.repeat(40) } });
       if (path === '/me') return route.fulfill({ json: { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' } });
+      if (path === '/navigation/observations') {
+        const kind = url.searchParams.get('kind'), organization = url.searchParams.get('organizationId');
+        const boardId = url.searchParams.get('boardId'), cardId = url.searchParams.get('cardId');
+        const eventId = route.request().headers()['idempotency-key'];
+        return route.fulfill({ json: { eventId, actorId: actor, organizationId: organization, boardId: kind === 'context' ? null : boardId,
+          eventType: kind === 'context' ? 'APPLICATION_CONTEXT_CHANGED' : kind === 'board' ? 'BOARD_OPENED' : 'CARD_OPENED',
+          entityType: kind === 'context' ? organization ? 'Organization' : 'ApplicationContext' : kind === 'board' ? 'Board' : 'Card',
+          entityId: kind === 'context' ? organization ?? eventId : cardId ?? boardId, version: Number(url.searchParams.get('version') ?? 1), metadata: {}, createdAt: '2026-10-20T12:00:00Z' } });
+      }
       if (path.endsWith('/surface-access')) return route.fulfill({ status: source.denied ? 403 : 200, json: { organizationId: org, surface: 'INTERNAL' } });
       if (path === '/organizations/directory') return route.fulfill({ json: { items: [summary()], nextCursor: null } });
       if (path === `/organizations/${org}`) return route.fulfill({ status: source.denied ? 403 : 200, json: summary() });
@@ -83,6 +92,7 @@ for (const width of [1280, 768, 390, 320]) {
       const r = el.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       return !!hit && el.contains(hit);
     })).toBe(true);
+    await fit(); await page.screenshot({ path: info.outputPath(`work-board-standard-${width}.png`), fullPage: true });
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     await fit();
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);

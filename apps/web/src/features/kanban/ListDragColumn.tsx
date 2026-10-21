@@ -27,7 +27,8 @@ export function ListDragColumn({ id, name, disabled, available, children, scroll
     {available && <Button ref={handleRef} {...drag.attributes} {...drag.listeners} onFocus={focus.onFocus} disabled={disabled}
       aria-label={`Drag ${name} list`}
       sx={{ touchAction: 'none', ...(workExperienceEnabled && { position: 'absolute', top: 4, right: 4, zIndex: 1,
-        minWidth: 44, minHeight: 44, p: 0.5, color: 'text.secondary' }) }}>
+        minWidth: 44, minHeight: 44, p: 0.5, color: 'text.secondary', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider',
+        '&:hover': { bgcolor: 'background.paper', color: 'primary.main' } }) }}>
       {workExperienceEnabled ? <DragIndicatorIcon fontSize="small" /> : <>Drag {name} list</>}
     </Button>}
     {children}

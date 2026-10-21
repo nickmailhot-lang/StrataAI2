@@ -334,7 +334,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
   }
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Stack spacing={2} sx={{ overflowWrap: "anywhere" }}>
+      <Stack spacing={2} sx={{ overflowWrap: 'anywhere', ...(workExperienceEnabled && { '& .MuiButton-root': { textTransform: 'none' } }) }}>
         {!organizationId && data && liveActor && !loadError &&
           <NavigationConfirmation key={`navigation-global-${liveActor}`} target={{ kind: 'context', organization: null }} />}
         {liveNotice && <Typography role="status" aria-live="polite" aria-atomic="true">{liveNotice}</Typography>}
@@ -407,7 +407,7 @@ function DiscoveryScreen({ organizationId }: { organizationId?: string }) {
                 <Typography>{cursor ? "No accessible boards on this page. Return to the first page to check earlier boards." : "No accessible boards yet."}</Typography>
               ) : (
                 <Box component="section" aria-label="Boards in this Organization" sx={workExperienceEnabled ? {
-                  display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: 2,
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap: 2,
                 } : { display: 'contents' }}>
                 {data.boards.map((board) => (
                   <Button

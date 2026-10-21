@@ -587,7 +587,7 @@ function BoardContent() {
     );
   if (!snapshot) return <CircularProgress aria-label="Loading board" />;
   return (
-    <Stack role="region" aria-label="Board workspace" aria-busy={snapshotReading} spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode) ?? (workExperienceEnabled ? 'action.hover' : undefined), borderRadius: 2, p: workExperienceEnabled ? { xs: 1, sm: 2 } : 1, position: 'relative', isolation: 'isolate' }}>
+    <Stack role="region" aria-label="Board workspace" aria-busy={snapshotReading} spacing={2} sx={{ bgcolor: theme => boardBackgroundColor(snapshot.board, theme.palette.mode) ?? (workExperienceEnabled ? 'action.hover' : undefined), borderRadius: 2, p: workExperienceEnabled ? { xs: 1, sm: 2 } : 1, position: 'relative', isolation: 'isolate', ...(workExperienceEnabled && { '& .MuiButton-root': { textTransform: 'none' } }) }}>
       <UnsavedChangesGuard dirty={draftState.dirty || Boolean(creation && creationDirty)} />
       <BoardBackgroundImage snapshot={snapshot} unavailable={snapshotReading || !!loadError} />
       {snapshot.board.lifecycleState === 'active' && snapshot.board.version !== undefined &&
@@ -700,11 +700,13 @@ function BoardContent() {
         </Stack>
       </Stack>
       {saved && <Typography role="status">Changes saved.</Typography>}
+      <Stack direction="row" useFlexGap sx={workExperienceEnabled ? { flexWrap: 'wrap', gap: 1 } : { display: 'contents' }}>
       <ActivityHistoryControl organizationId={snapshot.board.organizationId} boardId={snapshot.board.id}
         kind="BOARD" targetId={snapshot.board.id} unavailable={snapshotReading || !!loadError}
         refreshSequence={`${reload}/${reconnectSequence}`} onDenied={clearDeniedScope} />
       <BoardFilterControl snapshot={snapshot} disabled={busy || snapshotReading || !!loadError || cardRecovery || listRecovery.size > 0 || renameRecovery.size > 0}
         onRefresh={refreshFilteredBoard} onCanvasChange={setCanvasFilter} />
+      </Stack>
       {snapshot.board.lifecycleState !== "active" && (
         <Alert severity="info">
           This board is archived. Editing is unavailable.
