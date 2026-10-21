@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-21T04:57:24.987Z",
+  "revision": "49c5bbce0c420561da549bc36395f61dc646de79",
+  "candidateRevision": "49c5bbce0c420561da549bc36395f61dc646de79",
+  "note": "Fresh complete affected twelve-file suite passed198, no failures or skips, at current source with original timeouts and assertions. Original aggregate failure remains Failed and exclusive cause unproven. This establishes current affected-suite scope, not whole-frontend or immutable release acceptance.",
+  "artifacts": [
+    {
+      "name": "trello-polish-unit-requalification.log",
+      "sha256": "10d5cc3ac50a63bf6dc49744bd6e82710ed6468a81e67af82ed5082bdaebbc05",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/organizations/OrganizationHome.test.tsx src/app/OrganizationContextLabel.test.tsx src/app/OrganizationContextLabel.offline.test.tsx src/features/kanban/BoardCardLink.test.tsx src/features/kanban/ListDragColumn.test.tsx src/features/kanban/BoardScreen.drag.test.tsx src/features/kanban/BoardScreen.test.tsx src/features/kanban/BoardWindow.test.tsx src/features/kanban/DragHandleFocus.test.tsx src/features/kanban/CardMemberIndicators.test.tsx src/features/kanban/CardLabelIndicators.test.tsx src/features/kanban/ListPositionControls.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\nNot implemented: Window's scrollTo() method\r\nNot implemented: Window's scrollTo() method\r\nNot implemented: Window's scrollTo() method\r\nNot implemented: Window's scrollTo() method\r\n\r\n Test Files  12 passed (12)\r\n      Tests  198 passed (198)\r\n   Start at  21:53:15\r\n   Duration  121.51s (import 55%, tests 28%, environment 13%, transform 2%, setup 2%)\r\n\r\n"
+    }
+  ]
+}

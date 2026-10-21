@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-21T04:57:24.987Z",
+  "revision": "49c5bbce0c420561da549bc36395f61dc646de79",
+  "captures": [
+    {
+      "path": "docs/delivery/evidence/trello-polish-organization-work-1280.png",
+      "sha256": "ada70c0a627b5b2704049d7467c544374ded2514891c315812a0718c229de88f"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-work-board-standard-1280.png",
+      "sha256": "ee6482a7092acc97ee141f2684f3e736ee5443880c5a9ceb90b79e8138a9604f"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-organization-work-390.png",
+      "sha256": "65728f5d2e310fc33cd0812c93c16727c0bc604d24b0db0d176d4e50c8d2997a"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-work-board-standard-390.png",
+      "sha256": "09ac7d0a1188dea76dbbbf03bc631809e8683f0dfde199a0cc55f5d47d0eff57"
+    }
+  ],
+  "inspection": "Developer inspected actual desktop/mobile standard-text Board and Organization captures: readable authorized names, bounded board tiles, label/title hierarchy, visible named 44px handles, retained actions and horizontal list canvas. Four-width keyboard/reflow/200%text/Axe passed separately. Quiet transport exposes existing Recovering board updates status; no live-service acceptance. No screen-reader/device/full-WCAG certification or screenshot baseline blessing."
+}
