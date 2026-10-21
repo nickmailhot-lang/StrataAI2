@@ -2,6 +2,8 @@ import { useCallback, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { Box, Button } from '@mui/material';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { useDragHandleFocus } from './useDragHandleFocus';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import { workExperienceEnabled } from '../../app/workExperience';
 export type ListDropRequest = { listId: string; name: string; version: number; before: string; nonce: string };
 export function ListDragColumn({ id, name, disabled, available, children, scrollMemory }: { id: string; name: string; disabled: boolean; available: boolean; children: ReactNode; scrollMemory?: Map<string, number> }) {
   const drag = useDraggable({ id, disabled: disabled || !available }); const drop = useDroppable({ id, disabled: disabled || !available });
@@ -20,8 +22,14 @@ export function ListDragColumn({ id, name, disabled, available, children, scroll
     onScroll={event => { if (event.target === event.currentTarget) scrollMemory?.set(`section:${id}`, event.currentTarget.scrollTop); }}
     sx={{ bgcolor: 'grey.100', borderRadius: 2, p: 2, minHeight: 240, maxHeight: '70vh', overflowY: 'auto', position: 'relative', zIndex: drag.isDragging ? 2 : 'auto',
       outline: drop.isOver && !drag.isDragging ? '2px solid' : undefined, outlineColor: 'primary.main',
+      ...(workExperienceEnabled && { p: 1.5, border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }),
       transform: drag.transform ? `translate3d(${drag.transform.x}px,${drag.transform.y}px,0)` : undefined }}>
-    {available && <Button ref={handleRef} {...drag.attributes} {...drag.listeners} onFocus={focus.onFocus} disabled={disabled} sx={{ touchAction: 'none' }}>Drag {name} list</Button>}
+    {available && <Button ref={handleRef} {...drag.attributes} {...drag.listeners} onFocus={focus.onFocus} disabled={disabled}
+      aria-label={`Drag ${name} list`}
+      sx={{ touchAction: 'none', ...(workExperienceEnabled && { position: 'absolute', top: 4, right: 4, zIndex: 1,
+        minWidth: 44, minHeight: 44, p: 0.5, color: 'text.secondary' }) }}>
+      {workExperienceEnabled ? <DragIndicatorIcon fontSize="small" /> : <>Drag {name} list</>}
+    </Button>}
     {children}
   </Box>;
 }

@@ -11,3 +11,5 @@ docs/delivery/evidence/cycle20* -text
 docs/delivery/evidence/merge17* -text
 # Preserve the three original hashed Windows delivery transcripts byte-for-byte.
 docs/delivery/evidence/cycle140-*-delivery-check.txt -text -whitespace
+# Preserve this UX cycle's hashed diagnostic wrappers on every checkout OS.
+docs/delivery/evidence/trello-polish-* -text
