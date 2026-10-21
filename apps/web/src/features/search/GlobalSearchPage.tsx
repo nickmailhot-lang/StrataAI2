@@ -80,7 +80,7 @@ export function GlobalSearchPage() {
     <PageHeader title="Search Cards" variant="h5" description="Search across your accessible Organizations and Boards." />
     {!page && !busy && !notice && <Typography>Choose filters, then select Search. Leave filters empty to browse Cards you can access.</Typography>}
     <Stack component="form" spacing={2} useFlexGap={workExperienceEnabled}
-      sx={workExperienceEnabled ? { display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' },
+      sx={workExperienceEnabled ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 16rem), 1fr))',
         alignItems: 'start', p: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2,
         '& .MuiFormControl-root': { minWidth: 0 }, '& .MuiButton-root': { minHeight: 56, textTransform: 'none' } } : undefined}
       onSubmit={event => { event.preventDefault(); actor.current = undefined;
