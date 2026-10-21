@@ -1,5 +1,13 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Original qualification complete; repaired candidate ready for fresh CI
+
+Original PR121 head951e6fdb run39646826188 has completed: **17 successful checks,4 failed checks,1 skipped release check**. Full browser matrix: **482 passed /3 failed /2 existing mail-profile skips**; the separate strict-account group has one additional metadata recovery failure. Last full group passes119. The required-ci failure and skipped release correctly prevent integration. All four failed native cases are evaluated and retained in the failure records below.
+
+Prepared source87dd2d0b addresses the pointer edge turn and keyboard admission. Fresh committed admission contracts pass31 atf485d5d8, and the enriched ledger including the final scoped proof passes root/Git/hash/main-history validation: **1611 items /3906 criteria /923 evidence records /69 Done**. These local checks do not replace complete current candidate CI, real-service roles/security, release validation, source/UX review or main integration. Publish one replacement candidate now and freeze it through that qualification. PR117 is already merged; PR121 and Card/Search122 remain draft/unmerged. Functional, UX, test and MVP acceptance stay separate; no parent closure or product percentage.
+
+---
+
 ## 2026-10-21 — Native regression repairs prepared; full qualification remains mandatory
 
 Original951 CI is Failed: strict-account phone metadata retry acknowledgment; full2 phone mouse/touch horizontal edge scrolling (118passed/2failed/2existingmail skips); full3 desktop settings draft discard (122passed/1failed). Full1 passes123; full4 continues. Every failure and trace artifact identity is retained; no native assertions, five-second deadlines, retries or security/role checks changed. PR117 is integrated37656975; PR121 remains draft/unmerged.
