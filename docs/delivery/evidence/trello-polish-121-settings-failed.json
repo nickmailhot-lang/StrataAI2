@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-21T20:44:10.876Z",
+  "result": "Failed",
+  "revision": "951e6fdbf2d20859f0c583d981934ba0d6fa9816",
+  "scope": "Actual hosted browser-full3 Organization settings draft discard failure; original exact value5000ms assertion retained.",
+  "testedSynthetic": "3cb874f77b95acab5e7879423013cd0aa59eb9a6",
+  "runId": 39646826188,
+  "jobId": 119403640850,
+  "counts": {
+    "passed": 122,
+    "failed": 1
+  },
+  "artifact": {
+    "id": 12380351058,
+    "sha256": "a195b7ed8095121a403cb2241b76093881533c54ef32d7476c0cb393df3b742b"
+  },
+  "failure": "organization-settings-live.spec.ts66: desktop Discard draft keyboard activation leaves Original unsaved draft instead of Later saved version; preceding original retry receipt/key/payload assertions passed.",
+  "evaluation": "Trace shows raw focus then page Enter while protected foreground reads can retire admission. Observe one native click on the original local review control, then leave the exact consumer result assertion unchanged. Do not repeat after activation, transfer intent to a replacement control, replay a business command or retry until a desired value appears. No exclusive product defect claim; full native scenario must pass current qualification.",
+  "capture": {
+    "path": "docs/delivery/evidence/trello-polish-121-settings-red-1280.png",
+    "sha256": "1766f26dff6a09ed44c3b7c9f7c363970ac3300cb50c1f910fa4160fc86461dd"
+  }
+}

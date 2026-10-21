@@ -1,5 +1,24 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Native regression repairs prepared; full qualification remains mandatory
+
+Original951 CI is Failed: strict-account phone metadata retry acknowledgment; full2 phone mouse/touch horizontal edge scrolling (118passed/2failed/2existingmail skips); full3 desktop settings draft discard (122passed/1failed). Full1 passes123; full4 continues. Every failure and trace artifact identity is retained; no native assertions, five-second deadlines, retries or security/role checks changed. PR117 is integrated37656975; PR121 remains draft/unmerged.
+
+Source87dd2d0b fixes compact-handle bent pointer edge progression using only visible owned fallback surfaces when preferred travel has no progress; speed/clipping/center-stop/keyboard handling remain. New regression reproduces the old defect9/1 and passes10/10 after repair. Native keyboard callers observe their exact request or one original local control activation; no replay after observed activation, duplicate tolerance, replacement-control transfer or consumer-result retry.
+
+Scoped checks: **107 affected components;31 admission positive/refusal contracts;7default+7rollback browsers;web/browser types;strict lint;11 architecture/capacity guards;490 cases/172 intact browser files;local compiler8.80s** Passed. Browser runs identify1ebd inputs equal87dd; admission run used the new working-tree inputs later committed87dd. Compiler identifies87dd/0.1.0-local and retains the existing chunk warning. Controlled HTTP/Vite runs do not certify real services, RLS, Production CSP, immutable images or release. Fresh complete final-head gates are mandatory.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities and data/API/tenant contracts preserved; existing pointer edge behavior repaired. |
+| UX completion | Scoped default/rollback Board geometry, keyboard return, reflow and Axe pass; full own workflow acceptance pending. |
+| Test completion | Narrow107+31+7+7 and source gates pass; actual original native failures remain Failed, complete repaired-head CI pending. |
+| MVP readiness | Not accepted globally; bounded Task/Test stay Testing, criteriaUnverified,69Done unchanged. No product percentage. |
+
+Card/Search polish remains preserved in draft122 with its scoped97+8+8 results and original text-zoom red retained. Reconcile this work after121 safely integrates, then require122 own complete qualification. Independent118 and119/120 histories remain intact.
+
+---
+
 ## 2026-10-21 — PR121 native phone recovery failure retained; admission rework
 
 PR117 dependency is resolved by its ordinary main merge37656975. Current PR121951 native strict-account Board metadata phone recovery failed its original5000ms exact acknowledgment assertion. Trace shows only the initial lost-ack PATCH and an ignored Retry Enter; the original unconfirmed draft remains. Reuse the existing request-observed admission helper for initial save, original-key retry and reviewed save; stop once each exact request begins. All payload/key/count/receipt/focus/persistence/role assertions, original deadlines and zero test retries remain intact. No application, API, schema or helper semantics changed. The original failed job and screenshot are retained; narrower helper checks cannot qualify the full native scenario.

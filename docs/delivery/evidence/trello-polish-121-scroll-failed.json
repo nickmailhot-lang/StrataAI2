@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-21T20:44:10.876Z",
+  "result": "Failed",
+  "revision": "951e6fdbf2d20859f0c583d981934ba0d6fa9816",
+  "scope": "Actual hosted browser-full2 native mouse/touch phone horizontal edge scroll failure, original5000ms scrollLeft>0 assertions intact.",
+  "testedSynthetic": "3cb874f77b95acab5e7879423013cd0aa59eb9a6",
+  "runId": 39646826188,
+  "jobId": 119403640777,
+  "counts": {
+    "passed": 118,
+    "failed": 2,
+    "skipped": 2
+  },
+  "existingSkips": "Existing mail-profile pair only; no new skip.",
+  "artifact": {
+    "id": 12380220366,
+    "sha256": "1d52f923814000da0beedb677fcfb8c438a8fd260ae222dcf40b245c4ddaa810"
+  },
+  "failure": "kanban-scroll.spec.ts62: phone mouse and touch activate drag and scroll vertically, then horizontal Board scrollLeft remains0 at the original5000ms deadline; desktop passes.",
+  "trace": {
+    "pickup": {
+      "x": 306.796875,
+      "y": 317.03125
+    },
+    "verticalTarget": {
+      "x": 183.8984375,
+      "y": 727.828125
+    },
+    "boardEdgeTarget": {
+      "x": 354,
+      "y": 452.4296875
+    }
+  },
+  "evaluation": "Compact right-hand pickup leaves net vertical displacement dominant even after turning to the Board edge. Current owned visible edge must allow progress when the preferred travel axis has no scrollable edge. Preserve preferred-axis corner priority, clipping, hidden/detached/unowned refusals, speed bounds, native center stop and library keyboard behavior.",
+  "captures": [
+    {
+      "path": "docs/delivery/evidence/trello-polish-121-scroll-mouse-red-390.png",
+      "sha256": "fc84866430aaf47f69034b78cad657c6e115b33d71eb126dfc6f77af1152c2ec"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-121-scroll-touch-red-390.png",
+      "sha256": "05293708fc5a0d257a80d801e9bb7938e5a9c348b60a005e3b9d21217e759305"
+    }
+  ]
+}
