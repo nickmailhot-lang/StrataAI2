@@ -1,5 +1,13 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — PR121 native phone recovery failure retained; admission rework
+
+PR117 dependency is resolved by its ordinary main merge37656975. Current PR121951 native strict-account Board metadata phone recovery failed its original5000ms exact acknowledgment assertion. Trace shows only the initial lost-ack PATCH and an ignored Retry Enter; the original unconfirmed draft remains. Reuse the existing request-observed admission helper for initial save, original-key retry and reviewed save; stop once each exact request begins. All payload/key/count/receipt/focus/persistence/role assertions, original deadlines and zero test retries remain intact. No application, API, schema or helper semantics changed. The original failed job and screenshot are retained; narrower helper checks cannot qualify the full native scenario.
+
+Functional/UI implementation remains present; test acceptance is failed and bounded Task/Test returned legally from Testing to In Progress. Merge is blocked until the repaired final head passes every required gate. Other current-run browser groups may finish to expose additional failures. Card/Search source remains preserved independently in draft122; it is not accepted or merged. No parent PRD closure or product percentage.
+
+---
+
 ## 2026-10-21 — PR #117 dependency resolved; PR #121 full qualification active
 
 PR #117 merged normally as `37656975f491352a3b9e5dc4ea0b124b546318c4` after all **22 exact-head checks passed**. Current hosted frontend: **2,963 passed / 24 original capacity deferrals**; complete full browsers: **481 passed / 2 existing mail-profile skips**, no failures. Foundation, commands, notifications, tenant/role/security and immutable bundle/startup/HTTPS checks pass. Source and empty review-thread/submission state were inspected. Actual merged tree `f9e682ddc1b843c7358a3c56e400b7047059076a` equals qualified synthetic merge `afb994ee`; main/head parents and historical failures are preserved. Complete hosted qualification is separate from earlier failed local aggregates and does not erase them.
