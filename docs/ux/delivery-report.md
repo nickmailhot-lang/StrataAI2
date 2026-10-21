@@ -1,5 +1,20 @@
 # Consolidated PRD delivery report
 
+## PR #119 security rework — current checkpoint
+
+The required security job on `f195f0e1` failed the unchanged high-severity npm audit for Vite 8.3.1 (GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw, GHSA-587h-7wmj-h5pm). Original log retained in `ux-polish-pr119-security-failed.json`; no threshold, assertion or retry was weakened. Reused existing patch `c99d1a7` as `aaba78a5`, changing only exact Vite 8.3.4 and its required locked transitive dependencies. The new locked-dependency audit reports zero vulnerabilities. This does not replace full installed-toolchain/security/immutable-release qualification.
+
+| Metric | Current result |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new business capability accepted |
+| UX completion | Search guidance implemented; Organization context remains owned by draft PR #117 and its first-use consumer PR #118. Search keyboard paging remains an independent follow-up audit |
+| Test completion | Previous-head source/web/.NET/PostgreSQL/CodeQL passed; security failed and browser jobs pending. Patched-head full CI and installed-toolchain checks required |
+| MVP readiness | PR #119 remains draft and unmerged. Task/Test returned to In Progress with retained failure; no additional Done or parent closure |
+
+Next: require exact patched-head full gates and review before merge. Preserve the existing Organization context implementation and single shared-shell owner; reproduce keyboard focus during paging and failure return in an isolated follow-up.
+
+---
+
 ## Current-build UX-first polish — 2026-10-20
 
 User-approved priority: polish existing priority MVP journeys before expanding visible functionality. [Polish milestone and ordered gaps](polish-milestone.md) now govern AGENTS and the delivery procedure. Existing implementation, approved backlog, original requirements and historical results remain intact. Independent security/reliability and supporting backend work may continue.
