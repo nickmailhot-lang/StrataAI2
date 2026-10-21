@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Combined Card/Search and repaired foundation pass scoped checks
+
+Actual combined source **3f9a150a** retains both ebb04eb5 Card/Search and1730b891 repaired foundation through a normal side-branch merge. Both parent ledger histories, criteria, evidence and report checkpoints are preserved. Card/Search feature files remain byte-identical to implemented FF source; this checkpoint verifies their interaction with the new pointer repairs.
+
+**161/161 affected component tests;15/15 default +15/15 rollback browser cases;web/browser types;strict lint;11 architecture/capacity guards;502 cases/174 intact browser files;local compiler5.79s** pass. Browser cases cover Card context/read withdrawal/drafts/return, Search applied/draft paging/error/denial/200%text, Organization/Work navigation/roles/reflow/Axe and native mouse/touch edge turns/cancel/no-write/scroll return. The unchanged delivery provenance guard first refused the new combined pass because implementation still namedFF. That Failed attempt is retained; prior FF implementation is preserved in history and current qualification is bound to actual3f9a. No source/test/validator/deadline was changed. Five current desktop/phone/tablet-zoom captures are byte-identical to retained inspected images, so those assets are reused. Compiler identifies3f9a/0.1.0-local; the existing chunk warning remains.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities and actual119/120 work preserved; pointer recovery improvements retained. No new domain/API/schema. |
+| UX completion | Combined Card/Search and foundation workflows pass the scoped default/rollback interaction checks; full own acceptance pending. |
+| Test completion | Current scoped161+15+15 and source gates pass. Controlled HTTP/Vite does not qualify native real-service roles/security, Production CSP or release; own full CI remains required. |
+| MVP readiness | Not accepted globally. Four Card/Search records stay Testing, criteriaUnverified;69 inherited Done unchanged. No product percentage. |
+
+PR121 stays frozen1730b891 in fresh CI39674641269, with full frontend2964passed/24originalcapacitydeferrals. Its remaining full gates and review must pass before normal main integration. PR122 remains stacked/draft/unmerged; after parent integration it must qualify its own complete final head. Original native and zoom failures remain Failed evidence, independently of narrower later passes. Ledger: **1619 items /3915 criteria /965 evidence records**.
+
+---
+
 ## 2026-10-21 — Card/Search reconciled with the repaired foundation
 
 PR121 is frozen at1730b891; fresh complete CI39674641269 is running against tested merge e0dbff49, tree599bc9ff. Its main dependency117 is resolved, but no121 acceptance or merge is claimed. The original failed native runs and their repairs remain below.

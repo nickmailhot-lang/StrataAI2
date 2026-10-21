@@ -1,0 +1,1334 @@
+{
+  "revision": "3f9a150af0be51fff4d40592efb36a37b59b5aaf",
+  "at": "2026-10-21T21:11:53.802Z",
+  "result": "Passed",
+  "scope": "Reconciled actual Card/Search source and actual repaired foundation; combined161 components and15default+15rollback controlled native/keyboard/zoom/Axe cases. Source checks and local compiler only; own complete CI/security/roles/release/review/integration remain mandatory.",
+  "parents": [
+    "ebb04eb51dc03d22ab0cc8f313e306b65f2e592e",
+    "1730b8915445af0fc3cb9e6d7abf126e720de39d"
+  ],
+  "tree": "02e2a28784dea32f3d3a048366318c1c47ed3cc6",
+  "cardSearchInputEquivalence": [
+    {
+      "path": "apps/web/src/features/kanban/BoardScreen.tsx",
+      "sha256": "ccca2dbe4993f68007c5593744dae5b1469d1838f269939f006af1a1db1f3a19"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CardDetailEditor.tsx",
+      "sha256": "dd5dfa5f2bad3ecee0be3fe5503d9bddc3590c5e2c7c29c1445c0463e43cca19"
+    },
+    {
+      "path": "apps/web/src/features/search/GlobalSearchPage.tsx",
+      "sha256": "8414cfea952ec86c71491164e4a48223c5c8979de0529ad5fbd55c71208e148a"
+    }
+  ],
+  "captures": [
+    {
+      "capture": "card-details-1280.png",
+      "sameAsRetained": true,
+      "currentSha256": "74c37d54c675a5b2a344e52da17c0f12f4a59dd24cd503d5f1a6b13ef62d54d5",
+      "retainedPath": "docs/delivery/evidence/trello-polish-detail-fixed-card-details-1280.png"
+    },
+    {
+      "capture": "card-details-390.png",
+      "sameAsRetained": true,
+      "currentSha256": "5b095d84a24531945705d820e2b1bd311f4048956b7f1318c2c73fb25b792429",
+      "retainedPath": "docs/delivery/evidence/trello-polish-detail-fixed-card-details-390.png"
+    },
+    {
+      "capture": "search-results-1280.png",
+      "sameAsRetained": true,
+      "currentSha256": "502f179b4aeaf1cafdf0bbecfe31754d6ef3ca0b41204d3de5720d7ec696b5fa",
+      "retainedPath": "docs/delivery/evidence/trello-polish-detail-fixed-search-results-1280.png"
+    },
+    {
+      "capture": "search-results-390.png",
+      "sameAsRetained": true,
+      "currentSha256": "d51a04f32d713b2f5d3530ca7343092a37b9ed2c26fb0c05ad38f9d0dfdc7a4d",
+      "retainedPath": "docs/delivery/evidence/trello-polish-detail-fixed-search-results-390.png"
+    },
+    {
+      "capture": "search-zoom-scope-768.png",
+      "sameAsRetained": true,
+      "currentSha256": "45fd2e6b7a2d563945fd2d52fe3b1dea8a99739afed4dfafa127d36afd532e76",
+      "retainedPath": "docs/delivery/evidence/trello-polish-detail-fixed-search-zoom-768.png"
+    }
+  ],
+  "captureLimit": "Five actual current desktop/phone/tablet-zoom captures are byte-identical to retained inspected images. Reuse those assets; no automatic broad baseline approval.",
+  "logs": [
+    {
+      "name": "trello-122-combined-unit.log",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/CardDetailEditor.test.tsx src/features/kanban/BoardScreen.test.tsx src/features/kanban/BoardScreen.drag.test.tsx src/app/UnsavedChangesGuard.test.tsx src/app/UnsavedChangesGuard.admission.test.tsx src/app/UnsavedChangesGuard.lifecycle.test.tsx src/features/search/GlobalSearchPage.test.tsx src/features/search/GlobalSearchPage.paging-focus.test.tsx src/features/search/globalSearch.test.ts src/features/search/searchInteraction.test.ts src/features/kanban/kanbanAutoScroll.test.ts src/features/kanban/kanbanPointerScrollFrame.test.ts src/features/kanban/DragHandleFocus.test.tsx src/features/kanban/ListDragColumn.test.tsx src/features/organizations/OrganizationSettingsPage.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  15 passed (15)\r\n      Tests  161 passed (161)\r\n   Start at  14:07:21\r\n   Duration  96.94s (import 46%, tests 32%, environment 16%, transform 3%, setup 3%)\r\n\r\n"
+    },
+    {
+      "name": "trello-122-combined-web-types.log",
+      "content": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\n"
+    },
+    {
+      "name": "trello-122-combined-browser-types.log",
+      "content": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "name": "trello-122-combined-lint.log",
+      "content": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "name": "trello-122-combined-architecture.log",
+      "content": "✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (518.9889ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (60.0617ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (239.2683ms)\r\n✔ phase guard detects eager allocation and accidental default activation (77.372ms)\r\n✔ ARCH-02-FR-009 rejects direct and aliased browser fetch in feature clients (1637.3288ms)\r\n✔ ARCH-02-FR-009 allows the shared transport and isolated test fixtures (40.4202ms)\r\n✔ ARCH-02-FR-009 permits feature requests through apiFetch (11.8068ms)\r\n✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (448.501ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (58.2573ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (285.3485ms)\r\n✔ phase guard detects eager allocation and accidental default activation (93.1659ms)\r\nℹ tests 11\r\nℹ suites 0\r\nℹ pass 11\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 3658.377\r\n"
+    },
+    {
+      "name": "trello-122-combined-registry.log",
+      "content": "Browser shard coverage: 502 cases in 174 intact files; 127/125/127/123 cases across all four shards.\r\n"
+    },
+    {
+      "name": "trello-122-combined-compiler.log",
+      "content": "vite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12060 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/build-metadata.json            0.07 kB │ gzip:   0.09 kB\r\ndist/index.html                     0.57 kB │ gzip:   0.34 kB\r\ndist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\ndist/assets/index-CuqTu-us.js   1,644.40 kB │ gzip: 458.54 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 5.79s\r\n"
+    }
+  ],
+  "browser": [
+    {
+      "mode": "default",
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/trello-card-search.spec.ts",
+            "tests/browser/kanban-edge-turn.spec.ts",
+            "tests/browser/trello-work-polish.spec.ts",
+            "--output",
+            "../trello-122-combined-default-results",
+            "--reporter=json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-122-combined-default-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "kanban-edge-turn.spec.ts",
+            "file": "kanban-edge-turn.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-003/PRD-06: native mouse turns from List to Board edge at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7567,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:01:22.350Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-371f23f52568a9324398",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              },
+              {
+                "title": "UX-003/PRD-06: native mouse turns from List to Board edge at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6804,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:01:30.102Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-4cd8f2264890d7164e37",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              },
+              {
+                "title": "UX-003/PRD-06: native touch turns from List to Board edge at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6887,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:01:36.924Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-5f7b650a5def0d7c2272",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              }
+            ]
+          },
+          {
+            "title": "trello-card-search.spec.ts",
+            "file": "trello-card-search.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9007,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:01:43.952Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-e43dedaf95f0fcc17cc3",
+                "file": "trello-card-search.spec.ts",
+                "line": 70,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5717,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:01:52.980Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-1d1e09e5db00a243d993",
+                "file": "trello-card-search.spec.ts",
+                "line": 106,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 8464,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:01:58.715Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-79a5c6c39d75bb393db9",
+                "file": "trello-card-search.spec.ts",
+                "line": 70,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5722,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:02:07.199Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-b5b2babffb5f2fc5800e",
+                "file": "trello-card-search.spec.ts",
+                "line": 106,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 8589,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:02:12.942Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-a8495084966e23923c68",
+                "file": "trello-card-search.spec.ts",
+                "line": 70,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5570,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:02:21.554Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-0aaadd3862b8bec1a0d7",
+                "file": "trello-card-search.spec.ts",
+                "line": 106,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 8298,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:02:27.147Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-fabb5e152086af875f1e",
+                "file": "trello-card-search.spec.ts",
+                "line": 70,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5718,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:02:35.463Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-9f3f4eb747f4be2a91ba",
+                "file": "trello-card-search.spec.ts",
+                "line": 106,
+                "column": 7
+              }
+            ]
+          },
+          {
+            "title": "trello-work-polish.spec.ts",
+            "file": "trello-work-polish.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 10374,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:02:41.214Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-59041cc67e1261328d65",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9858,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:02:51.607Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-a327dbe292eda816c562",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9672,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:03:01.489Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-828d8c028fe3041bcfec",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9207,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:03:11.184Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-59d39c0b4f415fb4366e",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-21T21:01:21.578Z",
+          "duration": 119328.463,
+          "expected": 15,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    },
+    {
+      "mode": "rollback",
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/trello-card-search.spec.ts",
+            "tests/browser/kanban-edge-turn.spec.ts",
+            "tests/browser/trello-work-polish.spec.ts",
+            "--output",
+            "../trello-122-combined-rollback-results",
+            "--reporter=json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-122-combined-rollback-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "kanban-edge-turn.spec.ts",
+            "file": "kanban-edge-turn.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-003/PRD-06: native mouse turns from List to Board edge at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6848,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:05:01.651Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-371f23f52568a9324398",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              },
+              {
+                "title": "UX-003/PRD-06: native mouse turns from List to Board edge at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5733,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:05:08.664Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-4cd8f2264890d7164e37",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              },
+              {
+                "title": "UX-003/PRD-06: native touch turns from List to Board edge at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5530,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:05:14.413Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "bc923fdea494a954ac1a-5f7b650a5def0d7c2272",
+                "file": "kanban-edge-turn.spec.ts",
+                "line": 10,
+                "column": 7
+              }
+            ]
+          },
+          {
+            "title": "trello-card-search.spec.ts",
+            "file": "trello-card-search.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7470,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:05:20.036Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-e43dedaf95f0fcc17cc3",
+                "file": "trello-card-search.spec.ts",
+                "line": 70,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5761,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:05:27.521Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-1d1e09e5db00a243d993",
+                "file": "trello-card-search.spec.ts",
+                "line": 106,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9018,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:05:33.300Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-79a5c6c39d75bb393db9",
+                "file": "trello-card-search.spec.ts",
+                "line": 70,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5437,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:05:42.334Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-b5b2babffb5f2fc5800e",
+                "file": "trello-card-search.spec.ts",
+                "line": 106,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 8674,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:05:47.786Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-a8495084966e23923c68",
+                "file": "trello-card-search.spec.ts",
+                "line": 70,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5362,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:05:56.479Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-0aaadd3862b8bec1a0d7",
+                "file": "trello-card-search.spec.ts",
+                "line": 106,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7710,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:06:01.864Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-fabb5e152086af875f1e",
+                "file": "trello-card-search.spec.ts",
+                "line": 70,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 5467,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:06:09.592Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-9f3f4eb747f4be2a91ba",
+                "file": "trello-card-search.spec.ts",
+                "line": 106,
+                "column": 7
+              }
+            ]
+          },
+          {
+            "title": "trello-work-polish.spec.ts",
+            "file": "trello-work-polish.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9489,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:06:15.091Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-59041cc67e1261328d65",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9512,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:06:24.603Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-a327dbe292eda816c562",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9251,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:06:34.135Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-828d8c028fe3041bcfec",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              },
+              {
+                "title": "UX-003 Trello-style Organization and Work consumers at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9896,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-21T21:06:43.407Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "a1da1509c582827da802-59d39c0b4f415fb4366e",
+                "file": "trello-work-polish.spec.ts",
+                "line": 16,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-21T21:05:00.825Z",
+          "duration": 112916.835,
+          "expected": 15,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    }
+  ],
+  "reconciliation": "{\"base\":\"951e6fdbf2d20859f0c583d981934ba0d6fa9816\",\"parentSearch\":\"ebb04eb51dc03d22ab0cc8f313e306b65f2e592e\",\"parentWork\":\"1730b8915445af0fc3cb9e6d7abf126e720de39d\",\"items\":1619,\"criteria\":3915,\"evidence\":963,\"done\":69,\"reportConflictHunksRetained\":1,\"sourceAndHashesVerified\":true,\"bothParentHistoriesPreserved\":true}\r\n",
+  "compiler": {
+    "revision": "3f9a150af0be51fff4d40592efb36a37b59b5aaf",
+    "version": "0.1.0-local",
+    "seconds": 5.79,
+    "existingChunkWarning": true,
+    "immutableReleaseQualified": false
+  },
+  "parentCI": {
+    "head": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+    "run": 39674641269,
+    "status": "Running at checkpoint; no parent acceptance or integration claim."
+  },
+  "limits": [
+    "Controlled HTTP/quiet transport browser fixtures do not qualify real services, tenant RLS, Production CSP or immutable release.",
+    "Original zoom and native failures stay immutable; prior source-specific passes are not relabeled.",
+    "Current combined Card/Search four records remain Testing with criteria Unverified; no parent PRD or global MVP completion."
+  ]
+}
