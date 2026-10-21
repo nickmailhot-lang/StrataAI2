@@ -53,13 +53,16 @@ for (const width of [1280, 768, 390, 320]) {
       return route.fulfill({ status: 503, json: {} });
     });
     const fit = async () => expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    const polished = process.env.STRATAAI_E2E_WORK_UX !== '0';
     await page.goto('/app');
     const organization = page.getByRole('link', { name: 'Cedar Court', exact: true });
-    await expect(organization).toBeVisible(); await expect(organization).toHaveAccessibleDescription('Member');
+    await expect(organization).toBeVisible();
+    if (polished) await expect(organization).toHaveAccessibleDescription('Member');
     await organization.press('Enter');
     await expect(page.getByRole('heading', { name: 'Cedar Court', exact: true })).toBeVisible();
     await expect(page.locator('header').getByText('Cedar Court', { exact: true })).toBeVisible();
-    await expect(page.getByText('Boards in this Organization · Member', { exact: true })).toBeVisible();
+    if (polished) await expect(page.getByText('Boards in this Organization · Member', { exact: true })).toBeVisible();
+    else await expect(page.getByText('Boards in this Organization · Member', { exact: true })).toHaveCount(0);
     const boardLink = page.getByRole('link', { name: 'Council operations', exact: true });
     await expect(boardLink).toHaveAttribute('href', `/app/${org}/boards/${board}`);
     await fit(); await page.screenshot({ path: info.outputPath(`organization-work-${width}.png`), fullPage: true });
@@ -76,7 +79,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(cardDrag).toBeEnabled(); await expect(listDrag).toBeEnabled();
     await expect(page.getByRole('button', { name: 'Move To do list', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Rename To do list', exact: true })).toBeVisible();
-    if (process.env.STRATAAI_E2E_WORK_UX !== '0') {
+    if (polished) {
       await expect(cardDrag).not.toHaveText('Drag Inspect the parkade water leak card');
       await expect(listDrag).not.toHaveText('Drag To do list');
       expect(await cardLink.evaluate(el => !!(el.querySelector('[aria-label="Card label indicators"]')!.compareDocumentPosition(el.querySelector('[title]')!) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
