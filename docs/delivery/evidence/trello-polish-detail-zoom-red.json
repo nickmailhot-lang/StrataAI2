@@ -1,0 +1,405 @@
+{
+  "at": "2026-10-21T18:32:34.026Z",
+  "revision": "b69d7efe826d5b291354918c1687cf3501dbb285",
+  "result": "Failed",
+  "cause": "Viewport-based two columns remain narrow at768px when root text is200%; MUI selected-scope single-line display clips Archived work. Actual screenshot also shows the cramped Member-name label. New complete eight-case run passes7/fails1 at unchanged deadlines and zero retries. Source/page fit/Axe passes alone did not detect selected-value clipping. Expanded oracle remains mandatory.",
+  "owner": "PRD-16-VS-01-T-02 / UX engineering",
+  "resolution": "Change only form grid column sizing to respect rem-based text width, then requalify complete affected files/default+rollback browser file without altering selected-value oracle, retries or deadlines.",
+  "capture": {
+    "path": "docs/delivery/evidence/trello-polish-detail-zoom-red-768.png",
+    "sha256": "c3b1f06efdb55bb3b89cbcf2cdadecf6ccd64dbc166966c72b419eece9c1b5fd"
+  },
+  "report": {
+    "config": {
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+        "test",
+        "tests/browser/trello-card-search.spec.ts",
+        "--reporter=json",
+        "--output=../trello-detail-search-zoom-browser-results"
+      ],
+      "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+      "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+      "failOnFlakyTests": false,
+      "forbidOnly": false,
+      "fullyParallel": false,
+      "globalSetup": null,
+      "globalTeardown": null,
+      "globalTimeout": 0,
+      "grep": {},
+      "grepInvert": null,
+      "maxFailures": 0,
+      "metadata": {
+        "actualWorkers": 1
+      },
+      "preserveOutput": "always",
+      "projects": [
+        {
+          "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-detail-search-zoom-browser-results",
+          "repeatEach": 1,
+          "retries": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "id": "",
+          "name": "",
+          "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "testIgnore": [],
+          "testMatch": [
+            "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+          ],
+          "timeout": 30000
+        }
+      ],
+      "quiet": false,
+      "reporter": [
+        [
+          "json"
+        ]
+      ],
+      "reportSlowTests": {
+        "max": 5,
+        "threshold": 300000
+      },
+      "shard": null,
+      "tags": [],
+      "updateSnapshots": "missing",
+      "updateSourceMethod": "patch",
+      "version": "1.63.0",
+      "workers": 1,
+      "webServer": null
+    },
+    "suites": [
+      {
+        "title": "trello-card-search.spec.ts",
+        "file": "trello-card-search.spec.ts",
+        "column": 0,
+        "line": 0,
+        "specs": [
+          {
+            "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 1280px",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 10804,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-21T18:29:04.343Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "3814b5769fbaf3e158db-e43dedaf95f0fcc17cc3",
+            "file": "trello-card-search.spec.ts",
+            "line": 70,
+            "column": 7
+          },
+          {
+            "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 1280px",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 6105,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-21T18:29:15.360Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "3814b5769fbaf3e158db-1d1e09e5db00a243d993",
+            "file": "trello-card-search.spec.ts",
+            "line": 106,
+            "column": 7
+          },
+          {
+            "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 768px",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 10071,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-21T18:29:21.483Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "3814b5769fbaf3e158db-79a5c6c39d75bb393db9",
+            "file": "trello-card-search.spec.ts",
+            "line": 70,
+            "column": 7
+          },
+          {
+            "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 768px",
+            "ok": false,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 5567,
+                    "error": {
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\trello-card-search.spec.ts:125:74",
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\trello-card-search.spec.ts",
+                        "column": 74,
+                        "line": 125
+                      },
+                      "snippet": "  123 |     await expect(scope).toHaveText('Archived work');\n  124 |     await page.screenshot({ path: info.outputPath(`search-zoom-scope-${width}.png`), fullPage: true });\n> 125 |     expect(await scope.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);\n      |                                                                          ^\n  126 |     await query.fill('unsent draft'); await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');\n  127 |     const feedback = page.getByRole('region', { name: 'Global Card search', exact: true }).getByRole('status');\n  128 |     await expect(feedback).toBeFocused(); await expect(query).toHaveValue('unsent draft');"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\trello-card-search.spec.ts",
+                          "column": 74,
+                          "line": 125
+                        },
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  123 |     await expect(scope).toHaveText('Archived work');\n  124 |     await page.screenshot({ path: info.outputPath(`search-zoom-scope-${width}.png`), fullPage: true });\n> 125 |     expect(await scope.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);\n      |                                                                          ^\n  126 |     await query.fill('unsent draft'); await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');\n  127 |     const feedback = page.getByRole('region', { name: 'Global Card search', exact: true }).getByRole('status');\n  128 |     await expect(feedback).toBeFocused(); await expect(query).toHaveValue('unsent draft');\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\trello-card-search.spec.ts:125:74"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-21T18:29:31.575Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "screenshot",
+                        "contentType": "image/png",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-detail-search-zoom-browser-results\\trello-card-search-PRD-16--9934f--paging-and-denial-at-768px\\test-failed-1.png"
+                      },
+                      {
+                        "name": "error-context",
+                        "contentType": "text/markdown",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-detail-search-zoom-browser-results\\trello-card-search-PRD-16--9934f--paging-and-denial-at-768px\\error-context.md"
+                      },
+                      {
+                        "name": "trace",
+                        "contentType": "application/zip",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-detail-search-zoom-browser-results\\trello-card-search-PRD-16--9934f--paging-and-denial-at-768px\\trace.zip"
+                      }
+                    ],
+                    "errorLocation": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\trello-card-search.spec.ts",
+                      "column": 74,
+                      "line": 125
+                    }
+                  }
+                ],
+                "status": "unexpected"
+              }
+            ],
+            "id": "3814b5769fbaf3e158db-b5b2babffb5f2fc5800e",
+            "file": "trello-card-search.spec.ts",
+            "line": 106,
+            "column": 7
+          },
+          {
+            "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 390px",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 9794,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-21T18:29:38.382Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "3814b5769fbaf3e158db-a8495084966e23923c68",
+            "file": "trello-card-search.spec.ts",
+            "line": 70,
+            "column": 7
+          },
+          {
+            "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 390px",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 5946,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-21T18:29:48.392Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "3814b5769fbaf3e158db-0aaadd3862b8bec1a0d7",
+            "file": "trello-card-search.spec.ts",
+            "line": 106,
+            "column": 7
+          },
+          {
+            "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 320px",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 9421,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-21T18:29:54.361Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "3814b5769fbaf3e158db-fabb5e152086af875f1e",
+            "file": "trello-card-search.spec.ts",
+            "line": 70,
+            "column": 7
+          },
+          {
+            "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 6218,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-21T18:30:03.800Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "3814b5769fbaf3e158db-9f3f4eb747f4be2a91ba",
+            "file": "trello-card-search.spec.ts",
+            "line": 106,
+            "column": 7
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "stats": {
+      "startTime": "2026-10-21T18:29:03.264Z",
+      "duration": 67032.512,
+      "expected": 7,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    }
+  }
+}

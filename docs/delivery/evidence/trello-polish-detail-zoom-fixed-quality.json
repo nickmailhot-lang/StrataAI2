@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-21T18:43:13.737Z",
+  "revision": "ff0350c3955ebed1b5788ba089d6e321b5da44d6",
+  "note": "Fresh web/browser types, strict lint, full architecture/phase11, registry499/173 and local compiler7.50s pass at ff0350c3. Compiler uses identified0.1.0-local, not an immutable release/CSP/real-service qualification. Existing chunk warning retained.",
+  "compilerMetadata": {
+    "revision": "ff0350c3955ebed1b5788ba089d6e321b5da44d6",
+    "version": "0.1.0-local"
+  },
+  "artifacts": [
+    {
+      "name": "trello-detail-search-zoom-fixed-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624",
+      "content": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\n"
+    },
+    {
+      "name": "trello-detail-search-zoom-fixed-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "content": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "name": "trello-detail-search-zoom-fixed-lint.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "content": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "name": "trello-detail-search-zoom-fixed-architecture.log",
+      "sha256": "fc8130011355d7fe118360fca49cb8938e48bc6d6dfc240f8a2951431b2e7832",
+      "content": "✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (547.9738ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (69.802ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (220.8827ms)\r\n✔ phase guard detects eager allocation and accidental default activation (76.2801ms)\r\n✔ ARCH-02-FR-009 rejects direct and aliased browser fetch in feature clients (1621.1459ms)\r\n✔ ARCH-02-FR-009 allows the shared transport and isolated test fixtures (38.5502ms)\r\n✔ ARCH-02-FR-009 permits feature requests through apiFetch (9.6224ms)\r\n✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (478.7223ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (52.9997ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (304.5187ms)\r\n✔ phase guard detects eager allocation and accidental default activation (148.7762ms)\r\nℹ tests 11\r\nℹ suites 0\r\nℹ pass 11\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 3738.6399\r\n"
+    },
+    {
+      "name": "trello-detail-search-zoom-fixed-shards.log",
+      "sha256": "34fa99042067e53511c456e57924b261b7ae0d78bfec0e2eb00d1cb65799eb56",
+      "content": "Browser shard coverage: 499 cases in 173 intact files; 125/128/123/123 cases across all four shards.\r\n"
+    },
+    {
+      "name": "trello-detail-search-zoom-fixed-compile.log",
+      "sha256": "b4984407701e2da1f7b9e409a20c44b49e662f2e74a300e100015465a6092ef5",
+      "content": "vite v8.3.4 building client environment for production...\r\ntransforming...\r\n✓ 12060 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/build-metadata.json            0.07 kB │ gzip:   0.09 kB\r\ndist/index.html                     0.57 kB │ gzip:   0.34 kB\r\ndist/assets/index-Bw_GsyDn.css      0.56 kB │ gzip:   0.33 kB\r\ndist/assets/index-D06OPdsT.js   1,644.19 kB │ gzip: 458.49 kB\r\n\r\n[plugin builtin:vite-reporter] \r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\r\n✓ built in 7.50s\r\n"
+    }
+  ]
+}

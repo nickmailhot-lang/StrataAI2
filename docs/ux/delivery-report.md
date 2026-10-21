@@ -1,5 +1,50 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Text-zoom repair verified; Card/Search follow-up ready for full qualification
+
+Current source `ff0350c3` corrects selected-filter clipping by making the existing Search grid follow text size. No request, field, cursor, actor check or action changed. The same expanded browser file now passes **8/8 default + 8/8 rollback**, including the original768px/200% selected-value assertion, Card pending/failed/denied context, dirty cancel/return, Search unsent draft/applied scope/cursor/error/denial, keyboard and Axe. No failure/skips/retries or widened deadline. The original **7 passed/1 failed** run and red screenshot remain Failed evidence, alongside earlier narrower passing scopes.
+
+Fresh complete ten-file component suite: **97/97**. Web/browser types, strict lint, architecture/phase **11/11**, registry **499 cases/173 intact files** and local compiler **7.50s** pass at this source. Compiler metadata identifiesff0350c3/0.1.0-local; browser runs use controlled HTTP/Vite and do not prove real-service RLS, persistence, Production CSP or immutable release. Delivery module contracts **36/36** retain actual A0/949-input identity; final enriched-ledger/source/evolution validation remains separate. Five new immutable captures include the corrected tablet text-zoom view; all earlier hashed captures are retained.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing Card/Search capabilities and original119/120 work preserved; no new domain/API/schema. |
+| UX completion | Card context/editor/footer and responsive Search surfaces implemented; actual desktop/mobile and tablet200% views inspected. Full own acceptance pending. |
+| Test completion | Current scoped97+8+8 and source checks pass; original red7/1 retained. Own complete CI/security/roles/real-service/release/review still required. |
+| MVP readiness | Not accepted globally. Four new records Testing and criteriaUnverified;69 inherited Done unchanged. No product percentage. |
+
+PR #117 is merged37656975. PR #121 stays frozen951e6fdb: full frontend2963passed/24originalcapacitydeferrals, backend/database/metadata/source/image/security/CodeQL have passed; command/browser and dependent release gates continue. Its checks do not qualify this follow-up. Publish the latter as a stacked draft to permit review without starting duplicate image builds; no merge before dependencies and every own gate qualify. Independent118 work remains untouched. Ledger: **1619 items / 3915 criteria / 956 evidence records**. New source qualification: EVID-TRELLO-DETAIL-ZOOM-FIXED-*; earlier failures and lifecycle transitions remain below.
+
+---
+
+
+## 2026-10-21 — Search text-zoom rework active
+
+Expanded complete Card/Search browser scope at b69d7efe: **7 passed / 1 failed**. At768px/200%text, the two-column form clips the selected **Archived work** value; actual screenshot confirms it. Page overflow and Axe alone had passed, so this additional readability oracle remains mandatory. Search Task/Test are back **In Progress**, tests/regressions Failed; prior source-bound97 and8+8 passes are retained separately. Card subset passes. Fix only text-aware grid sizing, then rerun the same complete default/rollback file and affected checks without changing assertions, timeouts or retries. PR121 remains frozen and independent. Evidence: EVID-TRELLO-DETAIL-ZOOM-RED.
+
+---
+
+
+## 2026-10-21 — Card/Search polish prepared independently; #121 qualification continues
+
+Application source `38a618b6`, final browser/spec source `a0c63f0b`: Card details now show the currently admitted Board/List location and a clearer core editor/footer using the existing panel and MUI. The caption withdraws during pending/failed/denied reads; drafts, Markdown, Save/Close, original recovery and return remain intact. Search uses the same five fields in a responsive grid, clearer result surfaces, sentence-case actions and compact paging. Existing #119 guidance and #120 keyboard behavior are preserved through their original commits, with no added domain, route, request or schema.
+
+| Metric | Current evidence and limit |
+| --- | --- |
+| Functional completion | Existing Card/Search capabilities retained. No new business capability or parent PRD closure. |
+| UX completion | Scoped Card/Search presentation implemented; four final desktop/mobile captures inspected. Existing Work flag restores previous layout/typography. Singular result-count wording is corrected in both layouts. |
+| Test completion | Complete affected **97/97** at38; current **8/8 default + 8/8 rollback** atA0, no failures/skips/retries, including delayed-read withdrawal, dirty cancel/return, paging, drafts, errors, denial,200%text/reflow/Axe. Types/lint, architecture/phase **11/11**, registry **499/173** and local compiler pass. Compiler identifies38/0.1.0-local; browser fixtures use Vite/controlled HTTP and do not certify Production CSP, real services or release. Own full checks remain pending. |
+| MVP readiness | Not accepted globally. Four new Task/Test records are Testing, their criteria Unverified, inherited69Done unchanged. No combined product-completion percentage. |
+
+PR #117 is merged at37656975 with exact tested-tree verification and all22passed. PR #121 remains frozen at951e6fdb, now on main: its complete frontend2963passed/24originalcapacitydeferrals, PostgreSQL, metadata and CodeQL pass; backend/downstream gates remain pending. It will not merge until every required current gate and review qualifies. Follow-up branch `ux/trello-card-search-polish` retains actual #119/#120 and #121 histories through5ad63505; this preparation does not restart or modify #121's CI. No additional image build was started for it.
+
+Retained setup refusals: an invalid guard filename ran no tests, a scratch common-suffix assumption refused report reconciliation, and owned edited CRLF files triggered strict diff checks. Corrected the invocation, preserved both explicit report conflict sides with both parent histories/evidence verified, and normalized only owned edits to canonical LF. Actual required guards pass unchanged; no tests, deadlines, retries, history or historical hashes were relaxed. Earlier failed unit/browser aggregates remain separate evidence.
+
+Owners: `PRD-09-VS-01-T-05`, `PRD-16-VS-01-T-02` and child tests, UX-003/005/006/007/008 and UXA-01–08. Ledger now **1619 items / 3915 criteria / 949 evidence records**. Next: finish/fix and merge #121 only after complete qualification; then reconcile/retarget this reviewable polish increment and qualify its own complete gates before integration. Existing independent #118 recovery work is preserved.
+
+---
+
+
 ## 2026-10-21 — PR #117 dependency resolved; PR #121 full qualification active
 
 PR #117 merged normally as `37656975f491352a3b9e5dc4ea0b124b546318c4` after all **22 exact-head checks passed**. Current hosted frontend: **2,963 passed / 24 original capacity deferrals**; complete full browsers: **481 passed / 2 existing mail-profile skips**, no failures. Foundation, commands, notifications, tenant/role/security and immutable bundle/startup/HTTPS checks pass. Source and empty review-thread/submission state were inspected. Actual merged tree `f9e682ddc1b843c7358a3c56e400b7047059076a` equals qualified synthetic merge `afb994ee`; main/head parents and historical failures are preserved. Complete hosted qualification is separate from earlier failed local aggregates and does not erase them.

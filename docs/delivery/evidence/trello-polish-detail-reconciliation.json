@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-21T18:24:13.024Z",
+  "revision": "5ad635055d8ffe51d90a3b9579650ab32b3940d6",
+  "note": "Actual Search120 and frozen121 parent histories retained by normal merge; both evolution checks and all939 evidence hashes/source/Git verified. No requirement/history/evidence removed; prior failures remain separate.",
+  "artifacts": [
+    {
+      "name": "trello-card-search-reconciliation.log",
+      "sha256": "0c1a15c179f9dafa003fe8436bb62554b8ec9420e15fb28199e80921a8f3b984",
+      "content": "{\"base\":\"db5762265b3dfd19aa28b03ed24ceec2fe2ec265\",\"parentSearch\":\"164aa474c5ef70d60afae190a374ec5b136e8673\",\"parentWork\":\"951e6fdbf2d20859f0c583d981934ba0d6fa9816\",\"items\":1615,\"criteria\":3911,\"evidence\":939,\"done\":69,\"reportConflictHunksRetained\":1,\"sourceAndHashesVerified\":true,\"bothParentHistoriesPreserved\":true}\r\n"
+    }
+  ]
+}

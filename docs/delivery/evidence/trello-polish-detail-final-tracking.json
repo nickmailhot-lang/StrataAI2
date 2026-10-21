@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-21T18:46:50.673Z",
+  "sourceHead": "ff0350c3955ebed1b5788ba089d6e321b5da44d6",
+  "ledgerSha256": "95fddc1f7a62be3afa90a5a1a0db8987f75d6f70dcdda1c88a4fcc1044c48d56",
+  "items": 1619,
+  "criteria": 3915,
+  "evidence": 956,
+  "done": 69,
+  "parents": [
+    {
+      "ref": "origin/main",
+      "revision": "37656975f491352a3b9e5dc4ea0b124b546318c4"
+    },
+    {
+      "ref": "951e6fdbf2d20859f0c583d981934ba0d6fa9816",
+      "revision": "951e6fdbf2d20859f0c583d981934ba0d6fa9816"
+    },
+    {
+      "ref": "origin/ux/search-keyboard-paging",
+      "revision": "164aa474c5ef70d60afae190a374ec5b136e8673"
+    }
+  ],
+  "method": "Unmodified exported validateLedger(root/Git/hash), validateBaseline and validateEvolution against actual main and both preserved feature parents. Report generated with same exported production progress/markdownReport functions; one full source/hash pass reused for both parent checks.",
+  "result": "Passed",
+  "limit": "Valid tracking is not acceptance of pending CI/security/role/release/UX/review gates; no newDone."
+}
