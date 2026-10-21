@@ -28,6 +28,8 @@ Owner: PRD-16 (live issue #17 inspected 2026-10-20), linked UX-007-VS-02, UX-003
 
 ## Acceptance gate before visible scope expansion
 
+Search keyboard-paging follow-up: `UX-006-VS-03-T-02` addresses the reproduced focus loss when Next/Refresh retires during loading. It uses the existing status region and theme, without shared shell/navigation changes or asynchronous focus reclamation. Scoped source/testing is recorded separately from PR #119's dependency-security qualification and the existing Organization-context PR #117 / first-use consumer #118. Keep each branch's failures and pending gates visible; a sibling check result cannot qualify another head.
+
 The priority journeys must have a consistent authorized entry, clear context/actions, canonical outcome and return, recoverable failures, supported responsive/keyboard operation, passing applicable tests and recorded UX review. Keep unresolved usability debt visible. A merged slice, source count or automated accessibility pass does not close an entire UX PRD or establish product acceptance.
 
 Net-new user-facing features stay behind this milestone. Required security/reliability work and independent backend work supporting the milestone may continue. Use small isolated PRs, one shared-file owner and a reversible migration flag if a change could interrupt existing behavior. Reverting this guidance slice needs no data migration.

@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-21T03:47:40.557Z",
+  "revision": "66bee0439fdfca53ddc30bcf71770eef76c86019",
+  "result": "Passed",
+  "command": "Complete six affected Search/parser/interaction/App/admission files:73 passed,0 failed/skipped;74.51s.",
+  "transcript": {
+    "path": "ux-paging-final-unit.log",
+    "sha256": "4c775dab0a9a2f2b8a52b051092e0b6e015c481f913508bb0b059c6d36c66000",
+    "stdoutBase64": "bnBtIG5vdGljZSBydW4gQHN0cmF0YWFpL3dlYkAwLjEuMCB0ZXN0DQpucG0gbm90aWNlIHJ1biB2aXRlc3QgcnVuIHNyYy9mZWF0dXJlcy9zZWFyY2gvR2xvYmFsU2VhcmNoUGFnZS5wYWdpbmctZm9jdXMudGVzdC50c3ggc3JjL2ZlYXR1cmVzL3NlYXJjaC9HbG9iYWxTZWFyY2hQYWdlLnRlc3QudHN4IHNyYy9mZWF0dXJlcy9zZWFyY2gvZ2xvYmFsU2VhcmNoLnRlc3QudHMgc3JjL2ZlYXR1cmVzL3NlYXJjaC9zZWFyY2hJbnRlcmFjdGlvbi50ZXN0LnRzIHNyYy9hcHAvQXBwLnRlc3QudHN4IHNyYy9hcHAvU3VyZmFjZUFkbWlzc2lvbi50ZXN0LnRzeA0KDQogUlVOICB2NS4wLjIgQzovVXNlcnMvbmlja20vRG9jdW1lbnRzL0NvZGV4LzIwMjYtMTAtMTYveW91LXNob3VsZC1pbmNvcnBvcmF0ZS10aGUtdXgtcmVkZXNpZ24vd29yay9TdHJhdGFBSTIvYXBwcy93ZWINCg0KDQogVGVzdCBGaWxlcyAgNiBwYXNzZWQgKDYpDQogICAgICBUZXN0cyAgNzMgcGFzc2VkICg3MykNCiAgIFN0YXJ0IGF0ICAyMDo0Mjo1Mg0KICAgRHVyYXRpb24gIDc0LjUxcyAoaW1wb3J0IDU4JSwgdGVzdHMgMjAlLCBlbnZpcm9ubWVudCAxNCUsIHRyYW5zZm9ybSA2JSwgc2V0dXAgMiUpDQoNCg=="
+  },
+  "initialGreen": {
+    "scope": "Earlier in-worktree five focus cases and existing67:72 passed; final adds delayed editing non-interference.",
+    "transcript": {
+      "path": "ux-paging-unit.log",
+      "sha256": "eeb1d2bb0b581ee7a5545c6efe856744c4d0166e937442377932db700cdbc20b",
+      "stdoutBase64": "bnBtIG5vdGljZSBydW4gQHN0cmF0YWFpL3dlYkAwLjEuMCB0ZXN0DQpucG0gbm90aWNlIHJ1biB2aXRlc3QgcnVuIHNyYy9mZWF0dXJlcy9zZWFyY2gvR2xvYmFsU2VhcmNoUGFnZS5wYWdpbmctZm9jdXMudGVzdC50c3ggc3JjL2ZlYXR1cmVzL3NlYXJjaC9HbG9iYWxTZWFyY2hQYWdlLnRlc3QudHN4IHNyYy9mZWF0dXJlcy9zZWFyY2gvZ2xvYmFsU2VhcmNoLnRlc3QudHMgc3JjL2ZlYXR1cmVzL3NlYXJjaC9zZWFyY2hJbnRlcmFjdGlvbi50ZXN0LnRzIHNyYy9hcHAvQXBwLnRlc3QudHN4IHNyYy9hcHAvU3VyZmFjZUFkbWlzc2lvbi50ZXN0LnRzeA0KDQogUlVOICB2NS4wLjIgQzovVXNlcnMvbmlja20vRG9jdW1lbnRzL0NvZGV4LzIwMjYtMTAtMTYveW91LXNob3VsZC1pbmNvcnBvcmF0ZS10aGUtdXgtcmVkZXNpZ24vd29yay9TdHJhdGFBSTIvYXBwcy93ZWINCg0KDQogVGVzdCBGaWxlcyAgNiBwYXNzZWQgKDYpDQogICAgICBUZXN0cyAgNzIgcGFzc2VkICg3MikNCiAgIFN0YXJ0IGF0ICAyMDo0MDo1OA0KICAgRHVyYXRpb24gIDcyLjcycyAoaW1wb3J0IDU5JSwgdGVzdHMgMTglLCBlbnZpcm9ubWVudCAxNiUsIHRyYW5zZm9ybSA1JSwgc2V0dXAgMyUpDQoNCg=="
+    }
+  }
+}

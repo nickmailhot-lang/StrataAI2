@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-21T03:47:40.557Z",
+  "revision": "66bee0439fdfca53ddc30bcf71770eef76c86019",
+  "result": "Passed",
+  "command": "Bounded rendered developer focus/reflow inspection at320px and1280px,200%text; four-width hit-testing/Axe automated separately.",
+  "images": [
+    {
+      "width": "320",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\outputs\\ux-search-keyboard-paging\\ux-search-paging-focus-320.png",
+      "sha256": "1578793794ee537af49d667a3dd793a721d25fe2be6b55cc25c9feb7a116880d",
+      "review": "Developer inspected actual viewport at200%text: full focus ring/status visible beneath fixed header; readable reflow. No approved baseline/device/screen-reader/full accessibility acceptance inferred."
+    },
+    {
+      "width": "1280",
+      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\outputs\\ux-search-keyboard-paging\\ux-search-paging-focus-1280.png",
+      "sha256": "ef4b49ee038402dc25486e5b6d5774757959b8a882fb6f1a94ae189403d76cbf",
+      "review": "Developer inspected actual viewport at200%text: full focus ring/status visible beneath fixed header; readable reflow. No approved baseline/device/screen-reader/full accessibility acceptance inferred."
+    }
+  ]
+}

@@ -1,5 +1,28 @@
 # Consolidated PRD delivery report
 
+## Keyboard paging and Organization-context coordination — 2026-10-20
+
+Current follow-up: `ux/search-keyboard-paging`, application/browser source `66bee0439fdfca53ddc30bcf71770eef76c86019`, based on PR #119 patched head `42b02c60`. PR #119 is still draft and unmerged while fresh required gates run. Its original security failure remains retained; reuse of exact Vite 8.3.4 passed a fresh isolated locked install, zero-vulnerability audit, both TypeScript checks, 67 affected tests and production compilation. The compiler output uses local development identity and is not immutable release evidence.
+
+| Metric | Current scoped result |
+| --- | --- |
+| Functional completion | Existing business behavior, APIs, schemas, permissions and query/cursor contracts preserved; no new business FR accepted |
+| UX completion | Search Next/Refresh now transfers focus from a retiring control to stable visible feedback before loading; pending/final/failed/denied results keep safe focus. Unsent edits and focus moved during a pending read are preserved. Organization context implementation remains in PR #117; no duplicate shared-shell edits |
+| Test completion | 73/73 complete affected component tests, 4/4 responsive native keyboard/Axe journeys, both types, lint, 7 architecture/phase guards, 483-case shard registration and 36 delivery contracts passed. Full fresh real-service/role/CSP/release regression remains required |
+| MVP readiness | Paging Task/Test Testing; no additional Done, parent PRD closure, whole accessibility acceptance or combined completion percentage. PR #119 cannot merge with incomplete gates |
+
+The focused paging defect was reproduced before implementation: four component failures/one pass and a 320px browser failure showed inactive feedback after the paging button unmounted. Those failures are retained. The correction moves focus synchronously only if a paging control owns focus. It does not restore focus asynchronously when a response arrives, start an extra read, change criteria, or expose private result data. Existing source acknowledgments, actor/epoch checks, denial clearing and Back remain effective.
+
+Final source checks: 73 cases in six entire affected files (74.51s, no failures/skips); four browser cases at 1280/768/390/320px and 200% text (42.91s, no failures/skips/flaky cases/reporter errors). They verify the visible focus ring, viewport hit-testing below the fixed header, native Tab onward to Refresh, retained cursor/query, 503 feedback, 403 withdrawal, background-read editing and browser Back. Axe runs before paging and on focused final feedback. Developer inspected actual focused 320px and 1280px viewport captures. Approved visual baselines, physical-device/screen-reader review and complete workflow acceptance remain separate.
+
+Organization-context audit: exact PR #117 head `b6a30cc0` has all 22 reported checks successful; PR #118 head `067894f7` still has failed full-browser jobs and another running. Failed consumer details: full1 Board creation recovery390px (`board-creation-recovery.spec.ts`) and full3 Organization actions390px (`organization-actions.spec.ts`) each failed the original focus-return assertion (expected focused, received inactive). Available logs are truncated; root cause is unproven and full traces/rendered evidence must be inspected by the existing owner. No timeout/assertion relaxation, forced test-side focus or flaky classification is accepted. Exact available diagnostics and disposition are retained in `ux-polish-organization-focus-failures.json`. These are sibling-branch results, not qualification of PR #119 or the paging source. Preserve their original failures, readable actor-bound context implementation and shared-shell ownership. No Organization merge or parent acceptance is claimed here. Supporting Search changes touch no shared shell, navigation or theme file.
+
+Evidence: `docs/delivery/evidence/ux-polish-keyboard-*` and `ux-polish-organization-coordination.json`. Original histories/IDs/hashes remain; the new focused Task/Test is `UX-006-VS-03-T-02` / `UX-006-VS-03-T-02-TEST-01`. Final updated ledger validation is recorded separately from the 36 contract tests.
+
+**Next:** finish exact-head PR #119 CI and review; merge only when every required gate passes. Keep this paging follow-up isolated and requalify it against main after its prerequisite integrates. Continue Organization context through existing PR #117/#118 ownership and evaluate failed consumer checks before any merge.
+
+---
+
 ## PR #119 security rework — current checkpoint
 
 The required security job on `f195f0e1` failed the unchanged high-severity npm audit for Vite 8.3.1 (GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw, GHSA-587h-7wmj-h5pm). Original log retained in `ux-polish-pr119-security-failed.json`; no threshold, assertion or retry was weakened. Reused existing patch `c99d1a7` as `aaba78a5`, changing only exact Vite 8.3.4 and its required locked transitive dependencies. The new locked-dependency audit reports zero vulnerabilities. This does not replace full installed-toolchain/security/immutable-release qualification.
