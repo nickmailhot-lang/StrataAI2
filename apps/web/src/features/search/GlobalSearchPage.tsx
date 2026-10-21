@@ -9,6 +9,7 @@ import { formatUserDateTime } from '../auth/userDateTime';
 import { formatCardDate } from '../kanban/cardDates';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { ChangedSearchInteractionActor, SearchInteractionAcknowledgments } from './searchInteraction';
+import { workExperienceEnabled } from '../../app/workExperience';
 
 type Criteria = { q: string; label: string; member: string; match: 'all' | 'any'; scope: 'active' | 'archived' };
 const empty = (): Criteria => ({ q: '', label: '', member: '', match: 'all', scope: 'active' });
@@ -77,7 +78,11 @@ export function GlobalSearchPage() {
   return <Stack spacing={2} component="section" aria-label="Global Card search">
     <PageHeader title="Search Cards" variant="h5" description="Search across your accessible Organizations and Boards." />
     {!page && !busy && !notice && <Typography>Choose filters, then select Search. Leave filters empty to browse Cards you can access.</Typography>}
-    <Stack component="form" spacing={2} onSubmit={event => { event.preventDefault(); actor.current = undefined;
+    <Stack component="form" spacing={2} useFlexGap={workExperienceEnabled}
+      sx={workExperienceEnabled ? { display: 'grid', gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' },
+        alignItems: 'start', p: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2,
+        '& .MuiFormControl-root': { minWidth: 0 }, '& .MuiButton-root': { minHeight: 56, textTransform: 'none' } } : undefined}
+      onSubmit={event => { event.preventDefault(); actor.current = undefined;
       void load({ ...draft, q: draft.q.trim(), label: draft.label.trim(), member: draft.member.trim() }); }}>
       <TextField label="Card text" value={draft.q} onChange={e => setDraft({ ...draft, q: e.target.value })} slotProps={{ htmlInput: { maxLength: 160 } }} />
       <TextField label="Label name" value={draft.label} onChange={e => setDraft({ ...draft, label: e.target.value })} slotProps={{ htmlInput: { maxLength: 160 } }} />
@@ -104,12 +109,14 @@ export function GlobalSearchPage() {
           : `This search has reached the last page. ${searchedWithFilters ? 'Try fewer filters, or choose' : 'Choose'} ${applied.current.scope === 'archived' ? 'Active work in Search scope for current Cards.' : 'Archived work in Search scope for archived Cards.'}`}</Typography>
       </Stack>
     </Paper>}
-    {page?.items.map(item => <Paper key={item.id} variant="outlined" sx={{ p: 2 }}>
-      <Typography component={Link} to={`/app/${item.organizationId}/boards/${item.boardId}/cards/${item.id}`}>{item.title}</Typography>
-      <Typography>{item.boardName} / {item.listName}</Typography>
-      <Typography>Labels: {item.labels.join(', ') || 'None'}{item.moreLabels ? ' (more on Card)' : ''}</Typography>
-      <Typography>Members: {item.members.join(', ') || 'None'}{item.moreMembers ? ' (more on Card)' : ''}</Typography>
-      <Typography>{item.dueAt ? `Due ${item.dueHasTime
+    {page?.items.map(item => <Paper key={item.id} variant="outlined" sx={{ p: 2, ...(workExperienceEnabled && { borderRadius: 2, minWidth: 0 }) }}>
+      <Typography component={Link} to={`/app/${item.organizationId}/boards/${item.boardId}/cards/${item.id}`}
+        sx={workExperienceEnabled ? { display: 'inline-block', fontWeight: 600, color: 'primary.main', overflowWrap: 'anywhere', mb: 0.5,
+          '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 2 } } : undefined}>{item.title}</Typography>
+      <Typography variant={workExperienceEnabled ? 'body2' : undefined} color={workExperienceEnabled ? 'text.secondary' : undefined}>{item.boardName} / {item.listName}</Typography>
+      <Typography variant={workExperienceEnabled ? 'body2' : undefined}>Labels: {item.labels.join(', ') || 'None'}{item.moreLabels ? ' (more on Card)' : ''}</Typography>
+      <Typography variant={workExperienceEnabled ? 'body2' : undefined}>Members: {item.members.join(', ') || 'None'}{item.moreMembers ? ' (more on Card)' : ''}</Typography>
+      <Typography variant={workExperienceEnabled ? 'body2' : undefined}>{item.dueAt ? `Due ${item.dueHasTime
         ? formatUserDateTime(item.dueAt, { locale: page.locale, timezone: item.boardDateTimezone ?? page.timezone }) ?? 'Date unavailable'
         : formatCardDate(item.dueAt, false, page.locale, item.boardDateTimezone ?? page.timezone)}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
     </Paper>)}
