@@ -17,7 +17,7 @@ const polished = process.env.STRATAAI_E2E_WORK_UX !== '0';
 // Existing real-service mutation, roles, Markdown, recovery and release gates
 // remain mandatory and are never replaced by this presentation fixture.
 async function sourceFor(page: Page) {
-  const source = { boardFailure: 0, searchFailure: 0, searches: [] as string[], writes: [] as string[] };
+  const source = { boardFailure: 0, holdBoard: false, boardWaiters: [] as Array<() => void>, searchFailure: 0, searches: [] as string[], writes: [] as string[] };
   await page.routeWebSocket('**/*', socket => socket.onMessage(message => {
     if (typeof message === 'string' && message.includes('"protocol"')) socket.send('{}\u001e');
   }));
@@ -38,11 +38,14 @@ async function sourceFor(page: Page) {
         entityType: kind === 'context' ? 'Organization' : kind === 'board' ? 'Board' : 'Card', entityId: kind === 'context' ? org : kind === 'board' ? board : card,
         version: Number(url.searchParams.get('version') ?? 1), metadata: {}, createdAt: '2026-10-21T12:00:00Z' } });
     }
-    if (path === `/boards/${board}`) return route.fulfill({ status: source.boardFailure || 200, json: {
+    if (path === `/boards/${board}`) {
+      if (source.holdBoard) await new Promise<void>(resolve => { source.boardWaiters.push(resolve); });
+      return route.fulfill({ status: source.boardFailure || 200, json: {
       board: { id: board, organizationId: org, name: 'Council operations', description: 'Council and maintenance work', version: 1, lifecycleState: 'active' },
       access: { canView: true, canEdit: true, canMove: true, canAdminister: false },
       lists: [{ list: { id: list, name: 'To do', rank, version: 1, lifecycleState: 'active' }, cards: [{ id: card, title, description: 'Record the source before arranging repairs.', rank, version: 1 }] }],
-    } });
+      } });
+    }
     if (path === '/search') {
       source.searches.push(url.search);
       return route.fulfill({ status: source.searchFailure || 200, json: { nextCursor: url.searchParams.has('after') ? null : 'detail-search-next',
@@ -78,7 +81,11 @@ for (const width of [1280, 768, 390, 320]) {
     await fit(page, width); await page.screenshot({ path: info.outputPath(`card-details-${width}.png`), fullPage: true });
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     await fit(page, width); expect(await detail.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true); await axe(page);
-    source.boardFailure = 503; await detail.getByRole('button', { name: 'Refresh card', exact: true }).press('Enter');
+    source.boardFailure = 503; source.holdBoard = true;
+    await detail.getByRole('button', { name: 'Refresh card', exact: true }).press('Enter');
+    await expect.poll(() => source.boardWaiters.length).toBeGreaterThan(0);
+    await expect(location).toHaveCount(0);
+    source.holdBoard = false; source.boardWaiters.splice(0).forEach(resolve => resolve());
     await expect(detail.getByRole('alert')).toBeVisible(); await expect(location).toHaveCount(0);
     source.boardFailure = 0; await detail.getByRole('button', { name: 'Refresh card', exact: true }).press('Enter');
     await expect(input).toBeEditable(); if (polished) await expect(location).toBeVisible();
