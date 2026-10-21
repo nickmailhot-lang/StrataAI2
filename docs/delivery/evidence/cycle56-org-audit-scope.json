@@ -1,0 +1,89 @@
+{
+  "at": "2026-10-20T08:08:26.755Z",
+  "source": "ee5ac6f339f22a260e112821656a5a8cb2902486",
+  "owner": "PRD-03-VS-01-T-01",
+  "requirements": [
+    {
+      "id": "PRD-03-VS-01/WS-FR-001",
+      "text": "Authenticated users SHALL be able to create a organization.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-03-VS-01/WS-FR-002",
+      "text": "Organization fields SHALL include name, description, logo/avatar, owner, status, createdAt, updatedAt.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-03-VS-01/WS-FR-007",
+      "text": "The organization home SHALL list all boards the current user is authorized to discover.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-03-VS-01/WS-FR-008",
+      "text": "Organization roles SHALL include OWNER, ADMIN, MEMBER.",
+      "status": "Unverified"
+    },
+    {
+      "id": "PRD-03-VS-01/EXIT",
+      "text": "Demonstrate the scoped authorized workflow and applicable denial, retry/lifecycle and UXA-01–08 checks; retain exact revision results and integrate with no known critical regression.",
+      "status": "Unverified"
+    }
+  ],
+  "candidatePaths": [
+    {
+      "path": "src/StrataAI.Domain/Organizations/Organization.cs",
+      "sha256": "56689944d6711dbd6b3ac1f62be2887a15bef81654194f48fd6893fb674231c7"
+    },
+    {
+      "path": "src/StrataAI.Application/Organizations/OrganizationService.cs",
+      "sha256": "30719b068309777c7cfd6d5be65737f6afa3c1cdffd88a72d3babefe69c552de"
+    },
+    {
+      "path": "src/StrataAI.Application/Organizations/IOrganizationStore.cs",
+      "sha256": "2dd7aa113bb5465351b36ddec72992d63797a4442a173beec13eaeee02ec5e8c"
+    },
+    {
+      "path": "apps/web/src/features/organizations/OrganizationCreationDialog.tsx",
+      "sha256": "0dc9a2c39ff1e4862e2517ab1a1d14f1cdb0ce4baadb098c30de2b36d52e4534"
+    },
+    {
+      "path": "apps/web/src/features/organizations/OrganizationHome.tsx",
+      "sha256": "75898343b46d6ca537c49b0a4a79d3de1cf0c9b008d075b4d95f8d556c175aa7"
+    },
+    {
+      "path": "tests/browser/organization-directory.spec.ts",
+      "sha256": "0fb32acda39bfa187177b9ca46eda21b828b805a3f64a19e5a43c22b7b2446e9"
+    },
+    {
+      "path": "tests/browser/organization-types.spec.ts",
+      "sha256": "9f581bd78db1a543d6512175228d64b50092a20812c303414c9a421420c2fb64"
+    },
+    {
+      "path": "tests/browser/organization-creation-retries.spec.ts",
+      "sha256": "a13c9916393d003d8055726e6eae2607d48298937d3dd66813c5450c444f5a61"
+    },
+    {
+      "path": "tests/browser/organization-creation-telemetry.spec.ts",
+      "sha256": "2e510aed84b2923938a21ccf224b9d51e015ee4997c0c1fa48f555d83e8ec445"
+    },
+    {
+      "path": "db/migrations/003_identity.sql",
+      "sha256": "301fc86671aad242c4641291ef72f1201ae91d4a80f922505d9807a80f16e545"
+    }
+  ],
+  "observations": [
+    "Existing Organization creation dialog already preserves account-bound original intent and explicit same-ID recovery. It is existing implementation to reconcile, not restart.",
+    "Existing native files exercise creation/type selection/recovery and authorized directory consumers. Their source is evidence of test coverage, not a passing result until current execution evidence is matched.",
+    "Logo URL is present in canonical migration/service update paths. The small legacy Domain Organization class alone must not be used to claim required fields are missing. Trace canonical OrganizationRecord/store/API fields first.",
+    "Published PR117/UI and PR116/Q are frozen while their own current required checks run. Audit in separate worktree preserves both qualified heads."
+  ],
+  "existingExecutedEvidence": {
+    "frontendSource": "1a253fef0e736662445fbb72673aad6520257ad4",
+    "completePassed": 2939,
+    "originalDeferrals": 24,
+    "sourceBinding": "R7 to publishedR10 frontend byte-identical. Extract exact existing Organization modules/case results from original full report; do not manufacture a rerun.",
+    "native": "Caption/work12Passed is not full Organization creation acceptance; existing creation-native currentCI evidence still required."
+  },
+  "next": "Map FR001/002/007/008/EXIT to canonical records/store/API/UI and exact executed test results or explicit unverified gaps. Retain all original requirements; add only genuine missing one-cycle tasks after evidence, not source-reference guesses.",
+  "scope": "Bounded existing-capability acceptance audit started. No product change, test pass, newDone, parent closure or MVP completion inferred."
+}

@@ -702,6 +702,18 @@ Acceptance remains pending. The new feature still needs its own current CI, fina
 
 The focused change is published as draft [PR #117](https://github.com/nickmailhot-lang/StrataAI2/pull/117). Its initial stacked target did not match the maintained CI filter, so the target was corrected to main with no source or workflow change. It depends on #116; inherited #116 changes will leave the diff after that PR merges. The normal publication-ledger update starts eligible current-head CI. All three feature records remain Testing until their own required checks, final review and actual main integration pass.
 
+### Cycles 56–57 — Complete first-use coverage at320px and200%text
+
+The Organization creation audit preserved the existing implementation and its continuous first-use test. The canonical OrganizationRecord already includes name, description, logo URL, owner, status and timestamps, with Owner/Admin/Member roles. Existing source-reference matches remain distinct from executed tests. The actual unchanged OrganizationHome/action/focus subset contains78passing controlled cases; the original five business criteria remain Unverified pending their complete evidence and integration.
+
+Task `PRD-03-VS-01-T-03` adds only two missing profiles to the existing Organization → Board → List → Card consumer. Its original three1280/768/390 profiles and all72assertion chains remain. The added320px and768px/200%text profiles perform real UI sign-in and creation, assert canonical fields/ownership, and retain original lost-response recovery, peer conflict, persisted edits/reload, Back/Forward/focus, wrong-scope denial and public read-only behaviour. New verified cases own the existing Organization-scoped Worker fixture and restore it in finally. Product code, API, schema, permissions and dependencies are unchanged.
+
+All five profiles passed once with zero skips/retries on the exact retainedAPI/Worker, fresh restricted PostgreSQL and verified R7client/R11test source. The base30-second configuration and original rate-pacing fixture are unchanged; observed total durations, including30531ms, are retained without claiming fixture/cleanup wall time below30seconds. Browser types,485-case/170-intact-file coverage and collection pass. No application rebuild or repeat frontend run was needed because the application source is byte-identical to the previously verified build.
+
+Allsix new viewport captures were inspected separately. The [320px](../delivery/evidence/cycle57-first-use-320.png) and [200%text](../delivery/evidence/cycle57-first-use-200.png) captures show the created Organization and primary Board action clearly. Saved Card fields/actions and public read-only controls were also reviewed. No independent newAxe run is claimed. Owned services, volumes, network, provider and private settings were cleaned, and the unrelated Worker stayed unchanged.
+
+Task03/Test are Testing; the auditTask01/TRACE remain InProgress. Own currentCI, final review, main integration and final tracking remain required. No new Done item, parent PRD or MVP completion is claimed.
+
 
 ## Offline Organization context repair — 2026-10-20
 
@@ -710,6 +722,18 @@ Published PR117 exposed two original offline member lifecycle failures: the prot
 Three dedicated controls failed before repair. All 27 caption controls passed after it. The complete original four lifecycle and four Organization/Board/Card context browser cases passed with zero failures, skips or retries, including both previously failing cases. Original 150-second lifecycle and 90-second context deadlines, five-second name assertion, role/receipt/Axe checks and retries remain unchanged. One new isolated frontend build passed, and all eight selected captures were inspected with explicit pending/neutral-capture limits. The isolated runtime cleaned up and the protected Worker was unchanged.
 
 The wider frontend suite is still running; no full pass, new published CI pass or main integration is inferred. The caption records return through Implemented and Testing with these limits. PR116 has separately merged with all 22 checks and exact source/tested/main tree equality; no parent PRD or MVP is closed.
+
+
+## First-use confirmation after the offline repair — 2026-10-20
+
+The original five first-use profiles passed against the fixed client `c940a6501e64c96bb90ee2ce42a0396059c97d56` with test source `47745b34a4c2970d9c6168d85ffd4941313d4aeb`: zero failures, skips or retries. All six 320px and 200% text captures were inspected separately. Original sign-in, canonical Organization fields/ownership, Board/List/Card creation, uncertain-outcome recovery, saved edit/reload/return and public/foreign-scope assertions remain. The native source and all browser static inputs are unchanged from the previously validated test commit; frontend assets are reused only because their complete source inputs are identical to the fixed build.
+
+The original configured 30-second test limit and release fixtures remain unchanged. Exact reported durations, including totals above 30 seconds, are retained without claiming fixture/cleanup wall time below 30 seconds. The owned fixture and private settings were removed and the protected Worker stayed unchanged. Full frontend, current immutable CI, review and main integration remain pending; no parent PRD or MVP completion is claimed.
+
+
+## Complete frontend verification after offline repair — 2026-10-20
+
+The actual current-source full frontend run passed: 2,942 passing tests, zero failures and the same 24 original capacity deferrals. All 2,963 earlier case identities and outcomes remain; the only additions are the three dedicated offline controls. All 31 caption/scroll controls passed, as did types and lint. Source inputs match the repaired published branch and first-use branch exactly; metadata changes during execution do not change that binding. Current published-head CI, final review and main integration remain independently pending. The controlled-test criterion is verified; no parent PRD or MVP is complete.
 
 
 CI repair validation at ac55be7025ad1df93c09fed8f68b679517516486: original invitation10 passed at F and additional14 affected original cases passed at F2, separately bound runs with zero skips/retries. Named Organization/Board/Card at1280/768200%/390/320 preserves exact scroll and focus return, private context withdrawal and Axe checks. Canonical event collectors preserve actor/version/private metadata and distinct producer effects across independent connections. Six actual320/200% captures inspected; neutral pending header withdrawal remains intentional. Original frontend2942Pass/24deferred sourceC result retained; current repaired-head immutable CI and main integration remain pending. No product/schema/API/permission/CI-policy change or parent closure.
@@ -738,3 +762,8 @@ The complete local frontend run finished with2951passes,12failures andtheorigina
 ### Cycle152: patched build-tool verification
 
 Exact Vite8.3.4 and required locked build-tool transitives pass supported npm11.19.1 fresh install, audit0, web/browser types, complete15 NavigationConfirmation cases and production compilation. Compiler verification uses default local metadata and is not an identified release bundle. Original security failures and the separate native7/4 aggregate remain Failed. New-head complete CI and integration remain required; no UX/product acceptance is inferred. Evidence:EVID-CYCLE-152-PATCHED-VITE-LOCAL.
+
+
+### Cycle162: accessible Card refusal observation
+
+Current50fd changes only the final Card actor test observation to await the same accessible focused alert after MUI dialog withdrawal. All other bytes/assertions and runtime remain unchanged. Complete10 actor/refusal cases pass with patched dependencies, web types and scoped lint. Original f28 full frontend1failed/2962passed/24capacity deferrals remains Failed; scoped10 does not replace fresh complete CI and release/main qualification. No product or UX acceptance is inferred from this test-only repair.
