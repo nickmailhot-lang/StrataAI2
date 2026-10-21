@@ -75,7 +75,8 @@ export function GlobalSearchPage() {
       window.removeEventListener('focus', refresh); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', refresh); };
   }, [load]);
   const searchedWithFilters = Boolean(applied.current.q || applied.current.label || applied.current.member);
-  return <Stack spacing={2} component="section" aria-label="Global Card search">
+  return <Stack spacing={2} component="section" aria-label="Global Card search"
+    sx={workExperienceEnabled ? { '& .MuiButton-root': { textTransform: 'none' } } : undefined}>
     <PageHeader title="Search Cards" variant="h5" description="Search across your accessible Organizations and Boards." />
     {!page && !busy && !notice && <Typography>Choose filters, then select Search. Leave filters empty to browse Cards you can access.</Typography>}
     <Stack component="form" spacing={2} useFlexGap={workExperienceEnabled}
@@ -98,7 +99,7 @@ export function GlobalSearchPage() {
     <Stack ref={feedback} role="status" aria-live="polite" tabIndex={-1}
       sx={{ '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 4, borderRadius: 1 } }}>{busy && <Typography>Searching…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}
-      {page && <Typography>{page.items.length} results on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
+      {page && <Typography>{page.items.length} result{page.items.length === 1 ? '' : 's'} on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
       {acknowledged && <Typography>Search acknowledged.</Typography>}
     </Stack>
     {page && !busy && !notice && page.items.length === 0 && <Paper component="section" aria-label="Search guidance" variant="outlined" sx={{ p: 2 }}>
@@ -120,7 +121,8 @@ export function GlobalSearchPage() {
         ? formatUserDateTime(item.dueAt, { locale: page.locale, timezone: item.boardDateTimezone ?? page.timezone }) ?? 'Date unavailable'
         : formatCardDate(item.dueAt, false, page.locale, item.boardDateTimezone ?? page.timezone)}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
     </Paper>)}
-    <Stack ref={paging} spacing={2}>
+    <Stack ref={paging} spacing={2} direction={workExperienceEnabled ? 'row' : undefined} useFlexGap={workExperienceEnabled}
+      sx={workExperienceEnabled ? { flexWrap: 'wrap', justifyContent: 'flex-end' } : undefined}>
       {page?.nextCursor && <Button disabled={busy} onClick={() => void load(applied.current, page.nextCursor!)}>Next search page</Button>}
       {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current, 'retry')}>Refresh results</Button>}
     </Stack>

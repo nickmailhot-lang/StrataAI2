@@ -887,7 +887,7 @@ function BoardContent() {
         fullWidth
         fullScreen={workExperienceEnabled && phone}
         maxWidth={workExperienceEnabled ? false : 'sm'}
-        sx={workExperienceEnabled ? { '& .MuiDialog-container': { justifyContent: 'flex-end' } } : undefined}
+        sx={workExperienceEnabled ? { '& .MuiDialog-container': { justifyContent: 'flex-end' }, '& .MuiButton-root': { textTransform: 'none' } } : undefined}
         aria-labelledby="card-detail-title"
       >
         <DialogTitle id="card-detail-title" sx={workExperienceEnabled ? { fontWeight: 600, borderBottom: '1px solid', borderColor: 'divider' } : undefined}>Card details</DialogTitle>

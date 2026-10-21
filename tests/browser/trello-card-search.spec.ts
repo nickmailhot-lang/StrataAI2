@@ -107,6 +107,7 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(page.getByText('Labels: None', { exact: true })).toBeVisible();
     await expect(page.getByText('Members: None', { exact: true })).toBeVisible();
     await expect(page.getByText('No deadline', { exact: true })).toBeVisible();
+    await expect(page.getByText('1 result on this page. More work can be searched.', { exact: true })).toBeVisible();
     await fit(page, width); await page.screenshot({ path: info.outputPath(`search-results-${width}.png`), fullPage: true });
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; }); await fit(page, width); await axe(page);
     await query.fill('unsent draft'); await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');
