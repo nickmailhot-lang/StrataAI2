@@ -1,0 +1,24 @@
+{
+  "revision": "376132265350213370fafacbe5f6368d0c6f8e0d",
+  "at": "2026-10-22T09:23:53.946Z",
+  "result": "Passed",
+  "checkedLedger": {
+    "sha256": "961047c733b2981f8f1034a9b2d9425c61854af033eff42b9f2b179e78ed3add",
+    "items": 1625,
+    "criteria": 3921,
+    "evidence": 997,
+    "done": 71
+  },
+  "validation": {
+    "command": "npm run delivery:validate -- --base-ref 551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+    "result": "npm notice run strataai2@0.1.0 delivery:validate\r\nnpm notice run node scripts/delivery-progress.mjs validate --base-ref 551a6bc8d2a08556e0c6b834a64c82b82fd2a112\r\nValid: 1625 work items; 3921 criteria. No unsupported Done claims.\r\n",
+    "sha256": "1816d6e49b9b515adc59f63419779f4c9c427b86456d8c8b54b70eb8ba540ce3"
+  },
+  "contracts": {
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "sha256": "016d54e259caf0597e195151e92e4301fdcc79f9772f29865210406eec858231"
+  },
+  "scope": "Full Git ancestry/source existence, every evidence hash, canonical baseline and parent-relative historical evolution pass on exact committed37613226 ledger bytes. Both parent histories preserved. New proof adds no acceptance and cannot qualify parent or own final-head hosted gates."
+}

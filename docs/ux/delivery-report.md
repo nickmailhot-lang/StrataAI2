@@ -11,7 +11,7 @@ After normal reconciliation with parent candidate `551a6bc8`, combined source `e
 | Test completion | Current combined scoped checks pass. Parent backend and downstream hosted gates remain pending; follow-up own full main-target checks remain required. |
 | MVP readiness | No new acceptance or merge; 71 Done unchanged. |
 
-Combined ledger: 1625 items, 3921 criteria, 997 evidence records. Delivery validation is next. Both PRs remain draft; the parent stays frozen throughout qualification.
+Combined ledger: 1625 items, 3921 criteria, 998 evidence records. Full Git, evidence-hash, baseline and parent-relative history validation plus all 36 delivery contracts pass on the exact committed ledger. Both PRs remain draft; the parent stays frozen throughout qualification.
 
 ---
 
