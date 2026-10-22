@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Star-recovery CI failure retained; merge remains blocked
+
+Candidate `551a6bc8` failed the notification group's desktop Board-star recovery case. The 44-case Board-management invocation passed 43 and failed one; earlier completed invocations passed 14, while later scopes were not run. Verified diagnostics show the first command deliberately lost its reply, a later unstar committed and another account starred independently. The owner focused Retry and sent global Enter, but no retry mutation started; the original intent remained unconfirmed.
+
+The repair will use the existing one-request observation helper with exact same-origin star mutation starts, retaining original request-count, key, version, history, private-actor, focus, deadline and recovery assertions. It must stop after an actual request even if its reply fails. Source, security, all 50 Foundation workflows and command integration passed on this head; those successes retain their identity and cannot qualify a replacement. Remaining browser groups continue so failures can be addressed together before one new push.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and security contracts preserved. |
+| UX completion | Bounded polish remains implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Required notifications failed; repaired source and every fresh final-head gate must pass. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Independent #123 filter work and its current checks remain preserved. Ten parent Task/Test records are In Progress for requalification. No failing check, original assertion, retry limit or performance budget is weakened.
+
+---
+
 ## 2026-10-22 — Organization and Search repair passes complete scoped checks
 
 Source `23aa8073` adds honest admitted-live-update feedback and fresh lifecycle reads after development remount. Organization disclosure collapse uses the existing observed native activation. The real-service replay fixture now observes the consumer confirmation before disconnecting; its strict cursor 2/event 3 oracle remains intact. Search selected values wrap and reserve text-scaled arrow space; a new geometry check prevents a complete but obscured label. No transport, API/schema, tenant, consent, recovery, timeout, retry or required CI behavior changed.

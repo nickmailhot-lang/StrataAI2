@@ -1,0 +1,127 @@
+{
+  "revision": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+  "at": "2026-10-22T11:03:04.492Z",
+  "result": "Failed",
+  "run": 39750379379,
+  "testedSynthetic": "1688fda9720de34b6c94d0800ad96cfda1284b31",
+  "version": "0.1.0-1969",
+  "job": {
+    "id": 119749635160,
+    "name": "browser-notifications",
+    "failedStep": "Strict verified-account Board management and personal preferences"
+  },
+  "failure": {
+    "file": "tests/browser/board-star.spec.ts",
+    "width": 1280,
+    "line": 89,
+    "expectation": "Star Board button enabled after original recovery",
+    "deadlineMs": 5000,
+    "received": "No matching button; original intent remains unconfirmed."
+  },
+  "artifact": {
+    "id": 12420560951,
+    "sha256": "2be386fb132f112fdcb36cdbf8dad6fa7caa6007b6d75c2a3bea293034a3e995",
+    "innerChecksums": 38,
+    "identity": "All inner entries and embedded1688/run39750379379/version1969 verified"
+  },
+  "assets": [
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-star-context.md",
+      "sha256": "503431f5a3692e3181c8ae92db523d2aee8f387ba6bf40ad2b2598a1d88b6051"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-star-test-failed-1.png",
+      "sha256": "48dd98925d5b6945ac68e60eec701a781662c27400f19f28b8ca0ea1aead9249"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-star-test-failed-2.png",
+      "sha256": "bed0bf232e255065ed9cd096e921e2f71c570254c8a46de6d31458c4b22a3991"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-star-test-failed-3.png",
+      "sha256": "b631b33addad876d772f3152e8e2b4124fbb5a8628d35b166369d007c1260b5c"
+    }
+  ],
+  "trace": {
+    "ownerBrowser": "3-trace.network",
+    "ownerWrites": 1,
+    "ownerAccountReads": {
+      "count": 48,
+      "allStatus200": true
+    },
+    "normalizedWrites": [
+      {
+        "trace": "3-trace.network",
+        "method": "PUT",
+        "version": "0",
+        "status": -1
+      },
+      {
+        "trace": "2-trace.network",
+        "method": "PUT",
+        "version": "0",
+        "status": 204
+      },
+      {
+        "trace": "2-trace.network",
+        "method": "DELETE",
+        "version": "1",
+        "status": 204
+      },
+      {
+        "trace": "1-trace.network",
+        "method": "PUT",
+        "version": "0",
+        "status": 204
+      }
+    ],
+    "retrySequence": [
+      {
+        "id": "call@5065",
+        "method": "focus",
+        "key": null,
+        "assertion": null
+      },
+      {
+        "id": "call@5067",
+        "method": "expect",
+        "key": null,
+        "assertion": "to.be.focused"
+      },
+      {
+        "id": "call@5069",
+        "method": "keyboardPress",
+        "key": "Enter",
+        "assertion": null
+      },
+      {
+        "id": "call@5071",
+        "method": "expect",
+        "key": null,
+        "assertion": "to.be.enabled"
+      }
+    ],
+    "finding": "Owner original PUT reached the server but its response was deliberately dropped. A later DELETE committed and another account independently starred. The original owner focused Retry and sent a bare global Enter, but no second owner mutation started. Original recovery remained unconfirmed. No owner account read failure or retry API rejection caused this assertion."
+  },
+  "partialNative": {
+    "completedInvocationsPassed": [
+      4,
+      2,
+      2,
+      6
+    ],
+    "failedInvocation": {
+      "passed": 43,
+      "failed": 1
+    },
+    "completedPassed": 57,
+    "failed": 1,
+    "laterScopes": "Not run after failed Board-management step; not counted as passed."
+  },
+  "evaluation": {
+    "cause": "Global Enter was sent after a focus assertion, while an independent protected/live read could retire that focus. Actual owner trace contains only the deliberately failed initial mutation and no retry. The application correctly retained original recovery; no failed operation should be replayed by a test helper.",
+    "owner": "Current PR122 integration owner",
+    "repair": "Use existing pressObservedRequest with exact same-origin Board star mutation-start observation. Count both PUT and DELETE, stop after one actual request even if wrong/failed, and preserve original consent/key/version/receipt/state/history/timezone/private-actor/focus assertions and deadlines. Guard all three affected activations in this fixture; add real routed native coverage of pending admission, failed recovery and explicit same-key recovery.",
+    "limits": "Other full-browser groups continue on this failed head to find additional failures before one replacement push. Source11, security, Foundation50 and command successes retain their actual551 identity; they do not qualify the replacement. No merge or acceptance."
+  }
+}
