@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Original policy retry passes scoped validation
+
+Source `ef227a55` replaces one fixture activation with the existing request-start observer. It stops when one original policy PATCH starts,including a lost reply. A byte comparison confirms all original assertions and deadlines remain. No product code,API,schema,permission or dependency changes.
+
+All 48 relevant component tests across four actual files and all 47 observer contracts pass. Four original policy browser scenarios pass at 1280/390px using the running Demo and unchanged policy UI inputs. They prove scoped recovery/history/withdrawal behavior,not qualification of replacement release images. Web/browser types,full lint and the unchanged 522-case/177-file partition pass. Original user Demo data and process remain unchanged.
+
+The failed8f candidate remains Failed;its19 passing checks and six strict profiles retain that execution identity. Ten bounded records return to Testing after scoped repair. Full delivery validation,36 contracts and a frozen replacement own22 gates,strict6,immutable release,final review and actual main integration remain mandatory. No merge,acceptance or Demo activation;71 Done unchanged. The independent Board follow-up is preserved separately.
+
+---
+
 ## 2026-10-22 — Final browser failure retained; original-recovery fixture rework
 
 Candidate `8f17005f` failed final qualification. Nineteen checks pass, but normal group four reports 128 passes and one failure: the 1280px retention-policy recovery scenario observes one PATCH instead of the required two after reload. The native trace records focus followed by Enter, with no second browser request. The normal matrix totals 519 passes, one failure and two original mail-fixture skips. Required-ci fails and release verification is skipped.

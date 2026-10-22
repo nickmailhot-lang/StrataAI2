@@ -1,0 +1,98 @@
+{
+  "revision": "ef227a557e56fdbd57d1bfefe3beeab5e36f5df6",
+  "at": "2026-10-22T21:16:19.415Z",
+  "result": "Passed",
+  "inputs": [
+    {
+      "path": "tests/browser/retention-policy-review.spec.ts",
+      "sha256": "ac11cd01a4fe0dee0345f6626dd63f57707e43bea07c768d67f8c974b20c7ff1"
+    },
+    {
+      "path": "tests/browser/keyboardAdmission.ts",
+      "sha256": "2f7fb0c6d452fe2cfe42d9d4dc6c795ba8af12387ccdcd87fd7079b7c6be2d10"
+    },
+    {
+      "path": "tests/browser/keyboardAdmission.test.mjs",
+      "sha256": "de414bf24471e8f488653a0a84d12b1cdbd783152d340d0ff84960e50acd5e64"
+    },
+    {
+      "path": "apps/web/src/features/records/RetentionPolicyEditor.tsx",
+      "sha256": "48e01dcf1cd71324aac272effe1bcfd0c10e872fb9fbede23eaafde6413f93ad"
+    },
+    {
+      "path": "apps/web/src/features/records/RetentionPoliciesPage.tsx",
+      "sha256": "a5265baa69f6caf21ae791700bd91f117b26de67f22dd9eac96e51f2e8fc0ce4"
+    },
+    {
+      "path": "apps/web/src/features/records/retentionPolicyClient.ts",
+      "sha256": "a64a7e25db2bbf7edec45672c260e7e8e3a8251a5c2233a689f5f5c003500b1d"
+    },
+    {
+      "path": "apps/web/src/features/records/retentionPolicyRecovery.ts",
+      "sha256": "0ccaaa64e7c96bc437f925ff78e01bd3ee27b288fbe6c3da8769b6739aac38ff"
+    }
+  ],
+  "assertionsAndDeadlines": "Exact original file bytes preserved except one import,two explanatory comments and replacing the single recovery activation with existing pressObservedRequest. Original5000ms count assertion,120000ms scenario,keys,bodies,versions,history,receipt,consent,withdrawal,privacy and scoped Worker assertions remain.",
+  "execution": {
+    "components": {
+      "files": 4,
+      "passed": 48,
+      "failed": 0,
+      "selection": "First filter matched3 existing files/28 tests; actual retentionPolicyChange file then ran separately20 tests. A nonexistent initial Recovery filename was not counted as an executed file."
+    },
+    "contracts": {
+      "passed": 47,
+      "failed": 0,
+      "skipped": 0
+    },
+    "native": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "widths": [
+        1280,
+        390
+      ],
+      "runtime": "Existing original0.1.0-1970 Demo through Nginx; isolated new account/Organization fixtures only; original user workspace/process/session unchanged.",
+      "unchangedPolicyInputs": [
+        {
+          "path": "apps/web/src/features/records/RetentionPolicyEditor.tsx",
+          "sha256": "48e01dcf1cd71324aac272effe1bcfd0c10e872fb9fbede23eaafde6413f93ad"
+        },
+        {
+          "path": "apps/web/src/features/records/RetentionPoliciesPage.tsx",
+          "sha256": "a5265baa69f6caf21ae791700bd91f117b26de67f22dd9eac96e51f2e8fc0ce4"
+        },
+        {
+          "path": "apps/web/src/features/records/retentionPolicyClient.ts",
+          "sha256": "a64a7e25db2bbf7edec45672c260e7e8e3a8251a5c2233a689f5f5c003500b1d"
+        },
+        {
+          "path": "apps/web/src/features/records/retentionPolicyRecovery.ts",
+          "sha256": "0ccaaa64e7c96bc437f925ff78e01bd3ee27b288fbe6c3da8769b6739aac38ff"
+        }
+      ],
+      "limits": "Supporting scoped original-recovery/withdrawal execution only,not a new-head immutable-image or restricted-PostgreSQL qualification."
+    },
+    "webTypes": "Passed",
+    "browserTypes": "Passed",
+    "fullLint": "Passed",
+    "registry": {
+      "tests": 522,
+      "files": 177,
+      "partition": [
+        131,
+        131,
+        131,
+        129
+      ]
+    }
+  },
+  "logs": {
+    "native": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run playwright test tests/browser/retention-policy-review.spec.ts --output=..\\trello-122-retention-native-results\r\n\r\nRunning 4 tests using 1 worker\r\n\r\n(node:33672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 1 tests\\browser\\retention-policy-review.spec.ts:45:7 › PRD-70: real policy creation, stale review and retained history with keyboard confirmation at 1280px (8.0s)\r\n  ok 2 tests\\browser\\retention-policy-review.spec.ts:97:7 › PRD-70: original retry after reload and administrator withdrawal protect private policy work at 1280px (5.9s)\r\n  ok 3 tests\\browser\\retention-policy-review.spec.ts:45:7 › PRD-70: real policy creation, stale review and retained history with keyboard confirmation at 390px (5.7s)\r\n  ok 4 tests\\browser\\retention-policy-review.spec.ts:97:7 › PRD-70: original retry after reload and administrator withdrawal protect private policy work at 390px (5.7s)\r\n\r\n  4 passed (27.2s)\r\n",
+    "contracts": "(node:26884) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/boardReadTracker.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ star admission observes either mutation verb once when it starts, independently of reply failure (6.8315ms)\r\n✔ star admission cannot be satisfied by reads, siblings, another Board or transport (0.896ms)\r\n✔ star admission rejects a foreign origin even with the same Board path and method (0.6096ms)\r\n✔ filter command observation counts the actual Cards Apply/Clear route exactly once per request start (1.2984ms)\r\n✔ filter command observation rejects sibling routes, other Boards and reads (0.714ms)\r\n✔ a foreign-origin filter request cannot satisfy same-origin command admission (0.4581ms)\r\n✔ a filter observer created before navigation qualifies the actual later page origin (0.9521ms)\r\n✔ event-driven readiness observes the qualified second response immediately and cleans up its listeners (2.1499ms)\r\n✔ read observation still fails on timeout or page closure without leaving listeners (13.9228ms)\r\n✔ late previous-screen responses cannot satisfy visibility bootstrap readiness (1.3654ms)\r\n✔ Card revision admission ignores previous screens, foreign data, errors and late older revisions (5.1817ms)\r\n(node:36972) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ stable invitation review uses the product default focus and one native opening (14.4491ms)\r\n✔ a protected refresh can retire transient visibility before the original focus assertion (3.0103ms)\r\n✔ only the retired read-only review reopens; Cancel is never focused by the fixture (117.19ms)\r\n✔ an already focused review cannot receive an extra opening key (1.2061ms)\r\n✔ a genuinely wrong default focus still fails within the original five-second budget (4915.3476ms)\r\n(node:8996) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ an admitted action dispatches exactly one Enter and stops at the expected request (19.2172ms)\r\n✔ an ignored keypress admits one request and stops once that request starts (474.0161ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-enabled (2.1757ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-focus (2.9278ms)\r\n✔ an extra request remains a failure even when the launcher has retired (5006.534ms)\r\n✔ an unexpected initial observation cannot trigger another Enter (1.0621ms)\r\n✔ local action observes one native activation and removes its listener (2.9443ms)\r\n✔ only an ignored local keypress is readmitted (474.5809ms)\r\n✔ local activation during focus cannot send another Enter to a retired control (1.2308ms)\r\n✔ a wrong consumer result after activation is not repaired by another activation (2.4751ms)\r\n✔ duplicate local activations remain a failure (5010.2412ms)\r\n✔ a replacement local control cannot receive the original activation (4927.8579ms)\r\n✔ read-only Tab proves native traversal without focusing its destination (1.6673ms)\r\n✔ an unobserved Shift+Tab repeats from its admitted origin only (107.0238ms)\r\n✔ broken keyboard order still fails within the original five-second budget (4928.7964ms)\r\n✔ nonmutating activity review observes its inline region before returning (2.9708ms)\r\n✔ an ignored review activation is retried only until its region opens (107.5721ms)\r\n✔ an already-open region does not require its retired launcher (1.188ms)\r\n✔ review opening during focus cannot activate the retired launcher (105.9181ms)\r\n✔ an unopened review remains a failure within the original admission budget (4920.612ms)\r\n✔ admitted text dispatches one native input event and one insertion (7.8536ms)\r\n✔ only an ignored insertion with no input event can be attempted again (484.5986ms)\r\n✔ a draft cleared after native input still fails its value assertion without refilling (3.2182ms)\r\n✔ a replacement control cannot receive the earlier input intent (4928.2448ms)\r\n✔ extra native input remains a failure and cannot trigger another insertion (5002.6808ms)\r\n✔ local validation observes one native submit and removes its listener (4.233ms)\r\n✔ local validation retries only a keypress that emitted no submit (472.2852ms)\r\n✔ an observed validation submit during focus cannot dispatch another Enter (105.3197ms)\r\n✔ a submit that retires its form is not replayed while its result is pending (3.1861ms)\r\n✔ a retired validation form cannot send a key to a replacement control (4898.3424ms)\r\n✔ duplicate native submits remain a failure without another activation (5001.981ms)\r\nℹ tests 47\r\nℹ suites 0\r\nℹ pass 47\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 48119.4798\r\n",
+    "components": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run --run src/features/records/RetentionPolicyEditor.test.tsx src/features/records/RetentionPoliciesPage.test.tsx src/features/records/retentionPolicyRecovery.test.ts src/features/records/retentionPolicyClient.test.ts\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  3 passed (3)\r\n      Tests  28 passed (28)\r\n   Start at  14:12:01\r\n   Duration  14.62s (tests 35%, import 31%, environment 26%, setup 5%, transform 2%)\r\n\r\n",
+    "change": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run --run src/features/records/retentionPolicyChange.test.ts\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  1 passed (1)\r\n      Tests  20 passed (20)\r\n   Start at  14:13:15\r\n   Duration  2.81s (environment 76%, setup 11%, transform 7%, tests 4%, import 1%, worker 1%)\r\n\r\n"
+  },
+  "limits": "Scoped repair passes. The original failed8f execution remains Failed with its own19 passing checks and six profile results. Replacement requires its own full22 checks,actual native/roles/SQL/security/regressions/strict6/release,final review and verified normal main integration. No acceptance,merge or Demo refresh."
+}
