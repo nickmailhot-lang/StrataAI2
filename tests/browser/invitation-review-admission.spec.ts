@@ -81,7 +81,12 @@ for (const width of [1280, 768, 390, 320]) for (const boardSurface of [false, tr
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
-    await expect(cancel).toBeFocused(); await pressObservedLocalAction(cancel);
+    await expect(cancel).toBeFocused();
+    await cancel.press('Shift+Tab');
+    const details = dialog.getByRole('region', { name: 'Invitation revocation details', exact: true });
+    await expect(details).toBeFocused();
+    await details.press('Tab'); await expect(cancel).toBeFocused();
+    await pressObservedLocalAction(cancel);
     await expect(dialog).toHaveCount(0); expect(source.writes).toEqual([]);
     await expect(page.getByText('Email sent', { exact: true })).toBeVisible();
     source.denied = true; await page.evaluate(() => window.dispatchEvent(new Event('focus')));
