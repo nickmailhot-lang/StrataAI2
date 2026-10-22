@@ -35,7 +35,7 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
   }
   const root = `/organizations/${encodeURIComponent(organizationId)}/operational-lifecycle`;
   useEffect(() => { mounted.current = true; original.current = readLifecycleIntent(organizationId); void load();
-    return () => { mounted.current = false; pending.current?.abort(); }; }, []);
+    return () => { mounted.current = false; pending.current?.abort(); pending.current = undefined; }; }, []);
   useEffect(() => {
     if (!liveActor) return;
     let fresh: LifecycleReview | undefined;

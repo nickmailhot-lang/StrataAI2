@@ -20,9 +20,14 @@ async function sourceFor(page: Page) {
     facts: [] as ReturnType<typeof fact>[], writes: [] as string[], send: (_events: ReturnType<typeof fact>[], _pending = false) => {} };
   await page.routeWebSocket('**/organizations/live/operational-lifecycle*', socket => {
     source.sockets.push(socket); let invocation = '', cursor = 0;
-    source.send = (events, pending = false) => socket.send(JSON.stringify({ type: 2, invocationId: invocation,
+    source.send = (events, pending = false) => {
+      socket.send(JSON.stringify({ type: 2, invocationId: invocation,
       item: { organizationId: organization, userId: actor, page: { organizationId: organization, actorId: actor,
         status: source.status, version: source.version, afterVersion: cursor, nextVersion: null, pending, events } } }) + '\u001e');
+      // Match the server's next frame cursor, independently of whether the
+      // consumer has admitted this frame. Reconnect uses its own Watch cursor.
+      if (events.length) cursor = events.at(-1)!.version;
+    };
     socket.onMessage(message => {
       if (typeof message !== 'string') return;
       for (const part of message.split('\u001e').filter(Boolean)) {
