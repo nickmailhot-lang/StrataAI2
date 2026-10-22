@@ -1,5 +1,13 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Current notifications and first full-browser group pass
+
+PR #122 candidate `8f17005f` now has 17 green checks. All 93 notification cases and all 131 cases in normal-browser group one pass, with no failures or skips in those scopes. Foundation retains 50 passes; the command group retains 80 successful workflow steps. The remaining three full-browser groups are running. The first performance artifact has verified checksums and current build identity but no measured profiles; it does not qualify any of the required six profiles.
+
+All remaining browser, strict performance, immutable release, final review and main-integration gates remain mandatory. No merge, Demo activation or acceptance has occurred. The independent Board-filter and canonical-assignee polish remains implemented with scoped checks and its own pending qualification. Functional completion, UX completion, test completion and MVP readiness remain separate; 71 records are Done. Ledger validation and all 36 delivery contracts passed for the preceding Foundation/command tracking update.
+
+---
+
 ## 2026-10-22 — Current Foundation and command integration pass
 
 PR #122 remains frozen at `8f17005f`. Its version 0.1.0-1971 Foundation job passes all 50 cases: 28 Demo metadata/terminal/recipient, two reminder, two original cover-pipeline and 18 lifecycle tests, with no failures or skips. The command, permission, RLS, transaction and runtime group also passes, with 80 successful workflow steps; this is not a count of test cases. Source quality, image builds and security pass. Fifteen checks are green; four integration groups are running and one is queued under the unchanged four-job limit.
