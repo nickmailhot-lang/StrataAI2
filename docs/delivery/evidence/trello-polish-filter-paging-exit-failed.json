@@ -1,0 +1,357 @@
+{
+  "revision": "6b934ea7927dbd3037f00060ae6fcda78e9f58b5",
+  "at": "2026-10-22T03:26:57.163Z",
+  "result": "Failed",
+  "scope": "After pre-cursorparking,4nativecases give1passed/3failed:shared dialog/canvas refs lose canvas owner during dialog exit.",
+  "report": {
+    "config": {
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+        "test",
+        "tests/browser/board-filter-guidance.spec.ts",
+        "--output=../board-filter-paging-default-fixed-results",
+        "--reporter=list,json"
+      ],
+      "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+      "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+      "failOnFlakyTests": false,
+      "forbidOnly": false,
+      "fullyParallel": false,
+      "globalSetup": null,
+      "globalTeardown": null,
+      "globalTimeout": 0,
+      "grep": {},
+      "grepInvert": null,
+      "maxFailures": 0,
+      "metadata": {
+        "actualWorkers": 1
+      },
+      "preserveOutput": "always",
+      "projects": [
+        {
+          "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/board-filter-paging-default-fixed-results",
+          "repeatEach": 1,
+          "retries": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "id": "",
+          "name": "",
+          "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "testIgnore": [],
+          "testMatch": [
+            "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+          ],
+          "timeout": 30000
+        }
+      ],
+      "quiet": false,
+      "reporter": [
+        [
+          "list"
+        ],
+        [
+          "json"
+        ]
+      ],
+      "reportSlowTests": {
+        "max": 5,
+        "threshold": 300000
+      },
+      "shard": null,
+      "tags": [],
+      "updateSnapshots": "missing",
+      "updateSourceMethod": "patch",
+      "version": "1.63.0",
+      "workers": 1,
+      "webServer": null
+    },
+    "suites": [
+      {
+        "title": "board-filter-guidance.spec.ts",
+        "file": "board-filter-guidance.spec.ts",
+        "column": 0,
+        "line": 0,
+        "specs": [
+          {
+            "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 1280px",
+            "ok": false,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 0,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 17804,
+                    "error": {
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('status', { name: 'Filtered Board results', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n",
+                      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('status', { name: 'Filtered Board results', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts:85:28",
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts",
+                        "column": 28,
+                        "line": 85
+                      },
+                      "snippet": "  83 |     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');\n  84 |     const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });\n> 85 |     await expect(feedback).toBeFocused();\n     |                            ^\n  86 |     await expect(feedback).toHaveText('Checking filtered Board Cards…');\n  87 |     await expect(feedback).toHaveCSS('outline-style', 'solid');\n  88 |     expect(await feedback.evaluate(element => {"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts",
+                          "column": 28,
+                          "line": 85
+                        },
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('status', { name: 'Filtered Board results', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n\n  83 |     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');\n  84 |     const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });\n> 85 |     await expect(feedback).toBeFocused();\n     |                            ^\n  86 |     await expect(feedback).toHaveText('Checking filtered Board Cards…');\n  87 |     await expect(feedback).toHaveCSS('outline-style', 'solid');\n  88 |     expect(await feedback.evaluate(element => {\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts:85:28"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-22T03:06:18.988Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "screenshot",
+                        "contentType": "image/png",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--71431-rn-and-withdrawal-at-1280px\\test-failed-1.png"
+                      },
+                      {
+                        "name": "error-context",
+                        "contentType": "text/markdown",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--71431-rn-and-withdrawal-at-1280px\\error-context.md"
+                      },
+                      {
+                        "name": "trace",
+                        "contentType": "application/zip",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--71431-rn-and-withdrawal-at-1280px\\trace.zip"
+                      }
+                    ],
+                    "errorLocation": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts",
+                      "column": 28,
+                      "line": 85
+                    }
+                  }
+                ],
+                "status": "unexpected"
+              }
+            ],
+            "id": "98144e8a521030506610-6d26c68c8f95eece30f8",
+            "file": "board-filter-guidance.spec.ts",
+            "line": 57,
+            "column": 7
+          },
+          {
+            "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 768px",
+            "ok": true,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "passed",
+                    "duration": 16933,
+                    "errors": [],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-22T03:06:39.339Z",
+                    "annotations": [],
+                    "attachments": []
+                  }
+                ],
+                "status": "expected"
+              }
+            ],
+            "id": "98144e8a521030506610-ee1971b4e6257b1717e1",
+            "file": "board-filter-guidance.spec.ts",
+            "line": 57,
+            "column": 7
+          },
+          {
+            "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 390px",
+            "ok": false,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 1,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 17784,
+                    "error": {
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('status', { name: 'Filtered Board results', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n",
+                      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('status', { name: 'Filtered Board results', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts:85:28",
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts",
+                        "column": 28,
+                        "line": 85
+                      },
+                      "snippet": "  83 |     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');\n  84 |     const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });\n> 85 |     await expect(feedback).toBeFocused();\n     |                            ^\n  86 |     await expect(feedback).toHaveText('Checking filtered Board Cards…');\n  87 |     await expect(feedback).toHaveCSS('outline-style', 'solid');\n  88 |     expect(await feedback.evaluate(element => {"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts",
+                          "column": 28,
+                          "line": 85
+                        },
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('status', { name: 'Filtered Board results', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n\n  83 |     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');\n  84 |     const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });\n> 85 |     await expect(feedback).toBeFocused();\n     |                            ^\n  86 |     await expect(feedback).toHaveText('Checking filtered Board Cards…');\n  87 |     await expect(feedback).toHaveCSS('outline-style', 'solid');\n  88 |     expect(await feedback.evaluate(element => {\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts:85:28"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-22T03:06:56.608Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "screenshot",
+                        "contentType": "image/png",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--f0955-urn-and-withdrawal-at-390px\\test-failed-1.png"
+                      },
+                      {
+                        "name": "error-context",
+                        "contentType": "text/markdown",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--f0955-urn-and-withdrawal-at-390px\\error-context.md"
+                      },
+                      {
+                        "name": "trace",
+                        "contentType": "application/zip",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--f0955-urn-and-withdrawal-at-390px\\trace.zip"
+                      }
+                    ],
+                    "errorLocation": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts",
+                      "column": 28,
+                      "line": 85
+                    }
+                  }
+                ],
+                "status": "unexpected"
+              }
+            ],
+            "id": "98144e8a521030506610-901d5c3ee79d9fdafea9",
+            "file": "board-filter-guidance.spec.ts",
+            "line": 57,
+            "column": 7
+          },
+          {
+            "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 320px",
+            "ok": false,
+            "tags": [],
+            "tests": [
+              {
+                "timeout": 30000,
+                "annotations": [],
+                "expectedStatus": "passed",
+                "projectId": "",
+                "projectName": "",
+                "results": [
+                  {
+                    "workerIndex": 2,
+                    "parallelIndex": 0,
+                    "status": "failed",
+                    "duration": 16443,
+                    "error": {
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('status', { name: 'Filtered Board results', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n",
+                      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('status', { name: 'Filtered Board results', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts:85:28",
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts",
+                        "column": 28,
+                        "line": 85
+                      },
+                      "snippet": "  83 |     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');\n  84 |     const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });\n> 85 |     await expect(feedback).toBeFocused();\n     |                            ^\n  86 |     await expect(feedback).toHaveText('Checking filtered Board Cards…');\n  87 |     await expect(feedback).toHaveCSS('outline-style', 'solid');\n  88 |     expect(await feedback.evaluate(element => {"
+                    },
+                    "errors": [
+                      {
+                        "location": {
+                          "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts",
+                          "column": 28,
+                          "line": 85
+                        },
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('status', { name: 'Filtered Board results', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n\n  83 |     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');\n  84 |     const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });\n> 85 |     await expect(feedback).toBeFocused();\n     |                            ^\n  86 |     await expect(feedback).toHaveText('Checking filtered Board Cards…');\n  87 |     await expect(feedback).toHaveCSS('outline-style', 'solid');\n  88 |     expect(await feedback.evaluate(element => {\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts:85:28"
+                      }
+                    ],
+                    "stdout": [],
+                    "stderr": [],
+                    "retry": 0,
+                    "startTime": "2026-10-22T03:07:16.664Z",
+                    "annotations": [],
+                    "attachments": [
+                      {
+                        "name": "screenshot",
+                        "contentType": "image/png",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--1bba3-urn-and-withdrawal-at-320px\\test-failed-1.png"
+                      },
+                      {
+                        "name": "error-context",
+                        "contentType": "text/markdown",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--1bba3-urn-and-withdrawal-at-320px\\error-context.md"
+                      },
+                      {
+                        "name": "trace",
+                        "contentType": "application/zip",
+                        "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--1bba3-urn-and-withdrawal-at-320px\\trace.zip"
+                      }
+                    ],
+                    "errorLocation": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts",
+                      "column": 28,
+                      "line": 85
+                    }
+                  }
+                ],
+                "status": "unexpected"
+              }
+            ],
+            "id": "98144e8a521030506610-c5f45dbc09a04fb3bbf5",
+            "file": "board-filter-guidance.spec.ts",
+            "line": 57,
+            "column": 7
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "stats": {
+      "startTime": "2026-10-22T03:06:17.722Z",
+      "duration": 76749.53,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 3,
+      "flaky": 0
+    }
+  },
+  "log": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run playwright test tests/browser/board-filter-guidance.spec.ts --output=../board-filter-paging-default-fixed-results --reporter=list,json\r\n\r\nRunning 4 tests using 1 worker\r\n\r\n(node:2440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  x  1 tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 1280px (17.8s)\r\n(node:40196) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  ok 2 tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 768px (16.9s)\r\n  x  3 tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 390px (17.8s)\r\n(node:10408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n  x  4 tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 320px (16.4s)\r\n\r\n\r\n  1) tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 1280px \r\n\r\n    Error: expect(locator).toBeFocused() failed\r\n\r\n    Locator:  getByRole('status', { name: 'Filtered Board results', exact: true })\r\n    Expected: focused\r\n    Received: inactive\r\n    Timeout:  5000ms\r\n\r\n    Call log:\r\n      - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\r\n      - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\r\n        14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\r\n           - unexpected value \"inactive\"\r\n\r\n\r\n      83 |     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');\r\n      84 |     const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });\r\n    > 85 |     await expect(feedback).toBeFocused();\r\n         |                            ^\r\n      86 |     await expect(feedback).toHaveText('Checking filtered Board Cards…');\r\n      87 |     await expect(feedback).toHaveCSS('outline-style', 'solid');\r\n      88 |     expect(await feedback.evaluate(element => {\r\n        at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts:85:28\r\n\r\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\r\n    ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--71431-rn-and-withdrawal-at-1280px\\test-failed-1.png\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n    Error Context: ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--71431-rn-and-withdrawal-at-1280px\\error-context.md\r\n\r\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\r\n    ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--71431-rn-and-withdrawal-at-1280px\\trace.zip\r\n    Usage:\r\n\r\n        npx playwright show-trace ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--71431-rn-and-withdrawal-at-1280px\\trace.zip\r\n\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n  2) tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 390px \r\n\r\n    Error: expect(locator).toBeFocused() failed\r\n\r\n    Locator:  getByRole('status', { name: 'Filtered Board results', exact: true })\r\n    Expected: focused\r\n    Received: inactive\r\n    Timeout:  5000ms\r\n\r\n    Call log:\r\n      - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\r\n      - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\r\n        14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\r\n           - unexpected value \"inactive\"\r\n\r\n\r\n      83 |     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');\r\n      84 |     const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });\r\n    > 85 |     await expect(feedback).toBeFocused();\r\n         |                            ^\r\n      86 |     await expect(feedback).toHaveText('Checking filtered Board Cards…');\r\n      87 |     await expect(feedback).toHaveCSS('outline-style', 'solid');\r\n      88 |     expect(await feedback.evaluate(element => {\r\n        at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts:85:28\r\n\r\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\r\n    ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--f0955-urn-and-withdrawal-at-390px\\test-failed-1.png\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n    Error Context: ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--f0955-urn-and-withdrawal-at-390px\\error-context.md\r\n\r\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\r\n    ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--f0955-urn-and-withdrawal-at-390px\\trace.zip\r\n    Usage:\r\n\r\n        npx playwright show-trace ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--f0955-urn-and-withdrawal-at-390px\\trace.zip\r\n\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n  3) tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 320px \r\n\r\n    Error: expect(locator).toBeFocused() failed\r\n\r\n    Locator:  getByRole('status', { name: 'Filtered Board results', exact: true })\r\n    Expected: focused\r\n    Received: inactive\r\n    Timeout:  5000ms\r\n\r\n    Call log:\r\n      - Expect \"toBeFocused\" getByRole('status', { name: 'Filtered Board results', exact: true }) with timeout 5000ms\r\n      - waiting for getByRole('status', { name: 'Filtered Board results', exact: true })\r\n        14 × locator resolved to <p role=\"status\" tabindex=\"-1\" aria-label=\"Filtered Board results\" class=\"MuiTypography-root MuiTypography-body1 css-13o2tdi-MuiTypography-root\">Checking filtered Board Cards…</p>\r\n           - unexpected value \"inactive\"\r\n\r\n\r\n      83 |     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');\r\n      84 |     const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });\r\n    > 85 |     await expect(feedback).toBeFocused();\r\n         |                            ^\r\n      86 |     await expect(feedback).toHaveText('Checking filtered Board Cards…');\r\n      87 |     await expect(feedback).toHaveCSS('outline-style', 'solid');\r\n      88 |     expect(await feedback.evaluate(element => {\r\n        at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\board-filter-guidance.spec.ts:85:28\r\n\r\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\r\n    ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--1bba3-urn-and-withdrawal-at-320px\\test-failed-1.png\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n    Error Context: ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--1bba3-urn-and-withdrawal-at-320px\\error-context.md\r\n\r\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\r\n    ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--1bba3-urn-and-withdrawal-at-320px\\trace.zip\r\n    Usage:\r\n\r\n        npx playwright show-trace ..\\board-filter-paging-default-fixed-results\\board-filter-guidance-PRD--1bba3-urn-and-withdrawal-at-320px\\trace.zip\r\n\r\n    ────────────────────────────────────────────────────────────────────────────────────────────────\r\n\r\n  3 failed\r\n    tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 1280px \r\n    tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 390px \r\n    tests\\browser\\board-filter-guidance.spec.ts:57:7 › PRD-16 Board filter last-page guidance, return and withdrawal at 320px \r\n  1 passed (1.3m)\r\n",
+  "capture": {
+    "path": "docs/delivery/evidence/trello-polish-filter-paging-exit-red-390.png",
+    "sha256": "68610d2f706dd9c64e2533ff9fd98b39b3a04ad94b00cff1d32dd214737025ef",
+    "trace": {
+      "retainedWorkspacePath": "../board-filter-paging-default-fixed-results/board-filter-guidance-PRD--f0955-urn-and-withdrawal-at-390px/trace.zip",
+      "sha256": "0cc2aaa8010fa18c9e502e1a5f0426e0242514d377489e969b9961db0d6af491",
+      "limit": "Raw local trace retained outside repository; immutable report and representative screenshot are versioned."
+    }
+  },
+  "evaluation": "Closing portal and mounted canvas shared the same paging refs; closing-dialog cleanup can reset the canvas owner. Give dialogNext/First and canvasNext/First independent refs and derive target from actual focused owner. This repairs transition ownership,not by waiting longer. Exact same4cases and every focus/viewport/error/criteria/command oracle nowpassat a15 in default and rollback."
+}

@@ -1,0 +1,50 @@
+{
+  "revision": "1125cc0241f598c016b4123329afb8f23b803027",
+  "at": "2026-10-22T03:28:19.362Z",
+  "result": "Passed",
+  "scope": "Fresh exact replacement backend2519passed/5originalcapacitydeferrals; remaining actualnative/role/security/performance/releasegates required.",
+  "artifactId": 12398783691,
+  "providerDigest": "64e0779c7c86113f182ae23e97f52d4ad08cba92a49ce6462a64eb2b5c079a05",
+  "build": {
+    "repository": "nickmailhot-lang/StrataAI2",
+    "commitSha": "8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4",
+    "shortSha": "8d8ac5bf5cd3",
+    "workflowRunId": "39712506633",
+    "workflowRunNumber": "1967",
+    "workflowRunAttempt": "1",
+    "version": "0.1.0-1967",
+    "releaseVersion": null,
+    "imageTag": "8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4",
+    "createdAt": "2026-10-22T02:40:28.984Z",
+    "images": {
+      "web": "strataai-web:8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4",
+      "api": "strataai-api:8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4",
+      "worker": "strataai-worker:8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4"
+    }
+  },
+  "reports": [
+    {
+      "status": "complete",
+      "counts": {
+        "passed": 1086,
+        "failed": 0,
+        "skipped": 3,
+        "error": 0
+      },
+      "cases": 1089,
+      "caseDigest": "b6e77a074a003452550524c73eb756cbd4ef521d650b5ca09d3d3b48adaafca9"
+    },
+    {
+      "status": "complete",
+      "counts": {
+        "passed": 1433,
+        "failed": 0,
+        "skipped": 2,
+        "error": 0
+      },
+      "cases": 1435,
+      "caseDigest": "894244e01d0ab78c3c09a56a3cbac00296ba23be5ef16f9a89768ac69d1b09af"
+    }
+  ],
+  "limits": "A sourcebackend pass is not qualification of real release services/nativeworkflows/security/performance/release or actualmainintegration. Originalcd953Foundationfailure staysFailed."
+}
