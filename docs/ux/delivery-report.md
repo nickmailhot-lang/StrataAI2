@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Original Foundation workflows pass on the corrected candidate
+
+Frozen PR #122 candidate `415a0378` passes all 50 Foundation native cases on its own release images: 28 Demo, two reminder, two original attachment/cover and 18 lifecycle cases. There are no failures or skips in this group. The original cover-recovery workflow now passes after both earlier recorded Foundation failures; its consent, command, receipt, privacy and deadline assertions remain intact.
+
+The current 2,985 frontend and 2,519 backend tests, all source gates, built images and security checks also pass. Full-browser, command and notification groups, all six strict normal-performance profiles, immutable release, final review and verified normal main integration are still required. Earlier failed executions retain their actual results.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Organization/Card/Search and independent filter polish implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Current source, security and Foundation pass. Remaining complete application and release gates are pending. |
+| MVP readiness | No new acceptance or merge; 71 Done unchanged. |
+
+Active ledger: 1625 items, 3921 criteria, 1010 evidence records. Independent #123 remains checked against the corrected parent and will require its own full main-target qualification.
+
+---
+
 ## 2026-10-22 — PR #122 source qualification passes; application checks continue
 
 Frozen candidate `415a0378` passes all 11 source gates: 2,985 frontend tests, 2,519 backend tests, web/browser types, lint, PostgreSQL, metadata, source quality and all CodeQL analyses. Provider artifact hashes and embedded metadata bind them to test composition `da9f1dcd`, run 39777957890, attempt 1, version 0.1.0-1970 and its three exact image tags. The original 24 frontend capacity deferrals and five backend deferred methods are unchanged. No previous candidate pass qualifies this replacement.
