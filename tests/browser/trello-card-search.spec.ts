@@ -131,6 +131,12 @@ for (const width of [1280, 768, 390, 320]) {
     await page.getByRole('option', { name: 'Archived work', exact: true }).press('Enter');
     await expect(scope).toHaveText('Archived work');
     await page.screenshot({ path: info.outputPath(`search-zoom-scope-${width}.png`), fullPage: true });
+    await info.attach('selected-scope-layout', { contentType: 'application/json', body: JSON.stringify(await scope.evaluate(el => {
+      const style = getComputedStyle(el), icon = el.parentElement!.querySelector('svg')!.getBoundingClientRect();
+      const range = document.createRange(); range.selectNodeContents(el);
+      return { classes: el.className, paddingRight: style.paddingRight, fontSize: style.fontSize,
+        whiteSpace: style.whiteSpace, icon: icon.toJSON(), text: [...range.getClientRects()].map(rect => rect.toJSON()) };
+    })) });
     expect(await scope.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     expect(await scope.evaluate(el => {
       const icon = el.parentElement!.querySelector('svg')!.getBoundingClientRect();
