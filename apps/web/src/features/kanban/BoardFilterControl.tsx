@@ -41,7 +41,8 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const acknowledgments = useRef(new SearchInteractionAcknowledgments());
   const applyAction = useRef<HTMLButtonElement>(null), clearAction = useRef<HTMLButtonElement>(null), retryAction = useRef<HTMLButtonElement>(null);
   const filterTrigger = useRef<HTMLButtonElement>(null), changeOwner = useRef<HTMLElement | null>(null), restoreChangeFocus = useRef(false);
-  const nextPageAction = useRef<HTMLButtonElement>(null), firstPageAction = useRef<HTMLButtonElement>(null);
+  const dialogNextPage = useRef<HTMLButtonElement>(null), dialogFirstPage = useRef<HTMLButtonElement>(null);
+  const canvasNextPage = useRef<HTMLButtonElement>(null), canvasFirstPage = useRef<HTMLButtonElement>(null);
   const filterRegion = useRef<HTMLDivElement>(null), canvasFeedback = useRef<HTMLParagraphElement>(null);
   const changeDialog = useRef<HTMLElement | null>(null);
   const changeAction = useRef<'apply' | 'clear'>('apply');
@@ -62,12 +63,14 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const available = snapshot.access.canView && snapshot.board.lifecycleState === 'active';
   const parkPagingFocus = useCallback(() => {
     const focused = document.activeElement;
-    if (focused && (focused === nextPageAction.current || focused === firstPageAction.current)) {
-      const target = open ? filterRegion.current : canvasFeedback.current;
+    const dialogOwner = focused && (focused === dialogNextPage.current || focused === dialogFirstPage.current);
+    const canvasOwner = focused && (focused === canvasNextPage.current || focused === canvasFirstPage.current);
+    if (dialogOwner || canvasOwner) {
+      const target = dialogOwner ? filterRegion.current : canvasFeedback.current;
       target?.focus({ preventScroll: true });
       target?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
     }
-  }, [open]);
+  }, []);
   function showPage(after?: string) { parkPagingFocus(); setCursor(after); }
   const storageKey = (actor: string) => `strataai:board-filter:v1:${actor}:${org}:${board}`;
   useLayoutEffect(() => {
@@ -360,8 +363,8 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
       <Typography variant="body2">Open a Card to move it, or clear filters to reorder the full Board.</Typography>
       <Typography variant="body2">List operations still apply to every Card in that List.</Typography>
       <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
-        {result?.next && <Button ref={nextPageAction} disabled={disabled || loading} onClick={() => showPage(result.next!)}>Next filtered Cards</Button>}
-        {cursor && <Button ref={firstPageAction} disabled={disabled || loading} onClick={() => showPage()}>First filtered Cards</Button>}
+        {result?.next && <Button ref={canvasNextPage} disabled={disabled || loading} onClick={() => showPage(result.next!)}>Next filtered Cards</Button>}
+        {cursor && <Button ref={canvasFirstPage} disabled={disabled || loading} onClick={() => showPage()}>First filtered Cards</Button>}
         <Button disabled={disabled || labelLoading || memberLoading || !identity || !available || changeBusy || !!changeIntent} onClick={clear}>Clear Board filters</Button>
         {notice && <Button disabled={disabled || loading} onClick={() => setRetry(n => n + 1)}>Retry filtered Cards</Button>}
       </Stack>
@@ -434,8 +437,8 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
             : cursor ? 'No matching Cards on this page.' : 'No Cards match these filters.'}</Typography>
           {emptyGuidance && <Typography>{emptyGuidance}</Typography>}
           {result.items.map(c => <Button key={c.id} component={Link} to={`/app/${org}/boards/${board}/cards/${c.id}`} onClick={close}>{c.title} — {snapshot.lists.find(l => l.list.id === c.listId)?.list.name ?? 'Board List'}</Button>)}
-          {result.next && <Button ref={nextPageAction} onClick={() => showPage(result.next!)}>Next filtered Cards</Button>}
-          {cursor && <Button ref={firstPageAction} onClick={() => showPage()}>First filtered Cards</Button>}
+          {result.next && <Button ref={dialogNextPage} onClick={() => showPage(result.next!)}>Next filtered Cards</Button>}
+          {cursor && <Button ref={dialogFirstPage} onClick={() => showPage()}>First filtered Cards</Button>}
         </Stack>}
       </Stack>}</DialogContent><DialogActions><Button onClick={close}>Close filters</Button></DialogActions>
     </Dialog>
