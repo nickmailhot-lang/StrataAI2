@@ -1,0 +1,44 @@
+{
+  "revision": "5abadda8594fdb7c4d400789cb213b5e70e14ff5",
+  "at": "2026-10-22T04:32:54.251Z",
+  "result": "Passed",
+  "scope": "Normal c1 parent reconciliation preserves both histories; current browser types,506-case/175-file partition, full Git/hash/baseline/evolution validation against c1 and all36 delivery contracts pass.",
+  "parent": "c1f1debb91a5078aef7ed259ded5f623d1f206ef",
+  "ledgerSha256": "bb0f634ef77663e362dfdad41f3970f979533dc1c457be7d6f51412195785094",
+  "logs": [
+    {
+      "key": "types",
+      "content": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "key": "registry",
+      "content": "Browser shard coverage: 506 cases in 175 intact files; 127/128/128/123 cases across all four shards.\r\n"
+    },
+    {
+      "key": "ledger",
+      "content": "Valid: 1623 work items; 3919 criteria. No unsupported Done claims.\r\n"
+    },
+    {
+      "key": "delivery",
+      "content": "✔ PRD-25-VS-03/AC-01: complete real backlog retains all 100 definitions, obligations and parent links (83411.8225ms)\r\n✔ PRD-25-VS-03/AC-01: losing a PRD or architecture definition fails closed (405.6059ms)\r\n✔ PRD-25-VS-03/AC-01: losing original FR or AC cannot shrink acceptance denominator (92.5679ms)\r\n✔ PRD-25-VS-03/AC-01: source mutation cannot inherit frozen audit (7.0175ms)\r\n✔ PRD-25-VS-03/AC-01: missing slice requirement mapping is rejected (98.2448ms)\r\n✔ PRD-25-VS-03/AC-02: duplicate item IDs, orphan items and acceptance are refused (1.4546ms)\r\n✔ PRD-25-VS-03/AC-02: untraced test and unknown dependencies are refused (0.9741ms)\r\n✔ PRD-25-VS-03/AC-02: lifecycle runs in order and does not skip validation (5.6899ms)\r\n✔ PRD-25-VS-03/AC-02: Blocked requires reason, owner and exact prior-state resume (1.9193ms)\r\n✔ PRD-25-VS-03/AC-02: Implemented needs source identity, never just a state label (1.7422ms)\r\n✔ PRD-25-VS-03/AC-02: state and append-only history must agree (0.7696ms)\r\n✔ PRD-25-VS-03/AC-02: a new item cannot start at Done to bypass lifecycle (2.8295ms)\r\n✔ PRD-25-VS-03/AC-03: a Test cannot claim Passed without executed evidence (1.687ms)\r\n✔ PRD-25-VS-03/AC-03: complete synthetic evidence passes all gates (1.6949ms)\r\n✔ PRD-25-VS-03/AC-03: missing tests blocks Done (2.1052ms)\r\n✔ PRD-25-VS-03/AC-03: missing acceptance blocks Done (1.0036ms)\r\n✔ PRD-25-VS-03/AC-03: missing security blocks Done (0.8307ms)\r\n✔ PRD-25-VS-03/AC-03: missing roles blocks Done (1.8931ms)\r\n✔ PRD-25-VS-03/AC-03: missing regressions blocks Done (0.7391ms)\r\n✔ PRD-25-VS-03/AC-03: missing integration blocks Done (0.4566ms)\r\n✔ PRD-25-VS-03/AC-03: missing tracking blocks Done (0.3506ms)\r\n✔ PRD-25-VS-03/AC-03: missing review blocks Done (0.4614ms)\r\n✔ PRD-25-VS-03/AC-03: missing ux blocks Done (0.4953ms)\r\n✔ PRD-25-VS-03/AC-03: missing build blocks Done (1.4053ms)\r\n✔ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (1.1659ms)\r\n✔ PRD-25-VS-03/AC-03: unverified, stale, failed or skipped evidence cannot satisfy acceptance (1.8119ms)\r\n✔ PRD-25-VS-03/AC-03: unknown critical regressions and unpassed test block completion (1.4534ms)\r\n✔ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (2.9422ms)\r\n✔ PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unvalidated work (2.7219ms)\r\n✔ PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done (0.7463ms)\r\n✔ PRD-25-VS-03/AC-04: validated Done work contributes completion counts and recent increments (0.4481ms)\r\n✔ PRD-25-VS-03/AC-05: prior states, criteria and failed evidence cannot be rewritten or deleted (3.5037ms)\r\n✔ PRD-25-VS-03/AC-03: exact Git integration, evidence hashes and repository path boundaries (4707.6991ms)\r\n✔ PRD-25-VS-03/AC-04: real CLI reports machine-readable progress and exits nonzero for bad action (172211.7596ms)\r\n✔ PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its refusal tests (0.8057ms)\r\n✔ PRD-25-VS-03/AC-05: CLI can validate evolution against the actual retained ledger in Git (93075.649ms)\r\nℹ tests 36\r\nℹ suites 0\r\nℹ pass 36\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 354409.8439\r\n"
+    }
+  ],
+  "sourceEquivalence": [
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.tsx",
+      "sha256": "0fbccb10885760bec66f82e6e79fc4b74f947b37252ea255fb8221a0c96760af",
+      "scopedSource": "a15b24841306b504ab7244a3d2adb5e7b996d8de"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.test.tsx",
+      "sha256": "238b6fb32251a12eab3f1d66893c347051c7702024832038a3f6545bb63834ff",
+      "scopedSource": "a15b24841306b504ab7244a3d2adb5e7b996d8de"
+    },
+    {
+      "path": "tests/browser/board-filter-guidance.spec.ts",
+      "sha256": "8779a739149db8e85b0bba6be20c4b244b5934f4a2623140d97d1dac97647782",
+      "scopedSource": "a15b24841306b504ab7244a3d2adb5e7b996d8de"
+    }
+  ],
+  "limits": "Filter77+4/4 scoped results retain actuala15 identity; parent8+8 proxy results retain330 identity. Complete current parent and own main-target gates, source/UX review and actual integration still required. All old Failed evidence retained;71Done unchanged."
+}

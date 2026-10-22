@@ -1,5 +1,7 @@
 # Consolidated PRD delivery report
 
+The reconciled follow-up source `5abadda8` passes current browser types, the complete 506-case/175-file partition, full Git/hash/baseline/evolution validation and all **36 delivery contracts**. Filter implementation/test hashes still match tested `a15b2484`. Recording this result brings the combined ledger to **989 evidence records**; work/criteria counts and 71 Done are unchanged. Parent and follow-up full hosted qualification remain pending.
+
 ## 2026-10-21 — Parent correction reconciled; filter polish remains independent
 
 PR #122 has a new frozen candidate, `c1f1debb`, replacing failed `1125cc02`. Its corrected visible-admission check passes eight complete Card/Search cases in both existing presentations, plus 17 cover units, 42 admission/architecture/capacity contracts, browser types and all 36 delivery contracts. Both earlier hosted failures remain Failed and evaluated. Fresh complete CI must qualify this head before merge; earlier candidates’ source, image and security passes are historical support.
