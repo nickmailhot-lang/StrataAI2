@@ -1,5 +1,17 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Final browser failure retained; original-recovery fixture rework
+
+Candidate `8f17005f` failed final qualification. Nineteen checks pass, but normal group four reports 128 passes and one failure: the 1280px retention-policy recovery scenario observes one PATCH instead of the required two after reload. The native trace records focus followed by Enter, with no second browser request. The normal matrix totals 519 passes, one failure and two original mail-fixture skips. Required-ci fails and release verification is skipped.
+
+All six original strict performance profiles pass on this failed candidate. They remain evidence for this execution only. Foundation retains 50 passes, notifications 93, and commands 80 successful workflow steps. No passing result qualifies a replacement head.
+
+The bounded repair uses the existing native request-start observer for the original retry and stops after its one PATCH starts, even if the reply is lost. Original key/body, receipt, exact counts, reviewed version, history, permission withdrawal, privacy, Worker scope and time budgets remain mandatory. No product, API, schema or permission change is proposed. The complete failed result and private diagnostic provenance are retained before rework.
+
+Ten parent records return to In Progress; acceptance remains unverified and 71 Done unchanged. The PR stays draft and unmerged. The version 1971 images remain inactive; the current user Demo and data stay available. The independent Board follow-up is preserved separately. A replacement must pass scoped validation and its own complete 22 gates before integration or Demo refresh.
+
+---
+
 ## 2026-10-22 — Invitation repair and keyboard accessibility pass scoped checks
 
 Source dc210e3d repairs read-only review/default-focus observation and makes existing revocation details keyboard reachable when they scroll at200% text. Cancel retains its safe initial focus. Original clock,consent,zero-write,role,privacy,Worker,recovery and deadline checks remain. All failed executions are retained and evaluated; no checks were weakened.
