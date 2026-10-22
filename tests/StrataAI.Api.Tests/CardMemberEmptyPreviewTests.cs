@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using StrataAI.Application.Identity;
+using StrataAI.Application.Organizations;
 using StrataAI.Application.WorkManagement;
 using Xunit;
 
@@ -11,15 +12,22 @@ public sealed partial class ApiHostTests
     // producer result; the browser must never infer it from missing metadata.
     [Theory]
     [InlineData(BoardRole.Member)]
-    [InlineData(BoardRole.Viewer)]
+    [InlineData(null)]
     [InlineData(BoardRole.Admin)]
-    public async Task Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(BoardRole role)
+    public async Task Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(BoardRole? role)
     {
         var ct = TestContext.Current.CancellationToken; await using var app = new ApiFactory();
         var fixture = await BoardInvitationFixtureAsync(app, ct);
         var work = app.Services.GetRequiredService<IWorkManagementService>();
         var store = app.Services.GetRequiredService<IWorkManagementStore>(); var now = DateTimeOffset.UtcNow;
-        Assert.True((await work.SetBoardMemberAsync(fixture.Board.Id, fixture.Owner.Id, fixture.Recipient.Id, role, "fixture", ct)).Succeeded);
+        if (role is { } boardRole)
+            Assert.True((await work.SetBoardMemberAsync(fixture.Board.Id, fixture.Owner.Id, fixture.Recipient.Id, boardRole, "fixture", ct)).Succeeded);
+        else
+        {
+            // A read-only Organization viewer has no explicit Board grant.
+            var current = await work.GetBoardAsync(fixture.Board.Id, fixture.Owner.Id, ct);
+            Assert.True((await work.SetBoardVisibilityAsync(fixture.Board.Id, fixture.Owner.Id, BoardVisibility.Organization, current.Value!.Board.Version, "fixture", ct)).Succeeded);
+        }
         var list = await store.CreateListAsync(fixture.Board.Id, Guid.NewGuid(), "Preview list", null, now, ct);
         var empty = await store.CreateCardAsync(list.Id, Guid.NewGuid(), "No assignees", null, null, now, ct);
         var assigned = await store.CreateCardAsync(list.Id, Guid.NewGuid(), "Assigned", null, null, now, ct);
@@ -37,8 +45,11 @@ public sealed partial class ApiHostTests
         var detailed = await work.ListCardMembersAsync(empty.Id, fixture.Recipient.Id, cancellationToken: ct);
         Assert.True(detailed.Succeeded); Assert.Empty(detailed.Value!.Items);
         Assert.Equal(zero.CardVersion, detailed.Value.CardVersion);
-        Assert.Equal(role != BoardRole.Viewer, detailed.Value.CanEdit);
-        Assert.True((await work.RemoveBoardMemberAsync(fixture.Board.Id, fixture.Owner.Id, fixture.Recipient.Id, "fixture", ct)).Succeeded);
+        Assert.Equal(role.HasValue, detailed.Value.CanEdit);
+        if (role.HasValue)
+            Assert.True((await work.RemoveBoardMemberAsync(fixture.Board.Id, fixture.Owner.Id, fixture.Recipient.Id, "fixture", ct)).Succeeded);
+        else
+            Assert.True((await app.Services.GetRequiredService<IOrganizationService>().RemoveMemberAsync(fixture.Board.OrganizationId, fixture.Owner.Id, fixture.Recipient.Id, "fixture", ct)).Succeeded);
         var withdrawn = await work.GetBoardAsync(fixture.Board.Id, fixture.Recipient.Id, ct);
         Assert.False(withdrawn.Succeeded); Assert.Null(withdrawn.Value);
     }
