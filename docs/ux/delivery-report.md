@@ -1,5 +1,20 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Filter polish passes checks against corrected parent
+
+After normal reconciliation with parent candidate `551a6bc8`, combined source `eb7cccff` passes all 77 tests across five complete files and four native workflows in each presentation at 320/390/768/1280px, including 200% text, Axe, actual keyboard focus, empty-page guidance, failed reads, denial, drafts and clear/return. Web/browser types, full lint and the complete 514-case/176-file browser partition pass. The three filter source/test inputs remain byte-identical to original tested `a15b2484`. All historical and parent failure evidence remains intact.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Filter guidance and keyboard paging implemented and scoped-tested on the combined branch; acceptance remains unverified. |
+| Test completion | Current combined scoped checks pass. Parent backend and downstream hosted gates remain pending; follow-up own full main-target checks remain required. |
+| MVP readiness | No new acceptance or merge; 71 Done unchanged. |
+
+Combined ledger: 1625 items, 3921 criteria, 997 evidence records. Delivery validation is next. Both PRs remain draft; the parent stays frozen throughout qualification.
+
+---
+
 ## 2026-10-22 — Filter polish reconciled with corrected Organization and Search parent
 
 Draft #123 now includes parent #122 candidate `551a6bc8` through a normal branch merge. All three filter source/test inputs remain byte-identical to tested `a15b2484`. Both branches retain every work item, criterion, evidence record and cycle. The parent's three hosted browser failures, local remount/type/visual failures and subsequent scoped repairs remain recorded. Parent CI is still running; neither PR is accepted or merged to main.
