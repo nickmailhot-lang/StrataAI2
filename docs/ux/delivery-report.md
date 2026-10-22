@@ -1,5 +1,26 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — PR122 replacement prepared; complete new qualification required
+
+Original published **cd9530ff** has14passingchecks and a required Foundation failure at the current snapshot; other browser/notification groups remain incomplete. Retain the390px cover failure,its verified artifact and evaluation. No original incomplete scope is counted as passing. This replacement will supersede the failed candidate through a normal push; the workflow may cancel its remaining jobs. Every required check must qualify the replacement independently.
+
+Prepared source **b9e7f773** adds explicit ownerwindow return and exactlyone observed native Refreshcard activation,currentBoardread,and settledadmission before the existing coverremoval review. This setup uses the existing caller helper; application/securitybehavior is unchanged. Original consent,receipt,key/body/writecount,version,publicvisitor,peerlive/no-navigation and privacy assertions,deadlines,retries and budgets remain intact. The new cover component refuses a review during current admission and requires explicit fresh review without writes.
+
+Scoped826proof remains17cover components+31keyboardadmission contracts,web/browsertypes,strictlint,and2alternateattachmentcases registered;36deliverycontracts pass at the following checkpoint. Currentb9browsertypes pass,and exact application/cover-test/helper hashes match826. These supporting results do not qualify the actual repaired native scenario or any freshfullgate. FourCard/Search records remainInProgress with the original failedregression visible; no newDone.
+
+Independent **ux/board-filter-guidance**, source22b92e46/checkpoint2b9a6120, repairs an admitted emptylastpage after50matches. Its initial invalidemptycontinuation fixture was correctly refused and is retained asFailedsetup,evaluated separately from the valid wordingregression. The originalcursor guard remains. Scoped73component/protocol tests,4default+4rollbackfourwidth/200%text/Axebrowsers,types/lint,11guards and506/175registry pass;36deliverycontracts andfullGit/hashvalidation also pass. This followup is preserved separately and is not included in the PR122 codeorledger count.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities/API/schema/tenant boundaries preserved. |
+| UX completion | Card/Search implemented; repair and independent filter polish await fullown acceptance. |
+| Test completion | Original122 requiredFoundation failure remains Failed. Preparedsource support passes; freshcompletefinalheadCI is mandatory. |
+| MVP readiness | No newacceptedwork;71Done unchanged. Globalreadiness unaccepted/unmeasured; no combinedpercentage. |
+
+This candidate ledger:1619items/3915criteria/972evidence/71Done. Independentfilter checkpoint:1621/3917/974/71. Reconcilebothhistories whenparentintegrates; neither sourcecount nor a passingnarrow suite certifies broaderPRDorMVP. Next:publishone replacement,freeze,completeall22/source/native/role/security/performance/release/reviewgates,then normalexpectedheadmergeandactualtestedtreeverification.
+
+---
+
 ## 2026-10-21 — PR122 Foundation phone cover failure retained; merge prohibited
 
 Current head **cd9530ff**, own CI39701151929, failed Foundation119586017892 in the real attachment/cover pipeline at390px. Cover and candidate reads returned200/currentversion7; after the peer-window handoff, fresh Board admission caused the application to reject the unsent cover review. The original Remove Card cover enabled assertion failed; no removal was submitted. Retained artifact12396042071 has verified provider SHA2561419eaf0be628fcecb3bfe943a531113c6ba7bafed1911816c6dccfaf8d35c34 and every inner checksum. Original screenshot, deadlines and failure remain.
