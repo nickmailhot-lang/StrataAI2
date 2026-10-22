@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — PR122 replacement published; separate filter follow-up ready for review
+
+**PR122 now qualifies published head1125cc02** in [freshCI39712506633](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39712506633) and [CodeQL39712502121](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39712502121). Its synthetic8d8ac5bf has verified parentsmain4c1e27e2+head1125and treeaab61910 equal to the candidate. Keep122draft/unmerged until all22freshgates,actualperformance/releaseprovenance and review pass. Originalcd953Foundationfailure staysFailed; superseded/incomplete scopes never countas passes. No runtimeguard/assertion/deadline/retry/budget was weakened.
+
+Separatefilter source22b92e46 is preserved through actualnormal sidebranch reconciliation258ce296. Sevenownedconsumer/testinputs remain byte-identical to its73component/protocol,4default+4rollbackbrowser andsourcegateproof.36deliverycontracts and fullGit/hashvalidation passed atprior2b9checkpoint. Bothbranchhistories,initialinvalidfixture refusals,actualvalidlastpagered and old122failure remain. This is sidebranch reconciliation,not mainintegration or newexecutionofearlierscopedpasses.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | CurrentMVP capabilities/contracts preserved; no newbusinessscope. |
+| UX completion | Card/Search and boundedfilterguidance implemented; fullown acceptance pending. |
+| Test completion | Filter scoped73+4+4/source/36deliverypass. PR122 freshcompletegates running; originalFoundationfailure remains retained. Stackedfilterownmain-targetCI notrunyet. |
+| MVP readiness | No newacceptedwork;71Doneunchanged. Globalreadiness unaccepted/unmeasured; no combinedpercentage. |
+
+Consolidatedactivefollowupledger:1621items/3917criteria/976evidence/71Done. Twofilterrecords remainTesting and fourparentCard/Search recordsInProgress. Allcriteriaacceptance staysunverified for thoseincrements. Next:reviewthefocusedstackeddraft,finish/fix122freshfullCIwithoutweakening,mergenormallyonlyafterallgatespass,then retargetandqualifythefilterfollowup independently. Independent118untouched.
+
+---
+
 ## 2026-10-21 — PR122 replacement prepared; complete new qualification required
 
 Original published **cd9530ff** has14passingchecks and a required Foundation failure at the current snapshot; other browser/notification groups remain incomplete. Retain the390px cover failure,its verified artifact and evaluation. No original incomplete scope is counted as passing. This replacement will supersede the failed candidate through a normal push; the workflow may cancel its remaining jobs. Every required check must qualify the replacement independently.
