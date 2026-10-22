@@ -1,0 +1,53 @@
+{
+  "revision": "b9e7f773daf8b8985d3f7677d080bb8b474084ac",
+  "at": "2026-10-22T02:37:30.402Z",
+  "result": "Passed",
+  "scope": "Final repaired caller source review and browser TypeScript check; exact application/cover-test/helper inputs remain identical to scoped826. Complete fresh hosted gates remain mandatory.",
+  "sourceEquivalence": [
+    {
+      "path": "apps/web/src/features/kanban/BoardScreen.tsx",
+      "sha256": "ccca2dbe4993f68007c5593744dae5b1469d1838f269939f006af1a1db1f3a19",
+      "priorSource": "826ac6e645c31936c545917f2d8ec5d819e5d9e1"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CardDetailEditor.tsx",
+      "sha256": "dd5dfa5f2bad3ecee0be3fe5503d9bddc3590c5e2c7c29c1445c0463e43cca19",
+      "priorSource": "826ac6e645c31936c545917f2d8ec5d819e5d9e1"
+    },
+    {
+      "path": "apps/web/src/features/search/GlobalSearchPage.tsx",
+      "sha256": "8414cfea952ec86c71491164e4a48223c5c8979de0529ad5fbd55c71208e148a",
+      "priorSource": "826ac6e645c31936c545917f2d8ec5d819e5d9e1"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CardCoverControl.tsx",
+      "sha256": "6f249dad62ae99745ec681ed857694a61851e3a14828231f19491ca064754459",
+      "priorSource": "826ac6e645c31936c545917f2d8ec5d819e5d9e1"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CardCoverControl.test.tsx",
+      "sha256": "ed6a7c33e3c4082fca5b6549bbe18734e6c1448769504e1f0b6ca9183637341c",
+      "priorSource": "826ac6e645c31936c545917f2d8ec5d819e5d9e1"
+    },
+    {
+      "path": "tests/browser/keyboardAdmission.ts",
+      "sha256": "6916ed36ba1c55968963518a39b66f97528665f8576b71ac93d03801522923eb",
+      "priorSource": "826ac6e645c31936c545917f2d8ec5d819e5d9e1"
+    }
+  ],
+  "browserTypes": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n",
+  "callerReview": {
+    "change": "Return to ownerwindow; observe exactlyone native Refreshcard click through existing helper,wait actualcurrentBoardread and aria-busyfalse,then execute original removal review.",
+    "why": "The earlier prepared caller passed a completed-response counter to a request-start helper. Observe native activation directly; independent live read completions may coalesce. No failed consumer operation is replayed.",
+    "originalOracles": "Every original cover consent/receipt/key/body/writecount/version/publicvisitor/peerlive-no-navigation/privacy assertion remains byte-identical; original timeouts/testretries/budgets unchanged."
+  },
+  "priorSupportingProof": {
+    "revision": "826ac6e645c31936c545917f2d8ec5d819e5d9e1",
+    "coverComponents": 17,
+    "keyboardAdmissionContracts": 31,
+    "evidence": "EVID-TRELLO-122-COVER-SCOPED",
+    "sourceLimit": "Supporting passes retain actual826 identity; only currentbrowsertypes/source review claimed here."
+  },
+  "originalFailedEvidence": "EVID-TRELLO-122-FOUNDATION-FAILED",
+  "qualification": "Not yet published/retested. No current full regression/performance/release/security/roles/UXacceptance or target integration claimed."
+}

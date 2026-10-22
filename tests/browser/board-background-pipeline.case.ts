@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
-import { openAdmittedReview, pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction, pressObservedLocalAction, pressObservedRequest } from './keyboardAdmission';
 
 // Explicit alternate config: never discovered by the ordinary .spec.ts suite.
 // The CI shell fixture supplies a real uploaded/published image and owns the
@@ -197,7 +197,9 @@ for (const width of [1280, 390]) {
       // refuse a cover review that overlaps it; never replay that failed read
       // or weaken the exact cover/receipt and peer no-navigation assertions.
       await page.bringToFront();
-      await pressObservedRequest(page.getByRole('button', { name: 'Refresh card', exact: true }), reads, reads() + 1);
+      const priorOwnerReads = reads();
+      await pressObservedLocalAction(page.getByRole('button', { name: 'Refresh card', exact: true }));
+      await expect.poll(reads).toBeGreaterThan(priorOwnerReads);
       await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
       await openCoverReview();
       await pressAdmittedAction(page.getByRole('button', { name: 'Remove Card cover', exact: true }));
