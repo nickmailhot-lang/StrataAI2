@@ -2,18 +2,20 @@
 
 ## 2026-10-22 — Organization and Search repair passes complete scoped checks
 
-Source `23aa8073` adds honest admitted-live-update feedback and fresh lifecycle reads after development remount. Organization disclosure collapse uses the existing observed native activation. The real-service replay fixture now observes the consumer confirmation before disconnecting; its strict cursor2/event3 oracle remains intact. Search selected values wrap and reserve text-scaled arrow space; a new geometry check prevents a complete but obscured label. No transport, API/schema, tenant, consent, recovery, timeout, retry or required CI behavior changed.
+Source `23aa8073` adds honest admitted-live-update feedback and fresh lifecycle reads after development remount. Organization disclosure collapse uses the existing observed native activation. The real-service replay fixture now observes the consumer confirmation before disconnecting; its strict cursor 2/event 3 oracle remains intact. Search selected values wrap and reserve text-scaled arrow space; a new geometry check prevents a complete but obscured label. No transport, API/schema, tenant, consent, recovery, timeout, retry or required CI behavior changed.
 
-All75 tests across5 complete component files and16 default plus16 fallback native cases pass at320/390/768/1280px with200% text, Axe, denied withdrawal, conservative admitted/unadmitted reconnect and unchanged Card/Search drafts/paging. Types, full lint,42 admission/architecture/capacity guards and510 cases in175 intact browser files pass collection/partition checks; the two attachment cases remain intact. Registry collection is not execution. Initial, intermediate, invocation and visual failures remain retained and evaluated.
+All 75 tests across 5 complete component files and 16 default plus 16 fallback native cases pass at 320/390/768/1280px with 200% text, Axe, denied withdrawal, conservative admitted/unadmitted reconnect and unchanged Card/Search drafts/paging. Types, full lint, 42 admission/architecture/capacity guards and 510 cases in 175 intact browser files pass collection/partition checks; the two attachment cases remain intact. Registry collection is not execution. Initial, intermediate, invocation and visual failures remain retained and evaluated.
 
 | Metric | Status |
 | --- | --- |
 | Functional completion | Existing required business capabilities preserved; no new scope or global percentage. |
 | UX completion | Current Organization and Search repairs implemented and locally tested;10 bounded Task/Test records Testing, acceptance unverified. Independent #123 filter guidance/paging preserved. |
 | Test completion | Current scoped checks pass. Failed c1 hosted candidate remains Failed; every gate must pass on the replacement head. |
-| MVP readiness | No new accepted increment or merge;71 Done unchanged. Complete release and priority workflow acceptance remain required. |
+| MVP readiness | No new accepted increment or merge; 71 Done unchanged. Complete release and priority workflow acceptance remain required. |
 
-Next: full Git/hash/baseline/evolution and delivery contracts, one replacement push, fresh complete hosted qualification, review and tested-tree main integration.
+The browser type check initially rejected two new rectangle spread conversions. The same geometry predicate now uses Array.from with the existing libraries; current browser types, full lint and the complete 320px Search case pass at `ed46f407`. The 32-case browser and 75-test unit proof retains its actual `23aa8073` identity; runtime bytes are unchanged.
+
+Full Git, evidence-hash, baseline, main-relative history validation and all 36 delivery contracts pass on the exact committed ledger. Next: one replacement push, every fresh hosted gate, review and verified main integration.
 
 ---
 
