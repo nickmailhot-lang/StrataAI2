@@ -2,6 +2,23 @@
 
 ## 2026-10-22 — Star-admission repair and independent filter history reconciled
 
+The active follow-up now includes frozen parent415a and both checked fixture repairs through a normal branch merge, preserving both complete histories. No application code changes in this reconciliation, and all three filter source/test inputs remain byte-identical to tested `a15b2484`. The parent's remote head `551a6bc8` remains failed and unmerged; its remaining browser groups continue before one replacement push.
+
+Current fixture source4d4 passes twelve complete Card/Search/star native cases in each presentation,42 admission/tracker contracts,types/lint,514-case partition and full delivery validation/36 contracts. Original star request/key/version/history and exact Search q/cursor/scope/focus assertions remain intact. Both actual real-service and complete replacement gates remain mandatory. The independent filter's 77 component and four native cases per presentation retain their actual `eb7cccff` execution identity; no parent result qualifies this follow-up's full gates. Current combined metadata validation is next.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business capabilities and contracts preserved. |
+| UX completion | Bounded polish implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Local repair passes targeted checks. Remote551 notifications and premature Search observation remain Failed; fresh parent415a and follow-up full qualification remain required. |
+| MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
+
+Combined ledger: 1625 items, 3921 criteria, 1007 evidence records. Ten parent and four filter Task/Test records remain Testing. All failed runs, mode-invocation errors and previous scoped proof are retained.
+
+---
+
+## 2026-10-22 — Star-admission repair and independent filter history reconciled
+
 The active follow-up now includes the checked local star-admission repair through a normal branch merge, preserving both complete histories. No application code changes in this reconciliation, and all three filter source/test inputs remain byte-identical to tested `a15b2484`. The parent's remote head `551a6bc8` remains failed and unmerged; its remaining browser groups continue before one replacement push.
 
 The star fixture repair passes 59 tests in four complete files, 42 admission/tracker contracts, four native cases in each presentation, types/lint, 11 architecture/capacity guards and all 36 delivery contracts. Its actual real-service original scenario must pass again on the replacement. The independent filter's 77 component and four native cases per presentation retain their actual `eb7cccff` execution identity; no parent result qualifies this follow-up's full gates. Current combined browser types, the complete 518-case/177-file partition, full Git/source/evidence-hash/baseline/parent-history validation and all 36 delivery contracts pass on the exact committed ledger.
@@ -168,6 +185,31 @@ Separatefilter source22b92e46 is preserved through actualnormal sidebranch recon
 | MVP readiness | No newacceptedwork;71Doneunchanged. Globalreadiness unaccepted/unmeasured; no combinedpercentage. |
 
 Consolidatedactivefollowupledger:1621items/3917criteria/976evidence/71Done. Twofilterrecords remainTesting and fourparentCard/Search recordsInProgress. Allcriteriaacceptance staysunverified for thoseincrements. Next:reviewthefocusedstackeddraft,finish/fix122freshfullCIwithoutweakening,mergenormallyonlyafterallgatespass,then retargetandqualifythefilterfollowup independently. Independent118untouched.
+
+---
+
+## 2026-10-22 — Consolidated repair checked; fresh qualification required
+
+Source `4d4c3f55` preserves all production application, API, schema, tenant and command behavior. The star fixture observes one actual request and stops after it starts; Search now proves focused loading before a held account read, then observes the exact next-page request and admitted completion. Original focus, draft, q, cursor, scope, request/key/version, history, deadline, retry and performance checks remain intact.
+
+Twelve complete Card/Search/star native cases pass in each existing presentation at 320/390/768/1280px, including 200% text, Axe, dirty return, error/denial and no unrelated domain writes. 42 admission/tracker contracts, types, full lint, the intact 514-case/176-file partition and full Git/source/hash/baseline/main-history validation plus 36 delivery contracts pass on exact4d4 ledger bytes. Earlier unit results retain their actual source identities and are not recounted as reruns.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Bounded polish implemented and locally checked; acceptance unverified. |
+| Test completion | Corrected local scopes pass; failed551 remains retained. Every fresh final-head gate must pass. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Ten bounded records are Testing. Publish one frozen repaired candidate, require all 22 hosted checks, strict six-profile performance, immutable release and final review before verified normal main merge. Independent Board-filter polish remains preserved in draft #123 and needs its own qualification after parent integration. Ledger: 1621 items, 3917 criteria, 988 evidence records, 71 Done.
+
+---
+
+## 2026-10-22 — Completed CI matrix; Search observation repair
+
+Candidate `551a6bc8` remains Failed and unmerged. Its full-browser matrix finished with 507 passes, one failure and two original mail-topology skips. Groups 1–3 passed; group4 passed126 and failed the immediate Search cursor observation at320px with200% text. Notifications separately passed57 completed cases and failed original star recovery; later scopes did not run. Required CI failed and release was skipped. All failures remain retained.
+
+Verified Search diagnostics show focus and the unsent draft were preserved. The exact expected next-page request began about five milliseconds after the synchronous assertion inspected the old request. The fixture will hold account admission, prove focused loading before the request, then observe the actual exact request and completion within existing deadlines. The checked star repair is preserved. One consolidated replacement must pass all fresh gates before merge. Ten bounded records re-enter In Progress;71 previously Done remain unchanged. Functional, UX, test and MVP acceptance remain separate.
 
 ---
 

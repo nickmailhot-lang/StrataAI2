@@ -18,7 +18,8 @@ const polished = process.env.STRATAAI_E2E_WORK_UX !== '0';
 // Existing real-service mutation, roles, Markdown, recovery and release gates
 // remain mandatory and are never replaced by this presentation fixture.
 async function sourceFor(page: Page) {
-  const source = { boardFailure: 0, holdBoard: false, boardWaiters: [] as Array<() => void>, searchFailure: 0, searches: [] as string[], writes: [] as string[] };
+  const source = { boardFailure: 0, holdBoard: false, boardWaiters: [] as Array<() => void>, searchFailure: 0,
+    holdSearchAccount: false, heldSearchAccounts: 0, searchAccountWaiters: [] as Array<() => void>, searches: [] as string[], writes: [] as string[] };
   await page.routeWebSocket('**/*', socket => socket.onMessage(message => {
     if (typeof message === 'string' && message.includes('"protocol"')) socket.send('{}\u001e');
   }));
@@ -28,7 +29,13 @@ async function sourceFor(page: Page) {
     if (path.endsWith('/negotiate')) return route.fulfill({ json: { negotiateVersion: 1, connectionId: 'detail-search', connectionToken: 'detail-search', availableTransports: [{ transport: 'WebSockets', transferFormats: ['Text', 'Binary'] }] } });
     if (!['GET', 'HEAD'].includes(route.request().method())) source.writes.push(path);
     if (path === '/api/runtime') return route.fulfill({ json: { service: 'strataai-api', mode: 'production', version: '0.1.0', revision: 'a'.repeat(40) } });
-    if (path === '/me') return route.fulfill({ json: { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' } });
+    if (path === '/me') {
+      if (source.holdSearchAccount) {
+        source.heldSearchAccounts++;
+        await new Promise<void>(resolve => source.searchAccountWaiters.push(resolve));
+      }
+      return route.fulfill({ json: { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'America/Vancouver' } });
+    }
     if (path.endsWith('/surface-access')) return route.fulfill({ json: { organizationId: org, surface: 'INTERNAL' } });
     if (path === `/organizations/${org}`) return route.fulfill({ json: { organization: { id: org, name: 'Cedar Court', status: 0 }, role: 2 } });
     if (path === '/navigation/observations') {
@@ -144,12 +151,28 @@ for (const width of [1280, 768, 390, 320]) {
       return Array.from(range.getClientRects()).every(rect => rect.right <= icon.left - 4 || rect.bottom <= icon.top || rect.top >= icon.bottom);
     })).toBe(true);
     await fit(page, width); await axe(page);
-    await query.fill('unsent draft'); await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');
+    await query.fill('unsent draft');
     const feedback = page.getByRole('region', { name: 'Global Card search', exact: true }).getByRole('status');
-    await expect(feedback).toBeFocused(); await expect(query).toHaveValue('unsent draft');
+    const beforePaging = source.searches.length;
+    // Focus parks synchronously, before the protected account read and search.
+    // Prove that loading state, then observe the actual next request rather
+    // than mistaking the previous request for a completed page transition.
+    source.holdSearchAccount = true;
+    try {
+      await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');
+      await expect(feedback).toBeFocused(); await expect(query).toHaveValue('unsent draft');
+      await expect(feedback).toHaveText('Searching…');
+      await expect.poll(() => source.heldSearchAccounts).toBeGreaterThan(0);
+      expect(source.searches).toHaveLength(beforePaging);
+    } finally {
+      source.holdSearchAccount = false; source.searchAccountWaiters.splice(0).forEach(resolve => resolve());
+    }
+    await expect.poll(() => source.searches.length).toBe(beforePaging + 1);
     expect(new URLSearchParams(source.searches.at(-1)).get('q')).toBe('roof');
     expect(new URLSearchParams(source.searches.at(-1)).get('after')).toBe('detail-search-next');
     expect(new URLSearchParams(source.searches.at(-1)).get('scope')).toBe('active');
+    await expect(feedback).toHaveText('1 result on this page. Search complete.');
+    await expect(feedback).toBeFocused(); await expect(query).toHaveValue('unsent draft');
     source.searchFailure = 503; await page.getByRole('button', { name: 'Refresh results', exact: true }).press('Enter');
     await expect(page.getByText('Search is unavailable. Check your account and access, then search again.', { exact: true })).toBeVisible();
     await expect(feedback).toBeFocused(); await expect(query).toHaveValue('unsent draft'); await expect(result).toHaveCount(0);

@@ -1,0 +1,432 @@
+{
+  "revision": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+  "at": "2026-10-22T12:14:02.372Z",
+  "result": "Failed",
+  "testedSynthetic": "1688fda9720de34b6c94d0800ad96cfda1284b31",
+  "run": 39750379379,
+  "version": "0.1.0-1969",
+  "checks": {
+    "headRevision": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+    "checks": [
+      {
+        "id": 119815715607,
+        "name": "release-bundle",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "skipped",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119815715607",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119815665013,
+        "name": "required-ci",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "failure",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119815665013",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119749635338,
+        "name": "container-integration (browser-full, 4/4)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "failure",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119749635338",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119749635280,
+        "name": "container-integration (commands, 1/1)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119749635280",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119749635258,
+        "name": "container-integration (browser-full, 3/4)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119749635258",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119749635207,
+        "name": "security",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119749635207",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119749635202,
+        "name": "container-integration (browser-foundation, 1/1)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119749635202",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119749635160,
+        "name": "container-integration (browser-notifications, 1/1)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "failure",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119749635160",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119749635151,
+        "name": "container-integration (browser-full, 2/4)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119749635151",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119749635096,
+        "name": "container-integration (browser-full, 1/4)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119749635096",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119748375104,
+        "name": "build-images-once",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119748375104",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119748344126,
+        "name": "source-quality-gate",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119748344126",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119729389836,
+        "name": "CodeQL",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/119729389836",
+        "output": {
+          "title": "No new alerts in code changed by this pull request",
+          "summary": "[View all branch alerts](/nickmailhot-lang/StrataAI2/security/code-scanning?query=pr%3A122+tool%3ACodeQL+is%3Aopen).",
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119729360409,
+        "name": "web-quality",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119729360409",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119729360236,
+        "name": "dotnet-quality",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119729360236",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119729360223,
+        "name": "postgres-integration",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119729360223",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119729171992,
+        "name": "metadata",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750379379/job/119729171992",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119729159243,
+        "name": "Analyze (c-cpp)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750374222/job/119729159243",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119729158969,
+        "name": "Analyze (javascript-typescript)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750374222/job/119729158969",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119729158857,
+        "name": "Analyze (actions)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750374222/job/119729158857",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119729158784,
+        "name": "Analyze (python)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750374222/job/119729158784",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119729158528,
+        "name": "Analyze (csharp)",
+        "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39750374222/job/119729158528",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      }
+    ],
+    "statuses": [],
+    "annotations": [],
+    "hasMore": false,
+    "job": null,
+    "jobs": [],
+    "log": null,
+    "logTruncated": false,
+    "providerGuidance": "GitHub guidance for this response only: use checkRunId for output and annotations, runId from a GitHub Actions /runs/<id> link to list jobs, or jobId from a /jobs/<id> link for logs. page paginates checks, jobs or annotations. Keep the supplied account and returned headRevision on follow-up reads. Third-party CI exposes only the output reported to GitHub."
+  },
+  "artifact": {
+    "id": 12424916167,
+    "sha256": "0e809d5451d8ba71de2c21d3f9d9edceb7e736d3ef3f7bff9759bd3c9b8a3db7",
+    "verifiedInnerEntries": 102,
+    "metadata": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "1688fda9720de34b6c94d0800ad96cfda1284b31",
+      "shortSha": "1688fda9720d",
+      "workflowRunId": "39750379379",
+      "workflowRunNumber": "1969",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1969",
+      "releaseVersion": null,
+      "imageTag": "1688fda9720de34b6c94d0800ad96cfda1284b31",
+      "createdAt": "2026-10-22T08:47:46.289Z",
+      "images": {
+        "web": "strataai-web:1688fda9720de34b6c94d0800ad96cfda1284b31",
+        "api": "strataai-api:1688fda9720de34b6c94d0800ad96cfda1284b31",
+        "worker": "strataai-worker:1688fda9720de34b6c94d0800ad96cfda1284b31"
+      }
+    }
+  },
+  "assets": [
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-search-paging-error-context.md",
+      "sha256": "6787cb55e339ee9a22c2601aee91801663d59ca0cb1f79893cca2f34e6d7e0ff"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-search-paging-test-failed-1.png",
+      "sha256": "ffe6a7ba37b4bc17e7a52e3da58942a9abe5b596a63774cee1944d8ab2883ad5"
+    }
+  ],
+  "failure": {
+    "job": 119749635338,
+    "file": "tests/browser/trello-card-search.spec.ts",
+    "line": 151,
+    "width": 320,
+    "textZoom": "200%",
+    "expected": "detail-search-next",
+    "received": null
+  },
+  "trace": {
+    "nextNativeEnter": 2405272.906,
+    "focusedStatusAssertionPassed": 2405285.074,
+    "preservedDraftAssertionPassed": 2405287.777,
+    "immediateCursorAssertion": 2405289.948,
+    "assertionFailed": 2405290.365,
+    "correctNextSearchRequestStarted": 2405294.949,
+    "request": {
+      "q": "roof",
+      "scope": "active",
+      "after": "detail-search-next",
+      "status": 200
+    }
+  },
+  "evaluation": {
+    "cause": "The original synchronous request-history assertion ran approximately five milliseconds before the correct next-page HTTP request started. Search immediately parked focus, kept the edited draft and then sent the exact original applied criteria/cursor. The screenshot visibly shows focused Searching status. This is an observation race, not focus loss or a wrong cursor.",
+    "owner": "Current PR122 integration owner",
+    "repair": "Hold the existing before-search account read, prove focused loading and unchanged draft before any next request starts, release it in finally, then observe one new request within the unchanged default five-second assertion budget. Preserve exact q/after/scope expectations and require admitted completion/focus before the following error and denial checks.",
+    "limits": "No application change, additional retry, relaxed selector, longer deadline or weaker assertion. Current551 remains Failed; the repair and one complete replacement qualification are mandatory."
+  },
+  "completeOldMatrix": {
+    "shards": [
+      {
+        "shard": 1,
+        "passed": 129,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "shard": 2,
+        "passed": 125,
+        "failed": 0,
+        "skipped": 2,
+        "skipReason": "Two original mail-topology deferrals"
+      },
+      {
+        "shard": 3,
+        "passed": 127,
+        "failed": 0,
+        "skipped": 0
+      },
+      {
+        "shard": 4,
+        "passed": 126,
+        "failed": 1,
+        "skipped": 0
+      }
+    ],
+    "passed": 507,
+    "failed": 1,
+    "skipped": 2,
+    "sourceGates": 11,
+    "foundationPassed": 50,
+    "commands": "Passed",
+    "notifications": {
+      "passed": 57,
+      "failed": 1,
+      "laterScopes": "Not Run"
+    },
+    "requiredCI": "Failed",
+    "release": "Skipped"
+  }
+}
