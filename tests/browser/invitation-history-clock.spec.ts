@@ -1,9 +1,8 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
-import { openAdmittedReview } from './keyboardAdmission';
+import { openAdmittedReview, openFocusedInvitationReview } from './keyboardAdmission';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackInvitationAdmission } from './invitationAdmissionTracker';
-import { openFocusedInvitationReview } from './invitationReviewAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-01/02/03/04-TC-03/06/11/12: invitation history rejects normalized source clocks and recovers actual records at ${width}px`, async ({ page, context }) => {

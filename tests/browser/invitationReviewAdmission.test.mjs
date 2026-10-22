@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { expect } from '@playwright/test';
-import { openAdmittedReview } from './keyboardAdmission.ts';
-import { openFocusedInvitationReview } from './invitationReviewAdmission.ts';
+import { openAdmittedReview, openFocusedInvitationReview } from './keyboardAdmission.ts';
 
 // Actual Playwright assertions/polling drive this isolated Locator protocol.
 // Routed browser coverage separately proves the real transition/consumer.
