@@ -2,18 +2,18 @@
 
 ## 2026-10-22 — Star-admission repair and independent filter history reconciled
 
-The active follow-up now includes frozen parent415a and both checked fixture repairs through a normal branch merge, preserving both complete histories. No application code changes in this reconciliation, and all three filter source/test inputs remain byte-identical to tested `a15b2484`. The parent's remote head `551a6bc8` remains failed and unmerged; its remaining browser groups continue before one replacement push.
+The active follow-up now includes frozen parent 415a and both checked fixture repairs through a normal branch merge, preserving both complete histories. No application code changes in this reconciliation, and all three filter source/test inputs remain byte-identical to tested `a15b2484`. Frozen parent 415a is running fresh CI39777957890 (version1970); metadata, all code scans, PostgreSQL and frontend quality pass. Backend and all remaining built-application gates are still required. Failed551 completed with both evaluated fixture failures and skipped release; no old pass qualifies415a.
 
-Current fixture source4d4 passes twelve complete Card/Search/star native cases in each presentation,42 admission/tracker contracts,types/lint,514-case partition and full delivery validation/36 contracts. Original star request/key/version/history and exact Search q/cursor/scope/focus assertions remain intact. Both actual real-service and complete replacement gates remain mandatory. The independent filter's 77 component and four native cases per presentation retain their actual `eb7cccff` execution identity; no parent result qualifies this follow-up's full gates. Current combined metadata validation is next.
+Current fixture source 4d4 passes twelve complete Card/Search/star native cases in each presentation, 42 admission/tracker contracts, types/lint, 514-case partition and full delivery validation / 36 contracts. Original star request/key/version/history and exact Search q/cursor/scope/focus assertions remain intact. Both actual real-service and complete replacement gates remain mandatory. The independent filter's 77 component and four native cases per presentation retain their actual `eb7cccff` execution identity; no parent result qualifies this follow-up's full gates. Current combined browser types, the complete 518-case/177-file partition, full Git/source/evidence-hash/baseline/parent-history validation and all 36 delivery contracts pass on the exact committed ledger.
 
 | Metric | Status |
 | --- | --- |
 | Functional completion | Existing business capabilities and contracts preserved. |
 | UX completion | Bounded polish implemented and scoped-tested; acceptance remains unverified. |
-| Test completion | Local repair passes targeted checks. Remote551 notifications and premature Search observation remain Failed; fresh parent415a and follow-up full qualification remain required. |
+| Test completion | Local repair passes targeted checks. Remote551 notifications and premature Search observation remain Failed; fresh parent 415a and follow-up full qualification remain required. |
 | MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
 
-Combined ledger: 1625 items, 3921 criteria, 1007 evidence records. Ten parent and four filter Task/Test records remain Testing. All failed runs, mode-invocation errors and previous scoped proof are retained.
+Combined ledger: 1625 items, 3921 criteria, 1008 evidence records. Ten parent and four filter Task/Test records remain Testing. All failed runs, mode-invocation errors and previous scoped proof are retained.
 
 ---
 
