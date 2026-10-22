@@ -1,5 +1,13 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Current Foundation and command integration pass
+
+PR #122 remains frozen at `8f17005f`. Its version 0.1.0-1971 Foundation job passes all 50 cases: 28 Demo metadata/terminal/recipient, two reminder, two original cover-pipeline and 18 lifecycle tests, with no failures or skips. The command, permission, RLS, transaction and runtime group also passes, with 80 successful workflow steps; this is not a count of test cases. Source quality, image builds and security pass. Fifteen checks are green; four integration groups are running and one is queued under the unchanged four-job limit.
+
+The normal-browser and notification suites, all six strict performance profiles, immutable release, final review and verified main integration remain required. No merge, new acceptance or Demo replacement has occurred. Functional completion, UX completion, test completion and MVP readiness remain separate; 71 records are Done. The independent Board follow-up retains implemented, scoped-tested assignee feedback and filter polish with its own unverified obligations.
+
+---
+
 ## 2026-10-22 — Parent source gates pass; canonical assignee feedback implemented separately
 
 Frozen PR #122 candidate `8f17005f` passes all 11 source gates. Provider hashes and current build/run identities verify 2,985 frontend and 2,519 backend passes, with the original 24/5 capacity deferrals unchanged. All three version 0.1.0-1971 images and security now pass; their exact provider/inner/config/manifest/layer identities are verified and preloaded. Four integration groups are running and three are queued under the existing four-job limit. No Demo activation has occurred. Actual browser/role, security, all six strict performance profiles, immutable release, final review and verified normal main integration remain mandatory. The PR stays draft and unmerged.
