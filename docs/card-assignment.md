@@ -1,5 +1,34 @@
 # Card assignment (PRD-11)
 
+## Current Board preview empty state
+
+`PRD-11-VS-01-T-02` addresses the existing `UX-CARD-02` requirement: an admitted
+Card with zero current eligible assignees displays **Unassigned**. Missing,
+malformed, stale or unavailable previews remain unknown; the browser does not
+infer a zero from an absent dictionary entry.
+
+The existing preview store now returns an explicit empty `CardMemberPreview`
+for each visible active Card without eligible assignments. PostgreSQL reads the
+count and Card revision in the same statement; Demo reads them under its existing
+lock. A later preview with a different revision still fails the unchanged client
+version check. Existing eligibility, ordering, six-person preview bounds, tenant
+joins, RLS and runtime privileges remain. Public outsiders and anonymous visitors
+still receive no protected member previews. No API fields, schema, commands,
+events, navigation or extra per-Card reads are added.
+
+Six focused host regressions pass, including read-only Organization viewers,
+Member/Admin access, last-assignee removal, eligibility and privacy. Existing
+consumer and related host checks are recorded separately in the
+[delivery report](ux/delivery-report.md). The original restricted-PostgreSQL
+assignment gate now also requires an explicit canonical zero. Four actual
+browser cases cover the Board/Card consumer, stale metadata, keyboard return,
+responsive text, accessibility and session withdrawal; positive execution on the
+new immutable images and all remaining required gates are still pending.
+
+Implementation, scoped tests and acceptance remain separate. PRD-11 remains
+open; older staged results and estimates below retain their historical scope
+and are not current product-completion measurements.
+
 The assignment foundation exposes authenticated
 `GET /boards/{boardId}/assignable-members?after=uuid`. It returns Organization
 and Board IDs, up to 50 `{userId, displayName}` choices and a UUID seek cursor.
