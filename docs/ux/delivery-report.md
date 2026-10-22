@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 â€” Consolidated repair checked; fresh qualification required
+
+Source `4d4c3f55` preserves all production application, API, schema, tenant and command behavior. The star fixture observes one actual request and stops after it starts; Search now proves focused loading before a held account read, then observes the exact next-page request and admitted completion. Original focus, draft, q, cursor, scope, request/key/version, history, deadline, retry and performance checks remain intact.
+
+Twelve complete Card/Search/star native cases pass in each existing presentation at 320/390/768/1280px, including 200% text, Axe, dirty return, error/denial and no unrelated domain writes. 42 admission/tracker contracts, types, full lint, the intact 514-case/176-file partition and full Git/source/hash/baseline/main-history validation plus 36 delivery contracts pass on exact4d4 ledger bytes. Earlier unit results retain their actual source identities and are not recounted as reruns.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Bounded polish implemented and locally checked; acceptance unverified. |
+| Test completion | Corrected local scopes pass; failed551 remains retained. Every fresh final-head gate must pass. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Ten bounded records are Testing. Publish one frozen repaired candidate, require all 22 hosted checks, strict six-profile performance, immutable release and final review before verified normal main merge. Independent Board-filter polish remains preserved in draft #123 and needs its own qualification after parent integration. Ledger: 1621 items, 3917 criteria, 988 evidence records, 71 Done.
+
+---
+
 ## 2026-10-22 — Completed CI matrix; Search observation repair
 
 Candidate `551a6bc8` remains Failed and unmerged. Its full-browser matrix finished with 507 passes, one failure and two original mail-topology skips. Groups 1–3 passed; group4 passed126 and failed the immediate Search cursor observation at320px with200% text. Notifications separately passed57 completed cases and failed original star recovery; later scopes did not run. Required CI failed and release was skipped. All failures remain retained.
