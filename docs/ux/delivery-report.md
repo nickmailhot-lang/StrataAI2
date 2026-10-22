@@ -1,5 +1,51 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Frozen policy-retry repair reconciled with independent Board polish
+
+Normal reconciliation of parent `f7174ba4` preserves both complete ledgers, histories and reports. The incoming executable change is confined to one native fixture using the existing request-start observer. No incoming product, layout, navigation, schema or API change occurs. All independent filter and canonical-assignee implementation inputs remain unchanged; original direct filter inputs also remain byte-identical to a15b2484.
+
+Parent scoped repair retains 48 component tests, 47 contracts, four original policy scenarios at 1280/390px on unchanged Demo policy inputs, types/lint, the intact 522-case partition, full delivery validation and 36 contracts. Failed8f remains Failed with its exact 519/1/2 native result and six measured profiles. Frozen replacement1972 is in fresh CI; no earlier pass qualifies it.
+
+Independent filter and assignee scopes retain their exact prior execution identities. Positive new-image assignee browser/SQL and the follow-up own complete qualification remain required. Combined source/types, the 530-case partition, Git/evidence/history validation and 36 contracts are next. No merge, acceptance or Demo activation;71 Done unchanged.
+
+Combined ledger: 1627 items, 3924 criteria, 1033 evidence records. Ten parent and four filter records remain Testing; two assignee records remain Implemented. Broader PRDs and MVP readiness remain open.
+
+---
+
+## 2026-10-22 — Policy recovery replacement prepared for complete qualification
+
+The fixture-only recovery repair preserves all original assertions and time budgets. Scoped checks pass:48 component tests in four actual files,47 observer contracts,four original desktop/phone policy workflows on unchanged Demo policy inputs,web/browser types,full lint and the intact522-case partition. Full Git/source/hash/baseline/main-history validation and all36 delivery contracts pass on exact committed `a0f9d0c4`. Final bookkeeping is structurally validated and remains subject to the replacement own metadata gate.
+
+Freeze one replacement and require its own complete22 checks,actual role/native/SQL/security/regression workflows,all six original strict profiles,immutable release,final review and actual normal main integration. Failed8f keeps519/1/2 native results and its own passing profiles;none qualifies a new head. The old version1971 images remain inactive. No merge,Demo refresh or acceptance;71 Done unchanged and ten bounded records remain Testing. The independent Board-polish follow-up and original user Demo are preserved.
+
+---
+
+
+## 2026-10-22 — Original policy retry passes scoped validation
+
+Source `ef227a55` replaces one fixture activation with the existing request-start observer. It stops when one original policy PATCH starts,including a lost reply. A byte comparison confirms all original assertions and deadlines remain. No product code,API,schema,permission or dependency changes.
+
+All 48 relevant component tests across four actual files and all 47 observer contracts pass. Four original policy browser scenarios pass at 1280/390px using the running Demo and unchanged policy UI inputs. They prove scoped recovery/history/withdrawal behavior,not qualification of replacement release images. Web/browser types,full lint and the unchanged 522-case/177-file partition pass. Original user Demo data and process remain unchanged.
+
+The failed8f candidate remains Failed;its19 passing checks and six strict profiles retain that execution identity. Ten bounded records return to Testing after scoped repair. Full delivery validation,36 contracts and a frozen replacement own22 gates,strict6,immutable release,final review and actual main integration remain mandatory. No merge,acceptance or Demo activation;71 Done unchanged. The independent Board follow-up is preserved separately.
+
+---
+
+
+## 2026-10-22 — Final browser failure retained; original-recovery fixture rework
+
+Candidate `8f17005f` failed final qualification. Nineteen checks pass, but normal group four reports 128 passes and one failure: the 1280px retention-policy recovery scenario observes one PATCH instead of the required two after reload. The native trace records focus followed by Enter, with no second browser request. The normal matrix totals 519 passes, one failure and two original mail-fixture skips. Required-ci fails and release verification is skipped.
+
+All six original strict performance profiles pass on this failed candidate. They remain evidence for this execution only. Foundation retains 50 passes, notifications 93, and commands 80 successful workflow steps. No passing result qualifies a replacement head.
+
+The bounded repair uses the existing native request-start observer for the original retry and stops after its one PATCH starts, even if the reply is lost. Original key/body, receipt, exact counts, reviewed version, history, permission withdrawal, privacy, Worker scope and time budgets remain mandatory. No product, API, schema or permission change is proposed. The complete failed result and private diagnostic provenance are retained before rework.
+
+Ten parent records return to In Progress; acceptance remains unverified and 71 Done unchanged. The PR stays draft and unmerged. The version 1971 images remain inactive; the current user Demo and data stay available. The independent Board follow-up is preserved separately. A replacement must pass scoped validation and its own complete 22 gates before integration or Demo refresh.
+
+---
+
+
+
 ## 2026-10-22 — Nineteen checks pass; final browser group remains
 
 Frozen PR #122 candidate `8f17005f` passes 19 current checks. Normal-browser groups one, two and three pass 131, 129 and 131 cases respectively, with two original mail-fixture skips retained in group two. All 93 dedicated notification cases pass. Foundation retains 50 passes and the command group retains 80 successful workflow steps. The invitation-review regression now passes on the current immutable images. All prior failures remain recorded and evaluated.

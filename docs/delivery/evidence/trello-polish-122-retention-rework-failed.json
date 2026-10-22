@@ -1,0 +1,600 @@
+{
+  "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+  "at": "2026-10-22T21:12:42.495Z",
+  "result": "Failed",
+  "run": 39818629442,
+  "testedSynthetic": "cff10bd1499c80374215e28b42e9c9720ea707ca",
+  "version": "0.1.0-1971",
+  "summary": {
+    "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+    "at": "2026-10-22T21:11:09.299Z",
+    "job": {
+      "id": 119989088259,
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "name": "container-integration (browser-full, 4/4)",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    "logTruncated": true,
+    "summary": [
+      "2026-10-22T21:01:32.1911897Z   1 failed",
+      "2026-10-22T21:01:32.1913439Z   128 passed (1.3h)"
+    ],
+    "failure": "retention-policy-review.spec.ts:135, 1280px original recovery after reload: expected PATCH count2, observed1 within original5000ms.",
+    "traceObservation": "One programmatic Retry focus followed by one page-level Enter at+27ms. No second browser policy PATCH started. Do not infer a receipt, later history or permission-withdrawal result for that failed scenario.",
+    "checks": {
+      "headRevision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "checks": [
+        {
+          "id": 120086859341,
+          "name": "release-bundle",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "skipped",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/120086859341",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 120086815637,
+          "name": "required-ci",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "failure",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/120086815637",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 1
+          }
+        },
+        {
+          "id": 119989088506,
+          "name": "container-integration (browser-foundation, 1/1)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119989088506",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119989088337,
+          "name": "container-integration (browser-full, 1/4)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119989088337",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119989088269,
+          "name": "container-integration (browser-full, 3/4)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119989088269",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119989088259,
+          "name": "container-integration (browser-full, 4/4)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "failure",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119989088259",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 1
+          }
+        },
+        {
+          "id": 119989088255,
+          "name": "container-integration (commands, 1/1)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119989088255",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119989088197,
+          "name": "container-integration (browser-notifications, 1/1)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119989088197",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119989088162,
+          "name": "container-integration (browser-full, 2/4)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119989088162",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119989088031,
+          "name": "security",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119989088031",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119987595526,
+          "name": "build-images-once",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119987595526",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119987543145,
+          "name": "source-quality-gate",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119987543145",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119964324943,
+          "name": "web-quality",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119964324943",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119964324855,
+          "name": "postgres-integration",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119964324855",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119964324645,
+          "name": "dotnet-quality",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119964324645",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119964086902,
+          "name": "metadata",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119964086902",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119963893010,
+          "name": "CodeQL",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/119963893010",
+          "output": {
+            "title": "No new alerts in code changed by this pull request",
+            "summary": "[View all branch alerts](/nickmailhot-lang/StrataAI2/security/code-scanning?query=pr%3A122+tool%3ACodeQL+is%3Aopen).",
+            "text": null,
+            "annotations_count": 0
+          }
+        },
+        {
+          "id": 119963616892,
+          "name": "Analyze (javascript-typescript)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616892",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 1
+          }
+        },
+        {
+          "id": 119963616781,
+          "name": "Analyze (c-cpp)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616781",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 1
+          }
+        },
+        {
+          "id": 119963616770,
+          "name": "Analyze (csharp)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616770",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 1
+          }
+        },
+        {
+          "id": 119963616364,
+          "name": "Analyze (actions)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616364",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 1
+          }
+        },
+        {
+          "id": 119963616079,
+          "name": "Analyze (python)",
+          "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+          "status": "completed",
+          "conclusion": "success",
+          "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616079",
+          "output": {
+            "title": null,
+            "summary": null,
+            "text": null,
+            "annotations_count": 1
+          }
+        }
+      ],
+      "statuses": [],
+      "annotations": [],
+      "hasMore": false,
+      "job": null,
+      "jobs": [],
+      "log": null,
+      "logTruncated": false,
+      "providerGuidance": "GitHub guidance for this response only: use checkRunId for output and annotations, runId from a GitHub Actions /runs/<id> link to list jobs, or jobId from a /jobs/<id> link for logs. page paginates checks, jobs or annotations. Keep the supplied account and returned headRevision on follow-up reads. Third-party CI exposes only the output reported to GitHub."
+    }
+  },
+  "normalMatrix": {
+    "passed": 519,
+    "failed": 1,
+    "skipped": 2
+  },
+  "otherScopes": {
+    "foundationPassed": 50,
+    "notificationsPassed": 93,
+    "commandSuccessfulSteps": 80
+  },
+  "diagnosticArtifact": {
+    "id": 12459026359,
+    "sha256": "fda035441a93207c9f92807db305bed95a66c2984799c9a516553acb67038dec",
+    "verified": true,
+    "privateTraceRetainedOutsideGit": true
+  },
+  "performance": {
+    "artifactId": 12458731864,
+    "sha256": "3787be2b852a139a85e6f8406fe993c62f7a31681c8e46b321671487cdb6e32b",
+    "profiles": [
+      {
+        "metric": "normal-desktop-card-dates",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "datedCards": 50,
+          "samples": 20,
+          "viewport": "1280x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable"
+        },
+        "usableMs": 1032.696890000003,
+        "detailMs": 149.5999999998603,
+        "detailObserved": true,
+        "detailAutomationMs": 229.55420799999774,
+        "mutationP95Ms": 75.14992500000517,
+        "mutationSamplesMs": [
+          75.14992500000517,
+          56.34199799999624,
+          54.22808700000314,
+          44.66120399999636,
+          42.78139999999985,
+          42.238274000003,
+          48.534701999997196,
+          108.11466800000198,
+          49.57450499999686,
+          43.667570999998134,
+          42.237912000004144,
+          42.79806699999608,
+          49.94091199999821,
+          47.5846309999979,
+          46.76814800000284,
+          53.08292900000379,
+          53.8816580000057,
+          49.24653699999908,
+          49.473343000005116,
+          43.84523300000001
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "normal-desktop-checklist",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "samples": 20,
+          "viewport": "1280x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable",
+          "checklists": 2,
+          "items": 63,
+          "pageSize": 50
+        },
+        "itemPageMs": 123.40217200000188,
+        "nextItemPageMs": 105.32667400001083,
+        "usableMs": 718.1461300000083,
+        "detailMs": 133.60000000009313,
+        "detailObserved": true,
+        "detailAutomationMs": 282.39983699998993,
+        "feedbackObserved": true,
+        "feedbackMs": 87.19999999995343,
+        "mutationP95Ms": 61.227040999991004,
+        "mutationSamplesMs": [
+          61.227040999991004,
+          44.186870000005,
+          36.725132999999914,
+          38.30728900000395,
+          44.99586300000374,
+          35.08227299999271,
+          37.318293000003905,
+          34.48721300000034,
+          41.73253100000147,
+          47.19014599999355,
+          42.809313000005204,
+          45.35810100000526,
+          41.58569900000293,
+          47.161750999992364,
+          39.911840000000666,
+          35.96967900000163,
+          34.62413199999719,
+          37.525253999992856,
+          33.95083999999042,
+          65.2017019999912
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "feedback": 100,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "normal-desktop-kanban",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "samples": 20,
+          "viewport": "1280x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable"
+        },
+        "usableMs": 797.139823000005,
+        "detailMs": 103,
+        "detailObserved": true,
+        "detailAutomationMs": 146.76997799999663,
+        "feedbackObserved": true,
+        "feedbackMs": 69.89999999990687,
+        "mutationP95Ms": 71.6607859999931,
+        "mutationSamplesMs": [
+          73.05705099999614,
+          61.9954080000025,
+          60.51210500000161,
+          65.72827199999301,
+          63.698242999991635,
+          62.705996000004234,
+          60.32601799999247,
+          60.04446099999768,
+          60.80100000000675,
+          62.15082999999868,
+          71.29977100000542,
+          68.56122000000323,
+          62.0570149999985,
+          64.15742299999692,
+          71.6607859999931,
+          59.588378000000375,
+          61.93630000000121,
+          61.703827999997884,
+          64.05828100000508,
+          61.16255100000126
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "feedback": 100,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "normal-phone-kanban",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "samples": 20,
+          "viewport": "390x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable",
+          "input": "chromium-touch"
+        },
+        "usableMs": 716.1130010000197,
+        "detailMs": 126.30000000004657,
+        "detailObserved": true,
+        "detailAutomationMs": 184.35719099998823,
+        "feedbackObserved": true,
+        "feedbackMs": 65.30000000004657,
+        "mutationP95Ms": 78.20764000000781,
+        "mutationSamplesMs": [
+          75.75941200001398,
+          66.33804500001133,
+          70.58002099997248,
+          71.43473900001845,
+          78.20764000000781,
+          63.211401000007754,
+          62.624225999985356,
+          61.86680499999784,
+          66.7802640000009,
+          60.026194999984,
+          57.66272900000331,
+          61.51631800000905,
+          61.30754800001159,
+          61.078472000022884,
+          60.94338899999275,
+          59.60201400000369,
+          61.859150000003865,
+          59.06020899998839,
+          58.616697999997996,
+          79.7525350000069
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "feedback": 100,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "desktop-list-feedback",
+        "status": "passed",
+        "fixture": {
+          "lists": 2,
+          "cards": 0,
+          "viewport": "1280x844",
+          "tracing": "commands-and-network"
+        },
+        "feedbackObserved": true,
+        "feedbackMs": 40.5,
+        "budgetsMs": {
+          "feedback": 100
+        }
+      },
+      {
+        "metric": "phone-list-feedback",
+        "status": "passed",
+        "fixture": {
+          "lists": 2,
+          "cards": 0,
+          "viewport": "390x844",
+          "tracing": "commands-and-network",
+          "input": "chromium-touch"
+        },
+        "feedbackObserved": true,
+        "feedbackMs": 39.200000000186265,
+        "budgetsMs": {
+          "feedback": 100
+        }
+      }
+    ],
+    "originalStrictBudgets": "Passed on failed8f only; not transferable to replacement"
+  },
+  "evaluation": "The retention recovery scenario assumed one focus and page-level Enter starts its original retry. The trace records focus followed27ms later by Enter, but no second browser policy PATCH; the original5000ms request-count assertion fails1 versus2. Do not infer later receipt/history/withdrawal success for that failed1280px scenario. Use the existing request-start observer to establish one admitted native activation and stop when that original PATCH starts. Preserve all key/body/version/count/history/authority/privacy/Worker and deadline assertions. No product,API,schema or permission change is proposed.",
+  "disposition": "PR remains draft and unmerged. required-ci Failed and release Skipped. Version1971 images must not be activated. All19 passing checks,original deferrals and six strict profile results retain this failed execution identity; replacement requires its own complete22 checks and review.",
+  "limits": "Current failure is retained as Failed. No retry-to-green,acceptance,merge,Demo activation or broader PRD closure."
+}

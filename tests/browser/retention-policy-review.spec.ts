@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker } from './scopedBoardWorker';
+import { pressObservedRequest } from './keyboardAdmission';
 
 const headers = { 'X-StrataAI-Request': '1' };
 const rule = { recordClass: 'governance', category: `minutes_${'m'.repeat(56)}`, jurisdiction: `Reviewed applicability ${'J'.repeat(70)}`,
@@ -131,7 +132,9 @@ for (const width of [1280, 390]) {
       await expect.poll(metadata).toBeGreaterThan(beforeReload);
       const recovery = page.getByRole('dialog', { name: 'Recover original policy submission', exact: true }); await expect(recovery).toBeVisible();
       await expect(recovery.getByText('Source: Original administrator private proposal', { exact: true })).toBeVisible();
-      await keyboardClick(page, recovery.getByRole('button', { name: 'Retry original submission', exact: true }));
+      // Observe the original retry starting through dialog/foreground admission.
+      // Stop activating once its one PATCH starts, even if its reply is lost.
+      await pressObservedRequest(recovery.getByRole('button', { name: 'Retry original submission', exact: true }), () => writes.length, 2);
       await expect.poll(() => writes.length).toBe(2);
       await expect(page.getByRole('status').filter({ hasText: 'The original policy change was acknowledged. Refreshing current policies.' })).toBeVisible();
       await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByText('Source: Later authoritative private source', { exact: true })).toBeVisible();
