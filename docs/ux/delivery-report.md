@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Original cover workflow and complete Foundation retest pass
+
+Current candidate `c1f1debb` passes the complete Foundation job119651986248 against the current exact images: **50 native cases** comprising28 Demo lifecycle cases,two reminder cases,both original desktop/phone cover cases and18 attachment lifecycle cases. The corrected visible readiness check succeeds. All original cover consent,receipts,keys/bodies,write counts,versions,public visibility,peer updates without navigation,privacy,assertions,deadlines and retries remain intact. Both earlier failed runs remain recorded as Failed; canceled scopes remain incomplete.
+
+The provider raw log is truncated; the completed job,full step table and four actual Playwright summaries are retained as bounded retest proof. Other full native partitions,commands,mail/roles,six strict normal-performance profiles,immutable release,review and verified normal main integration remain mandatory. **PR #122 is still unmerged and no new record is accepted.**
+
+The active ledger now contains1623 items,3919 criteria,991 evidence records and71 previously Done. Functional capabilities are preserved; the polished workflows are implemented; current source and Foundation tests pass; full acceptance and global MVP readiness remain pending. Independent filter polish in draft #123 retains its own scoped proof and requires its own full gates.
+
+---
+
 ## 2026-10-21 — PR #122 source gates pass; built-application qualification continues
 
 Frozen candidate `c1f1debb` has **11 passing source gates**: frontend 2,979 tests, backend 2,519 tests, types/lint, database integration, metadata, source quality and all CodeQL checks. The original 24 frontend capacity deferrals and five backend deferred methods are unchanged. Provider ZIP digests and embedded metadata bind these results to test merge `30fcdb21`, CI39722002143, attempt1 and version0.1.0-1968. Current image build119651064466 also passes; the same three images feed downstream jobs.

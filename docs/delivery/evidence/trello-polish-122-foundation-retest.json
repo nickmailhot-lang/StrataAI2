@@ -1,0 +1,871 @@
+{
+  "revision": "c1f1debb91a5078aef7ed259ded5f623d1f206ef",
+  "at": "2026-10-22T05:57:50.704Z",
+  "result": "Passed",
+  "scope": "Complete current Foundation retest: 50 actual native cases across Demo, reminders, original cover pipeline and attachment lifecycle.",
+  "testedSynthetic": "30fcdb2104b9aaec913cf1c31ba3b0a920f9e53d",
+  "workflowRunId": 39722002143,
+  "version": "0.1.0-1968",
+  "job": {
+    "id": 119651986248,
+    "head_sha": "c1f1debb91a5078aef7ed259ded5f623d1f206ef",
+    "name": "container-integration (browser-foundation, 1/1)",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "invocations": [
+    {
+      "scope": "Demo metadata/terminal/recipient",
+      "passed": 28
+    },
+    {
+      "scope": "Reminders",
+      "passed": 2
+    },
+    {
+      "scope": "Original desktop/phone cover pipeline",
+      "passed": 2
+    },
+    {
+      "scope": "Attachment lifecycle",
+      "passed": 18
+    }
+  ],
+  "summary": [
+    "2026-10-22T05:35:11.5324124Z   28 passed (14.8m)",
+    "2026-10-22T05:38:14.0510621Z   2 passed (3.0m)",
+    "2026-10-22T05:40:01.5597608Z   2 passed (1.4m)",
+    "2026-10-22T05:50:51.3022861Z   18 passed (10.8m)"
+  ],
+  "steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 1
+    },
+    {
+      "name": "Run actions/checkout@v7",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 2
+    },
+    {
+      "name": "Download exact built images",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 3
+    },
+    {
+      "name": "Verify image archive checksums",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 4
+    },
+    {
+      "name": "Load exact built images",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 5
+    },
+    {
+      "name": "Start release topology",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 6
+    },
+    {
+      "name": "Apply release-database migrations",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 7
+    },
+    {
+      "name": "Verify structured API and Worker console records",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 8
+    },
+    {
+      "name": "Prepare Retain fixed console verification evidence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 9
+    },
+    {
+      "name": "Retain fixed console verification evidence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 10
+    },
+    {
+      "name": "Provision least-privilege runtime database roles",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 11
+    },
+    {
+      "name": "Reject unsafe runtime database roles in exact images",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 12
+    },
+    {
+      "name": "Verify installed configuration identities, relationships and restricted capabilities",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 13
+    },
+    {
+      "name": "Retention policy schema and restricted capabilities",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 14
+    },
+    {
+      "name": "Health, readiness and SPA deep-link smoke tests",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 15
+    },
+    {
+      "name": "Verify embedded build identity and override resistance",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 16
+    },
+    {
+      "name": "Production does not expose demo reset",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 17
+    },
+    {
+      "name": "Verify production account defaults and prepare isolated auth fixture",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 18
+    },
+    {
+      "name": "Demo documented workflows without PostgreSQL or external network",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 19
+    },
+    {
+      "name": "API and Worker startup fail closed against exact retained images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 20
+    },
+    {
+      "name": "Verify explicit Worker job scope and handler configuration",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 21
+    },
+    {
+      "name": "Verify enabled attachment configuration refusal in exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 22
+    },
+    {
+      "name": "Test PostgreSQL profile concurrency",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 23
+    },
+    {
+      "name": "Identity audit rollback, logout waits and one-connection commands",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 24
+    },
+    {
+      "name": "Session-bound logout and deactivation receipts against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 25
+    },
+    {
+      "name": "Current and legacy credential-checked sign-in retries against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 26
+    },
+    {
+      "name": "Authentication lifecycle privacy against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 27
+    },
+    {
+      "name": "Atomic registration retries against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 28
+    },
+    {
+      "name": "Invitation-backed closed registration and atomic expiry against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 29
+    },
+    {
+      "name": "Verified-email invitation discovery and retry-safe acceptance",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 30
+    },
+    {
+      "name": "Atomic invitation creation retries against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 31
+    },
+    {
+      "name": "Private board discovery and revoked membership against restricted PostgreSQL runtime",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 32
+    },
+    {
+      "name": "Board member canonical events, receipts, Worker delivery and revoked recovery against exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 33
+    },
+    {
+      "name": "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 34
+    },
+    {
+      "name": "Board grants, lifecycle freezes and original receipt recovery against exact API and restricted PostgreSQL",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 35
+    },
+    {
+      "name": "Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 36
+    },
+    {
+      "name": "Independent full-capacity Board copy and atomic retry recovery against restricted PostgreSQL runtime",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 37
+    },
+    {
+      "name": "Board administrator demotion continuity and atomic recovery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 38
+    },
+    {
+      "name": "Work command and audit rollback against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 39
+    },
+    {
+      "name": "Organization audit rollback, revoked actor waits and concurrent owner departures",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 40
+    },
+    {
+      "name": "Automatic Organization metadata delivery with typed queue isolation",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 41
+    },
+    {
+      "name": "Automatic recipient authority pages and restart against exact Worker image",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 42
+    },
+    {
+      "name": "Automatic Board recipient authority pages and restart against exact Worker image",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 43
+    },
+    {
+      "name": "Organization request and terminal recipient authority against exact Worker image",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 44
+    },
+    {
+      "name": "Canonical issuer deactivation and bounded authority routing against exact Worker image",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 45
+    },
+    {
+      "name": "Account deactivation and Organization active-owner continuity",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 46
+    },
+    {
+      "name": "Authorized bounded Organization member directory and post-wait revocation",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 47
+    },
+    {
+      "name": "Authorized global search, literal matching, cursor binding and archived scope through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 48
+    },
+    {
+      "name": "Deleted and moved Card content admission across search inbox and notification history through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 49
+    },
+    {
+      "name": "Organization terminal search and notification withdrawal after issuing-session logout or account deactivation through exact API and Worker images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 50
+    },
+    {
+      "name": "Account-bound navigation observations through exact release proxy and API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 51
+    },
+    {
+      "name": "Durable work retry keys against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 52
+    },
+    {
+      "name": "Bounded archives, confirmed deletion and atomic List copies",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 53
+    },
+    {
+      "name": "Transactional labels, atomic association removal and post-wait receipt authorization",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 54
+    },
+    {
+      "name": "Bounded Board members, atomic Card assignments and post-wait revocation through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 55
+    },
+    {
+      "name": "Personal watch revisions, atomic publication and post-wait revocation through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 56
+    },
+    {
+      "name": "Atomic username mentions, source notifications and redaction history through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 57
+    },
+    {
+      "name": "Protected activity history, post-wait access/session admission and persisted cursor restart through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 58
+    },
+    {
+      "name": "Cross-Board Card movement, original receipt admission and atomic reference rollback through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 59
+    },
+    {
+      "name": "Independent Card copy, destination Watch notification and atomic late-publication rollback through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 60
+    },
+    {
+      "name": "UTC Card dates, atomic notification rollback and private retry recovery through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 61
+    },
+    {
+      "name": "Authorized URL attachments, receipts, metadata paging and atomic rollback against exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 62
+    },
+    {
+      "name": "Authorized checklist creation, ordered progress and atomic rollback against exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 63
+    },
+    {
+      "name": "Checklist, comment, activity, movement and lifecycle at supported capacity",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 64
+    },
+    {
+      "name": "Authorized configuration and lifecycle HTTP p95 through exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 65
+    },
+    {
+      "name": "Prepare Retain fixed Organization latency evidence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 66
+    },
+    {
+      "name": "Retain fixed Organization latency evidence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 67
+    },
+    {
+      "name": "Validate pinned operator Collector configuration",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 68
+    },
+    {
+      "name": "Verify exact-image operator metric ingestion and private-field exclusion",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 69
+    },
+    {
+      "name": "Verify operator warning firing and resolved delivery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 70
+    },
+    {
+      "name": "Prepare Retain fixed operator collection evidence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 71
+    },
+    {
+      "name": "Retain fixed operator collection evidence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 72
+    },
+    {
+      "name": "Prepare Retain fixed-scope Checklist capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 73
+    },
+    {
+      "name": "Retain fixed-scope Checklist capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 74
+    },
+    {
+      "name": "Prepare Retain fixed-scope activity capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 75
+    },
+    {
+      "name": "Retain fixed-scope activity capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 76
+    },
+    {
+      "name": "Prepare Retain fixed-scope notification inbox capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 77
+    },
+    {
+      "name": "Retain fixed-scope notification inbox capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 78
+    },
+    {
+      "name": "Prepare Retain fixed-scope watch producer fan-out measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 79
+    },
+    {
+      "name": "Retain fixed-scope watch producer fan-out measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 80
+    },
+    {
+      "name": "Prepare Retain fixed-scope global search capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 81
+    },
+    {
+      "name": "Retain fixed-scope global search capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 82
+    },
+    {
+      "name": "Prepare Retain fixed-scope comment capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 83
+    },
+    {
+      "name": "Retain fixed-scope comment capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 84
+    },
+    {
+      "name": "Prepare Retain fixed-scope cross-Board movement capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 85
+    },
+    {
+      "name": "Retain fixed-scope cross-Board movement capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 86
+    },
+    {
+      "name": "Prepare Retain fixed-scope work lifecycle capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 87
+    },
+    {
+      "name": "Retain fixed-scope work lifecycle capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 88
+    },
+    {
+      "name": "Prepare Retain fixed-scope permanent-deletion capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 89
+    },
+    {
+      "name": "Retain fixed-scope permanent-deletion capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 90
+    },
+    {
+      "name": "Prepare Retain fixed-scope Card copy capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 91
+    },
+    {
+      "name": "Retain fixed-scope Card copy capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 92
+    },
+    {
+      "name": "Atomic Work events and leased Worker readiness against exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 93
+    },
+    {
+      "name": "Hosted operational lifecycle discovery and restart recovery against exact release Worker",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 94
+    },
+    {
+      "name": "Independent Portal grants across operational lifecycle changes against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 95
+    },
+    {
+      "name": "Lifecycle session expiry during receipt publication against exact release API",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 96
+    },
+    {
+      "name": "Archived records and configuration history across operational lifecycle changes",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 97
+    },
+    {
+      "name": "Organization configuration tenant-scoped usage",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 98
+    },
+    {
+      "name": "Retention policy authorized commands and private history against exact release API",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 99
+    },
+    {
+      "name": "Run actions/setup-node@v7",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 100
+    },
+    {
+      "name": "Install browser test dependencies",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 101
+    },
+    {
+      "name": "Demo metadata, terminal and recipient lifecycle against exact API and web images",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 102
+    },
+    {
+      "name": "Attachment upload and isolated Worker image publication through explicit private test providers",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 103
+    },
+    {
+      "name": "Prepare Retain fixed-scope attachment capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 104
+    },
+    {
+      "name": "Retain fixed-scope attachment capacity measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 105
+    },
+    {
+      "name": "Authorized contiguous event replay and mid-read revocation against exact release API",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 106
+    },
+    {
+      "name": "Check concurrent and large-board rank allocation",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 107
+    },
+    {
+      "name": "Prepare Retain actual large-Board native capacity diagnostics",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 108
+    },
+    {
+      "name": "Retain actual large-Board native capacity diagnostics",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 109
+    },
+    {
+      "name": "Check write authorization and lifecycle during live database lock waits",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 110
+    },
+    {
+      "name": "Prepare isolated identity mail transport and ephemeral signing keys",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 111
+    },
+    {
+      "name": "Identity mail against exact API/Worker images and restricted database role",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 112
+    },
+    {
+      "name": "Recipient calendar admission through actual invitation mail proof",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 113
+    },
+    {
+      "name": "Desktop and mobile accessible keyboard verification/recovery through Worker delivery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 114
+    },
+    {
+      "name": "Desktop and phone task work through provider outage",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 115
+    },
+    {
+      "name": "Strict verified-account Organization departure and account continuity",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 116
+    },
+    {
+      "name": "Strict verified-account Board management and personal preferences",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 117
+    },
+    {
+      "name": "Strict verified-account source classification and original recovery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 118
+    },
+    {
+      "name": "Strict verified-account watch producers through native private inboxes",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 119
+    },
+    {
+      "name": "Strict verified-account assignment mention and reminder native delivery",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 120
+    },
+    {
+      "name": "Strict verified-account watch and permission ordering through observed database waits",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 121
+    },
+    {
+      "name": "Restore isolated unverified-email account fixture for profile browser tests",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 122
+    },
+    {
+      "name": "Enable automatic Organization metadata and invitation authority routing for native browser acceptance",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 123
+    },
+    {
+      "name": "Authenticated browser E2E against exact release images",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 124
+    },
+    {
+      "name": "Authentication and invitation abuse limits on API and edge",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 125
+    },
+    {
+      "name": "Prepare Retain browser failure evidence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 126
+    },
+    {
+      "name": "Retain browser failure evidence",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 127
+    },
+    {
+      "name": "Prepare Retain scoped browser performance measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 128
+    },
+    {
+      "name": "Retain scoped browser performance measurements",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 129
+    },
+    {
+      "name": "Capture container state and logs",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 130
+    },
+    {
+      "name": "Prepare Upload integration diagnostics",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 131
+    },
+    {
+      "name": "Upload integration diagnostics",
+      "status": "completed",
+      "conclusion": "skipped",
+      "number": 132
+    },
+    {
+      "name": "Stop release topology",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 133
+    },
+    {
+      "name": "Post Run actions/setup-node@v7",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 265
+    },
+    {
+      "name": "Post Run actions/checkout@v7",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 266
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success",
+      "number": 267
+    }
+  ],
+  "logTruncated": true,
+  "resolution": {
+    "failedEvidence": [
+      "EVID-TRELLO-122-FOUNDATION-FAILED",
+      "EVID-TRELLO-122-MODAL-READINESS-FAILED"
+    ],
+    "change": "The original cover cases pass after exactly one native owner Refresh card action, current read and enabled visible cover-review consumer. Original consent, receipt, key/body, write-count, version, public visibility, peer/no-navigation, privacy, assertion deadlines and retries remain unchanged.",
+    "preservation": "Earlier failed executions remain Failed; their canceled scopes remain incomplete. This is current c1 actual-service proof, not a relabeling of previous runs."
+  },
+  "limits": [
+    "The provider raw log is truncated. Completed current job status, complete step table and four actual Playwright summaries establish the bounded retest.",
+    "Other full native partitions, commands, mail/roles, six strict normal-performance profiles, immutable release, review and actual normal main integration remain required. No new acceptance."
+  ]
+}
