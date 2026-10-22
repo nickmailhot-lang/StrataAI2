@@ -51,6 +51,26 @@ it('guides an empty last page using applied filters without denying earlier matc
   expect(new URL(fetch.mock.calls[4][0], 'https://example.test').searchParams.has('after')).toBe(false);
   expect(screen.queryByText(/This is the last filter page/)).not.toBeInTheDocument();
 });
+it.each([false, true])('anchors retired dialog paging without reclaiming an edited field (resume=%s)', async resume => {
+  const page = Array.from({ length: 50 }, (_, i) => ({ ...card,
+    id: `66666666-6666-4666-8666-${String(i + 1).padStart(12, '0')}`, title: `Match ${i + 1}` }));
+  let release!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices())
+    .mockResolvedValueOnce(results(page, page.at(-1)!.id)).mockImplementationOnce(() => new Promise<Response>(resolve => { release = resolve; })));
+  mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await screen.findByText('50 Cards on this page');
+  const next = screen.getByText('Next filtered Cards', { selector: 'button' });
+  act(() => next.focus()); fireEvent.click(next);
+  await waitFor(() => expect(release).toBeTypeOf('function'));
+  const region = screen.getByLabelText('Board filter choices and results');
+  expect(region).toHaveFocus();
+  const keyword = screen.getByLabelText('Card keyword');
+  if (resume) { act(() => keyword.focus()); fireEvent.change(keyword, { target: { value: 'Unsent resumed edit' } }); }
+  await act(async () => release(results([])));
+  await screen.findByText('No matching Cards on this page.');
+  expect(resume ? keyword : region).toHaveFocus();
+  if (resume) expect(keyword).toHaveValue('Unsent resumed edit');
+});
 it('keeps the filter scroll region keyboard accessible while Board admission disables its controls', async () => {
   const fetch = vi.fn((path: string) => Promise.resolve(path === '/me' ? response({ id: actor }) : choices()));
   vi.stubGlobal('fetch', fetch); const p = props(); const view = mount(p); await open();
