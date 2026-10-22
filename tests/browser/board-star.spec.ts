@@ -3,7 +3,7 @@ import { registerNotificationAccount as registerVerifiedAccountFixture } from '.
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackBoardStarChanges } from './boardReadTracker';
-import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
+import { openAdmittedReview, pressObservedLocalAction, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-04: personal star isolation, lost acknowledgment and later-state recovery at ${width}px`, async ({ page, context, browser }) => {
@@ -142,7 +142,8 @@ for (const width of [1280, 390]) {
       for (const client of [page, other, mirror]) {
         expect(await client.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
         await expect(client.getByRole('button', { name: 'Done', exact: true })).toBeEnabled();
-        await client.getByRole('button', { name: 'Done', exact: true }).focus(); await client.keyboard.press('Enter');
+        await client.getByRole('button', { name: 'Done', exact: true }).focus();
+        await pressObservedLocalAction(client.getByRole('button', { name: 'Done', exact: true }));
         await expect((await disclosedWorkControl(client, 'Board actions', 'button', { name: 'Board starring', exact: true }))).toBeFocused();
       }
       await mirror.close();
