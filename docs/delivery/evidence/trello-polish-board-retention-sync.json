@@ -1,0 +1,49 @@
+{
+  "revision": "a6a3428b7edd2eb738de7e24d9f79dce50aa3f96",
+  "at": "2026-10-22T21:33:55.678Z",
+  "result": "Passed",
+  "parents": "70c0634fc7f302949446e7a30220d4dd126fa4a0 f7174ba4bc6fb078c71991bc548b06a2573db88a",
+  "checkedLedgerSha256": "ba2bd849ab57b0289410800a1370a086ed5b530ac36c08646f6e372724ffd475",
+  "independentInputs": [
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.test.tsx",
+      "gitSha256": "238b6fb32251a12eab3f1d66893c347051c7702024832038a3f6545bb63834ff"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.tsx",
+      "gitSha256": "0fbccb10885760bec66f82e6e79fc4b74f947b37252ea255fb8221a0c96760af"
+    },
+    {
+      "path": "scripts/ci/test-assignable-board-members.sh",
+      "gitSha256": "9045d59f95ac248b17b642c910abba1362e3182b7297fa40ef19bdf582bb1e1e"
+    },
+    {
+      "path": "src/StrataAI.Infrastructure/WorkManagement/CardMemberPreviewStore.cs",
+      "gitSha256": "c99650d1004fb490b2a2dc12aab5f0048de198e2822357240aac3e3b698f7cca"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/CardMemberEmptyPreviewTests.cs",
+      "gitSha256": "6803f73979eac515547b5a77763d50dadacdd965a49a35310ec2836cca7dc9e1"
+    },
+    {
+      "path": "tests/browser/board-filter-guidance.spec.ts",
+      "gitSha256": "8779a739149db8e85b0bba6be20c4b244b5934f4a2623140d97d1dac97647782"
+    },
+    {
+      "path": "tests/browser/card-assignee-empty-preview.spec.ts",
+      "gitSha256": "f79529876c019eff3e3eec5bfa969a79bb84c68521b581f90d0620e2858ba88d"
+    }
+  ],
+  "incomingProductChange": "None. Parent changes one native recovery fixture and retains all original assertions/time budgets.",
+  "bothParentEvolution": "Validated during strict three-way item/criterion/evidence/cycle reconciliation; complete histories retained.",
+  "validation": "npm notice run strataai2@0.1.0 delivery:validate\r\nnpm notice run node scripts/delivery-progress.mjs validate\r\nValid: 1627 work items; 3924 criteria. No unsupported Done claims.\r\n",
+  "contracts": "npm notice run strataai2@0.1.0 delivery:test\r\nnpm notice run node --test tests/delivery-progress.test.mjs\r\n✔ PRD-25-VS-03/AC-01: complete real backlog retains all 100 definitions, obligations and parent links (79990.3065ms)\r\n✔ PRD-25-VS-03/AC-01: losing a PRD or architecture definition fails closed (249.205ms)\r\n✔ PRD-25-VS-03/AC-01: losing original FR or AC cannot shrink acceptance denominator (58.6687ms)\r\n✔ PRD-25-VS-03/AC-01: source mutation cannot inherit frozen audit (7.1955ms)\r\n✔ PRD-25-VS-03/AC-01: missing slice requirement mapping is rejected (70.587ms)\r\n✔ PRD-25-VS-03/AC-02: duplicate item IDs, orphan items and acceptance are refused (1.4511ms)\r\n✔ PRD-25-VS-03/AC-02: untraced test and unknown dependencies are refused (0.9004ms)\r\n✔ PRD-25-VS-03/AC-02: lifecycle runs in order and does not skip validation (2.3635ms)\r\n✔ PRD-25-VS-03/AC-02: Blocked requires reason, owner and exact prior-state resume (0.8843ms)\r\n✔ PRD-25-VS-03/AC-02: Implemented needs source identity, never just a state label (0.6627ms)\r\n✔ PRD-25-VS-03/AC-02: state and append-only history must agree (0.3257ms)\r\n✔ PRD-25-VS-03/AC-02: a new item cannot start at Done to bypass lifecycle (0.7841ms)\r\n✔ PRD-25-VS-03/AC-03: a Test cannot claim Passed without executed evidence (0.3685ms)\r\n✔ PRD-25-VS-03/AC-03: complete synthetic evidence passes all gates (0.4166ms)\r\n✔ PRD-25-VS-03/AC-03: missing tests blocks Done (0.5226ms)\r\n✔ PRD-25-VS-03/AC-03: missing acceptance blocks Done (0.6761ms)\r\n✔ PRD-25-VS-03/AC-03: missing security blocks Done (0.5634ms)\r\n✔ PRD-25-VS-03/AC-03: missing roles blocks Done (0.2896ms)\r\n✔ PRD-25-VS-03/AC-03: missing regressions blocks Done (0.2821ms)\r\n✔ PRD-25-VS-03/AC-03: missing integration blocks Done (0.2527ms)\r\n✔ PRD-25-VS-03/AC-03: missing tracking blocks Done (0.263ms)\r\n✔ PRD-25-VS-03/AC-03: missing review blocks Done (0.3855ms)\r\n✔ PRD-25-VS-03/AC-03: missing ux blocks Done (0.4746ms)\r\n✔ PRD-25-VS-03/AC-03: missing build blocks Done (0.3104ms)\r\n✔ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (0.3691ms)\r\n✔ PRD-25-VS-03/AC-03: unverified, stale, failed or skipped evidence cannot satisfy acceptance (0.7363ms)\r\n✔ PRD-25-VS-03/AC-03: unknown critical regressions and unpassed test block completion (0.7423ms)\r\n✔ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (0.7365ms)\r\n✔ PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unvalidated work (2.1617ms)\r\n✔ PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done (0.8764ms)\r\n✔ PRD-25-VS-03/AC-04: validated Done work contributes completion counts and recent increments (0.7378ms)\r\n✔ PRD-25-VS-03/AC-05: prior states, criteria and failed evidence cannot be rewritten or deleted (2.573ms)\r\n✔ PRD-25-VS-03/AC-03: exact Git integration, evidence hashes and repository path boundaries (3458.7369ms)\r\n✔ PRD-25-VS-03/AC-04: real CLI reports machine-readable progress and exits nonzero for bad action (138044.2597ms)\r\n✔ PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its refusal tests (0.7239ms)\r\n✔ PRD-25-VS-03/AC-05: CLI can validate evolution against the actual retained ledger in Git (69567.8528ms)\r\nℹ tests 36\r\nℹ suites 0\r\nℹ pass 36\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 291785.0626\r\n",
+  "browserTypes": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n",
+  "registry": {
+    "tests": 530,
+    "files": 179,
+    "logSha256": "98fb60d236542c3cb93737da57221882be28cc6ff29a384f2885036c6ac04b48"
+  },
+  "scope": "Current combined browser types,complete registry,full Git/source/hash/baseline/main-history validation and36 contracts pass on exact committeda6a3428b. Direct independent implementation inputs remain unchanged; earlier filter and assignee scopes retain actual execution identities.",
+  "limits": "Parentf7174ba4 is frozen in its own freshCI1972. No failed8f pass qualifies it. Positive new-image assignee browser/SQL and independent follow-up complete main-target qualification remain required. Final evidence bookkeeping is structurally checked and awaits its own eventual metadata gate. No acceptance,merge or Demo activation."
+}

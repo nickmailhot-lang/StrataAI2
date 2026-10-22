@@ -1,5 +1,17 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Combined Board follow-up validated against frozen replacement
+
+Normal merge `a6a3428b` reconciles parent `f7174ba4` while preserving every independent filter and canonical-assignee implementation input. Both ledgers, histories and reports are retained. Combined browser types, the full 530-case/179-file registry, Git/source/hash/baseline/main-history validation and all 36 delivery contracts pass on that exact committed ledger. Final evidence bookkeeping is structurally checked and remains subject to the follow-up's own metadata gate.
+
+Frozen PR #122 is in fresh build 1972 qualification. Its current frontend artifact verifies 2,985 passes and the original 24 capacity deferrals. Backend and subsequent image, native, role, security, strict-performance, release, review and main-integration gates remain required. Failed candidate `8f17005f` stays Failed. No merge, acceptance or Demo activation has occurred; the original user Demo remains available.
+
+Filter polish retains 77 scoped component passes and four native cases in each presentation, executed at `eb7cccff`. Canonical assignee feedback retains 77 related host and 26 consumer passes, with one evaluated Linux-only skip. These retain their actual source identities. Positive new-image assignee browser/SQL and the follow-up's complete main-target gates remain required. Ten parent and four filter records are Testing; two assignee records are Implemented. Broad PRDs and MVP readiness remain open, with 71 Done unchanged.
+
+Ledger: 1,627 items, 3,924 criteria and 1,034 evidence records. Functional completion, UX completion, test completion and MVP readiness remain separate.
+
+---
+
 ## 2026-10-22 — Frozen policy-retry repair reconciled with independent Board polish
 
 Normal reconciliation of parent `f7174ba4` preserves both complete ledgers, histories and reports. The incoming executable change is confined to one native fixture using the existing request-start observer. No incoming product, layout, navigation, schema or API change occurs. All independent filter and canonical-assignee implementation inputs remain unchanged; original direct filter inputs also remain byte-identical to a15b2484.
