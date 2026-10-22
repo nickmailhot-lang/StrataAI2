@@ -1,5 +1,13 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Policy recovery replacement prepared for complete qualification
+
+The fixture-only recovery repair preserves all original assertions and time budgets. Scoped checks pass:48 component tests in four actual files,47 observer contracts,four original desktop/phone policy workflows on unchanged Demo policy inputs,web/browser types,full lint and the intact522-case partition. Full Git/source/hash/baseline/main-history validation and all36 delivery contracts pass on exact committed `a0f9d0c4`. Final bookkeeping is structurally validated and remains subject to the replacement own metadata gate.
+
+Freeze one replacement and require its own complete22 checks,actual role/native/SQL/security/regression workflows,all six original strict profiles,immutable release,final review and actual normal main integration. Failed8f keeps519/1/2 native results and its own passing profiles;none qualifies a new head. The old version1971 images remain inactive. No merge,Demo refresh or acceptance;71 Done unchanged and ten bounded records remain Testing. The independent Board-polish follow-up and original user Demo are preserved.
+
+---
+
 ## 2026-10-22 — Original policy retry passes scoped validation
 
 Source `ef227a55` replaces one fixture activation with the existing request-start observer. It stops when one original policy PATCH starts,including a lost reply. A byte comparison confirms all original assertions and deadlines remain. No product code,API,schema,permission or dependency changes.
