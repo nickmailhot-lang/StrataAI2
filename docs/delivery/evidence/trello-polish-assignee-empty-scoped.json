@@ -1,0 +1,92 @@
+{
+  "revision": "da0b224b198450196ab542c0c4af5ef3247255d0",
+  "at": "2026-10-22T17:52:01.169Z",
+  "result": "Passed",
+  "sourceInputs": [
+    {
+      "path": "src/StrataAI.Infrastructure/WorkManagement/CardMemberPreviewStore.cs",
+      "sha256": "c99650d1004fb490b2a2dc12aab5f0048de198e2822357240aac3e3b698f7cca"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/CardMemberEmptyPreviewTests.cs",
+      "sha256": "6803f73979eac515547b5a77763d50dadacdd965a49a35310ec2836cca7dc9e1"
+    },
+    {
+      "path": "scripts/ci/test-assignable-board-members.sh",
+      "sha256": "9045d59f95ac248b17b642c910abba1362e3182b7297fa40ef19bdf582bb1e1e"
+    },
+    {
+      "path": "tests/browser/card-assignee-empty-preview.spec.ts",
+      "sha256": "f79529876c019eff3e3eec5bfa969a79bb84c68521b581f90d0620e2858ba88d"
+    },
+    {
+      "path": "docs/card-assignment.md",
+      "sha256": "15e5b52d23553d65364d8aeebe2eb32e56e2a599db7bc5dc8326e5246a2e9067"
+    }
+  ],
+  "compiledHostSource": "bbd6c60d;actual C# inputs unchanged through da0b224b",
+  "checks": {
+    "newCases": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "log": {
+        "path": "../trello-assignee-empty-green.log",
+        "sha256": "45f08ab23f81024da9cd3a65ab5bf38a837ca07bb9f16ae4c35a12d235343601",
+        "text": "Running tests from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\nC:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64) passed (13s 785ms)\r\n\r\n  In process file artifacts produced:\r\n    - C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-empty-green-results\\assignee-empty-green.trx\r\n\r\nTest run summary: Passed!\r\n  total: 6\r\n  failed: 0\r\n  succeeded: 6\r\n  skipped: 0\r\n  duration: 15s 220ms\r\n"
+      }
+    },
+    "relatedHost": {
+      "passed": 75,
+      "failed": 0,
+      "skipped": 1,
+      "includesNewSix": true,
+      "log": {
+        "path": "../trello-assignee-members-correct.log",
+        "sha256": "d1883afdd9ac84ebe992ce821579d02ed0bb2d0ba3409d1b6b6d5923d51cd7b4",
+        "text": "Running tests from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\nskipped StrataAI.Api.Tests.ApiHostTests.PRD_14_Selected_cover_HTTP_exposes_only_sanitized_PNG_and_rechecks_public_or_current_member_scope\r\n  Private staging requires Linux.\r\n  from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\nC:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64) passed (4m 26s 443ms)\r\n\r\n  In process file artifacts produced:\r\n    - C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-members-correct-results\\assignee-members-correct.trx\r\n\r\nTest run summary: Passed!\r\n  total: 76\r\n  failed: 0\r\n  succeeded: 75\r\n  skipped: 1\r\n  duration: 4m 27s 507ms\r\n"
+      }
+    },
+    "additionalPagingDeparture": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "log": {
+        "path": "../trello-assignee-paging-departure.log",
+        "sha256": "f48b1ce2db18ef12cd2e9ea11677c123c4600b864050a6cc1aebd7ecda7b07c7",
+        "text": "Running tests from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\nC:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64) passed (6s 411ms)\r\n\r\n  In process file artifacts produced:\r\n    - C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-paging-departure-results\\assignee-paging-departure.trx\r\n\r\nTest run summary: Passed!\r\n  total: 2\r\n  failed: 0\r\n  succeeded: 2\r\n  skipped: 0\r\n  duration: 7s 641ms\r\n"
+      }
+    },
+    "components": {
+      "passed": 26,
+      "files": 3,
+      "log": {
+        "path": "../trello-assignee-ui-components.log",
+        "sha256": "024e5b4d6874f94ef344b29f2dae611520b3eb896a9b2196fad274b6e9c6bb31",
+        "text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run --run src/features/kanban/BoardCardLink.test.tsx src/features/kanban/CardMemberIndicators.test.tsx src/features/kanban/CardAssignees.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  3 passed (3)\r\n      Tests  26 passed (26)\r\n   Start at  10:44:39\r\n   Duration  55.57s (import 79%, environment 13%, tests 5%, setup 2%, transform 1%)\r\n\r\n"
+      }
+    },
+    "browserTypes": {
+      "path": "../trello-assignee-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    "partition": {
+      "cases": 530,
+      "files": 179,
+      "counts": [
+        133,
+        135,
+        131,
+        131
+      ],
+      "log": {
+        "path": "../trello-assignee-partition.log",
+        "sha256": "c875e4813c1047ce5f566c6109ff8dfea54e1c90fef51cb3b939b0b9e0d6fe6f",
+        "text": "Browser shard coverage: 530 cases in 179 intact files; 133/135/131/131 cases across all four shards.\r\n"
+      }
+    }
+  },
+  "behavior": "Both existing preview providers now explicitly return zero for visible active Cards with no current eligible assignments. PostgreSQL binds zero and revision in one statement; Demo binds both under its existing lock. Existing eligible-member filters,counts,ordering,six-person bounds,scope predicates,API fields,public absence,transactions,RLS and command behavior remain. The unchanged strict client still rejects missing/stale/invalid metadata.",
+  "limits": "77 related executed host tests pass,including the six new regressions;one distinct existing Linux-only cover case was not run locally.26 complete consumer tests,types and intact partition pass. New SQL/native immutable-image execution,roles/security/performance/release/review/main integration remain required. This is implemented and scoped-tested,not accepted."
+}

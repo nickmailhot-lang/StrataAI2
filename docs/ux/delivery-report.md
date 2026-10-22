@@ -1,5 +1,24 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Parent source gates pass; canonical assignee feedback implemented separately
+
+Frozen PR #122 candidate `8f17005f` passes all 11 source gates. Provider hashes and current build/run identities verify 2,985 frontend and 2,519 backend passes, with the original 24/5 capacity deferrals unchanged. Images for version 0.1.0-1971 are building once. Actual browser/role, security, all six strict performance profiles, immutable release, final review and verified normal main integration remain mandatory. The PR stays draft and unmerged.
+
+The independent Board follow-up implements explicit canonical zero-assignee previews in one existing store file. Zero and Card revision are read together, preserving eligibility, public/tenant privacy, version checks, API/schema contracts and all existing commands. Six new producer regressions pass; 77 related host tests execute successfully, including those six, and all 26 consumer tests pass. One existing cover case needs Linux and is retained as Skipped locally, separately from the original capacity deferrals. Browser types and the intact 530-case/179-file partition pass.
+
+Four actual browser cases reproduce the old running-image defect at every width. They are baseline failures, not a positive test of the new binary. Positive new-image browser and restricted-PostgreSQL checks remain pending; the existing CI gate now includes canonical-zero assertions. Automatic review rejected an optional separate source API process with only blocked by policy; no alternative launch was attempted. All compile, selection and baseline failures are retained and evaluated.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; the bounded zero-preview repair is implemented. |
+| UX completion | Existing Trello-style Board/Card consumer can use explicit zero; full new-image workflow acceptance remains unverified. |
+| Test completion | Parent source gates and scoped follow-up checks pass. Remaining image/native/SQL/performance/release gates remain required. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Two assignee Task/Test records are Implemented; four filter and ten parent records retain Testing. The existing user Demo and its sample workspace remain running. Next: delivery validation and complete current-head qualification before any merge or image refresh.
+
+---
+
 ## 2026-10-22 — Current Board assignee empty state reconciled
 
 The running Demo exposes a pre-existing UX gap: a Card with a confirmed empty assignee page shows Assignees unavailable because its Board preview is omitted. The live PRD-11 UX-CARD-02 requires valid zero to say Unassigned and missing/stale data to remain unknown. The strict UI is correct to refuse an invented zero; the existing server projection must provide an explicit version-bound empty preview.

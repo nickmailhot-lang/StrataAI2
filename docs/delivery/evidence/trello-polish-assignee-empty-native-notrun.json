@@ -1,0 +1,13 @@
+{
+  "revision": "da0b224b198450196ab542c0c4af5ef3247255d0",
+  "at": "2026-10-22T17:52:01.169Z",
+  "result": "Automatic approval review rejected the action",
+  "action": "Start a separate local source API Demo test process at127.0.0.1:18082",
+  "reason": "blocked by policy",
+  "evaluation": "The tool returned no further reason. No local source API process was started,and no alternative launch was attempted. Existing test hosts and user Demo remain available. Positive real browser and PostgreSQL checks for this fix require the new immutable images in the follow-up CI; old-image red and controlled/component passes cannot qualify them.",
+  "requiredNext": [
+    "New four-width actual browser fixture with its own scopedBoardWorker restored in finally",
+    "Existing restricted-PostgreSQL assignment gate,including new explicit zero assertions",
+    "All own required source/native/role/responsive/accessibility/performance/release checks and verified main integration"
+  ]
+}
