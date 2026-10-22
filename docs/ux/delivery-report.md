@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — PR #122 source qualification passes; application checks continue
+
+Frozen candidate `551a6bc8` passes all 11 source gates: 2,985 frontend tests, 2,519 backend tests, web/browser types, lint, PostgreSQL, metadata, source quality and all CodeQL analyses. Provider artifact hashes and embedded metadata bind them to test composition `1688fda9`, run 39750379379, attempt 1, version 0.1.0-1969 and its three exact image tags. The original 24 frontend capacity deferrals and five backend deferred methods are unchanged. No previous candidate pass qualifies this replacement.
+
+The release images and built-application Foundation, native/role/regression/security, strict six-profile performance and immutable release checks still need complete passing qualification, followed by final review and verified normal main integration. Both older Foundation failures, the three failed c1 browser cases and local remount/type/visual failures remain retained and evaluated. Neither PR is accepted or merged yet.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business capabilities and contracts preserved. |
+| UX completion | Bounded Organization/Card/Search and independent filter polish implemented and scoped-tested; acceptance unverified. |
+| Test completion | Parent current source gates pass; full application gates remain required. Follow-up combined checks pass, with own complete main-target qualification still required. |
+| MVP readiness | No new accepted increment or combined percentage; 71 Done unchanged. |
+
+Combined active report: 1625 work items, 3921 criteria, 999 evidence records. Independent #123 keeps its verified combined source `eb7cccff`, 77 component tests and four native cases per presentation, plus current types/lint/partition and 36 delivery contracts. Parent passes cannot substitute for its own gates.
+
+---
+
 ## 2026-10-22 — Filter polish passes checks against corrected parent
 
 After normal reconciliation with parent candidate `551a6bc8`, combined source `eb7cccff` passes all 77 tests across five complete files and four native workflows in each presentation at 320/390/768/1280px, including 200% text, Axe, actual keyboard focus, empty-page guidance, failed reads, denial, drafts and clear/return. Web/browser types, full lint and the complete 514-case/176-file browser partition pass. The three filter source/test inputs remain byte-identical to original tested `a15b2484`. All historical and parent failure evidence remains intact.
