@@ -1,5 +1,13 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Invitation-review focus failure retained; repair continues
+
+Candidate `415a0378` remains draft and unmerged after Full2 passed126,failed one invitation-history focus case and retained two original mail-topology skips. At390px the test accepted a transient revocation dialog before its safe default Cancel focus; a fresh protected history read correctly withdrew the review and asked for review again. Verified diagnostics preserve53 inner checksums and the failed5s assertion. This is separate from GitHub’s result-publication incident.
+
+The repair will observe the read-only review together with its original initial Cancel focus. It must not force Cancel focus,change consent,send a revocation,relax clock parsing or alter original budgets. Current source11,security,Foundation50,commands,all93 notifications and Full3/129 pass on415a; those results retain their actual identity and cannot qualify a replacement. Full1 setup and Full4 remain incomplete. Ten bounded parent records return to In Progress;71 Done unchanged. Independent filter work remains preserved. Functional,UX,test and MVP completion remain separate.
+
+---
+
 ## 2026-10-22 â€” Consolidated repair checked; fresh qualification required
 
 Source `4d4c3f55` preserves all production application, API, schema, tenant and command behavior. The star fixture observes one actual request and stops after it starts; Search now proves focused loading before a held account read, then observes the exact next-page request and admitted completion. Original focus, draft, q, cursor, scope, request/key/version, history, deadline, retry and performance checks remain intact.

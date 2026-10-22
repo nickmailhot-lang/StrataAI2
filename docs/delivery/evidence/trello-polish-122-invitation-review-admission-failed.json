@@ -1,0 +1,795 @@
+{
+  "revision": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+  "at": "2026-10-22T15:39:56.332Z",
+  "result": "Failed",
+  "run": 39777957890,
+  "testedSynthetic": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+  "version": "0.1.0-1970",
+  "job": 119847117945,
+  "native": {
+    "passed": 126,
+    "failed": 1,
+    "skipped": 2,
+    "skipReason": "Two original mail-topology deferrals"
+  },
+  "failure": {
+    "file": "tests/browser/invitation-history-clock.spec.ts",
+    "line": 54,
+    "width": 390,
+    "surface": "Organization",
+    "expectation": "Cancel initially focused",
+    "deadlineMs": 5000,
+    "wholeCaseDeadlineMs": 90000,
+    "received": "Transient inactive/disabled Cancel,then dialog correctly withdrawn by fresh invitation admission."
+  },
+  "artifact": {
+    "id": 12437131895,
+    "sha256": "66ae073b7cc26a6745b67fb2812515841704854f5fa4a933ed8735caf32726bc",
+    "verifiedInnerEntries": 53,
+    "metadata": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+      "shortSha": "da9f1dcdd873",
+      "workflowRunId": "39777957890",
+      "workflowRunNumber": "1970",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1970",
+      "releaseVersion": null,
+      "imageTag": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+      "createdAt": "2026-10-22T12:23:58.042Z",
+      "images": {
+        "web": "strataai-web:da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+        "api": "strataai-api:da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+        "worker": "strataai-worker:da9f1dcdd873a31efb93738bb43d5315e5eb8696"
+      }
+    }
+  },
+  "assets": [
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-invitation-clock-error-context.md",
+      "sha256": "6ab1efa2c561f398d12a2105029fa7291a317cc76b16aab39c5fbe1060f52d81"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-invitation-clock-test-failed-1.png",
+      "sha256": "cdadc8b9dc3a9ea18961ac6567ce7db4d97d7ff481836f66ed5d833edb586a14"
+    }
+  ],
+  "trace": {
+    "calls": [
+      {
+        "id": "expect@117",
+        "method": null,
+        "start": null,
+        "end": 2291558.645,
+        "selector": null,
+        "key": null,
+        "assertion": null,
+        "failed": true
+      },
+      {
+        "id": "expect@133",
+        "method": "expect",
+        "start": 2297556.77,
+        "end": null,
+        "selector": null,
+        "key": null,
+        "assertion": null,
+        "failed": false
+      },
+      {
+        "id": "call@11955",
+        "method": "expect",
+        "start": 2285945.506,
+        "end": null,
+        "selector": "internal:text=\"Unable to confirm invitation history. Please retry.\"s",
+        "key": null,
+        "assertion": "to.be.visible",
+        "failed": false
+      },
+      {
+        "id": "call@11992",
+        "method": "expect",
+        "start": 2286145.966,
+        "end": null,
+        "selector": "internal:text=\"clock-recipient-false-390-1792680550192@example.test\"s",
+        "key": null,
+        "assertion": "to.have.count",
+        "failed": false
+      },
+      {
+        "id": "call@11994",
+        "method": "expect",
+        "start": 2286151.438,
+        "end": null,
+        "selector": "internal:role=button[name=\"Revoke invitation for clock-recipient-false-390-1792680550192@example.test\"s]",
+        "key": null,
+        "assertion": "to.have.count",
+        "failed": false
+      },
+      {
+        "id": "call@12006",
+        "method": "focus",
+        "start": 2286176.903,
+        "end": null,
+        "selector": "internal:role=button[name=\"Refresh invitations\"s]",
+        "key": null,
+        "assertion": null,
+        "failed": false
+      },
+      {
+        "id": "call@12010",
+        "method": "expect",
+        "start": 2286189.287,
+        "end": null,
+        "selector": "internal:role=button[name=\"Refresh invitations\"s]",
+        "key": null,
+        "assertion": "to.be.focused",
+        "failed": false
+      },
+      {
+        "id": "call@12012",
+        "method": "expect",
+        "start": 2286193.58,
+        "end": null,
+        "selector": "internal:role=button[name=\"Refresh invitations\"s]",
+        "key": null,
+        "assertion": "to.be.enabled",
+        "failed": false
+      },
+      {
+        "id": "call@12014",
+        "method": "press",
+        "start": 2286197.245,
+        "end": null,
+        "selector": "internal:role=button[name=\"Refresh invitations\"s]",
+        "key": "Enter",
+        "assertion": null,
+        "failed": false
+      },
+      {
+        "id": "call@12018",
+        "method": "expect",
+        "start": 2286208.691,
+        "end": null,
+        "selector": "internal:role=heading[name=\"clock-recipient-false-390-1792680550192@example.test\"s]",
+        "key": null,
+        "assertion": "to.be.visible",
+        "failed": false
+      },
+      {
+        "id": "call@12039",
+        "method": "expect",
+        "start": 2286499.488,
+        "end": null,
+        "selector": "internal:role=button[name=\"Revoke invitation for clock-recipient-false-390-1792680550192@example.test\"s]",
+        "key": null,
+        "assertion": "to.be.enabled",
+        "failed": false
+      },
+      {
+        "id": "call@12047",
+        "method": "focus",
+        "start": 2286511.35,
+        "end": null,
+        "selector": "internal:role=button[name=\"Revoke invitation for clock-recipient-false-390-1792680550192@example.test\"s]",
+        "key": null,
+        "assertion": null,
+        "failed": false
+      },
+      {
+        "id": "call@12049",
+        "method": "expect",
+        "start": 2286518.308,
+        "end": null,
+        "selector": "internal:role=button[name=\"Revoke invitation for clock-recipient-false-390-1792680550192@example.test\"s]",
+        "key": null,
+        "assertion": "to.be.focused",
+        "failed": false
+      },
+      {
+        "id": "call@12051",
+        "method": "expect",
+        "start": 2286526.092,
+        "end": null,
+        "selector": "internal:role=button[name=\"Revoke invitation for clock-recipient-false-390-1792680550192@example.test\"s]",
+        "key": null,
+        "assertion": "to.be.enabled",
+        "failed": false
+      },
+      {
+        "id": "call@12053",
+        "method": "press",
+        "start": 2286530.541,
+        "end": null,
+        "selector": "internal:role=button[name=\"Revoke invitation for clock-recipient-false-390-1792680550192@example.test\"s]",
+        "key": "Enter",
+        "assertion": null,
+        "failed": false
+      },
+      {
+        "id": "call@12055",
+        "method": "expect",
+        "start": 2286549.447,
+        "end": null,
+        "selector": "internal:role=dialog[name=\"Revoke invitation?\"s]",
+        "key": null,
+        "assertion": "to.be.visible",
+        "failed": false
+      },
+      {
+        "id": "call@12057",
+        "method": "expect",
+        "start": 2286554.053,
+        "end": null,
+        "selector": "internal:role=button[name=\"Cancel\"s]",
+        "key": null,
+        "assertion": "to.be.focused",
+        "failed": false
+      },
+      {
+        "id": "call@12057",
+        "method": null,
+        "start": null,
+        "end": 2291555.015,
+        "selector": null,
+        "key": null,
+        "assertion": null,
+        "failed": true
+      }
+    ],
+    "normalizedNetwork": [
+      {
+        "trace": "1-trace.network",
+        "time": 2285739.639,
+        "method": "GET",
+        "path": "/app/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2285941.312,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2285941.169,
+        "method": "GET",
+        "path": "/organizations/:id/surface-access",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286038.737,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286040.616,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286040.414,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286040.529,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286071.149,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286076.238,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286080.102,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286131.514,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286162.642,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286167.379,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286182.131,
+        "method": "GET",
+        "path": "/organizations/:id/surface-access",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286204.99,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286361.153,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286364.138,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286377.659,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286384.436,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286583.053,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286594.944,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286615.247,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286675.359,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286686.455,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2286697.786,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2297502.379,
+        "method": "GET",
+        "path": "/me",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2297502.219,
+        "method": "GET",
+        "path": "/organizations/:id/surface-access",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2297542.718,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "1-trace.network",
+        "time": 2297604.893,
+        "method": "GET",
+        "path": "/me",
+        "status": -1
+      },
+      {
+        "trace": "0-trace.network",
+        "time": 2285678.65,
+        "method": "POST",
+        "path": "/organizations/:id/invitations",
+        "status": 201
+      },
+      {
+        "trace": "0-trace.network",
+        "time": 2285726.689,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "0-trace.network",
+        "time": 2286079.352,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "0-trace.network",
+        "time": 2286364.896,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "0-trace.network",
+        "time": 2286595.779,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "0-trace.network",
+        "time": 2286687.165,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      },
+      {
+        "trace": "0-trace.network",
+        "time": 2297543.774,
+        "method": "GET",
+        "path": "/organizations/:id/invitations",
+        "status": 200
+      }
+    ],
+    "finding": "Pending final source evaluation; no auth headers/cookies/bodies retained"
+  },
+  "evaluation": {
+    "cause": "The fixture accepted transient dialog visibility before the existing transition could focus Cancel. Independent protected history reads began during that assertion; the application withdrew review and explicitly asked for review again. Current reads were200 and no browser revocation was sent. This pre-existing invitation component is unchanged by415a; conservative consent withdrawal is correct.",
+    "owner": "Current PR122 integration owner",
+    "repair": "Observe review opening together with its original default Cancel focus; re-open only a read-only review retired by current admission. Never focus Cancel to hide a broken default. Preserve original clock corruption/recovery,scope/role checks,canonical source equality,zero writes,two documents,Axe and all5s/90s budgets. Add controlled real-consumer coverage for interrupted review and incorrect default focus.",
+    "remaining": "Full3 passes129,Foundation50/notifications93/commands/source11/security pass on this failed415a only. Full1 setup and Full4 remain incomplete; no current or future acceptance. Provider incident is separate from this concrete failed assertion."
+  },
+  "currentChecks": {
+    "headRevision": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+    "checks": [
+      {
+        "id": 119847118246,
+        "name": "container-integration (browser-full, 4/4)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "in_progress",
+        "conclusion": null,
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119847118246",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119847118159,
+        "name": "container-integration (browser-full, 1/4)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "in_progress",
+        "conclusion": null,
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119847118159",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119847118137,
+        "name": "container-integration (browser-full, 3/4)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119847118137",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119847118118,
+        "name": "container-integration (browser-foundation, 1/1)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119847118118",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119847118084,
+        "name": "container-integration (commands, 1/1)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119847118084",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119847118030,
+        "name": "container-integration (browser-notifications, 1/1)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119847118030",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119847117945,
+        "name": "container-integration (browser-full, 2/4)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "failure",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119847117945",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119847117791,
+        "name": "security",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119847117791",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119842042513,
+        "name": "build-images-once",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119842042513",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119842003258,
+        "name": "source-quality-gate",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119842003258",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119821877885,
+        "name": "CodeQL",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/119821877885",
+        "output": {
+          "title": "No new alerts in code changed by this pull request",
+          "summary": "[View all branch alerts](/nickmailhot-lang/StrataAI2/security/code-scanning?query=pr%3A122+tool%3ACodeQL+is%3Aopen).",
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119821806155,
+        "name": "postgres-integration",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119821806155",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119821806015,
+        "name": "web-quality",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119821806015",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119821805858,
+        "name": "dotnet-quality",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119821805858",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119821610784,
+        "name": "metadata",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119821610784",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 0
+        }
+      },
+      {
+        "id": 119821595126,
+        "name": "Analyze (javascript-typescript)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821595126",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119821595072,
+        "name": "Analyze (actions)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821595072",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119821595070,
+        "name": "Analyze (c-cpp)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821595070",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119821595009,
+        "name": "Analyze (csharp)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821595009",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      },
+      {
+        "id": 119821594635,
+        "name": "Analyze (python)",
+        "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+        "status": "completed",
+        "conclusion": "success",
+        "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821594635",
+        "output": {
+          "title": null,
+          "summary": null,
+          "text": null,
+          "annotations_count": 1
+        }
+      }
+    ],
+    "statuses": [],
+    "annotations": [],
+    "hasMore": false,
+    "job": null,
+    "jobs": [],
+    "log": null,
+    "logTruncated": false,
+    "providerGuidance": "GitHub guidance for this response only: use checkRunId for output and annotations, runId from a GitHub Actions /runs/<id> link to list jobs, or jobId from a /jobs/<id> link for logs. page paginates checks, jobs or annotations. Keep the supplied account and returned headRevision on follow-up reads. Third-party CI exposes only the output reported to GitHub."
+  }
+}
