@@ -1,5 +1,13 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Completed CI matrix; Search observation repair
+
+Candidate `551a6bc8` remains Failed and unmerged. Its full-browser matrix finished with 507 passes, one failure and two original mail-topology skips. Groups 1–3 passed; group4 passed126 and failed the immediate Search cursor observation at320px with200% text. Notifications separately passed57 completed cases and failed original star recovery; later scopes did not run. Required CI failed and release was skipped. All failures remain retained.
+
+Verified Search diagnostics show focus and the unsent draft were preserved. The exact expected next-page request began about five milliseconds after the synchronous assertion inspected the old request. The fixture will hold account admission, prove focused loading before the request, then observe the actual exact request and completion within existing deadlines. The checked star repair is preserved. One consolidated replacement must pass all fresh gates before merge. Ten bounded records re-enter In Progress;71 previously Done remain unchanged. Functional, UX, test and MVP acceptance remain separate.
+
+---
+
 ## 2026-10-22 — Star-recovery admission repair passes scoped checks
 
 Source `d77792fd` changes only browser fixtures/helpers. The original multi-account star scenario now waits for one actual same-origin mutation start, counts both possible mutation verbs, and stops even when a reply is lost. All original keys, versions, exact request counts, private history, dates, Worker ownership, focus and deadlines remain. No application, API, schema, tenant, security, dependency, performance budget or CI configuration changed.
