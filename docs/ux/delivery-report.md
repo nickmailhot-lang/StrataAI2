@@ -4,7 +4,7 @@
 
 The active follow-up now includes the checked local star-admission repair through a normal branch merge, preserving both complete histories. No application code changes in this reconciliation, and all three filter source/test inputs remain byte-identical to tested `a15b2484`. The parent's remote head `551a6bc8` remains failed and unmerged; its remaining browser groups continue before one replacement push.
 
-The star fixture repair passes 59 tests in four complete files, 42 admission/tracker contracts, four native cases in each presentation, types/lint, 11 architecture/capacity guards and all 36 delivery contracts. Its actual real-service original scenario must pass again on the replacement. The independent filter's 77 component and four native cases per presentation retain their actual `eb7cccff` execution identity; no parent result qualifies this follow-up's full gates. Current combined metadata validation is next.
+The star fixture repair passes 59 tests in four complete files, 42 admission/tracker contracts, four native cases in each presentation, types/lint, 11 architecture/capacity guards and all 36 delivery contracts. Its actual real-service original scenario must pass again on the replacement. The independent filter's 77 component and four native cases per presentation retain their actual `eb7cccff` execution identity; no parent result qualifies this follow-up's full gates. Current combined browser types, the complete 518-case/177-file partition, full Git/source/evidence-hash/baseline/parent-history validation and all 36 delivery contracts pass on the exact committed ledger.
 
 | Metric | Status |
 | --- | --- |
@@ -13,7 +13,7 @@ The star fixture repair passes 59 tests in four complete files, 42 admission/tra
 | Test completion | Local repair passes targeted checks. Remote551 notification failure remains Failed; fresh parent and follow-up full qualification remain required. |
 | MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
 
-Combined ledger: 1625 items, 3921 criteria, 1004 evidence records. Ten parent and four filter Task/Test records remain Testing. All failed runs, mode-invocation errors and previous scoped proof are retained.
+Combined ledger: 1625 items, 3921 criteria, 1005 evidence records. Ten parent and four filter Task/Test records remain Testing. All failed runs, mode-invocation errors and previous scoped proof are retained.
 
 ---
 

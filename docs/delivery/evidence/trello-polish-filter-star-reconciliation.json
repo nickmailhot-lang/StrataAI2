@@ -1,0 +1,55 @@
+{
+  "revision": "cc1c109ec65e3a3f76772a7a67d64b0175199f34",
+  "at": "2026-10-22T11:42:33.640Z",
+  "result": "Passed",
+  "normalParents": [
+    "9bbba739da6d8b7628ae6d9bc70061d3d77e405d",
+    "4d0f31dfd89ebbf5ef313d58434423254760ed13"
+  ],
+  "checkedLedger": {
+    "sha256": "88f61e98c67643b2c7c5283c9d730cbcd6ae04dc6f28232e51bd29cce31b3f99",
+    "items": 1625,
+    "criteria": 3921,
+    "evidence": 1004,
+    "done": 71
+  },
+  "logs": [
+    {
+      "name": "browser-types",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "name": "registry",
+      "text": "Browser shard coverage: 518 cases in 177 intact files; 131/129/129/129 cases across all four shards.\r\n",
+      "sha256": "58be59dc9df1d2a7833b10c04e1dd3b032f0f05d90857f255457e7bf1a41a3de"
+    },
+    {
+      "name": "delivery-validate",
+      "text": "npm notice run strataai2@0.1.0 delivery:validate\r\nnpm notice run node scripts/delivery-progress.mjs validate --base-ref 4d0f31dfd89ebbf5ef313d58434423254760ed13\r\nValid: 1625 work items; 3921 criteria. No unsupported Done claims.\r\n",
+      "sha256": "abed5f7aef671eed1e7a484b506c0d33144b0c70def65e1000c88c56c19a81b2"
+    },
+    {
+      "name": "delivery-contracts",
+      "text": "npm notice run strataai2@0.1.0 delivery:test\r\nnpm notice run node --test tests/delivery-progress.test.mjs\r\n✔ PRD-25-VS-03/AC-01: complete real backlog retains all 100 definitions, obligations and parent links (57356.0609ms)\r\n✔ PRD-25-VS-03/AC-01: losing a PRD or architecture definition fails closed (234.1537ms)\r\n✔ PRD-25-VS-03/AC-01: losing original FR or AC cannot shrink acceptance denominator (55.0853ms)\r\n✔ PRD-25-VS-03/AC-01: source mutation cannot inherit frozen audit (4.5508ms)\r\n✔ PRD-25-VS-03/AC-01: missing slice requirement mapping is rejected (52.5144ms)\r\n✔ PRD-25-VS-03/AC-02: duplicate item IDs, orphan items and acceptance are refused (1.1325ms)\r\n✔ PRD-25-VS-03/AC-02: untraced test and unknown dependencies are refused (0.5459ms)\r\n✔ PRD-25-VS-03/AC-02: lifecycle runs in order and does not skip validation (4.2289ms)\r\n✔ PRD-25-VS-03/AC-02: Blocked requires reason, owner and exact prior-state resume (1.0978ms)\r\n✔ PRD-25-VS-03/AC-02: Implemented needs source identity, never just a state label (0.7537ms)\r\n✔ PRD-25-VS-03/AC-02: state and append-only history must agree (0.3874ms)\r\n✔ PRD-25-VS-03/AC-02: a new item cannot start at Done to bypass lifecycle (1.0713ms)\r\n✔ PRD-25-VS-03/AC-03: a Test cannot claim Passed without executed evidence (0.3913ms)\r\n✔ PRD-25-VS-03/AC-03: complete synthetic evidence passes all gates (0.3593ms)\r\n✔ PRD-25-VS-03/AC-03: missing tests blocks Done (0.3794ms)\r\n✔ PRD-25-VS-03/AC-03: missing acceptance blocks Done (0.2819ms)\r\n✔ PRD-25-VS-03/AC-03: missing security blocks Done (0.2449ms)\r\n✔ PRD-25-VS-03/AC-03: missing roles blocks Done (0.2369ms)\r\n✔ PRD-25-VS-03/AC-03: missing regressions blocks Done (0.2349ms)\r\n✔ PRD-25-VS-03/AC-03: missing integration blocks Done (0.2624ms)\r\n✔ PRD-25-VS-03/AC-03: missing tracking blocks Done (0.2635ms)\r\n✔ PRD-25-VS-03/AC-03: missing review blocks Done (13.258ms)\r\n✔ PRD-25-VS-03/AC-03: missing ux blocks Done (0.4329ms)\r\n✔ PRD-25-VS-03/AC-03: missing build blocks Done (0.2417ms)\r\n✔ PRD-25-VS-03/AC-03: Done parent cannot conceal incomplete required child (0.3474ms)\r\n✔ PRD-25-VS-03/AC-03: unverified, stale, failed or skipped evidence cannot satisfy acceptance (0.6441ms)\r\n✔ PRD-25-VS-03/AC-03: unknown critical regressions and unpassed test block completion (0.5876ms)\r\n✔ PRD-25-VS-03/AC-03: only reasoned inapplicability is allowed, mandatory gates cannot be waived (0.4054ms)\r\n✔ PRD-25-VS-03/AC-04: counts separate hierarchy, tests, unknown MVP and unvalidated work (1.1176ms)\r\n✔ PRD-25-VS-03/AC-04: closed source issues and historic results do not become Done (0.6046ms)\r\n✔ PRD-25-VS-03/AC-04: validated Done work contributes completion counts and recent increments (0.3361ms)\r\n✔ PRD-25-VS-03/AC-05: prior states, criteria and failed evidence cannot be rewritten or deleted (1.9248ms)\r\n✔ PRD-25-VS-03/AC-03: exact Git integration, evidence hashes and repository path boundaries (2946.5209ms)\r\n✔ PRD-25-VS-03/AC-04: real CLI reports machine-readable progress and exits nonzero for bad action (115928.1644ms)\r\n✔ PRD-25-VS-03/AC-06: required metadata job runs ledger validation and its refusal tests (0.6858ms)\r\n✔ PRD-25-VS-03/AC-05: CLI can validate evolution against the actual retained ledger in Git (57895.6188ms)\r\nℹ tests 36\r\nℹ suites 0\r\nℹ pass 36\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 234738.7046\r\n",
+      "sha256": "de9bd926376b853b49aa857caeb46ad2547a26bd314542082971584e7c8328b7"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.tsx",
+      "sha256": "0fbccb10885760bec66f82e6e79fc4b74f947b37252ea255fb8221a0c96760af"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.test.tsx",
+      "sha256": "238b6fb32251a12eab3f1d66893c347051c7702024832038a3f6545bb63834ff"
+    },
+    {
+      "path": "tests/browser/board-filter-guidance.spec.ts",
+      "sha256": "8779a739149db8e85b0bba6be20c4b244b5934f4a2623140d97d1dac97647782"
+    }
+  ],
+  "scope": "Normal branch merge of checked local star-admission repair preserves both complete work/evidence/cycle histories. No application code changes relative to previous feature checkpoint. Current combined browser types,518-case177-file partition,full Git/source/hash/baseline/parent4d0f31df evolution and36 delivery contracts pass on exact committedcc1 bytes.",
+  "supportingSourceIdentities": "Filter77 components and4+4 native workflows retain actualeb7 execution identity; three direct filter source/test inputs remain exactlya15. Star59 components/4+4 native/type/lint/11guards atd777 and42 contracts at231 retain their own recorded identities. This reconciliation does not falsely re-execute those scopes.",
+  "limits": "Remote551 remains Failed and unmerged while remaining old-head browser groups finish. No old or scoped pass qualifies the eventual replacement or this follow-up full main-target head. All failures and unverified acceptance remain."
+}
