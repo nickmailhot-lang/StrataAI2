@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Parent correction reconciled; filter polish remains independent
+
+PR #122 has a new frozen candidate, `c1f1debb`, replacing failed `1125cc02`. Its corrected visible-admission check passes eight complete Card/Search cases in both existing presentations, plus 17 cover units, 42 admission/architecture/capacity contracts, browser types and all 36 delivery contracts. Both earlier hosted failures remain Failed and evaluated. Fresh complete CI must qualify this head before merge; earlier candidates’ source, image and security passes are historical support.
+
+Draft PR #123 now includes the parent correction and all failure histories through a normal branch merge. Its Board-filter consumer remains byte-identical to tested `a15b2484`: clear empty-last-page guidance and stable visible keyboard focus for Next/First, with 77 scoped tests and four desktop/mobile browser cases in each presentation. Those results retain their actual source identity. This combined follow-up still needs its own full main-target qualification after the parent safely integrates. Existing independent feature work remains untouched.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing business capabilities and contracts preserved. |
+| UX completion | Card/Search and filter guidance/paging implemented; acceptance pending. |
+| Test completion | Scoped proof passes. Fresh complete parent and follow-up gates remain mandatory. |
+| MVP readiness | No new accepted increment or combined product percentage; 71 Done unchanged. |
+
+Combined active ledger: 1623 items, 3919 criteria, 988 evidence records. Four filter work records remain Testing; four Card/Search work records remain In Progress. Carried Search UX dependencies retain their pending acceptance and original failures. No broader PRD is closed.
+
+---
+
 ## 2026-10-21 — PR #122 checks running; filter polish ready for full qualification
 
 [PR #122](https://github.com/nickmailhot-lang/StrataAI2/pull/122) is frozen at `1125cc02`. Its [fresh CI run](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39712506633) has 13 passing checks and no reported failures at this checkpoint. The application image build and security checks passed; the real-service command, Foundation, notification and full browser groups are running or queued. Final performance, release, review and main-integration requirements remain open. Do not merge until every required gate passes for this candidate.
@@ -37,6 +54,37 @@ Separatefilter source22b92e46 is preserved through actualnormal sidebranch recon
 | MVP readiness | No newacceptedwork;71Doneunchanged. Globalreadiness unaccepted/unmeasured; no combinedpercentage. |
 
 Consolidatedactivefollowupledger:1621items/3917criteria/976evidence/71Done. Twofilterrecords remainTesting and fourparentCard/Search recordsInProgress. Allcriteriaacceptance staysunverified for thoseincrements. Next:reviewthefocusedstackeddraft,finish/fix122freshfullCIwithoutweakening,mergenormallyonlyafterallgatespass,then retargetandqualifythefilterfollowup independently. Independent118untouched.
+
+---
+
+Local delivery validation and all **36 delivery contracts pass** on the exact 974-record ledger bytes committed in `daf76adb`. Recording this result brings the parent ledger to **975 evidence records**; 1619 items, 3915 criteria and 71 Done remain unchanged. Full hosted qualification of the next published head is still required.
+
+## 2026-10-21 — Visible Card admission correction passes scoped checks
+
+Source `33018315` uses the existing visible Review Card cover control to confirm parent admission while the Card dialog correctly hides the background Board. All eight complete Card/Search cases pass in both the polished and fallback views at 320, 390, 768 and 1280px. They verify pending and failed reads disable the review control, a fresh admitted read restores it, and denial withdraws it. Existing dirty-return, Search paging, 200% text, accessibility and privacy checks remain.
+
+Current browser types, 17 cover unit tests, 31 keyboard admission contracts, 11 architecture/capacity guards, the 502-case/174-file primary registry and both attachment cases pass. Runtime code, API and database contracts, tenant boundaries, original assertions, deadlines, retries and CI requirements are unchanged. Controlled local fixtures do not qualify the real-service attachment removal flow. Both earlier hosted failures remain Failed and evaluated; every required gate must pass on the replacement head before merge.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved. No new business scope. |
+| UX completion | Card/Search implemented; independent draft #123 adds empty-page guidance and stable keyboard paging. Acceptance pending. |
+| Test completion | Current scoped checks pass. Fresh complete hosted qualification is required. |
+| MVP readiness | No new accepted increment or global percentage; 71 Done records unchanged. |
+
+Parent candidate ledger: 1619 items, 3915 criteria, 974 evidence records. PR #123 remains separate with its own retained proof and requires reconciliation and full gates after the parent integrates.
+
+---
+
+## 2026-10-21 — PR #122 blocked by an incorrect modal readiness check
+
+Candidate `1125cc02` failed Foundation job119621389436 in CI39712506633. Both original desktop and phone cover cases stopped at a readiness assertion added in the previous repair. An open Card dialog correctly hides the background Board from accessibility queries, so checking that hidden region’s busy state cannot succeed. The visible Card review control is present. This was an avoidable test-target mistake; it does not justify exposing hidden content or weakening admission.
+
+The corrected source `33018315` waits for the existing visible cover-review launcher to be enabled after one observed Card refresh and a current Board read. That launcher also stays disabled after failed admission. Additional checks in the complete existing four-width Card/Search file cover pending, failed, recovered and denied reads while confirming the modal background stays inaccessible. All original cover consent, receipts, keys/bodies, write counts, versions, peer updates, privacy and deadlines remain intact.
+
+Verified failure artifact12400142317 has SHA256612d3d374d7af30d107085f253d0f654762a7d13655c59218c7397e1f086f7fa and matching inner checksums/build identity. Original failures remain Failed. Earlier source/image/security passes cannot qualify a replacement; the repaired final head must pass all required gates independently before merge. Four Card/Search records remain In Progress; 71 previously Done records are unchanged.
+
+Independent draft #123 retains the completed filter guidance/paging polish and its scoped77tests/four default+four rollback browser passes. Its acceptance and own complete main-target CI remain pending. Broader PRDs and global MVP readiness remain open.
 
 ---
 
