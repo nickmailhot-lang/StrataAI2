@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { boundedWorkRead, workRequest, WorkRequestError, type BoardSnapshot, type WorkCard } from '../../api/workManagement';
@@ -60,6 +60,15 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const foregroundPending = useRef<AbortController | undefined>(undefined);
   const org = snapshot.board.organizationId, board = snapshot.board.id;
   const available = snapshot.access.canView && snapshot.board.lifecycleState === 'active';
+  const parkPagingFocus = useCallback(() => {
+    const focused = document.activeElement;
+    if (focused && (focused === nextPageAction.current || focused === firstPageAction.current)) {
+      const target = open ? filterRegion.current : canvasFeedback.current;
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
+    }
+  }, [open]);
+  function showPage(after?: string) { parkPagingFocus(); setCursor(after); }
   const storageKey = (actor: string) => `strataai:board-filter:v1:${actor}:${org}:${board}`;
   useLayoutEffect(() => {
     if (!restoreChangeFocus.current || changeBusy || disabled || labelLoading || memberLoading
@@ -248,12 +257,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   // Every canonical refresh invalidates the result page, including realtime
   // changes and recovery after disconnect. Never filter the six face indicators.
   useEffect(() => {
-    const focused = document.activeElement;
-    if (focused && (focused === nextPageAction.current || focused === firstPageAction.current)) {
-      const target = open ? filterRegion.current : canvasFeedback.current;
-      target?.focus({ preventScroll: true });
-      target?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
-    }
+    parkPagingFocus();
     if ((!open && !canvasMode) || !applied || !identity || disabled || !available) { setResult(undefined); return; }
     let active = true; const controller = new AbortController(); setResult(undefined); setLoading(true); setNotice(undefined);
     const query = new URLSearchParams({ keyword: applied.keyword, labels: applied.labels.join(','), match: applied.match });
@@ -291,7 +295,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
       }
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; controller.abort(); setLoading(false); };
-  }, [open, canvasMode, applied, identity, disabled, available, org, board, snapshot, cursor, retry, onRefresh, onCanvasChange]);
+  }, [open, canvasMode, applied, identity, disabled, available, org, board, snapshot, cursor, retry, onRefresh, onCanvasChange, parkPagingFocus]);
   function commitClear() {
     setCanvasMode(false); setCriteria(empty()); setApplied(undefined); setResult(undefined); setCursor(undefined);
     if (identity) try { sessionStorage.removeItem(storageKey(identity)); } catch { /* Optional storage. */ }
@@ -356,8 +360,8 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
       <Typography variant="body2">Open a Card to move it, or clear filters to reorder the full Board.</Typography>
       <Typography variant="body2">List operations still apply to every Card in that List.</Typography>
       <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
-        {result?.next && <Button ref={nextPageAction} disabled={disabled || loading} onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
-        {cursor && <Button ref={firstPageAction} disabled={disabled || loading} onClick={() => setCursor(undefined)}>First filtered Cards</Button>}
+        {result?.next && <Button ref={nextPageAction} disabled={disabled || loading} onClick={() => showPage(result.next!)}>Next filtered Cards</Button>}
+        {cursor && <Button ref={firstPageAction} disabled={disabled || loading} onClick={() => showPage()}>First filtered Cards</Button>}
         <Button disabled={disabled || labelLoading || memberLoading || !identity || !available || changeBusy || !!changeIntent} onClick={clear}>Clear Board filters</Button>
         {notice && <Button disabled={disabled || loading} onClick={() => setRetry(n => n + 1)}>Retry filtered Cards</Button>}
       </Stack>
@@ -430,8 +434,8 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
             : cursor ? 'No matching Cards on this page.' : 'No Cards match these filters.'}</Typography>
           {emptyGuidance && <Typography>{emptyGuidance}</Typography>}
           {result.items.map(c => <Button key={c.id} component={Link} to={`/app/${org}/boards/${board}/cards/${c.id}`} onClick={close}>{c.title} — {snapshot.lists.find(l => l.list.id === c.listId)?.list.name ?? 'Board List'}</Button>)}
-          {result.next && <Button ref={nextPageAction} onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
-          {cursor && <Button ref={firstPageAction} onClick={() => setCursor(undefined)}>First filtered Cards</Button>}
+          {result.next && <Button ref={nextPageAction} onClick={() => showPage(result.next!)}>Next filtered Cards</Button>}
+          {cursor && <Button ref={firstPageAction} onClick={() => showPage()}>First filtered Cards</Button>}
         </Stack>}
       </Stack>}</DialogContent><DialogActions><Button onClick={close}>Close filters</Button></DialogActions>
     </Dialog>
