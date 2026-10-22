@@ -135,13 +135,13 @@ for (const width of [1280, 768, 390, 320]) {
       const style = getComputedStyle(el), icon = el.parentElement!.querySelector('svg')!.getBoundingClientRect();
       const range = document.createRange(); range.selectNodeContents(el);
       return { classes: el.className, paddingRight: style.paddingRight, fontSize: style.fontSize,
-        whiteSpace: style.whiteSpace, icon: icon.toJSON(), text: [...range.getClientRects()].map(rect => rect.toJSON()) };
+        whiteSpace: style.whiteSpace, icon: icon.toJSON(), text: Array.from(range.getClientRects()).map(rect => rect.toJSON()) };
     })) });
     expect(await scope.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     expect(await scope.evaluate(el => {
       const icon = el.parentElement!.querySelector('svg')!.getBoundingClientRect();
       const range = document.createRange(); range.selectNodeContents(el);
-      return [...range.getClientRects()].every(rect => rect.right <= icon.left - 4 || rect.bottom <= icon.top || rect.top >= icon.bottom);
+      return Array.from(range.getClientRects()).every(rect => rect.right <= icon.left - 4 || rect.bottom <= icon.top || rect.top >= icon.bottom);
     })).toBe(true);
     await fit(page, width); await axe(page);
     await query.fill('unsent draft'); await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');
