@@ -29,7 +29,7 @@ class Locator {
       this.state.open = false; this.state.retired = true; this.state.focus = 'refresh';
     }
     const matches = expression === 'to.be.visible' ? await this.isVisible()
-      : expression === 'to.be.focused' ? this.state.open && this.state.focus === this.role
+      : expression === 'to.be.focused' ? (this.role === 'launcher' || this.state.open) && this.state.focus === this.role
         : expression === 'to.be.enabled';
     return { matches, received: this.state.focus, log: [], timedOut: !matches };
   }
