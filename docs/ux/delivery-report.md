@@ -1,5 +1,17 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — PR122 Foundation phone cover failure retained; merge prohibited
+
+Current head **cd9530ff**, own CI39701151929, failed Foundation119586017892 in the real attachment/cover pipeline at390px. Cover and candidate reads returned200/currentversion7; after the peer-window handoff, fresh Board admission caused the application to reject the unsent cover review. The original Remove Card cover enabled assertion failed; no removal was submitted. Retained artifact12396042071 has verified provider SHA2561419eaf0be628fcecb3bfe943a531113c6ba7bafed1911816c6dccfaf8d35c34 and every inner checksum. Original screenshot, deadlines and failure remain.
+
+Repair prepares an explicit owner-window/current Card refresh before reviewing removal; all original public consent,receipt,key/body,write-count,version,peer live/no-navigation and privacy oracles remain. A new component case verifies refusal during parent admission and fresh explicit review without automatic replay; complete cover suite17passed. No runtime/security gate changes. This bounded pass does not qualify the real repaired scenario or replace complete final-head CI.
+
+Exact current source artifacts pass **2978frontend/24original capacity deferrals** and **2519backend/5existing capacity deferrals**, bound to synthetic786974a1/run39701151929/version0.1.0-1966. Database,source,security and CodeQL pass. Other native groups are running; required-ci/release are not qualified. Four Card/Search records return legally to In Progress;71previouslyDone remain. Functional implementation is preserved; UX acceptance,complete tests and MVP acceptance remain separate and pending. Do not merge.
+
+The next independent UX audit reproduced a Board-filter empty continuation that falsely says no Cards match. Its new Task/Test and failing regression are parked on isolated ux/board-filter-guidance, without changing this PR candidate or independent118 work.
+
+---
+
 ## 2026-10-21 — PR #121 accepted on main; Card details and Search continue separately
 
 PR #117's dependency is resolved, and **PR #121 merged normally into main as 4c1e27e2** after **all 22 current checks passed**. Qualified head1730b891 and tested merge e0dbff49 have tree599bc9ff; the actual main merge has the identical tree and expected parents37656975 +1730b891. Fresh Git ancestry and current review state were verified. No administrative bypass, force push, relaxed assertion, extra test retry, wider deadline or larger budget was used.

@@ -192,6 +192,13 @@ for (const width of [1280, 390]) {
       const priorSyncResponse = await context.request.get(`/boards/${board}/sync`); expect(priorSyncResponse.status()).toBe(200);
       const priorSync = await priorSyncResponse.json(); expect(priorSync).toMatchObject({ hasMore: false, pending: false, resetRequired: false });
       expect(priorSync.cursor).toMatch(/^[0-9]{1,19}$/);
+      // Return from the peer window through a current owner snapshot before
+      // reviewing an unsent removal. A foreground access read must still
+      // refuse a cover review that overlaps it; never replay that failed read
+      // or weaken the exact cover/receipt and peer no-navigation assertions.
+      await page.bringToFront();
+      await pressObservedRequest(page.getByRole('button', { name: 'Refresh card', exact: true }), reads, reads() + 1);
+      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
       await openCoverReview();
       await pressAdmittedAction(page.getByRole('button', { name: 'Remove Card cover', exact: true }));
       await expect(coverConsent).toHaveCount(0);
