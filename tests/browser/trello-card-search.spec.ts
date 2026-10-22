@@ -132,6 +132,11 @@ for (const width of [1280, 768, 390, 320]) {
     await expect(scope).toHaveText('Archived work');
     await page.screenshot({ path: info.outputPath(`search-zoom-scope-${width}.png`), fullPage: true });
     expect(await scope.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+    expect(await scope.evaluate(el => {
+      const icon = el.parentElement!.querySelector('svg')!.getBoundingClientRect();
+      const range = document.createRange(); range.selectNodeContents(el);
+      return [...range.getClientRects()].every(rect => rect.right <= icon.left - 4 || rect.bottom <= icon.top || rect.top >= icon.bottom);
+    })).toBe(true);
     await fit(page, width); await axe(page);
     await query.fill('unsent draft'); await page.getByRole('button', { name: 'Next search page', exact: true }).press('Enter');
     const feedback = page.getByRole('region', { name: 'Global Card search', exact: true }).getByRole('status');
