@@ -41,6 +41,8 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   const acknowledgments = useRef(new SearchInteractionAcknowledgments());
   const applyAction = useRef<HTMLButtonElement>(null), clearAction = useRef<HTMLButtonElement>(null), retryAction = useRef<HTMLButtonElement>(null);
   const filterTrigger = useRef<HTMLButtonElement>(null), changeOwner = useRef<HTMLElement | null>(null), restoreChangeFocus = useRef(false);
+  const nextPageAction = useRef<HTMLButtonElement>(null), firstPageAction = useRef<HTMLButtonElement>(null);
+  const filterRegion = useRef<HTMLDivElement>(null), canvasFeedback = useRef<HTMLParagraphElement>(null);
   const changeDialog = useRef<HTMLElement | null>(null);
   const changeAction = useRef<'apply' | 'clear'>('apply');
   const [openingPending, setOpeningPending] = useState<string>();
@@ -83,6 +85,10 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     if (expected === 'anonymous') await admitAnonymous(signal); else await verifyBoardFilterActor(expected, signal);
   }
   function withdrawIdentity() {
+    if (document.activeElement === canvasFeedback.current) {
+      filterTrigger.current?.focus({ preventScroll: true });
+      filterTrigger.current?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
+    }
     epoch.current++; pending.current?.abort(); pending.current = undefined;
     memberPending.current?.abort(); memberPending.current = undefined;
     changePending.current?.abort(); changePending.current = undefined;
@@ -242,6 +248,12 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   // Every canonical refresh invalidates the result page, including realtime
   // changes and recovery after disconnect. Never filter the six face indicators.
   useEffect(() => {
+    const focused = document.activeElement;
+    if (focused && (focused === nextPageAction.current || focused === firstPageAction.current)) {
+      const target = open ? filterRegion.current : canvasFeedback.current;
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
+    }
     if ((!open && !canvasMode) || !applied || !identity || disabled || !available) { setResult(undefined); return; }
     let active = true; const controller = new AbortController(); setResult(undefined); setLoading(true); setNotice(undefined);
     const query = new URLSearchParams({ keyword: applied.keyword, labels: applied.labels.join(','), match: applied.match });
@@ -336,13 +348,16 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   return <>
     {available && <Button ref={filterTrigger} onClick={() => { setOpen(true); setOpeningPending(`${org}/${board}`); }}>Filter Board Cards</Button>}
     {canvasMode && !open && <Stack spacing={1}>
-      <Typography role="status">{result ? `Filtered Board: ${result.items.length} matching Cards on this page.` : 'Checking filtered Board Cards…'}</Typography>
+      <Typography ref={canvasFeedback} role="status" aria-label="Filtered Board results" tabIndex={-1}
+        sx={{ '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2, borderRadius: 1 } }}>
+        {result ? `Filtered Board: ${result.items.length} matching Cards on this page.`
+          : notice ? 'Filtered Board results are unavailable.' : 'Checking filtered Board Cards…'}</Typography>
       {emptyGuidance && <Typography>{emptyGuidance}</Typography>}
       <Typography variant="body2">Open a Card to move it, or clear filters to reorder the full Board.</Typography>
       <Typography variant="body2">List operations still apply to every Card in that List.</Typography>
       <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
-        {result?.next && <Button disabled={disabled || loading} onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
-        {cursor && <Button disabled={disabled || loading} onClick={() => setCursor(undefined)}>First filtered Cards</Button>}
+        {result?.next && <Button ref={nextPageAction} disabled={disabled || loading} onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
+        {cursor && <Button ref={firstPageAction} disabled={disabled || loading} onClick={() => setCursor(undefined)}>First filtered Cards</Button>}
         <Button disabled={disabled || labelLoading || memberLoading || !identity || !available || changeBusy || !!changeIntent} onClick={clear}>Clear Board filters</Button>
         {notice && <Button disabled={disabled || loading} onClick={() => setRetry(n => n + 1)}>Retry filtered Cards</Button>}
       </Stack>
@@ -351,7 +366,7 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
     {!open && changeNotice && <Typography role="status">{changeNotice}</Typography>}
     <Dialog open={open && available} onClose={close} fullWidth maxWidth="sm">
       <DialogTitle>Filter Board Cards</DialogTitle>
-      <DialogContent tabIndex={0} role="region" aria-label="Board filter choices and results"
+      <DialogContent ref={filterRegion} tabIndex={0} role="region" aria-label="Board filter choices and results"
         sx={{ '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: '-3px' } }}>
         {openingPending ? <Typography role="status">Checking current Board access…</Typography> : <Stack spacing={2}>
         <TextField label="Card keyword" value={criteria.keyword} onChange={e => { const keyword = e.target.value; setCriteria(c => ({ ...c, keyword })); }} disabled={disabled || labelLoading || !identity} slotProps={{ htmlInput: { maxLength: 160 } }} />
@@ -415,8 +430,8 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
             : cursor ? 'No matching Cards on this page.' : 'No Cards match these filters.'}</Typography>
           {emptyGuidance && <Typography>{emptyGuidance}</Typography>}
           {result.items.map(c => <Button key={c.id} component={Link} to={`/app/${org}/boards/${board}/cards/${c.id}`} onClick={close}>{c.title} — {snapshot.lists.find(l => l.list.id === c.listId)?.list.name ?? 'Board List'}</Button>)}
-          {result.next && <Button onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
-          {cursor && <Button onClick={() => setCursor(undefined)}>First filtered Cards</Button>}
+          {result.next && <Button ref={nextPageAction} onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
+          {cursor && <Button ref={firstPageAction} onClick={() => setCursor(undefined)}>First filtered Cards</Button>}
         </Stack>}
       </Stack>}</DialogContent><DialogActions><Button onClick={close}>Close filters</Button></DialogActions>
     </Dialog>

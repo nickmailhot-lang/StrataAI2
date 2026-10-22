@@ -64,6 +64,9 @@ for (const width of [1280, 768, 390, 320]) {
     await pressObservedRequest(dialog.getByRole('button', { name: 'Apply filters', exact: true }), () => source.changes.length, 1);
     await expect(dialog.getByText('50 Cards on this page', { exact: true })).toBeVisible();
     await keyword.fill('unsent edit'); await dialog.getByRole('button', { name: 'Next filtered Cards', exact: true }).press('Enter');
+    const filterRegion = dialog.getByRole('region', { name: 'Board filter choices and results', exact: true });
+    await expect(filterRegion).toBeFocused();
+    await expect(filterRegion).toHaveCSS('outline-style', 'solid');
     await expect(dialog.getByText(last, { exact: true })).toBeVisible();
     await expect(dialog.getByText('No matching Cards on this page.', { exact: true })).toBeVisible();
     await expect(dialog.getByText('No Cards match these filters.', { exact: true })).toHaveCount(0);
@@ -78,9 +81,20 @@ for (const width of [1280, 768, 390, 320]) {
     await page.screenshot({ path: info.outputPath(`filter-last-page-${width}.png`), fullPage: true });
     source.hold = true;
     await page.getByRole('button', { name: 'First filtered Cards', exact: true }).press('Enter');
+    const feedback = page.getByRole('status', { name: 'Filtered Board results', exact: true });
+    await expect(feedback).toBeFocused();
+    await expect(feedback).toHaveText('Checking filtered Board Cards…');
+    await expect(feedback).toHaveCSS('outline-style', 'solid');
+    expect(await feedback.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return rect.top >= 0 && rect.bottom <= innerHeight && !!hit && element.contains(hit);
+    })).toBe(true);
     await expect.poll(() => source.waiters.length).toBeGreaterThan(0); await expect(page.getByText(last, { exact: true })).toHaveCount(0);
     source.failure = 503; source.hold = false; source.waiters.splice(0).forEach(resolve => resolve());
     await expect(page.getByText('Filtered Cards could not be loaded. Try again or refresh the Board.', { exact: true })).toBeVisible();
+    await expect(feedback).toBeFocused();
+    await expect(feedback).toHaveText('Filtered Board results are unavailable.');
     await expect(page.getByText(last, { exact: true })).toHaveCount(0);
     source.failure = 0; await page.getByRole('button', { name: 'Retry filtered Cards', exact: true }).press('Enter');
     await expect(page.getByText('Filtered Board: 50 matching Cards on this page.', { exact: true })).toBeVisible();

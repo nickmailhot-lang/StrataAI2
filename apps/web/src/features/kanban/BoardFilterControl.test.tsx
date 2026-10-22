@@ -84,6 +84,28 @@ it('keeps the filter scroll region keyboard accessible while Board admission dis
   expect(region).toHaveFocus(); expect(screen.getByLabelText('Card keyword')).toHaveValue('Retained draft');
   expect(fetch.mock.calls.every(([, init]: [string, RequestInit?]) => !init?.method || init.method === 'GET')).toBe(true);
 });
+it.each([false, true])('returns owned canvas paging after denial without stealing outside focus (outside=%s)', async outside => {
+  const rows = Array.from({ length: 50 }, (_, i) => ({ ...card, lifecycleState: 'active' as const,
+    id: `66666666-6666-4666-8666-${String(i + 1).padStart(12, '0')}` }));
+  sessionStorage.setItem(storage(), JSON.stringify({ keyword: '', labels: [], members: [], match: 'all', canvas: true }));
+  let resultReads = 0, release!: (value: Response) => void;
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/me' ? response({ id: actor }) : path.includes('/labels') ? choices()
+    : ++resultReads === 1 ? results(rows, rows.at(-1)!.id) : new Promise<Response>(resolve => { release = resolve; })));
+  const p = { ...props(), snapshot: { ...snapshot, lists: [{ ...snapshot.lists[0], cards: rows }] }, onCanvasChange: vi.fn() };
+  render(<MemoryRouter><BoardFilterControl {...p} /><button>Another task</button></MemoryRouter>, { wrapper: AppThemeFixture });
+  await screen.findByText('Filtered Board: 50 matching Cards on this page.');
+  const next = screen.getByText('Next filtered Cards', { selector: 'button' }); act(() => next.focus()); fireEvent.click(next);
+  await waitFor(() => expect(release).toBeTypeOf('function'));
+  const status = screen.getByText('Checking filtered Board Cards…'); expect(status).toHaveFocus();
+  const other = screen.getByText('Another task'); if (outside) act(() => other.focus());
+  await act(async () => release(response({}, 403)));
+  await waitFor(() => expect(p.onRefresh).toHaveBeenCalled());
+  expect(outside ? other : screen.getByRole('button', { name: 'Filter Board Cards' })).toHaveFocus();
+  // The unchanged saved-canvas owner can start a fresh protected read while
+  // the parent refresh is pending. It must never restore the refused page.
+  expect(screen.queryByText('Filtered Board: 50 matching Cards on this page.')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Next filtered Cards' })).not.toBeInTheDocument();
+});
 it('rejects an empty continuation instead of turning an invalid page into successful empty guidance', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices())
     .mockResolvedValueOnce(results([], card.id)));
