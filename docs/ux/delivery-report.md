@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Replacement source gates pass; release images building
+
+Frozen PR #122 candidate `f7174ba4` passes all 11 source-quality checks. Provider checksums, current build/run identities and complete reports verify **2,985 frontend and 2,519 backend passes**. The original 24 frontend and five backend deferrals retain the same source identities; none is counted as a pass. Build 1972 images are building once.
+
+Actual current image/native/role/SQL/security/regression workflows, all six measured strict performance profiles, immutable release, final review and verified normal main integration remain mandatory. Failed candidate `8f17005f` stays Failed with its own results. No merge, acceptance or Demo activation has occurred. The current user Demo and the independent Board follow-up remain preserved.
+
+Functional completion, UX completion, test completion and MVP readiness remain separate. Ten parent and four filter records remain Testing; two assignee records are Implemented. Positive new-image assignee browser/SQL and its own complete main-target gates remain pending. Broad PRDs and MVP readiness remain open; 71 Done unchanged.
+
+---
+
 ## 2026-10-22 — Combined Board follow-up validated against frozen replacement
 
 Normal merge `a6a3428b` reconciles parent `f7174ba4` while preserving every independent filter and canonical-assignee implementation input. Both ledgers, histories and reports are retained. Combined browser types, the full 530-case/179-file registry, Git/source/hash/baseline/main-history validation and all 36 delivery contracts pass on that exact committed ledger. Final evidence bookkeeping is structurally checked and remains subject to the follow-up's own metadata gate.
