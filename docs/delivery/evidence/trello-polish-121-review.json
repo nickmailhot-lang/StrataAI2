@@ -1,0 +1,149 @@
+{
+  "revision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+  "at": "2026-10-22T00:32:14.984Z",
+  "result": "Passed",
+  "reviewer": "Codex acting in the user-delegated Principal Software Architect, Product Owner and UX Engineering Lead role",
+  "base": "37656975f491352a3b9e5dc4ea0b124b546318c4",
+  "testedTree": "599bc9ff93992b5a62b7d4e6b8a5d12740f8b42b",
+  "sourceReview": {
+    "revision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+    "base": "37656975f491352a3b9e5dc4ea0b124b546318c4",
+    "tree": "599bc9ff93992b5a62b7d4e6b8a5d12740f8b42b",
+    "reviewedAt": "2026-10-21T21:20:00Z",
+    "reviewer": "Codex acting in the user's delegated Principal Software Architect and UX Engineering Lead role",
+    "scope": "All14 changed runtime/config/test files, plus source-bound failure/repair tracking; no backend/API/schema/workflow/dependency mutation.",
+    "findings": [],
+    "observations": [
+      "Existing authorized routes, snapshot/capability guards, command ownership, original receipt recovery and lifecycle conditions remain.",
+      "Compact drag controls keep original listeners/refs/accessible names,44px targets and reserved text space; active background and role state remain canonical.",
+      "Native preferred-axis scroll progresses first; fallback is only another owned visible clipped surface when no preferred edge progresses. Original speed bounds, center stop and keyboard library path remain.",
+      "The original edge regression reproduced before repair; existing refusal tests and new mouse/touch scenarios preserve cancellation/no writes and scroll/focus return.",
+      "Request-observed admission stops at exact counts; local review admission stops after one original native activation. Original exact result, receipt, key, payload, persistence and timeout assertions remain.",
+      "No test retries, timeouts, performance budgets, capacity counterpart counts, security checks or CI workflows were relaxed. Vite only prebundles the lazy icon to preserve its initial React graph."
+    ],
+    "reviewSubmissionsAtCheckpoint": [],
+    "reviewThreadsAtCheckpoint": [],
+    "limits": [
+      "Static source review does not qualify pending native,security,performance,release or integration gates.",
+      "Fresh head/main/review/thread state must be rechecked immediately before ordinary expected-head merge."
+    ]
+  },
+  "sourceHashes": [
+    {
+      "path": "apps/web/src/features/kanban/BoardCardLink.tsx",
+      "sha256": "9be78636351fd45491978bef8bb656863300b698c38f8b73e443d144d4c73df1"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardScreen.tsx",
+      "sha256": "617fb6746cf7b9f4868c1f61c99efde8d9a369cf91fb105f1a537b83c7a963e1"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CardDragItem.tsx",
+      "sha256": "29fead6f43c620675af80edbdafa98b24ee16d37a1152b5efee55ec661bf7424"
+    },
+    {
+      "path": "apps/web/src/features/kanban/ListDragColumn.tsx",
+      "sha256": "ec6455fba53291b08934b89f87ca6a2a16da00097c04b6a33239fed5ffbb6d6d"
+    },
+    {
+      "path": "apps/web/src/features/kanban/kanbanAutoScroll.test.ts",
+      "sha256": "7bda54616270487f657ce2fbf948d9fe1ef9c148caa978446e6b4dfd93943a15"
+    },
+    {
+      "path": "apps/web/src/features/kanban/kanbanAutoScroll.ts",
+      "sha256": "db877b412d6cf628d0c1e0609d8c2aed30fe887ff4fd306088e905cd5f4920cd"
+    },
+    {
+      "path": "apps/web/src/features/organizations/OrganizationHome.tsx",
+      "sha256": "62ec3c93f200e45024f386ea7a777b5256e11dfcdc66099a39d729a190ce0b52"
+    },
+    {
+      "path": "apps/web/vite.config.ts",
+      "sha256": "27ed52c81534ad5d35249f465f6d7bc8c571eedc7bca60662fd5eaef1ae9dccb"
+    },
+    {
+      "path": "tests/browser/board-metadata.spec.ts",
+      "sha256": "d9b83309b92e08e743794feca8e0fe66b85ec90fbfe56bf6e7681ab776dd8e57"
+    },
+    {
+      "path": "tests/browser/kanban-edge-turn.spec.ts",
+      "sha256": "c78dc5d72587ccff601a1c58403cd19868179e1f40450ff3ac148d1f1bd31ee2"
+    },
+    {
+      "path": "tests/browser/keyboardAdmission.test.mjs",
+      "sha256": "de414bf24471e8f488653a0a84d12b1cdbd783152d340d0ff84960e50acd5e64"
+    },
+    {
+      "path": "tests/browser/keyboardAdmission.ts",
+      "sha256": "6916ed36ba1c55968963518a39b66f97528665f8576b71ac93d03801522923eb"
+    },
+    {
+      "path": "tests/browser/organization-settings-live.spec.ts",
+      "sha256": "e7143f0765dbd70415667afce5fb4a0ff556c9d543dbf383f6a8d4229de11b5e"
+    },
+    {
+      "path": "tests/browser/trello-work-polish.spec.ts",
+      "sha256": "b3847879242d88f46b00c29834b5da677528ca9b307a9b99cfa38c8bbc41216f"
+    }
+  ],
+  "allChangedPaths": [
+    ".gitattributes",
+    "apps/web/src/features/kanban/BoardCardLink.tsx",
+    "apps/web/src/features/kanban/BoardScreen.tsx",
+    "apps/web/src/features/kanban/CardDragItem.tsx",
+    "apps/web/src/features/kanban/ListDragColumn.tsx",
+    "apps/web/src/features/kanban/kanbanAutoScroll.test.ts",
+    "apps/web/src/features/kanban/kanbanAutoScroll.ts",
+    "apps/web/src/features/organizations/OrganizationHome.tsx",
+    "apps/web/vite.config.ts",
+    "docs/delivery/evidence/trello-polish-117-final-review.json",
+    "docs/delivery/evidence/trello-polish-117-merge.json",
+    "docs/delivery/evidence/trello-polish-121-admission-repair.json",
+    "docs/delivery/evidence/trello-polish-121-matrix-repair-quality.json",
+    "docs/delivery/evidence/trello-polish-121-metadata-red-390.png",
+    "docs/delivery/evidence/trello-polish-121-notifications-failed.json",
+    "docs/delivery/evidence/trello-polish-121-repair-tracking.json",
+    "docs/delivery/evidence/trello-polish-121-scroll-failed.json",
+    "docs/delivery/evidence/trello-polish-121-scroll-mouse-red-390.png",
+    "docs/delivery/evidence/trello-polish-121-scroll-red.json",
+    "docs/delivery/evidence/trello-polish-121-scroll-touch-red-390.png",
+    "docs/delivery/evidence/trello-polish-121-settings-failed.json",
+    "docs/delivery/evidence/trello-polish-121-settings-red-1280.png",
+    "docs/delivery/evidence/trello-polish-audit.json",
+    "docs/delivery/evidence/trello-polish-browser-current.json",
+    "docs/delivery/evidence/trello-polish-failure-trace-excerpts.json",
+    "docs/delivery/evidence/trello-polish-focus-diagnostic.json",
+    "docs/delivery/evidence/trello-polish-initial-diagnostics.json",
+    "docs/delivery/evidence/trello-polish-initial-scoped.json",
+    "docs/delivery/evidence/trello-polish-organization-work-1280.png",
+    "docs/delivery/evidence/trello-polish-organization-work-390.png",
+    "docs/delivery/evidence/trello-polish-parent-ci.json",
+    "docs/delivery/evidence/trello-polish-quality.json",
+    "docs/delivery/evidence/trello-polish-rollback.json",
+    "docs/delivery/evidence/trello-polish-unit-aggregate-failed.json",
+    "docs/delivery/evidence/trello-polish-unit-requalification.json",
+    "docs/delivery/evidence/trello-polish-visual.json",
+    "docs/delivery/evidence/trello-polish-warm-cold.json",
+    "docs/delivery/evidence/trello-polish-work-board-standard-1280.png",
+    "docs/delivery/evidence/trello-polish-work-board-standard-390.png",
+    "docs/delivery/progress.json",
+    "docs/ux/delivery-report.md",
+    "docs/ux/trello-polish.md",
+    "tests/browser/board-metadata.spec.ts",
+    "tests/browser/kanban-edge-turn.spec.ts",
+    "tests/browser/keyboardAdmission.test.mjs",
+    "tests/browser/keyboardAdmission.ts",
+    "tests/browser/organization-settings-live.spec.ts",
+    "tests/browser/trello-work-polish.spec.ts"
+  ],
+  "reviews": {
+    "reviews": []
+  },
+  "threads": {
+    "review_threads": []
+  },
+  "requestedReviewers": null,
+  "requestedTeams": null,
+  "findings": [],
+  "evaluation": "Bounded source/config/test changes reviewed with all current22 gates and actual performance/release provenance. Original receipt/value/count/key/payload/focus/persistence/authorization assertions, deadlines, retries, budgets and capacity guard remain. Current normal expected-head merge still required."
+}

@@ -1,0 +1,1510 @@
+{
+  "headRevision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+  "at": "2026-10-22T00:32:14.984Z",
+  "result": "Passed",
+  "testedSynthetic": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+  "testedTree": "599bc9ff93992b5a62b7d4e6b8a5d12740f8b42b",
+  "base": "37656975f491352a3b9e5dc4ea0b124b546318c4",
+  "runs": {
+    "ci": 39674641269,
+    "codeql": 39674635215
+  },
+  "checks": [
+    {
+      "id": 119564636369,
+      "name": "release-bundle",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119564636369",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119564611278,
+      "name": "required-ci",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119564611278",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119497501924,
+      "name": "container-integration (browser-full, 1/4)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119497501924",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119497501718,
+      "name": "container-integration (browser-full, 4/4)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119497501718",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119497501648,
+      "name": "container-integration (browser-notifications, 1/1)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119497501648",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119497501468,
+      "name": "container-integration (browser-full, 2/4)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119497501468",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119497501466,
+      "name": "container-integration (browser-full, 3/4)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119497501466",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119497501458,
+      "name": "container-integration (browser-foundation, 1/1)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119497501458",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119497501450,
+      "name": "container-integration (commands, 1/1)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119497501450",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119497501180,
+      "name": "security",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119497501180",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119496120395,
+      "name": "build-images-once",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119496120395",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119496076657,
+      "name": "source-quality-gate",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119496076657",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119481436320,
+      "name": "CodeQL",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/119481436320",
+      "output": {
+        "title": "No new alerts in code changed by this pull request",
+        "summary": "[View all branch alerts](/nickmailhot-lang/StrataAI2/security/code-scanning?query=pr%3A121+tool%3ACodeQL+is%3Aopen).",
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119481341328,
+      "name": "web-quality",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119481341328",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119481341271,
+      "name": "dotnet-quality",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119481341271",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119481341255,
+      "name": "postgres-integration",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119481341255",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119481157510,
+      "name": "metadata",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674641269/job/119481157510",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119481140030,
+      "name": "Analyze (actions)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674635215/job/119481140030",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 119481139890,
+      "name": "Analyze (javascript-typescript)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674635215/job/119481139890",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 119481139845,
+      "name": "Analyze (python)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674635215/job/119481139845",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 119481139792,
+      "name": "Analyze (c-cpp)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674635215/job/119481139792",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 119481139408,
+      "name": "Analyze (csharp)",
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39674635215/job/119481139408",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    }
+  ],
+  "statuses": [],
+  "hasMore": false,
+  "sourceArtifacts": {
+    "frontend": {
+      "artifactId": 12381114359,
+      "zipSha256": "67ca6a4bb1e8df2a01edaccbe4a095bd1f010fb4a909ecedf0e80fba476a1516",
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+        "shortSha": "e0dbff49d36d",
+        "workflowRunId": "39674641269",
+        "workflowRunNumber": "1964",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1964",
+        "releaseVersion": null,
+        "imageTag": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+        "createdAt": "2026-10-21T20:56:54.168Z",
+        "images": {
+          "web": "strataai-web:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "api": "strataai-api:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "worker": "strataai-worker:e0dbff49d36d88a5410d8014bd40d01e0fc86140"
+        }
+      },
+      "reports": [
+        {
+          "reportIndex": 0,
+          "status": "complete",
+          "counts": {
+            "passed": 2964,
+            "failed": 0,
+            "skipped": 24,
+            "error": 0
+          },
+          "skipped": [
+            {
+              "caseId": "49e7eb50f2cd5c7ceab2ff30a4701034de05e497138a2cb33f0ff3dfd70aa421",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "359a9b9a668882ef810f69eb81d5956088bd347520edfd824e70941a67c32399",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "1dc9887c73461030e56f147a8c1e82ba2ef7728fdd5b3d513e7b89cc2609242a",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "2b8705f456dd06d1393685a44d050948f95bb6631c582f0c1a6fe2ce917fb450",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "3e0f66ff926fb2e129e5ca967fb096f474afb8319667b47df43f11a6df0c5fa1",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "7e8d2f6a6a4da29e44e26d53de29aaaa4fbd09a89a1e47a2c8cd4978d390b28d",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "b14ab94854517c9f8418bb12fbbc3e08a21dd11f66823a3baa3e88a97e26d8af",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "65114f375d359c4d70129f2331d2f94ac075fd1a1a0a02b22c3488c6758bcd35",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "30cfd20d364f284175da945efdd02f25e98edff5f8761f646cb1286bd0dcf550",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "ed4de8addc6af2c9dcfb3c5d3db9c2996457a40b2257fa0482336b1fdd36f616",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "c12a77d555e4c23a35136cbc663fea4fd44dd73f9023f8a19119109c8a7cad25",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "f02d78549a9691d0cad8bbbf91fc3512da06ff157f8f9264e2cca11496dd6b0b",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "0773156d0bcf4371ef214af681b11d0bbff91e6b3ccc07ebc74303f5d4cbd6a0",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "79a741a604a4bc90251de49f112081870984f662f64ce60cf34748118f20e64b",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "7ab53605f1f9926a56d9f26125c582dc01ebe27077205f99d9c53c533a66d5a1",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "de1f92369674fc562023b19edc2f92c1dac1050bf7749c8387f3acf10eb9b8b8",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "41420ce30da4f356d0144a41e40095c6b8cad448702d05e0f7de0a83d3493ce6",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "fd32e8151854ea6cf6b8c42701dbfb344cdb338138e1778564d4ac2128bded05",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "3ad10772a02b7103589a96c16cc8e99e664b7832dce9b6c3ccf9f4842208c310",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "baecb20e6672945be56cdf8e27c153b73cd98e11882adbb53c0e5ad7ae728db2",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "8f45994b4efc85b196551931107c6c28d49cabde68814097c1f34c42a7e6c668",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "0327654b7a23edafd82823aca8e1fda826ccfb0b935dac0bd76875e67b5aa459",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "bdb273fc310500dabb6d8f0c628ef2ca85d547cc4fc36558ee6cb2a238b3adfe",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "380913516af2237802de2454d83a635aa68a40e29a5cee2b8d14d916a7ba2df6",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            }
+          ]
+        }
+      ]
+    },
+    "backend": {
+      "artifactId": 12382997969,
+      "zipSha256": "5495f28c85fcb4735e2395623b7ca2e48674ba5b8b4812095d11c7d213742445",
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+        "shortSha": "e0dbff49d36d",
+        "workflowRunId": "39674641269",
+        "workflowRunNumber": "1964",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1964",
+        "releaseVersion": null,
+        "imageTag": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+        "createdAt": "2026-10-21T20:56:54.168Z",
+        "images": {
+          "web": "strataai-web:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "api": "strataai-api:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "worker": "strataai-worker:e0dbff49d36d88a5410d8014bd40d01e0fc86140"
+        }
+      },
+      "reports": [
+        {
+          "reportIndex": 0,
+          "status": "complete",
+          "counts": {
+            "passed": 1086,
+            "failed": 0,
+            "skipped": 3,
+            "error": 0
+          },
+          "skipped": [
+            {
+              "caseId": "84d9761463c297a2e422bc11ec7ce9c6258785d86963a4e762a9445984b0992f",
+              "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "4b74a40b43d59826258a6d2b0068947c4b56cd5b367db035dd692379205a2531",
+              "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "826b81f75452edcff192854390c6e989f2126f4cc12ad1e79f996961f2560615",
+              "source": "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+              "outcome": "skipped",
+              "durationMs": 0
+            }
+          ]
+        },
+        {
+          "reportIndex": 1,
+          "status": "complete",
+          "counts": {
+            "passed": 1433,
+            "failed": 0,
+            "skipped": 2,
+            "error": 0
+          },
+          "skipped": [
+            {
+              "caseId": "0b7744bf178812c6351906ff14f32df016719c78f033b4d14782bf0687f9c82d",
+              "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "13979d60737c8bc80e8898d460172f82380e188de0271bf6e1f567b61d0ff780",
+              "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition",
+              "outcome": "skipped",
+              "durationMs": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "native": {
+    "full": [
+      {
+        "headRevision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+        "job": {
+          "id": 119497501924,
+          "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+          "name": "container-integration (browser-full, 1/4)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        "logTruncated": true,
+        "evidence": [
+          "2026-10-21T22:15:58.3136382Z   ✓   59 tests/browser/board-metadata.spec.ts:9:7 › PRD-04: metadata save recovery, concurrent draft review and responsive background at 1280px (16.8s)",
+          "2026-10-21T22:16:40.0527845Z   ✓   60 tests/browser/board-metadata.spec.ts:9:7 › PRD-04: metadata save recovery, concurrent draft review and responsive background at 390px (16.7s)",
+          "2026-10-21T23:01:15.8225856Z   123 passed (1.4h)",
+          "2026-10-21T23:01:18.1275412Z SHA256 digest of uploaded artifact is 67a7cbe2a0b8f9878c979dcbc1d7590bcc4c0e31edef8329675a729ad4145421",
+          "2026-10-21T23:01:18.4088758Z Artifact browser-performance-e0dbff49d36d88a5410d8014bd40d01e0fc86140-1 has been successfully uploaded! Final size is 897 bytes. Artifact ID is 12388482364"
+        ]
+      },
+      {
+        "headRevision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+        "job": {
+          "id": 119497501468,
+          "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+          "name": "container-integration (browser-full, 2/4)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        "logTruncated": true,
+        "evidence": [
+          "2026-10-21T23:12:20.6889275Z   ✓   93 tests/browser/kanban-scroll.spec.ts:7:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 1280px (2.7s)",
+          "2026-10-21T23:12:48.3050413Z   ✓   94 tests/browser/kanban-scroll.spec.ts:7:7 › PRD-06: mouse drag boundaries scroll Kanban containers and cancellation makes no write at 390px (2.6s)",
+          "2026-10-21T23:13:15.4264665Z   ✓   95 tests/browser/kanban-scroll.spec.ts:7:7 › PRD-06: touch drag boundaries scroll Kanban containers and cancellation makes no write at 390px (2.1s)",
+          "2026-10-21T23:30:23.4681138Z   2 skipped",
+          "2026-10-21T23:30:23.4681485Z   121 passed (1.2h)",
+          "2026-10-21T23:30:25.9072611Z SHA256 digest of uploaded artifact is 8d15fb25c5ef15a79ea8b072deb6cacd6ce21df0726d303b779ebda23d821b69",
+          "2026-10-21T23:30:26.4573787Z Artifact browser-performance-e0dbff49d36d88a5410d8014bd40d01e0fc86140-2 has been successfully uploaded! Final size is 897 bytes. Artifact ID is 12389857365"
+        ]
+      },
+      {
+        "headRevision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+        "job": {
+          "id": 119497501466,
+          "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+          "name": "container-integration (browser-full, 3/4)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        "logTruncated": true,
+        "evidence": [
+          "2026-10-21T23:24:18.2735464Z   ✓   94 tests/browser/organization-settings-live.spec.ts:7:7 › PRD-03-TC-06/08/09/11/12: live settings preserves drafts and original receipts at 1280px (19.5s)",
+          "2026-10-21T23:25:02.7466267Z   ✓   95 tests/browser/organization-settings-live.spec.ts:7:7 › PRD-03-TC-06/08/09/11/12: live settings preserves drafts and original receipts at 390px (19.4s)",
+          "2026-10-21T23:40:24.7451093Z   125 passed (1.3h)",
+          "2026-10-21T23:40:27.2944360Z SHA256 digest of uploaded artifact is 00b360054c5d11af64c38b5a258d5768a799bd958d46417e17bc6991797dd9fc",
+          "2026-10-21T23:40:27.7767607Z Artifact browser-performance-e0dbff49d36d88a5410d8014bd40d01e0fc86140-3 has been successfully uploaded! Final size is 897 bytes. Artifact ID is 12390705073"
+        ]
+      },
+      {
+        "headRevision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+        "job": {
+          "id": 119497501718,
+          "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+          "name": "container-integration (browser-full, 4/4)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        "logTruncated": true,
+        "evidence": [
+          "2026-10-22T00:23:11.5977347Z   119 passed (1.2h)",
+          "2026-10-22T00:23:14.8021427Z SHA256 digest of uploaded artifact is 5368c87089da7ce9e660edc5a6277accebea52e7d9cd3abe1fbad06ad18ef5f6",
+          "2026-10-22T00:23:15.3632498Z Artifact browser-performance-e0dbff49d36d88a5410d8014bd40d01e0fc86140-4 has been successfully uploaded! Final size is 2288 bytes. Artifact ID is 12392331681"
+        ]
+      }
+    ],
+    "foundation": {
+      "headRevision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "job": {
+        "id": 119497501458,
+        "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+        "name": "container-integration (browser-foundation, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "logTruncated": true,
+      "evidence": [
+        "2026-10-21T21:48:25.1750428Z   ✓  19 tests/browser/organization-settings-live.spec.ts:7:7 › PRD-03-TC-06/08/09/11/12: live settings preserves drafts and original receipts at 1280px (6.4s)",
+        "2026-10-21T21:48:56.5833123Z   ✓  20 tests/browser/organization-settings-live.spec.ts:7:7 › PRD-03-TC-06/08/09/11/12: live settings preserves drafts and original receipts at 390px (6.4s)",
+        "2026-10-21T21:52:41.5843407Z   28 passed (14.5m)",
+        "2026-10-21T21:55:42.0042681Z   2 passed (3.0m)",
+        "2026-10-21T21:57:19.4356776Z   2 passed (1.2m)",
+        "2026-10-21T22:07:44.1498314Z   18 passed (10.4m)"
+      ]
+    },
+    "notifications": {
+      "headRevision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "job": {
+        "id": 119497501648,
+        "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+        "name": "container-integration (browser-notifications, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "logTruncated": true,
+      "evidence": [
+        "2026-10-21T21:59:20.0823840Z   4 passed (3.1m)",
+        "2026-10-21T22:01:39.7083935Z   2 passed (2.2m)",
+        "2026-10-21T22:05:52.1457622Z   2 passed (4.2m)",
+        "2026-10-21T22:08:38.6309163Z   6 passed (2.8m)",
+        "2026-10-21T22:19:11.6294764Z   ✓  16 tests/browser/board-metadata.spec.ts:9:7 › PRD-04: metadata save recovery, concurrent draft review and responsive background at 1280px (16.8s)",
+        "2026-10-21T22:19:53.4042241Z   ✓  17 tests/browser/board-metadata.spec.ts:9:7 › PRD-04: metadata save recovery, concurrent draft review and responsive background at 390px (16.8s)",
+        "2026-10-21T22:39:42.6378999Z   44 passed (31.1m)",
+        "2026-10-21T22:48:08.6912105Z   14 passed (8.4m)",
+        "2026-10-21T22:56:37.9622861Z   7 passed (8.5m)",
+        "2026-10-21T23:05:51.5996603Z   9 passed (9.2m)",
+        "2026-10-21T23:10:05.0306889Z   5 passed (4.1m)"
+      ]
+    },
+    "commands": {
+      "headRevision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "job": {
+        "id": 119497501450,
+        "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+        "name": "container-integration (commands, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    },
+    "fullMatrixCounts": {
+      "passed": 488,
+      "failed": 0,
+      "skipped": 2,
+      "skipReason": "Original identity-mail pair is intentionally not run in the unverified-email full profile; actual provider/mail verification runs in its required dedicated group."
+    },
+    "foundationScopeCounts": [
+      28,
+      2,
+      2,
+      18
+    ],
+    "limits": "Per-scope counts overlap profiles and are not a unique global workflow denominator."
+  },
+  "normalPerformance": {
+    "result": "Passed",
+    "scope": "All six normal-performance metrics across all four actual full-browser shards; provider and inner checksums, exact release identity, original strict budgets and twenty-sample p95 verified. No broader release or MVP acceptance claim.",
+    "metadata": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+      "shortSha": "e0dbff49d36d",
+      "workflowRunId": "39674641269",
+      "workflowRunNumber": "1964",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1964",
+      "releaseVersion": null,
+      "imageTag": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+      "createdAt": "2026-10-21T20:56:54.168Z",
+      "images": {
+        "web": "strataai-web:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+        "api": "strataai-api:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+        "worker": "strataai-worker:e0dbff49d36d88a5410d8014bd40d01e0fc86140"
+      }
+    },
+    "artifacts": [
+      {
+        "artifactId": 12388482364,
+        "artifactName": "browser-performance-e0dbff49d36d88a5410d8014bd40d01e0fc86140-1",
+        "providerDigest": "67a7cbe2a0b8f9878c979dcbc1d7590bcc4c0e31edef8329675a729ad4145421",
+        "metadata": {
+          "repository": "nickmailhot-lang/StrataAI2",
+          "commitSha": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "shortSha": "e0dbff49d36d",
+          "workflowRunId": "39674641269",
+          "workflowRunNumber": "1964",
+          "workflowRunAttempt": "1",
+          "version": "0.1.0-1964",
+          "releaseVersion": null,
+          "imageTag": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "createdAt": "2026-10-21T20:56:54.168Z",
+          "images": {
+            "web": "strataai-web:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+            "api": "strataai-api:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+            "worker": "strataai-worker:e0dbff49d36d88a5410d8014bd40d01e0fc86140"
+          }
+        },
+        "innerChecksums": "5b118247eef18eaf3463c7ccf34b2796da6a1da4328cc07f5baea51d6db9d25f  build-metadata.json\n2f10af3252e79bb1fa541ff5602f6989907cd836a9cf08c9dfdaf53db2119917  kanban.json\n",
+        "data": {
+          "schemaVersion": 1,
+          "revision": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "topology": "exact release images through Nginx",
+          "measurements": []
+        },
+        "scope": "Per-artifact provenance/checksums and original strict budgets verified. Global six-metric coverage is checked separately across all four full shards."
+      },
+      {
+        "artifactId": 12389857365,
+        "artifactName": "browser-performance-e0dbff49d36d88a5410d8014bd40d01e0fc86140-2",
+        "providerDigest": "8d15fb25c5ef15a79ea8b072deb6cacd6ce21df0726d303b779ebda23d821b69",
+        "metadata": {
+          "repository": "nickmailhot-lang/StrataAI2",
+          "commitSha": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "shortSha": "e0dbff49d36d",
+          "workflowRunId": "39674641269",
+          "workflowRunNumber": "1964",
+          "workflowRunAttempt": "1",
+          "version": "0.1.0-1964",
+          "releaseVersion": null,
+          "imageTag": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "createdAt": "2026-10-21T20:56:54.168Z",
+          "images": {
+            "web": "strataai-web:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+            "api": "strataai-api:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+            "worker": "strataai-worker:e0dbff49d36d88a5410d8014bd40d01e0fc86140"
+          }
+        },
+        "innerChecksums": "5b118247eef18eaf3463c7ccf34b2796da6a1da4328cc07f5baea51d6db9d25f  build-metadata.json\n2f10af3252e79bb1fa541ff5602f6989907cd836a9cf08c9dfdaf53db2119917  kanban.json\n",
+        "data": {
+          "schemaVersion": 1,
+          "revision": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "topology": "exact release images through Nginx",
+          "measurements": []
+        },
+        "scope": "Per-artifact provenance/checksums and original strict budgets verified. Global six-metric coverage is checked separately across all four full shards."
+      },
+      {
+        "artifactId": 12390705073,
+        "artifactName": "browser-performance-e0dbff49d36d88a5410d8014bd40d01e0fc86140-3",
+        "providerDigest": "00b360054c5d11af64c38b5a258d5768a799bd958d46417e17bc6991797dd9fc",
+        "metadata": {
+          "repository": "nickmailhot-lang/StrataAI2",
+          "commitSha": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "shortSha": "e0dbff49d36d",
+          "workflowRunId": "39674641269",
+          "workflowRunNumber": "1964",
+          "workflowRunAttempt": "1",
+          "version": "0.1.0-1964",
+          "releaseVersion": null,
+          "imageTag": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "createdAt": "2026-10-21T20:56:54.168Z",
+          "images": {
+            "web": "strataai-web:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+            "api": "strataai-api:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+            "worker": "strataai-worker:e0dbff49d36d88a5410d8014bd40d01e0fc86140"
+          }
+        },
+        "innerChecksums": "5b118247eef18eaf3463c7ccf34b2796da6a1da4328cc07f5baea51d6db9d25f  build-metadata.json\n2f10af3252e79bb1fa541ff5602f6989907cd836a9cf08c9dfdaf53db2119917  kanban.json\n",
+        "data": {
+          "schemaVersion": 1,
+          "revision": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "topology": "exact release images through Nginx",
+          "measurements": []
+        },
+        "scope": "Per-artifact provenance/checksums and original strict budgets verified. Global six-metric coverage is checked separately across all four full shards."
+      },
+      {
+        "artifactId": 12392331681,
+        "artifactName": "browser-performance-e0dbff49d36d88a5410d8014bd40d01e0fc86140-4",
+        "providerDigest": "5368c87089da7ce9e660edc5a6277accebea52e7d9cd3abe1fbad06ad18ef5f6",
+        "metadata": {
+          "repository": "nickmailhot-lang/StrataAI2",
+          "commitSha": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "shortSha": "e0dbff49d36d",
+          "workflowRunId": "39674641269",
+          "workflowRunNumber": "1964",
+          "workflowRunAttempt": "1",
+          "version": "0.1.0-1964",
+          "releaseVersion": null,
+          "imageTag": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "createdAt": "2026-10-21T20:56:54.168Z",
+          "images": {
+            "web": "strataai-web:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+            "api": "strataai-api:e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+            "worker": "strataai-worker:e0dbff49d36d88a5410d8014bd40d01e0fc86140"
+          }
+        },
+        "innerChecksums": "5b118247eef18eaf3463c7ccf34b2796da6a1da4328cc07f5baea51d6db9d25f  build-metadata.json\n5843d456d0a7922896c5ab5276fb8cff1347bb512adba4bcfbff503d694c2339  kanban.json\n",
+        "data": {
+          "schemaVersion": 1,
+          "revision": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+          "topology": "exact release images through Nginx",
+          "measurements": [
+            {
+              "metric": "normal-desktop-card-dates",
+              "status": "passed",
+              "fixture": {
+                "lists": 3,
+                "cards": 50,
+                "datedCards": 50,
+                "samples": 20,
+                "viewport": "1280x844",
+                "assets": "warm",
+                "tracing": "commands-and-network",
+                "detailTiming": "browser-painted-editable"
+              },
+              "usableMs": 1018.6234749999967,
+              "detailMs": 124.60000000009313,
+              "detailObserved": true,
+              "detailAutomationMs": 210.3942240000033,
+              "mutationP95Ms": 61.96009200000117,
+              "mutationSamplesMs": [
+                67.32846299999801,
+                58.09981900000275,
+                54.127313000004506,
+                55.257746999996016,
+                43.77206499999738,
+                51.09272999999666,
+                54.932723999998416,
+                61.96009200000117,
+                51.79247800000303,
+                44.09414900000411,
+                49.76887899999565,
+                58.863892000001215,
+                53.10367599999881,
+                43.70285100000183,
+                42.80319900000177,
+                42.1425190000009,
+                43.08614099999977,
+                51.87780600000406,
+                44.314065999999,
+                43.13399199999549
+              ],
+              "budgetsMs": {
+                "usable": 1500,
+                "detail": 200,
+                "mutationP95": 500
+              }
+            },
+            {
+              "metric": "normal-desktop-checklist",
+              "status": "passed",
+              "fixture": {
+                "lists": 3,
+                "cards": 50,
+                "samples": 20,
+                "viewport": "1280x844",
+                "assets": "warm",
+                "tracing": "commands-and-network",
+                "detailTiming": "browser-painted-editable",
+                "checklists": 2,
+                "items": 63,
+                "pageSize": 50
+              },
+              "itemPageMs": 122.44302700000117,
+              "nextItemPageMs": 105.3158470000053,
+              "usableMs": 762.1186489999964,
+              "detailMs": 128.10000000009313,
+              "detailObserved": true,
+              "detailAutomationMs": 207.27012300000933,
+              "feedbackObserved": true,
+              "feedbackMs": 69.69999999995343,
+              "mutationP95Ms": 54.685905999998795,
+              "mutationSamplesMs": [
+                65.16894899999897,
+                46.25637399998959,
+                38.168562000006204,
+                37.512329999997746,
+                39.46275200000673,
+                36.40031799999997,
+                36.59854700000142,
+                38.212532999998075,
+                37.23758000000089,
+                41.451161000004504,
+                49.21663300000364,
+                46.60752099999809,
+                44.48996099999931,
+                54.685905999998795,
+                53.12977200000023,
+                36.57583299999533,
+                37.59678599999461,
+                37.0926380000019,
+                35.503767999995034,
+                48.52295800000138
+              ],
+              "budgetsMs": {
+                "usable": 1500,
+                "feedback": 100,
+                "detail": 200,
+                "mutationP95": 500
+              }
+            },
+            {
+              "metric": "normal-desktop-kanban",
+              "status": "passed",
+              "fixture": {
+                "lists": 3,
+                "cards": 50,
+                "samples": 20,
+                "viewport": "1280x844",
+                "assets": "warm",
+                "tracing": "commands-and-network",
+                "detailTiming": "browser-painted-editable"
+              },
+              "usableMs": 771.0961870000028,
+              "detailMs": 105.10000000009313,
+              "detailObserved": true,
+              "detailAutomationMs": 156.062528999988,
+              "feedbackObserved": true,
+              "feedbackMs": 77.39999999990687,
+              "mutationP95Ms": 82.83479200000875,
+              "mutationSamplesMs": [
+                82.83479200000875,
+                66.51648799999384,
+                65.99552799999947,
+                64.05463800000143,
+                64.50518100000045,
+                64.06330900000466,
+                61.545870999994804,
+                63.48564199999964,
+                92.5572600000014,
+                69.17548400000669,
+                69.22638599999482,
+                75.09590800000296,
+                74.3384870000009,
+                74.16175600000133,
+                63.93084800000361,
+                62.642923999999766,
+                63.51359600000433,
+                62.75726699999359,
+                63.27229599999555,
+                60.26404000000912
+              ],
+              "budgetsMs": {
+                "usable": 1500,
+                "feedback": 100,
+                "detail": 200,
+                "mutationP95": 500
+              }
+            },
+            {
+              "metric": "normal-phone-kanban",
+              "status": "passed",
+              "fixture": {
+                "lists": 3,
+                "cards": 50,
+                "samples": 20,
+                "viewport": "390x844",
+                "assets": "warm",
+                "tracing": "commands-and-network",
+                "detailTiming": "browser-painted-editable",
+                "input": "chromium-touch"
+              },
+              "usableMs": 621.6383320000023,
+              "detailMs": 101.5,
+              "detailObserved": true,
+              "detailAutomationMs": 148.5476009999984,
+              "feedbackObserved": true,
+              "feedbackMs": 51.59999999997672,
+              "mutationP95Ms": 78.92334599999595,
+              "mutationSamplesMs": [
+                75.97798300001887,
+                65.1462729999912,
+                65.42625000001863,
+                78.92334599999595,
+                72.02972800002317,
+                71.14888100000098,
+                63.446202000021,
+                60.31888700000127,
+                63.56053499999689,
+                67.64309600001434,
+                68.75753600001917,
+                62.51690300001064,
+                65.0366909999866,
+                60.57390299998224,
+                61.81976600000053,
+                59.41572800002177,
+                60.80283099997905,
+                60.02605200000107,
+                62.53420900000492,
+                80.62567000000854
+              ],
+              "budgetsMs": {
+                "usable": 1500,
+                "feedback": 100,
+                "detail": 200,
+                "mutationP95": 500
+              }
+            },
+            {
+              "metric": "desktop-list-feedback",
+              "status": "passed",
+              "fixture": {
+                "lists": 2,
+                "cards": 0,
+                "viewport": "1280x844",
+                "tracing": "commands-and-network"
+              },
+              "feedbackObserved": true,
+              "feedbackMs": 40.300000000046566,
+              "budgetsMs": {
+                "feedback": 100
+              }
+            },
+            {
+              "metric": "phone-list-feedback",
+              "status": "passed",
+              "fixture": {
+                "lists": 2,
+                "cards": 0,
+                "viewport": "390x844",
+                "tracing": "commands-and-network",
+                "input": "chromium-touch"
+              },
+              "feedbackObserved": true,
+              "feedbackMs": 45.800000000046566,
+              "budgetsMs": {
+                "feedback": 100
+              }
+            }
+          ]
+        },
+        "scope": "Per-artifact provenance/checksums and original strict budgets verified. Global six-metric coverage is checked separately across all four full shards."
+      }
+    ],
+    "metrics": [
+      {
+        "metric": "normal-desktop-card-dates",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "datedCards": 50,
+          "samples": 20,
+          "viewport": "1280x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable"
+        },
+        "usableMs": 1018.6234749999967,
+        "detailMs": 124.60000000009313,
+        "detailObserved": true,
+        "detailAutomationMs": 210.3942240000033,
+        "mutationP95Ms": 61.96009200000117,
+        "mutationSamplesMs": [
+          67.32846299999801,
+          58.09981900000275,
+          54.127313000004506,
+          55.257746999996016,
+          43.77206499999738,
+          51.09272999999666,
+          54.932723999998416,
+          61.96009200000117,
+          51.79247800000303,
+          44.09414900000411,
+          49.76887899999565,
+          58.863892000001215,
+          53.10367599999881,
+          43.70285100000183,
+          42.80319900000177,
+          42.1425190000009,
+          43.08614099999977,
+          51.87780600000406,
+          44.314065999999,
+          43.13399199999549
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "normal-desktop-checklist",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "samples": 20,
+          "viewport": "1280x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable",
+          "checklists": 2,
+          "items": 63,
+          "pageSize": 50
+        },
+        "itemPageMs": 122.44302700000117,
+        "nextItemPageMs": 105.3158470000053,
+        "usableMs": 762.1186489999964,
+        "detailMs": 128.10000000009313,
+        "detailObserved": true,
+        "detailAutomationMs": 207.27012300000933,
+        "feedbackObserved": true,
+        "feedbackMs": 69.69999999995343,
+        "mutationP95Ms": 54.685905999998795,
+        "mutationSamplesMs": [
+          65.16894899999897,
+          46.25637399998959,
+          38.168562000006204,
+          37.512329999997746,
+          39.46275200000673,
+          36.40031799999997,
+          36.59854700000142,
+          38.212532999998075,
+          37.23758000000089,
+          41.451161000004504,
+          49.21663300000364,
+          46.60752099999809,
+          44.48996099999931,
+          54.685905999998795,
+          53.12977200000023,
+          36.57583299999533,
+          37.59678599999461,
+          37.0926380000019,
+          35.503767999995034,
+          48.52295800000138
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "feedback": 100,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "normal-desktop-kanban",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "samples": 20,
+          "viewport": "1280x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable"
+        },
+        "usableMs": 771.0961870000028,
+        "detailMs": 105.10000000009313,
+        "detailObserved": true,
+        "detailAutomationMs": 156.062528999988,
+        "feedbackObserved": true,
+        "feedbackMs": 77.39999999990687,
+        "mutationP95Ms": 82.83479200000875,
+        "mutationSamplesMs": [
+          82.83479200000875,
+          66.51648799999384,
+          65.99552799999947,
+          64.05463800000143,
+          64.50518100000045,
+          64.06330900000466,
+          61.545870999994804,
+          63.48564199999964,
+          92.5572600000014,
+          69.17548400000669,
+          69.22638599999482,
+          75.09590800000296,
+          74.3384870000009,
+          74.16175600000133,
+          63.93084800000361,
+          62.642923999999766,
+          63.51359600000433,
+          62.75726699999359,
+          63.27229599999555,
+          60.26404000000912
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "feedback": 100,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "normal-phone-kanban",
+        "status": "passed",
+        "fixture": {
+          "lists": 3,
+          "cards": 50,
+          "samples": 20,
+          "viewport": "390x844",
+          "assets": "warm",
+          "tracing": "commands-and-network",
+          "detailTiming": "browser-painted-editable",
+          "input": "chromium-touch"
+        },
+        "usableMs": 621.6383320000023,
+        "detailMs": 101.5,
+        "detailObserved": true,
+        "detailAutomationMs": 148.5476009999984,
+        "feedbackObserved": true,
+        "feedbackMs": 51.59999999997672,
+        "mutationP95Ms": 78.92334599999595,
+        "mutationSamplesMs": [
+          75.97798300001887,
+          65.1462729999912,
+          65.42625000001863,
+          78.92334599999595,
+          72.02972800002317,
+          71.14888100000098,
+          63.446202000021,
+          60.31888700000127,
+          63.56053499999689,
+          67.64309600001434,
+          68.75753600001917,
+          62.51690300001064,
+          65.0366909999866,
+          60.57390299998224,
+          61.81976600000053,
+          59.41572800002177,
+          60.80283099997905,
+          60.02605200000107,
+          62.53420900000492,
+          80.62567000000854
+        ],
+        "budgetsMs": {
+          "usable": 1500,
+          "feedback": 100,
+          "detail": 200,
+          "mutationP95": 500
+        }
+      },
+      {
+        "metric": "desktop-list-feedback",
+        "status": "passed",
+        "fixture": {
+          "lists": 2,
+          "cards": 0,
+          "viewport": "1280x844",
+          "tracing": "commands-and-network"
+        },
+        "feedbackObserved": true,
+        "feedbackMs": 40.300000000046566,
+        "budgetsMs": {
+          "feedback": 100
+        }
+      },
+      {
+        "metric": "phone-list-feedback",
+        "status": "passed",
+        "fixture": {
+          "lists": 2,
+          "cards": 0,
+          "viewport": "390x844",
+          "tracing": "commands-and-network",
+          "input": "chromium-touch"
+        },
+        "feedbackObserved": true,
+        "feedbackMs": 45.800000000046566,
+        "budgetsMs": {
+          "feedback": 100
+        }
+      }
+    ],
+    "coverage": {
+      "required": [
+        "desktop-list-feedback",
+        "normal-desktop-card-dates",
+        "normal-desktop-checklist",
+        "normal-desktop-kanban",
+        "normal-phone-kanban",
+        "phone-list-feedback"
+      ],
+      "observed": [
+        "desktop-list-feedback",
+        "normal-desktop-card-dates",
+        "normal-desktop-checklist",
+        "normal-desktop-kanban",
+        "normal-phone-kanban",
+        "phone-list-feedback"
+      ],
+      "missing": []
+    },
+    "maximaMs": {
+      "usableMs": 1018.6234749999967,
+      "detailMs": 128.10000000009313,
+      "feedbackMs": 77.39999999990687,
+      "mutationP95Ms": 82.83479200000875
+    }
+  },
+  "release": {
+    "headRevision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+    "job": {
+      "id": 119564636369,
+      "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+      "name": "release-bundle",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "logTruncated": false,
+    "evidence": [
+      "2026-10-22T00:24:00.3994295Z Release evidence identity, completeness and checksums verified.",
+      "2026-10-22T00:24:02.2735494Z Release evidence identity, completeness and checksums verified.",
+      "2026-10-22T00:25:32.0341571Z Assembled release acceptance record passed: verified identities, unavailable Worker refusal, unchanged record and same-image recovery.",
+      "2026-10-22T00:25:32.0345008Z Assembled bundle migrations, restricted Production startup, exact image identity, health/proxy, graceful restart and runtime password rotation passed.",
+      "2026-10-22T00:26:31.4358878Z HTTPS certificate rotation passed: rejected key preserves serving certificate; renewed and restored certificates verified on fresh connections; original session/task and listener preserved.",
+      "2026-10-22T00:27:07.4585578Z HTTPS activity cursor recovery passed: source-issued encrypted continuation, exact restored page and Card rebinding refusal under saved and fresh sessions.",
+      "2026-10-22T00:27:18.7401327Z HTTPS database recovery passed: distinct restored cluster and independently recovered encrypted key ring, saved session and fresh Secure sign-in, exact task graph, target Worker/WSS edit and logout, unchanged source and original images.",
+      "2026-10-22T00:27:28.2666857Z HTTPS WSS Board passed: Worker-delivered edit, persisted cursor recovery, anonymous/origin refusal, content-free frames and logout withdrawal.",
+      "2026-10-22T00:27:28.6079867Z Assembled HTTPS bundle passed: only TLS published, missing/mismatched key refusal, certificate trust/name verification, HSTS, Secure sign-in, persisted task graph and web restart; original images unchanged.",
+      "2026-10-22T00:27:30.6319982Z Release evidence identity, completeness and checksums verified.",
+      "2026-10-22T00:27:47.5318919Z SHA256 digest of uploaded artifact is 58f290f6820014b9b76a35ee415147d811e0b5bf774deaf3929b6e0b0fc413bd",
+      "2026-10-22T00:27:48.1749596Z Artifact strataai2-docker-bundle-e0dbff49d36d88a5410d8014bd40d01e0fc86140 has been successfully uploaded! Final size is 518873132 bytes. Artifact ID is 12392870770"
+    ],
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Download exact tested images",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Download exact tested security evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Verify tested release inputs",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Assemble release bundle",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Verify release bundle completeness and checksums",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7
+      },
+      {
+        "name": "Verify assembled bundle startup without source or SDKs",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8
+      },
+      {
+        "name": "Verify assembled Demo bundle and seeded account without source or SDKs",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9
+      },
+      {
+        "name": "Prepare Node 24 for HTTPS transport contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10
+      },
+      {
+        "name": "Verify assembled HTTPS bundle and secure task workflow",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11
+      },
+      {
+        "name": "Verify bundle unchanged after startup smoke",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12
+      },
+      {
+        "name": "Upload runnable release bundle",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13
+      },
+      {
+        "name": "Post Prepare Node 24 for HTTPS transport contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25
+      },
+      {
+        "name": "Post Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 26
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 27
+      }
+    ],
+    "artifact": {
+      "id": 12392870770,
+      "name": "strataai2-docker-bundle-e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+      "size_in_bytes": 518873132,
+      "url": "https://api.github.com/repos/nickmailhot-lang/StrataAI2/actions/artifacts/12392870770",
+      "archive_download_url": "https://api.github.com/repos/nickmailhot-lang/StrataAI2/actions/artifacts/12392870770/zip",
+      "expired": false,
+      "created_at": "2026-10-22T00:27:47Z",
+      "expires_at": "2026-11-05T00:27:30Z",
+      "updated_at": "2026-10-22T00:27:47Z",
+      "digest": "sha256:58f290f6820014b9b76a35ee415147d811e0b5bf774deaf3929b6e0b0fc413bd",
+      "workflow_run": {
+        "id": 39674641269,
+        "repository_id": 1396912372,
+        "head_repository_id": 1396912372,
+        "head_branch": "ux/trello-org-work-polish",
+        "head_sha": "1730b8915445af0fc3cb9e6d7abf126e720de39d"
+      }
+    },
+    "limit": "Provider bundle digest and actual CI source-free startup, Demo, HTTPS, Secure-session/WSS/recovery and unchanged-bundle checksum verification; no production deployment claim."
+  },
+  "unchangedChecks": {
+    "workflowsServerSchemasDependencies": true,
+    "testRetries": 0,
+    "originalNativeAssertionsAndDeadlines": true,
+    "originalPerformanceBudgets": true,
+    "originalCapacityCounterpart24": true
+  },
+  "historicalFailures": {
+    "run": 39646826188,
+    "head": "951e6fdbf2d20859f0c583d981934ba0d6fa9816",
+    "retainedEvidence": [
+      "EVID-TRELLO-121-NOTIFICATIONS-FAILED",
+      "EVID-TRELLO-121-SCROLL-FAILED",
+      "EVID-TRELLO-121-SETTINGS-FAILED",
+      "EVID-TRELLO-121-SCROLL-RED"
+    ],
+    "evaluation": "Original failed executions remain Failed. Current complete unchanged-result/deadline scenarios pass after owned-edge and observed keyboard-admission repairs."
+  }
+}

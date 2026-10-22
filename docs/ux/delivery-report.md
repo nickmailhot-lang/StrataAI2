@@ -1,5 +1,28 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — PR #121 accepted on main; Card details and Search continue separately
+
+PR #117's dependency is resolved, and **PR #121 merged normally into main as 4c1e27e2** after **all 22 current checks passed**. Qualified head1730b891 and tested merge e0dbff49 have tree599bc9ff; the actual main merge has the identical tree and expected parents37656975 +1730b891. Fresh Git ancestry and current review state were verified. No administrative bypass, force push, relaxed assertion, extra test retry, wider deadline or larger budget was used.
+
+The current qualification passed **2,964 frontend tests** with the original24 capacity deferrals, **2,519 backend tests** with5 existing capacity deferrals, the complete native browser matrix **488 passed /2 intended mail-profile skips**, Foundation scopes **28+2+2+18**, and every strict-account/notification scope. The mail scenarios run in their required actual-provider profile. Counts from overlapping profiles are reported separately. All four original native failures now pass: phone metadata acknowledgment, phone mouse/touch edge scrolling, and desktop settings draft discard. Their original Failed executions, screenshots, trace identities and evaluations remain unchanged.
+
+All six normal-performance metrics were verified against the exact release identity, provider ZIP digests and inner checksums. Original strict budgets remain: readiness **1,018.6ms <1,500ms**, painted detail **128.1ms <200ms**, feedback **77.4ms <100ms**, mutation p95 **82.8ms <500ms** (maxima across their applicable measured scenarios). Source-free Production/Demo startup, HTTPS/Secure sessions, certificate rotation, WSS/cursor/database recovery and unchanged release-bundle checksums passed. The retained runnable bundle is artifact12392870770, SHA25658f290f6820014b9b76a35ee415147d811e0b5bf774deaf3929b6e0b0fc413bd. These are qualified release tests, not a claim of production deployment or universal performance.
+
+Scoped source/UX review accepted only **UX-003-VS-03-T-02** and its Test. They progressed legally Testing →Review →Done, child first, after actual main integration. Previous source/gate histories and failed evidence are retained. Their broader UX Foundation/feature PRDs remain partial.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing business capabilities, APIs, schemas, tenant boundaries and original-command recovery are preserved. Organization/Work presentation is integrated on main. |
+| UX completion | The bounded Organization/Work increment is accepted. Card details and Search are implemented and pass combined scoped checks; their full acceptance remains pending. |
+| Test completion | PR121's exact-head22 gates, performance and release checks passed. Card/Search has161 component tests +15 default/15 rollback browser cases passing, with its own complete final-head CI still required. |
+| MVP readiness | Only the bounded increment is accepted.71 work records are Done; global MVP readiness remains unaccepted/unmeasured. No combined product percentage or parent PRD closure. |
+
+**PR #122 remains draft and unmerged, now based on main.** Actual main was reconciled normally through ae4078df, preserving the existing Card/Search work and actual119/120 history. Application/test inputs remain those of scoped source3f9a150a: Card location withdraws during pending/failed/denied reads; drafts, Save/Close and return stay intact; Search preserves applied query/cursors while keeping unsent filters separate and readable at200% text. Five current desktop/phone/tablet-zoom captures match retained inspected pixels, so existing assets are reused. Local types/lint,11 architecture/capacity guards,502 cases/174 intact browser files and compiler5.79s also pass. Controlled HTTP/Vite and local compilation do not qualify its own real-service roles/security, Production CSP or immutable release; [PR122 checks](https://github.com/nickmailhot-lang/StrataAI2/pull/122/checks) must qualify the published final head before integration.
+
+Consolidated ledger: **1,619 items /3,915 criteria /969 evidence records /71 Done**. Four Card/Search Task/Test records remain Testing, their acceptance Unverified. Current certificates: EVID-TRELLO-121-CI22, REVIEW, UX and MAIN. Independent118 and all earlier failure/provenance records remain intact. Next: publish this accepted-parent checkpoint with the reconciled Card/Search candidate, run its full required gates, fix actual failures without weakening checks, and merge only after its own qualification.
+
+---
+
 ## 2026-10-21 — Combined Card/Search and repaired foundation pass scoped checks
 
 Actual combined source **3f9a150a** retains both ebb04eb5 Card/Search and1730b891 repaired foundation through a normal side-branch merge. Both parent ledger histories, criteria, evidence and report checkpoints are preserved. Card/Search feature files remain byte-identical to implemented FF source; this checkpoint verifies their interaction with the new pointer repairs.
