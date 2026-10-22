@@ -2,7 +2,7 @@
 
 ## 2026-10-22 — Parent source gates pass; canonical assignee feedback implemented separately
 
-Frozen PR #122 candidate `8f17005f` passes all 11 source gates. Provider hashes and current build/run identities verify 2,985 frontend and 2,519 backend passes, with the original 24/5 capacity deferrals unchanged. Images for version 0.1.0-1971 are building once. Actual browser/role, security, all six strict performance profiles, immutable release, final review and verified normal main integration remain mandatory. The PR stays draft and unmerged.
+Frozen PR #122 candidate `8f17005f` passes all 11 source gates. Provider hashes and current build/run identities verify 2,985 frontend and 2,519 backend passes, with the original 24/5 capacity deferrals unchanged. All three version 0.1.0-1971 images and security now pass; their exact provider/inner/config/manifest/layer identities are verified and preloaded. Four integration groups are running and three are queued under the existing four-job limit. No Demo activation has occurred. Actual browser/role, security, all six strict performance profiles, immutable release, final review and verified normal main integration remain mandatory. The PR stays draft and unmerged.
 
 The independent Board follow-up implements explicit canonical zero-assignee previews in one existing store file. Zero and Card revision are read together, preserving eligibility, public/tenant privacy, version checks, API/schema contracts and all existing commands. Six new producer regressions pass; 77 related host tests execute successfully, including those six, and all 26 consumer tests pass. One existing cover case needs Linux and is retained as Skipped locally, separately from the original capacity deferrals. Browser types and the intact 530-case/179-file partition pass.
 
@@ -15,7 +15,7 @@ Four actual browser cases reproduce the old running-image defect at every width.
 | Test completion | Parent source gates and scoped follow-up checks pass. Remaining image/native/SQL/performance/release gates remain required. |
 | MVP readiness | No merge or new acceptance; 71 Done unchanged. |
 
-Two assignee Task/Test records are Implemented; four filter and ten parent records retain Testing. The existing user Demo and its sample workspace remain running. Next: delivery validation and complete current-head qualification before any merge or image refresh.
+Two assignee Task/Test records are Implemented; four filter and ten parent records retain Testing. The existing user Demo and its sample workspace remain running. Full Git/source/hash/baseline/main-history validation and all 36 delivery contracts pass on exact committed `6f60fd41`. Ledger: 1,627 items, 3,924 criteria, 1,027 evidence records and 71 Done. PRD-11-VS-01 is In Progress, with broader obligations still unverified. Next: complete current-head qualification before any merge or image refresh.
 
 ---
 

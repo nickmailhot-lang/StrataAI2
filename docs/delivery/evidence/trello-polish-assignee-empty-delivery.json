@@ -1,0 +1,24 @@
+{
+  "revision": "6f60fd41962a38010cbde11aa30caae1b6efbcac",
+  "at": "2026-10-22T18:22:17.577Z",
+  "result": "Passed",
+  "checkedLedger": {
+    "sha256": "196aaee5e7cb50a1d7220d125245ebf27b0942ac145d9e5f9d6020f0ae3a776b",
+    "items": 1627,
+    "criteria": 3924,
+    "evidence": 1025,
+    "done": 71
+  },
+  "validation": {
+    "command": "npm run delivery:validate -- --base-ref origin/main",
+    "sha256": "9c0622e9e10e5bab4a82700592743d1a0d1200937a6deae187723a3c29153a8e",
+    "result": "npm notice run strataai2@0.1.0 delivery:validate\r\nnpm notice run node scripts/delivery-progress.mjs validate --base-ref origin/main\r\nValid: 1627 work items; 3924 criteria. No unsupported Done claims.\r\n"
+  },
+  "contracts": {
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "sha256": "d32afeb2339157537e90d4779b7cafa8c383108dddb251c3ccdef0c1776eb06c"
+  },
+  "limits": "Exact committed6f60 ledger passes full Git/source/hash/baseline/main-history checks and36 contracts. Native new-image/restricted-PostgreSQL,own complete CI,review and integration remain pending. No acceptance."
+}
