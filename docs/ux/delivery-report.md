@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Current Board assignee empty state reconciled
+
+The running Demo exposes a pre-existing UX gap: a Card with a confirmed empty assignee page shows Assignees unavailable because its Board preview is omitted. The live PRD-11 UX-CARD-02 requires valid zero to say Unassigned and missing/stale data to remain unknown. The strict UI is correct to refuse an invented zero; the existing server projection must provide an explicit version-bound empty preview.
+
+One focused Task and child Test under PRD-11-VS-01 are In Progress in the independent Board-polish follow-up. Preserve the existing API/DTO,transactions,eligibility,public/tenant privacy and version checks. No new feature,permission or navigation is introduced. Frozen PR #122 remains8f17005f in fresh qualification; this work does not change it or qualify its gates.
+
+Functional and UX implementation are not yet complete for this gap; tests and acceptance remain unverified. All71 Done and the prior filter/history proof remain unchanged.
+
+---
+
 ## 2026-10-22 — Invitation repair reconciled with independent Board-filter polish
 
 The normal merge of frozen parent `8f17005f` preserves both complete ledgers,histories and reports. The only incoming application change makes invitation review details keyboard reachable while preserving initial Cancel focus. All three direct filter source/test inputs remain byte-identical to checked `a15b2484`. No filter functionality is overwritten.
