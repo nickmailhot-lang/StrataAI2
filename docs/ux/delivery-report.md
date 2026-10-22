@@ -2,18 +2,18 @@
 
 ## 2026-10-22 — Invitation repair reconciled with independent Board-filter polish
 
-The normal merge of frozen parent8f17005f preserves both complete ledgers,histories and reports. The only incoming application change makes invitation review details keyboard reachable while preserving initial Cancel focus. All three direct filter source/test inputs remain byte-identical to checked a15b2484. No filter functionality is overwritten.
+The normal merge of frozen parent `8f17005f` preserves both complete ledgers,histories and reports. The only incoming application change makes invitation review details keyboard reachable while preserving initial Cancel focus. All three direct filter source/test inputs remain byte-identical to checked `a15b2484`. No filter functionality is overwritten.
 
-Parent scoped evidence retains100 components,47 admission contracts,27 guards,eight native cases per presentation,types/lint,522-case partition,full delivery validation and36 contracts,plus290 CI-coverage contracts. Earlier filter77 components and4+4 native cases retain actual eb7cccff execution identity. Current combined types,partition,delivery validation and36 contracts are next. Parent8f17005f is frozen in fresh CI; no parent or follow-up merge is authorized before its own gates pass.
+Parent scoped evidence retains 100 component tests, 47 admission contracts, 27 guards, eight native cases per presentation,types/lint, 522-case partition,full delivery validation and 36 contracts, plus 290 CI-coverage contracts. Earlier filter 77 components and 4+4 native cases retain actual `eb7cccff` execution identity. Current combined browser types, the intact 526-case/178-file partition, full Git/source/hash/baseline/main-history validation and all 36 delivery contracts pass on exact committed `99a5aa0b`. Parent `8f17005f` is frozen in fresh CI; no parent or follow-up merge is authorized before its own gates pass.
 
 | Metric | Status |
 | --- | --- |
 | Functional completion | Existing features and contracts preserved. |
 | UX completion | Bounded polish implemented; full acceptance unverified. |
 | Test completion | Scoped checks retain exact execution identities; full fresh qualification remains required. |
-| MVP readiness | No new acceptance;71 Done unchanged. |
+| MVP readiness | No new acceptance; 71 Done unchanged. |
 
-Combined ledger: 1625 items,3921 criteria,1017 evidence records. Ten parent and four filter records remain Testing. All failed runs are retained. Latest demo refresh follows safe parent qualification/integration; current preview remains available.
+Combined ledger: 1,625 items, 3,921 criteria, 1,019 evidence records. Ten parent and four filter records remain Testing. All failed runs are retained. Latest demo refresh follows safe parent qualification/integration; current preview remains available.
 
 ---
 
