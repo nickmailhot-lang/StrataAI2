@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Star-admission repair and independent filter history reconciled
+
+The active follow-up now includes the checked local star-admission repair through a normal branch merge, preserving both complete histories. No application code changes in this reconciliation, and all three filter source/test inputs remain byte-identical to tested `a15b2484`. The parent's remote head `551a6bc8` remains failed and unmerged; its remaining browser groups continue before one replacement push.
+
+The star fixture repair passes 59 tests in four complete files, 42 admission/tracker contracts, four native cases in each presentation, types/lint, 11 architecture/capacity guards and all 36 delivery contracts. Its actual real-service original scenario must pass again on the replacement. The independent filter's 77 component and four native cases per presentation retain their actual `eb7cccff` execution identity; no parent result qualifies this follow-up's full gates. Current combined metadata validation is next.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business capabilities and contracts preserved. |
+| UX completion | Bounded polish implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Local repair passes targeted checks. Remote551 notification failure remains Failed; fresh parent and follow-up full qualification remain required. |
+| MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
+
+Combined ledger: 1625 items, 3921 criteria, 1004 evidence records. Ten parent and four filter Task/Test records remain Testing. All failed runs, mode-invocation errors and previous scoped proof are retained.
+
+---
+
 ## 2026-10-22 — Original Foundation workflows pass on the corrected candidate
 
 Frozen PR #122 candidate `551a6bc8` passes all 50 Foundation native cases on its own release images: 28 Demo, two reminder, two original attachment/cover and 18 lifecycle cases. There are no failures or skips in this group. The original cover-recovery workflow now passes after both earlier recorded Foundation failures; its consent, command, receipt, privacy and deadline assertions remain intact.
@@ -151,6 +168,40 @@ Separatefilter source22b92e46 is preserved through actualnormal sidebranch recon
 | MVP readiness | No newacceptedwork;71Doneunchanged. Globalreadiness unaccepted/unmeasured; no combinedpercentage. |
 
 Consolidatedactivefollowupledger:1621items/3917criteria/976evidence/71Done. Twofilterrecords remainTesting and fourparentCard/Search recordsInProgress. Allcriteriaacceptance staysunverified for thoseincrements. Next:reviewthefocusedstackeddraft,finish/fix122freshfullCIwithoutweakening,mergenormallyonlyafterallgatespass,then retargetandqualifythefilterfollowup independently. Independent118untouched.
+
+---
+
+## 2026-10-22 — Star-recovery admission repair passes scoped checks
+
+Source `d77792fd` changes only browser fixtures/helpers. The original multi-account star scenario now waits for one actual same-origin mutation start, counts both possible mutation verbs, and stops even when a reply is lost. All original keys, versions, exact request counts, private history, dates, Worker ownership, focus and deadlines remain. No application, API, schema, tenant, security, dependency, performance budget or CI configuration changed.
+
+The repair passes 59 tests across four complete star-control/live/history/sync files, 42 admission/tracker contracts, four default and four fallback native cases at 320/390/768/1280px, web/browser types, full lint, 11 architecture/capacity guards and the intact 514-case/176-file browser partition. Native cases verify pending permission admission, no replay after a failed recovery reply, explicit same-key/version recovery, authoritative later state, 200% text, Axe and denial. An initial fallback invocation used mismatched mode flags; those four failures are retained and evaluated, and the unchanged correctly configured scope passes.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved; no new business scope. |
+| UX completion | Existing bounded polish remains implemented; acceptance remains unverified. |
+| Test completion | Repaired local scopes pass. Remote551 remains Failed; remaining matrix results and every fresh new-head gate are required. |
+| MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
+
+Ten bounded parent Task/Test records are Testing; independent #123 filter work remains preserved. Full Git, evidence-hash, baseline and main-relative history validation plus all 36 delivery contracts pass on the exact committed ledger. The parent repair now has 986 evidence records with 71 Done unchanged. Next: consolidate remaining current CI results, publish one replacement and pass every fresh required gate before merge.
+
+---
+
+## 2026-10-22 — Star-recovery CI failure retained; merge remains blocked
+
+Candidate `551a6bc8` failed the notification group's desktop Board-star recovery case. The 44-case Board-management invocation passed 43 and failed one; earlier completed invocations passed 14, while later scopes were not run. Verified diagnostics show the first command deliberately lost its reply, a later unstar committed and another account starred independently. The owner focused Retry and sent global Enter, but no retry mutation started; the original intent remained unconfirmed.
+
+The repair will use the existing one-request observation helper with exact same-origin star mutation starts, retaining original request-count, key, version, history, private-actor, focus, deadline and recovery assertions. It must stop after an actual request even if its reply fails. Source, security, all 50 Foundation workflows and command integration passed on this head; those successes retain their identity and cannot qualify a replacement. Remaining browser groups continue so failures can be addressed together before one new push.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and security contracts preserved. |
+| UX completion | Bounded polish remains implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Required notifications failed; repaired source and every fresh final-head gate must pass. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Independent #123 filter work and its current checks remain preserved. Ten parent Task/Test records are In Progress for requalification. No failing check, original assertion, retry limit or performance budget is weakened.
 
 ---
 
