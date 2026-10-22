@@ -1,0 +1,54 @@
+{
+  "revision": "cd9530ffd3cc2c72f6d010c46e7b2b94c5d75887",
+  "at": "2026-10-22T02:04:43.924Z",
+  "result": "Failed",
+  "run": 39701151929,
+  "jobId": 119586017892,
+  "testedSynthetic": "786974a19d525e6d93badcfc412d2d326334a299",
+  "job": {
+    "id": 119586017892,
+    "head_sha": "cd9530ffd3cc2c72f6d010c46e7b2b94c5d75887",
+    "name": "container-integration (browser-foundation, 1/1)",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "failedStage": "Attachment upload and isolated Worker image publication through explicit private test providers",
+  "case": "PRD-04 real public consent, publication recovery and image-backed copy at 390px",
+  "assertion": {
+    "control": "Remove Card cover",
+    "expectation": "enabled",
+    "controlDeadlineMs": 500,
+    "overallAdmissionDeadlineMs": 5000,
+    "received": "Element not found; cover review refused during current parent admission."
+  },
+  "artifact": {
+    "id": 12396042071,
+    "sha256": "1419eaf0be628fcecb3bfe943a531113c6ba7bafed1911816c6dccfaf8d35c34",
+    "innerChecksums": "Every staged inner file SHA-256 verified against SHA256SUMS; metadata bound to this synthetic/run/version0.1.0-1966."
+  },
+  "diagnosis": {
+    "observed": "After a peer window was opened, owner native focus/Enter started cover review. GET cover and candidates returned200,cardVersion7,final account200. Current parent admission was pending; the control correctly discarded this unsent review, showed its existing Refresh Card guidance, and triggered a fresh Board GET. No remove command was submitted.",
+    "evidenceTimes": {
+      "ownerReviewPress": 69031.676,
+      "coverGET": 69048.059,
+      "candidatesGET": 69094.767,
+      "finalAccountGET": 69114.913,
+      "boardGETAborted": 69128.314,
+      "boardGET200": 69156.004
+    },
+    "causeLimit": "Trace proves the admission refusal and successful protected reads; background/window scheduling is the evaluated trigger, not an exclusive environment-flake claim.",
+    "impact": "Phone fixture cannot reach its removal assertion; required full gates fail and merge remains prohibited.",
+    "owner": "Current PR122 integration owner",
+    "repair": "Return to owner window, explicitly refresh through the existing Card control and observe current Board admission before the one removal review. Keep all original mutation counts,key/body,public consent,receipt,version,peer live update/no-navigation,privacy and original deadlines/retries. Add controlled refusal/fresh-review unit coverage; no runtime permission gate changed.",
+    "resolution": "Prepared; own complete repaired-head CI remains required."
+  },
+  "otherScopes": {
+    "demoFoundation": 28,
+    "demoReminders": 2,
+    "attachmentPipeline": {
+      "passed": 1,
+      "failed": 1
+    },
+    "laterScopes": "Not run after failure; not counted as passed."
+  }
+}
