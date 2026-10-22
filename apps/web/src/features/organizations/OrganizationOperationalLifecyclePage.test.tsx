@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationOperationalLifecyclePage } from './OrganizationOperationalLifecyclePage';
 import { readLifecycleIntent } from './operationalLifecycle';
@@ -61,11 +62,19 @@ function acknowledgment(options: RequestInit) {
   return { organizationId: org, actorId: actor, eventId: event, actorLabel: 'Original caption', actingCapacity: 'ORGANIZATION_OWNER',
     previousStatus: 'ACTIVE', status: body.status, version: body.version+1, correlationId: 'original-lifecycle', createdAt: '2026-10-10T12:00:01Z' };
 }
-function mount(id = org) {
+function mount(id = org, strict = false) {
   const router = createMemoryRouter([{ path: '/app/:organizationId/operational-lifecycle', element: <OrganizationOperationalLifecyclePage /> },
     { path: '/app', element: <h1>Organizations destination</h1> }, { path: '/login', element: <h1>Sign in destination</h1> }],
-    { initialEntries: [`/app/${id}/operational-lifecycle`] }); render(<RouterProvider router={router} />); return router;
+    { initialEntries: [`/app/${id}/operational-lifecycle`] });
+  render(strict ? <StrictMode><RouterProvider router={router} /></StrictMode> : <RouterProvider router={router} />); return router;
 }
+it('admits a fresh read after StrictMode retires the first mount without a domain write', async () => {
+  const fetcher = vi.fn(async (path: string) => response(path === '/me' ? profile : review));
+  vi.stubGlobal('fetch', fetcher); mount(org, true);
+  expect(await screen.findByRole('button', { name: 'Review lifecycle change' })).toBeEnabled();
+  expect(screen.getByText('Reviewed Organization')).toBeInTheDocument();
+  expect(fetcher.mock.calls.every(([path]) => path === '/me' || path === route)).toBe(true);
+});
 async function confirm() { fireEvent.click(await screen.findByRole('button', { name: 'Review lifecycle change' })); fireEvent.click(screen.getByRole('button', { name: 'Confirm lifecycle change' })); }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); sessionStorage.clear(); });
 
