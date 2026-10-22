@@ -324,7 +324,7 @@ function History({ organizationId, boardId }: { organizationId: string; boardId?
     </>}
     <Dialog open={!!selected} onClose={() => { if (!busy) selectReview(undefined); }} aria-labelledby="revoke-invitation-title"
       slotProps={{ transition: { onEntered: () => cancel.current?.focus(), onExited: () => refresh.current?.focus() } }}>
-      <DialogTitle id="revoke-invitation-title">Revoke invitation?</DialogTitle><DialogContent>{boardId !== undefined && <Typography>{boardName}: {selected?.boardTarget?.role.toLowerCase()}</Typography>}<Typography>{selected?.email}</Typography><Typography>This prevents invitation acceptance. It cannot recall email or remove access already granted.</Typography></DialogContent>
+      <DialogTitle id="revoke-invitation-title">Revoke invitation?</DialogTitle><DialogContent tabIndex={0} role="region" aria-label="Invitation revocation details">{boardId !== undefined && <Typography>{boardName}: {selected?.boardTarget?.role.toLowerCase()}</Typography>}<Typography>{selected?.email}</Typography><Typography>This prevents invitation acceptance. It cannot recall email or remove access already granted.</Typography></DialogContent>
       <DialogActions><Button ref={cancel} disabled={busy} onClick={() => selectReview(undefined)}>Cancel</Button><Button disabled={busy} onClick={() => void revoke()}>Confirm revocation</Button></DialogActions>
     </Dialog>
   </Stack></Container>;

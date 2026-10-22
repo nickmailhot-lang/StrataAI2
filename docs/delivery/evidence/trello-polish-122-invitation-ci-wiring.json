@@ -1,0 +1,28 @@
+{
+  "revision": "75583ce463d073ce9b7f7e34c24761addea5847d",
+  "at": "2026-10-22T16:58:18.788Z",
+  "result": "Passed",
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "ce934b15ac490de91368c3e410f6e2770181aa22eddb3d548127b41de5b02ddb"
+    },
+    {
+      "path": "scripts/ci/verify-integration-suites.mjs",
+      "sha256": "7eda122e80eb948dba32e608c746cbb85f257e8b84045b511bdaf7629cfdb61f"
+    },
+    {
+      "path": "tests/integration-suites.test.mjs",
+      "sha256": "ce7a349a164d86190660ed55636b1d88d6ef0fa5604a6aa62101134d7eac92b1"
+    }
+  ],
+  "tests": {
+    "command": "node --test tests/integration-suites.test.mjs",
+    "passed": 290,
+    "failed": 0,
+    "skipped": 0,
+    "sha256": "93ff53aef2167f04d8af81e9b0eb874721b41c56e4066499e7703723c305ab54"
+  },
+  "change": "Add the five new invitation read-only/default-focus contracts to the existing unconditional pre-build web-quality step. Require that command in integration verification and add an omission refusal case. All original commands,checks,policies and strict budgets remain.",
+  "executionIdentity": "Checks executed against these exact working-tree bytes,then committed unchanged at75583ce4. This is CI-wiring verification,not final hosted qualification."
+}

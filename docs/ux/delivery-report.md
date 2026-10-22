@@ -1,5 +1,68 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Invitation repair reconciled with independent Board-filter polish
+
+The normal merge of frozen parent8f17005f preserves both complete ledgers,histories and reports. The only incoming application change makes invitation review details keyboard reachable while preserving initial Cancel focus. All three direct filter source/test inputs remain byte-identical to checked a15b2484. No filter functionality is overwritten.
+
+Parent scoped evidence retains100 components,47 admission contracts,27 guards,eight native cases per presentation,types/lint,522-case partition,full delivery validation and36 contracts,plus290 CI-coverage contracts. Earlier filter77 components and4+4 native cases retain actual eb7cccff execution identity. Current combined types,partition,delivery validation and36 contracts are next. Parent8f17005f is frozen in fresh CI; no parent or follow-up merge is authorized before its own gates pass.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing features and contracts preserved. |
+| UX completion | Bounded polish implemented; full acceptance unverified. |
+| Test completion | Scoped checks retain exact execution identities; full fresh qualification remains required. |
+| MVP readiness | No new acceptance;71 Done unchanged. |
+
+Combined ledger: 1625 items,3921 criteria,1017 evidence records. Ten parent and four filter records remain Testing. All failed runs are retained. Latest demo refresh follows safe parent qualification/integration; current preview remains available.
+
+---
+
+## 2026-10-22 — Invitation repair and keyboard accessibility pass scoped checks
+
+Source dc210e3d repairs read-only review/default-focus observation and makes existing revocation details keyboard reachable when they scroll at200% text. Cancel retains its safe initial focus. Original clock,consent,zero-write,role,privacy,Worker,recovery and deadline checks remain. All failed executions are retained and evaluated; no checks were weakened.
+
+The corrected scope passes100 component tests in four complete files,47 helper contracts,27 complete architecture/performance/capacity guards,and eight native cases in each existing presentation at320/390/768/1280px. Native checks include malformed clock refusal,current admission,default focus,Shift+Tab/Tab traversal,200% text,Axe and access withdrawal. Web/browser types,full lint and the intact522-case177-file partition pass with their exact execution identities. Full Git/source/hash/baseline/main-history validation and36 delivery contracts also pass on exact committed e6c39fed. The ledger retains997 evidence records and71 Done. Five new invitation contracts are now mandatory before image builds;all290 integration-coverage positive/refusal contracts pass on exact committed75583ce4 inputs. Existing CI checks are retained.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new business scope. |
+| UX completion | Bounded repair and accessibility fix implemented; full acceptance unverified. |
+| Test completion | Scoped checks pass; fresh complete hosted gates remain mandatory. |
+| MVP readiness | Preview only; no merge or new acceptance.71 Done unchanged. |
+
+Earlier415a Full4 now passes127; Full2 remains failed and Full1 setup incomplete. Those results cannot qualify this replacement. The existing0.1.0-1970 Demo and independent draft#123 are preserved. Ten bounded records are Testing; publish one replacement after local delivery validation and require every gate before merge.
+
+---
+
+
+## 2026-10-22 — Current built images running as a local Demo preview
+
+Build **0.1.0-1970**, tested synthetic revision `da9f1dcdd873a31efb93738bb43d5315e5eb8696` for candidate `415a0378`, is running at http://localhost:8088 as Docker project `strataai-demo-current`. The existing image-only Demo Compose configuration isolates API/Worker from production providers and binds the web port to loopback. No rebuild, dependency installation, schema change or production deployment was needed.
+
+Verified the provider ZIP SHA256, all five inner checksums, build/run identity and all three image configs/manifests/layers. Docker Desktop reports OCI manifest IDs while the CI provenance reports config IDs; both were verified through the retained archives. All three containers are healthy; web/API/Worker readiness and exact build identities pass. The documented seeded Demo login passes through the API and the actual browser. Wrong password returns401 and anonymous private-Board access returns404. The browser visibly opens the sample Council Operations board, with live updates connected, three Lists and seven Cards in StrataAI Demo. Demo data is process-local and resets when its API restarts.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; sample Organization, Board, Lists and Cards created through authenticated APIs. |
+| UX completion | Current built Organization and Board screens can be explored in the running demo; no new workflow acceptance claimed. |
+| Test completion | Local image-provenance, health/readiness, sign-in, refusal and board smoke checks pass. Required PR checks remain separate. |
+| MVP readiness | Preview only. PR #122 remains draft/unmerged after its retained invitation-focus failure; 71 Done unchanged. |
+
+Runtime proof and restart settings are retained in `work/demo-latest-1970`; the visible demo is left open. This operational demo does not close a PRD, qualify the unpublished invitation-fixture repair, or satisfy the full merge/release gates. Independent Board-filter work remains preserved in draft #123.
+
+---
+
+
+## 2026-10-22 — Invitation-review focus failure retained; repair continues
+
+Candidate `415a0378` remains draft and unmerged after Full2 passed126,failed one invitation-history focus case and retained two original mail-topology skips. At390px the test accepted a transient revocation dialog before its safe default Cancel focus; a fresh protected history read correctly withdrew the review and asked for review again. Verified diagnostics preserve53 inner checksums and the failed5s assertion. This is separate from GitHub’s result-publication incident.
+
+The repair will observe the read-only review together with its original initial Cancel focus. It must not force Cancel focus,change consent,send a revocation,relax clock parsing or alter original budgets. Current source11,security,Foundation50,commands,all93 notifications and Full3/129 pass on415a; those results retain their actual identity and cannot qualify a replacement. Full1 setup and Full4 remain incomplete. Ten bounded parent records return to In Progress;71 Done unchanged. Independent filter work remains preserved. Functional,UX,test and MVP completion remain separate.
+
+---
+
+
+
 ## 2026-10-22 — External CI-result publication delay; merge remains gated
 
 GitHub reports an active [Actions-results incident](https://www.githubstatus.com/incidents/q29p76qtnkyk), beginning at14:18 UTC. Its14:35 update says repository updates recovered while workflow and step-result processing remains delayed. This may explain stale setup or queue displays for PR #122; the specific runner cause is not confirmed. The incident is an external observation dependency, not a failing application assertion or permission to merge.

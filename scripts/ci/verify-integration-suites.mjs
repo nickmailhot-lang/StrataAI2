@@ -247,6 +247,7 @@ export function verifyIntegrationSuites(workflow, registry, attachmentSources = 
   assert.equal(keyboardAdmission?.if, undefined);
   assert.equal(keyboardAdmission?.['continue-on-error'] ?? false, false);
   assert.ok(keyboardAdmission?.run.includes('node --experimental-strip-types --test tests/browser/keyboardAdmission.test.mjs'), 'Request admission retirement checks must run before image builds');
+  assert.ok(keyboardAdmission?.run.includes('node --experimental-strip-types --test tests/browser/invitationReviewAdmission.test.mjs'), 'Invitation default-focus and read-only re-admission checks must run before image builds');
   const consoleUnit = jobs['web-quality'].steps.find(step => step.name === 'Verify operator evidence rejects missing and private metric fields');
   const alertRules = jobs['web-quality'].steps.find(step => step.name === 'Verify operator alert rules with pinned Prometheus');
   assert.equal(alertRules?.run, 'bash scripts/ci/test-operator-alerts.sh', 'Operator alert rule validation is mandatory');
