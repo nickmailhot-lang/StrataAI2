@@ -200,7 +200,7 @@ for (const width of [1280, 390]) {
       const priorOwnerReads = reads();
       await pressObservedLocalAction(page.getByRole('button', { name: 'Refresh card', exact: true }));
       await expect.poll(reads).toBeGreaterThan(priorOwnerReads);
-      await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveAttribute('aria-busy', 'false');
+      await expect(coverReview).toBeEnabled();
       await openCoverReview();
       await pressAdmittedAction(page.getByRole('button', { name: 'Remove Card cover', exact: true }));
       await expect(coverConsent).toHaveCount(0);

@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from './releaseTest';
 import { openAdmittedReview } from './keyboardAdmission';
+import { disclosedWorkControl } from './workActionDisclosure';
 
 const org = '11111111-1111-4111-8111-111111111111';
 const actor = '22222222-2222-4222-8222-222222222222';
@@ -81,14 +82,22 @@ for (const width of [1280, 768, 390, 320]) {
     await fit(page, width); await page.screenshot({ path: info.outputPath(`card-details-${width}.png`), fullPage: true });
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     await fit(page, width); expect(await detail.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true); await axe(page);
+    // A modal correctly removes the background Board from the accessible
+    // surface. Its visible cover launcher is the current admission consumer.
+    await expect(page.getByRole('region', { name: 'Board workspace', exact: true })).toHaveCount(0);
+    const coverReview = await disclosedWorkControl(page, 'Appearance actions', 'button', { name: 'Review Card cover', exact: true });
+    await expect(coverReview).toBeEnabled();
     source.boardFailure = 503; source.holdBoard = true;
     await detail.getByRole('button', { name: 'Refresh card', exact: true }).press('Enter');
     await expect.poll(() => source.boardWaiters.length).toBeGreaterThan(0);
     await expect(location).toHaveCount(0);
+    await expect(coverReview).toBeDisabled();
     source.holdBoard = false; source.boardWaiters.splice(0).forEach(resolve => resolve());
     await expect(detail.getByRole('alert')).toBeVisible(); await expect(location).toHaveCount(0);
+    await expect(coverReview).toBeDisabled();
     source.boardFailure = 0; await detail.getByRole('button', { name: 'Refresh card', exact: true }).press('Enter');
     await expect(input).toBeEditable(); if (polished) await expect(location).toBeVisible();
+    await expect(coverReview).toBeEnabled();
     await input.fill('Unsaved repair investigation');
     const guard = page.getByRole('dialog', { name: 'Discard unsaved changes?', exact: true });
     await openAdmittedReview(detail.getByRole('button', { name: 'Close', exact: true }), guard);
@@ -100,7 +109,7 @@ for (const width of [1280, 768, 390, 320]) {
     const origin = page.getByRole('link', { name: title, exact: true }); await expect(origin).toBeFocused();
     await origin.press('Enter'); await expect(input).toHaveValue(title);
     source.boardFailure = 403; await detail.getByRole('button', { name: 'Refresh card', exact: true }).press('Enter');
-    await expect(input).toHaveCount(0); await expect(location).toHaveCount(0); noDomainWrites(source.writes);
+    await expect(input).toHaveCount(0); await expect(location).toHaveCount(0); await expect(coverReview).toHaveCount(0); noDomainWrites(source.writes);
   });
 
   test(`PRD-16 Trello Search surfaces preserve drafts, paging and denial at ${width}px`, async ({ page }, info) => {
