@@ -4,7 +4,7 @@
 
 Source dc210e3d repairs read-only review/default-focus observation and makes existing revocation details keyboard reachable when they scroll at200% text. Cancel retains its safe initial focus. Original clock,consent,zero-write,role,privacy,Worker,recovery and deadline checks remain. All failed executions are retained and evaluated; no checks were weakened.
 
-The corrected scope passes100 component tests in four complete files,47 helper contracts,27 complete architecture/performance/capacity guards,and eight native cases in each existing presentation at320/390/768/1280px. Native checks include malformed clock refusal,current admission,default focus,Shift+Tab/Tab traversal,200% text,Axe and access withdrawal. Web/browser types,full lint and the intact522-case177-file partition pass with their exact execution identities. Full Git/hash/baseline/history validation and36 delivery contracts are next.
+The corrected scope passes100 component tests in four complete files,47 helper contracts,27 complete architecture/performance/capacity guards,and eight native cases in each existing presentation at320/390/768/1280px. Native checks include malformed clock refusal,current admission,default focus,Shift+Tab/Tab traversal,200% text,Axe and access withdrawal. Web/browser types,full lint and the intact522-case177-file partition pass with their exact execution identities. Full Git/source/hash/baseline/main-history validation and36 delivery contracts also pass on exact committed e6c39fed. The ledger retains996 evidence records and71 Done.
 
 | Metric | Status |
 | --- | --- |
@@ -42,7 +42,7 @@ The repair will observe the read-only review together with its original initial 
 
 ---
 
-## 2026-10-22 â€” Consolidated repair checked; fresh qualification required
+## 2026-10-22 — Consolidated repair checked; fresh qualification required
 
 Source `4d4c3f55` preserves all production application, API, schema, tenant and command behavior. The star fixture observes one actual request and stops after it starts; Search now proves focused loading before a held account read, then observes the exact next-page request and admitted completion. Original focus, draft, q, cursor, scope, request/key/version, history, deadline, retry and performance checks remain intact.
 
