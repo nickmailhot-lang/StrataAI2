@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Original star recovery and all notification workflows pass
+
+Frozen PR #122 candidate `415a0378` passes all 93 real-service notification cases, including the original multi-account star recovery that failed on551 and all later privacy, source, watch, assignment, mention, reminder and authority-ordering workflows. The nine invocations pass 4+2+2+6+44+14+7+9+5, with no failures or skips. Original keys, versions, counts, history, private Worker delivery and deadlines remain intact.
+
+Command integration also passes permissions, rollback, original-command recovery, Portal isolation and operator lifecycle checks. Its 80 successful workflow steps are not test or feature counts. Current source11 (2,985 frontend / 2,519 backend), unchanged24/5 source deferrals, built images, security and all50 Foundation workflows already pass. Four full-browser groups, all six strict performance profiles, aggregate required CI, immutable source-free release and final review/integration are still required. One browser dependency-setup step remains unusually long; it is pending, not falsely counted as passing or as a failed application assertion.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Bounded polish implemented and checked; acceptance remains unverified. |
+| Test completion | Source, security, Foundation, commands and notifications pass on415a. Remaining full browser/performance/release gates are required. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Consolidated ledger: 1625 work items, 3921 criteria, 1011 evidence records. Ten parent and four independent filter records remain Testing. All failed executions remain retained and evaluated. No required check has been weakened.
+
+---
+
 ## 2026-10-22 — Original Foundation workflows pass on the corrected candidate
 
 Frozen PR #122 candidate `415a0378` passes all 50 Foundation native cases on its own release images: 28 Demo, two reminder, two original attachment/cover and 18 lifecycle cases. There are no failures or skips in this group. The original cover-recovery workflow now passes after both earlier recorded Foundation failures; its consent, command, receipt, privacy and deadline assertions remain intact.
