@@ -1,5 +1,18 @@
 import type { Page, Request } from '@playwright/test';
 
+// Observe the browser's actual personal-star command start, including an
+// unexpected verb. Never count reads, transport traffic or another authority.
+// Admission must stop after a request starts even when its reply is lost.
+export function trackBoardStarChanges(page: Page, boardId: string): () => number {
+  let observed = 0;
+  page.on('request', request => {
+    const url = new URL(request.url());
+    if (['PUT', 'DELETE'].includes(request.method()) && url.origin === new URL(page.url()).origin
+      && url.pathname === `/boards/${boardId}/star`) observed++;
+  });
+  return () => observed;
+}
+
 // Filter originals are commands at the Cards route. Count their actual start,
 // never a sibling route, read, foreign Board or cross-origin request.
 export function trackBoardFilterChanges(page: Page, boardId: string): () => number {

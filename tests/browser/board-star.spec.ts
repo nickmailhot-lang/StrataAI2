@@ -2,8 +2,8 @@ import { disclosedWorkControl } from './workActionDisclosure';
 import { registerNotificationAccount as registerVerifiedAccountFixture } from './notificationAccountFixture';
 import { expect, test } from './releaseTest';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
-import { trackBoardReads } from './boardReadTracker';
-import { openAdmittedReview } from './keyboardAdmission';
+import { trackBoardReads, trackBoardStarChanges } from './boardReadTracker';
+import { openAdmittedReview, pressObservedRequest } from './keyboardAdmission';
 
 for (const width of [1280, 390]) {
   test(`PRD-04: personal star isolation, lost acknowledgment and later-state recovery at ${width}px`, async ({ page, context, browser }) => {
@@ -25,6 +25,7 @@ for (const width of [1280, 390]) {
       await waitForBoardDelivery(context.request, board.id);
       const path = `/app/${org}/boards/${board.id}`; const other = await outsider.newPage();
       const mirror = await context.newPage(); let initialPrivateFrame = false; let liveRevision = 0;
+      const ownStarChanges = trackBoardStarChanges(page, board.id), otherStarChanges = trackBoardStarChanges(other, board.id);
       const admissionReads = new Map([page, other, mirror].map(client => [client, trackBoardReads(client, board.id, path)]));
       mirror.on('websocket', socket => {
         if (!socket.url().includes('/boards/live/stars')) return;
@@ -67,7 +68,8 @@ for (const width of [1280, 390]) {
         } else await route.fulfill({ response: acknowledgment });
       });
       await expect(page.getByRole('button', { name: 'Star Board', exact: true })).toBeEnabled();
-      await page.getByRole('button', { name: 'Star Board', exact: true }).focus(); await page.keyboard.press('Enter');
+      await page.getByRole('button', { name: 'Star Board', exact: true }).focus();
+      await pressObservedRequest(page.getByRole('button', { name: 'Star Board', exact: true }), ownStarChanges, 1);
       await expect(page.getByRole('button', { name: 'Retry same star change', exact: true })).toBeEnabled();
       await expect(page.getByText('You have not starred this Board.', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Done', exact: true })).toHaveCount(0);
@@ -75,7 +77,8 @@ for (const width of [1280, 390]) {
       // account, independently of the fallback HTTP polling timer.
       await expect.poll(() => liveRevision).toBe(2);
       await expect(other.getByRole('button', { name: 'Star Board', exact: true })).toBeEnabled();
-      await other.getByRole('button', { name: 'Star Board', exact: true }).focus(); await other.keyboard.press('Enter');
+      await other.getByRole('button', { name: 'Star Board', exact: true }).focus();
+      await pressObservedRequest(other.getByRole('button', { name: 'Star Board', exact: true }), otherStarChanges, 1);
       await expect(other.getByText('You have starred this Board.', { exact: true })).toBeVisible();
       // Private live delivery can trigger a bounded read while the other
       // account changes its star. Activate only after current parent admission
@@ -85,10 +88,11 @@ for (const width of [1280, 390]) {
       await expect(page.locator('[role="region"][aria-label="Board workspace"]')).toHaveAttribute('aria-busy', 'false');
       const retry = page.getByRole('button', { name: 'Retry same star change', exact: true });
       await expect(retry).toBeEnabled(); await retry.focus(); await expect(retry).toBeFocused();
-      await page.keyboard.press('Enter');
+      await pressObservedRequest(retry, ownStarChanges, 2);
       await expect(page.getByRole('button', { name: 'Star Board', exact: true })).toBeEnabled();
       await expect(page.getByText('You have not starred this Board.', { exact: true })).toBeVisible();
       expect(keys).toHaveLength(2); expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/); expect(keys[1]).toBe(keys[0]);
+      expect(ownStarChanges()).toBe(2); expect(otherStarChanges()).toBe(1);
       for (const [client, revisions] of [[page, 2], [other, 1], [mirror, 2]] as const) {
         const review = client.getByRole('button', { name: 'Review your star history', exact: true });
         const history = client.getByRole('region', { name: 'Your star history', exact: true });
