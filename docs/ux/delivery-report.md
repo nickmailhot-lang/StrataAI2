@@ -13,7 +13,7 @@ The repair passes 59 tests across four complete star-control/live/history/sync f
 | Test completion | Repaired local scopes pass. Remote551 remains Failed; remaining matrix results and every fresh new-head gate are required. |
 | MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
 
-Ten bounded parent Task/Test records are Testing; independent #123 filter work remains preserved. Next: validate delivery evidence, consolidate remaining CI results, publish one replacement and pass all required gates before merge.
+Ten bounded parent Task/Test records are Testing; independent #123 filter work remains preserved. Full Git, evidence-hash, baseline and main-relative history validation plus all 36 delivery contracts pass on the exact committed ledger. The parent repair now has 986 evidence records with 71 Done unchanged. Next: consolidate remaining current CI results, publish one replacement and pass every fresh required gate before merge.
 
 ---
 
