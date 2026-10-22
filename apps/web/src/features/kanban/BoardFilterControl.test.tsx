@@ -29,6 +29,26 @@ const storage = (id = actor) => `strataai:board-filter:v1:${id}:${org}:${board}`
 function mount(p: ComponentProps<typeof BoardFilterControl> = props()) { return render(<MemoryRouter><BoardFilterControl {...p} /></MemoryRouter>, { wrapper: AppThemeFixture }); }
 async function open() { fireEvent.click(screen.getByRole('button', { name: 'Filter Board Cards' })); await screen.findByRole('checkbox', { name: 'Priority (red)' }); }
 beforeEach(() => sessionStorage.clear()); afterEach(() => vi.unstubAllGlobals());
+it('guides an empty continuation using applied filters and does not claim the whole search is empty', async () => {
+  const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices())
+    .mockResolvedValueOnce(results([], 'next-empty-page')).mockResolvedValueOnce(results([])).mockResolvedValueOnce(results());
+  vi.stubGlobal('fetch', fetch); mount(); await open();
+  fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: 'Applied keyword' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await screen.findByText('More Cards can be checked. Select Next filtered Cards to continue with the applied filters.');
+  expect(screen.queryByText('No Cards match these filters.')).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: 'Unsent edit' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Next filtered Cards' }));
+  await screen.findByText('This is the last filter page. Select First filtered Cards to return, or change or clear the filters.');
+  expect(screen.getByLabelText('Card keyword')).toHaveValue('Unsent edit');
+  const query = new URL(fetch.mock.calls[3][0], 'https://example.test').searchParams;
+  expect(query.get('keyword')).toBe('Applied keyword'); expect(query.get('after')).toBe('next-empty-page');
+  expect(screen.queryByText('No Cards match these filters.')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'First filtered Cards' }));
+  await screen.findByRole('link', { name: 'Persisted match — Planning' });
+  expect(new URL(fetch.mock.calls[4][0], 'https://example.test').searchParams.has('after')).toBe(false);
+  expect(screen.queryByText(/This is the last filter page/)).not.toBeInTheDocument();
+});
 it('keeps the filter scroll region keyboard accessible while Board admission disables its controls', async () => {
   const fetch = vi.fn((path: string) => Promise.resolve(path === '/me' ? response({ id: actor }) : choices()));
   vi.stubGlobal('fetch', fetch); const p = props(); const view = mount(p); await open();
