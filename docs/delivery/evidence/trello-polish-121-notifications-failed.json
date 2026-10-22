@@ -1,0 +1,41 @@
+{
+  "revision": "951e6fdbf2d20859f0c583d981934ba0d6fa9816",
+  "testedSynthetic": "3cb874f77b95acab5e7879423013cd0aa59eb9a6",
+  "runId": 39646826188,
+  "jobId": 119403640654,
+  "result": "Failed",
+  "scope": "Strict verified-account Board management, native phone metadata recovery",
+  "failure": "board-metadata.spec.ts:49 at390px: original exact acknowledgment not visible within5000ms.",
+  "observed": "Actual trace contains one PATCH (initial intentional lost acknowledgment) and the Retry Enter at call@4776; no second PATCH. Failure DOM retains original disabled draft, unconfirmed status and retry action. The first PATCH committed, as peer heading/background checks passed.",
+  "evaluation": "Evidence supports unadmitted retry activation during protected live-read admission; it does not establish a successful retry response or permit weakening the receipt assertion. Reuse existing pressObservedRequest for the three save activations. Stop activation when its exact observed request begins; original counts/keys/payload/receipt/focus/visible/status deadlines remain mandatory.",
+  "artifact": {
+    "id": 12377470155,
+    "sha256": "74e8f620f1e33fb73bf5a4a77a1b7aeb700359deea366483ba87bfdf49db0dcc"
+  },
+  "jobLogTruncated": true,
+  "retainedLog": [
+    "2026-10-21T19:03:18.0723483Z \u001b[36;1mnpx playwright test tests/browser/board.spec.ts tests/browser/board-metadata.spec.ts tests/browser/board-copy.spec.ts tests/browser/board-lifecycle.spec.ts tests/browser/board-archive-account.spec.ts tests/browser/board-star.spec.ts tests/browser/activity-history.spec.ts tests/browser/board-background-client.spec.ts tests/browser/organization-board-live.spec.ts tests/browser/board-visibility.spec.ts tests/browser/board-members.spec.ts tests/browser/board-admin-live.spec.ts tests/browser/card-labels.spec.ts tests/browser/label-filter-live.spec.ts tests/browser/card-description.spec.ts\u001b[0m",
+    "2026-10-21T19:14:45.8916448Z   ✓  16 tests/browser/board-metadata.spec.ts:9:7 › PRD-04: metadata save recovery, concurrent draft review and responsive background at 1280px (18.7s)",
+    "2026-10-21T19:15:32.3041807Z   ✘  17 tests/browser/board-metadata.spec.ts:9:7 › PRD-04: metadata save recovery, concurrent draft review and responsive background at 390px (21.2s)",
+    "2026-10-21T19:36:54.5534516Z   1) tests/browser/board-metadata.spec.ts:9:7 › PRD-04: metadata save recovery, concurrent draft review and responsive background at 390px ",
+    "2026-10-21T19:36:54.5538025Z     Error: expect(locator).toBeVisible() failed",
+    "2026-10-21T19:36:54.5540826Z     Locator: getByText('Board changes acknowledged. Current Board state is being checked.', { exact: true })",
+    "2026-10-21T19:36:54.5542983Z     Expected: visible",
+    "2026-10-21T19:36:54.5543885Z     Timeout: 5000ms",
+    "2026-10-21T19:36:54.5544870Z     Error: element(s) not found",
+    "2026-10-21T19:36:54.5547643Z       - Expect \"toBeVisible\" getByText('Board changes acknowledged. Current Board state is being checked.', { exact: true }) with timeout 5000ms",
+    "2026-10-21T19:36:54.5550337Z       - waiting for getByText('Board changes acknowledged. Current Board state is being checked.', { exact: true })",
+    "2026-10-21T19:36:54.5555715Z     > 49 |       await expect(page.getByText('Board changes acknowledged. Current Board state is being checked.', { exact: true })).toBeVisible();",
+    "2026-10-21T19:36:54.5565007Z         at /home/runner/work/StrataAI2/StrataAI2/tests/browser/board-metadata.spec.ts:49:122",
+    "2026-10-21T19:36:54.5567774Z     test-results/board-metadata-PRD-04-meta-5e6d9-ponsive-background-at-390px/test-failed-2.png",
+    "2026-10-21T19:36:54.5598316Z     test-results/board-metadata-PRD-04-meta-5e6d9-ponsive-background-at-390px/test-failed-1.png",
+    "2026-10-21T19:36:54.5602243Z     Error Context: test-results/board-metadata-PRD-04-meta-5e6d9-ponsive-background-at-390px/error-context.md",
+    "2026-10-21T19:36:54.5605381Z     test-results/board-metadata-PRD-04-meta-5e6d9-ponsive-background-at-390px/trace.zip",
+    "2026-10-21T19:36:54.5607521Z         npx playwright show-trace test-results/board-metadata-PRD-04-meta-5e6d9-ponsive-background-at-390px/trace.zip",
+    "2026-10-21T19:36:54.5610547Z   1 failed",
+    "2026-10-21T19:36:54.5612085Z     tests/browser/board-metadata.spec.ts:9:7 › PRD-04: metadata save recovery, concurrent draft review and responsive background at 390px ",
+    "2026-10-21T19:36:54.8640946Z ##[error]Process completed with exit code 1."
+  ],
+  "fullJobUrl": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39646826188/job/119403640654",
+  "correction": "No application or helper change; use existing request-observed admission at caller. Full current CI required after repair, old run remains failed."
+}

@@ -1,5 +1,85 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Original qualification complete; repaired candidate ready for fresh CI
+
+Original PR121 head951e6fdb run39646826188 has completed: **17 successful checks,4 failed checks,1 skipped release check**. Full browser matrix: **482 passed /3 failed /2 existing mail-profile skips**; the separate strict-account group has one additional metadata recovery failure. Last full group passes119. The required-ci failure and skipped release correctly prevent integration. All four failed native cases are evaluated and retained in the failure records below.
+
+Prepared source87dd2d0b addresses the pointer edge turn and keyboard admission. Fresh committed admission contracts pass31 atf485d5d8, and the enriched ledger including the final scoped proof passes root/Git/hash/main-history validation: **1611 items /3906 criteria /923 evidence records /69 Done**. These local checks do not replace complete current candidate CI, real-service roles/security, release validation, source/UX review or main integration. Publish one replacement candidate now and freeze it through that qualification. PR117 is already merged; PR121 and Card/Search122 remain draft/unmerged. Functional, UX, test and MVP acceptance stay separate; no parent closure or product percentage.
+
+---
+
+## 2026-10-21 — Native regression repairs prepared; full qualification remains mandatory
+
+Original951 CI is Failed: strict-account phone metadata retry acknowledgment; full2 phone mouse/touch horizontal edge scrolling (118passed/2failed/2existingmail skips); full3 desktop settings draft discard (122passed/1failed). Full1 passes123; full4 continues. Every failure and trace artifact identity is retained; no native assertions, five-second deadlines, retries or security/role checks changed. PR117 is integrated37656975; PR121 remains draft/unmerged.
+
+Source87dd2d0b fixes compact-handle bent pointer edge progression using only visible owned fallback surfaces when preferred travel has no progress; speed/clipping/center-stop/keyboard handling remain. New regression reproduces the old defect9/1 and passes10/10 after repair. Native keyboard callers observe their exact request or one original local control activation; no replay after observed activation, duplicate tolerance, replacement-control transfer or consumer-result retry.
+
+Scoped checks: **107 affected components;31 admission positive/refusal contracts;7default+7rollback browsers;web/browser types;strict lint;11 architecture/capacity guards;490 cases/172 intact browser files;local compiler8.80s** Passed. Browser runs identify1ebd inputs equal87dd; admission run used the new working-tree inputs later committed87dd. Compiler identifies87dd/0.1.0-local and retains the existing chunk warning. Controlled HTTP/Vite runs do not certify real services, RLS, Production CSP, immutable images or release. Fresh complete final-head gates are mandatory.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities and data/API/tenant contracts preserved; existing pointer edge behavior repaired. |
+| UX completion | Scoped default/rollback Board geometry, keyboard return, reflow and Axe pass; full own workflow acceptance pending. |
+| Test completion | Narrow107+31+7+7 and source gates pass; actual original native failures remain Failed, complete repaired-head CI pending. |
+| MVP readiness | Not accepted globally; bounded Task/Test stay Testing, criteriaUnverified,69Done unchanged. No product percentage. |
+
+Card/Search polish remains preserved in draft122 with its scoped97+8+8 results and original text-zoom red retained. Reconcile this work after121 safely integrates, then require122 own complete qualification. Independent118 and119/120 histories remain intact.
+
+---
+
+## 2026-10-21 — PR121 native phone recovery failure retained; admission rework
+
+PR117 dependency is resolved by its ordinary main merge37656975. Current PR121951 native strict-account Board metadata phone recovery failed its original5000ms exact acknowledgment assertion. Trace shows only the initial lost-ack PATCH and an ignored Retry Enter; the original unconfirmed draft remains. Reuse the existing request-observed admission helper for initial save, original-key retry and reviewed save; stop once each exact request begins. All payload/key/count/receipt/focus/persistence/role assertions, original deadlines and zero test retries remain intact. No application, API, schema or helper semantics changed. The original failed job and screenshot are retained; narrower helper checks cannot qualify the full native scenario.
+
+Functional/UI implementation remains present; test acceptance is failed and bounded Task/Test returned legally from Testing to In Progress. Merge is blocked until the repaired final head passes every required gate. Other current-run browser groups may finish to expose additional failures. Card/Search source remains preserved independently in draft122; it is not accepted or merged. No parent PRD closure or product percentage.
+
+---
+
+## 2026-10-21 — PR #117 dependency resolved; PR #121 full qualification active
+
+PR #117 merged normally as `37656975f491352a3b9e5dc4ea0b124b546318c4` after all **22 exact-head checks passed**. Current hosted frontend: **2,963 passed / 24 original capacity deferrals**; complete full browsers: **481 passed / 2 existing mail-profile skips**, no failures. Foundation, commands, notifications, tenant/role/security and immutable bundle/startup/HTTPS checks pass. Source and empty review-thread/submission state were inspected. Actual merged tree `f9e682ddc1b843c7358a3c56e400b7047059076a` equals qualified synthetic merge `afb994ee`; main/head parents and historical failures are preserved. Complete hosted qualification is separate from earlier failed local aggregates and does not erase them.
+
+PR #121 now targets main. Local reconciliation `26ce5e9a` changes no application/test tree. Prior scoped **198 component / 4 default / 4 rollback browser** passes retain their original source identities. Freeze the tracking checkpoint for its **own fresh full CI**; parent results never substitute for child qualification. Keep #121 draft and unmerged until every applicable gate, current tested-tree/release evidence and review pass. Independent PR #118 recovery and PR #119/#120 Search branches remain untouched.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing business capabilities preserved; parent Organization context integrated. No new business scope or parent PRD closure. |
+| UX completion | Organization/Work presentation implemented and scoped desktop/mobile evidence retained; child integration remains pending. Card/Search polish follows after #121 qualifies and merges. |
+| Test completion | Parent22 complete; child full current checks pending, scoped198+4+4 pass. Original browser/unit failures stay recorded; no assertion/deadline/retry/capacity waiver. |
+| MVP readiness | Not accepted globally; 69 inherited Done unchanged, two new UX records remain Testing, criteria Unverified. No combined percentage. |
+
+Ledger: **1,611 items / 3,906 criteria / 916 evidence records**. Evidence: `EVID-TRELLO-POLISH-117-REVIEW` and `EVID-TRELLO-POLISH-117-MERGE`. Next: finish/fix #121's complete CI, verify current review/main/tested-tree and merge normally; then bounded Card details and Search polish with separate acceptance and report updates.
+
+---
+
+
+## 2026-10-20 — Trello-style Organization and Work presentation
+
+Current application/test source: `49c5bbce0c420561da549bc36395f61dc646de79` (presentation at `efd44858`; final commit adds rollback expectations to the new browser spec). This small child increment reuses PR #117's admitted Organization-name header and existing navigation. Organization/Board links become readable surfaces; lists and Cards use compact MUI styling, labels before titles and visible 44px drag handles with their original accessible names. Existing command, recovery, permissions, focus, canvas, background and lifecycle owners are preserved. No domain/API/schema/subscription changes or invented preview data. Existing Work UX flag `0` restores the previous presentation.
+
+| Metric | Current evidence and limit |
+| --- | --- |
+| Functional completion | Existing Organization → Board → Card routes and operations retained. This increment changes presentation, adds no business capability and certifies no parent PRD. |
+| UX completion | Organization/Board presentation implemented and inspected on desktop/mobile; four-width keyboard, reflow, 200% text and applicable Axe checks pass in controlled-source scope. Card-detail/Search visual adoption remains a later bounded increment. |
+| Test completion | Complete affected suite **198/198** and default **4/4** plus rollback **4/4** browser cases pass without skips/retries. Web/browser types, strict lint, architecture **7/7**, browser registration **487 cases/171 files**, production compilation and delivery contracts **36/36** pass in their recorded scope. Fresh complete candidate CI, whole frontend, real-service integration/roles/RLS/security and immutable release checks remain pending. |
+| MVP readiness | **Not accepted for integration.** Two new Task/Test records are Testing, criteria remain Unverified; 69 inherited Done records remain unchanged. No new Done, merged increment, product percentage or MVP acceptance claim. |
+
+| PRD / work item | Functional / UX status | Dependencies and remaining validation |
+| --- | --- | --- |
+| PRD-03 / PRD-04: Organization and Board discovery | Existing capabilities retained; admitted names, role description and Board tiles polished | Reuse UX-001/002 and PR #117 header; preserve directory pagination, errors, commands and access withdrawal. |
+| PRD-06: Work canvas | Existing List/Card operations retained; compact surfaces and discoverable handles implemented | UX-003/005/006/008; original drag listeners, role checks, command receipts and 24-case BoardWindow functional/capacity counterparts unchanged. Complete real-service regressions remain required. |
+| UX-003-VS-03-T-02 / TEST-01 | Implemented → Testing; scoped results pass, full acceptance open | Parent PR #117 qualification/review/integration, latest-main reconciliation, every required candidate check and final review. UX-001/002/003 foundation PRDs remain partial. |
+
+Retained failures and evaluation: the first controlled browser run failed all four cases: a cold lazy icon invalidated the development React graph, then three cases exposed a new fixture counter counting SignalR negotiation as a domain write. Prebundling the new icon and classifying only that transport request corrected those causes; warm and fresh cold runs each passed four. All business-write assertions, deadlines and retries remain unchanged. The first complete affected unit aggregate remains **Failed: 197 passed/1 failed**, an existing cached-Card close/focus test exceeding its original 5-second whole-test deadline. The complete file subsequently passed 3/3 and a fresh complete twelve-file suite passed 198/198. Its exclusive cause is unproven; a narrower pass never replaces that failed aggregate. Historical parent failures are also retained.
+
+Branch `ux/trello-org-work-polish` is isolated on PR #117's `b6a30cc0` head, not an overwrite of independent PR #118 recovery or PR #119/#120 Search work. Parent #117 currently has 22 successful checks and remains draft/unmerged; these checks do not qualify this child. Publish this increment as a stacked draft on `delivery/organization-context-name-20261020`. The existing main-only CI trigger does not automatically run full CI for that stacked base. Keep it unmerged, then reconcile the qualified parent/latest main and require fresh complete checks at the final child head. No workflow or protection is relaxed. The next UX increment is bounded Card-detail/Search presentation after this foundation is reviewed.
+
+Evidence: `docs/delivery/evidence/trello-polish-*` preserves source identities, live requirements, original failures, successful scoped runs, rollback, inspected captures and parent-only CI. Ledger: **1,611 work items / 3,906 criteria**, with functional, UX, test and acceptance status separate. Compiler output has development identity and is supporting compilation evidence, not a qualified release bundle. Controlled HTTP/quiet transport does not establish actual persistence, collaboration, tenant security or full device/screen-reader acceptance.
+
+The dated entries below preserve earlier checkpoint history; they do not describe the current Trello-style candidate.
+
+---
+
 Final published903 results (2026-10-18T21:53:08.147Z):22 checks complete,18success/3failure/1skip. Full browser476passed/1failed/2original mail-profile skips; full4=115passed. Notifications57passed/1failed with four later scopes not run. All6 actual903 normal-performance records meet original budgets; artifact provider/inner hashes and synthetic/run identity verified. Local1f1c fix and preceding365 keyboard readiness await fresh final-head qualification. Both qualification items are Testing; global result remains Failed. Only96merged;16pending. Next: Validate final ledger evolution/hashes, commit one metadata checkpoint, then fast-forward existing PR111 branch to the corrected candidate. Freeze that exact head for all22 required checks; merge only after fresh main/head/reviews and successful gates.
 
 Current checkpoint (2026-10-18T21:48:13.434Z): local 1f1c2a6cc3a54afce1683d41788d9b775d806d96 preserves pending revocation feedback through a failed background read. Deterministic red2/green100, web types/lint and identified build Passed. Supporting UI: Board desktop/mobile2Passed with inspected screens; Organization2Failed before any DELETE; original-stream Demo adapter4Failed before revocation. All failures retained. Published903 has two failed browser groups, with full4 still running. Only PR96 merged;16pending. Next: collect last903 diagnostics, validate one metadata checkpoint, publish corrected PR111 head, then require all22 fresh checks before merge.

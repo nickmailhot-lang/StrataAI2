@@ -20,6 +20,37 @@ export async function pressAdmittedAction(button: Locator, key: 'Enter' | 'Space
   await button.press(key);
 }
 
+// Local review actions have no HTTP request to observe. Admit one native click
+// on the original control, then leave its consumer result to caller assertions.
+// Never retry an activated action or apply this helper to a business command.
+export async function pressObservedLocalAction(button: Locator) {
+  const observation = await button.evaluateHandle(node => {
+    const state = { count: 0 };
+    const onClick = () => { state.count++; };
+    node.addEventListener('click', onClick, { capture: true });
+    return { node, state, onClick };
+  });
+  try {
+    await expect(async () => {
+      if (await observation.evaluate(o => o.state.count) === 0) {
+        expect(await observation.evaluate(o => o.node.isConnected)).toBe(true);
+        await expect(button).toBeEnabled({ timeout: 500 });
+        if (await observation.evaluate(o => o.state.count) === 0) await button.focus({ timeout: 500 });
+        if (await observation.evaluate(o => o.state.count) === 0) await expect(button).toBeFocused({ timeout: 500 });
+        if (await observation.evaluate(o => o.state.count) === 0) await expect(button).toBeEnabled({ timeout: 500 });
+        if (await observation.evaluate(o => o.state.count) === 0) {
+          expect(await observation.evaluate(o => o.node.isConnected)).toBe(true);
+          await button.press('Enter', { timeout: 500 });
+        }
+      }
+      await expect.poll(() => observation.evaluate(o => o.state.count), { timeout: 500 }).toBe(1);
+    }).toPass({ timeout: 5_000 });
+  } finally {
+    await observation.evaluate(o => o.node.removeEventListener('click', o.onClick, { capture: true }));
+    await observation.dispose();
+  }
+}
+
 // A protected foreground read can retire either end of keyboard traversal.
 // Re-establish only the origin and send the real traversal key; never focus
 // the destination to make a keyboard-order assertion pass.

@@ -42,7 +42,7 @@ export class KanbanAutoScroll {
     if (this.axis && (delta.x || delta.y)) this.axis = Math.abs(delta.x) > Math.abs(delta.y) ? 'horizontal' : 'vertical';
   }
   private scrollNativePointer = () => {
-    const pointer = this.pointer, horizontal = this.axis === 'horizontal';
+    const pointer = this.pointer;
     if (!pointer?.window || !this.axis) return;
     const now = pointer.window.performance.now();
     if (!Number.isFinite(now)) return;
@@ -51,39 +51,51 @@ export class KanbanAutoScroll {
     // background pause. Visible horizontal geometry bounds the jump below.
     const elapsed = Math.max(0, Math.min(50, now - (this.lastTick ?? now - 5)));
     this.lastTick = now;
-    for (let index = 0; index < this.ancestors.length; index++) {
-      const element = this.ancestors[index];
-      if (!element.isConnected || !this.canScroll(element)) continue;
-      const rect = element.getBoundingClientRect();
-      let left = Math.max(0, rect.left), right = Math.min(pointer.window.innerWidth, rect.right);
-      let top = Math.max(0, rect.top), bottom = Math.min(pointer.window.innerHeight, rect.bottom);
-      for (const parent of this.ancestors.slice(index + 1)) {
-        if (!parent.isConnected || parent === pointer.document.scrollingElement) continue;
-        const bounds = parent.getBoundingClientRect();
-        left = Math.max(left, bounds.left); right = Math.min(right, bounds.right);
-        top = Math.max(top, bounds.top); bottom = Math.min(bottom, bounds.bottom);
-      }
-      if (![left, right, top, bottom].every(Number.isFinite) || right <= left || bottom <= top) continue;
-      const point = horizontal ? pointer.currentX : pointer.currentY;
-      const cross = horizontal ? pointer.currentY : pointer.currentX;
-      if (!Number.isFinite(point) || !Number.isFinite(cross)
-        || cross < (horizontal ? top : left) || cross > (horizontal ? bottom : right)) continue;
-      const start = horizontal ? left : top, end = horizontal ? right : bottom;
-      const threshold = (end - start) * 0.2;
-      // Match the normal ten-pixels-per-five-ms rate. A single delayed frame
-      // cannot cross more than a twelfth of the visible horizontal viewport.
-      // This retains a middle-half destination's quarter-width margin through
-      // several delayed callbacks before the next native pointer input arrives.
-      // Vertical traversal retains its existing quarter-height progress bound.
-      // Recompute from the native point on every tick so center input stops
-      // immediately even before a React effect or hovered rectangle catches up.
-      const distance = Math.min(2 * elapsed, (end - start) / (horizontal ? 12 : 4));
-      const step = point < start + threshold ? -distance * Math.min(1, (start + threshold - point) / threshold)
-        : point > end - threshold ? distance * Math.min(1, (point - end + threshold) / threshold) : 0;
-      const offset = horizontal ? element.scrollLeft : element.scrollTop;
-      const maximum = horizontal ? element.scrollWidth - element.clientWidth : element.scrollHeight - element.clientHeight;
-      if (step < 0 && offset > 0 || step > 0 && offset < maximum) {
-        element.scrollBy(horizontal ? step : 0, horizontal ? 0 : step); return;
+    // Keep the travel axis first at corners. Once it has no edge progress,
+    // allow a turn onto another visible owned edge; a compact handle's pickup
+    // point must not lock an entire bent pointer journey to its initial axis.
+    for (const axis of [this.axis, this.axis === 'horizontal' ? 'vertical' : 'horizontal'] as const) {
+      const horizontal = axis === 'horizontal';
+      for (let index = 0; index < this.ancestors.length; index++) {
+        const element = this.ancestors[index];
+        if (!element.isConnected || !element.hasAttribute('data-kanban-scroll')
+          || element.getAttribute('data-kanban-scroll-axis') !== axis) continue;
+        const rect = element.getBoundingClientRect();
+        let left = Math.max(0, rect.left), right = Math.min(pointer.window.innerWidth, rect.right);
+        let top = Math.max(0, rect.top), bottom = Math.min(pointer.window.innerHeight, rect.bottom);
+        for (const parent of this.ancestors.slice(index + 1)) {
+          if (!parent.isConnected || parent === pointer.document.scrollingElement) continue;
+          const bounds = parent.getBoundingClientRect();
+          left = Math.max(left, bounds.left); right = Math.min(right, bounds.right);
+          top = Math.max(top, bounds.top); bottom = Math.min(bottom, bounds.bottom);
+        }
+        if (![left, right, top, bottom].every(Number.isFinite) || right <= left || bottom <= top) continue;
+        // Fallback cannot scroll an edge hidden beneath another viewport or
+        // reached only by leaving its visible surface. Existing travel-axis
+        // handling outside an edge remains unchanged.
+        if (axis !== this.axis && (pointer.currentX < left || pointer.currentX > right
+          || pointer.currentY < top || pointer.currentY > bottom)) continue;
+        const point = horizontal ? pointer.currentX : pointer.currentY;
+        const cross = horizontal ? pointer.currentY : pointer.currentX;
+        if (!Number.isFinite(point) || !Number.isFinite(cross)
+          || cross < (horizontal ? top : left) || cross > (horizontal ? bottom : right)) continue;
+        const start = horizontal ? left : top, end = horizontal ? right : bottom;
+        const threshold = (end - start) * 0.2;
+        // Match the normal ten-pixels-per-five-ms rate. A single delayed frame
+        // cannot cross more than a twelfth of the visible horizontal viewport.
+        // This retains a middle-half destination's quarter-width margin through
+        // several delayed callbacks before the next native pointer input arrives.
+        // Vertical traversal retains its existing quarter-height progress bound.
+        // Recompute from the native point on every tick so center input stops
+        // immediately even before a React effect or hovered rectangle catches up.
+        const distance = Math.min(2 * elapsed, (end - start) / (horizontal ? 12 : 4));
+        const step = point < start + threshold ? -distance * Math.min(1, (start + threshold - point) / threshold)
+          : point > end - threshold ? distance * Math.min(1, (point - end + threshold) / threshold) : 0;
+        const offset = horizontal ? element.scrollLeft : element.scrollTop;
+        const maximum = horizontal ? element.scrollWidth - element.clientWidth : element.scrollHeight - element.clientHeight;
+        if (step < 0 && offset > 0 || step > 0 && offset < maximum) {
+          element.scrollBy(horizontal ? step : 0, horizontal ? 0 : step); return;
+        }
       }
     }
   };

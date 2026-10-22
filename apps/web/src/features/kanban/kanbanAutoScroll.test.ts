@@ -85,6 +85,22 @@ it('tracks native direction across nested Card and Board viewports and leaves ke
     vi.advanceTimersByTime(50); expect(board.scrollBy).toHaveBeenCalledTimes(2);
   } finally { scroll.finish(); source.remove(); cards.element.remove(); board.element.remove(); vi.useRealTimers(); }
 });
+it('turns from a List edge to the visible Board edge after picking up a compact right-hand Card handle', () => {
+  vi.useFakeTimers(); const scroll = new KanbanAutoScroll();
+  const cards = viewport('vertical', new DOMRect(24, 149, 320, 590)), board = viewport('horizontal', new DOMRect(24, 149, 342, 606));
+  const source = startPointer(scroll, 306, 317);
+  try {
+    observe(scroll, [cards.element, board.element]);
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 184, clientY: 728 })); vi.advanceTimersByTime(10);
+    expect(cards.element.scrollTop).toBeGreaterThan(1000); expect(board.element.scrollLeft).toBe(1000);
+    const top = cards.element.scrollTop;
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 354, clientY: 452 })); vi.advanceTimersByTime(10);
+    expect(board.element.scrollLeft).toBeGreaterThan(1000); expect(cards.element.scrollTop).toBe(top);
+    document.dispatchEvent(new MouseEvent('pointermove', { clientX: 195, clientY: 452 }));
+    const left = board.element.scrollLeft; vi.advanceTimersByTime(20);
+    expect(board.element.scrollLeft).toBe(left); expect(cards.element.scrollTop).toBe(top);
+  } finally { scroll.finish(); source.remove(); cards.element.remove(); board.element.remove(); vi.useRealTimers(); }
+});
 it('bounds native edge speed outside the viewport and ignores clipped, hidden, detached and unowned surfaces', () => {
   vi.useFakeTimers(); const scroll = new KanbanAutoScroll();
   const cards = viewport('vertical', new DOMRect(0, 100, 300, 200)), board = viewport('horizontal', new DOMRect(272, 100, 472, 400));
