@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Current Foundation and command groups pass
+
+Frozen candidate `f7174ba4` has 15 green checks. All 50 current Foundation cases pass: 28 Demo, two reminder, two original cover and 18 lifecycle scenarios, with no failures or skips. The command, role, RLS, transaction and runtime group completes 80 successful workflow steps; this is not a count of test cases. Source, image and security checks already pass.
+
+Three full-browser groups and notifications are running. The final full-browser group is queued under the unchanged four-job limit. All remaining current native checks, six measured original strict performance profiles, immutable release, final review and verified normal main integration remain required. Failed candidate `8f17005f` retains its failed result.
+
+No merge, acceptance or Demo activation has occurred. The new images are preloaded only, and the original user Demo remains available. Independent filter and assignee polish retain their own scoped results and pending complete qualification. Functional completion, UX completion, test completion and MVP readiness remain separate; 71 Done unchanged.
+
+---
+
 ## 2026-10-22 — Current images verified and preloaded; integration gates running
 
 Frozen candidate `f7174ba4` now has 13 green checks: source quality, built images and security. The exact build 1972 web/API/Worker images pass provider and inner checksums, manifest/config/layer identity and source/version labels. They are preloaded only; no new containers have started. The current security artifact also passes provenance checks. CodeQL analysis succeeds; its optional cache-restore warning was evaluated, and no check was changed or finding suppressed.
