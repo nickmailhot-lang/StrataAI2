@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Nineteen checks pass; final browser group remains
+
+Frozen PR #122 candidate `8f17005f` passes 19 current checks. Normal-browser groups one, two and three pass 131, 129 and 131 cases respectively, with two original mail-fixture skips retained in group two. All 93 dedicated notification cases pass. Foundation retains 50 passes and the command group retains 80 successful workflow steps. The invitation-review regression now passes on the current immutable images. All prior failures remain recorded and evaluated.
+
+The final browser group is running. The first three verified performance artifacts contain no measured profiles; none of the six required profiles is yet qualified. All original strict budgets, required-ci, immutable release, final review and verified normal main integration remain mandatory. No merge or Demo activation has occurred.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; independent canonical-assignee feedback is implemented. |
+| UX completion | Bounded parent polish passes three native groups and notifications; final acceptance remains unverified. |
+| Test completion | Nineteen current checks pass; final browser, measured performance and release gates remain required. |
+| MVP readiness | No new acceptance; 71 records remain Done. Broad PRDs and MVP readiness remain open. |
+
+The independent Board follow-up retains its scoped results and still requires positive new-image browser/SQL and its own complete qualification. The original Demo remains running. Its prepared refresh preserves a separate browser origin and verifies copied text, canonical dates, List order and star state after qualification; it has not been activated.
+
+---
+
 ## 2026-10-22 — Current notifications and first full-browser group pass
 
 PR #122 candidate `8f17005f` now has 17 green checks. All 93 notification cases and all 131 cases in normal-browser group one pass, with no failures or skips in those scopes. Foundation retains 50 passes; the command group retains 80 successful workflow steps. The remaining three full-browser groups are running. The first performance artifact has verified checksums and current build identity but no measured profiles; it does not qualify any of the required six profiles.
