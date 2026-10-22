@@ -1,5 +1,34 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Visible Card admission correction passes scoped checks
+
+Source `33018315` uses the existing visible Review Card cover control to confirm parent admission while the Card dialog correctly hides the background Board. All eight complete Card/Search cases pass in both the polished and fallback views at 320, 390, 768 and 1280px. They verify pending and failed reads disable the review control, a fresh admitted read restores it, and denial withdraws it. Existing dirty-return, Search paging, 200% text, accessibility and privacy checks remain.
+
+Current browser types, 17 cover unit tests, 31 keyboard admission contracts, 11 architecture/capacity guards, the 502-case/174-file primary registry and both attachment cases pass. Runtime code, API and database contracts, tenant boundaries, original assertions, deadlines, retries and CI requirements are unchanged. Controlled local fixtures do not qualify the real-service attachment removal flow. Both earlier hosted failures remain Failed and evaluated; every required gate must pass on the replacement head before merge.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved. No new business scope. |
+| UX completion | Card/Search implemented; independent draft #123 adds empty-page guidance and stable keyboard paging. Acceptance pending. |
+| Test completion | Current scoped checks pass. Fresh complete hosted qualification is required. |
+| MVP readiness | No new accepted increment or global percentage; 71 Done records unchanged. |
+
+Parent candidate ledger: 1619 items, 3915 criteria, 974 evidence records. PR #123 remains separate with its own retained proof and requires reconciliation and full gates after the parent integrates.
+
+---
+
+## 2026-10-21 — PR #122 blocked by an incorrect modal readiness check
+
+Candidate `1125cc02` failed Foundation job119621389436 in CI39712506633. Both original desktop and phone cover cases stopped at a readiness assertion added in the previous repair. An open Card dialog correctly hides the background Board from accessibility queries, so checking that hidden region’s busy state cannot succeed. The visible Card review control is present. This was an avoidable test-target mistake; it does not justify exposing hidden content or weakening admission.
+
+The corrected source `33018315` waits for the existing visible cover-review launcher to be enabled after one observed Card refresh and a current Board read. That launcher also stays disabled after failed admission. Additional checks in the complete existing four-width Card/Search file cover pending, failed, recovered and denied reads while confirming the modal background stays inaccessible. All original cover consent, receipts, keys/bodies, write counts, versions, peer updates, privacy and deadlines remain intact.
+
+Verified failure artifact12400142317 has SHA256612d3d374d7af30d107085f253d0f654762a7d13655c59218c7397e1f086f7fa and matching inner checksums/build identity. Original failures remain Failed. Earlier source/image/security passes cannot qualify a replacement; the repaired final head must pass all required gates independently before merge. Four Card/Search records remain In Progress; 71 previously Done records are unchanged.
+
+Independent draft #123 retains the completed filter guidance/paging polish and its scoped77tests/four default+four rollback browser passes. Its acceptance and own complete main-target CI remain pending. Broader PRDs and global MVP readiness remain open.
+
+---
+
 ## 2026-10-21 — PR122 replacement prepared; complete new qualification required
 
 Original published **cd9530ff** has14passingchecks and a required Foundation failure at the current snapshot; other browser/notification groups remain incomplete. Retain the390px cover failure,its verified artifact and evaluation. No original incomplete scope is counted as passing. This replacement will supersede the failed candidate through a normal push; the workflow may cancel its remaining jobs. Every required check must qualify the replacement independently.
