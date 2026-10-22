@@ -1,5 +1,26 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — Admitted empty filter last-page guidance passes scoped checks
+
+Current source **22b92e46** clarifies an existing Board-filter journey: after50matches, an empty last page says **No matching Cards on this page** and points to the existing First/change/clear actions. Dialog and filtered canvas guidance withdraw during pending/failed/denied reads. Applied criteria/cursor remain distinct from unsent edits. Invalid empty continuations remain refused by the original50-item/UUID/last-item guard. No new route,shared layout,API,schema,event,permission,automatic write or migration flag.
+
+**Audit correction:** the initial proposed empty-with-next fixture was invalid, so its refusal did not establish a product defect. Both invalid-fixture failures and a separate original5000ms test timeout remain Failed evidence. The valid full50→empty-last-page test then reproduces the misleading message in2.5s; the original deadline stays unchanged. No original assertion,role/capacity rule,retry or guard was relaxed.
+
+**Scoped source22b92e46:73tests across5complete files;4default+4rollback native routed browser cases at320/390/768/1280px;200%text,Axe,draft/applied criteria,paging,503retry,clear/full Board and403withdrawal;web/browser types;strict lint;11architecture/capacity guards;506cases/175intactfiles registered.** Desktop/phone rendered captures reviewed; other two widths automated. Controlled HTTP/quiet transport and development-server captures do not qualify real services,RLS,Production CSP,normal performance or immutable release. Source rebuild is deferred to the required build-once CI rather than creating a duplicate release.
+
+PR122 publishedcd953 still has its original Foundation phone cover failure. Local repair checkpoint9384265f preserves that failure,adds explicit foreground/current snapshot setup,and passes17cover/31keyboard contracts plus36delivery contracts and types/lint. Let remaining old-run jobs finish before one replacement candidate; no merge or acceptance is claimed. Independent118 untouched.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities/contracts preserved; no new business scope. |
+| UX completion | Bounded filter guidance implemented/scoped-tested. Card/Search and this follow-up acceptance remain pending. |
+| Test completion | Current filter scoped73+4+4/source gates pass. Original122 required Foundation failure remains Failed; repaired/full own gates still required. |
+| MVP readiness | No new accepted increment or parent closure;71Done unchanged. Global readiness remains unaccepted/unmeasured. |
+
+Canonical ledger:1621items/3917criteria/974evidence/71Done. New PRD-16-VS-02-T-02 and childTest are Testing with acceptanceUnverified. Current evidence:EVID-TRELLO-FILTER-FIXTURE-REFUSALS,LAST-PAGE-RED,SCOPED. Next:finish parent122 qualification and normal integration,then qualify this separate follow-up.
+
+---
+
 ## 2026-10-21 — PR122 Foundation phone cover failure retained; merge prohibited
 
 Current head **cd9530ff**, own CI39701151929, failed Foundation119586017892 in the real attachment/cover pipeline at390px. Cover and candidate reads returned200/currentversion7; after the peer-window handoff, fresh Board admission caused the application to reject the unsent cover review. The original Remove Card cover enabled assertion failed; no removal was submitted. Retained artifact12396042071 has verified provider SHA2561419eaf0be628fcecb3bfe943a531113c6ba7bafed1911816c6dccfaf8d35c34 and every inner checksum. Original screenshot, deadlines and failure remain.
