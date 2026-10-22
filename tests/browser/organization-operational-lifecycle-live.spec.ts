@@ -80,6 +80,10 @@ for (const width of [1280, 390]) {
         === 'actingCapacity,actorId,createdAt,entityId,entityType,eventId,eventType,organizationId,previousStatus,status,version')).toBe(true);
       expect(JSON.stringify(frames)).not.toContain(name);
       expect(JSON.stringify(frames)).not.toContain('Lifecycle release owner');
+      // A frame's arrival is not consumer admission: a parent-only update can
+      // already render this revision while its published fact is still being
+      // checked. Disconnect only after the visible consumer confirms delivery.
+      await expect(review.getByRole('status', { name: 'Live update status', exact: true })).toHaveText('Live updates are current.');
       await peer.setOffline(true); await Promise.all([...sockets].map(socket => socket.close()));
       const current = await context.request.get(path); expect(current.status()).toBe(200); const head = await current.json();
       const reactivated = await context.request.patch(path, { headers: { ...headers, 'Idempotency-Key': crypto.randomUUID(),

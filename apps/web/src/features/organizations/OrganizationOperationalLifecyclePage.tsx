@@ -21,6 +21,8 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
   const [intent, setIntent] = useState<LifecycleIntent>(); const original = useRef<LifecycleIntent | undefined>(undefined);
   const [ack, setAck] = useState<LifecycleAcknowledgment>(); const [denied, setDenied] = useState(false);
   const [liveStatus, setLiveStatus] = useState<string>(); const [liveUnavailable, setLiveUnavailable] = useState(false);
+  const [liveCurrent, setLiveCurrent] = useState(false);
+  const confirmedLiveVersion = useRef<number | undefined>(undefined);
   const latestReview = useRef<LifecycleReview | undefined>(undefined); latestReview.current = review;
   const liveActor = review?.actorId; const opened = useRef(false);
   const mounted = useRef(false); const pending = useRef<AbortController | undefined>(undefined);
@@ -46,10 +48,16 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
           throw new WorkRequestError(409, null);
         fresh = value;
       },
-      update: () => {
+      update: page => {
         if (!mounted.current || !fresh || pending.current || original.current) return;
         const previous = latestReview.current;
         setLiveUnavailable(false);
+        // A current parent snapshot can precede publication. Confirm live
+        // delivery only after this consumer's existing admission has accepted
+        // the matching fact; quiet pages may retain that confirmation.
+        const published = page.events.at(-1)?.version;
+        if (published !== undefined) confirmedLiveVersion.current = published;
+        setLiveCurrent(!page.pending && page.version === fresh.version && confirmedLiveVersion.current === fresh.version);
         if (!previous || previous.version !== fresh.version || previous.status !== fresh.status || previous.name !== fresh.name) {
           setOpen(false); setConfirmation(undefined); setReview(fresh);
           setTarget(fresh.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE');
@@ -59,7 +67,7 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
       reconnected: () => { if (mounted.current) activityEvent('organization_lifecycle_read', 'reconnect'); },
       unavailable: () => {
         if (!mounted.current) return;
-        activityEvent('organization_lifecycle_read', 'exception'); setOpen(false); setLiveUnavailable(true);
+        activityEvent('organization_lifecycle_read', 'exception'); setOpen(false); setLiveUnavailable(true); setLiveCurrent(false);
         setLiveStatus('Live updates are unavailable. Load the current lifecycle before reviewing another change.');
       },
       denied: (status, switched) => { if (mounted.current) unavailable(status, switched); },
@@ -71,7 +79,8 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
   }, [busy, intent, error, ack]);
   function begin() {
     if (pending.current) return;
-    const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined); return controller;
+    const controller = new AbortController(); pending.current = controller; setBusy(true); setError(undefined);
+    confirmedLiveVersion.current = undefined; setLiveCurrent(false); return controller;
   }
   function current(controller: AbortController) { return mounted.current && pending.current === controller && !controller.signal.aborted; }
   function finish(controller: AbortController) { if (current(controller)) { pending.current = undefined; setBusy(false); } }
@@ -83,6 +92,7 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
     }, controller.signal);
   }
   function unavailable(status: number, switched = false) {
+    confirmedLiveVersion.current = undefined; setLiveCurrent(false);
     if (switched || status === 403 || status === 404) { clearLifecycleIntent(organizationId); original.current = undefined; }
     setReview(undefined); setIntent(undefined); setAck(undefined); setOpen(false); setDenied(true);
     setError('Organization lifecycle is unavailable to this account.');
@@ -173,6 +183,7 @@ function Lifecycle({ organizationId }: { organizationId: string }) {
     {busy && <Typography role="status">Checking current lifecycle and permission…</Typography>}
     {error && <Alert severity="warning">{error}</Alert>}
     {liveStatus && !denied && <Typography role="status">{liveStatus}</Typography>}
+    {liveCurrent && !denied && !busy && <Typography role="status" aria-label="Live update status">Live updates are current.</Typography>}
     {ack && <Alert severity="success" role="status" tabIndex={-1} ref={notice}>Original change acknowledged: {lifecycleLabel(ack.status)}, revision {ack.version}.
       {' '}This acknowledgment may precede a later change. Load the current lifecycle before another action.</Alert>}
     {review && !denied && <>
