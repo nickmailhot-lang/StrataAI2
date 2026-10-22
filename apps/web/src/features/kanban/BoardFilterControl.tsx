@@ -328,10 +328,16 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
   function clear(event: React.MouseEvent<HTMLButtonElement>) { void change('clear', undefined, event.currentTarget); }
   function apply(event: React.MouseEvent<HTMLButtonElement>) { void change('apply', undefined, event.currentTarget); }
   function close() { restoreChangeFocus.current = false; epoch.current++; pending.current?.abort(); pending.current = undefined; memberPending.current?.abort(); memberPending.current = undefined; changePending.current?.abort(); changePending.current = undefined; setChangeBusy(false); setMemberLoading(false); setMembers([]); setMemberOpen(false); setLabelLoading(false); setOpen(false); setOpeningPending(undefined); setResult(undefined); }
+  const emptyGuidance = result?.items.length === 0 && !loading && !notice && !disabled && available
+    ? cursor
+      ? 'This is the last filter page. Select First filtered Cards to return, or change or clear the filters.'
+      : 'Try changing or clearing the applied filters to check other Cards you can access.'
+    : undefined;
   return <>
     {available && <Button ref={filterTrigger} onClick={() => { setOpen(true); setOpeningPending(`${org}/${board}`); }}>Filter Board Cards</Button>}
     {canvasMode && !open && <Stack spacing={1}>
       <Typography role="status">{result ? `Filtered Board: ${result.items.length} matching Cards on this page.` : 'Checking filtered Board Cards…'}</Typography>
+      {emptyGuidance && <Typography>{emptyGuidance}</Typography>}
       <Typography variant="body2">Open a Card to move it, or clear filters to reorder the full Board.</Typography>
       <Typography variant="body2">List operations still apply to every Card in that List.</Typography>
       <Stack direction="row" useFlexGap sx={{ flexWrap: 'wrap', gap: 1 }}>
@@ -405,7 +411,9 @@ export function BoardFilterControl({ snapshot, disabled, onRefresh, onCanvasChan
             setCanvasMode(true); close();
           }}>Show this page on Board</Button>}
           <Typography variant="body2">Results use the last applied filters. Apply again after changing the fields.</Typography>
-          <Typography role="status">{result.items.length ? `${result.items.length} Cards on this page` : 'No Cards match these filters.'}</Typography>
+          <Typography role="status">{result.items.length ? `${result.items.length} Cards on this page`
+            : cursor ? 'No matching Cards on this page.' : 'No Cards match these filters.'}</Typography>
+          {emptyGuidance && <Typography>{emptyGuidance}</Typography>}
           {result.items.map(c => <Button key={c.id} component={Link} to={`/app/${org}/boards/${board}/cards/${c.id}`} onClick={close}>{c.title} — {snapshot.lists.find(l => l.list.id === c.listId)?.list.name ?? 'Board List'}</Button>)}
           {result.next && <Button onClick={() => setCursor(result.next!)}>Next filtered Cards</Button>}
           {cursor && <Button onClick={() => setCursor(undefined)}>First filtered Cards</Button>}

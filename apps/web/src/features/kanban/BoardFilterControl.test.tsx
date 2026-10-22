@@ -64,6 +64,32 @@ it('keeps the filter scroll region keyboard accessible while Board admission dis
   expect(region).toHaveFocus(); expect(screen.getByLabelText('Card keyword')).toHaveValue('Retained draft');
   expect(fetch.mock.calls.every(([, init]: [string, RequestInit?]) => !init?.method || init.method === 'GET')).toBe(true);
 });
+it('rejects an empty continuation instead of turning an invalid page into successful empty guidance', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices())
+    .mockResolvedValueOnce(results([], card.id)));
+  mount(); await open(); fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await screen.findByText('Filtered Cards could not be loaded. Try again or refresh the Board.');
+  expect(screen.queryByText(/Try changing or clearing/)).not.toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Filtered Cards' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Next filtered Cards' })).not.toBeInTheDocument();
+});
+it.each([503, 403])('withdraws empty guidance during a pending read and after failure %s', async status => {
+  let release!: (value: Response) => void;
+  const fetch = vi.fn().mockResolvedValueOnce(response({ id: actor })).mockResolvedValueOnce(choices())
+    .mockResolvedValueOnce(results([])).mockImplementationOnce(() => new Promise<Response>(resolve => { release = resolve; }));
+  vi.stubGlobal('fetch', fetch); const p = props(); mount(p); await open();
+  fireEvent.change(screen.getByLabelText('Card keyword'), { target: { value: 'Retained draft' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await screen.findByText('Try changing or clearing the applied filters to check other Cards you can access.');
+  fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+  await waitFor(() => expect(release).toBeTypeOf('function'));
+  expect(screen.queryByText(/Try changing or clearing/)).not.toBeInTheDocument();
+  await act(async () => release(response({}, status)));
+  if (status === 403) await waitFor(() => expect(p.onRefresh).toHaveBeenCalled());
+  else { await screen.findByText('Filtered Cards could not be loaded. Try again or refresh the Board.'); expect(screen.getByLabelText('Card keyword')).toHaveValue('Retained draft'); }
+  expect(screen.queryByText(/Try changing or clearing/)).not.toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Filtered Cards' })).not.toBeInTheDocument();
+});
 it('lets an admitted anonymous PUBLIC visitor filter without assignee discovery or another actor criteria', async () => {
   sessionStorage.setItem(storage(), JSON.stringify({ keyword: 'Private actor criterion', labels: [], members: [actor], match: 'all' }));
   const fetch = vi.fn((path: string) => Promise.resolve(path === '/me' ? response({}, 401)
