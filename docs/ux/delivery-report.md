@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Star-recovery admission repair passes scoped checks
+
+Source `d77792fd` changes only browser fixtures/helpers. The original multi-account star scenario now waits for one actual same-origin mutation start, counts both possible mutation verbs, and stops even when a reply is lost. All original keys, versions, exact request counts, private history, dates, Worker ownership, focus and deadlines remain. No application, API, schema, tenant, security, dependency, performance budget or CI configuration changed.
+
+The repair passes 59 tests across four complete star-control/live/history/sync files, 42 admission/tracker contracts, four default and four fallback native cases at 320/390/768/1280px, web/browser types, full lint, 11 architecture/capacity guards and the intact 514-case/176-file browser partition. Native cases verify pending permission admission, no replay after a failed recovery reply, explicit same-key/version recovery, authoritative later state, 200% text, Axe and denial. An initial fallback invocation used mismatched mode flags; those four failures are retained and evaluated, and the unchanged correctly configured scope passes.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved; no new business scope. |
+| UX completion | Existing bounded polish remains implemented; acceptance remains unverified. |
+| Test completion | Repaired local scopes pass. Remote551 remains Failed; remaining matrix results and every fresh new-head gate are required. |
+| MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
+
+Ten bounded parent Task/Test records are Testing; independent #123 filter work remains preserved. Next: validate delivery evidence, consolidate remaining CI results, publish one replacement and pass all required gates before merge.
+
+---
+
 ## 2026-10-22 — Star-recovery CI failure retained; merge remains blocked
 
 Candidate `551a6bc8` failed the notification group's desktop Board-star recovery case. The 44-case Board-management invocation passed 43 and failed one; earlier completed invocations passed 14, while later scopes were not run. Verified diagnostics show the first command deliberately lost its reply, a later unstar committed and another account starred independently. The owner focused Retry and sent global Enter, but no retry mutation started; the original intent remained unconfirmed.
