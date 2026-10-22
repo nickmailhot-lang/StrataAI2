@@ -1,8 +1,10 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { OrganizationOperationalLifecyclePage } from './OrganizationOperationalLifecyclePage';
 import { readLifecycleIntent } from './operationalLifecycle';
 import type { watchOperationalLifecycle } from './operationalLifecycleLive';
+import type { OperationalLifecycleReplay } from './operationalLifecycleReplay';
 const live = vi.hoisted(() => ({ options: undefined as Parameters<typeof watchOperationalLifecycle>[0] | undefined }));
 vi.mock('./operationalLifecycleLive', () => ({ watchOperationalLifecycle: (options: Parameters<typeof watchOperationalLifecycle>[0]) => {
   live.options = options; return () => {};
@@ -44,6 +46,15 @@ const actor = '22222222-2222-4222-8222-222222222222'; const org = '55555555-5555
 const other = '33333333-3333-4333-8333-333333333333'; const event = '44444444-4444-4444-8444-444444444444';
 const profile = { id: actor, version: 1, status: 'ACTIVE', emailVerified: true, locale: 'en-CA', timezone: 'UTC' };
 const review = { organizationId: org, actorId: actor, status: 'ACTIVE', version: 3, updatedAt: '2026-10-10T12:00:00Z', actingCapacity: 'ORGANIZATION_OWNER', name: 'Reviewed Organization' };
+function publishedPage(version: number, status: 'ACTIVE' | 'SUSPENDED', published = true): OperationalLifecycleReplay {
+  return { organizationId: org, actorId: actor, status, version, afterVersion: 0, nextVersion: null, pending: !published,
+    events: published ? [{ eventId: event, organizationId: org, actorId: actor, entityType: 'Organization', entityId: org,
+      eventType: status === 'ACTIVE' ? 'ORGANIZATION_REACTIVATED' : 'ORGANIZATION_SUSPENDED', version,
+      previousStatus: status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE', status, actingCapacity: 'ORGANIZATION_OWNER', createdAt: '2026-10-10T12:00:01Z' }] : [] };
+}
+async function deliver(page: OperationalLifecycleReplay) {
+  await act(async () => { await live.options!.admit(page, new AbortController().signal); live.options!.update(page); });
+}
 const route = `/organizations/${org}/operational-lifecycle`;
 function response(body: unknown, status = 200) { return new Response(JSON.stringify(body), { status }); }
 function acknowledgment(options: RequestInit) {
@@ -51,11 +62,19 @@ function acknowledgment(options: RequestInit) {
   return { organizationId: org, actorId: actor, eventId: event, actorLabel: 'Original caption', actingCapacity: 'ORGANIZATION_OWNER',
     previousStatus: 'ACTIVE', status: body.status, version: body.version+1, correlationId: 'original-lifecycle', createdAt: '2026-10-10T12:00:01Z' };
 }
-function mount(id = org) {
+function mount(id = org, strict = false) {
   const router = createMemoryRouter([{ path: '/app/:organizationId/operational-lifecycle', element: <OrganizationOperationalLifecyclePage /> },
     { path: '/app', element: <h1>Organizations destination</h1> }, { path: '/login', element: <h1>Sign in destination</h1> }],
-    { initialEntries: [`/app/${id}/operational-lifecycle`] }); render(<RouterProvider router={router} />); return router;
+    { initialEntries: [`/app/${id}/operational-lifecycle`] });
+  render(strict ? <StrictMode><RouterProvider router={router} /></StrictMode> : <RouterProvider router={router} />); return router;
 }
+it('admits a fresh read after StrictMode retires the first mount without a domain write', async () => {
+  const fetcher = vi.fn(async (path: string) => response(path === '/me' ? profile : review));
+  vi.stubGlobal('fetch', fetcher); mount(org, true);
+  expect(await screen.findByRole('button', { name: 'Review lifecycle change' })).toBeEnabled();
+  expect(screen.getByText('Reviewed Organization')).toBeInTheDocument();
+  expect(fetcher.mock.calls.every(([path]) => path === '/me' || path === route)).toBe(true);
+});
 async function confirm() { fireEvent.click(await screen.findByRole('button', { name: 'Review lifecycle change' })); fireEvent.click(screen.getByRole('button', { name: 'Confirm lifecycle change' })); }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); sessionStorage.clear(); });
 
@@ -169,4 +188,60 @@ it('recovers an older receipt across a later reactivation without presenting it 
   await screen.findByText(/Original change acknowledged: Suspended, revision 4/);
   const reload = await screen.findByRole('button', { name: 'Load current lifecycle' }); await waitFor(() => expect(reload).toBeEnabled()); fireEvent.click(reload);
   await screen.findByText(/Revision 6/); expect(writes).toBe(2);
+});
+
+it('confirms live updates only after publication catches up with the admitted parent, then retains confirmation through quiet pages', async () => {
+  let current = review; const fetcher = vi.fn(async (path: string) => response(path === '/me' ? profile : current));
+  vi.stubGlobal('fetch', fetcher); mount(); await screen.findByRole('button', { name: 'Review lifecycle change' });
+  current = { ...review, status: 'SUSPENDED', version: 4 };
+  await deliver(publishedPage(4, 'SUSPENDED', false));
+  expect(screen.getByText(/Revision 4/)).toBeInTheDocument();
+  expect(screen.queryByRole('status', { name: 'Live update status' })).not.toBeInTheDocument();
+  await deliver(publishedPage(4, 'SUSPENDED'));
+  expect(screen.getByRole('status', { name: 'Live update status' })).toHaveTextContent('Live updates are current.');
+  await deliver({ ...publishedPage(4, 'SUSPENDED'), afterVersion: 4, events: [] });
+  expect(screen.getByRole('status', { name: 'Live update status' })).toBeInTheDocument();
+  expect(fetcher.mock.calls.every(([path]) => path === '/me' || path === route)).toBe(true);
+});
+it('does not confirm an older fact when the fresh permitted snapshot is ahead', async () => {
+  let current = review; vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : current)));
+  mount(); await screen.findByRole('button', { name: 'Review lifecycle change' }); current = { ...review, version: 5 };
+  await deliver(publishedPage(4, 'SUSPENDED'));
+  expect(screen.getByText(/Revision 5/)).toBeInTheDocument();
+  expect(screen.queryByRole('status', { name: 'Live update status' })).not.toBeInTheDocument();
+  await deliver(publishedPage(5, 'ACTIVE'));
+  expect(screen.getByRole('status', { name: 'Live update status' })).toBeInTheDocument();
+});
+it('withdraws live confirmation during interruption and restores it only after fresh admitted delivery', async () => {
+  const current = { ...review, status: 'SUSPENDED', version: 4 };
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : current)));
+  mount(); await screen.findByRole('button', { name: 'Review lifecycle change' }); await deliver(publishedPage(4, 'SUSPENDED'));
+  expect(screen.getByRole('status', { name: 'Live update status' })).toBeInTheDocument();
+  act(() => live.options!.unavailable());
+  expect(screen.queryByRole('status', { name: 'Live update status' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Review lifecycle change' })).toBeDisabled();
+  await deliver({ ...publishedPage(4, 'SUSPENDED'), afterVersion: 4, events: [] });
+  expect(screen.getByRole('status', { name: 'Live update status' })).toBeInTheDocument();
+});
+it('clears live confirmation for explicit reload until publication is admitted in the new review', async () => {
+  const current = { ...review, status: 'SUSPENDED', version: 4 };
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : current)));
+  mount(); await screen.findByRole('button', { name: 'Review lifecycle change' }); await deliver(publishedPage(4, 'SUSPENDED'));
+  expect(screen.getByRole('status', { name: 'Live update status' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Load current lifecycle' }));
+  await screen.findByRole('button', { name: 'Review lifecycle change' });
+  expect(screen.queryByRole('status', { name: 'Live update status' })).not.toBeInTheDocument();
+  await deliver(publishedPage(4, 'SUSPENDED'));
+  expect(screen.getByRole('status', { name: 'Live update status' })).toBeInTheDocument();
+});
+it('withdraws confirmation for unpublished newer state and for lost administration', async () => {
+  let current = { ...review, status: 'SUSPENDED', version: 4 };
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => response(path === '/me' ? profile : current)));
+  mount(); await screen.findByRole('button', { name: 'Review lifecycle change' }); await deliver(publishedPage(4, 'SUSPENDED'));
+  expect(screen.getByRole('status', { name: 'Live update status' })).toBeInTheDocument();
+  current = { ...review, version: 5 }; await deliver(publishedPage(5, 'ACTIVE', false));
+  expect(screen.queryByRole('status', { name: 'Live update status' })).not.toBeInTheDocument();
+  act(() => live.options!.denied(404, false));
+  expect(screen.queryByRole('status', { name: 'Live update status' })).not.toBeInTheDocument();
+  expect(screen.queryByText('Reviewed Organization')).not.toBeInTheDocument();
 });

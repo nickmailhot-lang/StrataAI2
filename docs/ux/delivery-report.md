@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Filter polish reconciled with corrected Organization and Search parent
+
+Draft #123 now includes parent #122 candidate `551a6bc8` through a normal branch merge. All three filter source/test inputs remain byte-identical to tested `a15b2484`. Both branches retain every work item, criterion, evidence record and cycle. The parent's three hosted browser failures, local remount/type/visual failures and subsequent scoped repairs remain recorded. Parent CI is still running; neither PR is accepted or merged to main.
+
+The independent filter workflow keeps accurate empty-page guidance and visible keyboard focus across Next/First, errors, denial and return. Its earlier 77 tests and four native cases in each presentation retain their actual source identity. Targeted checks on this combined branch are next; own full main-target qualification remains mandatory after the parent integrates.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business capabilities, contracts and tenant boundaries preserved. |
+| UX completion | Organization, Card/Search and filter polish implemented; acceptance remains unverified. |
+| Test completion | Parent frontend now passes 2,985 tests and existing source checks. Backend and downstream application gates remain pending. Follow-up reconciliation checks are next. |
+| MVP readiness | No new accepted increment; 71 Done unchanged. No combined percentage. |
+
+Combined ledger: 1625 items, 3921 criteria, 996 evidence records. Four filter and ten bounded parent Task/Test records remain Testing. Independent feature work and the frozen parent candidate are preserved.
+
+---
+
 ## 2026-10-21 — Original cover workflow and complete Foundation retest pass
 
 Current candidate `c1f1debb` passes the complete Foundation job119651986248 against the current exact images: **50 native cases** comprising28 Demo lifecycle cases,two reminder cases,both original desktop/phone cover cases and18 attachment lifecycle cases. The corrected visible readiness check succeeds. All original cover consent,receipts,keys/bodies,write counts,versions,public visibility,peer updates without navigation,privacy,assertions,deadlines and retries remain intact. Both earlier failed runs remain recorded as Failed; canceled scopes remain incomplete.
@@ -85,6 +102,42 @@ Separatefilter source22b92e46 is preserved through actualnormal sidebranch recon
 | MVP readiness | No newacceptedwork;71Doneunchanged. Globalreadiness unaccepted/unmeasured; no combinedpercentage. |
 
 Consolidatedactivefollowupledger:1621items/3917criteria/976evidence/71Done. Twofilterrecords remainTesting and fourparentCard/Search recordsInProgress. Allcriteriaacceptance staysunverified for thoseincrements. Next:reviewthefocusedstackeddraft,finish/fix122freshfullCIwithoutweakening,mergenormallyonlyafterallgatespass,then retargetandqualifythefilterfollowup independently. Independent118untouched.
+
+---
+
+## 2026-10-22 — Organization and Search repair passes complete scoped checks
+
+Source `23aa8073` adds honest admitted-live-update feedback and fresh lifecycle reads after development remount. Organization disclosure collapse uses the existing observed native activation. The real-service replay fixture now observes the consumer confirmation before disconnecting; its strict cursor 2/event 3 oracle remains intact. Search selected values wrap and reserve text-scaled arrow space; a new geometry check prevents a complete but obscured label. No transport, API/schema, tenant, consent, recovery, timeout, retry or required CI behavior changed.
+
+All 75 tests across 5 complete component files and 16 default plus 16 fallback native cases pass at 320/390/768/1280px with 200% text, Axe, denied withdrawal, conservative admitted/unadmitted reconnect and unchanged Card/Search drafts/paging. Types, full lint, 42 admission/architecture/capacity guards and 510 cases in 175 intact browser files pass collection/partition checks; the two attachment cases remain intact. Registry collection is not execution. Initial, intermediate, invocation and visual failures remain retained and evaluated.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing required business capabilities preserved; no new scope or global percentage. |
+| UX completion | Current Organization and Search repairs implemented and locally tested;10 bounded Task/Test records Testing, acceptance unverified. Independent #123 filter guidance/paging preserved. |
+| Test completion | Current scoped checks pass. Failed c1 hosted candidate remains Failed; every gate must pass on the replacement head. |
+| MVP readiness | No new accepted increment or merge; 71 Done unchanged. Complete release and priority workflow acceptance remain required. |
+
+The browser type check initially rejected two new rectangle spread conversions. The same geometry predicate now uses Array.from with the existing libraries; current browser types, full lint and the complete 320px Search case pass at `ed46f407`. The 32-case browser and 75-test unit proof retains its actual `23aa8073` identity; runtime bytes are unchanged.
+
+Full Git, evidence-hash, baseline, main-relative history validation and all 36 delivery contracts pass on the exact committed ledger. Next: one replacement push, every fresh hosted gate, review and verified main integration.
+
+---
+
+## 2026-10-22 — PR #122 current browser failures retained; targeted repair underway
+
+Candidate `c1f1debb` is not mergeable under the required quality policy: Full3 passed 125 and failed two Organization fixtures; Full4 passed 122 and failed the Search scope fit check at 320px/200% text. Required CI failed and the release bundle was skipped. Verified diagnostics identify an unobserved disclosure keypress, disconnect before published lifecycle consumer admission, and a clipped selected Search scope. All failed assertions, original deadlines, zero retries and required checks remain.
+
+The original cover-removal Foundation now passes all 50 cases on this candidate. Its 2979 frontend tests, 2519 backend tests, source/security/CodeQL and other passing groups retain their actual source identity; they cannot qualify the replacement. Existing 24 frontend and 5 backend capacity deferrals and two full-suite mail-topology skips are unchanged.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business, API and tenant contracts preserved. |
+| UX completion | Organization live-update confirmation and complete narrow Search labels being repaired; Card/Search and independent #123 keyboard/filter polish remain unaccepted. |
+| Test completion | Current hosted run failed three browser cases. New controlled native tests exposed a development remount admission bug, retained with a separate failing component regression before repair. Fresh complete checks required. |
+| MVP readiness | No new acceptance or merge. 71 Done records unchanged; no combined percentage. |
+
+Independent feature work remains on its separate draft branch. Next: finish scoped native, types and lint; publish one corrected candidate; require every final-head gate and immutable release before merge.
 
 ---
 

@@ -1,0 +1,37 @@
+{
+  "revision": "2f29edb9a2a4faf010c7ebdb1ba74d9b0f108830",
+  "at": "2026-10-22T08:25:30.780Z",
+  "result": "Failed",
+  "native": {
+    "reportSha256": "7d3ee9c8d9899ab7e924935e209caa66627e03e309b201a97c06d277a1452a37",
+    "stats": {
+      "startTime": "2026-10-22T08:18:38.846Z",
+      "duration": 81152.003,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 8,
+      "flaky": 0
+    },
+    "cause": "Development StrictMode aborted initial lifecycle load but left pending controller occupied, so the second mount could not start its fresh read.",
+    "repair": "Retire the aborted controller in existing effect cleanup; old async completions still fail current-controller checks. Separate explicit StrictMode red test added before repair."
+  },
+  "componentRed": {
+    "revision": "be4491656386f86eb5d69148bc0656cb73d107c7",
+    "logSha256": "25fd2bbe08f7b7aa1209dc9f7f5819ea3ed1fe756c03f2d4545feccf8291c204",
+    "passed": 23,
+    "failed": 5
+  },
+  "componentRemountRed": {
+    "revision": "a94cac51b7a1c8fb14a0242d7faaf80de00fbfa4",
+    "logSha256": "0e786a0d5292f8eafbf0be1f5c80c061aed725c599d93a36626837490fe50224",
+    "failed": 1,
+    "notSelected": 28
+  },
+  "controlledFixtureCorrection": "After eventful frames the fake server advances its next-frame cursor; a reconnect still uses the actual consumer Watch cursor. This preserves the production protocol and strict admitted/unadmitted oracle.",
+  "earlierScopedPass": {
+    "revision": "e5bb3613fd94cfea3755bfc290507764f3171883",
+    "completeFiles": 4,
+    "passed": 54,
+    "logSha256": "0a4c3060f519f3ff155b409915d18f6fe368797ea2cffa67a877d212ac219ae6"
+  }
+}
