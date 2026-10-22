@@ -1,5 +1,39 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Organization and Search repair passes complete scoped checks
+
+Source `23aa8073` adds honest admitted-live-update feedback and fresh lifecycle reads after development remount. Organization disclosure collapse uses the existing observed native activation. The real-service replay fixture now observes the consumer confirmation before disconnecting; its strict cursor2/event3 oracle remains intact. Search selected values wrap and reserve text-scaled arrow space; a new geometry check prevents a complete but obscured label. No transport, API/schema, tenant, consent, recovery, timeout, retry or required CI behavior changed.
+
+All75 tests across5 complete component files and16 default plus16 fallback native cases pass at320/390/768/1280px with200% text, Axe, denied withdrawal, conservative admitted/unadmitted reconnect and unchanged Card/Search drafts/paging. Types, full lint,42 admission/architecture/capacity guards and510 cases in175 intact browser files pass collection/partition checks; the two attachment cases remain intact. Registry collection is not execution. Initial, intermediate, invocation and visual failures remain retained and evaluated.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing required business capabilities preserved; no new scope or global percentage. |
+| UX completion | Current Organization and Search repairs implemented and locally tested;10 bounded Task/Test records Testing, acceptance unverified. Independent #123 filter guidance/paging preserved. |
+| Test completion | Current scoped checks pass. Failed c1 hosted candidate remains Failed; every gate must pass on the replacement head. |
+| MVP readiness | No new accepted increment or merge;71 Done unchanged. Complete release and priority workflow acceptance remain required. |
+
+Next: full Git/hash/baseline/evolution and delivery contracts, one replacement push, fresh complete hosted qualification, review and tested-tree main integration.
+
+---
+
+## 2026-10-22 — PR #122 current browser failures retained; targeted repair underway
+
+Candidate `c1f1debb` is not mergeable under the required quality policy: Full3 passed 125 and failed two Organization fixtures; Full4 passed 122 and failed the Search scope fit check at 320px/200% text. Required CI failed and the release bundle was skipped. Verified diagnostics identify an unobserved disclosure keypress, disconnect before published lifecycle consumer admission, and a clipped selected Search scope. All failed assertions, original deadlines, zero retries and required checks remain.
+
+The original cover-removal Foundation now passes all 50 cases on this candidate. Its 2979 frontend tests, 2519 backend tests, source/security/CodeQL and other passing groups retain their actual source identity; they cannot qualify the replacement. Existing 24 frontend and 5 backend capacity deferrals and two full-suite mail-topology skips are unchanged.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business, API and tenant contracts preserved. |
+| UX completion | Organization live-update confirmation and complete narrow Search labels being repaired; Card/Search and independent #123 keyboard/filter polish remain unaccepted. |
+| Test completion | Current hosted run failed three browser cases. New controlled native tests exposed a development remount admission bug, retained with a separate failing component regression before repair. Fresh complete checks required. |
+| MVP readiness | No new acceptance or merge. 71 Done records unchanged; no combined percentage. |
+
+Independent feature work remains on its separate draft branch. Next: finish scoped native, types and lint; publish one corrected candidate; require every final-head gate and immutable release before merge.
+
+---
+
 Local delivery validation and all **36 delivery contracts pass** on the exact 974-record ledger bytes committed in `daf76adb`. Recording this result brings the parent ledger to **975 evidence records**; 1619 items, 3915 criteria and 71 Done remain unchanged. Full hosted qualification of the next published head is still required.
 
 ## 2026-10-21 — Visible Card admission correction passes scoped checks

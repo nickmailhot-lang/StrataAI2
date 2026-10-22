@@ -1,0 +1,123 @@
+{
+  "revision": "c1f1debb91a5078aef7ed259ded5f623d1f206ef",
+  "at": "2026-10-22T08:25:30.780Z",
+  "result": "Failed",
+  "run": 39722002143,
+  "testedSynthetic": "30fcdb2104b9aaec913cf1c31ba3b0a920f9e53d",
+  "version": "0.1.0-1968",
+  "assets": [
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-full3-actions-context.md",
+      "sha256": "c093fa1edc56057386bdbb8cc6b63ddbf8d1ec9329ca8fa811716f8c245a47f9"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-full3-lifecycle-context.md",
+      "sha256": "e11a8a6ffab37526ec9648c6fe07cf527c89f5867929879f76f0abb189f1aafd"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-full3-actions-failure.png",
+      "sha256": "242f70c42630ff98f791b0f49f813e569b25d2c4b9fd664f7713fb0c8642034c"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-full3-lifecycle-3.png",
+      "sha256": "51092cb6c14908313106325044fc79a8f72a113002059e829185149f5caa5e45"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-full4-search-context.md",
+      "sha256": "ec843330e881089628e5f754e67353b702f5b1054db5a56906e5a648d4c5c70f"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-122-full4-search-failure.png",
+      "sha256": "15b737104bab5c2a019782bfc7e22770df3bf519a5be6ec4db2fa8439c2344c2"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 12408019551,
+      "sha256": "c48ac776c9798b62395ae2a755b319dc8d5083fa6147fe9e069b2b72780eb970",
+      "innerChecksums": 72
+    },
+    {
+      "id": 12411526686,
+      "sha256": "82f6225b184341883323f6cb8db559fa2efb0faaf429e990357b374de5bb50a5",
+      "innerChecksums": 102
+    }
+  ],
+  "failures": [
+    {
+      "job": 119651986281,
+      "file": "tests/browser/organization-actions.spec.ts",
+      "width": 390,
+      "assertion": "Disclosure open property must be false after native Enter; received true within original 5000ms.",
+      "cause": "Bare global keypress did not establish one observed local native activation after focus admission changed.",
+      "repair": "Reuse existing observed local-action admission. Stop after one native click. Original collapsed, hidden links, focus, role, target and viewport checks retained."
+    },
+    {
+      "job": 119651986281,
+      "file": "tests/browser/organization-operational-lifecycle-live.spec.ts",
+      "width": 390,
+      "line": 90,
+      "assertion": "Reconnect must replay exactly event3 after admitted cursor2 within original 30000ms.",
+      "cause": "Fixture disconnected after wire arrival and an already-current parent UI, before published event2 finished existing same-actor permission admission. Conservative reconnect correctly used cursor0 and replayed events2,3.",
+      "observed": [
+        {
+          "status": "ACTIVE",
+          "version": 1,
+          "afterVersion": 0,
+          "eventVersions": []
+        },
+        {
+          "status": "SUSPENDED",
+          "version": 2,
+          "afterVersion": 0,
+          "eventVersions": []
+        },
+        {
+          "status": "SUSPENDED",
+          "version": 2,
+          "afterVersion": 0,
+          "eventVersions": [
+            2
+          ]
+        },
+        {
+          "status": "ACTIVE",
+          "version": 3,
+          "afterVersion": 0,
+          "eventVersions": [
+            2,
+            3
+          ]
+        },
+        {
+          "status": "ACTIVE",
+          "version": 3,
+          "afterVersion": 3,
+          "eventVersions": []
+        }
+      ],
+      "repair": "Visible named status confirms a matching published fact only after current permission admission. Observe that consumer status before deliberate offline; preserve exact after2/event3 oracle and original deadline. This is not a responsive failure or a change to cursor advancement."
+    },
+    {
+      "job": 119651986200,
+      "file": "tests/browser/trello-card-search.spec.ts",
+      "width": 320,
+      "line": 134,
+      "assertion": "Selected Search scope scrollWidth <= clientWidth at 200% text; received false.",
+      "cause": "Existing MUI single-line selected value truncates Archived work in the narrow form.",
+      "repair": "Allow selected values to wrap within the existing Search form in both presentations; retain strict fit oracle and add post-selection Axe/reflow."
+    }
+  ],
+  "retainedPassing": {
+    "web": 2979,
+    "webCapacityDeferred": 24,
+    "backend": 2519,
+    "backendCapacityDeferred": 5,
+    "foundation": 50,
+    "notifications": 93,
+    "full1": 127,
+    "full2": 123,
+    "full2OriginalMailTopologySkips": 2
+  },
+  "evaluation": "All three failures remain Failed. Existing foundation cover recovery now passes actual release images, but partial successes do not qualify this failed head or any replacement. Full fresh required gates and release remain mandatory; no API/schema/role/tenant/Worker/command/deadline/retry changes."
+}
