@@ -1,0 +1,78 @@
+{
+  "revision": "dc210e3d4e5777820ff7ca3078698ea7e3cf66d5",
+  "at": "2026-10-22T16:49:44.800Z",
+  "result": "Passed",
+  "demo": {
+    "verifiedAt": "2026-10-22T16:04:14.315161+00:00",
+    "url": "http://localhost:8088",
+    "boardUrl": "http://localhost:8088/app/ce9d78fb-1e1f-455c-80ea-7b0235a77f3e/boards/883173a9-5f58-4aae-8b43-07c6fbd779a9",
+    "build": {
+      "revision": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+      "version": "0.1.0-1970"
+    },
+    "services": {
+      "api": {
+        "health": "passed",
+        "readiness": "passed",
+        "runtime": "demo",
+        "buildIdentity": "verified"
+      },
+      "worker": {
+        "health": "passed",
+        "readiness": "passed",
+        "runtime": "demo",
+        "buildIdentity": "verified"
+      }
+    },
+    "login": "passed",
+    "wrongPassword": "401 rejected",
+    "privateBoardAnonymousAccess": "404 rejected",
+    "seeded": {
+      "organization": "ce9d78fb-1e1f-455c-80ea-7b0235a77f3e",
+      "board": "883173a9-5f58-4aae-8b43-07c6fbd779a9",
+      "lists": 3,
+      "cards": 7
+    },
+    "qualification": "Local preview smoke only; PR122 remains unmerged and not release-accepted."
+  },
+  "imageVerification": {
+    "build": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+      "shortSha": "da9f1dcdd873",
+      "workflowRunId": "39777957890",
+      "workflowRunNumber": "1970",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1970",
+      "releaseVersion": null,
+      "imageTag": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+      "createdAt": "2026-10-22T12:23:58.042Z",
+      "images": {
+        "web": "strataai-web:da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+        "api": "strataai-api:da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+        "worker": "strataai-worker:da9f1dcdd873a31efb93738bb43d5315e5eb8696"
+      }
+    },
+    "images": {
+      "web": {
+        "localManifestId": "sha256:bfa6a40f529d05c0f8ca7b4f27fbe1f6a0d6781ca08bde7b04cde2fba9ff1b35",
+        "ciConfigId": "sha256:8f1277c451af918a0ce5d34d7ba0f6533f8bd0c8e84a6e3f6fb6284dd1992d05"
+      },
+      "api": {
+        "localManifestId": "sha256:184cbf2259ff55742087f1d7afe4af86f07cb874db1eceed0686f4d946a60837",
+        "ciConfigId": "sha256:c537617bc1e46512bc105986dfe3785a07d22fc8acfa230d32bcda20e3b6e9e8"
+      },
+      "worker": {
+        "localManifestId": "sha256:12ac7a068656397f2af7a5e3d1e8e7f589ed545588e3629b211088698d403b72",
+        "ciConfigId": "sha256:708e036d2e8c9380901f954cdd603cb1fa33ce3d372f0ec2bb6bb20bee7bfb27"
+      }
+    },
+    "checksums": "all five passed",
+    "note": "Docker Desktop containerd reports OCI manifest IDs; CI classic store reports verified config IDs."
+  },
+  "artifact": {
+    "id": 12427947814,
+    "sha256": "a5eb4da4b30f5a180b4c61028e79f41c87f148452cd75957a0f5c38d61294137"
+  },
+  "limits": "This runs old built application415a/da9 as requested; not the new repair. Demo does not qualify a replacement or establish MVP acceptance. API restart resets process-local sample/account/work data."
+}
