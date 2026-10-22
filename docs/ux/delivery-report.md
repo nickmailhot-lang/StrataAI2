@@ -1,5 +1,22 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — External CI-result publication delay; merge remains gated
+
+GitHub reports an active [Actions-results incident](https://www.githubstatus.com/incidents/q29p76qtnkyk), beginning at14:18 UTC. Its14:35 update says repository updates recovered while workflow and step-result processing remains delayed. This may explain stale setup or queue displays for PR #122; the specific runner cause is not confirmed. The incident is an external observation dependency, not a failing application assertion or permission to merge.
+
+Frozen candidate `415a0378` retains verified source11 (2,985 frontend / 2,519 backend, original24/5 deferrals), built-image/security, Foundation50, command integration and all93 notification passes. Original distinct-account star recovery now passes with all original key/version/count/history/Worker oracles. Four full-browser groups, complete six-profile performance, aggregate required CI, immutable release and final review/main integration still require authoritative passing results.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new scope. |
+| UX completion | Bounded polish and independent filter guidance implemented and locally checked; acceptance unverified. |
+| Test completion | Verified passes retained. Pending or delayed results are not counted as passes or application failures. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Owner of external result-processing recovery: GitHub Actions. Resume condition: all current-head checks and artifact evidence become available and pass verification; incident resolution alone is insufficient. Preserve the running jobs and frozen candidate. No assertions, deadlines, retries, budgets or required checks change. Ledger: 1625 items, 3921 criteria, 1011 evidence records, with ten parent and four filter records still Testing.
+
+---
+
 ## 2026-10-22 — Original star recovery and all notification workflows pass
 
 Frozen PR #122 candidate `415a0378` passes all 93 real-service notification cases, including the original multi-account star recovery that failed on551 and all later privacy, source, watch, assignment, mention, reminder and authority-ordering workflows. The nine invocations pass 4+2+2+6+44+14+7+9+5, with no failures or skips. Original keys, versions, counts, history, private Worker delivery and deadlines remain intact.
