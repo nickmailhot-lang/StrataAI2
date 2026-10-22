@@ -1,5 +1,7 @@
 # Consolidated PRD delivery report
 
+Local delivery validation and all **36 delivery contracts pass** on the exact 974-record ledger bytes committed in `daf76adb`. Recording this result brings the parent ledger to **975 evidence records**; 1619 items, 3915 criteria and 71 Done remain unchanged. Full hosted qualification of the next published head is still required.
+
 ## 2026-10-21 — Visible Card admission correction passes scoped checks
 
 Source `33018315` uses the existing visible Review Card cover control to confirm parent admission while the Card dialog correctly hides the background Board. All eight complete Card/Search cases pass in both the polished and fallback views at 320, 390, 768 and 1280px. They verify pending and failed reads disable the review control, a fresh admitted read restores it, and denial withdraws it. Existing dirty-return, Search paging, 200% text, accessibility and privacy checks remain.
