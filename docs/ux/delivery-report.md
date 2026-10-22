@@ -1,5 +1,24 @@
 # Consolidated PRD delivery report
 
+## 2026-10-21 — PR #122 source gates pass; built-application qualification continues
+
+Frozen candidate `c1f1debb` has **11 passing source gates**: frontend 2,979 tests, backend 2,519 tests, types/lint, database integration, metadata, source quality and all CodeQL checks. The original 24 frontend capacity deferrals and five backend deferred methods are unchanged. Provider ZIP digests and embedded metadata bind these results to test merge `30fcdb21`, CI39722002143, attempt1 and version0.1.0-1968. Current image build119651064466 also passes; the same three images feed downstream jobs.
+
+Frontend artifact12401078738 SHA2569a333eb46ca01597ecf7b7f13e13752468e14075615d7be81f670f13a52dc861 and backend artifact12402904246 SHA256489127c30c8f61818147681fd3b89d8a362e66d10aa062587e5510b899ca4181 are verified. The earlier candidates’ passes are not used to qualify this replacement. Both original Foundation failures and their failed aggregate checks remain recorded; canceled scopes remain incomplete. No additional completed failed step was found in the ten canceled workflow groups.
+
+The current actual cover workflow, all built-application native/role/regression checks, security, six strict normal-performance profiles, source-free immutable release, review and verified normal main integration remain required. **Do not merge or accept the affected records yet.**
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Card/Search and independent filter polish implemented; acceptance pending. |
+| Test completion | Parent source gates and scoped UX checks pass; complete parent and follow-up gates remain required. |
+| MVP readiness | No new accepted increment or combined percentage; 71 Done unchanged. |
+
+Combined active ledger:1623 items,3919 criteria,990 evidence records. PR #123 retains its tested filter source`a15b2484`,77 scoped tests and four browser cases per presentation, plus current reconciled types/registry and36 delivery contracts. Parent passes cannot substitute for its own complete main-target qualification.
+
+---
+
 The reconciled follow-up source `5abadda8` passes current browser types, the complete 506-case/175-file partition, full Git/hash/baseline/evolution validation and all **36 delivery contracts**. Filter implementation/test hashes still match tested `a15b2484`. Recording this result brings the combined ledger to **989 evidence records**; work/criteria counts and 71 Done are unchanged. Parent and follow-up full hosted qualification remain pending.
 
 ## 2026-10-21 — Parent correction reconciled; filter polish remains independent
