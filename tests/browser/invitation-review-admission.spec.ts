@@ -64,18 +64,14 @@ for (const width of [1280, 768, 390, 320]) for (const boardSurface of [false, tr
     await openAdmittedReview(page.getByRole('button', { name: 'Refresh invitations', exact: true }), revoke);
     await expect(revoke).toBeEnabled();
     const dialog = page.getByRole('dialog', { name: 'Revoke invitation?', exact: true });
-    // A benign mail-state update arrives during the first opening transition.
-    // Current authority must retire that review; never force its default focus.
+    // Observe the first review before delivering a benign mail-state update.
+    // Current authority must retire it; review again only after that outcome.
+    await openAdmittedReview(revoke, dialog);
     source.changeNext = true;
-    await revoke.evaluate(node => node.addEventListener('click', () => {
-      setTimeout(() => window.dispatchEvent(new Event('focus')), 0);
-    }, { once: true }));
-    const opening = openFocusedInvitationReview(revoke, dialog);
-    try {
-      await expect.poll(() => source.changedReads).toBe(1);
-      await expect(dialog).toHaveCount(0);
-      await opening;
-    } finally { await opening.catch(() => {}); }
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect.poll(() => source.changedReads).toBe(1);
+    await expect(dialog).toHaveCount(0);
+    await openFocusedInvitationReview(revoke, dialog);
     const cancel = dialog.getByRole('button', { name: 'Cancel', exact: true });
     await expect(cancel).toBeFocused(); expect(source.writes).toEqual([]);
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
