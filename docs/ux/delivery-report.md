@@ -1,5 +1,15 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Current images verified and preloaded; integration gates running
+
+Frozen candidate `f7174ba4` now has 13 green checks: source quality, built images and security. The exact build 1972 web/API/Worker images pass provider and inner checksums, manifest/config/layer identity and source/version labels. They are preloaded only; no new containers have started. The current security artifact also passes provenance checks. CodeQL analysis succeeds; its optional cache-restore warning was evaluated, and no check was changed or finding suppressed.
+
+Four integration groups are running and three are queued under the unchanged four-job limit. All current native, role, SQL and regression workflows, six measured original strict performance profiles, immutable release, final review and verified normal main integration remain required. No merge, acceptance or Demo activation has occurred. The original user Demo stays available.
+
+The prepared refresh uses a separate 127.0.0.1 browser origin to preserve the original localhost session. It remains guarded by actual passing qualification and main-integration proof. The independent Board-filter and assignee work retains its scoped results and pending new-image/SQL/full qualification. Functional completion, UX completion, test completion and MVP readiness remain separate; 71 Done unchanged.
+
+---
+
 ## 2026-10-22 — Replacement source gates pass; release images building
 
 Frozen PR #122 candidate `f7174ba4` passes all 11 source-quality checks. Provider checksums, current build/run identities and complete reports verify **2,985 frontend and 2,519 backend passes**. The original 24 frontend and five backend deferrals retain the same source identities; none is counted as a pass. Build 1972 images are building once.
