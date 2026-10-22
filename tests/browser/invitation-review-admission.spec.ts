@@ -14,7 +14,14 @@ async function sourceFor(page: Page, boardSurface: boolean) {
   const root = boardSurface ? `/boards/${board}/invitations` : `/organizations/${org}/invitations`;
   const state = { malformed: true, changed: false, changeNext: false, denied: false, changedReads: 0, writes: [] as string[] };
   await page.routeWebSocket('**/*', socket => socket.onMessage(message => {
-    if (typeof message === 'string' && message.includes('"protocol"')) socket.send('{}\u001e');
+    if (typeof message !== 'string') return;
+    for (const part of message.split('\u001e').filter(Boolean)) {
+      const value = JSON.parse(part) as { protocol?: string; type?: number; target?: string; invocationId?: string };
+      if (value.protocol) socket.send('{}\u001e');
+      if (new URL(socket.url()).pathname === '/boards/live' && value.type === 4 && value.target === 'Watch')
+        socket.send(JSON.stringify({ type: 2, invocationId: value.invocationId,
+          item: { cursor: '0', hasMore: false, pending: false, resetRequired: false, events: [] } }) + '\u001e');
+    }
   }));
   await page.route('**/*', async route => {
     const request = route.request(); if (!['fetch', 'xhr'].includes(request.resourceType())) return route.continue();
