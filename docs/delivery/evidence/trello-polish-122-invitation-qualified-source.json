@@ -1,0 +1,146 @@
+{
+  "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+  "at": "2026-10-22T17:50:03.435Z",
+  "result": "Passed",
+  "identity": {
+    "head": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+    "base": "4c1e27e265a71e0787e0bf40177337a5be2e2155",
+    "synthetic": "cff10bd1499c80374215e28b42e9c9720ea707ca",
+    "tree": "8b04d47b15a4fa07ddc00a59dc61c858d3e5ee07",
+    "run": "39818629442",
+    "version": "0.1.0-1971",
+    "attempt": "1",
+    "browserCases": 522,
+    "browserFiles": 177,
+    "browserPartition": [
+      131,
+      131,
+      131,
+      129
+    ]
+  },
+  "checks": [
+    {
+      "id": 119987543145,
+      "name": "source-quality-gate",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119987543145"
+    },
+    {
+      "id": 119964324943,
+      "name": "web-quality",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119964324943"
+    },
+    {
+      "id": 119964324855,
+      "name": "postgres-integration",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119964324855"
+    },
+    {
+      "id": 119964324645,
+      "name": "dotnet-quality",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119964324645"
+    },
+    {
+      "id": 119964086902,
+      "name": "metadata",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818629442/job/119964086902"
+    },
+    {
+      "id": 119963893010,
+      "name": "CodeQL",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/119963893010"
+    },
+    {
+      "id": 119963616892,
+      "name": "Analyze (javascript-typescript)",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616892"
+    },
+    {
+      "id": 119963616781,
+      "name": "Analyze (c-cpp)",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616781"
+    },
+    {
+      "id": 119963616770,
+      "name": "Analyze (csharp)",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616770"
+    },
+    {
+      "id": 119963616364,
+      "name": "Analyze (actions)",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616364"
+    },
+    {
+      "id": 119963616079,
+      "name": "Analyze (python)",
+      "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39818623129/job/119963616079"
+    }
+  ],
+  "sourceCounts": {
+    "web": {
+      "passed": 2985,
+      "failed": 0,
+      "skipped": 24
+    },
+    "dotnet": {
+      "passed": 2519,
+      "failed": 0,
+      "skipped": 5
+    }
+  },
+  "artifacts": [
+    {
+      "id": 12446018050,
+      "name": "source-test-results-dotnet-cff10bd1499c80374215e28b42e9c9720ea707ca",
+      "sha256": "7421328dd1fbf4566310de96611265874eadd8b08f4786aadb1ba76c6ff47bf7",
+      "size": 150859
+    },
+    {
+      "id": 12444990426,
+      "name": "source-test-results-web-cff10bd1499c80374215e28b42e9c9720ea707ca",
+      "sha256": "75ae682fa67d5876ae17b98b68b1117c696075b0897f0c727697fa2327546682",
+      "size": 136768
+    },
+    {
+      "id": 12443781483,
+      "name": "strataai-build-metadata-cff10bd1499c80374215e28b42e9c9720ea707ca",
+      "sha256": "6e38544a61f12c8a8815b5a7f826d34224510b00ebc36efa23bc0be36d4beae1",
+      "size": 420
+    }
+  ],
+  "verification": "Provider ZIP hashes and embedded current composition/run/attempt/version/three image tags verified. All original24 frontend and5 backend deferral source identities retained. This proves source gates only.",
+  "limits": "Images are building once. Current native/role/strict6-performance/security/release/final review and verified normal main integration remain mandatory. This candidate does not contain the independent assignee fix."
+}

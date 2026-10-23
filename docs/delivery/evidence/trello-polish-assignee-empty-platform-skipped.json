@@ -1,0 +1,25 @@
+{
+  "revision": "da0b224b198450196ab542c0c4af5ef3247255d0",
+  "at": "2026-10-22T17:52:01.169Z",
+  "result": "Skipped",
+  "scope": "Boundary-only *member* host selection",
+  "counts": {
+    "passed": 75,
+    "failed": 0,
+    "skipped": 1
+  },
+  "case": "StrataAI.Api.Tests.ApiHostTests.PRD_14_Selected_cover_HTTP_exposes_only_sanitized_PNG_and_rechecks_public_or_current_member_scope",
+  "reason": "Private staging requires Linux.",
+  "source": {
+    "path": "tests/StrataAI.Api.Tests/CardCoverDeliveryApiTests.cs",
+    "sha256": "dfb7f0d80e590393938977e4ebabbe61f87de2249ae357bf86b5a02520d14aed",
+    "unchangedFrom": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+    "gitBlobSha256": "7baf819939561f842d6d6e2b57d35d0b45b5738cbdf00cfac88e21611a66df09",
+    "lineEndingApplicability": "Working copy uses CRLF;the retained Git blob uses LF. Entire source is byte-identical after line-ending canonicalization;the existing Linux platform guard was not modified."
+  },
+  "resultArtifact": {
+    "path": "../trello-assignee-members-correct-results/assignee-members-correct.trx",
+    "sha256": "d9f9bd3855053616aa68ca4cb27f57276d63838848dbd7183993db5b0ad266f0"
+  },
+  "evaluation": "This existing platform guard is distinct from the original five capacity deferrals. The Linux case was not run locally and is not a pass. Full Linux API/image qualification remains mandatory; no source or CI skip was added."
+}

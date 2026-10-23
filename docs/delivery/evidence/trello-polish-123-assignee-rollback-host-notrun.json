@@ -1,0 +1,10 @@
+{
+  "revision": "0d8939e2d8eedc74ebe29c8b96ca7bcee28a6c27",
+  "at": "2026-10-23T04:19:01.720628+00:00",
+  "result": "Not Run",
+  "action": "Local host Vite rollback server via PowerShell Start-Process",
+  "reason": "Automatic approval review rejected:blocked by policy",
+  "state": "No Vite process started;not retried through another host launch mechanism.",
+  "safeAlternative": "Compile frontend only with existing flag0,then serve read-only assets in the already isolated QA Docker web service. API/Worker IDs unchanged;four actual rollback cases pass separately in scoped evidence.",
+  "limits": "Host-server Not Run is retained separately;Docker scoped pass is not substituted for fresh immutable current-head CI."
+}

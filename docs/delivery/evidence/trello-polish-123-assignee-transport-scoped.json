@@ -1,0 +1,238 @@
+{
+  "revision": "0d8939e2d8eedc74ebe29c8b96ca7bcee28a6c27",
+  "at": "2026-10-23T04:19:01.720628+00:00",
+  "result": "Passed",
+  "priorHead": "95c1f5c2a9148cef2a3f7f71ea48b2af88fff2d9",
+  "executionSource": "Both invocations executed the sole dirty fixture repair on95c1f5c2. Recorded implementation0d8939e2 contains those exact bytes; this is byte-identity/scoped proof,not a claim that a future commit was the Git HEAD at execution.",
+  "fixture": {
+    "path": "tests/browser/card-assignee-empty-preview.spec.ts",
+    "sha256": "a9ba810099aa4a4176d0e1aa1d661e017c3a416c46621914ab8b3441fa00b0e4"
+  },
+  "behavioralOracles": "Original entire UI/canonical/stale/current/zero-business-write/logout/private404/finally tail byte-identical;90s scenario,all original expectations,widths and authority unchanged.",
+  "classification": {
+    "result": "Passed",
+    "cases": [
+      {
+        "method": "POST",
+        "path": "/organizations/live/operational-lifecycle/negotiate",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/live/operational-lifecycle/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "PATCH",
+        "path": "/organizations/live/operational-lifecycle/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "DELETE",
+        "path": "/organizations/live/operational-lifecycle/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/live/metadata/negotiate",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/live/metadata/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "PATCH",
+        "path": "/organizations/live/metadata/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "DELETE",
+        "path": "/organizations/live/metadata/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/boards/live/negotiate",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "method": "PUT",
+        "path": "/boards/live/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "PATCH",
+        "path": "/boards/live/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "DELETE",
+        "path": "/boards/live/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/organizations",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/boards",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/boards/11111111-1111-4111-8111-111111111111/lists",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/lists/11111111-1111-4111-8111-111111111111/cards",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "PATCH",
+        "path": "/cards/11111111-1111-4111-8111-111111111111/dates",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "PUT",
+        "path": "/cards/11111111-1111-4111-8111-111111111111/members/22222222-2222-4222-8222-222222222222",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "DELETE",
+        "path": "/cards/11111111-1111-4111-8111-111111111111",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/boards/11111111-1111-4111-8111-111111111111/cards/filter-change",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/boards/11111111-1111-4111-8111-111111111111/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/boards/live/negotiate/extra",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "POST",
+        "path": "/boards/live/stars/negotiate",
+        "expected": 1,
+        "actual": 1
+      },
+      {
+        "method": "GET",
+        "path": "/boards",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "method": "HEAD",
+        "path": "/cards",
+        "expected": 0,
+        "actual": 0
+      }
+    ],
+    "source": {
+      "path": "tests/browser/card-assignee-empty-preview.spec.ts",
+      "sha256": "a9ba810099aa4a4176d0e1aa1d661e017c3a416c46621914ab8b3441fa00b0e4"
+    },
+    "originalUITail": "Byte-identical from page.goto through canonical/stale/current/zero-write/logout/private404/finally assertions",
+    "scope": "Measurement boundary verification,not a substitute for actual-image native or own complete CI."
+  },
+  "executions": [
+    {
+      "label": "retained1974API/web/Worker",
+      "path": "work/trello-123-assignee-fixed-image.json",
+      "sha256": "eb99adbbc1d70cc9dfb393c46878114ff06420a1952d7ea7f6bbd0170d952c2a",
+      "stats": {
+        "startTime": "2026-10-23T04:11:49.903Z",
+        "duration": 27359.614,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "label": "flag0 local compiled frontend over same retained1974API/Worker",
+      "path": "work/trello-123-assignee-fixed-rollback.json",
+      "sha256": "220bcc5d4922923c703f32d2e2a58f4fcfcc646b1ab0a21d26985c24b175b219",
+      "stats": {
+        "startTime": "2026-10-23T04:16:37.780Z",
+        "duration": 26402.042999999998,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    }
+  ],
+  "rollbackBuild": {
+    "flag": "VITE_STRATAAI_WORK_UX=0",
+    "sourceHead": "95c1f5c2a9148cef2a3f7f71ea48b2af88fff2d9",
+    "webSourceChanges": "none versus frozen head;only browser fixture/docs changed",
+    "kind": "Local compiled rollback frontend over retained CI API/Worker;not immutable CI-web evidence",
+    "files": [
+      {
+        "path": "assets/index-Bw_GsyDn.css",
+        "sha256": "fc33a78a27e5091ded148a71980768a2c0f49737f997b9f918bbaf7df062c666"
+      },
+      {
+        "path": "assets/index-DpuYIPrX.js",
+        "sha256": "9b9ad4399b855857ac9208a002abea12f425cbd722bec4b3d1a0257b6b504149"
+      },
+      {
+        "path": "build-metadata.json",
+        "sha256": "3714e6c95267a60a979eb15c69012f4b7f3bb95f0c2abe2a035b7a5a9dd243d3"
+      },
+      {
+        "path": "index.html",
+        "sha256": "a11883f2067fc50aac2257ac16afc0708245a2f1cc012d41535daa9d6dccfc4c"
+      }
+    ]
+  },
+  "apiWorkerPreserved": {
+    "api": "d871fc4f63a6791d8dc35ee3eb79b50882289ecfdcda5b1dbd5dac08d534e525",
+    "worker": "67a3dc6f9454599da5966b6b25e8fb6e3f6ac16f8ebcfe9546c9f83e7233a50d"
+  },
+  "browserTypes": {
+    "path": "work/trello-123-transport-browser-types.log",
+    "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+    "result": "Passed"
+  },
+  "bounds": "Only isolated disposable QA topology used;sourceAPI18082 never started;current1970/1972 user demos unchanged. Failed1974candidate is not qualified/merged/activated;fresh all22 own CI remains mandatory.",
+  "localProbeInvocationNote": "First standalone classification audit did not execute due over-escaped regex SyntaxError;corrected audit uses literal suffix slicing and all25 probes pass. This was an audit-helper invocation error,not a product/native test result."
+}

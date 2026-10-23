@@ -1,0 +1,372 @@
+{
+  "revision": "da0b224b198450196ab542c0c4af5ef3247255d0",
+  "at": "2026-10-22T17:52:01.169Z",
+  "result": "Failed",
+  "compile": {
+    "revision": "77f20355",
+    "result": "Build failed;0 tests executed",
+    "cause": "New test incorrectly named a nonexistent BoardRole.Viewer. The actual model uses an active Organization member without a Board grant for read-only Organization visibility.",
+    "log": {
+      "path": "../trello-assignee-empty-red.log",
+      "sha256": "5dafd1b0d5159855c168b5d2fc6e2c186b4d3bec775372a76ce26cce886105c7",
+      "text": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs(14,27): error CS0117: 'BoardRole' does not contain a definition for 'Viewer' [C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\StrataAI.Api.Tests.csproj]\r\nBuild failed with exit code: 1.\r\n"
+    }
+  },
+  "canonicalRed": {
+    "revision": "e9053ac0",
+    "passed": 0,
+    "failed": 6,
+    "skipped": 0,
+    "cause": "All six new cases find that zero-assignee Cards are omitted from the canonical preview dictionary.",
+    "log": {
+      "path": "../trello-assignee-empty-red-canonical.log",
+      "sha256": "e5e49b2bf054d13f94713c9d27635e4649b66c92f1b2f5b4f93843e1c2be1c27",
+      "text": "Running tests from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\nfailed StrataAI.Api.Tests.ApiHostTests.Card_member_previews_remain_absent_for_anonymous_and_foreign_Organization_public_visitors (4s 509ms)\r\n  from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\n  Xunit.MicrosoftTestingPlatform.XunitException: System.Collections.Generic.KeyNotFoundException : The given key 'ee1cb915-9429-4d0a-a8e2-62b36c629892' was not present in the dictionary.\r\n    at System.Collections.Generic.Dictionary`2.get_Item(TKey key)\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_remain_absent_for_anonymous_and_foreign_Organization_public_visitors() in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:74\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_remain_absent_for_anonymous_and_foreign_Organization_public_visitors() in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:75\r\n    --- End of stack trace from previous location ---\r\nfailed StrataAI.Api.Tests.ApiHostTests.Card_member_previews_empty_state_retains_current_account_eligibility_filtering (1s 463ms)\r\n  from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\n  Xunit.MicrosoftTestingPlatform.XunitException: System.Collections.Generic.KeyNotFoundException : The given key 'ca1675ab-f4a3-4e91-b480-f38c4987651c' was not present in the dictionary.\r\n    at System.Collections.Generic.Dictionary`2.get_Item(TKey key)\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_empty_state_retains_current_account_eligibility_filtering() in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:108\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_empty_state_retains_current_account_eligibility_filtering() in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:112\r\n    --- End of stack trace from previous location ---\r\nfailed StrataAI.Api.Tests.ApiHostTests.Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(role: Admin) (1s 383ms)\r\n  from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\n  Assert.Equal() Failure: Values differ\r\n  Expected: 2\r\n  Actual:   1\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(Nullable`1 role) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:39\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(Nullable`1 role) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:54\r\n    --- End of stack trace from previous location ---\r\nfailed StrataAI.Api.Tests.ApiHostTests.Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(role: Member) (2s 297ms)\r\n  from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\n  Assert.Equal() Failure: Values differ\r\n  Expected: 2\r\n  Actual:   1\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(Nullable`1 role) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:39\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(Nullable`1 role) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:54\r\n    --- End of stack trace from previous location ---\r\nfailed StrataAI.Api.Tests.ApiHostTests.Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(role: null) (2s 074ms)\r\n  from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\n  Assert.Equal() Failure: Values differ\r\n  Expected: 2\r\n  Actual:   1\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(Nullable`1 role) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:39\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_include_explicit_empty_visible_Cards_for_admitted_roles(Nullable`1 role) in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:54\r\n    --- End of stack trace from previous location ---\r\nfailed StrataAI.Api.Tests.ApiHostTests.Card_member_previews_follow_last_assignment_removal_without_inventing_a_revision (1s 702ms)\r\n  from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\n  Xunit.MicrosoftTestingPlatform.XunitException: System.Collections.Generic.KeyNotFoundException : The given key 'ef74d503-d391-4517-b567-5a2e5ab59d47' was not present in the dictionary.\r\n    at System.Collections.Generic.Dictionary`2.get_Item(TKey key)\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_follow_last_assignment_removal_without_inventing_a_revision() in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:90\r\n    at StrataAI.Api.Tests.ApiHostTests.Card_member_previews_follow_last_assignment_removal_without_inventing_a_revision() in C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\CardMemberEmptyPreviewTests.cs:94\r\n    --- End of stack trace from previous location ---\r\nC:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64) failed with 6 error(s) (16s 657ms)\r\nExit code: 2\r\n\r\n  In process file artifacts produced:\r\n    - C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-empty-red-canonical-results\\assignee-empty-red-canonical.trx\r\n\r\nTest run summary: Failed!\r\n  total: 6\r\n  failed: 6\r\n  succeeded: 0\r\n  skipped: 0\r\n  duration: 19s 771ms\r\nTest run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)\r\n"
+    }
+  },
+  "invalidInvocations": [
+    {
+      "log": {
+        "path": "../trello-assignee-regressions.log",
+        "sha256": "f68d6fd105dad2fd775495413527855273220ef17dbbf32bc6b9b9530b57249c",
+        "text": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0) Zero tests ran\r\nExit code: 5\r\n\r\nTest run summary: Zero tests ran\r\n  error: 1\r\n\r\n  total: 0\r\n  failed: 0\r\n  succeeded: 0\r\n  skipped: 0\r\n  duration: 439ms\r\nTest run completed with non-success exit code: 5 (see: https://aka.ms/testingplatform/exitcodes)\r\n"
+      },
+      "cause": "Inner wildcard fragments are unsupported; zero tests ran. No pass claimed."
+    },
+    {
+      "log": {
+        "path": "../trello-assignee-members.log",
+        "sha256": "b41963ef710c2aea3a3fd798b563e20da488fd6cfcdfaae8bd27abb912aa5b5d",
+        "text": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0) Zero tests ran\r\nExit code: 5\r\n\r\nTest run summary: Zero tests ran\r\n  error: 1\r\n\r\n  total: 0\r\n  failed: 0\r\n  succeeded: 0\r\n  skipped: 0\r\n  duration: 481ms\r\nTest run completed with non-success exit code: 5 (see: https://aka.ms/testingplatform/exitcodes)\r\n"
+      },
+      "cause": "Same unsupported inner wildcard;zero tests ran. Corrected boundary-only patterns run actual tests."
+    },
+    {
+      "log": {
+        "path": "../trello-assignee-test-options.log",
+        "sha256": "ac5e6a69a9545dd47dfe440e8d986e0e3b6f0b9686ba920d92a49d812526bac2",
+        "text": "Running tests from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\StrataAI.Api.Tests\\bin\\Release\\net10.0\\StrataAI.Api.Tests.dll (net10.0|x64)\r\nProcess terminated.\r\nSystem.InvalidOperationException: An unexpected help-related message was received when `--help` wasn't used.\r\n   at Microsoft.DotNet.Cli.Commands.Test.TestApplication.OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)\r\n   at Microsoft.DotNet.Cli.Commands.Test.TestApplication.OnRequest(NamedPipeServer server, IRequest request)\r\n   at System.Environment.FailFast(System.Runtime.CompilerServices.StackCrawlMarkHandle, System.String, System.Runtime.CompilerServices.ObjectHandleOnStack, System.String)\r\n   at System.Environment.FailFast(System.Threading.StackCrawlMark ByRef, System.String, System.Exception, System.String)\r\n   at System.Environment.FailFast(System.String)\r\n   at Microsoft.DotNet.Cli.Commands.Test.TestApplication.OnRequest(Microsoft.DotNet.Cli.Commands.Test.IPC.NamedPipeServer, Microsoft.DotNet.Cli.Commands.Test.IPC.IRequest)\r\n   at Microsoft.DotNet.Cli.Commands.Test.IPC.NamedPipeServer+<InternalLoopAsync>d__18.MoveNext()\r\n   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1[[System.Threading.Tasks.VoidTaskResult, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Microsoft.DotNet.Cli.Commands.Test.IPC.NamedPipeServer+<InternalLoopAsync>d__18, dotnet, Version=10.0.401.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]].ExecutionContextCallback(System.Object)\r\n   at System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext, System.Threading.ContextCallback, System.Object)\r\n   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1[[System.Threading.Tasks.VoidTaskResult, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Microsoft.DotNet.Cli.Commands.Test.IPC.NamedPipeServer+<InternalLoopAsync>d__18, dotnet, Version=10.0.401.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]].MoveNext(System.Threading.Thread)\r\n   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1[[System.Threading.Tasks.VoidTaskResult, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Microsoft.DotNet.Cli.Commands.Test.IPC.NamedPipeServer+<InternalLoopAsync>d__18, dotnet, Version=10.0.401.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]].MoveNext()\r\n   at System.IO.Stream+<ReadAtLeastAsyncCore>d__49.MoveNext()\r\n   at System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext, System.Threading.ContextCallback, System.Object)\r\n   at System.Threading.ThreadPoolWorkQueue.Dispatch()\r\n   at System.Threading.PortableThreadPool+WorkerThread.WorkerThreadStart()\r\n   at System.Threading.Thread.StartCallback()\r\n"
+      },
+      "cause": "Dotnet CLI help IPC failure; no application test ran. Read compiled runner help for supported boundary-only patterns."
+    }
+  ],
+  "oldImageNative": {
+    "runnerRevision": "62895231",
+    "target": {
+      "version": "0.1.0-1970",
+      "revision": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+      "candidate": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6"
+    },
+    "path": "../trello-assignee-native-old-image-red.json",
+    "sha256": "b81aeb6ee95cc98dcac73420df9d161acf41d129e3a8d06412251e0129850e80",
+    "stats": {
+      "startTime": "2026-10-22T17:39:54.708Z",
+      "duration": 37643.699,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 4,
+      "flaky": 0
+    },
+    "specs": [
+      {
+        "title": "PRD-11-VS-01-T-02 / UX-CARD-02: actual zero-assignee Card previews stay authoritative at 1280px",
+        "ok": false,
+        "tags": [],
+        "tests": [
+          {
+            "timeout": 90000,
+            "annotations": [],
+            "expectedStatus": "passed",
+            "projectId": "",
+            "projectName": "",
+            "results": [
+              {
+                "workerIndex": 0,
+                "parallelIndex": 0,
+                "status": "failed",
+                "duration": 7007,
+                "error": {
+                  "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n",
+                  "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts:45:72",
+                  "location": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                    "column": 72,
+                    "line": 45
+                  },
+                  "snippet": "  43 |       const emptyFace = page.getByRole('link', { name: 'Unassigned work', exact: true });\n  44 |       const assignedFace = page.getByRole('link', { name: 'Assigned work', exact: true });\n> 45 |       await expect(emptyFace.getByText('Unassigned', { exact: true })).toBeVisible();\n     |                                                                        ^\n  46 |       await expect(assignedFace.getByRole('img', { name: 'Assigned to Preview Owner', exact: true })).toBeVisible();\n  47 |       const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200);\n  48 |       const snapshot = await canonical.json();"
+                },
+                "errors": [
+                  {
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                      "column": 72,
+                      "line": 45
+                    },
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n\n\n  43 |       const emptyFace = page.getByRole('link', { name: 'Unassigned work', exact: true });\n  44 |       const assignedFace = page.getByRole('link', { name: 'Assigned work', exact: true });\n> 45 |       await expect(emptyFace.getByText('Unassigned', { exact: true })).toBeVisible();\n     |                                                                        ^\n  46 |       await expect(assignedFace.getByRole('img', { name: 'Assigned to Preview Owner', exact: true })).toBeVisible();\n  47 |       const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200);\n  48 |       const snapshot = await canonical.json();\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts:45:72"
+                  }
+                ],
+                "stdout": [],
+                "stderr": [],
+                "retry": 0,
+                "startTime": "2026-10-22T17:39:56.390Z",
+                "annotations": [],
+                "attachments": [
+                  {
+                    "name": "screenshot",
+                    "contentType": "image/png",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-d2f3d-tay-authoritative-at-1280px\\test-failed-1.png"
+                  },
+                  {
+                    "name": "error-context",
+                    "contentType": "text/markdown",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-d2f3d-tay-authoritative-at-1280px\\error-context.md"
+                  },
+                  {
+                    "name": "trace",
+                    "contentType": "application/zip",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-d2f3d-tay-authoritative-at-1280px\\trace.zip"
+                  }
+                ],
+                "errorLocation": {
+                  "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                  "column": 72,
+                  "line": 45
+                }
+              }
+            ],
+            "status": "unexpected"
+          }
+        ],
+        "id": "dd646a26d0a1f9b43e78-4bb504036bf7725a96ee",
+        "file": "card-assignee-empty-preview.spec.ts",
+        "line": 7,
+        "column": 7
+      },
+      {
+        "title": "PRD-11-VS-01-T-02 / UX-CARD-02: actual zero-assignee Card previews stay authoritative at 768px",
+        "ok": false,
+        "tags": [],
+        "tests": [
+          {
+            "timeout": 90000,
+            "annotations": [],
+            "expectedStatus": "passed",
+            "projectId": "",
+            "projectName": "",
+            "results": [
+              {
+                "workerIndex": 1,
+                "parallelIndex": 0,
+                "status": "failed",
+                "duration": 8427,
+                "error": {
+                  "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n",
+                  "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts:45:72",
+                  "location": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                    "column": 72,
+                    "line": 45
+                  },
+                  "snippet": "  43 |       const emptyFace = page.getByRole('link', { name: 'Unassigned work', exact: true });\n  44 |       const assignedFace = page.getByRole('link', { name: 'Assigned work', exact: true });\n> 45 |       await expect(emptyFace.getByText('Unassigned', { exact: true })).toBeVisible();\n     |                                                                        ^\n  46 |       await expect(assignedFace.getByRole('img', { name: 'Assigned to Preview Owner', exact: true })).toBeVisible();\n  47 |       const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200);\n  48 |       const snapshot = await canonical.json();"
+                },
+                "errors": [
+                  {
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                      "column": 72,
+                      "line": 45
+                    },
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n\n\n  43 |       const emptyFace = page.getByRole('link', { name: 'Unassigned work', exact: true });\n  44 |       const assignedFace = page.getByRole('link', { name: 'Assigned work', exact: true });\n> 45 |       await expect(emptyFace.getByText('Unassigned', { exact: true })).toBeVisible();\n     |                                                                        ^\n  46 |       await expect(assignedFace.getByRole('img', { name: 'Assigned to Preview Owner', exact: true })).toBeVisible();\n  47 |       const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200);\n  48 |       const snapshot = await canonical.json();\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts:45:72"
+                  }
+                ],
+                "stdout": [],
+                "stderr": [],
+                "retry": 0,
+                "startTime": "2026-10-22T17:40:05.237Z",
+                "annotations": [],
+                "attachments": [
+                  {
+                    "name": "screenshot",
+                    "contentType": "image/png",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-b8dc4-stay-authoritative-at-768px\\test-failed-1.png"
+                  },
+                  {
+                    "name": "error-context",
+                    "contentType": "text/markdown",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-b8dc4-stay-authoritative-at-768px\\error-context.md"
+                  },
+                  {
+                    "name": "trace",
+                    "contentType": "application/zip",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-b8dc4-stay-authoritative-at-768px\\trace.zip"
+                  }
+                ],
+                "errorLocation": {
+                  "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                  "column": 72,
+                  "line": 45
+                }
+              }
+            ],
+            "status": "unexpected"
+          }
+        ],
+        "id": "dd646a26d0a1f9b43e78-f20ae3bacf47ab7aafda",
+        "file": "card-assignee-empty-preview.spec.ts",
+        "line": 7,
+        "column": 7
+      },
+      {
+        "title": "PRD-11-VS-01-T-02 / UX-CARD-02: actual zero-assignee Card previews stay authoritative at 390px",
+        "ok": false,
+        "tags": [],
+        "tests": [
+          {
+            "timeout": 90000,
+            "annotations": [],
+            "expectedStatus": "passed",
+            "projectId": "",
+            "projectName": "",
+            "results": [
+              {
+                "workerIndex": 2,
+                "parallelIndex": 0,
+                "status": "failed",
+                "duration": 6736,
+                "error": {
+                  "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n",
+                  "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts:45:72",
+                  "location": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                    "column": 72,
+                    "line": 45
+                  },
+                  "snippet": "  43 |       const emptyFace = page.getByRole('link', { name: 'Unassigned work', exact: true });\n  44 |       const assignedFace = page.getByRole('link', { name: 'Assigned work', exact: true });\n> 45 |       await expect(emptyFace.getByText('Unassigned', { exact: true })).toBeVisible();\n     |                                                                        ^\n  46 |       await expect(assignedFace.getByRole('img', { name: 'Assigned to Preview Owner', exact: true })).toBeVisible();\n  47 |       const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200);\n  48 |       const snapshot = await canonical.json();"
+                },
+                "errors": [
+                  {
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                      "column": 72,
+                      "line": 45
+                    },
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n\n\n  43 |       const emptyFace = page.getByRole('link', { name: 'Unassigned work', exact: true });\n  44 |       const assignedFace = page.getByRole('link', { name: 'Assigned work', exact: true });\n> 45 |       await expect(emptyFace.getByText('Unassigned', { exact: true })).toBeVisible();\n     |                                                                        ^\n  46 |       await expect(assignedFace.getByRole('img', { name: 'Assigned to Preview Owner', exact: true })).toBeVisible();\n  47 |       const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200);\n  48 |       const snapshot = await canonical.json();\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts:45:72"
+                  }
+                ],
+                "stdout": [],
+                "stderr": [],
+                "retry": 0,
+                "startTime": "2026-10-22T17:40:15.607Z",
+                "annotations": [],
+                "attachments": [
+                  {
+                    "name": "screenshot",
+                    "contentType": "image/png",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-fbdf9-stay-authoritative-at-390px\\test-failed-1.png"
+                  },
+                  {
+                    "name": "error-context",
+                    "contentType": "text/markdown",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-fbdf9-stay-authoritative-at-390px\\error-context.md"
+                  },
+                  {
+                    "name": "trace",
+                    "contentType": "application/zip",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-fbdf9-stay-authoritative-at-390px\\trace.zip"
+                  }
+                ],
+                "errorLocation": {
+                  "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                  "column": 72,
+                  "line": 45
+                }
+              }
+            ],
+            "status": "unexpected"
+          }
+        ],
+        "id": "dd646a26d0a1f9b43e78-438a9ff3925c6338cc88",
+        "file": "card-assignee-empty-preview.spec.ts",
+        "line": 7,
+        "column": 7
+      },
+      {
+        "title": "PRD-11-VS-01-T-02 / UX-CARD-02: actual zero-assignee Card previews stay authoritative at 320px",
+        "ok": false,
+        "tags": [],
+        "tests": [
+          {
+            "timeout": 90000,
+            "annotations": [],
+            "expectedStatus": "passed",
+            "projectId": "",
+            "projectName": "",
+            "results": [
+              {
+                "workerIndex": 3,
+                "parallelIndex": 0,
+                "status": "failed",
+                "duration": 7072,
+                "error": {
+                  "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n",
+                  "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts:45:72",
+                  "location": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                    "column": 72,
+                    "line": 45
+                  },
+                  "snippet": "  43 |       const emptyFace = page.getByRole('link', { name: 'Unassigned work', exact: true });\n  44 |       const assignedFace = page.getByRole('link', { name: 'Assigned work', exact: true });\n> 45 |       await expect(emptyFace.getByText('Unassigned', { exact: true })).toBeVisible();\n     |                                                                        ^\n  46 |       await expect(assignedFace.getByRole('img', { name: 'Assigned to Preview Owner', exact: true })).toBeVisible();\n  47 |       const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200);\n  48 |       const snapshot = await canonical.json();"
+                },
+                "errors": [
+                  {
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                      "column": 72,
+                      "line": 45
+                    },
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Unassigned work', exact: true }).getByText('Unassigned', { exact: true })\u001b[22m\n\n\n  43 |       const emptyFace = page.getByRole('link', { name: 'Unassigned work', exact: true });\n  44 |       const assignedFace = page.getByRole('link', { name: 'Assigned work', exact: true });\n> 45 |       await expect(emptyFace.getByText('Unassigned', { exact: true })).toBeVisible();\n     |                                                                        ^\n  46 |       await expect(assignedFace.getByRole('img', { name: 'Assigned to Preview Owner', exact: true })).toBeVisible();\n  47 |       const canonical = await context.request.get(`/boards/${board}`); expect(canonical.status()).toBe(200);\n  48 |       const snapshot = await canonical.json();\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts:45:72"
+                  }
+                ],
+                "stdout": [],
+                "stderr": [],
+                "retry": 0,
+                "startTime": "2026-10-22T17:40:24.489Z",
+                "annotations": [],
+                "attachments": [
+                  {
+                    "name": "screenshot",
+                    "contentType": "image/png",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-8aee8-stay-authoritative-at-320px\\test-failed-1.png"
+                  },
+                  {
+                    "name": "error-context",
+                    "contentType": "text/markdown",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-8aee8-stay-authoritative-at-320px\\error-context.md"
+                  },
+                  {
+                    "name": "trace",
+                    "contentType": "application/zip",
+                    "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-assignee-native-old-image-red-results\\card-assignee-empty-previe-8aee8-stay-authoritative-at-320px\\trace.zip"
+                  }
+                ],
+                "errorLocation": {
+                  "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\card-assignee-empty-preview.spec.ts",
+                  "column": 72,
+                  "line": 45
+                }
+              }
+            ],
+            "status": "unexpected"
+          }
+        ],
+        "id": "dd646a26d0a1f9b43e78-8e8e22748593afb9a8bd",
+        "file": "card-assignee-empty-preview.spec.ts",
+        "line": 7,
+        "column": 7
+      }
+    ],
+    "cause": "All four widths correctly fail to find Unassigned on the old running image,whose source omits empty previews. This is intentional baseline reproduction; later steps did not run. It does not test the new binary."
+  },
+  "owner": "Board polish integration owner",
+  "correction": "Use the actual role model. Store now produces explicit empty previews with a canonical revision under the existing lock/single SQL statement. All original privacy/version gates remain; no assertion or budget is weakened."
+}

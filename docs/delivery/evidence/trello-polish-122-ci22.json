@@ -1,0 +1,2302 @@
+{
+  "headRevision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+  "checks": [
+    {
+      "id": 120182888340,
+      "name": "release-bundle",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120182888340",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120182862481,
+      "name": "required-ci",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120182862481",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120117571128,
+      "name": "container-integration (browser-full, 4/4)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120117571128",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120117571074,
+      "name": "container-integration (commands, 1/1)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120117571074",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120117571066,
+      "name": "container-integration (browser-foundation, 1/1)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120117571066",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120117571061,
+      "name": "container-integration (browser-notifications, 1/1)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120117571061",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120117571047,
+      "name": "container-integration (browser-full, 3/4)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120117571047",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120117571035,
+      "name": "container-integration (browser-full, 2/4)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120117571035",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120117571031,
+      "name": "container-integration (browser-full, 1/4)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120117571031",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120117570932,
+      "name": "security",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120117570932",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120116376324,
+      "name": "build-images-once",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120116376324",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120116338475,
+      "name": "source-quality-gate",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120116338475",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120097025643,
+      "name": "CodeQL",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/120097025643",
+      "output": {
+        "title": "No new alerts in code changed by this pull request",
+        "summary": "[View all branch alerts](/nickmailhot-lang/StrataAI2/security/code-scanning?query=pr%3A122+tool%3ACodeQL+is%3Aopen).",
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096998726,
+      "name": "web-quality",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120096998726",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096998647,
+      "name": "postgres-integration",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120096998647",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096998616,
+      "name": "dotnet-quality",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120096998616",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096805856,
+      "name": "metadata",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120096805856",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096805127,
+      "name": "Analyze (actions)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096805127",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 120096804983,
+      "name": "Analyze (python)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096804983",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 120096804922,
+      "name": "Analyze (csharp)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096804922",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 120096804878,
+      "name": "Analyze (javascript-typescript)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096804878",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 2
+      }
+    },
+    {
+      "id": 120096804860,
+      "name": "Analyze (c-cpp)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096804860",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    }
+  ],
+  "statuses": [],
+  "annotations": [],
+  "hasMore": false,
+  "job": null,
+  "jobs": [],
+  "log": null,
+  "logTruncated": false,
+  "providerGuidance": "GitHub guidance for this response only: use checkRunId for output and annotations, runId from a GitHub Actions /runs/<id> link to list jobs, or jobId from a /jobs/<id> link for logs. page paginates checks, jobs or annotations. Keep the supplied account and returned headRevision on follow-up reads. Third-party CI exposes only the output reported to GitHub.",
+  "at": "2026-10-23T01:19:19.673399+00:00",
+  "result": "Passed",
+  "base": "4c1e27e265a71e0787e0bf40177337a5be2e2155",
+  "testedSynthetic": "220cdac710af6cbbf1572cef04e130279c0d7188",
+  "testedTree": "8c073ca008f8b3febaca6e053090644be0a52696",
+  "runs": {
+    "ci": 39856747644,
+    "codeql": 39856745781
+  },
+  "version": "0.1.0-1972",
+  "sourceArtifacts": {
+    "web": {
+      "artifactId": 12460686739,
+      "providerSha256": "1d07bf6711f523387de3839cc3f9be0a3f6c5113b385be2b5c30a193c022ac77",
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+        "shortSha": "220cdac710af",
+        "workflowRunId": "39856747644",
+        "workflowRunNumber": "1972",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1972",
+        "releaseVersion": null,
+        "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+        "createdAt": "2026-10-22T21:22:59.920Z",
+        "images": {
+          "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+          "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+          "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+        }
+      },
+      "reports": [
+        {
+          "status": "complete",
+          "counts": {
+            "passed": 2985,
+            "failed": 0,
+            "skipped": 24,
+            "error": 0
+          },
+          "skipped": [
+            {
+              "caseId": "49e7eb50f2cd5c7ceab2ff30a4701034de05e497138a2cb33f0ff3dfd70aa421",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "359a9b9a668882ef810f69eb81d5956088bd347520edfd824e70941a67c32399",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "1dc9887c73461030e56f147a8c1e82ba2ef7728fdd5b3d513e7b89cc2609242a",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "2b8705f456dd06d1393685a44d050948f95bb6631c582f0c1a6fe2ce917fb450",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "3e0f66ff926fb2e129e5ca967fb096f474afb8319667b47df43f11a6df0c5fa1",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "7e8d2f6a6a4da29e44e26d53de29aaaa4fbd09a89a1e47a2c8cd4978d390b28d",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "b14ab94854517c9f8418bb12fbbc3e08a21dd11f66823a3baa3e88a97e26d8af",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "65114f375d359c4d70129f2331d2f94ac075fd1a1a0a02b22c3488c6758bcd35",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "30cfd20d364f284175da945efdd02f25e98edff5f8761f646cb1286bd0dcf550",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "ed4de8addc6af2c9dcfb3c5d3db9c2996457a40b2257fa0482336b1fdd36f616",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "c12a77d555e4c23a35136cbc663fea4fd44dd73f9023f8a19119109c8a7cad25",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "f02d78549a9691d0cad8bbbf91fc3512da06ff157f8f9264e2cca11496dd6b0b",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "0773156d0bcf4371ef214af681b11d0bbff91e6b3ccc07ebc74303f5d4cbd6a0",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "79a741a604a4bc90251de49f112081870984f662f64ce60cf34748118f20e64b",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "7ab53605f1f9926a56d9f26125c582dc01ebe27077205f99d9c53c533a66d5a1",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "de1f92369674fc562023b19edc2f92c1dac1050bf7749c8387f3acf10eb9b8b8",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "41420ce30da4f356d0144a41e40095c6b8cad448702d05e0f7de0a83d3493ce6",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "fd32e8151854ea6cf6b8c42701dbfb344cdb338138e1778564d4ac2128bded05",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "3ad10772a02b7103589a96c16cc8e99e664b7832dce9b6c3ccf9f4842208c310",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "baecb20e6672945be56cdf8e27c153b73cd98e11882adbb53c0e5ad7ae728db2",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "8f45994b4efc85b196551931107c6c28d49cabde68814097c1f34c42a7e6c668",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "0327654b7a23edafd82823aca8e1fda826ccfb0b935dac0bd76875e67b5aa459",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "bdb273fc310500dabb6d8f0c628ef2ca85d547cc4fc36558ee6cb2a238b3adfe",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "380913516af2237802de2454d83a635aa68a40e29a5cee2b8d14d916a7ba2df6",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    "dotnet": {
+      "artifactId": 12463020485,
+      "providerSha256": "074bed355c7bc995cd60b277cd373bb323f84c8deab95074c824a1cb294e317c",
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+        "shortSha": "220cdac710af",
+        "workflowRunId": "39856747644",
+        "workflowRunNumber": "1972",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1972",
+        "releaseVersion": null,
+        "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+        "createdAt": "2026-10-22T21:22:59.920Z",
+        "images": {
+          "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+          "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+          "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+        }
+      },
+      "reports": [
+        {
+          "status": "complete",
+          "counts": {
+            "passed": 1086,
+            "failed": 0,
+            "skipped": 3,
+            "error": 0
+          },
+          "skipped": [
+            {
+              "caseId": "d1dc97f3d4ea2b26181782f2bdb589b325a2a1e604f5ef643ef8b26c6da3b48b",
+              "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "40ac8b20978a85caa6b7a3ba19e8581ebfbde4101812a747543c30e6af475301",
+              "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "13c5b60df5381d07cbb559818a454a700c2982969fd22ffea77c86a293fe17ea",
+              "source": "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            }
+          ]
+        },
+        {
+          "status": "complete",
+          "counts": {
+            "passed": 1433,
+            "failed": 0,
+            "skipped": 2,
+            "error": 0
+          },
+          "skipped": [
+            {
+              "caseId": "0b7744bf178812c6351906ff14f32df016719c78f033b4d14782bf0687f9c82d",
+              "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            },
+            {
+              "caseId": "13979d60737c8bc80e8898d460172f82380e188de0271bf6e1f567b61d0ff780",
+              "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition",
+              "outcome": "skipped",
+              "durationMs": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "native": {
+    "normal": [
+      {
+        "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+        "at": "2026-10-22T23:48:31.187Z",
+        "job": {
+          "id": 120117571031,
+          "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+          "name": "container-integration (browser-full, 1/4)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        "logTruncated": true,
+        "summary": [
+          "2026-10-22T23:47:42.0141892Z   131 passed (1.5h)"
+        ],
+        "passed": 131,
+        "failed": 0,
+        "skipped": 0,
+        "scope": "Current1972 normal browser group1 only. Remaining current groups,strict6,release,review and main integration are required."
+      },
+      {
+        "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+        "at": "2026-10-23T00:15:19.782Z",
+        "job": {
+          "id": 120117571035,
+          "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+          "name": "container-integration (browser-full, 2/4)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        "logTruncated": true,
+        "summary": [
+          "2026-10-23T00:13:44.7766829Z   2 skipped",
+          "2026-10-23T00:13:44.7767515Z   129 passed (1.3h)"
+        ],
+        "passed": 129,
+        "failed": 0,
+        "skipped": 2,
+        "scope": "Current1972 normal group2 passes;retains two original mail-fixture skips. Dedicated current notification mail acceptance passed. Remaining normal/performance/release/review/main gates remain required."
+      },
+      {
+        "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+        "at": "2026-10-23T00:29:54.078Z",
+        "job": {
+          "id": 120117571047,
+          "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+          "name": "container-integration (browser-full, 3/4)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        "logTruncated": true,
+        "summary": [
+          "2026-10-23T00:27:54.6421388Z   131 passed (1.3h)"
+        ],
+        "passed": 131,
+        "failed": 0,
+        "skipped": 0,
+        "scope": "Current1972 normal group3 only. Last normal group,all six measured strict profiles,release,review and verified main integration remain required."
+      },
+      {
+        "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+        "at": "2026-10-23T01:11:10.794Z",
+        "job": {
+          "id": 120117571128,
+          "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+          "name": "container-integration (browser-full, 4/4)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        "logTruncated": true,
+        "summary": [
+          "2026-10-23T01:10:21.6719922Z   129 passed (1.2h)"
+        ],
+        "retentionCases": [
+          "2026-10-23T00:14:07.2309013Z   \u2713   33 tests/browser/retention-policy-review.spec.ts:45:7 \u203a PRD-70: real policy creation, stale review and retained history with keyboard confirmation at 1280px (15.6s)",
+          "2026-10-23T00:14:48.8040631Z   \u2713   34 tests/browser/retention-policy-review.spec.ts:97:7 \u203a PRD-70: original retry after reload and administrator withdrawal protect private policy work at 1280px (16.6s)",
+          "2026-10-23T00:15:28.8422701Z   \u2713   35 tests/browser/retention-policy-review.spec.ts:45:7 \u203a PRD-70: real policy creation, stale review and retained history with keyboard confirmation at 390px (15.0s)",
+          "2026-10-23T00:16:08.8409453Z   \u2713   36 tests/browser/retention-policy-review.spec.ts:97:7 \u203a PRD-70: original retry after reload and administrator withdrawal protect private policy work at 390px (15.0s)"
+        ],
+        "passed": 129,
+        "failed": 0,
+        "skipped": 0,
+        "scope": "Current1972 normal group4 passes,including original policy recovery. All four normal groups total520 passed/0failed/2original mail-fixture skips. Release,full profile verification,final review and verified main integration remain required."
+      }
+    ],
+    "normalCounts": {
+      "passed": 520,
+      "failed": 0,
+      "skipped": 2
+    },
+    "foundation": {
+      "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "at": "2026-10-22T22:49:21.118Z",
+      "job": {
+        "id": 120117571066,
+        "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+        "name": "container-integration (browser-foundation, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "logTruncated": true,
+      "summary": [
+        "2026-10-22T22:31:58.7731078Z   28 passed (14.7m)",
+        "2026-10-22T22:35:00.2756679Z   2 passed (3.0m)",
+        "2026-10-22T22:36:48.7702402Z   2 passed (1.4m)",
+        "2026-10-22T22:47:29.5524866Z   18 passed (10.6m)"
+      ],
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Current1972 immutable-image Foundation50 only. Provider log is truncated; all four known summaries and completed-success job are present. Remaining current normal/notification/command/performance/release/review/main gates remain required."
+    },
+    "notifications": {
+      "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "at": "2026-10-22T23:55:38.593Z",
+      "job": {
+        "id": 120117571061,
+        "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+        "name": "container-integration (browser-notifications, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "logTruncated": true,
+      "summary": [
+        "2026-10-22T22:39:23.6473287Z   4 passed (3.3m)",
+        "2026-10-22T22:41:47.6536654Z   2 passed (2.3m)",
+        "2026-10-22T22:46:03.8367647Z   2 passed (4.3m)",
+        "2026-10-22T22:48:57.8143210Z   6 passed (2.9m)",
+        "2026-10-22T23:21:23.8525168Z   44 passed (32.4m)",
+        "2026-10-22T23:30:21.4737959Z   14 passed (8.9m)",
+        "2026-10-22T23:39:18.4005314Z   7 passed (8.9m)",
+        "2026-10-22T23:49:01.6047178Z   9 passed (9.7m)",
+        "2026-10-22T23:53:48.6604266Z   5 passed (4.7m)"
+      ],
+      "passed": 93,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Current1972 notification93 only. Provider log is truncated;all nine known summaries and completed-success job are present. Remaining normal/strict6/release/review/main gates remain required."
+    },
+    "commands": {
+      "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "at": "2026-10-22T22:53:42.373Z",
+      "job": {
+        "id": 120117571074,
+        "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+        "name": "container-integration (commands, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "workflowSteps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Download exact built images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Verify image archive checksums",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Load exact built images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Start release topology",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Apply release-database migrations",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Verify structured API and Worker console records",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Prepare Retain fixed console verification evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Retain fixed console verification evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Provision least-privilege runtime database roles",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        },
+        {
+          "name": "Reject unsafe runtime database roles in exact images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12
+        },
+        {
+          "name": "Verify installed configuration identities, relationships and restricted capabilities",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13
+        },
+        {
+          "name": "Retention policy schema and restricted capabilities",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14
+        },
+        {
+          "name": "Health, readiness and SPA deep-link smoke tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15
+        },
+        {
+          "name": "Verify embedded build identity and override resistance",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16
+        },
+        {
+          "name": "Production does not expose demo reset",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Verify production account defaults and prepare isolated auth fixture",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Demo documented workflows without PostgreSQL or external network",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        },
+        {
+          "name": "API and Worker startup fail closed against exact retained images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20
+        },
+        {
+          "name": "Verify explicit Worker job scope and handler configuration",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21
+        },
+        {
+          "name": "Verify enabled attachment configuration refusal in exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22
+        },
+        {
+          "name": "Test PostgreSQL profile concurrency",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23
+        },
+        {
+          "name": "Identity audit rollback, logout waits and one-connection commands",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24
+        },
+        {
+          "name": "Session-bound logout and deactivation receipts against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25
+        },
+        {
+          "name": "Current and legacy credential-checked sign-in retries against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26
+        },
+        {
+          "name": "Authentication lifecycle privacy against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27
+        },
+        {
+          "name": "Atomic registration retries against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28
+        },
+        {
+          "name": "Invitation-backed closed registration and atomic expiry against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29
+        },
+        {
+          "name": "Verified-email invitation discovery and retry-safe acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30
+        },
+        {
+          "name": "Atomic invitation creation retries against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31
+        },
+        {
+          "name": "Private board discovery and revoked membership against restricted PostgreSQL runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32
+        },
+        {
+          "name": "Board member canonical events, receipts, Worker delivery and revoked recovery against exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 33
+        },
+        {
+          "name": "Board visibility and role HTTP permission matrix against exact API and restricted PostgreSQL",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 34
+        },
+        {
+          "name": "Board grants, lifecycle freezes and original receipt recovery against exact API and restricted PostgreSQL",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 35
+        },
+        {
+          "name": "Personal Board stars and revoked receipt admission against restricted PostgreSQL runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 36
+        },
+        {
+          "name": "Independent full-capacity Board copy and atomic retry recovery against restricted PostgreSQL runtime",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 37
+        },
+        {
+          "name": "Board administrator demotion continuity and atomic recovery",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 38
+        },
+        {
+          "name": "Work command and audit rollback against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 39
+        },
+        {
+          "name": "Organization audit rollback, revoked actor waits and concurrent owner departures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 40
+        },
+        {
+          "name": "Automatic Organization metadata delivery with typed queue isolation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 41
+        },
+        {
+          "name": "Automatic recipient authority pages and restart against exact Worker image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 42
+        },
+        {
+          "name": "Automatic Board recipient authority pages and restart against exact Worker image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 43
+        },
+        {
+          "name": "Organization request and terminal recipient authority against exact Worker image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 44
+        },
+        {
+          "name": "Canonical issuer deactivation and bounded authority routing against exact Worker image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 45
+        },
+        {
+          "name": "Account deactivation and Organization active-owner continuity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 46
+        },
+        {
+          "name": "Authorized bounded Organization member directory and post-wait revocation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 47
+        },
+        {
+          "name": "Authorized global search, literal matching, cursor binding and archived scope through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 48
+        },
+        {
+          "name": "Deleted and moved Card content admission across search inbox and notification history through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 49
+        },
+        {
+          "name": "Organization terminal search and notification withdrawal after issuing-session logout or account deactivation through exact API and Worker images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 50
+        },
+        {
+          "name": "Account-bound navigation observations through exact release proxy and API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 51
+        },
+        {
+          "name": "Durable work retry keys against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 52
+        },
+        {
+          "name": "Bounded archives, confirmed deletion and atomic List copies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 53
+        },
+        {
+          "name": "Transactional labels, atomic association removal and post-wait receipt authorization",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 54
+        },
+        {
+          "name": "Bounded Board members, atomic Card assignments and post-wait revocation through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 55
+        },
+        {
+          "name": "Personal watch revisions, atomic publication and post-wait revocation through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 56
+        },
+        {
+          "name": "Atomic username mentions, source notifications and redaction history through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 57
+        },
+        {
+          "name": "Protected activity history, post-wait access/session admission and persisted cursor restart through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 58
+        },
+        {
+          "name": "Cross-Board Card movement, original receipt admission and atomic reference rollback through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 59
+        },
+        {
+          "name": "Independent Card copy, destination Watch notification and atomic late-publication rollback through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 60
+        },
+        {
+          "name": "UTC Card dates, atomic notification rollback and private retry recovery through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 61
+        },
+        {
+          "name": "Authorized URL attachments, receipts, metadata paging and atomic rollback against exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 62
+        },
+        {
+          "name": "Authorized checklist creation, ordered progress and atomic rollback against exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 63
+        },
+        {
+          "name": "Checklist, comment, activity, movement and lifecycle at supported capacity",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 64
+        },
+        {
+          "name": "Authorized configuration and lifecycle HTTP p95 through exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 65
+        },
+        {
+          "name": "Prepare Retain fixed Organization latency evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 66
+        },
+        {
+          "name": "Retain fixed Organization latency evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 67
+        },
+        {
+          "name": "Validate pinned operator Collector configuration",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 68
+        },
+        {
+          "name": "Verify exact-image operator metric ingestion and private-field exclusion",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 69
+        },
+        {
+          "name": "Verify operator warning firing and resolved delivery",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 70
+        },
+        {
+          "name": "Prepare Retain fixed operator collection evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 71
+        },
+        {
+          "name": "Retain fixed operator collection evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 72
+        },
+        {
+          "name": "Prepare Retain fixed-scope Checklist capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 73
+        },
+        {
+          "name": "Retain fixed-scope Checklist capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 74
+        },
+        {
+          "name": "Prepare Retain fixed-scope activity capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 75
+        },
+        {
+          "name": "Retain fixed-scope activity capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 76
+        },
+        {
+          "name": "Prepare Retain fixed-scope notification inbox capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 77
+        },
+        {
+          "name": "Retain fixed-scope notification inbox capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 78
+        },
+        {
+          "name": "Prepare Retain fixed-scope watch producer fan-out measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 79
+        },
+        {
+          "name": "Retain fixed-scope watch producer fan-out measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 80
+        },
+        {
+          "name": "Prepare Retain fixed-scope global search capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 81
+        },
+        {
+          "name": "Retain fixed-scope global search capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 82
+        },
+        {
+          "name": "Prepare Retain fixed-scope comment capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 83
+        },
+        {
+          "name": "Retain fixed-scope comment capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 84
+        },
+        {
+          "name": "Prepare Retain fixed-scope cross-Board movement capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 85
+        },
+        {
+          "name": "Retain fixed-scope cross-Board movement capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 86
+        },
+        {
+          "name": "Prepare Retain fixed-scope work lifecycle capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 87
+        },
+        {
+          "name": "Retain fixed-scope work lifecycle capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 88
+        },
+        {
+          "name": "Prepare Retain fixed-scope permanent-deletion capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 89
+        },
+        {
+          "name": "Retain fixed-scope permanent-deletion capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 90
+        },
+        {
+          "name": "Prepare Retain fixed-scope Card copy capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 91
+        },
+        {
+          "name": "Retain fixed-scope Card copy capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 92
+        },
+        {
+          "name": "Atomic Work events and leased Worker readiness against exact release images",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 93
+        },
+        {
+          "name": "Hosted operational lifecycle discovery and restart recovery against exact release Worker",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 94
+        },
+        {
+          "name": "Independent Portal grants across operational lifecycle changes against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 95
+        },
+        {
+          "name": "Lifecycle session expiry during receipt publication against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 96
+        },
+        {
+          "name": "Archived records and configuration history across operational lifecycle changes",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 97
+        },
+        {
+          "name": "Organization configuration tenant-scoped usage",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 98
+        },
+        {
+          "name": "Retention policy authorized commands and private history against exact release API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 99
+        },
+        {
+          "name": "Run actions/setup-node@v7",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 100
+        },
+        {
+          "name": "Install browser test dependencies",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 101
+        },
+        {
+          "name": "Demo metadata, terminal and recipient lifecycle against exact API and web images",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 102
+        },
+        {
+          "name": "Attachment upload and isolated Worker image publication through explicit private test providers",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 103
+        },
+        {
+          "name": "Prepare Retain fixed-scope attachment capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 104
+        },
+        {
+          "name": "Retain fixed-scope attachment capacity measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 105
+        },
+        {
+          "name": "Authorized contiguous event replay and mid-read revocation against exact release API",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 106
+        },
+        {
+          "name": "Check concurrent and large-board rank allocation",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 107
+        },
+        {
+          "name": "Prepare Retain actual large-Board native capacity diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 108
+        },
+        {
+          "name": "Retain actual large-Board native capacity diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 109
+        },
+        {
+          "name": "Check write authorization and lifecycle during live database lock waits",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 110
+        },
+        {
+          "name": "Prepare isolated identity mail transport and ephemeral signing keys",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 111
+        },
+        {
+          "name": "Identity mail against exact API/Worker images and restricted database role",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 112
+        },
+        {
+          "name": "Recipient calendar admission through actual invitation mail proof",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 113
+        },
+        {
+          "name": "Desktop and mobile accessible keyboard verification/recovery through Worker delivery",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 114
+        },
+        {
+          "name": "Desktop and phone task work through provider outage",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 115
+        },
+        {
+          "name": "Strict verified-account Organization departure and account continuity",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 116
+        },
+        {
+          "name": "Strict verified-account Board management and personal preferences",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 117
+        },
+        {
+          "name": "Strict verified-account source classification and original recovery",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 118
+        },
+        {
+          "name": "Strict verified-account watch producers through native private inboxes",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 119
+        },
+        {
+          "name": "Strict verified-account assignment mention and reminder native delivery",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 120
+        },
+        {
+          "name": "Strict verified-account watch and permission ordering through observed database waits",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 121
+        },
+        {
+          "name": "Restore isolated unverified-email account fixture for profile browser tests",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 122
+        },
+        {
+          "name": "Enable automatic Organization metadata and invitation authority routing for native browser acceptance",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 123
+        },
+        {
+          "name": "Authenticated browser E2E against exact release images",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 124
+        },
+        {
+          "name": "Authentication and invitation abuse limits on API and edge",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 125
+        },
+        {
+          "name": "Prepare Retain browser failure evidence",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 126
+        },
+        {
+          "name": "Retain browser failure evidence",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 127
+        },
+        {
+          "name": "Prepare Retain scoped browser performance measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 128
+        },
+        {
+          "name": "Retain scoped browser performance measurements",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 129
+        },
+        {
+          "name": "Capture container state and logs",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 130
+        },
+        {
+          "name": "Prepare Upload integration diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 131
+        },
+        {
+          "name": "Upload integration diagnostics",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 132
+        },
+        {
+          "name": "Stop release topology",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 133
+        },
+        {
+          "name": "Post Run actions/checkout@v7",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 266
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 267
+        }
+      ],
+      "successfulWorkflowSteps": 80,
+      "providerLogTruncated": true,
+      "scope": "Current1972 command/role/RLS/transaction/runtime group passed.80 is a workflow step count,not a test-case count. All remaining normal/notification/strict6/release/review/main gates remain mandatory."
+    }
+  },
+  "normalPerformance": {
+    "verifiedArtifacts": [
+      {
+        "artifactId": 12467313282,
+        "artifactName": "browser-performance-220cdac710af6cbbf1572cef04e130279c0d7188-1",
+        "providerDigest": "76233b4a3ffd223ddb492cdb6072c1412975e5799c4b810b1776239c787e94ec",
+        "metadata": {
+          "repository": "nickmailhot-lang/StrataAI2",
+          "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "shortSha": "220cdac710af",
+          "workflowRunId": "39856747644",
+          "workflowRunNumber": "1972",
+          "workflowRunAttempt": "1",
+          "version": "0.1.0-1972",
+          "releaseVersion": null,
+          "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "createdAt": "2026-10-22T21:22:59.920Z",
+          "images": {
+            "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+            "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+            "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+          }
+        },
+        "innerChecksums": "9cfb7d7d2c7e34c76032c70daec216c1bc18f3c01c5ff15e481e9cd3408af1f9  build-metadata.json\ne71a83ac4e3c14d63f9f22c94964c55e2f1f75ed4006d783d342d77e33bfd019  kanban.json\n",
+        "data": {
+          "schemaVersion": 1,
+          "revision": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "topology": "exact release images through Nginx",
+          "measurements": []
+        },
+        "scope": "Per-artifact provenance/checksums and original strict budgets verified. Global six-metric coverage is checked separately across all four full shards."
+      },
+      {
+        "artifactId": 12468199581,
+        "artifactName": "browser-performance-220cdac710af6cbbf1572cef04e130279c0d7188-2",
+        "providerDigest": "ae5beff51af299a41622b80dfa15ca02f4419a2f8238f2db3a964244428aeb55",
+        "metadata": {
+          "repository": "nickmailhot-lang/StrataAI2",
+          "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "shortSha": "220cdac710af",
+          "workflowRunId": "39856747644",
+          "workflowRunNumber": "1972",
+          "workflowRunAttempt": "1",
+          "version": "0.1.0-1972",
+          "releaseVersion": null,
+          "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "createdAt": "2026-10-22T21:22:59.920Z",
+          "images": {
+            "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+            "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+            "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+          }
+        },
+        "innerChecksums": "9cfb7d7d2c7e34c76032c70daec216c1bc18f3c01c5ff15e481e9cd3408af1f9  build-metadata.json\ne71a83ac4e3c14d63f9f22c94964c55e2f1f75ed4006d783d342d77e33bfd019  kanban.json\n",
+        "data": {
+          "schemaVersion": 1,
+          "revision": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "topology": "exact release images through Nginx",
+          "measurements": []
+        },
+        "scope": "Per-artifact provenance/checksums and original strict budgets verified. Global six-metric coverage is checked separately across all four full shards."
+      },
+      {
+        "artifactId": 12469381949,
+        "artifactName": "browser-performance-220cdac710af6cbbf1572cef04e130279c0d7188-3",
+        "providerDigest": "60fd40b7fbf4d37c1bbd7f352fca0189a05b8f6c098d4112c7a14e298f13eb6e",
+        "metadata": {
+          "repository": "nickmailhot-lang/StrataAI2",
+          "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "shortSha": "220cdac710af",
+          "workflowRunId": "39856747644",
+          "workflowRunNumber": "1972",
+          "workflowRunAttempt": "1",
+          "version": "0.1.0-1972",
+          "releaseVersion": null,
+          "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "createdAt": "2026-10-22T21:22:59.920Z",
+          "images": {
+            "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+            "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+            "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+          }
+        },
+        "innerChecksums": "9cfb7d7d2c7e34c76032c70daec216c1bc18f3c01c5ff15e481e9cd3408af1f9  build-metadata.json\ne71a83ac4e3c14d63f9f22c94964c55e2f1f75ed4006d783d342d77e33bfd019  kanban.json\n",
+        "data": {
+          "schemaVersion": 1,
+          "revision": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "topology": "exact release images through Nginx",
+          "measurements": []
+        },
+        "scope": "Per-artifact provenance/checksums and original strict budgets verified. Global six-metric coverage is checked separately across all four full shards."
+      },
+      {
+        "artifactId": 12470768910,
+        "artifactName": "browser-performance-220cdac710af6cbbf1572cef04e130279c0d7188-4",
+        "providerDigest": "0d9b19d12f1c42e3bf9bb9ba6d18ea2eae4e8c7c5b5b6061996d38578727d62e",
+        "metadata": {
+          "repository": "nickmailhot-lang/StrataAI2",
+          "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "shortSha": "220cdac710af",
+          "workflowRunId": "39856747644",
+          "workflowRunNumber": "1972",
+          "workflowRunAttempt": "1",
+          "version": "0.1.0-1972",
+          "releaseVersion": null,
+          "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "createdAt": "2026-10-22T21:22:59.920Z",
+          "images": {
+            "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+            "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+            "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+          }
+        },
+        "innerChecksums": "9cfb7d7d2c7e34c76032c70daec216c1bc18f3c01c5ff15e481e9cd3408af1f9  build-metadata.json\n826072943542f9e115a5c02601de0dbed8c9df6faf36d0e3e62980eeaf22e20c  kanban.json\n",
+        "data": {
+          "schemaVersion": 1,
+          "revision": "220cdac710af6cbbf1572cef04e130279c0d7188",
+          "topology": "exact release images through Nginx",
+          "measurements": [
+            {
+              "metric": "normal-desktop-card-dates",
+              "status": "passed",
+              "fixture": {
+                "lists": 3,
+                "cards": 50,
+                "datedCards": 50,
+                "samples": 20,
+                "viewport": "1280x844",
+                "assets": "warm",
+                "tracing": "commands-and-network",
+                "detailTiming": "browser-painted-editable"
+              },
+              "usableMs": 671.9655139999995,
+              "detailMs": 69.80000000004657,
+              "detailObserved": true,
+              "detailAutomationMs": 123.9545169999983,
+              "mutationP95Ms": 45.93553899999824,
+              "mutationSamplesMs": [
+                53.25832900000023,
+                30.495747000000847,
+                27.78908500000034,
+                24.65929899999901,
+                32.1682400000027,
+                31.76226300000053,
+                34.949037999998836,
+                25.29222800000207,
+                22.183254999999917,
+                22.84979200000089,
+                25.988200000003417,
+                24.994556000001467,
+                22.529185000003054,
+                23.09243200000128,
+                45.93553899999824,
+                26.81376199999795,
+                22.494409000002634,
+                29.873571000000084,
+                29.38818000000174,
+                22.683336999998573
+              ],
+              "budgetsMs": {
+                "usable": 1500,
+                "detail": 200,
+                "mutationP95": 500
+              }
+            },
+            {
+              "metric": "normal-desktop-checklist",
+              "status": "passed",
+              "fixture": {
+                "lists": 3,
+                "cards": 50,
+                "samples": 20,
+                "viewport": "1280x844",
+                "assets": "warm",
+                "tracing": "commands-and-network",
+                "detailTiming": "browser-painted-editable",
+                "checklists": 2,
+                "items": 63,
+                "pageSize": 50
+              },
+              "itemPageMs": 47.38039000000572,
+              "nextItemPageMs": 49.9833779999899,
+              "usableMs": 414.09059700000216,
+              "detailMs": 102.59999999997672,
+              "detailObserved": true,
+              "detailAutomationMs": 214.17950500000006,
+              "feedbackObserved": true,
+              "feedbackMs": 35,
+              "mutationP95Ms": 43.826021000000765,
+              "mutationSamplesMs": [
+                43.826021000000765,
+                33.0784180000046,
+                21.276989000005415,
+                38.33344600000419,
+                18.03175999999803,
+                21.3696779999882,
+                19.26754400000209,
+                25.353592999992543,
+                25.96044699999038,
+                25.852908999993815,
+                25.218999999997322,
+                21.630440000008093,
+                23.204639000003226,
+                19.199747000006028,
+                37.19503299999633,
+                54.39811000000918,
+                41.480853000000934,
+                29.890490999998292,
+                28.47632299999532,
+                27.779759999990347
+              ],
+              "budgetsMs": {
+                "usable": 1500,
+                "feedback": 100,
+                "detail": 200,
+                "mutationP95": 500
+              }
+            },
+            {
+              "metric": "normal-desktop-kanban",
+              "status": "passed",
+              "fixture": {
+                "lists": 3,
+                "cards": 50,
+                "samples": 20,
+                "viewport": "1280x844",
+                "assets": "warm",
+                "tracing": "commands-and-network",
+                "detailTiming": "browser-painted-editable"
+              },
+              "usableMs": 379.0455229999934,
+              "detailMs": 76.29999999993015,
+              "detailObserved": true,
+              "detailAutomationMs": 115.85164599999553,
+              "feedbackObserved": true,
+              "feedbackMs": 38.5,
+              "mutationP95Ms": 47.39703500000178,
+              "mutationSamplesMs": [
+                45.32209799998964,
+                37.34224399999948,
+                35.66584600000351,
+                34.74638799999957,
+                49.10132299999532,
+                47.39703500000178,
+                35.895074999993085,
+                44.498082000005525,
+                34.975943000012194,
+                43.402627999996184,
+                38.716377000004286,
+                39.19529699999839,
+                36.13127699999313,
+                35.19345000000612,
+                35.943379000003915,
+                35.77475599999889,
+                35.110484999997425,
+                34.88248200000089,
+                34.24869300000137,
+                36.71755000000121
+              ],
+              "budgetsMs": {
+                "usable": 1500,
+                "feedback": 100,
+                "detail": 200,
+                "mutationP95": 500
+              }
+            },
+            {
+              "metric": "normal-phone-kanban",
+              "status": "passed",
+              "fixture": {
+                "lists": 3,
+                "cards": 50,
+                "samples": 20,
+                "viewport": "390x844",
+                "assets": "warm",
+                "tracing": "commands-and-network",
+                "detailTiming": "browser-painted-editable",
+                "input": "chromium-touch"
+              },
+              "usableMs": 523.5474490000051,
+              "detailMs": 69.90000000002328,
+              "detailObserved": true,
+              "detailAutomationMs": 118.17310099999304,
+              "feedbackObserved": true,
+              "feedbackMs": 36.90000000002328,
+              "mutationP95Ms": 43.76573400000052,
+              "mutationSamplesMs": [
+                44.639435000004596,
+                37.01787100000365,
+                36.680437999995775,
+                34.780555000004824,
+                35.8787580000062,
+                35.31526899999881,
+                35.360948999994434,
+                38.14367000000493,
+                35.37532000000647,
+                35.95916900000884,
+                34.70091900000989,
+                34.70433599999524,
+                35.21439900000405,
+                39.3337360000005,
+                38.50303100000019,
+                43.76573400000052,
+                35.267282000000705,
+                36.00643600001058,
+                36.78237200000149,
+                29.34378199999628
+              ],
+              "budgetsMs": {
+                "usable": 1500,
+                "feedback": 100,
+                "detail": 200,
+                "mutationP95": 500
+              }
+            },
+            {
+              "metric": "desktop-list-feedback",
+              "status": "passed",
+              "fixture": {
+                "lists": 2,
+                "cards": 0,
+                "viewport": "1280x844",
+                "tracing": "commands-and-network"
+              },
+              "feedbackObserved": true,
+              "feedbackMs": 31,
+              "budgetsMs": {
+                "feedback": 100
+              }
+            },
+            {
+              "metric": "phone-list-feedback",
+              "status": "passed",
+              "fixture": {
+                "lists": 2,
+                "cards": 0,
+                "viewport": "390x844",
+                "tracing": "commands-and-network",
+                "input": "chromium-touch"
+              },
+              "feedbackObserved": true,
+              "feedbackMs": 31.5,
+              "budgetsMs": {
+                "feedback": 100
+              }
+            }
+          ]
+        },
+        "scope": "Per-artifact provenance/checksums and original strict budgets verified. Global six-metric coverage is checked separately across all four full shards."
+      }
+    ],
+    "qualifiedProfiles": [
+      "desktop-list-feedback",
+      "normal-desktop-card-dates",
+      "normal-desktop-checklist",
+      "normal-desktop-kanban",
+      "normal-phone-kanban",
+      "phone-list-feedback"
+    ],
+    "budgets": "All six original strict < budgets,fixture3Lists/50Cards/20finite warm samples and original p95 verified."
+  },
+  "release": {
+    "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+    "job": {
+      "id": 120182888340,
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "name": "release-bundle",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Download exact tested images",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Download exact tested security evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Verify tested release inputs",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Assemble release bundle",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Verify release bundle completeness and checksums",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7
+      },
+      {
+        "name": "Verify assembled bundle startup without source or SDKs",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8
+      },
+      {
+        "name": "Verify assembled Demo bundle and seeded account without source or SDKs",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9
+      },
+      {
+        "name": "Prepare Node 24 for HTTPS transport contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10
+      },
+      {
+        "name": "Verify assembled HTTPS bundle and secure task workflow",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11
+      },
+      {
+        "name": "Verify bundle unchanged after startup smoke",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12
+      },
+      {
+        "name": "Upload runnable release bundle",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13
+      },
+      {
+        "name": "Post Prepare Node 24 for HTTPS transport contract",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25
+      },
+      {
+        "name": "Post Run actions/checkout@v7",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 26
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 27
+      }
+    ],
+    "logTruncated": false,
+    "summary": [
+      "2026-10-23T01:10:56.9876325Z Release evidence identity, completeness and checksums verified.",
+      "2026-10-23T01:10:58.8934268Z Release evidence identity, completeness and checksums verified.",
+      "2026-10-23T01:14:14.5803559Z HTTPS database recovery passed: distinct restored cluster and independently recovered encrypted key ring, saved session and fresh Secure sign-in, exact task graph, target Worker/WSS edit and logout, unchanged source and original images.",
+      "2026-10-23T01:14:24.0493372Z HTTPS WSS Board passed: Worker-delivered edit, persisted cursor recovery, anonymous/origin refusal, content-free frames and logout withdrawal.",
+      "2026-10-23T01:14:24.3303315Z Assembled HTTPS bundle passed: only TLS published, missing/mismatched key refusal, certificate trust/name verification, HSTS, Secure sign-in, persisted task graph and web restart; original images unchanged.",
+      "2026-10-23T01:14:26.2947375Z Release evidence identity, completeness and checksums verified."
+    ],
+    "artifact": {
+      "id": 12471212694,
+      "name": "strataai2-docker-bundle-220cdac710af6cbbf1572cef04e130279c0d7188",
+      "providerDigest": "sha256:b3d297c9b879eaac652cef7f6654947f79b39c788e8221ef8fdfabe776a06780",
+      "size": 518858655,
+      "downloadedLocally": false,
+      "verification": "Current CI verified exact tested inputs,all bundle checksums,source-free Production/Demo/HTTPS/Secure/WSS/recovery and post-startup bundle integrity. Locally reuse separately verified same-run images instead of downloading the duplicate518MB bundle."
+    }
+  },
+  "images": {
+    "build": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+      "shortSha": "220cdac710af",
+      "workflowRunId": "39856747644",
+      "workflowRunNumber": "1972",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1972",
+      "releaseVersion": null,
+      "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+      "createdAt": "2026-10-22T21:22:59.920Z",
+      "images": {
+        "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+        "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+        "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+      }
+    },
+    "images": {
+      "web": {
+        "localManifestOrConfigId": "sha256:46c5c2f4a57e36dab737cb930ea6035166338acee246a2fdb976a0d51af2428f",
+        "ciConfigId": "sha256:7e45b28ff367fe7108059d2017a198586bc5d032d3580e2b97fa801fa67e8991",
+        "archiveManifestId": "sha256:46c5c2f4a57e36dab737cb930ea6035166338acee246a2fdb976a0d51af2428f",
+        "rootFsLayersVerified": 12
+      },
+      "api": {
+        "localManifestOrConfigId": "sha256:4a67b86b0edb9ed5fd8708de03f101ec26a73328b12c25c09ec651091cf8be78",
+        "ciConfigId": "sha256:6a39015d4e71c78547a684c440ca3e50ea7ee49ac2754e924fa637cd67b34bbd",
+        "archiveManifestId": "sha256:4a67b86b0edb9ed5fd8708de03f101ec26a73328b12c25c09ec651091cf8be78",
+        "rootFsLayersVerified": 10
+      },
+      "worker": {
+        "localManifestOrConfigId": "sha256:c1dead50c01520cf8dc1d5d902069b86c957503b0e3a5cb94fa9dffa016e476a",
+        "ciConfigId": "sha256:9e16cd42971d0fcbe8b57a0072cc5e966cf1d9d75cacdb8f1e9d7fbeaa99db6d",
+        "archiveManifestId": "sha256:c1dead50c01520cf8dc1d5d902069b86c957503b0e3a5cb94fa9dffa016e476a",
+        "rootFsLayersVerified": 10
+      }
+    },
+    "artifact": {
+      "id": 12462477690,
+      "sha256": "3fabaca3d694172294689d6915a25a54e364d20cf81e15bdd1e348487c778e2d"
+    },
+    "checksums": "all five passed",
+    "state": "Preloaded only. No containers started or acceptance claimed. Activate only after current all22 checks,strict profiles,review and verified normal main integration.",
+    "note": "Docker Desktop containerd reports OCI manifest IDs; CI classic store reports verified config IDs. Both identities and all rootfs layers were checked."
+  },
+  "securityArtifact": {
+    "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+    "artifactId": 12461684164,
+    "providerDigest": "5559ddda2091a09791c8d00b4e4560ec3d558a2fa7448e31502b4eeed9f64ea9",
+    "metadata": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+      "shortSha": "220cdac710af",
+      "workflowRunId": "39856747644",
+      "workflowRunNumber": "1972",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1972",
+      "releaseVersion": null,
+      "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+      "createdAt": "2026-10-22T21:22:59.920Z",
+      "images": {
+        "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+        "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+        "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+      }
+    },
+    "checksums": {
+      "build-metadata.json": "9cfb7d7d2c7e34c76032c70daec216c1bc18f3c01c5ff15e481e9cd3408af1f9",
+      "image-provenance.json": "9dd954d1edaabf8dee87a7ffb780da7ba924d1c5f8037cb5b076d3414f8f4548",
+      "metrics-collector.cdx.json": "b4e4d4cdb030f9adf11ea05a4953009f2c84ffc22fb386daf89417714193566c",
+      "strataai-api.cdx.json": "732721e8d735fa7df1eee3f7b733cf00d7b4c69533dae668408932480790b9c7",
+      "strataai-web.cdx.json": "c2f1663b79a350bed8444dacbe5a46baf40345814cfe4ce12c701007570f9e3c",
+      "strataai-worker.cdx.json": "541fc5e71732123c8ab70a7ef8d5d1f4f74a45aaa35f1f085cbe5e7eb255ba4e"
+    },
+    "sboms": [
+      {
+        "path": "metrics-collector.cdx.json",
+        "components": 1075
+      },
+      {
+        "path": "strataai-api.cdx.json",
+        "components": 134
+      },
+      {
+        "path": "strataai-web.cdx.json",
+        "components": 73
+      },
+      {
+        "path": "strataai-worker.cdx.json",
+        "components": 135
+      }
+    ],
+    "at": "2026-10-22T22:16:28.868251+00:00",
+    "limits": "Artifact integrity and current source/image identity verified. Security job passed; SBOM component count is not a vulnerability count or product acceptance."
+  },
+  "diagnosticEvaluation": {
+    "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+    "at": "2026-10-22T22:10:18.356Z",
+    "annotations": [
+      {
+        "checkRunId": 120096805127,
+        "name": "Analyze (actions)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804983,
+        "name": "Analyze (python)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804922,
+        "name": "Analyze (csharp)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804878,
+        "name": "Analyze (javascript-typescript)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 169,
+            "end_line": 169,
+            "annotation_level": "warning",
+            "message": "Failed to restore: Aborting cache download as the download time exceeded the timeout.",
+            "title": "",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804860,
+        "name": "Analyze (c-cpp)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      }
+    ],
+    "jsAnalysisSteps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Checkout repository",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Setup proxy for registries",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Initialize CodeQL",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Autobuild",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Perform CodeQL Analysis",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Post Perform CodeQL Analysis",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9
+      },
+      {
+        "name": "Post Initialize CodeQL",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10
+      },
+      {
+        "name": "Post Setup proxy for registries",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11
+      },
+      {
+        "name": "Post Checkout repository",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13
+      }
+    ],
+    "evaluation": "All five Analyze jobs and CodeQL pass with no new alerts. JavaScript/TypeScript reports one optional cache restore timeout warning; Initialize CodeQL and Perform CodeQL Analysis both completed successfully. It did not skip analysis or suppress a code finding. Five notice-level annotations concern GitHub runner-image migration. No workflow/check change or retry was used to suppress either diagnostic.",
+    "limits": "This evaluates these current-source annotations only; remaining immutable/native/security/performance/release/review/integration gates stay mandatory."
+  },
+  "historicalFailures": "Every previous failed head and local failure remains under its original evidence/history. Failed8f was not retried to green or promoted;f717 is a separately qualified replacement. Original24frontend/5backend deferrals and two normal mail-profile skips remain distinct from passed current dedicated mail acceptance.",
+  "limits": "Complete current automated qualification only. Source/UX review and actual ordinary main integration are separate;no broader PRD or global MVP completion. New user Demo not activated yet."
+}

@@ -1,0 +1,274 @@
+{
+  "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+  "at": "2026-10-22T22:19:51.558Z",
+  "result": "Passed",
+  "run": 39856747644,
+  "testedSynthetic": "220cdac710af6cbbf1572cef04e130279c0d7188",
+  "testedTree": "8c073ca008f8b3febaca6e053090644be0a52696",
+  "version": "0.1.0-1972",
+  "imageVerification": {
+    "build": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+      "shortSha": "220cdac710af",
+      "workflowRunId": "39856747644",
+      "workflowRunNumber": "1972",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1972",
+      "releaseVersion": null,
+      "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+      "createdAt": "2026-10-22T21:22:59.920Z",
+      "images": {
+        "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+        "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+        "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+      }
+    },
+    "images": {
+      "web": {
+        "localManifestOrConfigId": "sha256:46c5c2f4a57e36dab737cb930ea6035166338acee246a2fdb976a0d51af2428f",
+        "ciConfigId": "sha256:7e45b28ff367fe7108059d2017a198586bc5d032d3580e2b97fa801fa67e8991",
+        "archiveManifestId": "sha256:46c5c2f4a57e36dab737cb930ea6035166338acee246a2fdb976a0d51af2428f",
+        "rootFsLayersVerified": 12
+      },
+      "api": {
+        "localManifestOrConfigId": "sha256:4a67b86b0edb9ed5fd8708de03f101ec26a73328b12c25c09ec651091cf8be78",
+        "ciConfigId": "sha256:6a39015d4e71c78547a684c440ca3e50ea7ee49ac2754e924fa637cd67b34bbd",
+        "archiveManifestId": "sha256:4a67b86b0edb9ed5fd8708de03f101ec26a73328b12c25c09ec651091cf8be78",
+        "rootFsLayersVerified": 10
+      },
+      "worker": {
+        "localManifestOrConfigId": "sha256:c1dead50c01520cf8dc1d5d902069b86c957503b0e3a5cb94fa9dffa016e476a",
+        "ciConfigId": "sha256:9e16cd42971d0fcbe8b57a0072cc5e966cf1d9d75cacdb8f1e9d7fbeaa99db6d",
+        "archiveManifestId": "sha256:c1dead50c01520cf8dc1d5d902069b86c957503b0e3a5cb94fa9dffa016e476a",
+        "rootFsLayersVerified": 10
+      }
+    },
+    "artifact": {
+      "id": 12462477690,
+      "sha256": "3fabaca3d694172294689d6915a25a54e364d20cf81e15bdd1e348487c778e2d"
+    },
+    "checksums": "all five passed",
+    "state": "Preloaded only. No containers started or acceptance claimed. Activate only after current all22 checks,strict profiles,review and verified normal main integration.",
+    "note": "Docker Desktop containerd reports OCI manifest IDs; CI classic store reports verified config IDs. Both identities and all rootfs layers were checked."
+  },
+  "innerChecksums": "4c247247bab910d62440716f4f2caa570e611e61153f7cd8c80ce883f226e7d6  strataai-web.tar.gz\n872fadb505ac34876edc0b9d195f1f4dd5926c0ce4bf84673f3e6a178e7086a2  strataai-api.tar.gz\n99e115cbc2402eeaea7d9df9cabcad2812bfc6c1405fa8052ab86966e1ce1df4  strataai-worker.tar.gz\n9cfb7d7d2c7e34c76032c70daec216c1bc18f3c01c5ff15e481e9cd3408af1f9  build-metadata.json\n9dd954d1edaabf8dee87a7ffb780da7ba924d1c5f8037cb5b076d3414f8f4548  image-provenance.json\n",
+  "securityArtifact": {
+    "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+    "artifactId": 12461684164,
+    "providerDigest": "5559ddda2091a09791c8d00b4e4560ec3d558a2fa7448e31502b4eeed9f64ea9",
+    "metadata": {
+      "repository": "nickmailhot-lang/StrataAI2",
+      "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+      "shortSha": "220cdac710af",
+      "workflowRunId": "39856747644",
+      "workflowRunNumber": "1972",
+      "workflowRunAttempt": "1",
+      "version": "0.1.0-1972",
+      "releaseVersion": null,
+      "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+      "createdAt": "2026-10-22T21:22:59.920Z",
+      "images": {
+        "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+        "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+        "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+      }
+    },
+    "checksums": {
+      "build-metadata.json": "9cfb7d7d2c7e34c76032c70daec216c1bc18f3c01c5ff15e481e9cd3408af1f9",
+      "image-provenance.json": "9dd954d1edaabf8dee87a7ffb780da7ba924d1c5f8037cb5b076d3414f8f4548",
+      "metrics-collector.cdx.json": "b4e4d4cdb030f9adf11ea05a4953009f2c84ffc22fb386daf89417714193566c",
+      "strataai-api.cdx.json": "732721e8d735fa7df1eee3f7b733cf00d7b4c69533dae668408932480790b9c7",
+      "strataai-web.cdx.json": "c2f1663b79a350bed8444dacbe5a46baf40345814cfe4ce12c701007570f9e3c",
+      "strataai-worker.cdx.json": "541fc5e71732123c8ab70a7ef8d5d1f4f74a45aaa35f1f085cbe5e7eb255ba4e"
+    },
+    "sboms": [
+      {
+        "path": "metrics-collector.cdx.json",
+        "components": 1075
+      },
+      {
+        "path": "strataai-api.cdx.json",
+        "components": 134
+      },
+      {
+        "path": "strataai-web.cdx.json",
+        "components": 73
+      },
+      {
+        "path": "strataai-worker.cdx.json",
+        "components": 135
+      }
+    ],
+    "at": "2026-10-22T22:16:28.868251+00:00",
+    "limits": "Artifact integrity and current source/image identity verified. Security job passed; SBOM component count is not a vulnerability count or product acceptance."
+  },
+  "codeqlDiagnostics": {
+    "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+    "at": "2026-10-22T22:10:18.356Z",
+    "annotations": [
+      {
+        "checkRunId": 120096805127,
+        "name": "Analyze (actions)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804983,
+        "name": "Analyze (python)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804922,
+        "name": "Analyze (csharp)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804878,
+        "name": "Analyze (javascript-typescript)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 169,
+            "end_line": 169,
+            "annotation_level": "warning",
+            "message": "Failed to restore: Aborting cache download as the download time exceeded the timeout.",
+            "title": "",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804860,
+        "name": "Analyze (c-cpp)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      }
+    ],
+    "jsAnalysisSteps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Checkout repository",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Setup proxy for registries",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Initialize CodeQL",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Autobuild",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Perform CodeQL Analysis",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Post Perform CodeQL Analysis",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9
+      },
+      {
+        "name": "Post Initialize CodeQL",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10
+      },
+      {
+        "name": "Post Setup proxy for registries",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11
+      },
+      {
+        "name": "Post Checkout repository",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13
+      }
+    ],
+    "evaluation": "All five Analyze jobs and CodeQL pass with no new alerts. JavaScript/TypeScript reports one optional cache restore timeout warning; Initialize CodeQL and Perform CodeQL Analysis both completed successfully. It did not skip analysis or suppress a code finding. Five notice-level annotations concern GitHub runner-image migration. No workflow/check change or retry was used to suppress either diagnostic.",
+    "limits": "This evaluates these current-source annotations only; remaining immutable/native/security/performance/release/review/integration gates stay mandatory."
+  },
+  "outerArchiveRemoved": true,
+  "scope": "Current exact CI images pass provider and all five inner checksums,OCI manifest/config identities,all RootFS layers and revision/version/source/created labels. They are preloaded in Docker only;no container has started. Current security artifact provider/inner hashes and four SBOMs have matching current build identity. Security job passes.",
+  "limits": "13 checks are green;four integration groups run and three queue under unchanged max-parallel4. Actual current native/role/SQL/regression workflows,all six measured strict profiles,immutable release,final review and verified normal main integration remain required. No acceptance,merge,Demo activation or independent-follow-up qualification. Original Demo/process/data remain untouched."
+}

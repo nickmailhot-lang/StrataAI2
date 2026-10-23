@@ -1,0 +1,45 @@
+{
+  "revision": "1125cc0241f598c016b4123329afb8f23b803027",
+  "at": "2026-10-22T03:26:57.163Z",
+  "result": "Passed",
+  "scope": "Exact replacement fullfrontend webquality; allother native/backend/security/role/performance/releasegates remain pending.",
+  "artifactId": 12398038110,
+  "providerDigest": "3e47c683b2a58b7158b796c32308b43ee2233d07184c6ec8e527b837dad405d0",
+  "build": {
+    "repository": "nickmailhot-lang/StrataAI2",
+    "commitSha": "8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4",
+    "shortSha": "8d8ac5bf5cd3",
+    "workflowRunId": "39712506633",
+    "workflowRunNumber": "1967",
+    "workflowRunAttempt": "1",
+    "version": "0.1.0-1967",
+    "releaseVersion": null,
+    "imageTag": "8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4",
+    "createdAt": "2026-10-22T02:40:28.984Z",
+    "images": {
+      "web": "strataai-web:8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4",
+      "api": "strataai-api:8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4",
+      "worker": "strataai-worker:8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4"
+    }
+  },
+  "reports": [
+    {
+      "status": "complete",
+      "counts": {
+        "passed": 2979,
+        "failed": 0,
+        "skipped": 24,
+        "error": 0
+      },
+      "cases": 3003,
+      "caseDigest": "9aac51452217e6f478a73a454d376f515eb85e065bce671039b8190cc2a50959"
+    }
+  ],
+  "counts": {
+    "passed": 2979,
+    "failed": 0,
+    "skipped": 24,
+    "error": 0
+  },
+  "limits": "Sourcequality Passed does not replace required native/actualservices/RLS/CSP/performance/release/review/mainintegration. Originalcd953Foundation remains immutableFailed."
+}

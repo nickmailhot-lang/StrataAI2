@@ -1,0 +1,58 @@
+{
+  "revision": "99a5aa0be5c5cee199ee1d42da940d60e81c062b",
+  "at": "2026-10-22T17:09:11.175Z",
+  "result": "Passed",
+  "parents": [
+    "21ee7c791a289866bbe7632d697617eb3301cfb5",
+    "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222"
+  ],
+  "checkedLedger": {
+    "sha256": "7d9839364d01d31e9167cbf16cc3cca1bed4ee1a2f244bb1fd4ffc542983ff14",
+    "items": 1625,
+    "criteria": 3921,
+    "evidence": 1017,
+    "done": 71
+  },
+  "filterInputs": [
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.tsx",
+      "sha256": "0fbccb10885760bec66f82e6e79fc4b74f947b37252ea255fb8221a0c96760af"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.test.tsx",
+      "sha256": "238b6fb32251a12eab3f1d66893c347051c7702024832038a3f6545bb63834ff"
+    },
+    {
+      "path": "tests/browser/board-filter-guidance.spec.ts",
+      "sha256": "8779a739149db8e85b0bba6be20c4b244b5934f4a2623140d97d1dac97647782"
+    }
+  ],
+  "currentChecks": {
+    "types": {
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    "partition": {
+      "cases": 526,
+      "files": 178,
+      "counts": [
+        133,
+        131,
+        131,
+        131
+      ],
+      "sha256": "ea5d1d4ad7a1673f5f6c92a88702cd5ca3162c71a169f9f7000990404834c042"
+    },
+    "validation": {
+      "sha256": "9dac5927486cd1f1ab5c9342af8b774b76e9daae35def70a8721230d71028cd6",
+      "result": "npm notice run strataai2@0.1.0 delivery:validate\r\nnpm notice run node scripts/delivery-progress.mjs validate --base-ref origin/main\r\nValid: 1625 work items; 3921 criteria. No unsupported Done claims.\r\n"
+    },
+    "deliveryContracts": {
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0,
+      "sha256": "9a462ba3a5ff0332a5c475415cfedc7e05bba244c184f0ed5f46b775e83e864f"
+    }
+  },
+  "scope": "Normal branch merge preserves complete work/evidence/cycle histories from both parents. Three filter inputs remain exactly a15. The only incoming application change is the frozen parent invitation keyboard-accessibility fix. Earlier77 filter components and4+4 native cases retain actual eb7 execution identity; current parent invitation scopes retain dc210/57f990/75583 identities. Combined current types,complete526-case partition,full Git/hash/baseline/main-evolution validation and36 contracts pass on exact99a ledger.",
+  "limits": "Parent8f17005f still requires all current hosted gates,strict6 performance,release,review and verified main integration. Follow-up must qualify its own final main-target head. No acceptance or new Done."
+}

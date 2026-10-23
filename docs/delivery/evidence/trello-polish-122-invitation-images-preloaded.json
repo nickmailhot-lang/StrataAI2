@@ -1,0 +1,50 @@
+{
+  "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+  "at": "2026-10-22T18:22:17.577Z",
+  "result": "Passed",
+  "build": {
+    "repository": "nickmailhot-lang/StrataAI2",
+    "commitSha": "cff10bd1499c80374215e28b42e9c9720ea707ca",
+    "shortSha": "cff10bd1499c",
+    "workflowRunId": "39818629442",
+    "workflowRunNumber": "1971",
+    "workflowRunAttempt": "1",
+    "version": "0.1.0-1971",
+    "releaseVersion": null,
+    "imageTag": "cff10bd1499c80374215e28b42e9c9720ea707ca",
+    "createdAt": "2026-10-22T17:00:11.954Z",
+    "images": {
+      "web": "strataai-web:cff10bd1499c80374215e28b42e9c9720ea707ca",
+      "api": "strataai-api:cff10bd1499c80374215e28b42e9c9720ea707ca",
+      "worker": "strataai-worker:cff10bd1499c80374215e28b42e9c9720ea707ca"
+    }
+  },
+  "images": {
+    "web": {
+      "localManifestOrConfigId": "sha256:ad43ebd58c1e9d31d8656af5f680fe0e9aa797aac2495b6df07149f3a2d547a3",
+      "ciConfigId": "sha256:fe1b31aeac4200de1c97e320e148cb7f114ffbe5f1050dcd1daa6ff0e4675d86",
+      "archiveManifestId": "sha256:ad43ebd58c1e9d31d8656af5f680fe0e9aa797aac2495b6df07149f3a2d547a3",
+      "rootFsLayersVerified": 12
+    },
+    "api": {
+      "localManifestOrConfigId": "sha256:fd7bc1c6944b55471bf308007c01c704c938d90592c4f2ef8c8deb1ef97fb859",
+      "ciConfigId": "sha256:22c058a6f4788d827508bfd36204c5d046aab007c6518777ef9e5cd05a10497c",
+      "archiveManifestId": "sha256:fd7bc1c6944b55471bf308007c01c704c938d90592c4f2ef8c8deb1ef97fb859",
+      "rootFsLayersVerified": 10
+    },
+    "worker": {
+      "localManifestOrConfigId": "sha256:87e3b2ede0f805109ed72b93115cefc0c7f47a75650a26d978f4470b8fbb2508",
+      "ciConfigId": "sha256:a938fe4935fd0a500a6f6cd4ceb1943c1300b52eedd2e8cf39781cf665233afc",
+      "archiveManifestId": "sha256:87e3b2ede0f805109ed72b93115cefc0c7f47a75650a26d978f4470b8fbb2508",
+      "rootFsLayersVerified": 10
+    }
+  },
+  "artifact": {
+    "id": 12445719082,
+    "sha256": "14b01eb57432110897d99fae34d8dc34cce1135d6a5efa58b36c00f96d4b9c95"
+  },
+  "checksums": "all five passed",
+  "state": "Preloaded only. No containers started or acceptance claimed. Activate only after current all22 checks,strict profiles,review and verified normal main integration.",
+  "note": "Docker Desktop containerd reports OCI manifest IDs; CI classic store reports verified config IDs. Both identities and all rootfs layers were checked.",
+  "limits": "Image-cache preparation only;no Demo activation,merge or acceptance. All22 current gates,6 strict profiles,release,review and verified main integration remain required."
+}

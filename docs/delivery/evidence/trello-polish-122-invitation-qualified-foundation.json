@@ -1,0 +1,43 @@
+{
+  "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+  "at": "2026-10-22T18:30:02.173Z",
+  "result": "Passed",
+  "identity": {
+    "head": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+    "base": "4c1e27e265a71e0787e0bf40177337a5be2e2155",
+    "synthetic": "cff10bd1499c80374215e28b42e9c9720ea707ca",
+    "tree": "8b04d47b15a4fa07ddc00a59dc61c858d3e5ee07",
+    "run": "39818629442",
+    "version": "0.1.0-1971",
+    "attempt": "1",
+    "browserCases": 522,
+    "browserFiles": 177,
+    "browserPartition": [
+      131,
+      131,
+      131,
+      129
+    ]
+  },
+  "job": {
+    "id": 119989088506,
+    "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+    "name": "container-integration (browser-foundation, 1/1)",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "summaries": [
+    "2026-10-22T18:11:14.3801623Z   28 passed (14.7m)",
+    "2026-10-22T18:14:16.9984562Z   2 passed (3.0m)",
+    "2026-10-22T18:16:05.7265804Z   2 passed (1.4m)",
+    "2026-10-22T18:26:49.9149945Z   18 passed (10.7m)"
+  ],
+  "counts": {
+    "passed": 50,
+    "failed": 0,
+    "skipped": 0
+  },
+  "providerLogTruncated": true,
+  "scope": "Four completed real-image invocations: Demo metadata/terminal/recipient28; reminders2; original cover pipeline2; lifecycle18. Actual current-head job completed successfully. Conditional workflow steps belonging to other matrix groups are not counted as test passes.",
+  "limits": "Only Foundation is qualified by this proof. Remaining actual normal-browser/notifications/commands,strict6 performance,release,review and verified main integration remain required. No acceptance."
+}

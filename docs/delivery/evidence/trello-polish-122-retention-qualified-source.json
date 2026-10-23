@@ -1,0 +1,422 @@
+{
+  "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+  "at": "2026-10-22T22:08:36.825Z",
+  "result": "Passed",
+  "run": 39856747644,
+  "testedSynthetic": "220cdac710af6cbbf1572cef04e130279c0d7188",
+  "testedTree": "8c073ca008f8b3febaca6e053090644be0a52696",
+  "version": "0.1.0-1972",
+  "checks": [
+    {
+      "id": 120116338475,
+      "name": "source-quality-gate",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120116338475",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120097025643,
+      "name": "CodeQL",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/120097025643",
+      "output": {
+        "title": "No new alerts in code changed by this pull request",
+        "summary": "[View all branch alerts](/nickmailhot-lang/StrataAI2/security/code-scanning?query=pr%3A122+tool%3ACodeQL+is%3Aopen).",
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096998726,
+      "name": "web-quality",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120096998726",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096998647,
+      "name": "postgres-integration",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120096998647",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096998616,
+      "name": "dotnet-quality",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120096998616",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096805856,
+      "name": "metadata",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856747644/job/120096805856",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 120096805127,
+      "name": "Analyze (actions)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096805127",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 120096804983,
+      "name": "Analyze (python)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096804983",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 120096804922,
+      "name": "Analyze (csharp)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096804922",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 120096804878,
+      "name": "Analyze (javascript-typescript)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096804878",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 2
+      }
+    },
+    {
+      "id": 120096804860,
+      "name": "Analyze (c-cpp)",
+      "head_sha": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39856745781/job/120096804860",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    }
+  ],
+  "sourceArtifacts": {
+    "web": {
+      "artifactId": 12460686739,
+      "providerSha256": "1d07bf6711f523387de3839cc3f9be0a3f6c5113b385be2b5c30a193c022ac77",
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+        "shortSha": "220cdac710af",
+        "workflowRunId": "39856747644",
+        "workflowRunNumber": "1972",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1972",
+        "releaseVersion": null,
+        "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+        "createdAt": "2026-10-22T21:22:59.920Z",
+        "images": {
+          "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+          "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+          "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+        }
+      },
+      "reports": [
+        {
+          "status": "complete",
+          "counts": {
+            "passed": 2985,
+            "failed": 0,
+            "skipped": 24,
+            "error": 0
+          },
+          "deferred": [
+            {
+              "caseId": "49e7eb50f2cd5c7ceab2ff30a4701034de05e497138a2cb33f0ff3dfd70aa421",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "359a9b9a668882ef810f69eb81d5956088bd347520edfd824e70941a67c32399",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "1dc9887c73461030e56f147a8c1e82ba2ef7728fdd5b3d513e7b89cc2609242a",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "2b8705f456dd06d1393685a44d050948f95bb6631c582f0c1a6fe2ce917fb450",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "3e0f66ff926fb2e129e5ca967fb096f474afb8319667b47df43f11a6df0c5fa1",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "7e8d2f6a6a4da29e44e26d53de29aaaa4fbd09a89a1e47a2c8cd4978d390b28d",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "b14ab94854517c9f8418bb12fbbc3e08a21dd11f66823a3baa3e88a97e26d8af",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "65114f375d359c4d70129f2331d2f94ac075fd1a1a0a02b22c3488c6758bcd35",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "30cfd20d364f284175da945efdd02f25e98edff5f8761f646cb1286bd0dcf550",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "ed4de8addc6af2c9dcfb3c5d3db9c2996457a40b2257fa0482336b1fdd36f616",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "c12a77d555e4c23a35136cbc663fea4fd44dd73f9023f8a19119109c8a7cad25",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "f02d78549a9691d0cad8bbbf91fc3512da06ff157f8f9264e2cca11496dd6b0b",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "0773156d0bcf4371ef214af681b11d0bbff91e6b3ccc07ebc74303f5d4cbd6a0",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "79a741a604a4bc90251de49f112081870984f662f64ce60cf34748118f20e64b",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "7ab53605f1f9926a56d9f26125c582dc01ebe27077205f99d9c53c533a66d5a1",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "de1f92369674fc562023b19edc2f92c1dac1050bf7749c8387f3acf10eb9b8b8",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "41420ce30da4f356d0144a41e40095c6b8cad448702d05e0f7de0a83d3493ce6",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "fd32e8151854ea6cf6b8c42701dbfb344cdb338138e1778564d4ac2128bded05",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "3ad10772a02b7103589a96c16cc8e99e664b7832dce9b6c3ccf9f4842208c310",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "baecb20e6672945be56cdf8e27c153b73cd98e11882adbb53c0e5ad7ae728db2",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "8f45994b4efc85b196551931107c6c28d49cabde68814097c1f34c42a7e6c668",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "0327654b7a23edafd82823aca8e1fda826ccfb0b935dac0bd76875e67b5aa459",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "bdb273fc310500dabb6d8f0c628ef2ca85d547cc4fc36558ee6cb2a238b3adfe",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "380913516af2237802de2454d83a635aa68a40e29a5cee2b8d14d916a7ba2df6",
+              "source": "src/features/kanban/BoardWindow.capacity.test.tsx",
+              "outcome": "skipped",
+              "durationMs": 0
+            }
+          ]
+        }
+      ]
+    },
+    "dotnet": {
+      "artifactId": 12463020485,
+      "providerSha256": "074bed355c7bc995cd60b277cd373bb323f84c8deab95074c824a1cb294e317c",
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "220cdac710af6cbbf1572cef04e130279c0d7188",
+        "shortSha": "220cdac710af",
+        "workflowRunId": "39856747644",
+        "workflowRunNumber": "1972",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1972",
+        "releaseVersion": null,
+        "imageTag": "220cdac710af6cbbf1572cef04e130279c0d7188",
+        "createdAt": "2026-10-22T21:22:59.920Z",
+        "images": {
+          "web": "strataai-web:220cdac710af6cbbf1572cef04e130279c0d7188",
+          "api": "strataai-api:220cdac710af6cbbf1572cef04e130279c0d7188",
+          "worker": "strataai-worker:220cdac710af6cbbf1572cef04e130279c0d7188"
+        }
+      },
+      "reports": [
+        {
+          "status": "complete",
+          "counts": {
+            "passed": 1086,
+            "failed": 0,
+            "skipped": 3,
+            "error": 0
+          },
+          "deferred": [
+            {
+              "caseId": "d1dc97f3d4ea2b26181782f2bdb589b325a2a1e604f5ef643ef8b26c6da3b48b",
+              "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "40ac8b20978a85caa6b7a3ba19e8581ebfbde4101812a747543c30e6af475301",
+              "source": "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "13c5b60df5381d07cbb559818a454a700c2982969fd22ffea77c86a293fe17ea",
+              "source": "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition",
+              "outcome": "skipped",
+              "durationMs": 0
+            }
+          ]
+        },
+        {
+          "status": "complete",
+          "counts": {
+            "passed": 1433,
+            "failed": 0,
+            "skipped": 2,
+            "error": 0
+          },
+          "deferred": [
+            {
+              "caseId": "0b7744bf178812c6351906ff14f32df016719c78f033b4d14782bf0687f9c82d",
+              "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+              "outcome": "skipped",
+              "durationMs": 0
+            },
+            {
+              "caseId": "13979d60737c8bc80e8898d460172f82380e188de0271bf6e1f567b61d0ff780",
+              "source": "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition",
+              "outcome": "skipped",
+              "durationMs": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "scope": "All11 current source-quality checks pass. Provider ZIP hashes,current source/run/attempt/version/image tags,complete unit reports and exact original deferral-source identities verified. Original capacity counterpart/CI contract remains unchanged.",
+  "limits": "Images are building once;actual current native/role/SQL/security/regression workflows,all6 measured strict profiles,immutable release,final review and actual main integration remain required. This does not qualify the independent Board follow-up. No borrowed failed8f pass,no acceptance or Demo activation."
+}

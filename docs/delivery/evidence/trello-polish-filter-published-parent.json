@@ -1,0 +1,64 @@
+{
+  "revision": "258ce29624e18be5d8c505e3adcdff4d5a97d44e",
+  "at": "2026-10-22T02:41:10.494Z",
+  "result": "Passed",
+  "scope": "Normal side-branch reconciliation with actual published122 replacement1125; both ledger histories retained and source22 scoped inputs byte-identical. Not main integration or own full qualification.",
+  "publishedParent": {
+    "PR": 122,
+    "head": "1125cc0241f598c016b4123329afb8f23b803027",
+    "CI": 39712506633,
+    "codeql": 39712502121,
+    "synthetic": "8d8ac5bf5cd3b7867d6873bcc7365e7683119bf4",
+    "tree": "aab619106809717742b33112c0e79f7d2c2f223b",
+    "base": "4c1e27e265a71e0787e0bf40177337a5be2e2155",
+    "status": "Own complete new qualification running; unmerged/draft. Original Foundation failure retained."
+  },
+  "inputs": [
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.tsx",
+      "sha256": "77a5a6fe04d2b7a460393f825ce32614ea9dc1ab705b8354989843a80482c4d9"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.test.tsx",
+      "sha256": "99621b090940ae5d3620d7c0e8d33d8a79ebfbb9f5476aa0e8c39ecc7bf64aef"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterInteractionControl.test.tsx",
+      "sha256": "c9645d88dc157594d46eb0fafa71181461f84bbf32196d8505de0f615b25e4d3"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterClearAdmission.test.tsx",
+      "sha256": "02cc9a04f623b28c805cd283f7b22058cd4cd7198eeccec67619847159fd5464"
+    },
+    {
+      "path": "apps/web/src/features/search/boardFilterChange.test.ts",
+      "sha256": "9e90ca8ec0dc7d095ea719d474f646691d6bdeb1517666c088ac69473c5b2fcf"
+    },
+    {
+      "path": "apps/web/src/features/search/searchInteraction.test.ts",
+      "sha256": "36db463d9f534820627c49576df0b0e9cf6e6ced4601547d85752a9bc264940d"
+    },
+    {
+      "path": "tests/browser/board-filter-guidance.spec.ts",
+      "sha256": "e8ff9abdb912675d67ae05678afecebdcc1369a48f888d05eebebe64879b3938"
+    }
+  ],
+  "ledger": {
+    "items": 1621,
+    "criteria": 3917,
+    "evidenceBefore": 975,
+    "done": 71
+  },
+  "priorChecks": {
+    "source": "22b92e465480ef52b3d502e77f37e5fa5c147209",
+    "components": 73,
+    "actualFiles": 5,
+    "defaultBrowser": 4,
+    "rollbackBrowser": 4,
+    "guards": 11,
+    "registry": "506cases/175intactfiles",
+    "deliveryContracts": 36,
+    "fullGitHashValidation": "Passed at2b9a6120 checkpoint."
+  },
+  "limits": "Only hashes/history reconciliation claimed at258ce296. Scoped passes retain actual22 identity; no new parent/own22gate/performance/release/review/acceptance/main integration claim."
+}

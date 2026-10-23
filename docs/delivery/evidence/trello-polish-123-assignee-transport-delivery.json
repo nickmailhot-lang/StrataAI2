@@ -1,0 +1,42 @@
+{
+  "revision": "5b5897b6be7baa99c2519956dde2fe63386edbf1",
+  "at": "2026-10-23T04:31:33.989Z",
+  "result": "Passed",
+  "scope": "Complete Git/source/hash/baseline/main-history and36 delivery contracts on exact committed ledger bytes;complete530case/179file registry and4groups/7executions/130step coverage guard. Final evidence bookkeeping below is structurally checked and still requires its own complete fresh metadata/source/native/performance/release gates.",
+  "logs": [
+    {
+      "path": "work/trello-123-transport-delivery-validate.log",
+      "sha256": "9c0622e9e10e5bab4a82700592743d1a0d1200937a6deae187723a3c29153a8e",
+      "summary": [
+        "Valid: 1627 work items; 3924 criteria. No unsupported Done claims."
+      ]
+    },
+    {
+      "path": "work/trello-123-transport-delivery-contracts.log",
+      "sha256": "cb666110872d4a5109951bb9bb517ccd2bc8e0ac020c15d166158e8ab1c88788",
+      "summary": [
+        "ℹ tests 36",
+        "ℹ pass 36",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 379669.564"
+      ]
+    },
+    {
+      "path": "work/trello-123-transport-browser-registry.log",
+      "sha256": "5e85b2382838443460eb57af85bd2efbf3f1c91a622ac95f625ea20cfd11d089",
+      "summary": [
+        "Total: 530 tests in 179 files"
+      ]
+    },
+    {
+      "path": "work/trello-123-transport-integration-coverage.log",
+      "sha256": "0bc779b0d8ab1b4f8dcbb06e1563d5c397159cc4e6f7b5ad5e6c6a5040bc18cb",
+      "summary": [
+        "Mandatory integration coverage: 4 groups/7 isolated executions, 130 registered steps"
+      ]
+    }
+  ]
+}

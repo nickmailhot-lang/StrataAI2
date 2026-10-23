@@ -1,0 +1,547 @@
+{
+  "revision": "a15b24841306b504ab7244a3d2adb5e7b996d8de",
+  "at": "2026-10-22T03:26:57.163Z",
+  "result": "Passed",
+  "scope": "Finalcombinedcopy/focus:77tests/5completefiles;4default+4rollback currentroutednativecases;web/browsertypes,strictscopedlint,11guards,506cases/175intactfiles. Actual own fullgates still required.",
+  "logs": [
+    {
+      "key": "unit77",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run --run src/features/kanban/BoardFilterControl.test.tsx src/features/kanban/BoardFilterInteractionControl.test.tsx src/features/kanban/BoardFilterClearAdmission.test.tsx src/features/search/boardFilterChange.test.ts src/features/search/searchInteraction.test.ts\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  5 passed (5)\r\n      Tests  77 passed (77)\r\n   Start at  20:12:04\r\n   Duration  51.95s (tests 55%, environment 20%, import 19%, setup 4%, transform 2%)\r\n\r\n"
+    },
+    {
+      "key": "web-types",
+      "content": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\n"
+    },
+    {
+      "key": "browser-types",
+      "content": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "key": "lint",
+      "content": "npm notice run strataai2@0.1.0 npx\r\nnpm notice run eslint src/features/kanban/BoardFilterControl.tsx src/features/kanban/BoardFilterControl.test.tsx --max-warnings=0\r\n"
+    },
+    {
+      "key": "guards",
+      "content": "✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (2315.8244ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (184.1232ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (848.2399ms)\r\n✔ phase guard detects eager allocation and accidental default activation (227.7218ms)\r\n✔ ARCH-02-FR-009 rejects direct and aliased browser fetch in feature clients (6271.5889ms)\r\n✔ ARCH-02-FR-009 allows the shared transport and isolated test fixtures (106.6573ms)\r\n✔ ARCH-02-FR-009 permits feature requests through apiFetch (35.1ms)\r\n✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (1236.7522ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (199.7009ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (1014.7904ms)\r\n✔ phase guard detects eager allocation and accidental default activation (291.1242ms)\r\nℹ tests 11\r\nℹ suites 0\r\nℹ pass 11\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 14224.2554\r\n"
+    },
+    {
+      "key": "registry",
+      "content": "Browser shard coverage: 506 cases in 175 intact files; 127/128/128/123 cases across all four shards.\r\n"
+    }
+  ],
+  "exitReceipts": {
+    "revision": "a15b24841306b504ab7244a3d2adb5e7b996d8de",
+    "checks": [
+      {
+        "key": "web-types",
+        "exitCode": 0
+      },
+      {
+        "key": "browser-types",
+        "exitCode": 0
+      },
+      {
+        "key": "lint",
+        "exitCode": 0
+      },
+      {
+        "key": "guards",
+        "exitCode": 0
+      },
+      {
+        "key": "registry",
+        "exitCode": 0
+      }
+    ]
+  },
+  "browsers": [
+    {
+      "mode": "default",
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/board-filter-guidance.spec.ts",
+            "--output=../board-filter-paging-owners-default-results",
+            "--reporter=list,json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/board-filter-paging-owners-default-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "list"
+            ],
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "board-filter-guidance.spec.ts",
+            "file": "board-filter-guidance.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 18040,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T03:09:55.624Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "98144e8a521030506610-6d26c68c8f95eece30f8",
+                "file": "board-filter-guidance.spec.ts",
+                "line": 57,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 17647,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T03:10:13.979Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "98144e8a521030506610-ee1971b4e6257b1717e1",
+                "file": "board-filter-guidance.spec.ts",
+                "line": 57,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 15167,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T03:10:31.661Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "98144e8a521030506610-901d5c3ee79d9fdafea9",
+                "file": "board-filter-guidance.spec.ts",
+                "line": 57,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 16278,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T03:10:46.877Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "98144e8a521030506610-c5f45dbc09a04fb3bbf5",
+                "file": "board-filter-guidance.spec.ts",
+                "line": 57,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-22T03:09:54.229Z",
+          "duration": 69607.252,
+          "expected": 4,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    },
+    {
+      "mode": "rollback",
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/board-filter-guidance.spec.ts",
+            "--output=../board-filter-paging-owners-rollback-results",
+            "--reporter=list,json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/board-filter-paging-owners-rollback-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "list"
+            ],
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "board-filter-guidance.spec.ts",
+            "file": "board-filter-guidance.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 14754,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T03:17:38.751Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "98144e8a521030506610-6d26c68c8f95eece30f8",
+                "file": "board-filter-guidance.spec.ts",
+                "line": 57,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 12235,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T03:17:53.815Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "98144e8a521030506610-ee1971b4e6257b1717e1",
+                "file": "board-filter-guidance.spec.ts",
+                "line": 57,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 12217,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T03:18:06.075Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "98144e8a521030506610-901d5c3ee79d9fdafea9",
+                "file": "board-filter-guidance.spec.ts",
+                "line": 57,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Board filter last-page guidance, return and withdrawal at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 11972,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T03:18:18.312Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "98144e8a521030506610-c5f45dbc09a04fb3bbf5",
+                "file": "board-filter-guidance.spec.ts",
+                "line": 57,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-22T03:17:37.544Z",
+          "duration": 53394.828,
+          "expected": 4,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    }
+  ],
+  "captures": [
+    {
+      "width": 1280,
+      "textZoom": "200%",
+      "path": "docs/delivery/evidence/trello-polish-filter-paging-final-1280.png",
+      "sha256": "db1094bbe9cc30ff65c6200cf82b42d67ab0ded793e78804551f65587a6012b3"
+    },
+    {
+      "width": 768,
+      "textZoom": "200%",
+      "path": "docs/delivery/evidence/trello-polish-filter-paging-final-768.png",
+      "sha256": "cf91cda49dc89ee3d665a097553cfe926bbe88e95b25b2d29fe81e8ea3af75fc"
+    },
+    {
+      "width": 390,
+      "textZoom": "200%",
+      "path": "docs/delivery/evidence/trello-polish-filter-paging-final-390.png",
+      "sha256": "cfd9f89d0f3da8571fa290ebb64793546d467f162e7b605d8af0176440455ae8"
+    },
+    {
+      "width": 320,
+      "textZoom": "200%",
+      "path": "docs/delivery/evidence/trello-polish-filter-paging-final-320.png",
+      "sha256": "bdaa47b74c2211dd4ed9dead2d67733c46a02876c602fdfae4cec7c3df761b8f"
+    }
+  ],
+  "sourceReview": {
+    "reviewer": "Codex acting as user-delegated UX Engineering Lead",
+    "finding": "Focus parks only from actual owned Next/First before cursor retirement or protected read invalidation. Stable refs independent for closing dialog and canvas. Existing scrollregion/status/trigger and themeoutline reused; denied return never steals deliberate outside focus. No async completion reclamation,extra request,write,recovery replay,API/schema/role/cursor/parser change.",
+    "visual": "Current desktop1280 and phone390 last-page captures inspected at200%text; remaining widths automated. Native focus outline,viewportbounds and actualcenterhit verified. No broad screenshotbaseline,manualscreenreader/hardware/globalWCAG certification."
+  },
+  "historicalFailures": [
+    "EVID-TRELLO-FILTER-PAGING-RED",
+    "EVID-TRELLO-FILTER-PAGING-INTERMEDIATE",
+    "EVID-TRELLO-FILTER-PAGING-UNIT-FAILED",
+    "EVID-TRELLO-FILTER-PAGING-FIRST-FAILED",
+    "EVID-TRELLO-FILTER-PAGING-EXIT-FAILED"
+  ],
+  "limits": [
+    "Controlled HTTP/quietWS and localdevelopment assets do not qualify real services,RLS,ProductionCSP,normalperformance or immutable release.",
+    "Parent122new1125ownall22qualification and normalmainintegration remain pending; this followup needs its own complete final-head gates after retargetingmain."
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+  "at": "2026-10-22T20:07:43.949Z",
+  "result": "Passed",
+  "run": 39818629442,
+  "testedSynthetic": "cff10bd1499c80374215e28b42e9c9720ea707ca",
+  "version": "0.1.0-1971",
+  "scopes": [
+    {
+      "name": "full1",
+      "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "at": "2026-10-22T19:26:34.431Z",
+      "job": {
+        "id": 119989088337,
+        "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+        "name": "container-integration (browser-full, 1/4)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "logTruncated": true,
+      "summary": [
+        "2026-10-22T19:23:58.5278004Z   131 passed (1.4h)"
+      ],
+      "passed": 131,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Current exact-image normal browser shard1 only; remaining normal/notification/performance/release/review/integration required."
+    },
+    {
+      "name": "full2",
+      "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "at": "2026-10-22T19:52:09.906Z",
+      "job": {
+        "id": 119989088162,
+        "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+        "name": "container-integration (browser-full, 2/4)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "logTruncated": true,
+      "summary": [
+        "2026-10-22T19:51:04.5210124Z   2 skipped",
+        "2026-10-22T19:51:04.5210466Z   129 passed (1.2h)"
+      ],
+      "passed": 129,
+      "failed": 0,
+      "skipped": 2,
+      "scope": "Current immutable normal shard2 passes; retains two original mail-topology skips, which are not passes. Current invitation clock/default focus and native withdrawal/keyboard/Axe contracts pass. Other normal/performance/release/review/integration remain required."
+    },
+    {
+      "name": "full3",
+      "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "at": "2026-10-22T20:03:48.563Z",
+      "job": {
+        "id": 119989088269,
+        "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+        "name": "container-integration (browser-full, 3/4)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "logTruncated": true,
+      "summary": [
+        "2026-10-22T20:03:13.4682987Z   131 passed (1.3h)"
+      ],
+      "passed": 131,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Current exact-image normal browser shard3 only. Last shard, all six measured performance profiles, immutable release, review and verified main integration remain required."
+    },
+    {
+      "name": "notifications",
+      "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "at": "2026-10-22T19:45:18.756Z",
+      "job": {
+        "id": 119989088197,
+        "head_sha": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+        "name": "container-integration (browser-notifications, 1/1)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      "logTruncated": true,
+      "summary": [
+        "2026-10-22T18:28:33.4838666Z   4 passed (3.3m)",
+        "2026-10-22T18:30:58.2976819Z   2 passed (2.3m)",
+        "2026-10-22T18:35:13.6541801Z   2 passed (4.2m)",
+        "2026-10-22T18:38:08.4217653Z   6 passed (2.9m)",
+        "2026-10-22T19:11:02.6014317Z   44 passed (32.9m)",
+        "2026-10-22T19:20:00.8786826Z   14 passed (8.9m)",
+        "2026-10-22T19:28:59.3154082Z   7 passed (9.0m)",
+        "2026-10-22T19:38:43.5264519Z   9 passed (9.7m)",
+        "2026-10-22T19:43:33.2166893Z   5 passed (4.7m)"
+      ],
+      "passed": 93,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Current immutable-image notifications only. Provider log is truncated; all nine known phase summaries and completed-success job are present. Remaining browser/performance/release/review/integration remain required."
+    }
+  ],
+  "performance": [
+    {
+      "shard": 1,
+      "artifactId": 12453265073,
+      "providerDigest": "86898b89ea25cadc97ac5425ee076604ef4f4eb7aa3a6332a056009dac73510f",
+      "measuredProfiles": 0
+    },
+    {
+      "shard": 2,
+      "artifactId": 12454731046,
+      "providerDigest": "dadcd8c8641d617c3f163c8cdd2291cd0d165b4f52e8e1c92f334477e653aadf",
+      "measuredProfiles": 0
+    },
+    {
+      "shard": 3,
+      "artifactId": 12454743141,
+      "providerDigest": "e0e388f81c2c7b2280f154faffd8ea6ed7030d234ace3347985650b06f4d860d",
+      "measuredProfiles": 0
+    }
+  ],
+  "scope": "Current immutable-image normal browser groups one through three and all notification phases pass. The two original normal mail-topology skips remain Skipped; dedicated mail acceptance executes in notifications. Current invitation review/default-focus regression passes. Provider logs are truncated; known complete phase summaries and completed-success jobs are preserved.",
+  "limits": "The fourth normal browser group, all six measured strict performance profiles, required-ci, immutable release, final review and verified main integration remain required. Empty measurements do not qualify profiles. No acceptance, merge or Demo activation; all historical failures and broader open obligations remain."
+}

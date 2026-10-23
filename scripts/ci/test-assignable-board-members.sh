@@ -56,6 +56,14 @@ request() { curl --max-time 60 --silent --show-error -b "$scratch/$1.cookies" -X
 list=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"name":"Assignment commands"}' "$base/boards/$board/lists" | jq -r '.id')
 card=$(curl --fail --silent --show-error -b "$scratch/owner.cookies" -H 'X-StrataAI-Request: 1' -H 'Content-Type: application/json' -d '{"title":"Retained assignment Card","description":"Retained assignment description"}' "$base/lists/$list/cards" | jq -r '.id')
 for id in "$list" "$card"; do [[ "$id" =~ ^[0-9a-fA-F-]{36}$ ]]; done
+# UX-CARD-02: an eligible zero must be explicit and bound to the Card revision
+# returned by the same canonical read, never inferred by the browser.
+test "$(get owner "/boards/$board" empty-member-preview)" = 200
+jq -e --arg card "$card" '.cardMembers[$card].total==0 and .cardMembers[$card].items==[]
+ and .cardMembers[$card].cardVersion==1
+ and ([.lists[].cards[]|select(.id==$card)][0].version)==.cardMembers[$card].cardVersion' "$scratch/empty-member-preview.json" >/dev/null
+test "$(get owner "/cards/$card/members" empty-members)" = 200
+jq -e --arg card "$card" '.cardId==$card and .cardVersion==1 and .items==[] and .nextCursor==null and .canEdit==true' "$scratch/empty-members.json" >/dev/null
 member_path="/cards/$card/members/$member"
 key=11111111-1111-1111-1111-111111111141
 state() { admin "SELECT md5(jsonb_build_object(

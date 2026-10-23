@@ -1,5 +1,181 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Board polish repair ready for fresh CI
+
+PR #123 remains draft and unmerged. The failed build 1974 is retained:129 full-browser passes and four false-positive business-write failures. Repair `0d8939e2` distinguishes only the three exact existing SignalR negotiation POSTs from business commands. The zero-write assertion, all UI/privacy assertions, worker ownership, roles and 90-second deadline are unchanged.
+
+Four retained-image and four compiled-rollback native cases pass at 320/390/768/1280px, including canonical empty/assigned previews, stale-data withdrawal, keyboard return, 200% reflow, Axe, logout and private 404. Twenty-five boundary probes and browser types pass. The failed execution and separate denied host-server attempt remain distinct from these passes. Only the disposable QA project was removed; both user demos still have three healthy services.
+
+The exact tracking commit `5b5897b6` passes full Git/source/hash/baseline/main-history validation and all **36 delivery contracts**, without failures or skips. Browser discovery remains **530 cases in 179 files**; mandatory integration coverage remains four groups, seven isolated executions and 130 registered steps. Final evidence bookkeeping is structurally validated and remains subject to the new head's own metadata check.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing Board-filter guidance/focus and authoritative assignee previews implemented; no new business scope. |
+| UX completion | Eight scoped assignee cases pass across both presentations; all six bounded work records remain Testing. |
+| Test completion | Scoped repair and tracking checks pass. Fresh complete source, SQL, security, full browser/roles/responsive/accessibility, six strict performance profiles and immutable release checks remain mandatory. |
+| MVP readiness | 81 records remain Done. No new acceptance, broad PRD closure, merge or combined completion percentage. |
+
+Next: qualify the replacement revision completely, review it, merge only after all gates pass, then update the Demo from the verified images. Ledger: 1,627 items, 3,924 criteria and 1,049 evidence records.
+
+---
+
+## 2026-10-22 — PR #123 CI failure diagnosed; strict fixture repair passes both presentations
+
+Candidate `95c1f5c2`/run39885272560/build1974 failed full browser group1 with **129 passes and four failures**. At every width,the new assignee fixture counted three established SignalR transport-negotiation POSTs as business writes. Private traces confirm those exact three handshakes;the original canonical previews,version binding,Card disclosure,keyboard return,200% reflow,Axe and stale-data checks passed before the counter. The logout tail was Not Run in that failed execution. All failed evidence remains retained;this candidate cannot merge or activate a qualified Demo.
+
+Repair `0d8939e2` changes only that measurement:exclude POST at the three exact existing live-hub negotiation paths. The zero-business-write assertion and entire UI/privacy/assertion tail remain byte-identical,as do the90s scenario,roles,widths and deadlines. **Four exact-image and four rollback-native cases now pass**,including logout/private404.25 classification probes prove other methods and lookalike/domain paths are still counted. Browser types pass. These scoped runs executed the sole dirty fixture patch on95c1f5c2;their exact bytes are committed at0d8939e2. They are not fresh full-head qualification.
+
+The host Vite rollback launch was denied by automatic review with only blocked by policy;no host process started. A narrower local frontend-only flag0 build was served read-only in the isolated QA Docker web service over the unchanged CI API/Worker. Those four separate passes retain the denied-host Not Run record. Only that disposable QA project was removed afterward;both user Demo instances remain healthy. Diagnostic partial-extraction cleanup was also denied,so the complete verified ZIP and partial files remain retained.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing Board-filter/assignee implementation preserved;fixture measurement repaired without product/API/schema changes. |
+| UX completion | Eight scoped native cases pass in both presentations;all six bounded work records remain Testing. |
+| Test completion | Failed1974 retained. Its source2993/frontend and2525/backend passes,original24/5deferrals,Foundation50/notifications93/commands passes do not qualify the forthcoming head. Fresh all22,strict6 and immutable release remain required. |
+| MVP readiness | 81Done unchanged;no new acceptance,PRD closure,merge or combined product percentage. |
+
+Next:finish consolidated tracking validation,freeze a new main-target head and require its complete own checks before merge or Demo refresh. Ledger:1,627 items,3,924 criteria,1,048 evidence records.
+
+---
+
+## 2026-10-22 — PR #123 source checks pass; complete qualification running
+
+PR #123 frozen head `95c1f5c2` targets current main `ad992105`. Its own run39885272560/build **0.1.0-1974** has passing source quality,PostgreSQL integration,security,Foundation and commands checks. Source artifacts verify **2,993 frontend and2,525 backend passes**,with the original24 frontend/five backend deferrals unchanged by exact skipped-source comparison. Six new assignee role/privacy/version regressions and the locally platform-skipped Linux cover test pass in Linux CI.
+
+The full browser matrix is still running;strict six-profile performance,immutable release and final review remain required. No required failing check is reported at this snapshot;pending is not passing. Candidate images are checksum/identity/layer verified and preloaded only. Both existing Demo instances remain unchanged;the candidate is not deployed or accepted.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Board-filter guidance/focus and authoritative empty-assignee previews implemented;existing capabilities and contracts preserved. |
+| UX completion | Six bounded Task/Test records are Testing;current-image acceptance remains pending. |
+| Test completion | Own source results verified;complete native,strict performance and immutable release gates still required. |
+| MVP readiness | 81 records remain Done;no broad PRD or global MVP acceptance and no combined percentage. |
+
+Next:finish the remaining gates,repair any actual failures without weakening checks,perform final review and merge only after qualification. Then refresh the Demo from the verified images while preserving the current instance. Ledger:1,627 items,3,924 criteria,1,045 evidence records.
+
+---
+
+## 2026-10-22 — Final integration tracking validated; independent Board CI next
+
+PR #122 is merged as `ad992105`, with all 22 required checks, six original strict performance profiles, final source/UX review and the exact tested main tree verified. Qualified Demo **0.1.0-1972** is running at **http://127.0.0.1:8089/login**. Actual sign-in, Organization context, the copied Work board and its live connection are visible. The original Demo at http://localhost:8088 remains healthy and retains its data and session.
+
+The post-integration ledger passes full Git/source/hash/baseline/main-history validation and all **36 delivery contracts**, without failures or skips, on exact commit `348bcf84`. Only ten bounded Task/Test records and eleven criteria are accepted; **81 Done**. Broader PRDs and global MVP readiness remain open. Final evidence bookkeeping is structurally validated and remains subject to the follow-up own metadata gate.
+
+The independent Board follow-up is reconciled with actual main. It implements clearer empty-page guidance, stable filter paging and authoritative empty-assignee feedback. Four filter records remain Testing and two assignee records remain Implemented. Their positive new-image browser/SQL and complete own main-target checks remain required before acceptance or merge. Next: publish its frozen head against main and run those gates. No follow-up merge is claimed.
+
+Functional completion, UX completion, test completion and MVP readiness remain separate. Ledger: 1,627 items, 3,924 criteria and 1,044 evidence records. Both working Demo instances and qualified release archives are retained; only reproducible failed-build archives were removed.
+
+---
+
+## 2026-10-22 — PR #122 merged; qualified Demo running; Board polish continues
+
+PR #122 candidate `f7174ba4` passed all **22 required checks**, all six original strict performance profiles and the source-free Production/Demo/HTTPS/Secure/WSS/recovery release checks. The normal merge is `ad992105a5f0068f9f3a32e5d7519271e32b5cb6`; its parents and tree exactly match the tested composition. Source and bounded UX review passed. All earlier failures, original deferrals and conditional profile skips remain recorded with their actual identities. No check was weakened.
+
+Build **0.1.0-1972** is running at **http://127.0.0.1:8089/login**. The three exact-image services are healthy, valid sign-in succeeds, wrong-password sign-in is rejected, and an anonymous private-Board request returns 404. Three Lists and seven Cards were copied through normal APIs, with text, dates, ordering and star state verified. Actual browser sign-in, Organization context, the Work board and live connection are visible; the current screenshot is saved locally. The original Demo at http://localhost:8088 and its full data/history/session remain running. Both instances use process-local Demo data, so restarting an API resets that instance.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new business domain. Independent canonical-assignee feedback is implemented. |
+| UX completion | Bounded Card/Search, Search guidance/paging and lifecycle feedback accepted after tested-tree main integration. Filter and assignee polish await their own acceptance. |
+| Test completion | PR #122: all 22 gates,520 normal browser passes, 50 Foundation cases, 93 notification cases and six strict profiles pass. Original 24/5 deferrals and two normal mail-profile skips remain separate; dedicated current mail acceptance passes. Commands complete 80 workflow steps, not 80 test cases. |
+| MVP readiness | Ten bounded Task/Test records and eleven criteria accepted; 81 Done total. Broad PRDs and global MVP readiness remain open. |
+
+The independent follow-up preserves 77 filter component passes and four native cases in each presentation scopes, plus 77 related assignee host passes and 26 consumer passes scopes with the evaluated Linux-only skip. Positive new-image assignee browser/SQL and its own complete main-target checks remain required. Four filter records stay Testing and two assignee records stay Implemented. Next: validate final tracking, retarget to main and qualify its own frozen head. No follow-up merge is claimed.
+
+Ledger: 1,627 items, 3,924 criteria and 1,043 evidence records. No combined product-completion percentage or production deployment is claimed.
+
+---
+
+## 2026-10-22 — PR #122 qualified and integrated; Board polish continues
+
+PR #122 candidate `f7174ba4` passed all **22 required checks** on its own immutable tested composition. Current frontend (2,985) and backend (2,519) tests pass, with the original 24 frontend and five backend capacity deferrals unchanged. Original cover removal, normal native and role workflows, responsive/keyboard/Axe checks, all six original strict normal-performance profiles and the source-free Production/Demo/HTTPS/Secure/WSS/recovery release checks pass. All earlier source, Foundation, admission, visual, local invocation, star and premature Search observation failures remain recorded and evaluated. Source and bounded UX review passed without weakening checks.
+
+The ordinary expected-head merge is `ad992105a5f0068f9f3a32e5d7519271e32b5cb6`; its actual tree equals the qualified tested tree `8c073ca008f8b3febaca6e053090644be0a52696`. Ten existing Task/Test records and eleven criteria are accepted after that integration, including the Search paging dependency before its dependent Search polish. Only these bounded records are Done; broader PRDs and global MVP readiness remain open.
+
+Draft PR #123 retains clear empty-last-page guidance and stable Board-filter keyboard paging. Its tested implementation remains source `a15b2484` (77 scoped tests and four native cases in each presentation); later parent reconciliation and 36 delivery contracts are separate current proof. The separate canonical assignee-feedback repair has77 related host passes,26 consumer tests and an evaluated Linux-only skip;positive fixed-image browser/SQL remains pending. The combined follow-up still requires its own complete main-target gates,review and actual integration before acceptance or merge.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new business scope. |
+| UX completion | Bounded Card/Search presentation, carried Search guidance/paging and lifecycle feedback accepted. Filter polish implemented, awaiting own acceptance. |
+| Test completion | PR #122 own22 gates and source/native/role/performance/release checks pass. PR #123 own full qualification remains required. |
+| MVP readiness | Only the bounded accepted records advance; no global MVP closure or combined percentage. |
+
+Active follow-up ledger: 1627 items, 3924 criteria, 1042 evidence records, 81 Done. No production deployment is claimed.
+
+---
+
+## 2026-10-22 — Nineteen checks pass; final browser group remains
+
+Frozen PR #122 candidate `f7174ba4` passes 19 current checks. Normal-browser groups one, two and three pass 131, 129 and 131 cases respectively, with two original mail-fixture skips retained in group two. All 93 dedicated notification cases pass. Foundation retains 50 passes and the command group retains 80 successful workflow steps. The invitation-review regression now passes on the current immutable images. All prior failures remain recorded and evaluated.
+
+The final browser group is running. The first three verified performance artifacts contain no measured profiles; none of the six required profiles is yet qualified. All original strict budgets, required-ci, immutable release, final review and verified normal main integration remain mandatory. No merge or Demo activation has occurred.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; independent canonical-assignee feedback is implemented. |
+| UX completion | Bounded parent polish passes three native groups and notifications; final acceptance remains unverified. |
+| Test completion | Nineteen current checks pass; final browser, measured performance and release gates remain required. |
+| MVP readiness | No new acceptance; 71 records remain Done. Broad PRDs and MVP readiness remain open. |
+
+The independent Board follow-up retains its scoped results and still requires positive new-image browser/SQL and its own complete qualification. The original Demo remains running. Its prepared refresh preserves a separate browser origin and verifies copied text, canonical dates, List order and star state after qualification; it has not been activated.
+
+---
+
+## 2026-10-22 — Current Foundation and command groups pass
+
+Frozen candidate `f7174ba4` has 15 green checks. All 50 current Foundation cases pass: 28 Demo, two reminder, two original cover and 18 lifecycle scenarios, with no failures or skips. The command, role, RLS, transaction and runtime group completes 80 successful workflow steps; this is not a count of test cases. Source, image and security checks already pass.
+
+Three full-browser groups and notifications are running. The final full-browser group is queued under the unchanged four-job limit. All remaining current native checks, six measured original strict performance profiles, immutable release, final review and verified normal main integration remain required. Failed candidate `8f17005f` retains its failed result.
+
+No merge, acceptance or Demo activation has occurred. The new images are preloaded only, and the original user Demo remains available. Independent filter and assignee polish retain their own scoped results and pending complete qualification. Functional completion, UX completion, test completion and MVP readiness remain separate; 71 Done unchanged.
+
+---
+
+## 2026-10-22 — Current images verified and preloaded; integration gates running
+
+Frozen candidate `f7174ba4` now has 13 green checks: source quality, built images and security. The exact build 1972 web/API/Worker images pass provider and inner checksums, manifest/config/layer identity and source/version labels. They are preloaded only; no new containers have started. The current security artifact also passes provenance checks. CodeQL analysis succeeds; its optional cache-restore warning was evaluated, and no check was changed or finding suppressed.
+
+Four integration groups are running and three are queued under the unchanged four-job limit. All current native, role, SQL and regression workflows, six measured original strict performance profiles, immutable release, final review and verified normal main integration remain required. No merge, acceptance or Demo activation has occurred. The original user Demo stays available.
+
+The prepared refresh uses a separate 127.0.0.1 browser origin to preserve the original localhost session. It remains guarded by actual passing qualification and main-integration proof. The independent Board-filter and assignee work retains its scoped results and pending new-image/SQL/full qualification. Functional completion, UX completion, test completion and MVP readiness remain separate; 71 Done unchanged.
+
+---
+
+## 2026-10-22 — Replacement source gates pass; release images building
+
+Frozen PR #122 candidate `f7174ba4` passes all 11 source-quality checks. Provider checksums, current build/run identities and complete reports verify **2,985 frontend and 2,519 backend passes**. The original 24 frontend and five backend deferrals retain the same source identities; none is counted as a pass. Build 1972 images are building once.
+
+Actual current image/native/role/SQL/security/regression workflows, all six measured strict performance profiles, immutable release, final review and verified normal main integration remain mandatory. Failed candidate `8f17005f` stays Failed with its own results. No merge, acceptance or Demo activation has occurred. The current user Demo and the independent Board follow-up remain preserved.
+
+Functional completion, UX completion, test completion and MVP readiness remain separate. Ten parent and four filter records remain Testing; two assignee records are Implemented. Positive new-image assignee browser/SQL and its own complete main-target gates remain pending. Broad PRDs and MVP readiness remain open; 71 Done unchanged.
+
+---
+
+## 2026-10-22 — Combined Board follow-up validated against frozen replacement
+
+Normal merge `a6a3428b` reconciles parent `f7174ba4` while preserving every independent filter and canonical-assignee implementation input. Both ledgers, histories and reports are retained. Combined browser types, the full 530-case/179-file registry, Git/source/hash/baseline/main-history validation and all 36 delivery contracts pass on that exact committed ledger. Final evidence bookkeeping is structurally checked and remains subject to the follow-up's own metadata gate.
+
+Frozen PR #122 is in fresh build 1972 qualification. Its current frontend artifact verifies 2,985 passes and the original 24 capacity deferrals. Backend and subsequent image, native, role, security, strict-performance, release, review and main-integration gates remain required. Failed candidate `8f17005f` stays Failed. No merge, acceptance or Demo activation has occurred; the original user Demo remains available.
+
+Filter polish retains 77 scoped component passes and four native cases in each presentation, executed at `eb7cccff`. Canonical assignee feedback retains 77 related host and 26 consumer passes, with one evaluated Linux-only skip. These retain their actual source identities. Positive new-image assignee browser/SQL and the follow-up's complete main-target gates remain required. Ten parent and four filter records are Testing; two assignee records are Implemented. Broad PRDs and MVP readiness remain open, with 71 Done unchanged.
+
+Ledger: 1,627 items, 3,924 criteria and 1,034 evidence records. Functional completion, UX completion, test completion and MVP readiness remain separate.
+
+---
+
+## 2026-10-22 — Frozen policy-retry repair reconciled with independent Board polish
+
+Normal reconciliation of parent `f7174ba4` preserves both complete ledgers, histories and reports. The incoming executable change is confined to one native fixture using the existing request-start observer. No incoming product, layout, navigation, schema or API change occurs. All independent filter and canonical-assignee implementation inputs remain unchanged; original direct filter inputs also remain byte-identical to a15b2484.
+
+Parent scoped repair retains 48 component tests, 47 contracts, four original policy scenarios at 1280/390px on unchanged Demo policy inputs, types/lint, the intact 522-case partition, full delivery validation and 36 contracts. Failed8f remains Failed with its exact 519/1/2 native result and six measured profiles. Frozen replacement1972 is in fresh CI; no earlier pass qualifies it.
+
+Independent filter and assignee scopes retain their exact prior execution identities. Positive new-image assignee browser/SQL and the follow-up own complete qualification remain required. Combined source/types, the 530-case partition, Git/evidence/history validation and 36 contracts are next. No merge, acceptance or Demo activation;71 Done unchanged.
+
+Combined ledger: 1627 items, 3924 criteria, 1033 evidence records. Ten parent and four filter records remain Testing; two assignee records remain Implemented. Broader PRDs and MVP readiness remain open.
+
+---
+
 ## 2026-10-22 — Policy recovery replacement prepared for complete qualification
 
 The fixture-only recovery repair preserves all original assertions and time budgets. Scoped checks pass:48 component tests in four actual files,47 observer contracts,four original desktop/phone policy workflows on unchanged Demo policy inputs,web/browser types,full lint and the intact522-case partition. Full Git/source/hash/baseline/main-history validation and all36 delivery contracts pass on exact committed `a0f9d0c4`. Final bookkeeping is structurally validated and remains subject to the replacement own metadata gate.
@@ -7,6 +183,7 @@ The fixture-only recovery repair preserves all original assertions and time budg
 Freeze one replacement and require its own complete22 checks,actual role/native/SQL/security/regression workflows,all six original strict profiles,immutable release,final review and actual normal main integration. Failed8f keeps519/1/2 native results and its own passing profiles;none qualifies a new head. The old version1971 images remain inactive. No merge,Demo refresh or acceptance;71 Done unchanged and ten bounded records remain Testing. The independent Board-polish follow-up and original user Demo are preserved.
 
 ---
+
 
 ## 2026-10-22 — Original policy retry passes scoped validation
 
@@ -18,6 +195,7 @@ The failed8f candidate remains Failed;its19 passing checks and six strict profil
 
 ---
 
+
 ## 2026-10-22 — Final browser failure retained; original-recovery fixture rework
 
 Candidate `8f17005f` failed final qualification. Nineteen checks pass, but normal group four reports 128 passes and one failure: the 1280px retention-policy recovery scenario observes one PATCH instead of the required two after reload. The native trace records focus followed by Enter, with no second browser request. The normal matrix totals 519 passes, one failure and two original mail-fixture skips. Required-ci fails and release verification is skipped.
@@ -27,6 +205,87 @@ All six original strict performance profiles pass on this failed candidate. They
 The bounded repair uses the existing native request-start observer for the original retry and stops after its one PATCH starts, even if the reply is lost. Original key/body, receipt, exact counts, reviewed version, history, permission withdrawal, privacy, Worker scope and time budgets remain mandatory. No product, API, schema or permission change is proposed. The complete failed result and private diagnostic provenance are retained before rework.
 
 Ten parent records return to In Progress; acceptance remains unverified and 71 Done unchanged. The PR stays draft and unmerged. The version 1971 images remain inactive; the current user Demo and data stay available. The independent Board follow-up is preserved separately. A replacement must pass scoped validation and its own complete 22 gates before integration or Demo refresh.
+
+---
+
+
+
+## 2026-10-22 — Nineteen checks pass; final browser group remains
+
+Frozen PR #122 candidate `8f17005f` passes 19 current checks. Normal-browser groups one, two and three pass 131, 129 and 131 cases respectively, with two original mail-fixture skips retained in group two. All 93 dedicated notification cases pass. Foundation retains 50 passes and the command group retains 80 successful workflow steps. The invitation-review regression now passes on the current immutable images. All prior failures remain recorded and evaluated.
+
+The final browser group is running. The first three verified performance artifacts contain no measured profiles; none of the six required profiles is yet qualified. All original strict budgets, required-ci, immutable release, final review and verified normal main integration remain mandatory. No merge or Demo activation has occurred.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; independent canonical-assignee feedback is implemented. |
+| UX completion | Bounded parent polish passes three native groups and notifications; final acceptance remains unverified. |
+| Test completion | Nineteen current checks pass; final browser, measured performance and release gates remain required. |
+| MVP readiness | No new acceptance; 71 records remain Done. Broad PRDs and MVP readiness remain open. |
+
+The independent Board follow-up retains its scoped results and still requires positive new-image browser/SQL and its own complete qualification. The original Demo remains running. Its prepared refresh preserves a separate browser origin and verifies copied text, canonical dates, List order and star state after qualification; it has not been activated.
+
+---
+
+## 2026-10-22 — Current notifications and first full-browser group pass
+
+PR #122 candidate `8f17005f` now has 17 green checks. All 93 notification cases and all 131 cases in normal-browser group one pass, with no failures or skips in those scopes. Foundation retains 50 passes; the command group retains 80 successful workflow steps. The remaining three full-browser groups are running. The first performance artifact has verified checksums and current build identity but no measured profiles; it does not qualify any of the required six profiles.
+
+All remaining browser, strict performance, immutable release, final review and main-integration gates remain mandatory. No merge, Demo activation or acceptance has occurred. The independent Board-filter and canonical-assignee polish remains implemented with scoped checks and its own pending qualification. Functional completion, UX completion, test completion and MVP readiness remain separate; 71 records are Done. Ledger validation and all 36 delivery contracts passed for the preceding Foundation/command tracking update.
+
+---
+
+## 2026-10-22 — Current Foundation and command integration pass
+
+PR #122 remains frozen at `8f17005f`. Its version 0.1.0-1971 Foundation job passes all 50 cases: 28 Demo metadata/terminal/recipient, two reminder, two original cover-pipeline and 18 lifecycle tests, with no failures or skips. The command, permission, RLS, transaction and runtime group also passes, with 80 successful workflow steps; this is not a count of test cases. Source quality, image builds and security pass. Fifteen checks are green; four integration groups are running and one is queued under the unchanged four-job limit.
+
+The normal-browser and notification suites, all six strict performance profiles, immutable release, final review and verified main integration remain required. No merge, new acceptance or Demo replacement has occurred. Functional completion, UX completion, test completion and MVP readiness remain separate; 71 records are Done. The independent Board follow-up retains implemented, scoped-tested assignee feedback and filter polish with its own unverified obligations.
+
+---
+
+## 2026-10-22 — Parent source gates pass; canonical assignee feedback implemented separately
+
+Frozen PR #122 candidate `8f17005f` passes all 11 source gates. Provider hashes and current build/run identities verify 2,985 frontend and 2,519 backend passes, with the original 24/5 capacity deferrals unchanged. All three version 0.1.0-1971 images and security now pass; their exact provider/inner/config/manifest/layer identities are verified and preloaded. Four integration groups are running and three are queued under the existing four-job limit. No Demo activation has occurred. Actual browser/role, security, all six strict performance profiles, immutable release, final review and verified normal main integration remain mandatory. The PR stays draft and unmerged.
+
+The independent Board follow-up implements explicit canonical zero-assignee previews in one existing store file. Zero and Card revision are read together, preserving eligibility, public/tenant privacy, version checks, API/schema contracts and all existing commands. Six new producer regressions pass; 77 related host tests execute successfully, including those six, and all 26 consumer tests pass. One existing cover case needs Linux and is retained as Skipped locally, separately from the original capacity deferrals. Browser types and the intact 530-case/179-file partition pass.
+
+Four actual browser cases reproduce the old running-image defect at every width. They are baseline failures, not a positive test of the new binary. Positive new-image browser and restricted-PostgreSQL checks remain pending; the existing CI gate now includes canonical-zero assertions. Automatic review rejected an optional separate source API process with only blocked by policy; no alternative launch was attempted. All compile, selection and baseline failures are retained and evaluated.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; the bounded zero-preview repair is implemented. |
+| UX completion | Existing Trello-style Board/Card consumer can use explicit zero; full new-image workflow acceptance remains unverified. |
+| Test completion | Parent source gates and scoped follow-up checks pass. Remaining image/native/SQL/performance/release gates remain required. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Two assignee Task/Test records are Implemented; four filter and ten parent records retain Testing. The existing user Demo and its sample workspace remain running. Full Git/source/hash/baseline/main-history validation and all 36 delivery contracts pass on exact committed `6f60fd41`. Ledger: 1,627 items, 3,924 criteria, 1,027 evidence records and 71 Done. PRD-11-VS-01 is In Progress, with broader obligations still unverified. Next: complete current-head qualification before any merge or image refresh.
+
+---
+
+## 2026-10-22 — Current Board assignee empty state reconciled
+
+The running Demo exposes a pre-existing UX gap: a Card with a confirmed empty assignee page shows Assignees unavailable because its Board preview is omitted. The live PRD-11 UX-CARD-02 requires valid zero to say Unassigned and missing/stale data to remain unknown. The strict UI is correct to refuse an invented zero; the existing server projection must provide an explicit version-bound empty preview.
+
+One focused Task and child Test under PRD-11-VS-01 are In Progress in the independent Board-polish follow-up. Preserve the existing API/DTO,transactions,eligibility,public/tenant privacy and version checks. No new feature,permission or navigation is introduced. Frozen PR #122 remains8f17005f in fresh qualification; this work does not change it or qualify its gates.
+
+Functional and UX implementation are not yet complete for this gap; tests and acceptance remain unverified. All71 Done and the prior filter/history proof remain unchanged.
+
+---
+
+## 2026-10-22 — Invitation repair reconciled with independent Board-filter polish
+
+The normal merge of frozen parent `8f17005f` preserves both complete ledgers,histories and reports. The only incoming application change makes invitation review details keyboard reachable while preserving initial Cancel focus. All three direct filter source/test inputs remain byte-identical to checked `a15b2484`. No filter functionality is overwritten.
+
+Parent scoped evidence retains 100 component tests, 47 admission contracts, 27 guards, eight native cases per presentation,types/lint, 522-case partition,full delivery validation and 36 contracts, plus 290 CI-coverage contracts. Earlier filter 77 components and 4+4 native cases retain actual `eb7cccff` execution identity. Current combined browser types, the intact 526-case/178-file partition, full Git/source/hash/baseline/main-history validation and all 36 delivery contracts pass on exact committed `99a5aa0b`. Parent `8f17005f` is frozen in fresh CI; no parent or follow-up merge is authorized before its own gates pass.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing features and contracts preserved. |
+| UX completion | Bounded polish implemented; full acceptance unverified. |
+| Test completion | Scoped checks retain exact execution identities; full fresh qualification remains required. |
+| MVP readiness | No new acceptance; 71 Done unchanged. |
+
+Combined ledger: 1,625 items, 3,921 criteria, 1,019 evidence records. Ten parent and four filter records remain Testing. All failed runs are retained. Latest demo refresh follows safe parent qualification/integration; current preview remains available.
 
 ---
 
@@ -47,6 +306,7 @@ Earlier415a Full4 now passes127; Full2 remains failed and Full1 setup incomplete
 
 ---
 
+
 ## 2026-10-22 — Current built images running as a local Demo preview
 
 Build **0.1.0-1970**, tested synthetic revision `da9f1dcdd873a31efb93738bb43d5315e5eb8696` for candidate `415a0378`, is running at http://localhost:8088 as Docker project `strataai-demo-current`. The existing image-only Demo Compose configuration isolates API/Worker from production providers and binds the web port to loopback. No rebuild, dependency installation, schema change or production deployment was needed.
@@ -64,11 +324,270 @@ Runtime proof and restart settings are retained in `work/demo-latest-1970`; the 
 
 ---
 
+
 ## 2026-10-22 — Invitation-review focus failure retained; repair continues
 
 Candidate `415a0378` remains draft and unmerged after Full2 passed126,failed one invitation-history focus case and retained two original mail-topology skips. At390px the test accepted a transient revocation dialog before its safe default Cancel focus; a fresh protected history read correctly withdrew the review and asked for review again. Verified diagnostics preserve53 inner checksums and the failed5s assertion. This is separate from GitHub’s result-publication incident.
 
 The repair will observe the read-only review together with its original initial Cancel focus. It must not force Cancel focus,change consent,send a revocation,relax clock parsing or alter original budgets. Current source11,security,Foundation50,commands,all93 notifications and Full3/129 pass on415a; those results retain their actual identity and cannot qualify a replacement. Full1 setup and Full4 remain incomplete. Ten bounded parent records return to In Progress;71 Done unchanged. Independent filter work remains preserved. Functional,UX,test and MVP completion remain separate.
+
+---
+
+
+
+## 2026-10-22 — External CI-result publication delay; merge remains gated
+
+GitHub reports an active [Actions-results incident](https://www.githubstatus.com/incidents/q29p76qtnkyk), beginning at14:18 UTC. Its14:35 update says repository updates recovered while workflow and step-result processing remains delayed. This may explain stale setup or queue displays for PR #122; the specific runner cause is not confirmed. The incident is an external observation dependency, not a failing application assertion or permission to merge.
+
+Frozen candidate `415a0378` retains verified source11 (2,985 frontend / 2,519 backend, original24/5 deferrals), built-image/security, Foundation50, command integration and all93 notification passes. Original distinct-account star recovery now passes with all original key/version/count/history/Worker oracles. Four full-browser groups, complete six-profile performance, aggregate required CI, immutable release and final review/main integration still require authoritative passing results.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new scope. |
+| UX completion | Bounded polish and independent filter guidance implemented and locally checked; acceptance unverified. |
+| Test completion | Verified passes retained. Pending or delayed results are not counted as passes or application failures. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Owner of external result-processing recovery: GitHub Actions. Resume condition: all current-head checks and artifact evidence become available and pass verification; incident resolution alone is insufficient. Preserve the running jobs and frozen candidate. No assertions, deadlines, retries, budgets or required checks change. Ledger: 1625 items, 3921 criteria, 1011 evidence records, with ten parent and four filter records still Testing.
+
+---
+
+## 2026-10-22 — Original star recovery and all notification workflows pass
+
+Frozen PR #122 candidate `415a0378` passes all 93 real-service notification cases, including the original multi-account star recovery that failed on551 and all later privacy, source, watch, assignment, mention, reminder and authority-ordering workflows. The nine invocations pass 4+2+2+6+44+14+7+9+5, with no failures or skips. Original keys, versions, counts, history, private Worker delivery and deadlines remain intact.
+
+Command integration also passes permissions, rollback, original-command recovery, Portal isolation and operator lifecycle checks. Its 80 successful workflow steps are not test or feature counts. Current source11 (2,985 frontend / 2,519 backend), unchanged24/5 source deferrals, built images, security and all50 Foundation workflows already pass. Four full-browser groups, all six strict performance profiles, aggregate required CI, immutable source-free release and final review/integration are still required. One browser dependency-setup step remains unusually long; it is pending, not falsely counted as passing or as a failed application assertion.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Bounded polish implemented and checked; acceptance remains unverified. |
+| Test completion | Source, security, Foundation, commands and notifications pass on415a. Remaining full browser/performance/release gates are required. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Consolidated ledger: 1625 work items, 3921 criteria, 1011 evidence records. Ten parent and four independent filter records remain Testing. All failed executions remain retained and evaluated. No required check has been weakened.
+
+---
+
+## 2026-10-22 — Original Foundation workflows pass on the corrected candidate
+
+Frozen PR #122 candidate `415a0378` passes all 50 Foundation native cases on its own release images: 28 Demo, two reminder, two original attachment/cover and 18 lifecycle cases. There are no failures or skips in this group. The original cover-recovery workflow now passes after both earlier recorded Foundation failures; its consent, command, receipt, privacy and deadline assertions remain intact.
+
+The current 2,985 frontend and 2,519 backend tests, all source gates, built images and security checks also pass. Full-browser, command and notification groups, all six strict normal-performance profiles, immutable release, final review and verified normal main integration are still required. Earlier failed executions retain their actual results.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Organization/Card/Search and independent filter polish implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Current source, security and Foundation pass. Remaining complete application and release gates are pending. |
+| MVP readiness | No new acceptance or merge; 71 Done unchanged. |
+
+Active ledger: 1625 items, 3921 criteria, 1010 evidence records. Independent #123 remains checked against the corrected parent and will require its own full main-target qualification.
+
+---
+
+## 2026-10-22 — PR #122 source qualification passes; application checks continue
+
+Frozen candidate `415a0378` passes all 11 source gates: 2,985 frontend tests, 2,519 backend tests, web/browser types, lint, PostgreSQL, metadata, source quality and all CodeQL analyses. Provider artifact hashes and embedded metadata bind them to test composition `da9f1dcd`, run 39777957890, attempt 1, version 0.1.0-1970 and its three exact image tags. The original 24 frontend capacity deferrals and five backend deferred methods are unchanged. No previous candidate pass qualifies this replacement.
+
+The release images and built-application Foundation, native/role/regression/security, strict six-profile performance and immutable release checks still need complete passing qualification, followed by final review and verified normal main integration. Both older Foundation failures, the three failed c1 browser cases and local remount/type/visual failures remain retained and evaluated. Failed551 is fully evaluated and retained: notifications original-recovery admission and premature Search request observation failed,requiredCI failed and release was skipped. The current fixture repair passes twelve complete Card/Search/star cases in each presentation without changing application code or weakening original assertions. Neither PR is accepted or merged yet.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business capabilities and contracts preserved. |
+| UX completion | Bounded Organization/Card/Search and independent filter polish implemented and scoped-tested; acceptance unverified. |
+| Test completion | Parent current source gates pass; full application gates remain required. Follow-up combined checks pass, with own complete main-target qualification still required. |
+| MVP readiness | No new accepted increment or combined percentage; 71 Done unchanged. |
+
+Combined active report: 1625 work items, 3921 criteria, 1009 evidence records. Independent #123 keeps its verified combined source `eb7cccff`, 77 component tests and four native cases per presentation, plus current types/lint/partition and 36 delivery contracts. Parent passes cannot substitute for its own gates.
+
+---
+
+## 2026-10-22 — Star-admission repair and independent filter history reconciled
+
+The active follow-up now includes frozen parent 415a and both checked fixture repairs through a normal branch merge, preserving both complete histories. No application code changes in this reconciliation, and all three filter source/test inputs remain byte-identical to tested `a15b2484`. Frozen parent 415a is running fresh CI39777957890 (version1970); metadata, all code scans, PostgreSQL and frontend quality pass. Backend and all remaining built-application gates are still required. Failed551 completed with both evaluated fixture failures and skipped release; no old pass qualifies415a.
+
+Current fixture source 4d4 passes twelve complete Card/Search/star native cases in each presentation, 42 admission/tracker contracts, types/lint, 514-case partition and full delivery validation / 36 contracts. Original star request/key/version/history and exact Search q/cursor/scope/focus assertions remain intact. Both actual real-service and complete replacement gates remain mandatory. The independent filter's 77 component and four native cases per presentation retain their actual `eb7cccff` execution identity; no parent result qualifies this follow-up's full gates. Current combined browser types, the complete 518-case/177-file partition, full Git/source/evidence-hash/baseline/parent-history validation and all 36 delivery contracts pass on the exact committed ledger.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business capabilities and contracts preserved. |
+| UX completion | Bounded polish implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Local repair passes targeted checks. Remote551 notifications and premature Search observation remain Failed; fresh parent 415a and follow-up full qualification remain required. |
+| MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
+
+Combined ledger: 1625 items, 3921 criteria, 1008 evidence records. Ten parent and four filter Task/Test records remain Testing. All failed runs, mode-invocation errors and previous scoped proof are retained.
+
+---
+
+## 2026-10-22 — Star-admission repair and independent filter history reconciled
+
+The active follow-up now includes the checked local star-admission repair through a normal branch merge, preserving both complete histories. No application code changes in this reconciliation, and all three filter source/test inputs remain byte-identical to tested `a15b2484`. The parent's remote head `551a6bc8` remains failed and unmerged; its remaining browser groups continue before one replacement push.
+
+The star fixture repair passes 59 tests in four complete files, 42 admission/tracker contracts, four native cases in each presentation, types/lint, 11 architecture/capacity guards and all 36 delivery contracts. Its actual real-service original scenario must pass again on the replacement. The independent filter's 77 component and four native cases per presentation retain their actual `eb7cccff` execution identity; no parent result qualifies this follow-up's full gates. Current combined browser types, the complete 518-case/177-file partition, full Git/source/evidence-hash/baseline/parent-history validation and all 36 delivery contracts pass on the exact committed ledger.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business capabilities and contracts preserved. |
+| UX completion | Bounded polish implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Local repair passes targeted checks. Remote551 notification failure remains Failed; fresh parent and follow-up full qualification remain required. |
+| MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
+
+Combined ledger: 1625 items, 3921 criteria, 1005 evidence records. Ten parent and four filter Task/Test records remain Testing. All failed runs, mode-invocation errors and previous scoped proof are retained.
+
+---
+
+## 2026-10-22 — Original Foundation workflows pass on the corrected candidate
+
+Frozen PR #122 candidate `551a6bc8` passes all 50 Foundation native cases on its own release images: 28 Demo, two reminder, two original attachment/cover and 18 lifecycle cases. There are no failures or skips in this group. The original cover-recovery workflow now passes after both earlier recorded Foundation failures; its consent, command, receipt, privacy and deadline assertions remain intact.
+
+The current 2,985 frontend and 2,519 backend tests, all source gates, built images and security checks also pass. Full-browser, command and notification groups, all six strict normal-performance profiles, immutable release, final review and verified normal main integration are still required. Earlier failed executions retain their actual results.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Organization/Card/Search and independent filter polish implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Current source, security and Foundation pass. Remaining complete application and release gates are pending. |
+| MVP readiness | No new acceptance or merge; 71 Done unchanged. |
+
+Active ledger: 1625 items, 3921 criteria, 1000 evidence records. Independent #123 remains checked against the corrected parent and will require its own full main-target qualification.
+
+---
+
+## 2026-10-22 — PR #122 source qualification passes; application checks continue
+
+Frozen candidate `551a6bc8` passes all 11 source gates: 2,985 frontend tests, 2,519 backend tests, web/browser types, lint, PostgreSQL, metadata, source quality and all CodeQL analyses. Provider artifact hashes and embedded metadata bind them to test composition `1688fda9`, run 39750379379, attempt 1, version 0.1.0-1969 and its three exact image tags. The original 24 frontend capacity deferrals and five backend deferred methods are unchanged. No previous candidate pass qualifies this replacement.
+
+The release images and built-application Foundation, native/role/regression/security, strict six-profile performance and immutable release checks still need complete passing qualification, followed by final review and verified normal main integration. Both older Foundation failures, the three failed c1 browser cases and local remount/type/visual failures remain retained and evaluated. Neither PR is accepted or merged yet.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business capabilities and contracts preserved. |
+| UX completion | Bounded Organization/Card/Search and independent filter polish implemented and scoped-tested; acceptance unverified. |
+| Test completion | Parent current source gates pass; full application gates remain required. Follow-up combined checks pass, with own complete main-target qualification still required. |
+| MVP readiness | No new accepted increment or combined percentage; 71 Done unchanged. |
+
+Combined active report: 1625 work items, 3921 criteria, 999 evidence records. Independent #123 keeps its verified combined source `eb7cccff`, 77 component tests and four native cases per presentation, plus current types/lint/partition and 36 delivery contracts. Parent passes cannot substitute for its own gates.
+
+---
+
+## 2026-10-22 — Filter polish passes checks against corrected parent
+
+After normal reconciliation with parent candidate `551a6bc8`, combined source `eb7cccff` passes all 77 tests across five complete files and four native workflows in each presentation at 320/390/768/1280px, including 200% text, Axe, actual keyboard focus, empty-page guidance, failed reads, denial, drafts and clear/return. Web/browser types, full lint and the complete 514-case/176-file browser partition pass. The three filter source/test inputs remain byte-identical to original tested `a15b2484`. All historical and parent failure evidence remains intact.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Filter guidance and keyboard paging implemented and scoped-tested on the combined branch; acceptance remains unverified. |
+| Test completion | Current combined scoped checks pass. Parent backend and downstream hosted gates remain pending; follow-up own full main-target checks remain required. |
+| MVP readiness | No new acceptance or merge; 71 Done unchanged. |
+
+Combined ledger: 1625 items, 3921 criteria, 998 evidence records. Full Git, evidence-hash, baseline and parent-relative history validation plus all 36 delivery contracts pass on the exact committed ledger. Both PRs remain draft; the parent stays frozen throughout qualification.
+
+---
+
+## 2026-10-22 — Filter polish reconciled with corrected Organization and Search parent
+
+Draft #123 now includes parent #122 candidate `551a6bc8` through a normal branch merge. All three filter source/test inputs remain byte-identical to tested `a15b2484`. Both branches retain every work item, criterion, evidence record and cycle. The parent's three hosted browser failures, local remount/type/visual failures and subsequent scoped repairs remain recorded. Parent CI is still running; neither PR is accepted or merged to main.
+
+The independent filter workflow keeps accurate empty-page guidance and visible keyboard focus across Next/First, errors, denial and return. Its earlier 77 tests and four native cases in each presentation retain their actual source identity. Targeted checks on this combined branch are next; own full main-target qualification remains mandatory after the parent integrates.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business capabilities, contracts and tenant boundaries preserved. |
+| UX completion | Organization, Card/Search and filter polish implemented; acceptance remains unverified. |
+| Test completion | Parent frontend now passes 2,985 tests and existing source checks. Backend and downstream application gates remain pending. Follow-up reconciliation checks are next. |
+| MVP readiness | No new accepted increment; 71 Done unchanged. No combined percentage. |
+
+Combined ledger: 1625 items, 3921 criteria, 996 evidence records. Four filter and ten bounded parent Task/Test records remain Testing. Independent feature work and the frozen parent candidate are preserved.
+
+---
+
+## 2026-10-21 — Original cover workflow and complete Foundation retest pass
+
+Current candidate `c1f1debb` passes the complete Foundation job119651986248 against the current exact images: **50 native cases** comprising28 Demo lifecycle cases,two reminder cases,both original desktop/phone cover cases and18 attachment lifecycle cases. The corrected visible readiness check succeeds. All original cover consent,receipts,keys/bodies,write counts,versions,public visibility,peer updates without navigation,privacy,assertions,deadlines and retries remain intact. Both earlier failed runs remain recorded as Failed; canceled scopes remain incomplete.
+
+The provider raw log is truncated; the completed job,full step table and four actual Playwright summaries are retained as bounded retest proof. Other full native partitions,commands,mail/roles,six strict normal-performance profiles,immutable release,review and verified normal main integration remain mandatory. **PR #122 is still unmerged and no new record is accepted.**
+
+The active ledger now contains1623 items,3919 criteria,991 evidence records and71 previously Done. Functional capabilities are preserved; the polished workflows are implemented; current source and Foundation tests pass; full acceptance and global MVP readiness remain pending. Independent filter polish in draft #123 retains its own scoped proof and requires its own full gates.
+
+---
+
+## 2026-10-21 — PR #122 source gates pass; built-application qualification continues
+
+Frozen candidate `c1f1debb` has **11 passing source gates**: frontend 2,979 tests, backend 2,519 tests, types/lint, database integration, metadata, source quality and all CodeQL checks. The original 24 frontend capacity deferrals and five backend deferred methods are unchanged. Provider ZIP digests and embedded metadata bind these results to test merge `30fcdb21`, CI39722002143, attempt1 and version0.1.0-1968. Current image build119651064466 also passes; the same three images feed downstream jobs.
+
+Frontend artifact12401078738 SHA2569a333eb46ca01597ecf7b7f13e13752468e14075615d7be81f670f13a52dc861 and backend artifact12402904246 SHA256489127c30c8f61818147681fd3b89d8a362e66d10aa062587e5510b899ca4181 are verified. The earlier candidates’ passes are not used to qualify this replacement. Both original Foundation failures and their failed aggregate checks remain recorded; canceled scopes remain incomplete. No additional completed failed step was found in the ten canceled workflow groups.
+
+The current actual cover workflow, all built-application native/role/regression checks, security, six strict normal-performance profiles, source-free immutable release, review and verified normal main integration remain required. **Do not merge or accept the affected records yet.**
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Card/Search and independent filter polish implemented; acceptance pending. |
+| Test completion | Parent source gates and scoped UX checks pass; complete parent and follow-up gates remain required. |
+| MVP readiness | No new accepted increment or combined percentage; 71 Done unchanged. |
+
+Combined active ledger:1623 items,3919 criteria,990 evidence records. PR #123 retains its tested filter source`a15b2484`,77 scoped tests and four browser cases per presentation, plus current reconciled types/registry and36 delivery contracts. Parent passes cannot substitute for its own complete main-target qualification.
+
+---
+
+The reconciled follow-up source `5abadda8` passes current browser types, the complete 506-case/175-file partition, full Git/hash/baseline/evolution validation and all **36 delivery contracts**. Filter implementation/test hashes still match tested `a15b2484`. Recording this result brings the combined ledger to **989 evidence records**; work/criteria counts and 71 Done are unchanged. Parent and follow-up full hosted qualification remain pending.
+
+## 2026-10-21 — Parent correction reconciled; filter polish remains independent
+
+PR #122 has a new frozen candidate, `c1f1debb`, replacing failed `1125cc02`. Its corrected visible-admission check passes eight complete Card/Search cases in both existing presentations, plus 17 cover units, 42 admission/architecture/capacity contracts, browser types and all 36 delivery contracts. Both earlier hosted failures remain Failed and evaluated. Fresh complete CI must qualify this head before merge; earlier candidates’ source, image and security passes are historical support.
+
+Draft PR #123 now includes the parent correction and all failure histories through a normal branch merge. Its Board-filter consumer remains byte-identical to tested `a15b2484`: clear empty-last-page guidance and stable visible keyboard focus for Next/First, with 77 scoped tests and four desktop/mobile browser cases in each presentation. Those results retain their actual source identity. This combined follow-up still needs its own full main-target qualification after the parent safely integrates. Existing independent feature work remains untouched.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing business capabilities and contracts preserved. |
+| UX completion | Card/Search and filter guidance/paging implemented; acceptance pending. |
+| Test completion | Scoped proof passes. Fresh complete parent and follow-up gates remain mandatory. |
+| MVP readiness | No new accepted increment or combined product percentage; 71 Done unchanged. |
+
+Combined active ledger: 1623 items, 3919 criteria, 988 evidence records. Four filter work records remain Testing; four Card/Search work records remain In Progress. Carried Search UX dependencies retain their pending acceptance and original failures. No broader PRD is closed.
+
+---
+
+## 2026-10-21 — PR #122 checks running; filter polish ready for full qualification
+
+[PR #122](https://github.com/nickmailhot-lang/StrataAI2/pull/122) is frozen at `1125cc02`. Its [fresh CI run](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39712506633) has 13 passing checks and no reported failures at this checkpoint. The application image build and security checks passed; the real-service command, Foundation, notification and full browser groups are running or queued. Final performance, release, review and main-integration requirements remain open. Do not merge until every required gate passes for this candidate.
+
+The retained source reports verify **2,979 frontend tests** and **2,519 backend tests** against tested merge `8d8ac5bf`, run `39712506633`, attempt 1 and version `0.1.0-1967`. The original 24 frontend and five backend capacity deferrals remain separate from passing tests. The previous candidate’s phone cover-review failure remains recorded as Failed. Its repair establishes current owner-window admission before the original removal review, while preserving consent, receipts, request identity, write counts, peer updates and the original deadlines.
+
+[PR #123](https://github.com/nickmailhot-lang/StrataAI2/pull/123) remains a separate draft behind #122. Source `a15b2484` improves the existing Board-filter workflow: an empty last page explains how to return or revise filters, and Next/First keep keyboard focus in the existing dialog region or canvas status. Independent focus references protect the handoff while the dialog closes. Resumed typing and outside focus retain ownership. Existing routes, APIs, schemas, tenant/Portal boundaries and original-command recovery remain intact.
+
+**PR #123 scoped checks:** 77 tests across five complete affected files; four browser scenarios in each of the polished and rollback presentations; 320/390/768/1280px layouts; 200% text; Axe; visible, unobscured focus; pending/error/denial recovery; applied criteria versus unsent drafts; paging and clear/return. Web/browser type checks, strict lint, 11 architecture/capacity guards and registration of all 506 browser cases in 175 intact files pass. Full ledger validation and all 36 delivery-history contracts passed at checkpoint `9573e0f9`. Desktop and phone captures were inspected. These controlled HTTP/development checks do not replace actual-service, RLS, Production CSP, performance or immutable-release qualification.
+
+The failure history is preserved: the initial invalid cursor fixture, the valid empty-last-page regression, focus falling to the page body, an intermediate fresh-read fixture mismatch, five local unit failures, and the native First/dialog-exit focus failures. The final source passes the complete scoped scenarios with unchanged assertions, deadlines, retries and guards. No exclusive environment-cause claim is made for the earlier unit failures, and no broad visual baseline was approved.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing MVP capabilities and contracts are preserved. The changes polish existing workflows. |
+| UX completion | Card/Search and filter guidance/paging are implemented in their branches. Full acceptance remains pending. |
+| Test completion | #122: 13 checks pass; remaining workflow and final gates are pending. #123: scoped 77 tests, eight browser executions and source/tracking checks pass; its own complete CI is still required. |
+| MVP readiness | No new increment is accepted yet. The 71 previously Done work records do not represent a product-completion percentage. |
+
+Active ledger: **1,623 work items / 3,919 criteria / 985 evidence records / 71 Done**. Four filter Task/Test records are Testing, with acceptance unverified. Card/Search and the carried Search UX records retain their pending qualification history. Broader PRDs remain open. Next: finish #122’s current gates, merge normally only after qualification, reconcile the accepted main checkpoint into #123, and require #123’s own complete checks. Independent #118 work remains untouched.
+
+---
+
+## 2026-10-21 — PR122 replacement published; separate filter follow-up ready for review
+
+**PR122 now qualifies published head1125cc02** in [freshCI39712506633](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39712506633) and [CodeQL39712502121](https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39712502121). Its synthetic8d8ac5bf has verified parentsmain4c1e27e2+head1125and treeaab61910 equal to the candidate. Keep122draft/unmerged until all22freshgates,actualperformance/releaseprovenance and review pass. Originalcd953Foundationfailure staysFailed; superseded/incomplete scopes never countas passes. No runtimeguard/assertion/deadline/retry/budget was weakened.
+
+Separatefilter source22b92e46 is preserved through actualnormal sidebranch reconciliation258ce296. Sevenownedconsumer/testinputs remain byte-identical to its73component/protocol,4default+4rollbackbrowser andsourcegateproof.36deliverycontracts and fullGit/hashvalidation passed atprior2b9checkpoint. Bothbranchhistories,initialinvalidfixture refusals,actualvalidlastpagered and old122failure remain. This is sidebranch reconciliation,not mainintegration or newexecutionofearlierscopedpasses.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | CurrentMVP capabilities/contracts preserved; no newbusinessscope. |
+| UX completion | Card/Search and boundedfilterguidance implemented; fullown acceptance pending. |
+| Test completion | Filter scoped73+4+4/source/36deliverypass. PR122 freshcompletegates running; originalFoundationfailure remains retained. Stackedfilterownmain-targetCI notrunyet. |
+| MVP readiness | No newacceptedwork;71Doneunchanged. Globalreadiness unaccepted/unmeasured; no combinedpercentage. |
+
+Consolidatedactivefollowupledger:1621items/3917criteria/976evidence/71Done. Twofilterrecords remainTesting and fourparentCard/Search recordsInProgress. Allcriteriaacceptance staysunverified for thoseincrements. Next:reviewthefocusedstackeddraft,finish/fix122freshfullCIwithoutweakening,mergenormallyonlyafterallgatespass,then retargetandqualifythefilterfollowup independently. Independent118untouched.
 
 ---
 
@@ -216,6 +735,27 @@ Independent **ux/board-filter-guidance**, source22b92e46/checkpoint2b9a6120, rep
 | MVP readiness | No newacceptedwork;71Done unchanged. Globalreadiness unaccepted/unmeasured; no combinedpercentage. |
 
 This candidate ledger:1619items/3915criteria/972evidence/71Done. Independentfilter checkpoint:1621/3917/974/71. Reconcilebothhistories whenparentintegrates; neither sourcecount nor a passingnarrow suite certifies broaderPRDorMVP. Next:publishone replacement,freeze,completeall22/source/native/role/security/performance/release/reviewgates,then normalexpectedheadmergeandactualtestedtreeverification.
+
+---
+
+## 2026-10-21 — Admitted empty filter last-page guidance passes scoped checks
+
+Current source **22b92e46** clarifies an existing Board-filter journey: after50matches, an empty last page says **No matching Cards on this page** and points to the existing First/change/clear actions. Dialog and filtered canvas guidance withdraw during pending/failed/denied reads. Applied criteria/cursor remain distinct from unsent edits. Invalid empty continuations remain refused by the original50-item/UUID/last-item guard. No new route,shared layout,API,schema,event,permission,automatic write or migration flag.
+
+**Audit correction:** the initial proposed empty-with-next fixture was invalid, so its refusal did not establish a product defect. Both invalid-fixture failures and a separate original5000ms test timeout remain Failed evidence. The valid full50→empty-last-page test then reproduces the misleading message in2.5s; the original deadline stays unchanged. No original assertion,role/capacity rule,retry or guard was relaxed.
+
+**Scoped source22b92e46:73tests across5complete files;4default+4rollback native routed browser cases at320/390/768/1280px;200%text,Axe,draft/applied criteria,paging,503retry,clear/full Board and403withdrawal;web/browser types;strict lint;11architecture/capacity guards;506cases/175intactfiles registered.** Desktop/phone rendered captures reviewed; other two widths automated. Controlled HTTP/quiet transport and development-server captures do not qualify real services,RLS,Production CSP,normal performance or immutable release. Source rebuild is deferred to the required build-once CI rather than creating a duplicate release.
+
+PR122 publishedcd953 still has its original Foundation phone cover failure. Local repair checkpoint9384265f preserves that failure,adds explicit foreground/current snapshot setup,and passes17cover/31keyboard contracts plus36delivery contracts and types/lint. Let remaining old-run jobs finish before one replacement candidate; no merge or acceptance is claimed. Independent118 untouched.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities/contracts preserved; no new business scope. |
+| UX completion | Bounded filter guidance implemented/scoped-tested. Card/Search and this follow-up acceptance remain pending. |
+| Test completion | Current filter scoped73+4+4/source gates pass. Original122 required Foundation failure remains Failed; repaired/full own gates still required. |
+| MVP readiness | No new accepted increment or parent closure;71Done unchanged. Global readiness remains unaccepted/unmeasured. |
+
+Canonical ledger:1621items/3917criteria/974evidence/71Done. New PRD-16-VS-02-T-02 and childTest are Testing with acceptanceUnverified. Current evidence:EVID-TRELLO-FILTER-FIXTURE-REFUSALS,LAST-PAGE-RED,SCOPED. Next:finish parent122 qualification and normal integration,then qualify this separate follow-up.
 
 ---
 
