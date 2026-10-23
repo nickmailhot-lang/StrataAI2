@@ -1,5 +1,24 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Board polish repair ready for fresh CI
+
+PR #123 remains draft and unmerged. The failed build 1974 is retained:129 full-browser passes and four false-positive business-write failures. Repair `0d8939e2` distinguishes only the three exact existing SignalR negotiation POSTs from business commands. The zero-write assertion, all UI/privacy assertions, worker ownership, roles and 90-second deadline are unchanged.
+
+Four retained-image and four compiled-rollback native cases pass at 320/390/768/1280px, including canonical empty/assigned previews, stale-data withdrawal, keyboard return, 200% reflow, Axe, logout and private 404. Twenty-five boundary probes and browser types pass. The failed execution and separate denied host-server attempt remain distinct from these passes. Only the disposable QA project was removed; both user demos still have three healthy services.
+
+The exact tracking commit `5b5897b6` passes full Git/source/hash/baseline/main-history validation and all **36 delivery contracts**, without failures or skips. Browser discovery remains **530 cases in 179 files**; mandatory integration coverage remains four groups, seven isolated executions and 130 registered steps. Final evidence bookkeeping is structurally validated and remains subject to the new head's own metadata check.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing Board-filter guidance/focus and authoritative assignee previews implemented; no new business scope. |
+| UX completion | Eight scoped assignee cases pass across both presentations; all six bounded work records remain Testing. |
+| Test completion | Scoped repair and tracking checks pass. Fresh complete source, SQL, security, full browser/roles/responsive/accessibility, six strict performance profiles and immutable release checks remain mandatory. |
+| MVP readiness | 81 records remain Done. No new acceptance, broad PRD closure, merge or combined completion percentage. |
+
+Next: qualify the replacement revision completely, review it, merge only after all gates pass, then update the Demo from the verified images. Ledger: 1,627 items, 3,924 criteria and 1,049 evidence records.
+
+---
+
 ## 2026-10-22 — PR #123 CI failure diagnosed; strict fixture repair passes both presentations
 
 Candidate `95c1f5c2`/run39885272560/build1974 failed full browser group1 with **129 passes and four failures**. At every width,the new assignee fixture counted three established SignalR transport-negotiation POSTs as business writes. Private traces confirm those exact three handshakes;the original canonical previews,version binding,Card disclosure,keyboard return,200% reflow,Axe and stale-data checks passed before the counter. The logout tail was Not Run in that failed execution. All failed evidence remains retained;this candidate cannot merge or activate a qualified Demo.
