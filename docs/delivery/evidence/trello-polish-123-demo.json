@@ -1,0 +1,85 @@
+{
+  "revision": "35c1775ac5a2ea2f8ac6a73c348a45fe41bac0e1",
+  "at": "2026-10-23T17:34:57.124958+00:00",
+  "result": "Passed",
+  "url": "http://127.0.0.2:8090",
+  "boardUrl": "http://127.0.0.2:8090/app/b453b411-6eb6-9b9b-119b-0f0f5a2ef258/boards/c01084e2-f800-4574-8819-3a4dcc5bd098",
+  "build": {
+    "revision": "23f1cf65e7c4cd5bc5ba0ed1193062d13af0a451",
+    "version": "0.1.0-1975"
+  },
+  "qualifiedHead": "35c1775ac5a2ea2f8ac6a73c348a45fe41bac0e1",
+  "verifiedMainMerge": "f1cd09ee80e91379a575a051835784d829af9565",
+  "services": {
+    "api": {
+      "container": "7e9410a151f237d72521889beb5e14cbaf791c1b395053d3ea7b7d1a2f1c686d",
+      "image": "sha256:3f3387f44227fc8bde0827169115f2ef64982796f15938648aba0f77184a514e",
+      "health": "passed",
+      "readiness": "passed",
+      "startedAt": "2026-10-23T17:34:27.766956827Z"
+    },
+    "worker": {
+      "container": "8dd5c59be0bbcbf1accb3b4437d5596ac6909c3f3a3adc647e50ebeee25943e4",
+      "image": "sha256:0bac61bccd0008d930cc0d9c64fbf0c92eab35facb7b53f85c6447cca9c6f978",
+      "health": "passed",
+      "readiness": "passed",
+      "startedAt": "2026-10-23T17:34:26.872660175Z"
+    },
+    "web": {
+      "container": "2d8e577c339345902cd85d82d451b46c77316040aeea1c686b6ec0bf7678a0b0",
+      "image": "sha256:5ca339406a1843c24c7b003b0860fcb7b761cbc4b403f7563c187cb647ddcc26",
+      "health": "passed",
+      "readiness": "checked through web",
+      "startedAt": "2026-10-23T17:34:40.827275917Z"
+    }
+  },
+  "login": "passed",
+  "wrongPassword": "401 rejected",
+  "anonymousPrivateBoard": "404 rejected",
+  "copiedCore": {
+    "lists": 3,
+    "cards": 7,
+    "dates": "preserved when present",
+    "selfAssignments": 0,
+    "titlesAndDescriptions": "exactly verified"
+  },
+  "earlier1970Demo": {
+    "url": "http://localhost:8088",
+    "state": "Also retained;never stopped or recreated."
+  },
+  "originalDemo": {
+    "url": "http://127.0.0.1:8089",
+    "state": "Unchanged original process and full data/history retained; browser cookie host is separate."
+  },
+  "limits": "Active Lists,Card text,dates and self-assignment copied through normal APIs. Other relationships/history and any unsaved browser draft remain in the original Demo. Broader MVP acceptance remains open.",
+  "assigneePreviews": {
+    "authoritativeVisibleCards": 7,
+    "explicitZero": 7,
+    "sameCardVersion": "verified for every visible Card"
+  },
+  "browserReview": {
+    "reviewer": "Codex, delegated UX Lead",
+    "observed": [
+      "Actual sign-in opens Organization directory; StrataAI Demo context and Council Operations Board accessible through existing navigation.",
+      "All three Lists and seven Cards visible; current explicit Unassigned presentation visible; Live updates connected.",
+      "Filter impossible keyword shows no matching Cards and explains change/clear recovery. Clear filters acknowledges and returns to original Board; filter trigger receives focus.",
+      "Latest build0.1.0-1975 footer visible. Existing tabs and original API/Worker processes not restarted."
+    ],
+    "screenshots": [
+      {
+        "name": "StrataAI2-demo-1975-board.jpg",
+        "sha256": "2e4761a69025b060bd96079c438a9d9c174d7cb9f01ed8d74c2b5a0ba16c9440"
+      },
+      {
+        "name": "StrataAI2-demo-1975-filter.jpg",
+        "sha256": "e22f6b282a3639683081b9668769e74e7e1a8afc549dc55192e8736175113645"
+      }
+    ],
+    "limits": "Manual current viewport review supplements current CI four-width keyboard/200%/Axe tests; does not claim manual assistive-technology certification or a large-page demo pagination exercise."
+  },
+  "localToolStartupNotes": [
+    "First post-merge helper invocation used the repository directory without ../; Python/Node could not find helper files and performed no work. Corrected explicit paths then passed.",
+    "Read-only rg glob invocation used literal PowerShell globs and failed; no product/check change."
+  ],
+  "policyRefusals": "Earlier source host and Vite host launch were denied;no host started. Partial diagnostic cleanup denied with blocked by policy;files retained and not removed through another mechanism."
+}
