@@ -1,5 +1,17 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Final integration tracking validated; independent Board CI next
+
+PR #122 is merged as `ad992105`, with all 22 required checks, six original strict performance profiles, final source/UX review and the exact tested main tree verified. Qualified Demo **0.1.0-1972** is running at **http://127.0.0.1:8089/login**. Actual sign-in, Organization context, the copied Work board and its live connection are visible. The original Demo at http://localhost:8088 remains healthy and retains its data and session.
+
+The post-integration ledger passes full Git/source/hash/baseline/main-history validation and all **36 delivery contracts**, without failures or skips, on exact commit `348bcf84`. Only ten bounded Task/Test records and eleven criteria are accepted; **81 Done**. Broader PRDs and global MVP readiness remain open. Final evidence bookkeeping is structurally validated and remains subject to the follow-up own metadata gate.
+
+The independent Board follow-up is reconciled with actual main. It implements clearer empty-page guidance, stable filter paging and authoritative empty-assignee feedback. Four filter records remain Testing and two assignee records remain Implemented. Their positive new-image browser/SQL and complete own main-target checks remain required before acceptance or merge. Next: publish its frozen head against main and run those gates. No follow-up merge is claimed.
+
+Functional completion, UX completion, test completion and MVP readiness remain separate. Ledger: 1,627 items, 3,924 criteria and 1,044 evidence records. Both working Demo instances and qualified release archives are retained; only reproducible failed-build archives were removed.
+
+---
+
 ## 2026-10-22 — PR #122 merged; qualified Demo running; Board polish continues
 
 PR #122 candidate `f7174ba4` passed all **22 required checks**, all six original strict performance profiles and the source-free Production/Demo/HTTPS/Secure/WSS/recovery release checks. The normal merge is `ad992105a5f0068f9f3a32e5d7519271e32b5cb6`; its parents and tree exactly match the tested composition. Source and bounded UX review passed. All earlier failures, original deferrals and conditional profile skips remain recorded with their actual identities. No check was weakened.
