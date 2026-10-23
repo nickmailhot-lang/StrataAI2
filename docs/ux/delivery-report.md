@@ -1,5 +1,43 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — PR #122 merged; qualified Demo running; Board polish continues
+
+PR #122 candidate `f7174ba4` passed all **22 required checks**, all six original strict performance profiles and the source-free Production/Demo/HTTPS/Secure/WSS/recovery release checks. The normal merge is `ad992105a5f0068f9f3a32e5d7519271e32b5cb6`; its parents and tree exactly match the tested composition. Source and bounded UX review passed. All earlier failures, original deferrals and conditional profile skips remain recorded with their actual identities. No check was weakened.
+
+Build **0.1.0-1972** is running at **http://127.0.0.1:8089/login**. The three exact-image services are healthy, valid sign-in succeeds, wrong-password sign-in is rejected, and an anonymous private-Board request returns 404. Three Lists and seven Cards were copied through normal APIs, with text, dates, ordering and star state verified. Actual browser sign-in, Organization context, the Work board and live connection are visible; the current screenshot is saved locally. The original Demo at http://localhost:8088 and its full data/history/session remain running. Both instances use process-local Demo data, so restarting an API resets that instance.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new business domain. Independent canonical-assignee feedback is implemented. |
+| UX completion | Bounded Card/Search, Search guidance/paging and lifecycle feedback accepted after tested-tree main integration. Filter and assignee polish await their own acceptance. |
+| Test completion | PR #122: all 22 gates,520 normal browser passes, 50 Foundation cases, 93 notification cases and six strict profiles pass. Original 24/5 deferrals and two normal mail-profile skips remain separate; dedicated current mail acceptance passes. Commands complete 80 workflow steps, not 80 test cases. |
+| MVP readiness | Ten bounded Task/Test records and eleven criteria accepted; 81 Done total. Broad PRDs and global MVP readiness remain open. |
+
+The independent follow-up preserves 77 filter component passes and four native cases in each presentation scopes, plus 77 related assignee host passes and 26 consumer passes scopes with the evaluated Linux-only skip. Positive new-image assignee browser/SQL and its own complete main-target checks remain required. Four filter records stay Testing and two assignee records stay Implemented. Next: validate final tracking, retarget to main and qualify its own frozen head. No follow-up merge is claimed.
+
+Ledger: 1,627 items, 3,924 criteria and 1,043 evidence records. No combined product-completion percentage or production deployment is claimed.
+
+---
+
+## 2026-10-22 — PR #122 qualified and integrated; Board polish continues
+
+PR #122 candidate `f7174ba4` passed all **22 required checks** on its own immutable tested composition. Current frontend (2,985) and backend (2,519) tests pass, with the original 24 frontend and five backend capacity deferrals unchanged. Original cover removal, normal native and role workflows, responsive/keyboard/Axe checks, all six original strict normal-performance profiles and the source-free Production/Demo/HTTPS/Secure/WSS/recovery release checks pass. All earlier source, Foundation, admission, visual, local invocation, star and premature Search observation failures remain recorded and evaluated. Source and bounded UX review passed without weakening checks.
+
+The ordinary expected-head merge is `ad992105a5f0068f9f3a32e5d7519271e32b5cb6`; its actual tree equals the qualified tested tree `8c073ca008f8b3febaca6e053090644be0a52696`. Ten existing Task/Test records and eleven criteria are accepted after that integration, including the Search paging dependency before its dependent Search polish. Only these bounded records are Done; broader PRDs and global MVP readiness remain open.
+
+Draft PR #123 retains clear empty-last-page guidance and stable Board-filter keyboard paging. Its tested implementation remains source `a15b2484` (77 scoped tests and four native cases in each presentation); later parent reconciliation and 36 delivery contracts are separate current proof. The separate canonical assignee-feedback repair has77 related host passes,26 consumer tests and an evaluated Linux-only skip;positive fixed-image browser/SQL remains pending. The combined follow-up still requires its own complete main-target gates,review and actual integration before acceptance or merge.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new business scope. |
+| UX completion | Bounded Card/Search presentation, carried Search guidance/paging and lifecycle feedback accepted. Filter polish implemented, awaiting own acceptance. |
+| Test completion | PR #122 own22 gates and source/native/role/performance/release checks pass. PR #123 own full qualification remains required. |
+| MVP readiness | Only the bounded accepted records advance; no global MVP closure or combined percentage. |
+
+Active follow-up ledger: 1627 items, 3924 criteria, 1042 evidence records, 81 Done. No production deployment is claimed.
+
+---
+
 ## 2026-10-22 — Nineteen checks pass; final browser group remains
 
 Frozen PR #122 candidate `f7174ba4` passes 19 current checks. Normal-browser groups one, two and three pass 131, 129 and 131 cases respectively, with two original mail-fixture skips retained in group two. All 93 dedicated notification cases pass. Foundation retains 50 passes and the command group retains 80 successful workflow steps. The invitation-review regression now passes on the current immutable images. All prior failures remain recorded and evaluated.

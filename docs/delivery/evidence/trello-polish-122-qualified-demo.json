@@ -1,0 +1,67 @@
+{
+  "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+  "at": "2026-10-23T01:30:58.244Z",
+  "result": "Passed",
+  "runtime": {
+    "at": "2026-10-23T01:24:17.393304+00:00",
+    "url": "http://127.0.0.1:8089",
+    "boardUrl": "http://127.0.0.1:8089/app/89819336-1e5b-eac0-5f0e-dbf884d55480/boards/6fbd3c54-6efb-4f8f-bd81-181e0a4dc364",
+    "build": {
+      "revision": "220cdac710af6cbbf1572cef04e130279c0d7188",
+      "version": "0.1.0-1972"
+    },
+    "qualifiedHead": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+    "verifiedMainMerge": "ad992105a5f0068f9f3a32e5d7519271e32b5cb6",
+    "services": {
+      "api": {
+        "container": "23904cd653033d5cf16778fcb4470df0f6c4a4369d038b1ad87a6c05d78df886",
+        "image": "sha256:4a67b86b0edb9ed5fd8708de03f101ec26a73328b12c25c09ec651091cf8be78",
+        "health": "passed",
+        "readiness": "passed",
+        "startedAt": "2026-10-23T01:23:58.499016249Z"
+      },
+      "worker": {
+        "container": "c959291db3286e3ac84cd226d08c1d55d6c4d7d17452b4fb31f72a5fdbaf3311",
+        "image": "sha256:c1dead50c01520cf8dc1d5d902069b86c957503b0e3a5cb94fa9dffa016e476a",
+        "health": "passed",
+        "readiness": "passed",
+        "startedAt": "2026-10-23T01:23:57.79239401Z"
+      },
+      "web": {
+        "container": "77f627de1620282d380958735bd572b9a1b5b2fb7210cae11746ea1a56f8b0cc",
+        "image": "sha256:46c5c2f4a57e36dab737cb930ea6035166338acee246a2fdb976a0d51af2428f",
+        "health": "passed",
+        "readiness": "checked through web",
+        "startedAt": "2026-10-23T01:24:06.543360777Z"
+      }
+    },
+    "login": "passed",
+    "wrongPassword": "401 rejected",
+    "anonymousPrivateBoard": "404 rejected",
+    "copiedCore": {
+      "lists": 3,
+      "cards": 7,
+      "dates": "preserved when present",
+      "selfAssignments": 0,
+      "titlesAndDescriptions": "exactly verified"
+    },
+    "originalDemo": {
+      "url": "http://localhost:8088",
+      "state": "Unchanged original process and full data/history retained; browser cookie host is separate."
+    },
+    "limits": "Active Lists,Card text,dates and self-assignment copied through normal APIs. Other relationships/history and any unsaved browser draft remain in the original Demo. Broader MVP acceptance remains open."
+  },
+  "browser": {
+    "surface": "New visible in-app browser tab3 at127.0.0.1;original localhost tab never navigated or reloaded.",
+    "observed": "Routine seeded-account sign-in succeeds. Organization context, Council Operations,all three List headings and seven Card links are present. Actual screenshot shows Live updates connected and the Trello-style Board. UI version metadata reads1972/220cdac7.",
+    "screenshot": {
+      "localDeliverable": "outputs/strataai2-demo-1972.png",
+      "sha256": "7dcf70f6ac2cab49f1783547c77ce264adedd6e7d1c3fef8285a8adf3f485634",
+      "bytes": 67586,
+      "publishedToGitHub": false
+    },
+    "handoff": "New Demo tab marked deliverable;original user tab/session/data preserved."
+  },
+  "scope": "Actual new local Demo after qualified normal main merge. All three exact images pass health/readiness/identity checks. Active core sample data copied through normal APIs with retained idempotency checkpoints;canonical text/dates,List/Card order and star state verified. Private snapshots and copied text are retained only locally,not published as evidence.",
+  "limits": "Other relationships/history and any original unsaved browser work remain in the original Demo. Both use process-local Demo data;API restart resets that instance. Existing conservative empty-assignee feedback remains separately implemented in draft123 and is not claimed accepted here. Broad PRDs/global MVP remain open."
+}

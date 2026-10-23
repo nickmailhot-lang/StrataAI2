@@ -1,0 +1,504 @@
+{
+  "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+  "base": "4c1e27e265a71e0787e0bf40177337a5be2e2155",
+  "at": "2026-10-23T01:19:19.673399+00:00",
+  "reviewer": "Codex acting in the user-delegated Principal Software Architect, Product Owner and UX Engineering Lead role",
+  "result": "Passed",
+  "status": "Current source and bounded UX review passed after complete own22 qualification. Actual normal main integration and post-integration acceptance remain pending.",
+  "files": [
+    {
+      "path": "apps/web/src/features/kanban/BoardScreen.tsx",
+      "sha256": "ccca2dbe4993f68007c5593744dae5b1469d1838f269939f006af1a1db1f3a19"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CardCoverControl.test.tsx",
+      "sha256": "ed6a7c33e3c4082fca5b6549bbe18734e6c1448769504e1f0b6ca9183637341c"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CardDetailEditor.tsx",
+      "sha256": "dd5dfa5f2bad3ecee0be3fe5503d9bddc3590c5e2c7c29c1445c0463e43cca19"
+    },
+    {
+      "path": "apps/web/src/features/search/GlobalSearchPage.paging-focus.test.tsx",
+      "sha256": "e6013f03784c6f5761d480dbbbf3887f7b910cd66816383d65d0c83e43ecdd39"
+    },
+    {
+      "path": "apps/web/src/features/search/GlobalSearchPage.test.tsx",
+      "sha256": "2fc9b460866cbb8e9edcafa93c2424bf64761112e7d7a6c44845f2fe31c4e0a9"
+    },
+    {
+      "path": "apps/web/src/features/search/GlobalSearchPage.tsx",
+      "sha256": "4a0b38ef0f4dccb71e682804dbb73cde19ab250cc85debbcd3a6f4c921764ef2"
+    },
+    {
+      "path": "tests/browser/board-background-pipeline.case.ts",
+      "sha256": "341d020777a066dc4315d75836beb28b23de299d55d6fa12f51bf2778fbcad62"
+    },
+    {
+      "path": "tests/browser/trello-card-search.spec.ts",
+      "sha256": "a6f7a723b3ae31e4a25d3baf6f7ed4b5ed52f3c3e6a6d4352a35fce0b8d7f0bd"
+    },
+    {
+      "path": "tests/browser/ux-search-guidance.spec.ts",
+      "sha256": "3af39e3c3a5876e2013005d968986af4876f0e0cc8559d3f7378f8c7736670a5"
+    },
+    {
+      "path": "apps/web/src/features/organizations/OrganizationOperationalLifecyclePage.tsx",
+      "sha256": "2fa14c381df47c71a4fed8ceeaf0e3855cff29a67e625fc0ac1c47e485e50ef9"
+    },
+    {
+      "path": "apps/web/src/features/organizations/OrganizationOperationalLifecyclePage.test.tsx",
+      "sha256": "92abb9c3494e48718bcd500900a76cb8e2754e98efcc0c686a9387a5a7a1fb0d"
+    },
+    {
+      "path": "apps/web/src/features/organizations/operationalLifecycleLive.ts",
+      "sha256": "665cef43604222aeb8680dea4bdf2ce6ac342ff22ce180b4022102f8a6567e99"
+    },
+    {
+      "path": "apps/web/src/features/organizations/operationalLifecycleReplay.ts",
+      "sha256": "80e28ce7d8c835c5faeb2b68513ee50fb24057d8201733bbaf6c37d3f455f9a0"
+    },
+    {
+      "path": "tests/browser/lifecycle-consumer-admission.spec.ts",
+      "sha256": "54019de271ced220f566e2efcbdee5afa93e186f6544b5e78d55cbe8d3c34c25"
+    },
+    {
+      "path": "tests/browser/organization-actions.spec.ts",
+      "sha256": "dc085b69a3e1428596a12180a3bdf470a1e067d4f3b05cbf2a4889d089fd02ff"
+    },
+    {
+      "path": "tests/browser/organization-operational-lifecycle-live.spec.ts",
+      "sha256": "266d6a94c6a700af94507eb8571287d11ec4f24941f32a1431df3978809bff27"
+    },
+    {
+      "path": "tests/browser/board-star.spec.ts",
+      "sha256": "f9c88c81a59e0bb62dc6ab469973bcd562e0adb989fac9aaf3b6f51ff62d9f87"
+    },
+    {
+      "path": "tests/browser/boardReadTracker.ts",
+      "sha256": "248faa5b3cd8f5363ba76e3602a9be83aa5cfaaefba7498758ed9b776d2af927"
+    },
+    {
+      "path": "tests/browser/boardReadTracker.test.mjs",
+      "sha256": "38d690fda994c1b9b25ace7403e517e447ec18a6476af2942b6a656c4f4970c2"
+    },
+    {
+      "path": "tests/browser/board-star-retry-admission.spec.ts",
+      "sha256": "26c0dfb6d229a0c23a00ea571f1b614bcb4f454f5205d3e77d742496289eecf5"
+    },
+    {
+      "path": "apps/web/src/features/organizations/OrganizationInvitationHistoryPage.tsx",
+      "sha256": "143006dc0baa37aa2d587d93efb788f0b6c85da4af9160ce39a1337c82c68428"
+    },
+    {
+      "path": "tests/browser/invitation-history-clock.spec.ts",
+      "sha256": "40444fcd3e031ffce7de42f8c261ad81c098a5ba26ebbaf8ce374e0e2f4c475d"
+    },
+    {
+      "path": "tests/browser/keyboardAdmission.ts",
+      "sha256": "2f7fb0c6d452fe2cfe42d9d4dc6c795ba8af12387ccdcd87fd7079b7c6be2d10"
+    },
+    {
+      "path": "tests/browser/invitationReviewAdmission.test.mjs",
+      "sha256": "f8b8fbe1a216c1fa3b6a6a08a3de6e7e97847e72cbebff59788bda446ca263cc"
+    },
+    {
+      "path": "tests/browser/invitation-review-admission.spec.ts",
+      "sha256": "165d87dc3f55fb6ed3a30a7065fafbd2ac4dc75ac90b90d29306a2a692fade96"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "ce934b15ac490de91368c3e410f6e2770181aa22eddb3d548127b41de5b02ddb"
+    },
+    {
+      "path": "scripts/ci/verify-integration-suites.mjs",
+      "sha256": "7eda122e80eb948dba32e608c746cbb85f257e8b84045b511bdaf7629cfdb61f"
+    },
+    {
+      "path": "tests/integration-suites.test.mjs",
+      "sha256": "ce7a349a164d86190660ed55636b1d88d6ef0fa5604a6aa62101134d7eac92b1"
+    },
+    {
+      "path": "tests/browser/retention-policy-review.spec.ts",
+      "sha256": "ac11cd01a4fe0dee0345f6626dd63f57707e43bea07c768d67f8c974b20c7ff1"
+    }
+  ],
+  "findings": [],
+  "reviewedBehavior": {
+    "Card": "Existing admitted Board/List context and memoized Card ownership. Same editor, form, dirty return, Markdown safety, commands, cover recovery and access withdrawal. Location remains unavailable during failed/unadmitted parent state. Existing polished/fallback modes preserved.",
+    "Search": "Same five fields, active/archived semantics, request identity, actor/epoch guards, drafts, cursor and authorized metadata/canonical links. Form-scoped MUI select wrapping reserves text-scaled disclosure space; actual native text-range checks prove no icon overlap. No label truncation or new navigation.",
+    "Paging": "Existing synchronous parking from an actually retiring paging control into stable status; no asynchronous focus reclamation or stealing from drafts. Existing first-use/continuation/final guidance is based only on successful admitted result and actual cursor.",
+    "Lifecycle": "Confirmation derives only from a canonical published fact after existing account/surface/account admission and current matching fresh revision. Parent-only/pending snapshots do not certify publication. Quiet pages may retain prior admitted confirmation; interruption withdraws it, and protected re-admission is required before restoration. Explicit read/command and definite denial reset it. Transport and conservative cursor advancement unchanged. Cleanup retires only its aborted controller; late retired completions fail current-controller checks.",
+    "NativeAdmission": "Star original recovery now observes one same-origin PUT/DELETE request start using the unchanged admission helper and stops even if the reply fails. Original key/version,counts,private-account history,Worker scope,focus and deadlines remain. Search holds account admission,proves focused loading with unchanged draft before a request,observes exact q/after/scope,and checks focused admitted completion within unchanged budgets. Organization disclosure close reuses existing one-observed-click helper. Real-service lifecycle waits actual consumer confirmation before deliberate offline, preserving strict after2/exactevent3 oracle. Cover review still uses visible modal control after native Refresh and current read, preserving consent and original command/receipt assertions.",
+    "Safety": "No dependency, type-library, timeout, retry, budget or capacity-counterpart changes. CI adds five mandatory helper contracts and a removal-refusal guard while preserving every original gate. No schema/API/event, tenant/Portal, actor/recovery or Worker-scope changes. All historical failures remain retained and evaluated.",
+    "InvitationReview": "Safe Cancel onEntered behavior is unchanged. The read-only fixture observes actual default focus and may reopen only a review retired by fresh authority; never forces focus or retries revocation. Existing DialogContent becomes a named keyboard-focusable region so zoomed scroll content is reachable,with Shift+Tab/Tab traversal and original Axe checks.",
+    "CI": "Five new helper contracts are explicitly required in the existing unconditional web-quality step; coverage verification refuses removal. Existing checks,retries,deadlines,release obligations and performance budgets remain unchanged.",
+    "RetentionRecoveryFixture": "Exactly one original retry is observed using the existing mandatory pressObservedRequest helper. Stop when its PATCH starts,including a lost reply. All original file bytes are retained except the import,two comments and activation call;5000ms count and120000ms scenario budgets,key/body/version/count/receipt/history/privacy/withdrawal/Worker assertions remain. No product or command behavior changes."
+  },
+  "visual": {
+    "current320Capture": "docs/delivery/evidence/trello-polish-122-search-320-readable.png",
+    "evaluation": "Viewed current320px/200% Search: full Archived work wraps with clear disclosure icon separation; complete metadata remains readable. Four-width local native/Axe and exact role/error/dirty/paging contracts passed. All actual current hosted workflows and immutable release remain mandatory. Prior desktop/phone Card captures remain supporting historical identities."
+  },
+  "localScope": {
+    "invitationSource": "dc210e3d4e5777820ff7ca3078698ea7e3cf66d5",
+    "native": {
+      "default": 8,
+      "fallback": 8,
+      "widths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "zoom": "200%",
+      "accessibility": "Axe plus keyboard details traversal; safe default focus and authority withdrawal"
+    },
+    "components": {
+      "passed": 100,
+      "execution": "57f9902553224e57c4796a67f956115f5917974e; applicable source inputs unchanged"
+    },
+    "helperContracts": 47,
+    "architecturePerformanceCapacityGuards": 27,
+    "ciCoverageContracts": 290,
+    "deliveryContracts": 36,
+    "priorScopes": "Earlier Card/Search/star and Organization scopes retain actual existing evidence identities; not recounted as runs on this head.",
+    "retention": {
+      "fixtureSource": "ef227a55",
+      "components": 48,
+      "observerContracts": 47,
+      "native": 4,
+      "widths": [
+        1280,
+        390
+      ],
+      "runtime": "Original1970 Demo; policy UI/API inputs unchanged. Working fixture bytes match ef227a55. Supporting scoped evidence only,not replacement-image qualification.",
+      "deliverySource": "a0f9d0c4",
+      "deliveryContracts": 36,
+      "partition": [
+        131,
+        131,
+        131,
+        129
+      ]
+    }
+  },
+  "failedCandidates": [
+    {
+      "revision": "cd9530ff",
+      "evaluation": "Original phone removal review overlapped protected admission; retained Failed."
+    },
+    {
+      "revision": "1125cc02",
+      "evaluation": "New readiness assertion targeted a background Board correctly hidden by the modal; both cases Failed before removal. Correction does not expose hidden content or relax admission."
+    },
+    {
+      "revision": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+      "evaluation": "Notifications original star activation started no retry; Search synchronous assertion preceded the exact correct next request by milliseconds. Full matrix507Pass/1Fail/2old skips; notification57Pass/1Fail/laterNotRun. RequiredCI Failed/release Skipped. All verified diagnostics and actual state preserved; repairs add observations without changing app behavior or weakening checks."
+    },
+    {
+      "revision": "c1f1debb91a5078aef7ed259ded5f623d1f206ef",
+      "evaluation": "Three current-head browser failures, failed required-ci and skipped release; retained Failed. Corrected admission observation and actual narrow selected-value layout, never relaxed original oracles."
+    }
+  ],
+  "testedSynthetic": "220cdac710af6cbbf1572cef04e130279c0d7188",
+  "testedTree": "8c073ca008f8b3febaca6e053090644be0a52696",
+  "workflowRunId": 39856747644,
+  "version": "0.1.0-1972",
+  "pending": [
+    "Verify actual ordinary main parents/tree and record bounded acceptance/tracking after merge."
+  ],
+  "reviewedAt": "2026-10-23T01:19:19.673399+00:00",
+  "currentReview": {
+    "head": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+    "criterionDefinitionsReviewed": 11,
+    "sourceInputsReviewed": 29,
+    "newOrChangedInputs": [
+      "apps/web/src/features/organizations/OrganizationInvitationHistoryPage.tsx",
+      "tests/browser/invitation-history-clock.spec.ts",
+      "tests/browser/keyboardAdmission.ts",
+      "tests/browser/invitationReviewAdmission.test.mjs",
+      "tests/browser/invitation-review-admission.spec.ts",
+      ".github/workflows/ci.yml",
+      "scripts/ci/verify-integration-suites.mjs",
+      "tests/integration-suites.test.mjs",
+      "tests/browser/retention-policy-review.spec.ts"
+    ],
+    "acceptance": "Unverified",
+    "currentAll22": "Passed",
+    "normalNative": {
+      "passed": 520,
+      "failed": 0,
+      "originalProfileSkips": 2
+    },
+    "foundationPassed": 50,
+    "notificationsPassed": 93,
+    "commandSuccessfulWorkflowSteps": 80,
+    "strictProfiles": [
+      "desktop-list-feedback",
+      "normal-desktop-card-dates",
+      "normal-desktop-checklist",
+      "normal-desktop-kanban",
+      "normal-phone-kanban",
+      "phone-list-feedback"
+    ]
+  },
+  "knownExistingDebt": [
+    {
+      "scope": "Existing Card assignee empty preview;not introduced by8f17005f",
+      "severity": "UX follow-up;no new authority grant or unsafe inference",
+      "observation": "Missing version-bound preview remains conservatively unavailable in the current client. Existing UX-CARD02 requires explicit server0 for valid Unassigned.",
+      "owner": "PRD-11-VS-01-T-02 and childTest in independent draft PR123",
+      "state": "Separate store repair implemented/scoped-tested;actual fixed-image browser/SQL and own gates pending."
+    }
+  ],
+  "visualApplicability": "Prior Card/Search/Organization visual checks retain actual execution identities and unchanged inputs. Invitation details add semantic keyboard reachability without CSS/layout changes. Controlled four-width/default+fallback zoom/Axe/focus traversal passes are recorded;current required image workflows remain mandatory before final review.",
+  "failedExecutions": [
+    {
+      "revision": "8f17005f9f5bbf9c19786b70e5ec3bd4f8cf9222",
+      "run": 39818629442,
+      "evaluation": "19 checks passed;normal519/1/2. Full4 original policy-retry activation observed1 rather than2 PATCHes;required-ci Failed and release Skipped. All strict6 profiles,Foundation50,notifications93 andcommands80 steps retain failed8f identity. Never activate1971 or borrow its passes."
+    }
+  ],
+  "remainingRequirements": [
+    "Verified actual ordinary main integration before any Done or Demo activation."
+  ],
+  "criteriaReview": [
+    {
+      "id": "UX-007-VS-02-T-02/AC-01",
+      "definition": "First-use and successful-empty guidance explains existing permitted controls; a cursor continues paging instead of falsely declaring completion. Guidance issues no requests, changes no criteria and preserves native submission/focus.",
+      "evaluation": "Guidance reads only successful admitted results, actual applied filters/scope and continuation cursor; does not issue requests. First-use, final/continuation, malformed/failed/denied/changed-actor and canonical return behaviors preserved. Exact-final-head hosted execution required. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "UX-007-VS-02-T-02/AC-02",
+      "definition": "Busy, malformed, failed, changed-account and definite-denial responses never show successful-empty guidance or protected source data. Existing result links, actor checks, cursor and draft recovery remain intact.",
+      "evaluation": "Guidance reads only successful admitted results, actual applied filters/scope and continuation cursor; does not issue requests. First-use, final/continuation, malformed/failed/denied/changed-actor and canonical return behaviors preserved. Exact-final-head hosted execution required. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "UX-007-VS-02-T-02-TEST-01/TRACE",
+      "definition": "Meaningful component and four-width Playwright/Axe checks cover first-use, empty continuation/final page, retained filters, no implicit reads, error/denial and readable keyboard use; applicable current immutable integration remains required.",
+      "evaluation": "Guidance reads only successful admitted results, actual applied filters/scope and continuation cursor; does not issue requests. First-use, final/continuation, malformed/failed/denied/changed-actor and canonical return behaviors preserved. Exact-final-head hosted execution required. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "UX-006-VS-03-T-02/AC-01",
+      "definition": "A focused Search paging control transfers to stable visible feedback before loading removes it. Final, failed and denied reads preserve safe focus and existing cursor/draft/privacy behavior; filter edits and unrelated focus are never stolen.",
+      "evaluation": "Existing Search paging parks focus before retiring the active launcher, preserves edited drafts and does not reclaim focus on later completion. Existing component/native foreground/background/error/403 and Tab/outline checks remain; exact-final-head hosted execution required. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "UX-006-VS-03-T-02-TEST-01/AC-01",
+      "definition": "Component and four-width native keyboard/Axe checks verify pending/final/failed/denied feedback, cursor and filter preservation, background edit focus, native onward traversal and unobscured focus. Full release/role regression remains mandatory.",
+      "evaluation": "Existing Search paging parks focus before retiring the active launcher, preserves edited drafts and does not reclaim focus on later completion. Existing component/native foreground/background/error/403 and Tab/outline checks remain; exact-final-head hosted execution required. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "PRD-09-VS-01-T-05/AC-01",
+      "definition": "Existing Card detail exposes its currently admitted Board/List context and clear core editor hierarchy on desktop/phone, retaining exact dialog name, save/close controls, drafts, safe Markdown, command recovery, return focus and original requests. Context withdraws during failed/pending/denied reads. Existing Work flag restores previous presentation.",
+      "evaluation": "Card context renders only from the admitted parent and authorized Card. Same dialog, stable title, description, safe Markdown, Save/Close, dirty return and original recoverable commands. Complete current controlled cases pass both presentations; actual cover/roles/recovery/release remain mandatory. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "PRD-09-VS-01-T-05-TEST-01/AC-01",
+      "definition": "Complete affected component files and routed desktop/tablet/phone/320px keyboard,200%text,context/error/dirty/denial/return and Axe checks pass for this increment, including original Work flag rollback. Controlled fixtures remain separate from current full real-service/release/security qualification.",
+      "evaluation": "Card context renders only from the admitted parent and authorized Card. Same dialog, stable title, description, safe Markdown, Save/Close, dirty return and original recoverable commands. Complete current controlled cases pass both presentations; actual cover/roles/recovery/release remain mandatory. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "PRD-16-VS-01-T-02/AC-01",
+      "definition": "Existing Search fields use a bounded responsive layout and readable authorized result Cards. Preserve119 guidance/120 keyboard paging, criteria/cursors, native submission, acknowledgment/actor/epoch checks, unsent edits, access withdrawal, complete result metadata and canonical Card links. Existing Work flag restores previous presentation.",
+      "evaluation": "Existing five fields, full metadata and canonical links preserve functional owners and search criteria/cursor/acknowledgment/actor checks. Scoped responsive form, readable chosen scope and icon clearance pass full four-width native workflows in both presentations; exact-final-head hosted role/release qualification required. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "PRD-16-VS-01-T-02-TEST-01/AC-01",
+      "definition": "Complete affected component files and routed desktop/tablet/phone/320px keyboard,200%text,context/error/dirty/denial/return and Axe checks pass for this increment, including original Work flag rollback. Controlled fixtures remain separate from current full real-service/release/security qualification.",
+      "evaluation": "Existing five fields, full metadata and canonical links preserve functional owners and search criteria/cursor/acknowledgment/actor checks. Scoped responsive form, readable chosen scope and icon clearance pass full four-width native workflows in both presentations; exact-final-head hosted role/release qualification required. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "UX-005-VS-02-T-02/AC-01",
+      "definition": "Existing authorized lifecycle consumer announces live updates are current only after admitting a published fact matching its current freshly permitted revision. Pending, unavailable, denied, explicit-read and mutation states withdraw confirmation. Fresh effect remount may read again. Preserve names/privacy, current actor, consent, original commands and replay cursors.",
+      "evaluation": "Lifecycle publication status is not inferred from raw wire arrival or a current parent alone. Existing fresh same-actor permission admission must complete and match the published revision. Pending/newer parent/unavailable/explicit read/command/denial withdraw confirmation. Fresh StrictMode remount cannot remain blocked by an aborted controller. Component/stream/replay/telemetry and8 controlled native admitted/unadmitted reconnect cases pass; original real-service strict cursor2/event3 and unchanged recovery/roles/release remain mandatory. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    },
+    {
+      "id": "UX-005-VS-02-T-02-TEST-01/AC-01",
+      "definition": "Complete component/stream/replay/telemetry tests and admitted/unadmitted reconnect at 1280/768/390/320px, 200% text, Axe and 403 withdrawal pass. Original real-service lifecycle replay, Organization keyboard actions and all required release gates remain mandatory.",
+      "evaluation": "Lifecycle publication status is not inferred from raw wire arrival or a current parent alone. Existing fresh same-actor permission admission must complete and match the published revision. Pending/newer parent/unavailable/explicit read/command/denial withdraw confirmation. Fresh StrictMode remount cannot remain blocked by an aborted controller. Component/stream/replay/telemetry and8 controlled native admitted/unadmitted reconnect cases pass; original real-service strict cursor2/event3 and unchanged recovery/roles/release remain mandatory. Current own22 source/role/native/strict-performance/immutable-release qualification passed;historical controlled/flag rollback inputs retain their exact source equivalence.",
+      "decision": "Satisfied in the qualified composition;item acceptance awaits verified main integration."
+    }
+  ],
+  "diagnosticEvaluation": {
+    "revision": "f7174ba4bc6fb078c71991bc548b06a2573db88a",
+    "at": "2026-10-22T22:10:18.356Z",
+    "annotations": [
+      {
+        "checkRunId": 120096805127,
+        "name": "Analyze (actions)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804983,
+        "name": "Analyze (python)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804922,
+        "name": "Analyze (csharp)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804878,
+        "name": "Analyze (javascript-typescript)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 169,
+            "end_line": 169,
+            "annotation_level": "warning",
+            "message": "Failed to restore: Aborting cache download as the download time exceeded the timeout.",
+            "title": "",
+            "raw_details": ""
+          },
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      },
+      {
+        "checkRunId": 120096804860,
+        "name": "Analyze (c-cpp)",
+        "annotations": [
+          {
+            "path": ".github",
+            "start_line": 1,
+            "end_line": 1,
+            "annotation_level": "notice",
+            "message": "\"The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748\"",
+            "title": "",
+            "raw_details": ""
+          }
+        ],
+        "hasMore": false
+      }
+    ],
+    "jsAnalysisSteps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Checkout repository",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Setup proxy for registries",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Initialize CodeQL",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Autobuild",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Perform CodeQL Analysis",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Post Perform CodeQL Analysis",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9
+      },
+      {
+        "name": "Post Initialize CodeQL",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10
+      },
+      {
+        "name": "Post Setup proxy for registries",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11
+      },
+      {
+        "name": "Post Checkout repository",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13
+      }
+    ],
+    "evaluation": "All five Analyze jobs and CodeQL pass with no new alerts. JavaScript/TypeScript reports one optional cache restore timeout warning; Initialize CodeQL and Perform CodeQL Analysis both completed successfully. It did not skip analysis or suppress a code finding. Five notice-level annotations concern GitHub runner-image migration. No workflow/check change or retry was used to suppress either diagnostic.",
+    "limits": "This evaluates these current-source annotations only; remaining immutable/native/security/performance/release/review/integration gates stay mandatory."
+  },
+  "reviewThreads": {
+    "unresolved": 0,
+    "checkedAt": "2026-10-23T01:19:19.673399+00:00"
+  },
+  "knownCriticalIntroducedRegressions": 0,
+  "scopeLimit": "Only the ten bounded Task/Test records and eleven definitions. Existing conservative assignee empty-preview debt is separately implemented in draft123 and is not introduced by this replacement. Broad PRDs/MVP remain open."
+}
