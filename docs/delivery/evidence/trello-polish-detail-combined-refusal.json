@@ -1,0 +1,9 @@
+{
+  "revision": "3f9a150af0be51fff4d40592efb36a37b59b5aaf",
+  "at": "2026-10-21T21:13:48.516Z",
+  "result": "Failed",
+  "scope": "Actual local delivery provenance validation refused a new3f9a test pass while implementation still namedFF. This is a tracking refusal, not a failing application scenario.",
+  "command": "node scripts/delivery-progress.mjs validate --base-ref 1730b8915445af0fc3cb9e6d7abf126e720de39d",
+  "log": "Unsubstantiated test pass PRD-09-VS-01-T-05-TEST-01\r\n",
+  "evaluation": "Keep validator unchanged. Preserve original FF implementation in history and bind the currently qualified combined source3f9a to the four current work records. Existing FF/source evidence and all original failure records remain immutable. Rerun the same validation, plus both-parent history checks; no product/test assertion/deadline change."
+}

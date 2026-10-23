@@ -9,6 +9,7 @@ import { formatUserDateTime } from '../auth/userDateTime';
 import { formatCardDate } from '../kanban/cardDates';
 import { activityEvent, activityResult } from '../kanban/activityTelemetry';
 import { ChangedSearchInteractionActor, SearchInteractionAcknowledgments } from './searchInteraction';
+import { workExperienceEnabled } from '../../app/workExperience';
 
 type Criteria = { q: string; label: string; member: string; match: 'all' | 'any'; scope: 'active' | 'archived' };
 const empty = (): Criteria => ({ q: '', label: '', member: '', match: 'all', scope: 'active' });
@@ -21,7 +22,14 @@ export function GlobalSearchPage() {
   const applied = useRef<Criteria>(empty()); const cursor = useRef<string | undefined>(undefined);
   const actor = useRef<string | undefined>(undefined); const pending = useRef<AbortController | undefined>(undefined);
   const epoch = useRef(0); const alive = useRef(false);
+  const feedback = useRef<HTMLDivElement>(null); const paging = useRef<HTMLDivElement>(null);
   const load = useCallback(async (criteria: Criteria, after?: string, kind: 'use' | 'retry' | 'reconnect' = 'use') => {
+    // Move focus before a paging control retires. Reads must not interrupt an
+    // edited filter or reclaim focus later when an asynchronous result arrives.
+    if (paging.current?.contains(document.activeElement)) {
+      feedback.current?.focus({ preventScroll: true });
+      feedback.current?.scrollIntoView?.({ block: 'center', behavior: 'instant' });
+    }
     pending.current?.abort(); const controller = new AbortController(); pending.current = controller;
     const ticket = ++epoch.current; setBusy(true); setPage(undefined); setNotice(undefined); setAcknowledged(false);
     const started = performance.now(); activityEvent('search_read', kind);
@@ -66,9 +74,17 @@ export function GlobalSearchPage() {
     return () => { alive.current = false; epoch.current++; pending.current?.abort(); clearInterval(interval);
       window.removeEventListener('focus', refresh); window.removeEventListener('online', online); document.removeEventListener('visibilitychange', refresh); };
   }, [load]);
-  return <Stack spacing={2} component="section" aria-label="Global Card search">
+  const searchedWithFilters = Boolean(applied.current.q || applied.current.label || applied.current.member);
+  return <Stack spacing={2} component="section" aria-label="Global Card search"
+    sx={workExperienceEnabled ? { '& .MuiButton-root': { textTransform: 'none' } } : undefined}>
     <PageHeader title="Search Cards" variant="h5" description="Search across your accessible Organizations and Boards." />
-    <Stack component="form" spacing={2} onSubmit={event => { event.preventDefault(); actor.current = undefined;
+    {!page && !busy && !notice && <Typography>Choose filters, then select Search. Leave filters empty to browse Cards you can access.</Typography>}
+    <Stack component="form" spacing={2} useFlexGap={workExperienceEnabled}
+      sx={{ '& .MuiInputBase-root .MuiSelect-select.MuiSelect-outlined.MuiInputBase-input': { whiteSpace: 'normal', overflowWrap: 'anywhere',
+        paddingRight: 'calc(1.5em + 14px)' }, ...(workExperienceEnabled ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 16rem), 1fr))',
+        alignItems: 'start', p: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2,
+        '& .MuiFormControl-root': { minWidth: 0 }, '& .MuiButton-root': { minHeight: 56, textTransform: 'none' } } : {}) }}
+      onSubmit={event => { event.preventDefault(); actor.current = undefined;
       void load({ ...draft, q: draft.q.trim(), label: draft.label.trim(), member: draft.member.trim() }); }}>
       <TextField label="Card text" value={draft.q} onChange={e => setDraft({ ...draft, q: e.target.value })} slotProps={{ htmlInput: { maxLength: 160 } }} />
       <TextField label="Label name" value={draft.label} onChange={e => setDraft({ ...draft, label: e.target.value })} slotProps={{ htmlInput: { maxLength: 160 } }} />
@@ -81,21 +97,35 @@ export function GlobalSearchPage() {
       </TextField>
       <Button type="submit" variant="contained" disabled={busy}>Search</Button>
     </Stack>
-    <Stack role="status" aria-live="polite">{busy && <Typography>Searching…</Typography>}
+    <Stack ref={feedback} role="status" aria-live="polite" tabIndex={-1}
+      sx={{ '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 4, borderRadius: 1 } }}>{busy && <Typography>Searching…</Typography>}
       {notice && <Alert severity="warning">{notice}</Alert>}
-      {page && <Typography>{page.items.length} results on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
+      {page && <Typography>{page.items.length} result{page.items.length === 1 ? '' : 's'} on this page.{page.nextCursor ? ' More work can be searched.' : ' Search complete.'}</Typography>}
       {acknowledged && <Typography>Search acknowledged.</Typography>}
     </Stack>
-    {page?.items.map(item => <Paper key={item.id} variant="outlined" sx={{ p: 2 }}>
-      <Typography component={Link} to={`/app/${item.organizationId}/boards/${item.boardId}/cards/${item.id}`}>{item.title}</Typography>
-      <Typography>{item.boardName} / {item.listName}</Typography>
-      <Typography>Labels: {item.labels.join(', ') || 'None'}{item.moreLabels ? ' (more on Card)' : ''}</Typography>
-      <Typography>Members: {item.members.join(', ') || 'None'}{item.moreMembers ? ' (more on Card)' : ''}</Typography>
-      <Typography>{item.dueAt ? `Due ${item.dueHasTime
+    {page && !busy && !notice && page.items.length === 0 && <Paper component="section" aria-label="Search guidance" variant="outlined" sx={{ p: 2 }}>
+      <Stack spacing={1}>
+        <Typography component="h3" variant="h6">{page.nextCursor ? 'Keep searching' : 'No matches on this page'}</Typography>
+        <Typography>{page.nextCursor
+          ? 'Search is not finished. Select Next search page to continue checking work you can access.'
+          : `This search has reached the last page. ${searchedWithFilters ? 'Try fewer filters, or choose' : 'Choose'} ${applied.current.scope === 'archived' ? 'Active work in Search scope for current Cards.' : 'Archived work in Search scope for archived Cards.'}`}</Typography>
+      </Stack>
+    </Paper>}
+    {page?.items.map(item => <Paper key={item.id} variant="outlined" sx={{ p: 2, ...(workExperienceEnabled && { borderRadius: 2, minWidth: 0 }) }}>
+      <Typography component={Link} to={`/app/${item.organizationId}/boards/${item.boardId}/cards/${item.id}`}
+        sx={workExperienceEnabled ? { display: 'inline-block', fontWeight: 600, color: 'primary.main', overflowWrap: 'anywhere', mb: 0.5,
+          '&:focus-visible': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 2 } } : undefined}>{item.title}</Typography>
+      <Typography variant={workExperienceEnabled ? 'body2' : undefined} color={workExperienceEnabled ? 'text.secondary' : undefined}>{item.boardName} / {item.listName}</Typography>
+      <Typography variant={workExperienceEnabled ? 'body2' : undefined}>Labels: {item.labels.join(', ') || 'None'}{item.moreLabels ? ' (more on Card)' : ''}</Typography>
+      <Typography variant={workExperienceEnabled ? 'body2' : undefined}>Members: {item.members.join(', ') || 'None'}{item.moreMembers ? ' (more on Card)' : ''}</Typography>
+      <Typography variant={workExperienceEnabled ? 'body2' : undefined}>{item.dueAt ? `Due ${item.dueHasTime
         ? formatUserDateTime(item.dueAt, { locale: page.locale, timezone: item.boardDateTimezone ?? page.timezone }) ?? 'Date unavailable'
         : formatCardDate(item.dueAt, false, page.locale, item.boardDateTimezone ?? page.timezone)}${item.dueComplete ? ' — completed' : ''}` : 'No deadline'}</Typography>
     </Paper>)}
-    {page?.nextCursor && <Button disabled={busy} onClick={() => void load(applied.current, page.nextCursor!)}>Next search page</Button>}
-    {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current, 'retry')}>Refresh results</Button>}
+    <Stack ref={paging} spacing={2} direction={workExperienceEnabled ? 'row' : undefined} useFlexGap={workExperienceEnabled}
+      sx={workExperienceEnabled ? { flexWrap: 'wrap', justifyContent: 'flex-end' } : undefined}>
+      {page?.nextCursor && <Button disabled={busy} onClick={() => void load(applied.current, page.nextCursor!)}>Next search page</Button>}
+      {page && <Button disabled={busy} onClick={() => void load(applied.current, cursor.current, 'retry')}>Refresh results</Button>}
+    </Stack>
   </Stack>;
 }

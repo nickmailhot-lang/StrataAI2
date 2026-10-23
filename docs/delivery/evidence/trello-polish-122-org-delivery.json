@@ -1,0 +1,25 @@
+{
+  "revision": "0d7621d7407d424e77e1ede7f92f78c27c3fb792",
+  "at": "2026-10-22T08:47:05.132Z",
+  "result": "Passed",
+  "checkedLedger": {
+    "sha256": "043ac6fcf9e90a99c07417205283c5f42c9c821511733407c1898f00064e913d",
+    "items": 1621,
+    "criteria": 3917,
+    "evidence": 979,
+    "done": 71
+  },
+  "validation": {
+    "command": "npm run delivery:validate -- --base-ref origin/main",
+    "result": "npm notice run strataai2@0.1.0 delivery:validate\r\nnpm notice run node scripts/delivery-progress.mjs validate --base-ref origin/main\r\nValid: 1621 work items; 3917 criteria. No unsupported Done claims.\r\n",
+    "sha256": "e5db74cc6b7724f5e8eddede323245732a1a05da06605dcbddea20b952bb3293"
+  },
+  "contracts": {
+    "command": "npm run delivery:test",
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "sha256": "45a3aab14b9476276f42fb2bb32fcd802350e8f000f4ea15ff66d01fdda545ef"
+  },
+  "scope": "Full Git ancestry/source existence, every evidence hash, canonical baseline and main-relative historical evolution pass on exact committed0d7621d7 ledger bytes. Adding this content-bound proof does not qualify a different runtime or replace final-head hosted gates. All earlier failures remain retained; no new acceptance."
+}

@@ -1,0 +1,15 @@
+{
+  "checkedLedgerRevision": "3c86e92c6a85db79c5609f37747545d7d7195a03",
+  "targetMainRevision": "db5762265b3dfd19aa28b03ed24ceec2fe2ec265",
+  "ledgerRawSha256": "510ada7bb0935d25bba48fc9848202d0c41157980e844284f920bd95aad375e7",
+  "validationCommand": "node scripts/delivery-progress.mjs validate --base-ref origin/main",
+  "result": "Passed",
+  "workItems": 1604,
+  "criteria": 3896,
+  "evidenceRecords": 831,
+  "stdout": "Valid: 1604 work items; 3896 criteria. No unsupported Done claims.\r\n",
+  "generatedReportCommand": "npm run delivery:report",
+  "generatedReportSha256": "f1a0328217468fb0222675e612ea2c0aa0c0ecf7f77f0529854938372c625943",
+  "scope": "Exact final ledger/evidence/source/Git ancestry/append-only validation and actual report generation passed. This transcript is deliberately outside the evidence graph to avoid self-reference. It is not release, UX/MVP acceptance or parent completion evidence.",
+  "draftFollowUp": "https://github.com/nickmailhot-lang/StrataAI2/pull/120"
+}

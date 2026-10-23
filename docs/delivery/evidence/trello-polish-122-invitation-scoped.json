@@ -1,0 +1,101 @@
+{
+  "revision": "dc210e3d4e5777820ff7ca3078698ea7e3cf66d5",
+  "at": "2026-10-22T16:49:44.800Z",
+  "result": "Passed",
+  "sourceInputs": [
+    {
+      "path": "apps/web/src/features/organizations/OrganizationInvitationHistoryPage.tsx",
+      "sha256": "143006dc0baa37aa2d587d93efb788f0b6c85da4af9160ce39a1337c82c68428"
+    },
+    {
+      "path": "tests/browser/invitation-history-clock.spec.ts",
+      "sha256": "40444fcd3e031ffce7de42f8c261ad81c098a5ba26ebbaf8ce374e0e2f4c475d"
+    },
+    {
+      "path": "tests/browser/keyboardAdmission.ts",
+      "sha256": "2f7fb0c6d452fe2cfe42d9d4dc6c795ba8af12387ccdcd87fd7079b7c6be2d10"
+    },
+    {
+      "path": "tests/browser/invitationReviewAdmission.test.mjs",
+      "sha256": "f8b8fbe1a216c1fa3b6a6a08a3de6e7e97847e72cbebff59788bda446ca263cc"
+    },
+    {
+      "path": "tests/browser/invitation-review-admission.spec.ts",
+      "sha256": "165d87dc3f55fb6ed3a30a7065fafbd2ac4dc75ac90b90d29306a2a692fade96"
+    }
+  ],
+  "native": [
+    {
+      "path": "../trello-122-invitation-native-default-ordered.json",
+      "sha256": "6764b472b7c9838c1e9da2f2e1f5ce03be410d982978ea0522dbe10b7b96da94",
+      "stats": {
+        "startTime": "2026-10-22T16:47:45.375Z",
+        "duration": 80594.155,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": [],
+      "failures": []
+    },
+    {
+      "path": "../trello-122-invitation-native-fallback-ordered.json",
+      "sha256": "6aceb4bfd57d631f7d4290892758880fd2823aee6aebbbfc721c7481cc9693a5",
+      "stats": {
+        "startTime": "2026-10-22T16:46:07.471Z",
+        "duration": 78862.77,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": [],
+      "failures": []
+    }
+  ],
+  "checks": [
+    {
+      "name": "components",
+      "path": "../trello-122-invitation-components-final.log",
+      "sha256": "f12bdaea31ad5682b41feba1febaf15764000842a5b360c9538f9354a2bc36c3"
+    },
+    {
+      "name": "contracts",
+      "path": "../trello-122-invitation-contracts-final.log",
+      "sha256": "7821b351af6e5bb3b7f9d1e0a4082ce8a6e476365f09fbd26e916208c7facdb6"
+    },
+    {
+      "name": "guards",
+      "path": "../trello-122-invitation-guards-final.log",
+      "sha256": "3865ff3245f00a02df26cfcb560bda7d74d8f3ae90adcc9149e75469680f6aa6"
+    },
+    {
+      "name": "registry",
+      "path": "../trello-122-invitation-registry-final.log",
+      "sha256": "3c64e16c9d08156b2f571f09fbd6ca1ca6a2f1a578942c5e3e9f10703bcca3cc"
+    },
+    {
+      "name": "webTypes",
+      "path": "../trello-122-invitation-web-types-final.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624"
+    },
+    {
+      "name": "browserTypes",
+      "path": "../trello-122-invitation-browser-types-ordered.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090"
+    },
+    {
+      "name": "lint",
+      "path": "../trello-122-invitation-lint-final.log",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef"
+    }
+  ],
+  "executionIdentity": {
+    "native": "dc210e3d4e5777820ff7ca3078698ea7e3cf66d5",
+    "browserTypes": "dc210e3d4e5777820ff7ca3078698ea7e3cf66d5",
+    "componentsContractsGuardsWebTypesLintRegistry": "57f9902553224e57c4796a67f956115f5917974e; applicable source/component/helper inputs unchanged; only controlled update ordering differs in native fixture."
+  },
+  "scope": "100 component tests across four complete invitation files;47 helper contracts;27 complete architecture/performance/capacity guards;8+8 native Organization/Board cases at320/390/768/1280 with200% text,unchanged Axe,default Cancel focus,keyboard scroll-region traversal,malformed clock refusal,readmission,zero writes and403 withdrawal. Web/browser types,full lint and522-case177-file intact partition pass.",
+  "remaining": "All fresh22 hosted gates,strict six-profile performance,actual immutable release,final review and verified normal main merge remain mandatory. Earlier415a Full4 passed127 but Full2 failed and Full1 setup remains incomplete; none qualifies this replacement."
+}

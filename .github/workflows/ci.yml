@@ -129,6 +129,7 @@ jobs:
           node --experimental-strip-types --test tests/browser/capacityScrollDiagnostics.test.mjs
           node --experimental-strip-types --test tests/browser/canonicalWorkMutation.test.mjs
           node --experimental-strip-types --test tests/browser/keyboardAdmission.test.mjs
+          node --experimental-strip-types --test tests/browser/invitationReviewAdmission.test.mjs
           node --experimental-strip-types --test tests/browser/cachedDetailPaint.test.mjs
 
       - name: Verify security assertion failure paths

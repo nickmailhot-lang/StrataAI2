@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-21T18:43:13.737Z",
+  "revision": "ff0350c3955ebed1b5788ba089d6e321b5da44d6",
+  "note": "Fresh complete ten affected files97passed, zero failed/skipped,119.70s at ff0350c3 after actual text-aware grid fix. Original assertions/timeouts unchanged.",
+  "artifacts": [
+    {
+      "name": "trello-detail-search-zoom-fixed-unit.log",
+      "sha256": "e62f1df7864c63a717086f8d08c4b46c10af348c395c4364ba1919f675f46bd2",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/CardDetailEditor.test.tsx src/features/kanban/BoardScreen.test.tsx src/features/kanban/BoardScreen.drag.test.tsx src/app/UnsavedChangesGuard.test.tsx src/app/UnsavedChangesGuard.admission.test.tsx src/app/UnsavedChangesGuard.lifecycle.test.tsx src/features/search/GlobalSearchPage.test.tsx src/features/search/GlobalSearchPage.paging-focus.test.tsx src/features/search/globalSearch.test.ts src/features/search/searchInteraction.test.ts\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  10 passed (10)\r\n      Tests  97 passed (97)\r\n   Start at  11:32:37\r\n   Duration  119.70s (import 46%, tests 32%, environment 16%, transform 3%, setup 3%)\r\n\r\n"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "revision": "10f55d2f5173a17e6e386173c29144259fde5a23",
+  "at": "2026-10-22T11:28:59.396Z",
+  "result": "Passed",
+  "checkedLedger": {
+    "sha256": "588cff4917fd8c2951160b88a39c2f24a0fd44fb1bafa5eb5969fadb072101dd",
+    "items": 1621,
+    "criteria": 3917,
+    "evidence": 985,
+    "done": 71
+  },
+  "validation": {
+    "command": "npm run delivery:validate -- --base-ref origin/main",
+    "result": "npm notice run strataai2@0.1.0 delivery:validate\r\nnpm notice run node scripts/delivery-progress.mjs validate --base-ref origin/main\r\nValid: 1621 work items; 3917 criteria. No unsupported Done claims.\r\n",
+    "sha256": "e5db74cc6b7724f5e8eddede323245732a1a05da06605dcbddea20b952bb3293"
+  },
+  "contracts": {
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "sha256": "c741953c92934df3902e8d6a4b4d682ac431095cd277d35c1594906587f34057"
+  },
+  "scope": "Full Git/source/evidence-hash/canonical-baseline/main-history validation and36 contracts pass on exact committed10f55d2f ledger bytes. This content-bound addition does not qualify actual service workflows or a new final head. Failed551 and its unknown/incomplete scopes remain separate; no new acceptance."
+}

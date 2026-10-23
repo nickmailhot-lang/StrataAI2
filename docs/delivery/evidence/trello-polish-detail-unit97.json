@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-21T18:24:13.024Z",
+  "revision": "38a618b6a1c8c1f84434c09c45d13f69cd1d5c21",
+  "note": "Complete ten affected Card/editor/Board/unsaved-guard/Search/parser/interaction/paging files passed97, zero failures/skips, unchanged original timeouts/assertions. Actual execution source38a618b6; laterA0 modifies only browser definition/docs, not these inputs.",
+  "artifacts": [
+    {
+      "name": "trello-detail-search-final-unit.log",
+      "sha256": "ec7d4504792e83a081279eb9e1081baedafbc7e7fa108aee38143ccdb584053b",
+      "content": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/CardDetailEditor.test.tsx src/features/kanban/BoardScreen.test.tsx src/features/kanban/BoardScreen.drag.test.tsx src/app/UnsavedChangesGuard.test.tsx src/app/UnsavedChangesGuard.admission.test.tsx src/app/UnsavedChangesGuard.lifecycle.test.tsx src/features/search/GlobalSearchPage.test.tsx src/features/search/GlobalSearchPage.paging-focus.test.tsx src/features/search/globalSearch.test.ts src/features/search/searchInteraction.test.ts\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  10 passed (10)\r\n      Tests  97 passed (97)\r\n   Start at  11:10:56\r\n   Duration  120.02s (import 46%, tests 33%, environment 15%, transform 4%, setup 3%)\r\n\r\n"
+    }
+  ]
+}

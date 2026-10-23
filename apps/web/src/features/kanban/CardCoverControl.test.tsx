@@ -61,6 +61,24 @@ async function choose() {
   fireEvent.click(await screen.findByRole('button', { name: 'Use Site image.png as cover' }));
 }
 beforeEach(() => { vi.mocked(workRequest).mockReset(); });
+it('withholds an unsent review when parent admission starts during its account proof and requires fresh review', async () => {
+  mock(); const p = props(); const view = render(<CardCoverControl {...p} />);
+  let release!: (value: typeof profile) => void;
+  vi.mocked(workRequest).mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
+  fireEvent.click(screen.getByRole('button', { name: 'Review Card cover' }));
+  await waitFor(() => expect(release).toBeTypeOf('function'));
+  view.rerender(<CardCoverControl {...p} unavailable />);
+  await act(async () => release(profile));
+  await screen.findByText('Unable to review the current cover. Refresh the Card and try again.');
+  expect(screen.queryByRole('button', { name: 'Use Site image.png as cover' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Remove Card cover' })).not.toBeInTheDocument();
+  expect(writes()).toHaveLength(0); expect(p.onRefresh).toHaveBeenCalled();
+  const attempts = vi.mocked(workRequest).mock.calls.length;
+  view.rerender(<CardCoverControl {...p} />);
+  expect(vi.mocked(workRequest).mock.calls).toHaveLength(attempts);
+  await choose(); expect(writes()).toHaveLength(0);
+  expect(screen.getByRole('button', { name: 'Confirm Card cover' })).toBeEnabled();
+});
 it('reviews current authority/versions then acknowledges the exact chosen cover without unsolicited requests', async () => {
   mock(); const p = props(); render(<CardCoverControl {...p} />); expect(workRequest).not.toHaveBeenCalled();
   await choose(); expect(writes()).toHaveLength(0); fireEvent.click(screen.getByRole('button', { name: 'Confirm Card cover' }));

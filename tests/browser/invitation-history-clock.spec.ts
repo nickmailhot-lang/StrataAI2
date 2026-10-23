@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from './releaseTest';
-import { openAdmittedReview } from './keyboardAdmission';
+import { openAdmittedReview, openFocusedInvitationReview } from './keyboardAdmission';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { trackInvitationAdmission } from './invitationAdmissionTracker';
 
@@ -51,7 +51,7 @@ for (const width of [1280, 390]) {
         await openAdmittedReview(page.getByRole('button', { name: 'Refresh invitations', exact: true }), page.getByRole('heading', { name: recipient, exact: true }));
         await expect.poll(admitted.ready, { timeout: 30_000 }).toBe(true); await expect(revoke).toBeEnabled();
         const dialog = page.getByRole('dialog', { name: 'Revoke invitation?', exact: true });
-        await openAdmittedReview(revoke, dialog); await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+        await openFocusedInvitationReview(revoke, dialog); await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
         expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);
         await page.keyboard.press('Enter'); await expect(dialog).toHaveCount(0); expect(writes).toBe(0);
         const after = await context.request.get(root); expect(after.status()).toBe(200); const retained = await after.json();

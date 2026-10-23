@@ -1,0 +1,542 @@
+{
+  "revision": "dc210e3d4e5777820ff7ca3078698ea7e3cf66d5",
+  "at": "2026-10-22T16:49:44.800Z",
+  "result": "Failed",
+  "failedRuns": [
+    {
+      "path": "../trello-122-invitation-native-default.json",
+      "sha256": "528421029668c554c2fe8665c31f4621a802d880a86b3205cdb3e2a8050acec1",
+      "stats": {
+        "startTime": "2026-10-22T15:48:08.815Z",
+        "duration": 80958.306,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 4,
+        "flaky": 0
+      },
+      "errors": [],
+      "failures": [
+        {
+          "title": "UX-008 invitation review keeps original default Cancel focus after source re-admission (Board, 1280px)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 10155,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:53:106",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                      "column": 106,
+                      "line": 53
+                    },
+                    "snippet": "  51 |     await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page, boardSurface);\n  52 |     await page.goto(boardSurface ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);\n> 53 |     await expect(page.getByText('Unable to confirm invitation history. Please retry.', { exact: true })).toBeVisible();\n     |                                                                                                          ^\n  54 |     await expect(page.getByRole('heading', { name: email, exact: true })).toHaveCount(0); expect(source.writes).toEqual([]);\n  55 |     source.malformed = false;\n  56 |     const revoke = page.getByRole('button', { name: `Revoke invitation for ${email}`, exact: true });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                        "column": 106,
+                        "line": 53
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n\n\n  51 |     await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page, boardSurface);\n  52 |     await page.goto(boardSurface ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);\n> 53 |     await expect(page.getByText('Unable to confirm invitation history. Please retry.', { exact: true })).toBeVisible();\n     |                                                                                                          ^\n  54 |     await expect(page.getByRole('heading', { name: email, exact: true })).toHaveCount(0); expect(source.writes).toEqual([]);\n  55 |     source.malformed = false;\n  56 |     const revoke = page.getByRole('button', { name: `Revoke invitation for ${email}`, exact: true });\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:53:106"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T15:48:22.275Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-d35dd--re-admission-Board-1280px-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-d35dd--re-admission-Board-1280px-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-d35dd--re-admission-Board-1280px-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                    "column": 106,
+                    "line": 53
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "06a983c46d67b30a09eb-4302422e07d1c11ed169",
+          "file": "invitation-review-admission.spec.ts",
+          "line": 50,
+          "column": 7
+        },
+        {
+          "title": "UX-008 invitation review keeps original default Cancel focus after source re-admission (Board, 768px)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 10008,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:53:106",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                      "column": 106,
+                      "line": 53
+                    },
+                    "snippet": "  51 |     await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page, boardSurface);\n  52 |     await page.goto(boardSurface ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);\n> 53 |     await expect(page.getByText('Unable to confirm invitation history. Please retry.', { exact: true })).toBeVisible();\n     |                                                                                                          ^\n  54 |     await expect(page.getByRole('heading', { name: email, exact: true })).toHaveCount(0); expect(source.writes).toEqual([]);\n  55 |     source.malformed = false;\n  56 |     const revoke = page.getByRole('button', { name: `Revoke invitation for ${email}`, exact: true });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                        "column": 106,
+                        "line": 53
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n\n\n  51 |     await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page, boardSurface);\n  52 |     await page.goto(boardSurface ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);\n> 53 |     await expect(page.getByText('Unable to confirm invitation history. Please retry.', { exact: true })).toBeVisible();\n     |                                                                                                          ^\n  54 |     await expect(page.getByRole('heading', { name: email, exact: true })).toHaveCount(0); expect(source.writes).toEqual([]);\n  55 |     source.malformed = false;\n  56 |     const revoke = page.getByRole('button', { name: `Revoke invitation for ${email}`, exact: true });\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:53:106"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T15:48:43.856Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-78467-e-re-admission-Board-768px-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-78467-e-re-admission-Board-768px-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-78467-e-re-admission-Board-768px-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                    "column": 106,
+                    "line": 53
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "06a983c46d67b30a09eb-d39d92d70aaf8210aa61",
+          "file": "invitation-review-admission.spec.ts",
+          "line": 50,
+          "column": 7
+        },
+        {
+          "title": "UX-008 invitation review keeps original default Cancel focus after source re-admission (Board, 390px)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 9071,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:53:106",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                      "column": 106,
+                      "line": 53
+                    },
+                    "snippet": "  51 |     await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page, boardSurface);\n  52 |     await page.goto(boardSurface ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);\n> 53 |     await expect(page.getByText('Unable to confirm invitation history. Please retry.', { exact: true })).toBeVisible();\n     |                                                                                                          ^\n  54 |     await expect(page.getByRole('heading', { name: email, exact: true })).toHaveCount(0); expect(source.writes).toEqual([]);\n  55 |     source.malformed = false;\n  56 |     const revoke = page.getByRole('button', { name: `Revoke invitation for ${email}`, exact: true });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                        "column": 106,
+                        "line": 53
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n\n\n  51 |     await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page, boardSurface);\n  52 |     await page.goto(boardSurface ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);\n> 53 |     await expect(page.getByText('Unable to confirm invitation history. Please retry.', { exact: true })).toBeVisible();\n     |                                                                                                          ^\n  54 |     await expect(page.getByRole('heading', { name: email, exact: true })).toHaveCount(0); expect(source.writes).toEqual([]);\n  55 |     source.malformed = false;\n  56 |     const revoke = page.getByRole('button', { name: `Revoke invitation for ${email}`, exact: true });\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:53:106"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T15:49:02.288Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-c052d-e-re-admission-Board-390px-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-c052d-e-re-admission-Board-390px-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-c052d-e-re-admission-Board-390px-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                    "column": 106,
+                    "line": 53
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "06a983c46d67b30a09eb-23ba75abcb837dda6e59",
+          "file": "invitation-review-admission.spec.ts",
+          "line": 50,
+          "column": 7
+        },
+        {
+          "title": "UX-008 invitation review keeps original default Cancel focus after source re-admission (Board, 320px)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 8870,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:53:106",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                      "column": 106,
+                      "line": 53
+                    },
+                    "snippet": "  51 |     await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page, boardSurface);\n  52 |     await page.goto(boardSurface ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);\n> 53 |     await expect(page.getByText('Unable to confirm invitation history. Please retry.', { exact: true })).toBeVisible();\n     |                                                                                                          ^\n  54 |     await expect(page.getByRole('heading', { name: email, exact: true })).toHaveCount(0); expect(source.writes).toEqual([]);\n  55 |     source.malformed = false;\n  56 |     const revoke = page.getByRole('button', { name: `Revoke invitation for ${email}`, exact: true });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                        "column": 106,
+                        "line": 53
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Unable to confirm invitation history. Please retry.', { exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('Unable to confirm invitation history. Please retry.', { exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Unable to confirm invitation history. Please retry.', { exact: true })\u001b[22m\n\n\n  51 |     await page.setViewportSize({ width, height: 900 }); const source = await sourceFor(page, boardSurface);\n  52 |     await page.goto(boardSurface ? `/app/${org}/boards/${board}/invitations` : `/app/${org}/invitations`);\n> 53 |     await expect(page.getByText('Unable to confirm invitation history. Please retry.', { exact: true })).toBeVisible();\n     |                                                                                                          ^\n  54 |     await expect(page.getByRole('heading', { name: email, exact: true })).toHaveCount(0); expect(source.writes).toEqual([]);\n  55 |     source.malformed = false;\n  56 |     const revoke = page.getByRole('button', { name: `Revoke invitation for ${email}`, exact: true });\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:53:106"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T15:49:20.501Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-49ccc-e-re-admission-Board-320px-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-49ccc-e-re-admission-Board-320px-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-results\\invitation-review-admissio-49ccc-e-re-admission-Board-320px-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                    "column": 106,
+                    "line": 53
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "06a983c46d67b30a09eb-8ac99d9cae56f37e906d",
+          "file": "invitation-review-admission.spec.ts",
+          "line": 50,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "path": "../trello-122-invitation-native-default-correct.json",
+      "sha256": "d3bbad3db3ec60b2a59a104981cddf2e63450b8f8154db7d1296a1a1e8ccc451",
+      "stats": {
+        "startTime": "2026-10-22T15:50:49.943Z",
+        "duration": 66898.80099999999,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "errors": [],
+      "failures": [
+        {
+          "title": "UX-008 invitation review keeps original default Cancel focus after source re-admission (Board, 320px)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6980,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 52\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure elements that have scrollable content are accessible by keyboard in Safari\",\u001b[39m\n\u001b[31m+     \"help\": \"Scrollable region must have keyboard access\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.13/scrollable-region-focusable?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"scrollable-region-focusable\",\u001b[39m\n\u001b[31m+     \"impact\": \"serious\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-content\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should have focusable content\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-element\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should be focusable\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Element should have focusable content\u001b[39m\n\u001b[31m+   Element should be focusable\",\u001b[39m\n\u001b[31m+         \"html\": \"<div class=\\\"MuiDialogContent-root css-kw13he-MuiDialogContent-root\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"serious\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".MuiDialogContent-root\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.keyboard\",\u001b[39m\n\u001b[31m+       \"wcag2a\",\u001b[39m\n\u001b[31m+       \"wcag211\",\u001b[39m\n\u001b[31m+       \"wcag213\",\u001b[39m\n\u001b[31m+       \"TTv5\",\u001b[39m\n\u001b[31m+       \"TT4.a\",\u001b[39m\n\u001b[31m+       \"EN-301-549\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.1\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.3\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-7.3.2\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 52\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure elements that have scrollable content are accessible by keyboard in Safari\",\u001b[39m\n\u001b[31m+     \"help\": \"Scrollable region must have keyboard access\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.13/scrollable-region-focusable?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"scrollable-region-focusable\",\u001b[39m\n\u001b[31m+     \"impact\": \"serious\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-content\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should have focusable content\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-element\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should be focusable\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Element should have focusable content\u001b[39m\n\u001b[31m+   Element should be focusable\",\u001b[39m\n\u001b[31m+         \"html\": \"<div class=\\\"MuiDialogContent-root css-kw13he-MuiDialogContent-root\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"serious\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".MuiDialogContent-root\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.keyboard\",\u001b[39m\n\u001b[31m+       \"wcag2a\",\u001b[39m\n\u001b[31m+       \"wcag211\",\u001b[39m\n\u001b[31m+       \"wcag213\",\u001b[39m\n\u001b[31m+       \"TTv5\",\u001b[39m\n\u001b[31m+       \"TT4.a\",\u001b[39m\n\u001b[31m+       \"EN-301-549\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.1\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.3\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-7.3.2\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:83:123",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                      "column": 123,
+                      "line": 83
+                    },
+                    "snippet": "  81 |     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });\n  82 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);\n> 83 |     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);\n     |                                                                                                                           ^\n  84 |     await expect(cancel).toBeFocused(); await pressObservedLocalAction(cancel);\n  85 |     await expect(dialog).toHaveCount(0); expect(source.writes).toEqual([]);\n  86 |     await expect(page.getByText('Email sent', { exact: true })).toBeVisible();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                        "column": 123,
+                        "line": 83
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 52\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"description\": \"Ensure elements that have scrollable content are accessible by keyboard in Safari\",\u001b[39m\n\u001b[31m+     \"help\": \"Scrollable region must have keyboard access\",\u001b[39m\n\u001b[31m+     \"helpUrl\": \"https://dequeuniversity.com/rules/axe/4.13/scrollable-region-focusable?application=playwright\",\u001b[39m\n\u001b[31m+     \"id\": \"scrollable-region-focusable\",\u001b[39m\n\u001b[31m+     \"impact\": \"serious\",\u001b[39m\n\u001b[31m+     \"nodes\": Array [\u001b[39m\n\u001b[31m+       Object {\u001b[39m\n\u001b[31m+         \"all\": Array [],\u001b[39m\n\u001b[31m+         \"any\": Array [\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-content\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should have focusable content\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+           Object {\u001b[39m\n\u001b[31m+             \"data\": null,\u001b[39m\n\u001b[31m+             \"id\": \"focusable-element\",\u001b[39m\n\u001b[31m+             \"impact\": \"serious\",\u001b[39m\n\u001b[31m+             \"message\": \"Element should be focusable\",\u001b[39m\n\u001b[31m+             \"relatedNodes\": Array [],\u001b[39m\n\u001b[31m+           },\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+         \"failureSummary\": \"Fix any of the following:\u001b[39m\n\u001b[31m+   Element should have focusable content\u001b[39m\n\u001b[31m+   Element should be focusable\",\u001b[39m\n\u001b[31m+         \"html\": \"<div class=\\\"MuiDialogContent-root css-kw13he-MuiDialogContent-root\\\">\",\u001b[39m\n\u001b[31m+         \"impact\": \"serious\",\u001b[39m\n\u001b[31m+         \"none\": Array [],\u001b[39m\n\u001b[31m+         \"target\": Array [\u001b[39m\n\u001b[31m+           \".MuiDialogContent-root\",\u001b[39m\n\u001b[31m+         ],\u001b[39m\n\u001b[31m+       },\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+     \"tags\": Array [\u001b[39m\n\u001b[31m+       \"cat.keyboard\",\u001b[39m\n\u001b[31m+       \"wcag2a\",\u001b[39m\n\u001b[31m+       \"wcag211\",\u001b[39m\n\u001b[31m+       \"wcag213\",\u001b[39m\n\u001b[31m+       \"TTv5\",\u001b[39m\n\u001b[31m+       \"TT4.a\",\u001b[39m\n\u001b[31m+       \"EN-301-549\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.1\",\u001b[39m\n\u001b[31m+       \"EN-9.2.1.3\",\u001b[39m\n\u001b[31m+       \"RGAAv4\",\u001b[39m\n\u001b[31m+       \"RGAA-7.3.2\",\u001b[39m\n\u001b[31m+     ],\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  81 |     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });\n  82 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);\n> 83 |     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);\n     |                                                                                                                           ^\n  84 |     await expect(cancel).toBeFocused(); await pressObservedLocalAction(cancel);\n  85 |     await expect(dialog).toHaveCount(0); expect(source.writes).toEqual([]);\n  86 |     await expect(page.getByText('Email sent', { exact: true })).toBeVisible();\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:83:123"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T15:51:48.827Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-correct-results\\invitation-review-admissio-49ccc-e-re-admission-Board-320px-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-correct-results\\invitation-review-admissio-49ccc-e-re-admission-Board-320px-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-default-correct-results\\invitation-review-admissio-49ccc-e-re-admission-Board-320px-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                    "column": 123,
+                    "line": 83
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "06a983c46d67b30a09eb-8ac99d9cae56f37e906d",
+          "file": "invitation-review-admission.spec.ts",
+          "line": 57,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "path": "../trello-122-invitation-native-fallback-final.json",
+      "sha256": "eb72f65b0c02fd16d36d07462fc61c41dbdda81ef23818fddf4fc6f45dce6780",
+      "stats": {
+        "startTime": "2026-10-22T16:43:35.850Z",
+        "duration": 106200.185,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "errors": [],
+      "failures": [
+        {
+          "title": "UX-008 invitation review keeps original default Cancel focus after source re-admission (Board, 1280px)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15832,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Revoke invitation?', exact: true }).getByRole('button', { name: 'Cancel', exact: true })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Revoke invitation?', exact: true }).getByRole('button', { name: 'Cancel', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Revoke invitation?', exact: true }).getByRole('button', { name: 'Cancel', exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Revoke invitation?', exact: true }).getByRole('button', { name: 'Cancel', exact: true })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Revoke invitation?', exact: true }).getByRole('button', { name: 'Cancel', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Revoke invitation?', exact: true }).getByRole('button', { name: 'Cancel', exact: true })\u001b[22m\n\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:80:26",
+                    "location": {
+                      "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                      "column": 26,
+                      "line": 80
+                    },
+                    "snippet": "  78 |     } finally { await opening.catch(() => {}); }\n  79 |     const cancel = dialog.getByRole('button', { name: 'Cancel', exact: true });\n> 80 |     await expect(cancel).toBeFocused(); expect(source.writes).toEqual([]);\n     |                          ^\n  81 |     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });\n  82 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);\n  83 |     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                        "column": 26,
+                        "line": 80
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('dialog', { name: 'Revoke invitation?', exact: true }).getByRole('button', { name: 'Cancel', exact: true })\nExpected: focused\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" getByRole('dialog', { name: 'Revoke invitation?', exact: true }).getByRole('button', { name: 'Cancel', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Revoke invitation?', exact: true }).getByRole('button', { name: 'Cancel', exact: true })\u001b[22m\n\n\n  78 |     } finally { await opening.catch(() => {}); }\n  79 |     const cancel = dialog.getByRole('button', { name: 'Cancel', exact: true });\n> 80 |     await expect(cancel).toBeFocused(); expect(source.writes).toEqual([]);\n     |                          ^\n  81 |     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });\n  82 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);\n  83 |     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([]);\n    at C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts:80:26"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-22T16:43:49.393Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-fallback-final-results\\invitation-review-admissio-d35dd--re-admission-Board-1280px-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-fallback-final-results\\invitation-review-admissio-d35dd--re-admission-Board-1280px-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\trello-122-invitation-native-fallback-final-results\\invitation-review-admissio-d35dd--re-admission-Board-1280px-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitation-review-admission.spec.ts",
+                    "column": 26,
+                    "line": 80
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "06a983c46d67b30a09eb-4302422e07d1c11ed169",
+          "file": "invitation-review-admission.spec.ts",
+          "line": 57,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "logs": [
+    {
+      "name": "trello-122-invitation-admission-contracts.log",
+      "sha256": "d99ebb41561e024c85731135085df49b4f578021252d47fc9a947c382c9ad235",
+      "text": "(node:20788) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\nnode:internal/modules/esm/resolve:271\r\n    throw new ERR_MODULE_NOT_FOUND(\r\n          ^\r\n\r\nError [ERR_MODULE_NOT_FOUND]: Cannot find module 'C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\keyboardAdmission' imported from C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitationReviewAdmission.ts\r\n    at finalizeResolution (node:internal/modules/esm/resolve:271:11)\r\n    at moduleResolve (node:internal/modules/esm/resolve:865:10)\r\n    at defaultResolve (node:internal/modules/esm/resolve:992:11)\r\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)\r\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)\r\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)\r\n    at #resolve (node:internal/modules/esm/loader:683:17)\r\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)\r\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)\r\n    at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {\r\n  code: 'ERR_MODULE_NOT_FOUND',\r\n  url: 'file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/keyboardAdmission'\r\n}\r\n\r\nNode.js v24.19.0\r\n✖ tests\\browser\\invitationReviewAdmission.test.mjs (295.8388ms)\r\nℹ tests 1\r\nℹ suites 0\r\nℹ pass 0\r\nℹ fail 1\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 315.3908\r\n\r\n✖ failing tests:\r\n\r\ntest at tests\\browser\\invitationReviewAdmission.test.mjs:1:1\r\n✖ tests\\browser\\invitationReviewAdmission.test.mjs (295.8388ms)\r\n  'test failed'\r\n"
+    },
+    {
+      "name": "trello-122-invitation-all-contracts.log",
+      "sha256": "5e11bc5db9edf392e6fde7b4881573c3a26ac95712a07a33fc15e5c8631df507",
+      "text": "(node:8548) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/boardReadTracker.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ star admission observes either mutation verb once when it starts, independently of reply failure (12.2803ms)\r\n✔ star admission cannot be satisfied by reads, siblings, another Board or transport (0.6306ms)\r\n✔ star admission rejects a foreign origin even with the same Board path and method (1.152ms)\r\n✔ filter command observation counts the actual Cards Apply/Clear route exactly once per request start (2.1011ms)\r\n✔ filter command observation rejects sibling routes, other Boards and reads (1.6249ms)\r\n✔ a foreign-origin filter request cannot satisfy same-origin command admission (0.4295ms)\r\n✔ a filter observer created before navigation qualifies the actual later page origin (4.0495ms)\r\n✔ event-driven readiness observes the qualified second response immediately and cleans up its listeners (1.7476ms)\r\n✔ read observation still fails on timeout or page closure without leaving listeners (17.1167ms)\r\n✔ late previous-screen responses cannot satisfy visibility bootstrap readiness (1.4125ms)\r\n✔ Card revision admission ignores previous screens, foreign data, errors and late older revisions (7.3374ms)\r\n(node:18220) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✖ stable invitation review uses the product default focus and one native opening (4916.3014ms)\r\n✖ a protected refresh can retire transient visibility before the original focus assertion (4922.2074ms)\r\n✖ only the retired read-only review reopens; Cancel is never focused by the fixture (4924.4609ms)\r\n✔ an already focused review cannot receive an extra opening key (3.3355ms)\r\n✖ a genuinely wrong default focus still fails within the original five-second budget (4914.461ms)\r\n(node:30952) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ an admitted action dispatches exactly one Enter and stops at the expected request (16.1259ms)\r\n✔ an ignored keypress admits one request and stops once that request starts (492.5854ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-enabled (4.4428ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-focus (1.6753ms)\r\n✔ an extra request remains a failure even when the launcher has retired (5012.3736ms)\r\n✔ an unexpected initial observation cannot trigger another Enter (1.1097ms)\r\n✔ local action observes one native activation and removes its listener (3.2766ms)\r\n✔ only an ignored local keypress is readmitted (477.1121ms)\r\n✔ local activation during focus cannot send another Enter to a retired control (1.431ms)\r\n✔ a wrong consumer result after activation is not repaired by another activation (3.0166ms)\r\n✔ duplicate local activations remain a failure (5013.1646ms)\r\n✔ a replacement local control cannot receive the original activation (4922.3464ms)\r\n✔ read-only Tab proves native traversal without focusing its destination (2.8912ms)\r\n✔ an unobserved Shift+Tab repeats from its admitted origin only (121.0482ms)\r\n✔ broken keyboard order still fails within the original five-second budget (4924.9428ms)\r\n✔ nonmutating activity review observes its inline region before returning (2.3501ms)\r\n✔ an ignored review activation is retried only until its region opens (104.1547ms)\r\n✔ an already-open region does not require its retired launcher (0.4812ms)\r\n✔ review opening during focus cannot activate the retired launcher (106.801ms)\r\n✔ an unopened review remains a failure within the original admission budget (4931.8111ms)\r\n✔ admitted text dispatches one native input event and one insertion (5.5697ms)\r\n✔ only an ignored insertion with no input event can be attempted again (484.7538ms)\r\n✔ a draft cleared after native input still fails its value assertion without refilling (8.0408ms)\r\n✔ a replacement control cannot receive the earlier input intent (4919.2594ms)\r\n✔ extra native input remains a failure and cannot trigger another insertion (5003.5777ms)\r\n✔ local validation observes one native submit and removes its listener (8.1499ms)\r\n✔ local validation retries only a keypress that emitted no submit (496.2117ms)\r\n✔ an observed validation submit during focus cannot dispatch another Enter (119.8309ms)\r\n✔ a submit that retires its form is not replayed while its result is pending (6.1341ms)\r\n✔ a retired validation form cannot send a key to a replacement control (4920.0106ms)\r\n✔ duplicate native submits remain a failure without another activation (5014.2556ms)\r\nℹ tests 47\r\nℹ suites 0\r\nℹ pass 43\r\nℹ fail 4\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 48913.6554\r\n\r\n✖ failing tests:\r\n\r\ntest at tests\\browser\\invitationReviewAdmission.test.mjs:41:1\r\n✖ stable invitation review uses the product default focus and one native opening (4916.3014ms)\r\n  Error: expect(locator).toBeFocused() failed\r\n  \r\n  Locator:  [object Object]\r\n  Expected: focused\r\n  Received: undefined\r\n  Timeout:  500ms\r\n  \r\n  \r\n  Call Log:\r\n  - Timeout 5000ms exceeded while waiting on the predicate\r\n  \r\n  Call Log:\r\n  - Timeout 5000ms exceeded while waiting on the predicate\r\n      at captureRawStack (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\ux119-dependencies\\node_modules\\playwright-core\\lib\\coreBundle.js:8588:17)\r\n      at callMatcherAsStep (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\ux119-dependencies\\node_modules\\playwright\\lib\\matchers\\expect.js:13310:57)\r\n      at Object.toPass (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\ux119-dependencies\\node_modules\\playwright\\lib\\matchers\\expect.js:13302:23)\r\n      at openFocusedInvitationReview (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\keyboardAdmission.ts:184:6)\r\n      at TestContext.<anonymous> (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitationReviewAdmission.test.mjs:42:38) {\r\n    matcherResult: { message: 'expect(locator).toBeFocused() failed\\n\\nLocator:  [object Object]\\nExpected: focused\\nReceived: undefined\\nTimeout:  500ms\\n\\n\\nCall Log:\\n- Timeout 5000ms exceeded while waiting on the predicate\\n\\nCall Log:\\n- Timeout 5000ms exceeded while waiting on the predicate', pass: false, name: 'toPass' }\r\n  }\r\n\r\ntest at tests\\browser\\invitationReviewAdmission.test.mjs:45:1\r\n✖ a protected refresh can retire transient visibility before the original focus assertion (4922.2074ms)\r\n  Error: expect(locator).toBeFocused() failed\r\n  \r\n  Locator:  [object Object]\r\n  Expected: focused\r\n  Received: undefined\r\n  Timeout:  500ms\r\n  \r\n  \r\n  Call Log:\r\n  - Timeout 5000ms exceeded while waiting on the predicate\r\n      at captureRawStack (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\ux119-dependencies\\node_modules\\playwright-core\\lib\\coreBundle.js:8588:17)\r\n      at callMatcherAsStep (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\ux119-dependencies\\node_modules\\playwright\\lib\\matchers\\expect.js:13310:57)\r\n      at Object.toPass (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\ux119-dependencies\\node_modules\\playwright\\lib\\matchers\\expect.js:13302:23)\r\n      at openAdmittedReview (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\keyboardAdmission.ts:173:6)\r\n      at TestContext.<anonymous> (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitationReviewAdmission.test.mjs:46:44) {\r\n    matcherResult: { message: 'expect(locator).toBeFocused() failed\\n\\nLocator:  [object Object]\\nExpected: focused\\nReceived: undefined\\nTimeout:  500ms\\n\\n\\nCall Log:\\n- Timeout 5000ms exceeded while waiting on the predicate', pass: false, name: 'toPass' }\r\n  }\r\n\r\ntest at tests\\browser\\invitationReviewAdmission.test.mjs:50:1\r\n✖ only the retired read-only review reopens; Cancel is never focused by the fixture (4924.4609ms)\r\n  Error: expect(locator).toBeFocused() failed\r\n  \r\n  Locator:  [object Object]\r\n  Expected: focused\r\n  Received: undefined\r\n  Timeout:  500ms\r\n  \r\n  \r\n  Call Log:\r\n  - Timeout 5000ms exceeded while waiting on the predicate\r\n  \r\n  Call Log:\r\n  - Timeout 5000ms exceeded while waiting on the predicate\r\n      at captureRawStack (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\ux119-dependencies\\node_modules\\playwright-core\\lib\\coreBundle.js:8588:17)\r\n      at callMatcherAsStep (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\ux119-dependencies\\node_modules\\playwright\\lib\\matchers\\expect.js:13310:57)\r\n      at Object.toPass (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\ux119-dependencies\\node_modules\\playwright\\lib\\matchers\\expect.js:13302:23)\r\n      at openFocusedInvitationReview (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\keyboardAdmission.ts:184:6)\r\n      at TestContext.<anonymous> (C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\tests\\browser\\invitationReviewAdmission.test.mjs:51:44) {\r\n    matcherResult: { message: 'expect(locator).toBeFocused() failed\\n\\nLocator:  [object Object]\\nExpected: focused\\nReceived: undefined\\nTimeout:  500ms\\n\\n\\nCall Log:\\n- Timeout 5000ms exceeded while waiting on the predicate\\n\\nCall Log:\\n- Timeout 5000ms exceeded while waiting on the predicate', pass: false, name: 'toPass' }\r\n  }\r\n\r\ntest at tests\\browser\\invitationReviewAdmission.test.mjs:58:1\r\n✖ a genuinely wrong default focus still fails within the original five-second budget (4914.461ms)\r\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\r\n  \r\n  0 !== 1\r\n  \r\n      at TestContext.<anonymous> (file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/invitationReviewAdmission.test.mjs:60:10)\r\n      at async Test.run (node:internal/test_runner/test:1389:7)\r\n      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {\r\n    generatedMessage: true,\r\n    code: 'ERR_ASSERTION',\r\n    actual: 0,\r\n    expected: 1,\r\n    operator: 'strictEqual',\r\n    diff: 'simple'\r\n  }\r\n"
+    }
+  ],
+  "evaluation": [
+    {
+      "source": "e8e0ea1b",
+      "cause": "Native Node cannot resolve a new extensionless TypeScript helper import.",
+      "effect": "One module-load failure; five new contracts not run.",
+      "repair": "Use the existing keyboardAdmission module; preserve TypeScript/configuration."
+    },
+    {
+      "source": "43e55114",
+      "cause": "The Locator test double incorrectly required an open dialog before launcher focus.",
+      "effect": "43 passed and four failed of47; existing42 contracts passed.",
+      "repair": "Model launcher focus independently; corrected5 focused then47 full contracts pass."
+    },
+    {
+      "source": "43e55114/4d79c809",
+      "cause": "Controlled Board socket omitted its validated initial Watch head.",
+      "effect": "Four Organization cases pass; all four Board cases correctly refuse unadmitted history.",
+      "repair": "Supply the exact scoped initial head; preserve application admission."
+    },
+    {
+      "source": "33bf22a4",
+      "cause": "At320px and200% text, Board revocation details scroll but are not keyboard reachable.",
+      "effect": "Seven native passes,one genuine Axe accessibility failure.",
+      "repair": "Make existing DialogContent a named focusable region. Keep Cancel as initial focus, prove Shift+Tab/Tab traversal and unchanged Axe checks."
+    },
+    {
+      "source": "57f99025",
+      "cause": "Controlled update could arrive after the first focus helper had already succeeded; the fixture later expected an already-retired dialog to remain.",
+      "effect": "Seven fallback passes,one focus failure.",
+      "repair": "Observe first review, explicitly deliver benign mail-state update, observe retirement,then open the current review. Five helper contracts separately retain interrupted/default-focus behavior."
+    }
+  ],
+  "owner": "PR122 integration owner",
+  "limits": "No assertion,deadline,retry,consent,role,privacy,API,Worker or clock check weakened."
+}

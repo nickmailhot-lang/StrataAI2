@@ -1,0 +1,279 @@
+{
+  "revision": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+  "at": "2026-10-22T13:08:36.455Z",
+  "result": "Passed",
+  "scope": "All eleven current source gates: frontend2985/backend2519, web/browser types, lint, metadata, PostgreSQL, source-quality and all CodeQL analyses. Provider digests and embedded merge/run/attempt/version/image identities verified; original24/5 capacity deferrals unchanged.",
+  "checks": [
+    {
+      "id": 119842003258,
+      "name": "source-quality-gate",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119842003258",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119821877885,
+      "name": "CodeQL",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/runs/119821877885",
+      "output": {
+        "title": "No new alerts in code changed by this pull request",
+        "summary": "[View all branch alerts](/nickmailhot-lang/StrataAI2/security/code-scanning?query=pr%3A122+tool%3ACodeQL+is%3Aopen).",
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119821806155,
+      "name": "postgres-integration",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119821806155",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119821806015,
+      "name": "web-quality",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119821806015",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119821805858,
+      "name": "dotnet-quality",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119821805858",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119821610784,
+      "name": "metadata",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777957890/job/119821610784",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 0
+      }
+    },
+    {
+      "id": 119821595126,
+      "name": "Analyze (javascript-typescript)",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821595126",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 119821595072,
+      "name": "Analyze (actions)",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821595072",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 119821595070,
+      "name": "Analyze (c-cpp)",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821595070",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 119821595009,
+      "name": "Analyze (csharp)",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821595009",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    },
+    {
+      "id": 119821594635,
+      "name": "Analyze (python)",
+      "head_sha": "415a03782db37ae8c3bf9ccd6ce86d3cc08c99b6",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/nickmailhot-lang/StrataAI2/actions/runs/39777951466/job/119821594635",
+      "output": {
+        "title": null,
+        "summary": null,
+        "text": null,
+        "annotations_count": 1
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "kind": "web",
+      "artifactId": 12426220998,
+      "sha256": "aec87422d13939d19c88f61998929b4e8d8f584787d807c7d104f2ec01ecfda2",
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+        "shortSha": "da9f1dcdd873",
+        "workflowRunId": "39777957890",
+        "workflowRunNumber": "1970",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1970",
+        "releaseVersion": null,
+        "imageTag": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+        "createdAt": "2026-10-22T12:23:58.042Z",
+        "images": {
+          "web": "strataai-web:da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+          "api": "strataai-api:da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+          "worker": "strataai-worker:da9f1dcdd873a31efb93738bb43d5315e5eb8696"
+        }
+      },
+      "reports": [
+        {
+          "status": "complete",
+          "counts": {
+            "passed": 2985,
+            "failed": 0,
+            "skipped": 24,
+            "error": 0
+          },
+          "deferredSources": [
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx",
+            "src/features/kanban/BoardWindow.capacity.test.tsx"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "dotnet",
+      "artifactId": 12428046716,
+      "sha256": "615aa818c728b111d88d8b0c74182685730bb16508a0d11155e226a7677a4be4",
+      "build": {
+        "repository": "nickmailhot-lang/StrataAI2",
+        "commitSha": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+        "shortSha": "da9f1dcdd873",
+        "workflowRunId": "39777957890",
+        "workflowRunNumber": "1970",
+        "workflowRunAttempt": "1",
+        "version": "0.1.0-1970",
+        "releaseVersion": null,
+        "imageTag": "da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+        "createdAt": "2026-10-22T12:23:58.042Z",
+        "images": {
+          "web": "strataai-web:da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+          "api": "strataai-api:da9f1dcdd873a31efb93738bb43d5315e5eb8696",
+          "worker": "strataai-worker:da9f1dcdd873a31efb93738bb43d5315e5eb8696"
+        }
+      },
+      "reports": [
+        {
+          "status": "complete",
+          "counts": {
+            "passed": 1086,
+            "failed": 0,
+            "skipped": 3,
+            "error": 0
+          },
+          "deferredSources": [
+            "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+            "StrataAI.Domain.Tests.RankTokenTests.DefaultAppendsAndPrependsSupportRequiredBoardCapacity",
+            "StrataAI.Domain.Tests.CardLabelTransferPlanTests.PRD_07_LargeContainedReferenceSetKeepsEveryCardAndOneSharedDefinition"
+          ]
+        },
+        {
+          "status": "complete",
+          "counts": {
+            "passed": 1433,
+            "failed": 0,
+            "skipped": 2,
+            "error": 0
+          },
+          "deferredSources": [
+            "StrataAI.Api.Tests.ApiHostTests.PRD_07_List_publication_covers_every_Card_in_a_100000_archived_graph",
+            "StrataAI.Api.Tests.ApiHostTests.PRD_07_Demo_large_archived_graph_keeps_every_identity_and_one_shared_definition"
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Built-application Foundation, original Organization replay/keyboard and cover recovery, all normal native/roles/regression/security/performance, source-free immutable release, review and verified normal main integration remain mandatory.",
+    "Failed551 star-recovery admission and premature Search observation,failed requiredCI and skipped release remain retained. Failedc1 browser cases and skipped release remain Failed/incomplete. Both older Foundation failures and every local intermediate failure remain retained and evaluated. No old source pass qualifies this replacement.",
+    "Parent source results do not qualify the independent filter changes in PR123. No new acceptance or Done."
+  ]
+}

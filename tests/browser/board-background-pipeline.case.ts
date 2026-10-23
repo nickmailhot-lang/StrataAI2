@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { expect, test } from './releaseTest';
 import { waitForBoardDelivery } from './scopedBoardWorker';
 import { trackBoardReads, trackCardVersion } from './boardReadTracker';
-import { openAdmittedReview, pressAdmittedAction, pressObservedRequest } from './keyboardAdmission';
+import { openAdmittedReview, pressAdmittedAction, pressObservedLocalAction, pressObservedRequest } from './keyboardAdmission';
 
 // Explicit alternate config: never discovered by the ordinary .spec.ts suite.
 // The CI shell fixture supplies a real uploaded/published image and owns the
@@ -192,6 +192,15 @@ for (const width of [1280, 390]) {
       const priorSyncResponse = await context.request.get(`/boards/${board}/sync`); expect(priorSyncResponse.status()).toBe(200);
       const priorSync = await priorSyncResponse.json(); expect(priorSync).toMatchObject({ hasMore: false, pending: false, resetRequired: false });
       expect(priorSync.cursor).toMatch(/^[0-9]{1,19}$/);
+      // Return from the peer window through a current owner snapshot before
+      // reviewing an unsent removal. A foreground access read must still
+      // refuse a cover review that overlaps it; never replay that failed read
+      // or weaken the exact cover/receipt and peer no-navigation assertions.
+      await page.bringToFront();
+      const priorOwnerReads = reads();
+      await pressObservedLocalAction(page.getByRole('button', { name: 'Refresh card', exact: true }));
+      await expect.poll(reads).toBeGreaterThan(priorOwnerReads);
+      await expect(coverReview).toBeEnabled();
       await openCoverReview();
       await pressAdmittedAction(page.getByRole('button', { name: 'Remove Card cover', exact: true }));
       await expect(coverConsent).toHaveCount(0);

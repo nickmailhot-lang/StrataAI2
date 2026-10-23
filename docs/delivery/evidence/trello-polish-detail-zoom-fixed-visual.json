@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-21T18:43:13.737Z",
+  "revision": "ff0350c3955ebed1b5788ba089d6e321b5da44d6",
+  "note": "Developer inspected actual corrected768px/200% Archived work: full selected scope and labels readable, no page overflow, fields reflow with text size. Final desktop/mobile Card/Search captures reviewed separately. Earlier red image and A0 images remain unchanged. No screenshot baseline blessing or full device/screen-reader/WCAG/parent acceptance.",
+  "captures": [
+    {
+      "path": "docs/delivery/evidence/trello-polish-detail-fixed-card-details-1280.png",
+      "sha256": "74c37d54c675a5b2a344e52da17c0f12f4a59dd24cd503d5f1a6b13ef62d54d5"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-detail-fixed-card-details-390.png",
+      "sha256": "5b095d84a24531945705d820e2b1bd311f4048956b7f1318c2c73fb25b792429"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-detail-fixed-search-results-1280.png",
+      "sha256": "502f179b4aeaf1cafdf0bbecfe31754d6ef3ca0b41204d3de5720d7ec696b5fa"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-detail-fixed-search-results-390.png",
+      "sha256": "d51a04f32d713b2f5d3530ca7343092a37b9ed2c26fb0c05ad38f9d0dfdc7a4d"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-detail-fixed-search-zoom-768.png",
+      "sha256": "45fd2e6b7a2d563945fd2d52fe3b1dea8a99739afed4dfafa127d36afd532e76"
+    }
+  ],
+  "artifacts": []
+}

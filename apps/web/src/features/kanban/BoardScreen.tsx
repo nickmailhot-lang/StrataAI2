@@ -887,11 +887,17 @@ function BoardContent() {
         fullWidth
         fullScreen={workExperienceEnabled && phone}
         maxWidth={workExperienceEnabled ? false : 'sm'}
-        sx={workExperienceEnabled ? { '& .MuiDialog-container': { justifyContent: 'flex-end' } } : undefined}
+        sx={workExperienceEnabled ? { '& .MuiDialog-container': { justifyContent: 'flex-end' }, '& .MuiButton-root': { textTransform: 'none' } } : undefined}
         aria-labelledby="card-detail-title"
       >
-        <DialogTitle id="card-detail-title">Card details</DialogTitle>
-        <DialogContent>
+        <DialogTitle id="card-detail-title" sx={workExperienceEnabled ? { fontWeight: 600, borderBottom: '1px solid', borderColor: 'divider' } : undefined}>Card details</DialogTitle>
+        <DialogContent sx={workExperienceEnabled ? { bgcolor: 'background.default', px: { xs: 2, sm: 3 }, py: 2 } : undefined}>
+          {workExperienceEnabled && cardLocation && snapshot.access.canView && !snapshotReading && !loadError &&
+            <Box component="section" aria-label="Card location" sx={{ py: 2, minWidth: 0 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
+                {snapshot.board.name} / {cardLocation.list.name}
+              </Typography>
+            </Box>}
           <Typography variant="h6" component="h3">Summary</Typography>
           {cardId && <CardLabelPicker key={`label-picker-${cardId}`} cardId={cardId} card={card} snapshot={snapshot}
             disabled={cardCommandRecovery || operationBusy || archiveRecovery || cardArchiveRecovery || copyRecovery || labelRecovery || labelManageRecovery || memberRecovery || cardRecovery || dateRecovery || reminderRecovery || checklistRecovery || attachmentRecovery || fileAttachmentRecovery || snapshotReading || !!loadError}
@@ -1049,7 +1055,8 @@ function BoardContent() {
               setSnapshotReading(true); setReload(value => value + 1); closeCard(); }} />}
           </SecondaryActions>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={workExperienceEnabled ? { px: { xs: 2, sm: 3 }, py: 2, flexWrap: 'wrap', gap: 1, borderTop: '1px solid', borderColor: 'divider',
+          '& .MuiButton-root': { minHeight: 44, textTransform: 'none' } } : undefined}>
           {workExperienceEnabled && card && editable && <Button variant="contained" type="submit" form="card-core-form" disabled={busy || !draftState.canSave}>{operationBusy ? 'Saving…' : 'Save card'}</Button>}
           <Button ref={cardClose} disabled={busy} onClick={closeCard}>
             Close

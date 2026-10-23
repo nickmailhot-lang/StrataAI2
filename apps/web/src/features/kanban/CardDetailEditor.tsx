@@ -2,6 +2,7 @@ import { useId, useLayoutEffect, useRef, useState } from "react";
 import { Alert, Box, Button, InputBase, TextField, Typography } from "@mui/material";
 import { WorkRequestError, type WorkCard } from "../../api/workManagement";
 import { CardDescriptionPreview } from './CardDescriptionPreview';
+import { workExperienceEnabled } from '../../app/workExperience';
 
 type Props = {
   externalSave?: boolean;
@@ -76,6 +77,7 @@ export function CardDetailEditor({
     <Box
       component="form"
       id={externalSave ? 'card-core-form' : undefined}
+      sx={workExperienceEnabled ? { p: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2 } : undefined}
       onSubmit={(event) => {
         if (conflict || busy || !editable) {
           event.preventDefault();
@@ -130,6 +132,7 @@ export function CardDetailEditor({
           onChange={(event) => setDraft({ ...draft, title: event.target.value })}
           disabled={!editable || busy}
           sx={{ minHeight: 56, px: 2, border: 1, borderColor: 'divider', borderRadius: 1,
+            ...(workExperienceEnabled && { fontSize: '1.25rem', fontWeight: 600 }),
             '&.Mui-focused': { outline: '3px solid', outlineColor: 'primary.main', outlineOffset: 1 },
             '& input.Mui-disabled': { color: 'text.secondary', WebkitTextFillColor: 'currentColor' } }}
         />

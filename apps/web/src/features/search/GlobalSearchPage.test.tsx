@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { workRequest, WorkRequestError } from '../../api/workManagement';
 import { GlobalSearchPage } from './GlobalSearchPage';
@@ -161,4 +161,88 @@ it('shows date-only deadlines without inventing a time in the current Board time
   fireEvent.click(screen.getByRole('button', { name: 'Search' }));
   await screen.findByText('Due Jan 2, 2040');
   expect(screen.queryByText(/23:59|09:59/)).not.toBeInTheDocument();
+});
+
+
+it('UX-007 explains first use without reads and waits for an admitted empty continuation before guiding paging', async () => {
+  const request = vi.mocked(workRequest);
+  let resolvePage!: (value: unknown) => void;
+  request.mockResolvedValueOnce(profile()).mockReturnValueOnce(new Promise(resolve => { resolvePage = resolve; })).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  expect(screen.getByText('Choose filters, then select Search. Leave filters empty to browse Cards you can access.')).toBeInTheDocument();
+  const input = screen.getByRole('textbox', { name: 'Card text' });
+  fireEvent.change(input, { target: { value: 'Retained query' } }); input.focus();
+  expect(request).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+  expect(screen.getByText('Searching…')).toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Search guidance' })).not.toBeInTheDocument();
+  await waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+  await act(async () => { resolvePage({ items: [], nextCursor: 'page-2', interaction: interaction() }); });
+  expect(await screen.findByRole('heading', { name: 'Keep searching' })).toBeInTheDocument();
+  expect(screen.getByText('Search is not finished. Select Next search page to continue checking work you can access.')).toBeInTheDocument();
+  expect(input).toHaveValue('Retained query'); expect(input).toHaveFocus();
+  expect(request).toHaveBeenCalledTimes(3);
+});
+it('UX-007 uses the canonical cursor and explains the final empty page without clearing filters or implying earlier pages were empty', async () => {
+  const request = vi.mocked(workRequest);
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce({ items: [], nextCursor: 'page-2', interaction: interaction() }).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.change(screen.getByRole('textbox', { name: 'Card text' }), { target: { value: 'Council draft' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+  await screen.findByRole('heading', { name: 'Keep searching' });
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce({ items: [], nextCursor: null, interaction: interaction() }).mockResolvedValueOnce(profile());
+  fireEvent.click(screen.getByRole('button', { name: 'Next search page' }));
+  await screen.findByRole('heading', { name: 'No matches on this page' });
+  expect(request.mock.calls.some(([url]) => String(url).includes('q=Council+draft') && String(url).includes('after=page-2'))).toBe(true);
+  expect(screen.getByText('This search has reached the last page. Try fewer filters, or choose Archived work in Search scope for archived Cards.')).toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: 'Card text' })).toHaveValue('Council draft');
+  expect(screen.queryByRole('button', { name: 'Next search page' })).not.toBeInTheDocument();
+  expect(request).toHaveBeenCalledTimes(6);
+});
+it('UX-007 does not label a failed refresh as an empty success and retains the recoverable query', async () => {
+  const request = vi.mocked(workRequest);
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce({ items: [], nextCursor: null, interaction: interaction() }).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.change(screen.getByRole('textbox', { name: 'Card text' }), { target: { value: 'Recoverable query' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Search' })); await screen.findByRole('region', { name: 'Search guidance' });
+  request.mockRejectedValueOnce(new WorkRequestError(503, null));
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh results' }));
+  await screen.findByText('Search is unavailable. Check your account and access, then search again.');
+  expect(screen.queryByRole('region', { name: 'Search guidance' })).not.toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: 'Card text' })).toHaveValue('Recoverable query');
+});
+it.each([401, 403, 404])('UX-007 withdraws empty guidance and private criteria on definitive refusal (%s)', async status => {
+  const request = vi.mocked(workRequest);
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce({ items: [], nextCursor: null, interaction: interaction() }).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.change(screen.getByRole('textbox', { name: 'Card text' }), { target: { value: 'Private query' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Search' })); await screen.findByRole('region', { name: 'Search guidance' });
+  request.mockRejectedValueOnce(new WorkRequestError(status, null));
+  fireEvent.click(screen.getByRole('button', { name: 'Refresh results' }));
+  await screen.findByText(/Search is unavailable/);
+  expect(screen.queryByRole('region', { name: 'Search guidance' })).not.toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: 'Card text' })).toHaveValue('');
+});
+it('UX-007 never treats a malformed successful HTTP body as an admitted empty result', async () => {
+  vi.mocked(workRequest).mockResolvedValueOnce(profile()).mockResolvedValueOnce({ items: [], nextCursor: null }).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.click(screen.getByRole('button', { name: 'Search' })); await screen.findByText(/Search is unavailable/);
+  expect(screen.queryByRole('region', { name: 'Search guidance' })).not.toBeInTheDocument();
+});
+
+
+it('UX-007 describes the applied archived scope and does not mistake unsent scope edits for a new search', async () => {
+  const request = vi.mocked(workRequest);
+  request.mockResolvedValueOnce(profile()).mockResolvedValueOnce({ items: [], nextCursor: null, interaction: interaction() }).mockResolvedValueOnce(profile());
+  render(<MemoryRouter><GlobalSearchPage /></MemoryRouter>);
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Search scope' }));
+  fireEvent.click(screen.getByRole('option', { name: 'Archived work' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+  const hint = 'This search has reached the last page. Choose Active work in Search scope for current Cards.';
+  await screen.findByText(hint);
+  expect(request.mock.calls.some(([url]) => String(url).includes('scope=archived'))).toBe(true);
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Search scope' }));
+  fireEvent.click(screen.getByRole('option', { name: 'Active work' }));
+  expect(screen.getByText(hint)).toBeInTheDocument();
+  expect(request).toHaveBeenCalledTimes(3);
 });

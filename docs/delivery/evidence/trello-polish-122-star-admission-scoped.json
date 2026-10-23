@@ -1,0 +1,549 @@
+{
+  "revision": "d77792fd2cfefd5d6dc81c3019a8d2c8bcbadb05",
+  "at": "2026-10-22T11:22:27.146Z",
+  "result": "Passed",
+  "component": {
+    "revision": "d77792fd2cfefd5d6dc81c3019a8d2c8bcbadb05",
+    "files": 4,
+    "passed": 59,
+    "failed": 0
+  },
+  "contracts": {
+    "revision": "231a8898f8286e00a85cbe8d9811ad01b65bb81f",
+    "passed": 42,
+    "inputBytesUnchangedAt": "d77792fd2cfefd5d6dc81c3019a8d2c8bcbadb05"
+  },
+  "browser": [
+    {
+      "mode": "default",
+      "sha256": "b4a8ed3c886ee906b18db4d8a2ae6e6ee8085370fd57f88d1c0709d273a0357a",
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/board-star-retry-admission.spec.ts",
+            "--output=../trello-122-star-native-default-results",
+            "--reporter=list,json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-122-star-native-default-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "list"
+            ],
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "board-star-retry-admission.spec.ts",
+            "file": "board-star-retry-admission.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-008 original star recovery admits one native request and never replays a failed reply at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 8921,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T11:09:31.938Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "141b5500124160e525a4-5b301c737ecb7d27d1fb",
+                "file": "board-star-retry-admission.spec.ts",
+                "line": 61,
+                "column": 7
+              },
+              {
+                "title": "UX-008 original star recovery admits one native request and never replays a failed reply at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6586,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T11:09:41.075Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "141b5500124160e525a4-14a8df407e5f726a7286",
+                "file": "board-star-retry-admission.spec.ts",
+                "line": 61,
+                "column": 7
+              },
+              {
+                "title": "UX-008 original star recovery admits one native request and never replays a failed reply at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6458,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T11:09:47.679Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "141b5500124160e525a4-8f877ced79d30e657354",
+                "file": "board-star-retry-admission.spec.ts",
+                "line": 61,
+                "column": 7
+              },
+              {
+                "title": "UX-008 original star recovery admits one native request and never replays a failed reply at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6637,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T11:09:54.156Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "141b5500124160e525a4-f893850970ea3c9ec80f",
+                "file": "board-star-retry-admission.spec.ts",
+                "line": 61,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-22T11:09:30.807Z",
+          "duration": 30278.850000000002,
+          "expected": 4,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    },
+    {
+      "mode": "fallback",
+      "fixtureMode": "STRATAAI_E2E_WORK_UX=0",
+      "sha256": "aba20ba55cc4adc7c4fe5d566a2fc494cadfa0a82aaf593561ce895a4107c193",
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/board-star-retry-admission.spec.ts",
+            "--output=../trello-122-star-native-rollback-correct-results",
+            "--reporter=list,json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-122-star-native-rollback-correct-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "list"
+            ],
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "board-star-retry-admission.spec.ts",
+            "file": "board-star-retry-admission.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-008 original star recovery admits one native request and never replays a failed reply at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7184,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T11:15:39.124Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "141b5500124160e525a4-5b301c737ecb7d27d1fb",
+                "file": "board-star-retry-admission.spec.ts",
+                "line": 61,
+                "column": 7
+              },
+              {
+                "title": "UX-008 original star recovery admits one native request and never replays a failed reply at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7054,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T11:15:46.501Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "141b5500124160e525a4-14a8df407e5f726a7286",
+                "file": "board-star-retry-admission.spec.ts",
+                "line": 61,
+                "column": 7
+              },
+              {
+                "title": "UX-008 original star recovery admits one native request and never replays a failed reply at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7218,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T11:15:53.575Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "141b5500124160e525a4-8f877ced79d30e657354",
+                "file": "board-star-retry-admission.spec.ts",
+                "line": 61,
+                "column": 7
+              },
+              {
+                "title": "UX-008 original star recovery admits one native request and never replays a failed reply at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7064,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T11:16:00.812Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "141b5500124160e525a4-f893850970ea3c9ec80f",
+                "file": "board-star-retry-admission.spec.ts",
+                "line": 61,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-22T11:15:38.252Z",
+          "duration": 29930.666,
+          "expected": 4,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    }
+  ],
+  "logs": [
+    {
+      "name": "components-complete",
+      "sha256": "d23ad9b0707b7d78d67108245798e2ede8816e09022e0e1650e3a87fd035611b",
+      "text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/kanban/BoardStarControl.test.tsx src/features/kanban/boardStarLive.test.ts src/features/kanban/BoardStarHistory.test.tsx src/features/kanban/boardStarSync.test.ts\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  4 passed (4)\r\n      Tests  59 passed (59)\r\n   Start at  04:11:57\r\n   Duration  12.26s (environment 32%, import 30%, tests 29%, setup 5%, transform 4%)\r\n\r\n"
+    },
+    {
+      "name": "admission-contracts",
+      "sha256": "952707951941280d42bf8a2fae1e53e121aa42b387f699dd9fc0b4b8846399e8",
+      "text": "(node:25552) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/boardReadTracker.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ star admission observes either mutation verb once when it starts, independently of reply failure (1.7597ms)\r\n✔ star admission cannot be satisfied by reads, siblings, another Board or transport (0.5029ms)\r\n✔ star admission rejects a foreign origin even with the same Board path and method (0.2695ms)\r\n✔ filter command observation counts the actual Cards Apply/Clear route exactly once per request start (0.3631ms)\r\n✔ filter command observation rejects sibling routes, other Boards and reads (0.7106ms)\r\n✔ a foreign-origin filter request cannot satisfy same-origin command admission (0.3447ms)\r\n✔ a filter observer created before navigation qualifies the actual later page origin (1.6661ms)\r\n✔ event-driven readiness observes the qualified second response immediately and cleans up its listeners (1.7377ms)\r\n✔ read observation still fails on timeout or page closure without leaving listeners (11.0404ms)\r\n✔ late previous-screen responses cannot satisfy visibility bootstrap readiness (1.1105ms)\r\n✔ Card revision admission ignores previous screens, foreign data, errors and late older revisions (3.6114ms)\r\n(node:31120) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ an admitted action dispatches exactly one Enter and stops at the expected request (13.3733ms)\r\n✔ an ignored keypress admits one request and stops once that request starts (483.2958ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-enabled (1.8963ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-focus (1.4785ms)\r\n✔ an extra request remains a failure even when the launcher has retired (5014.1759ms)\r\n✔ an unexpected initial observation cannot trigger another Enter (1.0161ms)\r\n✔ local action observes one native activation and removes its listener (2.811ms)\r\n✔ only an ignored local keypress is readmitted (465.0903ms)\r\n✔ local activation during focus cannot send another Enter to a retired control (1.7613ms)\r\n✔ a wrong consumer result after activation is not repaired by another activation (2.4576ms)\r\n✔ duplicate local activations remain a failure (5012.2208ms)\r\n✔ a replacement local control cannot receive the original activation (4914.347ms)\r\n✔ read-only Tab proves native traversal without focusing its destination (2.168ms)\r\n✔ an unobserved Shift+Tab repeats from its admitted origin only (106.8744ms)\r\n✔ broken keyboard order still fails within the original five-second budget (4914.6452ms)\r\n✔ nonmutating activity review observes its inline region before returning (2.2406ms)\r\n✔ an ignored review activation is retried only until its region opens (106.1157ms)\r\n✔ an already-open region does not require its retired launcher (0.4446ms)\r\n✔ review opening during focus cannot activate the retired launcher (107.7221ms)\r\n✔ an unopened review remains a failure within the original admission budget (4923.5544ms)\r\n✔ admitted text dispatches one native input event and one insertion (4.3478ms)\r\n✔ only an ignored insertion with no input event can be attempted again (481.3613ms)\r\n✔ a draft cleared after native input still fails its value assertion without refilling (3.6491ms)\r\n✔ a replacement control cannot receive the earlier input intent (4937.8296ms)\r\n✔ extra native input remains a failure and cannot trigger another insertion (5007.1005ms)\r\n✔ local validation observes one native submit and removes its listener (3.8461ms)\r\n✔ local validation retries only a keypress that emitted no submit (477.9119ms)\r\n✔ an observed validation submit during focus cannot dispatch another Enter (104.5974ms)\r\n✔ a submit that retires its form is not replayed while its result is pending (2.8035ms)\r\n✔ a retired validation form cannot send a key to a replacement control (4929.7283ms)\r\n✔ duplicate native submits remain a failure without another activation (5008.7898ms)\r\nℹ tests 42\r\nℹ suites 0\r\nℹ pass 42\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 48042.1448\r\n"
+    },
+    {
+      "name": "browser-types",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "name": "web-types",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624",
+      "text": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\n"
+    },
+    {
+      "name": "lint",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "text": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "name": "architecture",
+      "sha256": "4b8dd7d8c36f80083ded050826da2337ebe5ebd6c212ee4b27b696c15eeb1104",
+      "text": "✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (535.9118ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (63.3249ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (228.296ms)\r\n✔ phase guard detects eager allocation and accidental default activation (68.2932ms)\r\n✔ ARCH-02-FR-009 rejects direct and aliased browser fetch in feature clients (1318.907ms)\r\n✔ ARCH-02-FR-009 allows the shared transport and isolated test fixtures (40.8769ms)\r\n✔ ARCH-02-FR-009 permits feature requests through apiFetch (13.654ms)\r\n✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (353.8889ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (56.1882ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (301.2353ms)\r\n✔ phase guard detects eager allocation and accidental default activation (113.4097ms)\r\nℹ tests 11\r\nℹ suites 0\r\nℹ pass 11\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 3140.9059\r\n"
+    },
+    {
+      "name": "registry",
+      "sha256": "c9bc107dcd6d5150c063867f06f8ee7a7f9247c6056b38862824525a874b68dc",
+      "text": "Browser shard coverage: 514 cases in 176 intact files; 129/129/129/127 cases across all four shards.\r\n"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": "tests/browser/keyboardAdmission.ts",
+      "sha256": "6916ed36ba1c55968963518a39b66f97528665f8576b71ac93d03801522923eb"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "bcbda2abeb881172b62b68f5307cd3aa27795efe9a3d0cbcb78e013ad5f03380"
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "a2e91823c036a5a908cc3297a9382e3524bccb665136083100081faf9d593e2f"
+    },
+    {
+      "path": "playwright.attachment.config.ts",
+      "sha256": "d2d3ef276ae93c6898de7f1cbe2ab831c8e4906eac54dc4e24e70e3c72e7584f"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ec981e55d935ebbfbe9279068cda4f1825bcac487364f53168eca285378e21c9"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "9e35b63922de9e910547ce90ef92cffb080a82ca259f5d3055edaf0dd287c0bd"
+    },
+    {
+      "path": "tsconfig.browser.json",
+      "sha256": "5df6f396822e6ffa286d97e843cbed140534c438a89a3ed2443d8080d1cc5df2"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardStarControl.tsx",
+      "sha256": "3431ed0bbba2bcb2e17f5886ab8cad369ae20b8dda83648845e0b602008917fc"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardStarHistoryControl.tsx",
+      "sha256": "c187a38a5df56385cb715eba36778e283d9d60a8b153bc20c689fb9f024b640f"
+    },
+    {
+      "path": "apps/web/src/features/kanban/boardStarLive.ts",
+      "sha256": "aaba644f669acfd2499b59527e3bff54d61516181be2f468a9bffba350835a57"
+    }
+  ],
+  "implementation": "Only four browser fixture/helper files change. The original real-service case observes one same-origin Board star mutation start for owner, distinct account and original recovery; both PUT/DELETE count, so a wrong or failed request cannot cause another activation. Original owner2/other1 count, same-key/version/history/timezone/private live/worker/focus and original5s/120s checks remain. Nonmutating Done observes one native click; original focus-return assertion remains.",
+  "nativeBehavior": "A real routed control retains an original uncertain PUT, reads a later authoritative unstarred version2, waits through focus-triggered private read admission with zero extra writes, emits one held recovery request, keeps it unconfirmed after a failed reply without replay, then accepts only a new explicit same-key/version0 recovery activation. Four widths,200% text,Axe,denied withdrawal and zero unrelated domain writes pass in both presentations.",
+  "limitations": "Controlled native proof does not qualify distinct-account/actual Worker delivery or original private history. Current remote551 remains Failed. Remaining current matrix results and a complete fresh new-head qualification, strict performance, release, review and verified main integration are required. No application/API/schema/tenant/actor/command-recovery/dependency/testbudget/CI behavior changed."
+}

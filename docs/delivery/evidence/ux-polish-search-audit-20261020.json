@@ -1,0 +1,35 @@
+{
+  "sourceRevision": "db5762265b3dfd19aa28b03ed24ceec2fe2ec265",
+  "at": "2026-10-20",
+  "kind": "bounded-source-and-live-requirement-audit",
+  "owner": "UX-007-VS-02-T-01",
+  "liveRequirement": {
+    "issue": 17,
+    "updatedAt": "2026-10-17T19:29:51Z",
+    "refs": [
+      "PRD-16/SEARCH-FR-007",
+      "PRD-16/SEARCH-FR-009",
+      "UX-007/UX-007-AC-02"
+    ]
+  },
+  "inspected": [
+    "apps/web/src/features/search/GlobalSearchPage.tsx",
+    "apps/web/src/features/search/GlobalSearchPage.test.tsx",
+    "apps/web/src/features/search/globalSearch.ts",
+    "tests/browser/global-search-live.spec.ts",
+    "docs/ux/backlog-map.md",
+    "docs/ux/feature-acceptance.md",
+    "src/StrataAI.Application/WorkManagement/GlobalSearchService.cs"
+  ],
+  "existing": [
+    "explicit native search form",
+    "actor-before/after admission",
+    "server cursor paging",
+    "Card/Board context links",
+    "definitive denial clears private drafts/results",
+    "no automatic initial query",
+    "Bounded server traversal can return an empty page with a continuation cursor after 20 Organization/Board reads; empty is not equivalent to complete."
+  ],
+  "gap": "Successful empty responses expose counts but no next-step explanation; especially an empty continuation can appear terminal to the user. Add static guidance over the validated existing cursor without changing traversal, filters or authority.",
+  "remainingAudit": "Other existing empty/denied consumers and complete UX-007 acceptance remain unverified; this audit does not close the parent or its full audit task."
+}

@@ -1,5 +1,284 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — Policy recovery replacement prepared for complete qualification
+
+The fixture-only recovery repair preserves all original assertions and time budgets. Scoped checks pass:48 component tests in four actual files,47 observer contracts,four original desktop/phone policy workflows on unchanged Demo policy inputs,web/browser types,full lint and the intact522-case partition. Full Git/source/hash/baseline/main-history validation and all36 delivery contracts pass on exact committed `a0f9d0c4`. Final bookkeeping is structurally validated and remains subject to the replacement own metadata gate.
+
+Freeze one replacement and require its own complete22 checks,actual role/native/SQL/security/regression workflows,all six original strict profiles,immutable release,final review and actual normal main integration. Failed8f keeps519/1/2 native results and its own passing profiles;none qualifies a new head. The old version1971 images remain inactive. No merge,Demo refresh or acceptance;71 Done unchanged and ten bounded records remain Testing. The independent Board-polish follow-up and original user Demo are preserved.
+
+---
+
+## 2026-10-22 — Original policy retry passes scoped validation
+
+Source `ef227a55` replaces one fixture activation with the existing request-start observer. It stops when one original policy PATCH starts,including a lost reply. A byte comparison confirms all original assertions and deadlines remain. No product code,API,schema,permission or dependency changes.
+
+All 48 relevant component tests across four actual files and all 47 observer contracts pass. Four original policy browser scenarios pass at 1280/390px using the running Demo and unchanged policy UI inputs. They prove scoped recovery/history/withdrawal behavior,not qualification of replacement release images. Web/browser types,full lint and the unchanged 522-case/177-file partition pass. Original user Demo data and process remain unchanged.
+
+The failed8f candidate remains Failed;its19 passing checks and six strict profiles retain that execution identity. Ten bounded records return to Testing after scoped repair. Full delivery validation,36 contracts and a frozen replacement own22 gates,strict6,immutable release,final review and actual main integration remain mandatory. No merge,acceptance or Demo activation;71 Done unchanged. The independent Board follow-up is preserved separately.
+
+---
+
+## 2026-10-22 — Final browser failure retained; original-recovery fixture rework
+
+Candidate `8f17005f` failed final qualification. Nineteen checks pass, but normal group four reports 128 passes and one failure: the 1280px retention-policy recovery scenario observes one PATCH instead of the required two after reload. The native trace records focus followed by Enter, with no second browser request. The normal matrix totals 519 passes, one failure and two original mail-fixture skips. Required-ci fails and release verification is skipped.
+
+All six original strict performance profiles pass on this failed candidate. They remain evidence for this execution only. Foundation retains 50 passes, notifications 93, and commands 80 successful workflow steps. No passing result qualifies a replacement head.
+
+The bounded repair uses the existing native request-start observer for the original retry and stops after its one PATCH starts, even if the reply is lost. Original key/body, receipt, exact counts, reviewed version, history, permission withdrawal, privacy, Worker scope and time budgets remain mandatory. No product, API, schema or permission change is proposed. The complete failed result and private diagnostic provenance are retained before rework.
+
+Ten parent records return to In Progress; acceptance remains unverified and 71 Done unchanged. The PR stays draft and unmerged. The version 1971 images remain inactive; the current user Demo and data stay available. The independent Board follow-up is preserved separately. A replacement must pass scoped validation and its own complete 22 gates before integration or Demo refresh.
+
+---
+
+## 2026-10-22 — Invitation repair and keyboard accessibility pass scoped checks
+
+Source dc210e3d repairs read-only review/default-focus observation and makes existing revocation details keyboard reachable when they scroll at200% text. Cancel retains its safe initial focus. Original clock,consent,zero-write,role,privacy,Worker,recovery and deadline checks remain. All failed executions are retained and evaluated; no checks were weakened.
+
+The corrected scope passes100 component tests in four complete files,47 helper contracts,27 complete architecture/performance/capacity guards,and eight native cases in each existing presentation at320/390/768/1280px. Native checks include malformed clock refusal,current admission,default focus,Shift+Tab/Tab traversal,200% text,Axe and access withdrawal. Web/browser types,full lint and the intact522-case177-file partition pass with their exact execution identities. Full Git/source/hash/baseline/main-history validation and36 delivery contracts also pass on exact committed e6c39fed. The ledger retains997 evidence records and71 Done. Five new invitation contracts are now mandatory before image builds;all290 integration-coverage positive/refusal contracts pass on exact committed75583ce4 inputs. Existing CI checks are retained.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new business scope. |
+| UX completion | Bounded repair and accessibility fix implemented; full acceptance unverified. |
+| Test completion | Scoped checks pass; fresh complete hosted gates remain mandatory. |
+| MVP readiness | Preview only; no merge or new acceptance.71 Done unchanged. |
+
+Earlier415a Full4 now passes127; Full2 remains failed and Full1 setup incomplete. Those results cannot qualify this replacement. The existing0.1.0-1970 Demo and independent draft#123 are preserved. Ten bounded records are Testing; publish one replacement after local delivery validation and require every gate before merge.
+
+---
+
+## 2026-10-22 — Current built images running as a local Demo preview
+
+Build **0.1.0-1970**, tested synthetic revision `da9f1dcdd873a31efb93738bb43d5315e5eb8696` for candidate `415a0378`, is running at http://localhost:8088 as Docker project `strataai-demo-current`. The existing image-only Demo Compose configuration isolates API/Worker from production providers and binds the web port to loopback. No rebuild, dependency installation, schema change or production deployment was needed.
+
+Verified the provider ZIP SHA256, all five inner checksums, build/run identity and all three image configs/manifests/layers. Docker Desktop reports OCI manifest IDs while the CI provenance reports config IDs; both were verified through the retained archives. All three containers are healthy; web/API/Worker readiness and exact build identities pass. The documented seeded Demo login passes through the API and the actual browser. Wrong password returns401 and anonymous private-Board access returns404. The browser visibly opens the sample Council Operations board, with live updates connected, three Lists and seven Cards in StrataAI Demo. Demo data is process-local and resets when its API restarts.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; sample Organization, Board, Lists and Cards created through authenticated APIs. |
+| UX completion | Current built Organization and Board screens can be explored in the running demo; no new workflow acceptance claimed. |
+| Test completion | Local image-provenance, health/readiness, sign-in, refusal and board smoke checks pass. Required PR checks remain separate. |
+| MVP readiness | Preview only. PR #122 remains draft/unmerged after its retained invitation-focus failure; 71 Done unchanged. |
+
+Runtime proof and restart settings are retained in `work/demo-latest-1970`; the visible demo is left open. This operational demo does not close a PRD, qualify the unpublished invitation-fixture repair, or satisfy the full merge/release gates. Independent Board-filter work remains preserved in draft #123.
+
+---
+
+## 2026-10-22 — Invitation-review focus failure retained; repair continues
+
+Candidate `415a0378` remains draft and unmerged after Full2 passed126,failed one invitation-history focus case and retained two original mail-topology skips. At390px the test accepted a transient revocation dialog before its safe default Cancel focus; a fresh protected history read correctly withdrew the review and asked for review again. Verified diagnostics preserve53 inner checksums and the failed5s assertion. This is separate from GitHub’s result-publication incident.
+
+The repair will observe the read-only review together with its original initial Cancel focus. It must not force Cancel focus,change consent,send a revocation,relax clock parsing or alter original budgets. Current source11,security,Foundation50,commands,all93 notifications and Full3/129 pass on415a; those results retain their actual identity and cannot qualify a replacement. Full1 setup and Full4 remain incomplete. Ten bounded parent records return to In Progress;71 Done unchanged. Independent filter work remains preserved. Functional,UX,test and MVP completion remain separate.
+
+---
+
+## 2026-10-22 — Consolidated repair checked; fresh qualification required
+
+Source `4d4c3f55` preserves all production application, API, schema, tenant and command behavior. The star fixture observes one actual request and stops after it starts; Search now proves focused loading before a held account read, then observes the exact next-page request and admitted completion. Original focus, draft, q, cursor, scope, request/key/version, history, deadline, retry and performance checks remain intact.
+
+Twelve complete Card/Search/star native cases pass in each existing presentation at 320/390/768/1280px, including 200% text, Axe, dirty return, error/denial and no unrelated domain writes. 42 admission/tracker contracts, types, full lint, the intact 514-case/176-file partition and full Git/source/hash/baseline/main-history validation plus 36 delivery contracts pass on exact4d4 ledger bytes. Earlier unit results retain their actual source identities and are not recounted as reruns.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved. |
+| UX completion | Bounded polish implemented and locally checked; acceptance unverified. |
+| Test completion | Corrected local scopes pass; failed551 remains retained. Every fresh final-head gate must pass. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Ten bounded records are Testing. Publish one frozen repaired candidate, require all 22 hosted checks, strict six-profile performance, immutable release and final review before verified normal main merge. Independent Board-filter polish remains preserved in draft #123 and needs its own qualification after parent integration. Ledger: 1621 items, 3917 criteria, 988 evidence records, 71 Done.
+
+---
+
+## 2026-10-22 — Completed CI matrix; Search observation repair
+
+Candidate `551a6bc8` remains Failed and unmerged. Its full-browser matrix finished with 507 passes, one failure and two original mail-topology skips. Groups 1–3 passed; group4 passed126 and failed the immediate Search cursor observation at320px with200% text. Notifications separately passed57 completed cases and failed original star recovery; later scopes did not run. Required CI failed and release was skipped. All failures remain retained.
+
+Verified Search diagnostics show focus and the unsent draft were preserved. The exact expected next-page request began about five milliseconds after the synchronous assertion inspected the old request. The fixture will hold account admission, prove focused loading before the request, then observe the actual exact request and completion within existing deadlines. The checked star repair is preserved. One consolidated replacement must pass all fresh gates before merge. Ten bounded records re-enter In Progress;71 previously Done remain unchanged. Functional, UX, test and MVP acceptance remain separate.
+
+---
+
+## 2026-10-22 — Star-recovery admission repair passes scoped checks
+
+Source `d77792fd` changes only browser fixtures/helpers. The original multi-account star scenario now waits for one actual same-origin mutation start, counts both possible mutation verbs, and stops even when a reply is lost. All original keys, versions, exact request counts, private history, dates, Worker ownership, focus and deadlines remain. No application, API, schema, tenant, security, dependency, performance budget or CI configuration changed.
+
+The repair passes 59 tests across four complete star-control/live/history/sync files, 42 admission/tracker contracts, four default and four fallback native cases at 320/390/768/1280px, web/browser types, full lint, 11 architecture/capacity guards and the intact 514-case/176-file browser partition. Native cases verify pending permission admission, no replay after a failed recovery reply, explicit same-key/version recovery, authoritative later state, 200% text, Axe and denial. An initial fallback invocation used mismatched mode flags; those four failures are retained and evaluated, and the unchanged correctly configured scope passes.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and contracts preserved; no new business scope. |
+| UX completion | Existing bounded polish remains implemented; acceptance remains unverified. |
+| Test completion | Repaired local scopes pass. Remote551 remains Failed; remaining matrix results and every fresh new-head gate are required. |
+| MVP readiness | No merge or new accepted increment; 71 Done unchanged. |
+
+Ten bounded parent Task/Test records are Testing; independent #123 filter work remains preserved. Full Git, evidence-hash, baseline and main-relative history validation plus all 36 delivery contracts pass on the exact committed ledger. The parent repair now has 986 evidence records with 71 Done unchanged. Next: consolidate remaining current CI results, publish one replacement and pass every fresh required gate before merge.
+
+---
+
+## 2026-10-22 — Star-recovery CI failure retained; merge remains blocked
+
+Candidate `551a6bc8` failed the notification group's desktop Board-star recovery case. The 44-case Board-management invocation passed 43 and failed one; earlier completed invocations passed 14, while later scopes were not run. Verified diagnostics show the first command deliberately lost its reply, a later unstar committed and another account starred independently. The owner focused Retry and sent global Enter, but no retry mutation started; the original intent remained unconfirmed.
+
+The repair will use the existing one-request observation helper with exact same-origin star mutation starts, retaining original request-count, key, version, history, private-actor, focus, deadline and recovery assertions. It must stop after an actual request even if its reply fails. Source, security, all 50 Foundation workflows and command integration passed on this head; those successes retain their identity and cannot qualify a replacement. Remaining browser groups continue so failures can be addressed together before one new push.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities and security contracts preserved. |
+| UX completion | Bounded polish remains implemented and scoped-tested; acceptance remains unverified. |
+| Test completion | Required notifications failed; repaired source and every fresh final-head gate must pass. |
+| MVP readiness | No merge or new acceptance; 71 Done unchanged. |
+
+Independent #123 filter work and its current checks remain preserved. Ten parent Task/Test records are In Progress for requalification. No failing check, original assertion, retry limit or performance budget is weakened.
+
+---
+
+## 2026-10-22 — Organization and Search repair passes complete scoped checks
+
+Source `23aa8073` adds honest admitted-live-update feedback and fresh lifecycle reads after development remount. Organization disclosure collapse uses the existing observed native activation. The real-service replay fixture now observes the consumer confirmation before disconnecting; its strict cursor 2/event 3 oracle remains intact. Search selected values wrap and reserve text-scaled arrow space; a new geometry check prevents a complete but obscured label. No transport, API/schema, tenant, consent, recovery, timeout, retry or required CI behavior changed.
+
+All 75 tests across 5 complete component files and 16 default plus 16 fallback native cases pass at 320/390/768/1280px with 200% text, Axe, denied withdrawal, conservative admitted/unadmitted reconnect and unchanged Card/Search drafts/paging. Types, full lint, 42 admission/architecture/capacity guards and 510 cases in 175 intact browser files pass collection/partition checks; the two attachment cases remain intact. Registry collection is not execution. Initial, intermediate, invocation and visual failures remain retained and evaluated.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing required business capabilities preserved; no new scope or global percentage. |
+| UX completion | Current Organization and Search repairs implemented and locally tested;10 bounded Task/Test records Testing, acceptance unverified. Independent #123 filter guidance/paging preserved. |
+| Test completion | Current scoped checks pass. Failed c1 hosted candidate remains Failed; every gate must pass on the replacement head. |
+| MVP readiness | No new accepted increment or merge; 71 Done unchanged. Complete release and priority workflow acceptance remain required. |
+
+The browser type check initially rejected two new rectangle spread conversions. The same geometry predicate now uses Array.from with the existing libraries; current browser types, full lint and the complete 320px Search case pass at `ed46f407`. The 32-case browser and 75-test unit proof retains its actual `23aa8073` identity; runtime bytes are unchanged.
+
+Full Git, evidence-hash, baseline, main-relative history validation and all 36 delivery contracts pass on the exact committed ledger. Next: one replacement push, every fresh hosted gate, review and verified main integration.
+
+---
+
+## 2026-10-22 — PR #122 current browser failures retained; targeted repair underway
+
+Candidate `c1f1debb` is not mergeable under the required quality policy: Full3 passed 125 and failed two Organization fixtures; Full4 passed 122 and failed the Search scope fit check at 320px/200% text. Required CI failed and the release bundle was skipped. Verified diagnostics identify an unobserved disclosure keypress, disconnect before published lifecycle consumer admission, and a clipped selected Search scope. All failed assertions, original deadlines, zero retries and required checks remain.
+
+The original cover-removal Foundation now passes all 50 cases on this candidate. Its 2979 frontend tests, 2519 backend tests, source/security/CodeQL and other passing groups retain their actual source identity; they cannot qualify the replacement. Existing 24 frontend and 5 backend capacity deferrals and two full-suite mail-topology skips are unchanged.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing business, API and tenant contracts preserved. |
+| UX completion | Organization live-update confirmation and complete narrow Search labels being repaired; Card/Search and independent #123 keyboard/filter polish remain unaccepted. |
+| Test completion | Current hosted run failed three browser cases. New controlled native tests exposed a development remount admission bug, retained with a separate failing component regression before repair. Fresh complete checks required. |
+| MVP readiness | No new acceptance or merge. 71 Done records unchanged; no combined percentage. |
+
+Independent feature work remains on its separate draft branch. Next: finish scoped native, types and lint; publish one corrected candidate; require every final-head gate and immutable release before merge.
+
+---
+
+Local delivery validation and all **36 delivery contracts pass** on the exact 974-record ledger bytes committed in `daf76adb`. Recording this result brings the parent ledger to **975 evidence records**; 1619 items, 3915 criteria and 71 Done remain unchanged. Full hosted qualification of the next published head is still required.
+
+## 2026-10-21 — Visible Card admission correction passes scoped checks
+
+Source `33018315` uses the existing visible Review Card cover control to confirm parent admission while the Card dialog correctly hides the background Board. All eight complete Card/Search cases pass in both the polished and fallback views at 320, 390, 768 and 1280px. They verify pending and failed reads disable the review control, a fresh admitted read restores it, and denial withdraws it. Existing dirty-return, Search paging, 200% text, accessibility and privacy checks remain.
+
+Current browser types, 17 cover unit tests, 31 keyboard admission contracts, 11 architecture/capacity guards, the 502-case/174-file primary registry and both attachment cases pass. Runtime code, API and database contracts, tenant boundaries, original assertions, deadlines, retries and CI requirements are unchanged. Controlled local fixtures do not qualify the real-service attachment removal flow. Both earlier hosted failures remain Failed and evaluated; every required gate must pass on the replacement head before merge.
+
+| Metric | Status |
+| --- | --- |
+| Functional completion | Existing capabilities preserved. No new business scope. |
+| UX completion | Card/Search implemented; independent draft #123 adds empty-page guidance and stable keyboard paging. Acceptance pending. |
+| Test completion | Current scoped checks pass. Fresh complete hosted qualification is required. |
+| MVP readiness | No new accepted increment or global percentage; 71 Done records unchanged. |
+
+Parent candidate ledger: 1619 items, 3915 criteria, 974 evidence records. PR #123 remains separate with its own retained proof and requires reconciliation and full gates after the parent integrates.
+
+---
+
+## 2026-10-21 — PR #122 blocked by an incorrect modal readiness check
+
+Candidate `1125cc02` failed Foundation job119621389436 in CI39712506633. Both original desktop and phone cover cases stopped at a readiness assertion added in the previous repair. An open Card dialog correctly hides the background Board from accessibility queries, so checking that hidden region’s busy state cannot succeed. The visible Card review control is present. This was an avoidable test-target mistake; it does not justify exposing hidden content or weakening admission.
+
+The corrected source `33018315` waits for the existing visible cover-review launcher to be enabled after one observed Card refresh and a current Board read. That launcher also stays disabled after failed admission. Additional checks in the complete existing four-width Card/Search file cover pending, failed, recovered and denied reads while confirming the modal background stays inaccessible. All original cover consent, receipts, keys/bodies, write counts, versions, peer updates, privacy and deadlines remain intact.
+
+Verified failure artifact12400142317 has SHA256612d3d374d7af30d107085f253d0f654762a7d13655c59218c7397e1f086f7fa and matching inner checksums/build identity. Original failures remain Failed. Earlier source/image/security passes cannot qualify a replacement; the repaired final head must pass all required gates independently before merge. Four Card/Search records remain In Progress; 71 previously Done records are unchanged.
+
+Independent draft #123 retains the completed filter guidance/paging polish and its scoped77tests/four default+four rollback browser passes. Its acceptance and own complete main-target CI remain pending. Broader PRDs and global MVP readiness remain open.
+
+---
+
+## 2026-10-21 — PR122 replacement prepared; complete new qualification required
+
+Original published **cd9530ff** has14passingchecks and a required Foundation failure at the current snapshot; other browser/notification groups remain incomplete. Retain the390px cover failure,its verified artifact and evaluation. No original incomplete scope is counted as passing. This replacement will supersede the failed candidate through a normal push; the workflow may cancel its remaining jobs. Every required check must qualify the replacement independently.
+
+Prepared source **b9e7f773** adds explicit ownerwindow return and exactlyone observed native Refreshcard activation,currentBoardread,and settledadmission before the existing coverremoval review. This setup uses the existing caller helper; application/securitybehavior is unchanged. Original consent,receipt,key/body/writecount,version,publicvisitor,peerlive/no-navigation and privacy assertions,deadlines,retries and budgets remain intact. The new cover component refuses a review during current admission and requires explicit fresh review without writes.
+
+Scoped826proof remains17cover components+31keyboardadmission contracts,web/browsertypes,strictlint,and2alternateattachmentcases registered;36deliverycontracts pass at the following checkpoint. Currentb9browsertypes pass,and exact application/cover-test/helper hashes match826. These supporting results do not qualify the actual repaired native scenario or any freshfullgate. FourCard/Search records remainInProgress with the original failedregression visible; no newDone.
+
+Independent **ux/board-filter-guidance**, source22b92e46/checkpoint2b9a6120, repairs an admitted emptylastpage after50matches. Its initial invalidemptycontinuation fixture was correctly refused and is retained asFailedsetup,evaluated separately from the valid wordingregression. The originalcursor guard remains. Scoped73component/protocol tests,4default+4rollbackfourwidth/200%text/Axebrowsers,types/lint,11guards and506/175registry pass;36deliverycontracts andfullGit/hashvalidation also pass. This followup is preserved separately and is not included in the PR122 codeorledger count.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities/API/schema/tenant boundaries preserved. |
+| UX completion | Card/Search implemented; repair and independent filter polish await fullown acceptance. |
+| Test completion | Original122 requiredFoundation failure remains Failed. Preparedsource support passes; freshcompletefinalheadCI is mandatory. |
+| MVP readiness | No newacceptedwork;71Done unchanged. Globalreadiness unaccepted/unmeasured; no combinedpercentage. |
+
+This candidate ledger:1619items/3915criteria/972evidence/71Done. Independentfilter checkpoint:1621/3917/974/71. Reconcilebothhistories whenparentintegrates; neither sourcecount nor a passingnarrow suite certifies broaderPRDorMVP. Next:publishone replacement,freeze,completeall22/source/native/role/security/performance/release/reviewgates,then normalexpectedheadmergeandactualtestedtreeverification.
+
+---
+
+## 2026-10-21 — PR122 Foundation phone cover failure retained; merge prohibited
+
+Current head **cd9530ff**, own CI39701151929, failed Foundation119586017892 in the real attachment/cover pipeline at390px. Cover and candidate reads returned200/currentversion7; after the peer-window handoff, fresh Board admission caused the application to reject the unsent cover review. The original Remove Card cover enabled assertion failed; no removal was submitted. Retained artifact12396042071 has verified provider SHA2561419eaf0be628fcecb3bfe943a531113c6ba7bafed1911816c6dccfaf8d35c34 and every inner checksum. Original screenshot, deadlines and failure remain.
+
+Repair prepares an explicit owner-window/current Card refresh before reviewing removal; all original public consent,receipt,key/body,write-count,version,peer live/no-navigation and privacy oracles remain. A new component case verifies refusal during parent admission and fresh explicit review without automatic replay; complete cover suite17passed. No runtime/security gate changes. This bounded pass does not qualify the real repaired scenario or replace complete final-head CI.
+
+Exact current source artifacts pass **2978frontend/24original capacity deferrals** and **2519backend/5existing capacity deferrals**, bound to synthetic786974a1/run39701151929/version0.1.0-1966. Database,source,security and CodeQL pass. Other native groups are running; required-ci/release are not qualified. Four Card/Search records return legally to In Progress;71previouslyDone remain. Functional implementation is preserved; UX acceptance,complete tests and MVP acceptance remain separate and pending. Do not merge.
+
+The next independent UX audit reproduced a Board-filter empty continuation that falsely says no Cards match. Its new Task/Test and failing regression are parked on isolated ux/board-filter-guidance, without changing this PR candidate or independent118 work.
+
+---
+
+## 2026-10-21 — PR #121 accepted on main; Card details and Search continue separately
+
+PR #117's dependency is resolved, and **PR #121 merged normally into main as 4c1e27e2** after **all 22 current checks passed**. Qualified head1730b891 and tested merge e0dbff49 have tree599bc9ff; the actual main merge has the identical tree and expected parents37656975 +1730b891. Fresh Git ancestry and current review state were verified. No administrative bypass, force push, relaxed assertion, extra test retry, wider deadline or larger budget was used.
+
+The current qualification passed **2,964 frontend tests** with the original24 capacity deferrals, **2,519 backend tests** with5 existing capacity deferrals, the complete native browser matrix **488 passed /2 intended mail-profile skips**, Foundation scopes **28+2+2+18**, and every strict-account/notification scope. The mail scenarios run in their required actual-provider profile. Counts from overlapping profiles are reported separately. All four original native failures now pass: phone metadata acknowledgment, phone mouse/touch edge scrolling, and desktop settings draft discard. Their original Failed executions, screenshots, trace identities and evaluations remain unchanged.
+
+All six normal-performance metrics were verified against the exact release identity, provider ZIP digests and inner checksums. Original strict budgets remain: readiness **1,018.6ms <1,500ms**, painted detail **128.1ms <200ms**, feedback **77.4ms <100ms**, mutation p95 **82.8ms <500ms** (maxima across their applicable measured scenarios). Source-free Production/Demo startup, HTTPS/Secure sessions, certificate rotation, WSS/cursor/database recovery and unchanged release-bundle checksums passed. The retained runnable bundle is artifact12392870770, SHA25658f290f6820014b9b76a35ee415147d811e0b5bf774deaf3929b6e0b0fc413bd. These are qualified release tests, not a claim of production deployment or universal performance.
+
+Scoped source/UX review accepted only **UX-003-VS-03-T-02** and its Test. They progressed legally Testing →Review →Done, child first, after actual main integration. Previous source/gate histories and failed evidence are retained. Their broader UX Foundation/feature PRDs remain partial.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing business capabilities, APIs, schemas, tenant boundaries and original-command recovery are preserved. Organization/Work presentation is integrated on main. |
+| UX completion | The bounded Organization/Work increment is accepted. Card details and Search are implemented and pass combined scoped checks; their full acceptance remains pending. |
+| Test completion | PR121's exact-head22 gates, performance and release checks passed. Card/Search has161 component tests +15 default/15 rollback browser cases passing, with its own complete final-head CI still required. |
+| MVP readiness | Only the bounded increment is accepted.71 work records are Done; global MVP readiness remains unaccepted/unmeasured. No combined product percentage or parent PRD closure. |
+
+**PR #122 remains draft and unmerged, now based on main.** Actual main was reconciled normally through ae4078df, preserving the existing Card/Search work and actual119/120 history. Application/test inputs remain those of scoped source3f9a150a: Card location withdraws during pending/failed/denied reads; drafts, Save/Close and return stay intact; Search preserves applied query/cursors while keeping unsent filters separate and readable at200% text. Five current desktop/phone/tablet-zoom captures match retained inspected pixels, so existing assets are reused. Local types/lint,11 architecture/capacity guards,502 cases/174 intact browser files and compiler5.79s also pass. Controlled HTTP/Vite and local compilation do not qualify its own real-service roles/security, Production CSP or immutable release; [PR122 checks](https://github.com/nickmailhot-lang/StrataAI2/pull/122/checks) must qualify the published final head before integration.
+
+Consolidated ledger: **1,619 items /3,915 criteria /969 evidence records /71 Done**. Four Card/Search Task/Test records remain Testing, their acceptance Unverified. Current certificates: EVID-TRELLO-121-CI22, REVIEW, UX and MAIN. Independent118 and all earlier failure/provenance records remain intact. Next: publish this accepted-parent checkpoint with the reconciled Card/Search candidate, run its full required gates, fix actual failures without weakening checks, and merge only after its own qualification.
+
+---
+
+## 2026-10-21 — Combined Card/Search and repaired foundation pass scoped checks
+
+Actual combined source **3f9a150a** retains both ebb04eb5 Card/Search and1730b891 repaired foundation through a normal side-branch merge. Both parent ledger histories, criteria, evidence and report checkpoints are preserved. Card/Search feature files remain byte-identical to implemented FF source; this checkpoint verifies their interaction with the new pointer repairs.
+
+**161/161 affected component tests;15/15 default +15/15 rollback browser cases;web/browser types;strict lint;11 architecture/capacity guards;502 cases/174 intact browser files;local compiler5.79s** pass. Browser cases cover Card context/read withdrawal/drafts/return, Search applied/draft paging/error/denial/200%text, Organization/Work navigation/roles/reflow/Axe and native mouse/touch edge turns/cancel/no-write/scroll return. The unchanged delivery provenance guard first refused the new combined pass because implementation still namedFF. That Failed attempt is retained; prior FF implementation is preserved in history and current qualification is bound to actual3f9a. No source/test/validator/deadline was changed. Five current desktop/phone/tablet-zoom captures are byte-identical to retained inspected images, so those assets are reused. Compiler identifies3f9a/0.1.0-local; the existing chunk warning remains.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing capabilities and actual119/120 work preserved; pointer recovery improvements retained. No new domain/API/schema. |
+| UX completion | Combined Card/Search and foundation workflows pass the scoped default/rollback interaction checks; full own acceptance pending. |
+| Test completion | Current scoped161+15+15 and source gates pass. Controlled HTTP/Vite does not qualify native real-service roles/security, Production CSP or release; own full CI remains required. |
+| MVP readiness | Not accepted globally. Four Card/Search records stay Testing, criteriaUnverified;69 inherited Done unchanged. No product percentage. |
+
+PR121 stays frozen1730b891 in fresh CI39674641269, with full frontend2964passed/24originalcapacitydeferrals. Its remaining full gates and review must pass before normal main integration. PR122 remains stacked/draft/unmerged; after parent integration it must qualify its own complete final head. Original native and zoom failures remain Failed evidence, independently of narrower later passes. Ledger: **1619 items /3915 criteria /965 evidence records**.
+
+---
+
+## 2026-10-21 — Card/Search reconciled with the repaired foundation
+
+PR121 is frozen at1730b891; fresh complete CI39674641269 is running against tested merge e0dbff49, tree599bc9ff. Its main dependency117 is resolved, but no121 acceptance or merge is claimed. The original failed native runs and their repairs remain below.
+
+The Card/Search branch now combines its actual ebb04eb5 history, including119/120 and the text-zoom repair, with actual parent1730 through a normal local merge. Both parent ledger histories, evidence, acceptance definitions and report sections are preserved and validated: **1619 items /3915 criteria /963 evidence /69 Done**. This is side-branch reconciliation; main remains unchanged. Combined Card/Search and native pointer checks are next. Existing scoped results retain their own source identities; the combined tree needs its own tests and full qualification before integration.
+
+---
+
 ## 2026-10-21 — Original qualification complete; repaired candidate ready for fresh CI
 
 Original PR121 head951e6fdb run39646826188 has completed: **17 successful checks,4 failed checks,1 skipped release check**. Full browser matrix: **482 passed /3 failed /2 existing mail-profile skips**; the separate strict-account group has one additional metadata recovery failure. Last full group passes119. The required-ci failure and skipped release correctly prevent integration. All four failed native cases are evaluated and retained in the failure records below.
@@ -34,6 +313,57 @@ PR117 dependency is resolved by its ordinary main merge37656975. Current PR12195
 Functional/UI implementation remains present; test acceptance is failed and bounded Task/Test returned legally from Testing to In Progress. Merge is blocked until the repaired final head passes every required gate. Other current-run browser groups may finish to expose additional failures. Card/Search source remains preserved independently in draft122; it is not accepted or merged. No parent PRD closure or product percentage.
 
 ---
+
+
+
+---
+
+Preserved independent Card and Search checkpoint:
+
+## 2026-10-21 — Text-zoom repair verified; Card/Search follow-up ready for full qualification
+
+Current source `ff0350c3` corrects selected-filter clipping by making the existing Search grid follow text size. No request, field, cursor, actor check or action changed. The same expanded browser file now passes **8/8 default + 8/8 rollback**, including the original768px/200% selected-value assertion, Card pending/failed/denied context, dirty cancel/return, Search unsent draft/applied scope/cursor/error/denial, keyboard and Axe. No failure/skips/retries or widened deadline. The original **7 passed/1 failed** run and red screenshot remain Failed evidence, alongside earlier narrower passing scopes.
+
+Fresh complete ten-file component suite: **97/97**. Web/browser types, strict lint, architecture/phase **11/11**, registry **499 cases/173 intact files** and local compiler **7.50s** pass at this source. Compiler metadata identifiesff0350c3/0.1.0-local; browser runs use controlled HTTP/Vite and do not prove real-service RLS, persistence, Production CSP or immutable release. Delivery module contracts **36/36** retain actual A0/949-input identity; final enriched-ledger/source/evolution validation remains separate. Five new immutable captures include the corrected tablet text-zoom view; all earlier hashed captures are retained.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing Card/Search capabilities and original119/120 work preserved; no new domain/API/schema. |
+| UX completion | Card context/editor/footer and responsive Search surfaces implemented; actual desktop/mobile and tablet200% views inspected. Full own acceptance pending. |
+| Test completion | Current scoped97+8+8 and source checks pass; original red7/1 retained. Own complete CI/security/roles/real-service/release/review still required. |
+| MVP readiness | Not accepted globally. Four new records Testing and criteriaUnverified;69 inherited Done unchanged. No product percentage. |
+
+PR #117 is merged37656975. PR #121 stays frozen951e6fdb: full frontend2963passed/24originalcapacitydeferrals, backend/database/metadata/source/image/security/CodeQL have passed; command/browser and dependent release gates continue. Its checks do not qualify this follow-up. Publish the latter as a stacked draft to permit review without starting duplicate image builds; no merge before dependencies and every own gate qualify. Independent118 work remains untouched. Ledger: **1619 items / 3915 criteria / 956 evidence records**. New source qualification: EVID-TRELLO-DETAIL-ZOOM-FIXED-*; earlier failures and lifecycle transitions remain below.
+
+---
+
+
+## 2026-10-21 — Search text-zoom rework active
+
+Expanded complete Card/Search browser scope at b69d7efe: **7 passed / 1 failed**. At768px/200%text, the two-column form clips the selected **Archived work** value; actual screenshot confirms it. Page overflow and Axe alone had passed, so this additional readability oracle remains mandatory. Search Task/Test are back **In Progress**, tests/regressions Failed; prior source-bound97 and8+8 passes are retained separately. Card subset passes. Fix only text-aware grid sizing, then rerun the same complete default/rollback file and affected checks without changing assertions, timeouts or retries. PR121 remains frozen and independent. Evidence: EVID-TRELLO-DETAIL-ZOOM-RED.
+
+---
+
+
+## 2026-10-21 — Card/Search polish prepared independently; #121 qualification continues
+
+Application source `38a618b6`, final browser/spec source `a0c63f0b`: Card details now show the currently admitted Board/List location and a clearer core editor/footer using the existing panel and MUI. The caption withdraws during pending/failed/denied reads; drafts, Markdown, Save/Close, original recovery and return remain intact. Search uses the same five fields in a responsive grid, clearer result surfaces, sentence-case actions and compact paging. Existing #119 guidance and #120 keyboard behavior are preserved through their original commits, with no added domain, route, request or schema.
+
+| Metric | Current evidence and limit |
+| --- | --- |
+| Functional completion | Existing Card/Search capabilities retained. No new business capability or parent PRD closure. |
+| UX completion | Scoped Card/Search presentation implemented; four final desktop/mobile captures inspected. Existing Work flag restores previous layout/typography. Singular result-count wording is corrected in both layouts. |
+| Test completion | Complete affected **97/97** at38; current **8/8 default + 8/8 rollback** atA0, no failures/skips/retries, including delayed-read withdrawal, dirty cancel/return, paging, drafts, errors, denial,200%text/reflow/Axe. Types/lint, architecture/phase **11/11**, registry **499/173** and local compiler pass. Compiler identifies38/0.1.0-local; browser fixtures use Vite/controlled HTTP and do not certify Production CSP, real services or release. Own full checks remain pending. |
+| MVP readiness | Not accepted globally. Four new Task/Test records are Testing, their criteria Unverified, inherited69Done unchanged. No combined product-completion percentage. |
+
+PR #117 is merged at37656975 with exact tested-tree verification and all22passed. PR #121 remains frozen at951e6fdb, now on main: its complete frontend2963passed/24originalcapacitydeferrals, PostgreSQL, metadata and CodeQL pass; backend/downstream gates remain pending. It will not merge until every required current gate and review qualifies. Follow-up branch `ux/trello-card-search-polish` retains actual #119/#120 and #121 histories through5ad63505; this preparation does not restart or modify #121's CI. No additional image build was started for it.
+
+Retained setup refusals: an invalid guard filename ran no tests, a scratch common-suffix assumption refused report reconciliation, and owned edited CRLF files triggered strict diff checks. Corrected the invocation, preserved both explicit report conflict sides with both parent histories/evidence verified, and normalized only owned edits to canonical LF. Actual required guards pass unchanged; no tests, deadlines, retries, history or historical hashes were relaxed. Earlier failed unit/browser aggregates remain separate evidence.
+
+Owners: `PRD-09-VS-01-T-05`, `PRD-16-VS-01-T-02` and child tests, UX-003/005/006/007/008 and UXA-01–08. Ledger now **1619 items / 3915 criteria / 949 evidence records**. Next: finish/fix and merge #121 only after complete qualification; then reconcile/retarget this reviewable polish increment and qualify its own complete gates before integration. Existing independent #118 recovery work is preserved.
+
+---
+
 
 ## 2026-10-21 — PR #117 dependency resolved; PR #121 full qualification active
 
@@ -79,6 +409,104 @@ Evidence: `docs/delivery/evidence/trello-polish-*` preserves source identities, 
 The dated entries below preserve earlier checkpoint history; they do not describe the current Trello-style candidate.
 
 ---
+
+
+
+---
+
+Preserved independent Search checkpoint:
+
+## Keyboard paging and Organization-context coordination — 2026-10-20
+
+Current follow-up: [draft PR #120](https://github.com/nickmailhot-lang/StrataAI2/pull/120), branch `ux/search-keyboard-paging`, application/browser source `66bee0439fdfca53ddc30bcf71770eef76c86019`, based on PR #119 patched head `42b02c60`. PR #119 is still draft and unmerged while fresh required gates run. Its original security failure remains retained; reuse of exact Vite 8.3.4 passed a fresh isolated locked install, zero-vulnerability audit, both TypeScript checks, 67 affected tests and production compilation. The compiler output uses local development identity and is not immutable release evidence.
+
+| Metric | Current scoped result |
+| --- | --- |
+| Functional completion | Existing business behavior, APIs, schemas, permissions and query/cursor contracts preserved; no new business FR accepted |
+| UX completion | Search Next/Refresh now transfers focus from a retiring control to stable visible feedback before loading; pending/final/failed/denied results keep safe focus. Unsent edits and focus moved during a pending read are preserved. Organization context implementation remains in PR #117; no duplicate shared-shell edits |
+| Test completion | 73/73 complete affected component tests, 4/4 responsive native keyboard/Axe journeys, both types, lint, 7 architecture/phase guards, 483-case shard registration and 36 delivery contracts passed. Full fresh real-service/role/CSP/release regression remains required |
+| MVP readiness | Paging Task/Test Testing; no additional Done, parent PRD closure, whole accessibility acceptance or combined completion percentage. PR #119 cannot merge with incomplete gates |
+
+The focused paging defect was reproduced before implementation: four component failures/one pass and a 320px browser failure showed inactive feedback after the paging button unmounted. Those failures are retained. The correction moves focus synchronously only if a paging control owns focus. It does not restore focus asynchronously when a response arrives, start an extra read, change criteria, or expose private result data. Existing source acknowledgments, actor/epoch checks, denial clearing and Back remain effective.
+
+Final source checks: 73 cases in six entire affected files (74.51s, no failures/skips); four browser cases at 1280/768/390/320px and 200% text (42.91s, no failures/skips/flaky cases/reporter errors). They verify the visible focus ring, viewport hit-testing below the fixed header, native Tab onward to Refresh, retained cursor/query, 503 feedback, 403 withdrawal, background-read editing and browser Back. Axe runs before paging and on focused final feedback. Developer inspected actual focused 320px and 1280px viewport captures. Approved visual baselines, physical-device/screen-reader review and complete workflow acceptance remain separate.
+
+Organization-context audit: exact PR #117 head `b6a30cc0` has all 22 reported checks successful; PR #118 head `067894f7` still has failed full-browser jobs and another running. Failed consumer details: full1 Board creation recovery390px (`board-creation-recovery.spec.ts`) and full3 Organization actions390px (`organization-actions.spec.ts`) each failed the original focus-return assertion (expected focused, received inactive). Available logs are truncated; root cause is unproven and full traces/rendered evidence must be inspected by the existing owner. No timeout/assertion relaxation, forced test-side focus or flaky classification is accepted. Exact available diagnostics and disposition are retained in `ux-polish-organization-focus-failures.json`. These are sibling-branch results, not qualification of PR #119 or the paging source. Preserve their original failures, readable actor-bound context implementation and shared-shell ownership. No Organization merge or parent acceptance is claimed here. Supporting Search changes touch no shared shell, navigation or theme file.
+
+Evidence: `docs/delivery/evidence/ux-polish-keyboard-*` and `ux-polish-organization-coordination.json`. Original histories/IDs/hashes remain; the new focused Task/Test is `UX-006-VS-03-T-02` / `UX-006-VS-03-T-02-TEST-01`. Final updated ledger validation is recorded separately from the 36 contract tests.
+
+**Next:** finish exact-head PR #119 CI and review; merge only when every required gate passes. Keep this paging follow-up isolated and requalify it against main after its prerequisite integrates. Continue Organization context through existing PR #117/#118 ownership and evaluate failed consumer checks before any merge.
+
+---
+
+## PR #119 security rework — current checkpoint
+
+The required security job on `f195f0e1` failed the unchanged high-severity npm audit for Vite 8.3.1 (GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw, GHSA-587h-7wmj-h5pm). Original log retained in `ux-polish-pr119-security-failed.json`; no threshold, assertion or retry was weakened. Reused existing patch `c99d1a7` as `aaba78a5`, changing only exact Vite 8.3.4 and its required locked transitive dependencies. The new locked-dependency audit reports zero vulnerabilities. This does not replace full installed-toolchain/security/immutable-release qualification.
+
+| Metric | Current result |
+| --- | --- |
+| Functional completion | Existing capabilities preserved; no new business capability accepted |
+| UX completion | Search guidance implemented; Organization context remains owned by draft PR #117 and its first-use consumer PR #118. Search keyboard paging remains an independent follow-up audit |
+| Test completion | Previous-head source/web/.NET/PostgreSQL/CodeQL passed; security failed and browser jobs pending. Patched-head full CI and installed-toolchain checks required |
+| MVP readiness | PR #119 remains draft and unmerged. Task/Test returned to In Progress with retained failure; no additional Done or parent closure |
+
+Next: require exact patched-head full gates and review before merge. Preserve the existing Organization context implementation and single shared-shell owner; reproduce keyboard focus during paging and failure return in an isolated follow-up.
+
+---
+
+## Current-build UX-first polish — 2026-10-20
+
+User-approved priority: polish existing priority MVP journeys before expanding visible functionality. [Polish milestone and ordered gaps](polish-milestone.md) now govern AGENTS and the delivery procedure. Existing implementation, approved backlog, original requirements and historical results remain intact. Independent security/reliability and supporting backend work may continue.
+
+Current branch: `ux/current-build-search-polish`; inspected main baseline `db576226`; final application/browser source `547a6e0518d500e36ca3d54b5078825fcc7b792d`. All 22 checks on merged PR #116's head `6dc9a223` were verified successful; that baseline does not qualify this new revision. Earlier dated failure checkpoints below retain their original scope and are not current aggregate completion claims.
+
+| Metric | Current scoped result |
+| --- | --- |
+| Functional completion | Existing business capabilities preserved; no new business FR or domain capability accepted in this cycle |
+| UX completion | Existing Search Cards now explains first use, empty continuation and final-page options using the completed search's active/archive scope; wider polish milestone remains open |
+| Test completion | Final 67 affected tests and 4 controlled browser scenarios passed; current source types/lint, 7 architecture guards and 483-case registration passed. Delivery contracts: 36 passed on the unchanged reporting inputs; updated ledger validation recorded separately. Full fresh CI/integration remains required |
+| MVP readiness | Prior accepted main capabilities preserved; this follow-up is not integrated or accepted. No full UX PRD, new Done increment, overall MVP or percentage claim |
+
+### Current highest-impact polish queue
+
+1. **Organization/Work context:** replace opaque identifiers with authorized readable context and retain immediate role/actor withdrawal. Keep one shared-shell owner; this slice does not introduce competing metadata reads or header edits.
+2. **Search continuation and empty-state clarity (implemented here):** bounded server traversal can return a valid empty page with a cursor. Explain that searching can continue; do not confuse zero rows on this page with completion or with inaccessible data.
+3. **Keyboard paging/failure return and remaining forms:** audit focus when paging controls retire during loading, plus current conflict/original-command feedback, before the next consumer migration. Developer text/reflow inspection is not whole-workflow focus or device acceptance.
+4. **Supported width/zoom review:** every touched journey retains 320/390/768/1280px, keyboard, role-loss and accessibility checks. Wider human/assistive-technology review remains open.
+
+### UX-007-VS-02-T-02 — Search guidance slice
+
+Owner: PRD-16 (live issue #17 inspected), linked UX-003/005/006/007/008 and UXA-01–08. This polishes existing authorized Card search; it does not implement broader PRD-56 search or another navigation system.
+
+Entry remains Notifications/current header → Search Cards. The component gives first-use instructions without a request. A validated empty continuation says **Keep searching**; a final empty page says **No matches on this page**, preserving what may have appeared on earlier pages. Hints use the successfully applied scope/filter presence, so an already archived search suggests Active work; unsent edits do not silently change the meaning of the result. Current cursor, native submit, acknowledgment, filter drafts, actor checks, error behavior and browser Back are unchanged.
+
+| Required check | Result / scope |
+| --- | --- |
+| Web and browser TypeScript; lint | Passed on frozen final source |
+| Unit/component/admission | 67/67 passed across all five affected files; zero failures/skips; 85.86s |
+| Playwright / responsive / automated accessibility | 4/4 passed at 1280/768/390/320px and 200% root text; zero failures, skips, flaky cases or reporter errors; 45.89s. Actual routed consumers with controlled HTTP/transport in Vite |
+| Covered behavior | No initial/typing query, native Enter, cursor continuation, final empty page, active/archive guidance, retained draft after 503, definite 403 withdrawal, browser Back, page overflow and Axe |
+| Architecture and capacity phase | 7/7 passed; original protected 24-case counterparts/deferrals preserved |
+| Browser registration | Passed: 483 cases / 170 intact files across all four shards; registration is not execution of every case |
+| Delivery contracts | 36/36 passed; zero failures/skips, 203.29s. Executed at `e1187ecf`; reporting script/test/package/initial-ledger blobs are identical at `547a6e05`; no redundant rerun claimed |
+| Updated ledger / history / cycle report | Passed: 1,602 work items / 3,894 criteria, all 821 evidence hashes, exact source paths/Git ancestry and append-only evolution against origin/main; actual cycle report generated. No unsupported new Done claims |
+| Developer visual inspection | Current 320px final-page and 768px continuation text/reflow inspected. Full-page captures include fixed chrome at the scroll position; no approved baseline or full focus/device/assistive-technology acceptance claimed |
+| Fresh full regression / real-service roles / production CSP / immutable release | Pending on the final published head; unchanged existing global-search native scenarios remain mandatory. Local controlled fixtures do not replace them |
+| Integration / review | Draft and unmerged until all applicable required gates and review pass. Task/Test enter Testing with hashed source-bound evidence; broader audit and original parent acceptance stay open |
+
+### Retained failures and evaluation
+
+- Initial baseline delivery validation rejected 83 CRLF-converted Windows evidence files. Each was restored from exact Git bytes only after matching its unchanged recorded SHA-256; strict validation then passed (1,600 baseline items / 3,891 criteria). No evidence record, result, hash, validator or prior source was changed.
+- The initial red Search regression run had six missing-guidance failures and thirteen passes. The final entire affected-file run passes all 67 cases. New deferred-fixture sequencing waits for the existing in-flight read before releasing its response; original assertions, retries and deadlines remain intact.
+- Initial 66-case / four-browser passes remain bound to `e1187ecf`; inspection then identified an ambiguous already-selected archive suggestion. The final scope-aware source and 67-case / four-browser results are retained separately at `547a6e05`.
+
+Hashed manifests (including exact retained stdout), source Git blobs, baseline CI inspection and scoped visual review live under `docs/delivery/evidence/ux-polish-*`. The machine ledger appends a cycle without rewriting earlier history or promoting old evidence to current acceptance.
+
+**Next deliverable:** qualify this exact slice through a draft PR and all required fresh checks. Continue the Organization-context and keyboard-paging/remaining-form audits within the polish milestone. Net-new user-facing scope stays behind its acceptance gate.
+
+---
+
+## Earlier retained delivery checkpoints
 
 Final published903 results (2026-10-18T21:53:08.147Z):22 checks complete,18success/3failure/1skip. Full browser476passed/1failed/2original mail-profile skips; full4=115passed. Notifications57passed/1failed with four later scopes not run. All6 actual903 normal-performance records meet original budgets; artifact provider/inner hashes and synthetic/run identity verified. Local1f1c fix and preceding365 keyboard readiness await fresh final-head qualification. Both qualification items are Testing; global result remains Failed. Only96merged;16pending. Next: Validate final ledger evolution/hashes, commit one metadata checkpoint, then fast-forward existing PR111 branch to the corrected candidate. Freeze that exact head for all22 required checks; merge only after fresh main/head/reviews and successful gates.
 

@@ -4,7 +4,7 @@ import { expect, test } from './releaseTest';
 import { registerNotificationAccount } from './notificationAccountFixture';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 import { openOrganizationActions } from './organizationActionAdmission';
-import { openAdmittedReview, tabAdmittedFocus } from './keyboardAdmission';
+import { openAdmittedReview, pressObservedLocalAction, tabAdmittedFocus } from './keyboardAdmission';
 
 const rollback = process.env.STRATAAI_E2E_WORK_UX_ROLLBACK === '1';
 for (const width of [1280, 768, 390, 320]) {
@@ -71,7 +71,7 @@ for (const width of [1280, 768, 390, 320]) {
           // Collapsed actions stay mounted but leave keyboard/accessibility navigation.
           const details = summary.locator('..');
           const permittedName = role === 'Member' ? 'Leave Organization' : 'Organization settings';
-          await summary.focus(); await client.keyboard.press('Enter');
+          await pressObservedLocalAction(summary);
           await expect(details).toHaveJSProperty('open', false);
           await expect(client.getByRole('link', { name: permittedName, exact: true, includeHidden: true })).toHaveCount(1);
           await expect(permitted).toHaveCount(0);

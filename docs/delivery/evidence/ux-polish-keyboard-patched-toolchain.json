@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-21T03:47:40.557Z",
+  "revision": "42b02c60939e2180200c7d19ccc603ac15e7a0a6",
+  "result": "Passed",
+  "command": "PR119 patched toolchain: isolated npm11.19.0 locked install,Vite8.3.4,zero-vulnerability lock audit,web/browser types,67 complete affected tests and production compiler pass.",
+  "scope": "One owned isolated dependency install replaces local junctions only; original checkout dependencies untouched. Compiler output uses development identity and is not a qualified immutable release. Original security failure retained separately. No repeated install or image rebuild.",
+  "transcripts": [
+    {
+      "path": "ux119-locked-install.log",
+      "sha256": "2f8394c2532997a59892c92a1685084f1b308d83400e2f4729a7398deef1d713",
+      "stdoutBase64": "bnBtIG5vdGljZSBydW4gc3RyYXRhYWkyQDAuMS4wIG5weA0KbnBtIG5vdGljZSBydW4gbnBtIGNpIC0taWdub3JlLXNjcmlwdHMgLS1uby1mdW5kIC0tbm8tYXVkaXQNCm5wbSB3YXJuIFVua25vd24gZW52IGNvbmZpZyAiZ2xvYmFsLWlnbm9yZS1maWxlIi4gVGhpcyB3aWxsIHN0b3Agd29ya2luZyBpbiB0aGUgbmV4dCBtYWpvciB2ZXJzaW9uIG9mIG5wbS4gU2VlIGBucG0gaGVscCBucG1yY2AgZm9yIHN1cHBvcnRlZCBjb25maWcgb3B0aW9ucy4NCg0KYWRkZWQgMzc2IHBhY2thZ2VzIGluIDNtDQo="
+    },
+    {
+      "path": "ux119-types.log",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624",
+      "stdoutBase64": "bnBtIG5vdGljZSBydW4gc3RyYXRhYWkyQDAuMS4wIHR5cGVjaGVjaw0KbnBtIG5vdGljZSBydW4gbnBtIC0td29ya3NwYWNlIEBzdHJhdGFhaS93ZWIgcnVuIHR5cGVjaGVjaw0KbnBtIG5vdGljZSBydW4gQHN0cmF0YWFpL3dlYkAwLjEuMCB0eXBlY2hlY2sNCm5wbSBub3RpY2UgcnVuIHRzYyAtLW5vRW1pdA0K"
+    },
+    {
+      "path": "ux119-browser-types.log",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "stdoutBase64": "bnBtIG5vdGljZSBydW4gc3RyYXRhYWkyQDAuMS4wIHR5cGVjaGVjazpicm93c2VyDQpucG0gbm90aWNlIHJ1biB0c2MgLXAgdHNjb25maWcuYnJvd3Nlci5qc29uDQo="
+    },
+    {
+      "path": "ux119-patched-unit.log",
+      "sha256": "0c66583d09ed338ee7e6fa9669f68b89c7bd7da79e27e09dd0fcbefadc7d9fc0",
+      "stdoutBase64": "bnBtIG5vdGljZSBydW4gQHN0cmF0YWFpL3dlYkAwLjEuMCB0ZXN0DQpucG0gbm90aWNlIHJ1biB2aXRlc3QgcnVuIHNyYy9mZWF0dXJlcy9zZWFyY2gvR2xvYmFsU2VhcmNoUGFnZS50ZXN0LnRzeCBzcmMvZmVhdHVyZXMvc2VhcmNoL2dsb2JhbFNlYXJjaC50ZXN0LnRzIHNyYy9mZWF0dXJlcy9zZWFyY2gvc2VhcmNoSW50ZXJhY3Rpb24udGVzdC50cyBzcmMvYXBwL0FwcC50ZXN0LnRzeCBzcmMvYXBwL1N1cmZhY2VBZG1pc3Npb24udGVzdC50c3gNCg0KIFJVTiAgdjUuMC4yIEM6L1VzZXJzL25pY2ttL0RvY3VtZW50cy9Db2RleC8yMDI2LTEwLTE2L3lvdS1zaG91bGQtaW5jb3Jwb3JhdGUtdGhlLXV4LXJlZGVzaWduL3dvcmsvU3RyYXRhQUkyL2FwcHMvd2ViDQoNCg0KIFRlc3QgRmlsZXMgIDUgcGFzc2VkICg1KQ0KICAgICAgVGVzdHMgIDY3IHBhc3NlZCAoNjcpDQogICBTdGFydCBhdCAgMjA6Mzg6NTINCiAgIER1cmF0aW9uICA1NS40NHMgKGltcG9ydCA1NiUsIHRlc3RzIDIwJSwgZW52aXJvbm1lbnQgMTQlLCB0cmFuc2Zvcm0gNyUsIHNldHVwIDMlKQ0KDQo="
+    },
+    {
+      "path": "ux119-build.log",
+      "sha256": "de1054d9f47f9b2a4edec0de6f29f41401d2e6cd494061ad5a43637c71628d5f",
+      "stdoutBase64": "bnBtIG5vdGljZSBydW4gc3RyYXRhYWkyQDAuMS4wIGJ1aWxkDQpucG0gbm90aWNlIHJ1biBucG0gLS13b3Jrc3BhY2UgQHN0cmF0YWFpL3dlYiBydW4gYnVpbGQNCm5wbSBub3RpY2UgcnVuIEBzdHJhdGFhaS93ZWJAMC4xLjAgYnVpbGQNCm5wbSBub3RpY2UgcnVuIHRzYyAtLW5vRW1pdCAmJiB2aXRlIGJ1aWxkDQp2aXRlIHY4LjMuNCBidWlsZGluZyBjbGllbnQgZW52aXJvbm1lbnQgZm9yIHByb2R1Y3Rpb24uLi4NCnRyYW5zZm9ybWluZy4uLg0K4pyTIDEyMDU4IG1vZHVsZXMgdHJhbnNmb3JtZWQuDQpyZW5kZXJpbmcgY2h1bmtzLi4uDQpjb21wdXRpbmcgZ3ppcCBzaXplLi4uDQpkaXN0L2J1aWxkLW1ldGFkYXRhLmpzb24gICAgICAgICAgICAwLjA0IGtCIOKUgiBnemlwOiAgIDAuMDYga0INCmRpc3QvaW5kZXguaHRtbCAgICAgICAgICAgICAgICAgICAgIDAuNTcga0Ig4pSCIGd6aXA6ICAgMC4zNCBrQg0KZGlzdC9hc3NldHMvaW5kZXgtQndfR3N5RG4uY3NzICAgICAgMC41NiBrQiDilIIgZ3ppcDogICAwLjMzIGtCDQpkaXN0L2Fzc2V0cy9pbmRleC1EYkRxdWVkVS5qcyAgIDEsNjM0Ljk1IGtCIOKUgiBnemlwOiA0NTUuNTMga0INCg0KW3BsdWdpbiBidWlsdGluOnZpdGUtcmVwb3J0ZXJdIA0KKCEpIFNvbWUgY2h1bmtzIGFyZSBsYXJnZXIgdGhhbiA1MDAga0IgYWZ0ZXIgbWluaWZpY2F0aW9uLiBDb25zaWRlcjoNCi0gVXNpbmcgZHluYW1pYyBpbXBvcnQoKSB0byBjb2RlLXNwbGl0IHRoZSBhcHBsaWNhdGlvbg0KLSBVc2UgYnVpbGQucm9sbGRvd25PcHRpb25zLm91dHB1dC5jb2RlU3BsaXR0aW5nIHRvIGltcHJvdmUgY2h1bmtpbmc6IGh0dHBzOi8vcm9sbGRvd24ucnMvcmVmZXJlbmNlL091dHB1dE9wdGlvbnMuY29kZVNwbGl0dGluZw0KLSBBZGp1c3QgY2h1bmsgc2l6ZSBsaW1pdCBmb3IgdGhpcyB3YXJuaW5nIHZpYSBidWlsZC5jaHVua1NpemVXYXJuaW5nTGltaXQuDQrinJMgYnVpbHQgaW4gMTAuNTFzDQo="
+    },
+    {
+      "path": "ux119-security-audit.json",
+      "sha256": "1c65134a5084f9d435a5316e54842c503502c63b430c30bd0c9548c4c030f557",
+      "stdoutBase64": "ew0KICAiYXVkaXRSZXBvcnRWZXJzaW9uIjogMiwNCiAgInZ1bG5lcmFiaWxpdGllcyI6IHt9LA0KICAibWV0YWRhdGEiOiB7DQogICAgInZ1bG5lcmFiaWxpdGllcyI6IHsNCiAgICAgICJpbmZvIjogMCwNCiAgICAgICJsb3ciOiAwLA0KICAgICAgIm1vZGVyYXRlIjogMCwNCiAgICAgICJoaWdoIjogMCwNCiAgICAgICJjcml0aWNhbCI6IDAsDQogICAgICAidG90YWwiOiAwDQogICAgfSwNCiAgICAiZGVwZW5kZW5jaWVzIjogew0KICAgICAgInByb2QiOiAxOTUsDQogICAgICAiZGV2IjogMjA4LA0KICAgICAgIm9wdGlvbmFsIjogMjcsDQogICAgICAicGVlciI6IDgsDQogICAgICAicGVlck9wdGlvbmFsIjogMCwNCiAgICAgICJ0b3RhbCI6IDQwMg0KICAgIH0NCiAgfQ0KfQ0K"
+    }
+  ]
+}

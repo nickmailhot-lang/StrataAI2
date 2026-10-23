@@ -1,0 +1,31 @@
+{
+  "revision": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+  "at": "2026-10-22T10:14:47.779Z",
+  "result": "Passed",
+  "run": 39750379379,
+  "job": {
+    "id": 119749635202,
+    "head_sha": "551a6bc8d2a08556e0c6b834a64c82b82fd2a112",
+    "name": "container-integration (browser-foundation, 1/1)",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "testedSynthetic": "1688fda9720de34b6c94d0800ad96cfda1284b31",
+  "version": "0.1.0-1969",
+  "imageArtifact": {
+    "id": 12416281485,
+    "sha256": "d705bbdad22d5936914de8bc8a60d7e0a50af9895c8b0e51e7db80f6fe283786"
+  },
+  "summaries": [
+    "2026-10-22T09:56:32.8634240Z   28 passed (14.4m)",
+    "2026-10-22T09:59:32.3893002Z   2 passed (3.0m)",
+    "2026-10-22T10:01:12.2421164Z   2 passed (1.3m)",
+    "2026-10-22T10:11:27.9439570Z   18 passed (10.2m)"
+  ],
+  "passed": 50,
+  "failed": 0,
+  "skipped": 0,
+  "providerLogTruncated": true,
+  "scope": "Actual current release-image Foundation: Demo28, reminders2, original attachment/cover2 and lifecycle18 all pass. Original cover consent/key/body/count/receipt/version/peer/no-navigation/privacy and deadlines remain unchanged. This is current551 qualification, not a borrowed older candidate pass.",
+  "limits": "Full native matrix, commands, notifications, strict6 normal-performance profiles, immutable release, current review and verified main integration remain required. Every older/local failure retains its actual result; no acceptance or newDone."
+}

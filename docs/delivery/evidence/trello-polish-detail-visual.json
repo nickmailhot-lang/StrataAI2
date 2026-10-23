@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-21T18:24:13.024Z",
+  "revision": "a0c63f0bcef16c24841aeeba5f14abd9579a161c",
+  "note": "Developer inspected all four final actual desktop/mobile captures: readable admitted Board/List caption, distinct editor/retained Markdown, visible Save/Close footer and sentence-case actions; responsive Search grid/readable result metadata and compact paging. Controlled fixture intentionally leaves unrelated data/transport unavailable rather than inventing a successful service. No automatic visual baseline, manual device/screen-reader/full-WCAG or whole-PRD acceptance.",
+  "captures": [
+    {
+      "path": "docs/delivery/evidence/trello-polish-detail-card-details-1280.png",
+      "sha256": "74c37d54c675a5b2a344e52da17c0f12f4a59dd24cd503d5f1a6b13ef62d54d5"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-detail-search-results-1280.png",
+      "sha256": "502f179b4aeaf1cafdf0bbecfe31754d6ef3ca0b41204d3de5720d7ec696b5fa"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-detail-card-details-390.png",
+      "sha256": "5b095d84a24531945705d820e2b1bd311f4048956b7f1318c2c73fb25b792429"
+    },
+    {
+      "path": "docs/delivery/evidence/trello-polish-detail-search-results-390.png",
+      "sha256": "54094c306f203ffcfa5efeb7e3765fcb675f1a8b762dc24e80f260c30cfa5358"
+    }
+  ],
+  "applicationRevision": "38a618b6a1c8c1f84434c09c45d13f69cd1d5c21",
+  "browserRevision": "a0c63f0bcef16c24841aeeba5f14abd9579a161c",
+  "artifacts": []
+}

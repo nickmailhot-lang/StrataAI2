@@ -1,0 +1,56 @@
+{
+  "revision": "ed46f40710c7a8c602916e784b99730276c5e2a0",
+  "at": "2026-10-22T08:41:48.020Z",
+  "result": "Failed",
+  "initialScope": {
+    "revision": "590b31a567bfb6470d2d8a0abb84d90624f36276",
+    "passed": 16,
+    "sha256": "50058e1c2eb0304fb0cc5d3410640ddc9e142701cd74d686886b15b32e6f403a",
+    "scope": "Complete initial affected default workflows, before stronger unobscured-label check."
+  },
+  "fallbackInvocation": {
+    "revision": "590b31a567bfb6470d2d8a0abb84d90624f36276",
+    "passed": 12,
+    "failed": 4,
+    "sha256": "4d82adf5d7c77becf7ad2d413b6fb692b71e1b3521b2383948c6acbf32764d33",
+    "cause": "I launched the fallback server but omitted the existing STRATAAI_E2E_WORK_UX=0 fixture argument; four Card cases correctly rejected expecting polished context on fallback.",
+    "resolution": "Rerun the full existing fallback scope with its matching mode argument. No application, assertion or timeout weakened."
+  },
+  "selectedTextOverlap": [
+    {
+      "revision": "dbcc85bb71bbe470397c50fc100ac273a79935b7",
+      "passed": 0,
+      "failed": 1,
+      "sha256": "330b823d65d60b6a8215ecfbd032ca1ebbef5f7d9da1c7e3197c889ba35c296a"
+    },
+    {
+      "revision": "ffd90e13b78ea8a0baf25f0b005fb12271dc4636",
+      "passed": 15,
+      "failed": 1,
+      "sha256": "6062ab6e6671cb8680c7b755b7d57cb3c4bf97f601336ef53e3fb39a28a01ddf"
+    },
+    {
+      "revision": "ffd90e13b78ea8a0baf25f0b005fb12271dc4636",
+      "fixture": "Uncommitted diagnostic attachment only; same fixture bytes subsequently committed in23aa8073.",
+      "passed": 0,
+      "failed": 1,
+      "sha256": "3edf6adcd655009e9d5f08c386bbc3b2fda9d4a232160832b007bf8c9eddc9f2"
+    }
+  ],
+  "evaluation": "Visual review showed complete text still overlapped the 48px dropdown arrow at 320px/200% text. Added strict real text-range/icon separation check reproduced this before repair. First scoped inset lost to MUI default selector specificity: diagnostic showed actual 32px inset despite 32px font and48px icon. Existing form-scoped utility classes now apply62px computed inset; full label wraps and never touches the arrow. Original fit, drafts, paging, permission, Axe and zero-write checks retained.",
+  "exact320Green": {
+    "revision": "23aa8073de737644d4651321db2268ea88895cfe",
+    "passed": 1,
+    "sha256": "9f188c054e83d8dbaf26eb019f71bda87bb0581068c06e55b0135b4840e06f00"
+  },
+  "browserTypes": {
+    "revision": "23aa8073de737644d4651321db2268ea88895cfe",
+    "result": "Failed",
+    "logSha256": "796e11c9c6fcede9690c512aa3ed9de182368ff139c4b7b0f05843b382b31404",
+    "errors": [
+      "TS2488 DOMRectList iterator at two new geometry-test lines"
+    ],
+    "repair": "Use Array.from over the same DOMRectList. Existing TypeScript libraries and exact text/icon separation predicate unchanged.",
+    "currentResult": "Browser types and one complete320px native Search case rerun ated46f407; source below records current result."
+  }
+}

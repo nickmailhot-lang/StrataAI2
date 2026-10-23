@@ -20,7 +20,18 @@ Reuse `VITE_STRATAAI_WORK_UX`: default/on applies these additive surfaces; `0` r
 
 The lazy Board drag icon is included in the existing Vite dependency optimization to prevent mid-navigation cold-development graph invalidation. This is a development startup safeguard, not a production React/renderer replacement.
 
-Card detail and Search wireframes remain design direction for later bounded increments; their existing capabilities are retained. The implementation does not copy the illustrative mockup's sample records, local state or simulated writes into the application.
+The implementation does not copy the illustrative mockup's sample records, local state or simulated writes into the application.
+
+## Second increment: Card details and Search
+
+Owners: PRD-09/16, Tasks `PRD-09-VS-01-T-05` / `PRD-16-VS-01-T-02` and their child tests; UX-003/005/006/007/008 and UXA-01–08. Prepared on an isolated branch while PR #121 remains frozen for full qualification; merge depends on its qualified integration and this increment's own complete checks.
+
+- Reuse the current Card right panel/full-screen phone dialog. Its admitted Board/List caption uses the existing memoized Card location; no additional reads, scans or new links. Withdraw that caption during protected reads, read failure or access loss. Preserve the exact dialog name, existing refs, dirty-draft guard, focus/scroll return, safe Markdown and every original recovery owner.
+- Clarify the core editor with the existing MUI surface/title hierarchy and visible Save/Close footer. Use sentence-case actions without renaming their accessible controls. No secondary command is removed or unmounted.
+- Preserve PR #119's Search guidance and PR #120's keyboard-paging changes through their actual commit histories. Lay out the same five fields in a bounded responsive grid; retain native submission, feedback/paging refs, cursor/query/acknowledgment/actor checks, unsent edits and access withdrawal. Result surfaces retain every authorized metadata field and the canonical Card URL; no invented Organization names, counts or client-side filtering.
+- Existing Work UX flag `0` restores the previous layout and typography. The singular result-count wording correction applies to both layouts; count meaning and source remain unchanged.
+
+Validate complete affected component files and eight new controlled Card/Search scenarios at 320/390/768/1280px, plus rollback, 200% text, keyboard dirty-edit cancellation/return, paging, errors and denial, and applicable Axe. Inspect actual desktop/mobile captures. Existing real-service Markdown, mutation/recovery, confidentiality, normal performance and immutable release suites remain mandatory. No current parent PRD or MVP closure is implied.
 
 ## Required evidence before integration
 

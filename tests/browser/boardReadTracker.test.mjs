@@ -1,7 +1,33 @@
 import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { trackBoardFilterChanges, trackBoardReads, trackCardVersion, waitForBoardReads } from './boardReadTracker.ts';
+import { trackBoardFilterChanges, trackBoardReads, trackBoardStarChanges, trackCardVersion, waitForBoardReads } from './boardReadTracker.ts';
+
+test('star admission observes either mutation verb once when it starts, independently of reply failure', () => {
+  const page = new EventEmitter(); page.url = () => 'https://example.test/app/org/boards/board';
+  const count = trackBoardStarChanges(page, 'board');
+  for (const method of ['PUT', 'DELETE']) {
+    const request = { method: () => method, url: () => 'https://example.test/boards/board/star?version=0' };
+    page.emit('request', request); const started = count();
+    page.emit('requestfailed', request); page.emit('response', { request: () => request, status: () => 503 });
+    assert.equal(count(), started);
+  }
+  assert.equal(count(), 2);
+});
+test('star admission cannot be satisfied by reads, siblings, another Board or transport', () => {
+  const page = new EventEmitter(); page.url = () => 'https://example.test/app/org/boards/board';
+  const count = trackBoardStarChanges(page, 'board');
+  for (const [method, path] of [['GET', '/boards/board/star'], ['POST', '/boards/board/star'],
+    ['PUT', '/boards/other/star'], ['DELETE', '/boards/board/star/events'], ['PUT', '/boards/board/starred'],
+    ['POST', '/boards/live/stars/negotiate']]) page.emit('request', { method: () => method, url: () => 'https://example.test' + path });
+  assert.equal(count(), 0);
+});
+test('star admission rejects a foreign origin even with the same Board path and method', () => {
+  const page = new EventEmitter(); page.url = () => 'https://example.test/app/org/boards/board';
+  const count = trackBoardStarChanges(page, 'board');
+  page.emit('request', { method: () => 'PUT', url: () => 'https://other.test/boards/board/star?version=0' });
+  assert.equal(count(), 0);
+});
 
 test('filter command observation counts the actual Cards Apply/Clear route exactly once per request start', () => {
   const page = new EventEmitter(); page.url = () => 'https://example.test/app/org/boards/board';

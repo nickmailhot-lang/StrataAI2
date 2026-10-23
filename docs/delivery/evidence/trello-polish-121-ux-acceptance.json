@@ -1,0 +1,104 @@
+{
+  "revision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+  "at": "2026-10-22T00:32:14.984Z",
+  "result": "Passed",
+  "reviewer": "Codex acting in the user-delegated Principal Software Architect, Product Owner and UX Engineering Lead role",
+  "scope": "Only the existing bounded Organization/Work presentation Task and Test, approved Trello-style direction using existing navigation and MUI. No parent UX/feature PRD closure or global MVP/WCAG/baseline acceptance.",
+  "criteriaReviewed": [
+    {
+      "id": "UX-003-VS-03-T-02/AC-01",
+      "ownerId": "UX-003-VS-03-T-02",
+      "sourceId": "AC-01",
+      "text": "Reuse the existing admitted Organization-name header; present authorized Organization/board links as readable surfaces and compact list/card hierarchy with equivalent named drag controls. Preserve source identities, pagination, every command/recovery owner, long labels, role withdrawal and independent lifecycle/Portal paths; existing Work UX flag restores previous presentation.",
+      "sourceRefs": [
+        "UX-003/UX-003-AC-03",
+        "PRD-03/WS-FR-001",
+        "PRD-06/KANBAN-FR-001"
+      ],
+      "status": "Unverified",
+      "evidenceIds": []
+    },
+    {
+      "id": "UX-003-VS-03-T-02-TEST-01/AC-01",
+      "ownerId": "UX-003-VS-03-T-02-TEST-01",
+      "sourceId": "AC-01",
+      "text": "Affected complete component suites and four-width rendered keyboard/Axe/zoom checks validate authorized discovery, stable Board/Card links and return, visible drag/rename/move controls, no implicit writes, denied/private withdrawal and original flag rollback. Fresh full real-service/release/role checks remain mandatory before integration.",
+      "sourceRefs": [
+        "UX-003/UX-003-AC-03",
+        "PRD-03/WS-FR-001",
+        "PRD-06/KANBAN-FR-001"
+      ],
+      "status": "Unverified",
+      "evidenceIds": []
+    }
+  ],
+  "visual": {
+    "executionSource": "49c5bbce0c420561da549bc36395f61dc646de79",
+    "inspection": "Developer inspected actual desktop/mobile standard-text Board and Organization captures: readable authorized names, bounded board tiles, label/title hierarchy, visible named 44px handles, retained actions and horizontal list canvas. Four-width keyboard/reflow/200%text/Axe passed separately. Quiet transport exposes existing Recovering board updates status; no live-service acceptance. No screen-reader/device/full-WCAG certification or screenshot baseline blessing.",
+    "captures": [
+      {
+        "path": "docs/delivery/evidence/trello-polish-organization-work-1280.png",
+        "sha256": "ada70c0a627b5b2704049d7467c544374ded2514891c315812a0718c229de88f"
+      },
+      {
+        "path": "docs/delivery/evidence/trello-polish-work-board-standard-1280.png",
+        "sha256": "ee6482a7092acc97ee141f2684f3e736ee5443880c5a9ceb90b79e8138a9604f"
+      },
+      {
+        "path": "docs/delivery/evidence/trello-polish-organization-work-390.png",
+        "sha256": "65728f5d2e310fc33cd0812c93c16727c0bc604d24b0db0d176d4e50c8d2997a"
+      },
+      {
+        "path": "docs/delivery/evidence/trello-polish-work-board-standard-390.png",
+        "sha256": "09ac7d0a1188dea76dbbbf03bc631809e8683f0dfde199a0cc55f5d47d0eff57"
+      }
+    ],
+    "presentationInputsEqualCurrentRevision": [
+      {
+        "path": "apps/web/src/features/organizations/OrganizationHome.tsx",
+        "sha256": "62ec3c93f200e45024f386ea7a777b5256e11dfcdc66099a39d729a190ce0b52"
+      },
+      {
+        "path": "apps/web/src/features/kanban/BoardScreen.tsx",
+        "sha256": "617fb6746cf7b9f4868c1f61c99efde8d9a369cf91fb105f1a537b83c7a963e1"
+      },
+      {
+        "path": "apps/web/src/features/kanban/BoardCardLink.tsx",
+        "sha256": "9be78636351fd45491978bef8bb656863300b698c38f8b73e443d144d4c73df1"
+      },
+      {
+        "path": "apps/web/src/features/kanban/CardDragItem.tsx",
+        "sha256": "29fead6f43c620675af80edbdafa98b24ee16d37a1152b5efee55ec661bf7424"
+      },
+      {
+        "path": "apps/web/src/features/kanban/ListDragColumn.tsx",
+        "sha256": "ec6455fba53291b08934b89f87ca6a2a16da00097c04b6a33239fed5ffbb6d6d"
+      }
+    ]
+  },
+  "currentWorkflowEvidence": {
+    "ciHead": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+    "run": 39674641269,
+    "fullBrowser": {
+      "passed": 488,
+      "existingMailProfileSkips": 2
+    },
+    "foundationScopes": [
+      28,
+      2,
+      2,
+      18
+    ],
+    "strictBoardManagementScope44": "Passed, including original phone metadata recovery failure.",
+    "nativeOriginalScrollCases": "Desktop mouse, phone mouse and phone touch passed with exact cancellation/no-write/persisted-list and keyboard Card return/scroll assertions.",
+    "settingsDraftRecovery": "Desktop and phone passed with unchanged original receipt and exact discarded-draft value assertions.",
+    "normalPerformanceAllSix": "Passed within original strict budgets; no p95/sample/count relaxation.",
+    "rolesSecurity": "Required PG/source/exact-image authorization, strict verified-account and all complete native regression/security gates Passed."
+  },
+  "rollbackAndResponsive": "Actual source-specific default/rollback four-width controlled checks (320/390/768/1280),200% text,Axe and named44px drag targets retained. Current immutable default workflows and normal performance Passed. Local rollback checks do not claim an independently shipped rollback release image.",
+  "limits": [
+    "Acceptance is bounded to the reviewed Organization/Work increment; actual target integration is recorded separately after normal merge.",
+    "Five presentation modules match inspected49c5 captures byte-for-byte at source level; global screenshot-baseline approval/manual screen-reader or device certification is not claimed.",
+    "Card/Search source3f9a and original119/120 work remain draft122, Testing and unaccepted pending their own complete final-head gates."
+  ]
+}

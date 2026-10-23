@@ -1,0 +1,1549 @@
+{
+  "revision": "ed46f40710c7a8c602916e784b99730276c5e2a0",
+  "at": "2026-10-22T08:41:48.020Z",
+  "result": "Passed",
+  "browser": [
+    {
+      "mode": "default",
+      "revision": "23aa8073de737644d4651321db2268ea88895cfe",
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/lifecycle-consumer-admission.spec.ts",
+            "tests/browser/trello-card-search.spec.ts",
+            "--output=../trello-122-org-search-qualified-default-results",
+            "--reporter=list,json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-122-org-search-qualified-default-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "list"
+            ],
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "lifecycle-consumer-admission.spec.ts",
+            "file": "lifecycle-consumer-admission.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-005 lifecycle replay resumes from unadmitted publication at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6922,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:34:11.441Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-74f8a23a007917b0c939",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from admitted publication at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6821,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:34:18.544Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-6bdbcfcb068ebf400ee0",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from unadmitted publication at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7180,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:34:25.392Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-a98cc77338fcb9eed084",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from admitted publication at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6582,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:34:32.596Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-2fbf77071dd95656ba3b",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from unadmitted publication at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6488,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:34:39.202Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-2110d8fd31fc42baa297",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from admitted publication at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6419,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:34:45.710Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-e8aeb84cd24f486bd75b",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from unadmitted publication at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6408,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:34:52.149Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-3f11e0f8fe116c4b403b",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from admitted publication at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6684,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:34:58.577Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-973060595bb594cd28b7",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              }
+            ]
+          },
+          {
+            "title": "trello-card-search.spec.ts",
+            "file": "trello-card-search.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9367,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:35:05.311Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-e43dedaf95f0fcc17cc3",
+                "file": "trello-card-search.spec.ts",
+                "line": 71,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6962,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:35:14.694Z",
+                        "annotations": [],
+                        "attachments": [
+                          {
+                            "name": "selected-scope-layout",
+                            "contentType": "application/json",
+                            "body": "eyJjbGFzc2VzIjoiTXVpU2VsZWN0LXNlbGVjdCBNdWlTZWxlY3Qtb3V0bGluZWQgTXVpSW5wdXRCYXNlLWlucHV0IE11aU91dGxpbmVkSW5wdXQtaW5wdXQgY3NzLTFuMmppaHgtTXVpTmF0aXZlU2VsZWN0LXJvb3QtTXVpU2VsZWN0LXNlbGVjdC1NdWlJbnB1dEJhc2UtaW5wdXQtTXVpT3V0bGluZWRJbnB1dC1pbnB1dCIsInBhZGRpbmdSaWdodCI6IjYycHgiLCJmb250U2l6ZSI6IjMycHgiLCJ3aGl0ZVNwYWNlIjoibm9ybWFsIiwiaWNvbiI6eyJ4IjoxMTg0LCJ5Ijo2NDQuNTMxMjUsIndpZHRoIjo0OCwiaGVpZ2h0Ijo0OCwidG9wIjo2NDQuNTMxMjUsInJpZ2h0IjoxMjMyLCJib3R0b20iOjY5Mi41MzEyNSwibGVmdCI6MTE4NH0sInRleHQiOlt7IngiOjMwMywieSI6NjQ2LjUzMTI1LCJ3aWR0aCI6MjAwLjk4NDM3NSwiaGVpZ2h0Ijo0MywidG9wIjo2NDYuNTMxMjUsInJpZ2h0Ijo1MDMuOTg0Mzc1LCJib3R0b20iOjY4OS41MzEyNSwibGVmdCI6MzAzfV19"
+                          }
+                        ]
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-1d1e09e5db00a243d993",
+                "file": "trello-card-search.spec.ts",
+                "line": 115,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9219,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:35:21.678Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-79a5c6c39d75bb393db9",
+                "file": "trello-card-search.spec.ts",
+                "line": 71,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7445,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:35:30.915Z",
+                        "annotations": [],
+                        "attachments": [
+                          {
+                            "name": "selected-scope-layout",
+                            "contentType": "application/json",
+                            "body": "eyJjbGFzc2VzIjoiTXVpU2VsZWN0LXNlbGVjdCBNdWlTZWxlY3Qtb3V0bGluZWQgTXVpSW5wdXRCYXNlLWlucHV0IE11aU91dGxpbmVkSW5wdXQtaW5wdXQgY3NzLTFuMmppaHgtTXVpTmF0aXZlU2VsZWN0LXJvb3QtTXVpU2VsZWN0LXNlbGVjdC1NdWlJbnB1dEJhc2UtaW5wdXQtTXVpT3V0bGluZWRJbnB1dC1pbnB1dCIsInBhZGRpbmdSaWdodCI6IjYycHgiLCJmb250U2l6ZSI6IjMycHgiLCJ3aGl0ZVNwYWNlIjoibm9ybWFsIiwiaWNvbiI6eyJ4Ijo2ODAsInkiOjY4NC41MzEyNSwid2lkdGgiOjQ4LCJoZWlnaHQiOjQ4LCJ0b3AiOjY4NC41MzEyNSwicmlnaHQiOjcyOCwiYm90dG9tIjo3MzIuNTMxMjUsImxlZnQiOjY4MH0sInRleHQiOlt7IngiOjI5NSwieSI6Njg2LjUzMTI1LCJ3aWR0aCI6MjAwLjk4NDM3NSwiaGVpZ2h0Ijo0MywidG9wIjo2ODYuNTMxMjUsInJpZ2h0Ijo0OTUuOTg0Mzc1LCJib3R0b20iOjcyOS41MzEyNSwibGVmdCI6Mjk1fV19"
+                          }
+                        ]
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-b5b2babffb5f2fc5800e",
+                "file": "trello-card-search.spec.ts",
+                "line": 115,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9881,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:35:38.381Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-a8495084966e23923c68",
+                "file": "trello-card-search.spec.ts",
+                "line": 71,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6737,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:35:48.286Z",
+                        "annotations": [],
+                        "attachments": [
+                          {
+                            "name": "selected-scope-layout",
+                            "contentType": "application/json",
+                            "body": "eyJjbGFzc2VzIjoiTXVpU2VsZWN0LXNlbGVjdCBNdWlTZWxlY3Qtb3V0bGluZWQgTXVpSW5wdXRCYXNlLWlucHV0IE11aU91dGxpbmVkSW5wdXQtaW5wdXQgY3NzLTFuMmppaHgtTXVpTmF0aXZlU2VsZWN0LXJvb3QtTXVpU2VsZWN0LXNlbGVjdC1NdWlJbnB1dEJhc2UtaW5wdXQtTXVpT3V0bGluZWRJbnB1dC1pbnB1dCIsInBhZGRpbmdSaWdodCI6IjYycHgiLCJmb250U2l6ZSI6IjMycHgiLCJ3aGl0ZVNwYWNlIjoibm9ybWFsIiwiaWNvbiI6eyJ4IjozMDIsInkiOjgzNi41MzEyNSwid2lkdGgiOjQ4LCJoZWlnaHQiOjQ4LCJ0b3AiOjgzNi41MzEyNSwicmlnaHQiOjM1MCwiYm90dG9tIjo4ODQuNTMxMjUsImxlZnQiOjMwMn0sInRleHQiOlt7IngiOjQ3LCJ5Ijo4MzguNTMxMjUsIndpZHRoIjoyMDAuOTg0Mzc1LCJoZWlnaHQiOjQzLCJ0b3AiOjgzOC41MzEyNSwicmlnaHQiOjI0Ny45ODQzNzUsImJvdHRvbSI6ODgxLjUzMTI1LCJsZWZ0Ijo0N31dfQ=="
+                          }
+                        ]
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-0aaadd3862b8bec1a0d7",
+                "file": "trello-card-search.spec.ts",
+                "line": 115,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9097,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:35:55.041Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-fabb5e152086af875f1e",
+                "file": "trello-card-search.spec.ts",
+                "line": 71,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6903,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:36:04.158Z",
+                        "annotations": [],
+                        "attachments": [
+                          {
+                            "name": "selected-scope-layout",
+                            "contentType": "application/json",
+                            "body": "eyJjbGFzc2VzIjoiTXVpU2VsZWN0LXNlbGVjdCBNdWlTZWxlY3Qtb3V0bGluZWQgTXVpSW5wdXRCYXNlLWlucHV0IE11aU91dGxpbmVkSW5wdXQtaW5wdXQgY3NzLTFuMmppaHgtTXVpTmF0aXZlU2VsZWN0LXJvb3QtTXVpU2VsZWN0LXNlbGVjdC1NdWlJbnB1dEJhc2UtaW5wdXQtTXVpT3V0bGluZWRJbnB1dC1pbnB1dCIsInBhZGRpbmdSaWdodCI6IjYycHgiLCJmb250U2l6ZSI6IjMycHgiLCJ3aGl0ZVNwYWNlIjoibm9ybWFsIiwiaWNvbiI6eyJ4IjoyMzIsInkiOjQ0OC41MzEyNSwid2lkdGgiOjQ4LCJoZWlnaHQiOjQ4LCJ0b3AiOjQ0OC41MzEyNSwicmlnaHQiOjI4MCwiYm90dG9tIjo0OTYuNTMxMjUsImxlZnQiOjIzMn0sInRleHQiOlt7IngiOjQ3LCJ5Ijo0MjcuNTMxMjUsIndpZHRoIjoxMjMuMzEyNSwiaGVpZ2h0Ijo0MywidG9wIjo0MjcuNTMxMjUsInJpZ2h0IjoxNzAuMzEyNSwiYm90dG9tIjo0NzAuNTMxMjUsImxlZnQiOjQ3fSx7IngiOjQ3LCJ5Ijo0NzMuNTMxMjUsIndpZHRoIjo2OC45MDYyNSwiaGVpZ2h0Ijo0MywidG9wIjo0NzMuNTMxMjUsInJpZ2h0IjoxMTUuOTA2MjUsImJvdHRvbSI6NTE2LjUzMTI1LCJsZWZ0Ijo0N31dfQ=="
+                          }
+                        ]
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-9f3f4eb747f4be2a91ba",
+                "file": "trello-card-search.spec.ts",
+                "line": 115,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-22T08:34:10.527Z",
+          "duration": 121072.164,
+          "expected": 16,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      "sha256": "18649ace3b5b3e86c12640db1e35ff8ca15e6332064234894e733b40589b9930"
+    },
+    {
+      "mode": "rollback",
+      "revision": "23aa8073de737644d4651321db2268ea88895cfe",
+      "report": {
+        "config": {
+          "argv": [
+            "C:\\Program Files\\nodejs\\node.exe",
+            "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+            "test",
+            "tests/browser/lifecycle-consumer-admission.spec.ts",
+            "tests/browser/trello-card-search.spec.ts",
+            "--output=../trello-122-org-search-qualified-rollback-results",
+            "--reporter=list,json"
+          ],
+          "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+          "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+          "failOnFlakyTests": false,
+          "forbidOnly": false,
+          "fullyParallel": false,
+          "globalSetup": null,
+          "globalTeardown": null,
+          "globalTimeout": 0,
+          "grep": {},
+          "grepInvert": null,
+          "maxFailures": 0,
+          "metadata": {
+            "actualWorkers": 1
+          },
+          "preserveOutput": "always",
+          "projects": [
+            {
+              "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-122-org-search-qualified-rollback-results",
+              "repeatEach": 1,
+              "retries": 0,
+              "metadata": {
+                "actualWorkers": 1
+              },
+              "id": "",
+              "name": "",
+              "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+              "testIgnore": [],
+              "testMatch": [
+                "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+              ],
+              "timeout": 30000
+            }
+          ],
+          "quiet": false,
+          "reporter": [
+            [
+              "list"
+            ],
+            [
+              "json"
+            ]
+          ],
+          "reportSlowTests": {
+            "max": 5,
+            "threshold": 300000
+          },
+          "shard": null,
+          "tags": [],
+          "updateSnapshots": "missing",
+          "updateSourceMethod": "patch",
+          "version": "1.63.0",
+          "workers": 1,
+          "webServer": null
+        },
+        "suites": [
+          {
+            "title": "lifecycle-consumer-admission.spec.ts",
+            "file": "lifecycle-consumer-admission.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "UX-005 lifecycle replay resumes from unadmitted publication at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6663,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:36:16.844Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-74f8a23a007917b0c939",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from admitted publication at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6498,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:36:23.799Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-6bdbcfcb068ebf400ee0",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from unadmitted publication at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6762,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:36:30.319Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-a98cc77338fcb9eed084",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from admitted publication at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6419,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:36:37.104Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-2fbf77071dd95656ba3b",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from unadmitted publication at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6266,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:36:43.540Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-2110d8fd31fc42baa297",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from admitted publication at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6337,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:36:49.825Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-e8aeb84cd24f486bd75b",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from unadmitted publication at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6417,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:36:56.180Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-3f11e0f8fe116c4b403b",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              },
+              {
+                "title": "UX-005 lifecycle replay resumes from admitted publication at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6251,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:37:02.617Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "cb0fee83bbd505b8d17a-973060595bb594cd28b7",
+                "file": "lifecycle-consumer-admission.spec.ts",
+                "line": 64,
+                "column": 7
+              }
+            ]
+          },
+          {
+            "title": "trello-card-search.spec.ts",
+            "file": "trello-card-search.spec.ts",
+            "column": 0,
+            "line": 0,
+            "specs": [
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9206,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:37:08.913Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-e43dedaf95f0fcc17cc3",
+                "file": "trello-card-search.spec.ts",
+                "line": 71,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 1280px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6793,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:37:18.138Z",
+                        "annotations": [],
+                        "attachments": [
+                          {
+                            "name": "selected-scope-layout",
+                            "contentType": "application/json",
+                            "body": "eyJjbGFzc2VzIjoiTXVpU2VsZWN0LXNlbGVjdCBNdWlTZWxlY3Qtb3V0bGluZWQgTXVpSW5wdXRCYXNlLWlucHV0IE11aU91dGxpbmVkSW5wdXQtaW5wdXQgY3NzLTFuMmppaHgtTXVpTmF0aXZlU2VsZWN0LXJvb3QtTXVpU2VsZWN0LXNlbGVjdC1NdWlJbnB1dEJhc2UtaW5wdXQtTXVpT3V0bGluZWRJbnB1dC1pbnB1dCIsInBhZGRpbmdSaWdodCI6IjYycHgiLCJmb250U2l6ZSI6IjMycHgiLCJ3aGl0ZVNwYWNlIjoibm9ybWFsIiwiaWNvbiI6eyJ4IjoxMjAxLCJ5Ijo2MjcuNTMxMjUsIndpZHRoIjo0OCwiaGVpZ2h0Ijo0OCwidG9wIjo2MjcuNTMxMjUsInJpZ2h0IjoxMjQ5LCJib3R0b20iOjY3NS41MzEyNSwibGVmdCI6MTIwMX0sInRleHQiOlt7IngiOjI4NiwieSI6NjI5LjUzMTI1LCJ3aWR0aCI6MjAwLjk4NDM3NSwiaGVpZ2h0Ijo0MywidG9wIjo2MjkuNTMxMjUsInJpZ2h0Ijo0ODYuOTg0Mzc1LCJib3R0b20iOjY3Mi41MzEyNSwibGVmdCI6Mjg2fV19"
+                          }
+                        ]
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-1d1e09e5db00a243d993",
+                "file": "trello-card-search.spec.ts",
+                "line": 115,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9221,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:37:24.952Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-79a5c6c39d75bb393db9",
+                "file": "trello-card-search.spec.ts",
+                "line": 71,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 768px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 7294,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:37:34.195Z",
+                        "annotations": [],
+                        "attachments": [
+                          {
+                            "name": "selected-scope-layout",
+                            "contentType": "application/json",
+                            "body": "eyJjbGFzc2VzIjoiTXVpU2VsZWN0LXNlbGVjdCBNdWlTZWxlY3Qtb3V0bGluZWQgTXVpSW5wdXRCYXNlLWlucHV0IE11aU91dGxpbmVkSW5wdXQtaW5wdXQgY3NzLTFuMmppaHgtTXVpTmF0aXZlU2VsZWN0LXJvb3QtTXVpU2VsZWN0LXNlbGVjdC1NdWlJbnB1dEJhc2UtaW5wdXQtTXVpT3V0bGluZWRJbnB1dC1pbnB1dCIsInBhZGRpbmdSaWdodCI6IjYycHgiLCJmb250U2l6ZSI6IjMycHgiLCJ3aGl0ZVNwYWNlIjoibm9ybWFsIiwiaWNvbiI6eyJ4Ijo2OTcsInkiOjY2Ny41MzEyNSwid2lkdGgiOjQ4LCJoZWlnaHQiOjQ4LCJ0b3AiOjY2Ny41MzEyNSwicmlnaHQiOjc0NSwiYm90dG9tIjo3MTUuNTMxMjUsImxlZnQiOjY5N30sInRleHQiOlt7IngiOjI3OCwieSI6NjY5LjUzMTI1LCJ3aWR0aCI6MjAwLjk4NDM3NSwiaGVpZ2h0Ijo0MywidG9wIjo2NjkuNTMxMjUsInJpZ2h0Ijo0NzguOTg0Mzc1LCJib3R0b20iOjcxMi41MzEyNSwibGVmdCI6Mjc4fV19"
+                          }
+                        ]
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-b5b2babffb5f2fc5800e",
+                "file": "trello-card-search.spec.ts",
+                "line": 115,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9040,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:37:41.511Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-a8495084966e23923c68",
+                "file": "trello-card-search.spec.ts",
+                "line": 71,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 390px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6757,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:37:50.571Z",
+                        "annotations": [],
+                        "attachments": [
+                          {
+                            "name": "selected-scope-layout",
+                            "contentType": "application/json",
+                            "body": "eyJjbGFzc2VzIjoiTXVpU2VsZWN0LXNlbGVjdCBNdWlTZWxlY3Qtb3V0bGluZWQgTXVpSW5wdXRCYXNlLWlucHV0IE11aU91dGxpbmVkSW5wdXQtaW5wdXQgY3NzLTFuMmppaHgtTXVpTmF0aXZlU2VsZWN0LXJvb3QtTXVpU2VsZWN0LXNlbGVjdC1NdWlJbnB1dEJhc2UtaW5wdXQtTXVpT3V0bGluZWRJbnB1dC1pbnB1dCIsInBhZGRpbmdSaWdodCI6IjYycHgiLCJmb250U2l6ZSI6IjMycHgiLCJ3aGl0ZVNwYWNlIjoibm9ybWFsIiwiaWNvbiI6eyJ4IjozMTksInkiOjgyOC41MzEyNSwid2lkdGgiOjQ4LCJoZWlnaHQiOjQ4LCJ0b3AiOjgyOC41MzEyNSwicmlnaHQiOjM2NywiYm90dG9tIjo4NzYuNTMxMjUsImxlZnQiOjMxOX0sInRleHQiOlt7IngiOjMwLCJ5Ijo4MzAuNTMxMjUsIndpZHRoIjoyMDAuOTg0Mzc1LCJoZWlnaHQiOjQzLCJ0b3AiOjgzMC41MzEyNSwicmlnaHQiOjIzMC45ODQzNzUsImJvdHRvbSI6ODczLjUzMTI1LCJsZWZ0IjozMH1dfQ=="
+                          }
+                        ]
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-0aaadd3862b8bec1a0d7",
+                "file": "trello-card-search.spec.ts",
+                "line": 115,
+                "column": 7
+              },
+              {
+                "title": "PRD-09 Trello Card context, dirty return and private withdrawal at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 9209,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:37:57.353Z",
+                        "annotations": [],
+                        "attachments": []
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-fabb5e152086af875f1e",
+                "file": "trello-card-search.spec.ts",
+                "line": 71,
+                "column": 7
+              },
+              {
+                "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px",
+                "ok": true,
+                "tags": [],
+                "tests": [
+                  {
+                    "timeout": 30000,
+                    "annotations": [],
+                    "expectedStatus": "passed",
+                    "projectId": "",
+                    "projectName": "",
+                    "results": [
+                      {
+                        "workerIndex": 0,
+                        "parallelIndex": 0,
+                        "status": "passed",
+                        "duration": 6656,
+                        "errors": [],
+                        "stdout": [],
+                        "stderr": [],
+                        "retry": 0,
+                        "startTime": "2026-10-22T08:38:06.578Z",
+                        "annotations": [],
+                        "attachments": [
+                          {
+                            "name": "selected-scope-layout",
+                            "contentType": "application/json",
+                            "body": "eyJjbGFzc2VzIjoiTXVpU2VsZWN0LXNlbGVjdCBNdWlTZWxlY3Qtb3V0bGluZWQgTXVpSW5wdXRCYXNlLWlucHV0IE11aU91dGxpbmVkSW5wdXQtaW5wdXQgY3NzLTFuMmppaHgtTXVpTmF0aXZlU2VsZWN0LXJvb3QtTXVpU2VsZWN0LXNlbGVjdC1NdWlJbnB1dEJhc2UtaW5wdXQtTXVpT3V0bGluZWRJbnB1dC1pbnB1dCIsInBhZGRpbmdSaWdodCI6IjYycHgiLCJmb250U2l6ZSI6IjMycHgiLCJ3aGl0ZVNwYWNlIjoibm9ybWFsIiwiaWNvbiI6eyJ4IjoyNDksInkiOjQyNS41MzEyNSwid2lkdGgiOjQ4LCJoZWlnaHQiOjQ4LCJ0b3AiOjQyNS41MzEyNSwicmlnaHQiOjI5NywiYm90dG9tIjo0NzMuNTMxMjUsImxlZnQiOjI0OX0sInRleHQiOlt7IngiOjMwLCJ5Ijo0MjcuNTMxMjUsIndpZHRoIjoyMDAuOTg0Mzc1LCJoZWlnaHQiOjQzLCJ0b3AiOjQyNy41MzEyNSwicmlnaHQiOjIzMC45ODQzNzUsImJvdHRvbSI6NDcwLjUzMTI1LCJsZWZ0IjozMH1dfQ=="
+                          }
+                        ]
+                      }
+                    ],
+                    "status": "expected"
+                  }
+                ],
+                "id": "3814b5769fbaf3e158db-9f3f4eb747f4be2a91ba",
+                "file": "trello-card-search.spec.ts",
+                "line": 115,
+                "column": 7
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "stats": {
+          "startTime": "2026-10-22T08:36:15.774Z",
+          "duration": 117912.257,
+          "expected": 16,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      "sha256": "c0355e394046a90eaa2b63a4c9b8b88acfe6d92546399140807227f394c76f70"
+    }
+  ],
+  "current320": {
+    "revision": "ed46f40710c7a8c602916e784b99730276c5e2a0",
+    "report": {
+      "config": {
+        "argv": [
+          "C:\\Program Files\\nodejs\\node.exe",
+          "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\node_modules\\@playwright\\test\\cli.js",
+          "test",
+          "tests/browser/trello-card-search.spec.ts",
+          "-g",
+          "Search surfaces.*320px",
+          "--output=../trello-122-search-final-type-native-results",
+          "--reporter=list,json"
+        ],
+        "configFile": "C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\playwright.config.ts",
+        "rootDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+        "failOnFlakyTests": false,
+        "forbidOnly": false,
+        "fullyParallel": false,
+        "globalSetup": null,
+        "globalTeardown": null,
+        "globalTimeout": 0,
+        "grep": {},
+        "grepInvert": null,
+        "maxFailures": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "preserveOutput": "always",
+        "projects": [
+          {
+            "outputDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/trello-122-search-final-type-native-results",
+            "repeatEach": 1,
+            "retries": 0,
+            "metadata": {
+              "actualWorkers": 1
+            },
+            "id": "",
+            "name": "",
+            "testDir": "C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser",
+            "testIgnore": [],
+            "testMatch": [
+              "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+            ],
+            "timeout": 30000
+          }
+        ],
+        "quiet": false,
+        "reporter": [
+          [
+            "list"
+          ],
+          [
+            "json"
+          ]
+        ],
+        "reportSlowTests": {
+          "max": 5,
+          "threshold": 300000
+        },
+        "shard": null,
+        "tags": [],
+        "updateSnapshots": "missing",
+        "updateSourceMethod": "patch",
+        "version": "1.63.0",
+        "workers": 1,
+        "webServer": null
+      },
+      "suites": [
+        {
+          "title": "trello-card-search.spec.ts",
+          "file": "trello-card-search.spec.ts",
+          "column": 0,
+          "line": 0,
+          "specs": [
+            {
+              "title": "PRD-16 Trello Search surfaces preserve drafts, paging and denial at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7437,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-22T08:40:59.853Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "selected-scope-layout",
+                          "contentType": "application/json",
+                          "body": "eyJjbGFzc2VzIjoiTXVpU2VsZWN0LXNlbGVjdCBNdWlTZWxlY3Qtb3V0bGluZWQgTXVpSW5wdXRCYXNlLWlucHV0IE11aU91dGxpbmVkSW5wdXQtaW5wdXQgY3NzLTFuMmppaHgtTXVpTmF0aXZlU2VsZWN0LXJvb3QtTXVpU2VsZWN0LXNlbGVjdC1NdWlJbnB1dEJhc2UtaW5wdXQtTXVpT3V0bGluZWRJbnB1dC1pbnB1dCIsInBhZGRpbmdSaWdodCI6IjYycHgiLCJmb250U2l6ZSI6IjMycHgiLCJ3aGl0ZVNwYWNlIjoibm9ybWFsIiwiaWNvbiI6eyJ4IjoyMzIsInkiOjQ0OC41MzEyNSwid2lkdGgiOjQ4LCJoZWlnaHQiOjQ4LCJ0b3AiOjQ0OC41MzEyNSwicmlnaHQiOjI4MCwiYm90dG9tIjo0OTYuNTMxMjUsImxlZnQiOjIzMn0sInRleHQiOlt7IngiOjQ3LCJ5Ijo0MjcuNTMxMjUsIndpZHRoIjoxMjMuMzEyNSwiaGVpZ2h0Ijo0MywidG9wIjo0MjcuNTMxMjUsInJpZ2h0IjoxNzAuMzEyNSwiYm90dG9tIjo0NzAuNTMxMjUsImxlZnQiOjQ3fSx7IngiOjQ3LCJ5Ijo0NzMuNTMxMjUsIndpZHRoIjo2OC45MDYyNSwiaGVpZ2h0Ijo0MywidG9wIjo0NzMuNTMxMjUsInJpZ2h0IjoxMTUuOTA2MjUsImJvdHRvbSI6NTE2LjUzMTI1LCJsZWZ0Ijo0N31dfQ=="
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3814b5769fbaf3e158db-9f3f4eb747f4be2a91ba",
+              "file": "trello-card-search.spec.ts",
+              "line": 115,
+              "column": 7
+            }
+          ]
+        }
+      ],
+      "errors": [],
+      "stats": {
+        "startTime": "2026-10-22T08:40:58.707Z",
+        "duration": 8939.268,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "sha256": "a022054c8f39f209f9683d99657cb5223372fbba795ec9f628b0770314d266cb"
+  },
+  "unit": {
+    "revision": "23aa8073de737644d4651321db2268ea88895cfe",
+    "completeFiles": 5,
+    "passed": 75,
+    "failed": 0
+  },
+  "logs": [
+    {
+      "name": "org-final-unit",
+      "sha256": "b8deb9b908d9c1055d609afceec2bf1a55f8e9477da92d55cfdcee52402f4f58",
+      "text": "npm notice run @strataai/web@0.1.0 test\r\nnpm notice run vitest run src/features/organizations/OrganizationOperationalLifecyclePage.test.tsx src/features/organizations/operationalLifecycleLive.test.ts src/features/organizations/operationalLifecycleReplay.test.ts src/features/organizations/OrganizationOperationalLifecycleTelemetry.test.tsx src/features/search/GlobalSearchPage.test.tsx\r\n\r\n RUN  v5.0.2 C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/apps/web\r\n\r\n\r\n Test Files  5 passed (5)\r\n      Tests  75 passed (75)\r\n   Start at  01:38:27\r\n   Duration  17.25s (tests 39%, import 27%, environment 26%, setup 5%, transform 3%, worker 1%)\r\n\r\n"
+    },
+    {
+      "name": "org-final-web-types",
+      "sha256": "47a06363ea70d9255b80270fd785fb4d029671404bbbaa2e27412fd1901cd624",
+      "text": "npm notice run strataai2@0.1.0 typecheck\r\nnpm notice run npm --workspace @strataai/web run typecheck\r\nnpm notice run @strataai/web@0.1.0 typecheck\r\nnpm notice run tsc --noEmit\r\n"
+    },
+    {
+      "name": "org-final-browser-types",
+      "sha256": "9fdaf5b8e9d16afa87f80f84b07bce06e06dd3147b467f09050495f2d0246090",
+      "text": "npm notice run strataai2@0.1.0 typecheck:browser\r\nnpm notice run tsc -p tsconfig.browser.json\r\n"
+    },
+    {
+      "name": "org-final-lint",
+      "sha256": "22aa6854a5eecd7fe305677d02d65352128d1b26dce7a01489e33ef4080041ef",
+      "text": "npm notice run strataai2@0.1.0 lint\r\nnpm notice run npm --workspace @strataai/web run lint\r\nnpm notice run @strataai/web@0.1.0 lint\r\nnpm notice run eslint src --max-warnings=0\r\n"
+    },
+    {
+      "name": "org-guards",
+      "sha256": "42df960090f962d85413665292a7ce886a287902b65a916ffeb1fd59fca7ce03",
+      "text": "(node:22872) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/nickm/Documents/Codex/2026-10-16/you-should-incorporate-the-ux-redesign/work/StrataAI2/tests/browser/keyboardAdmission.ts is not specified and it doesn't parse as CommonJS.\r\nReparsing as ES module because module syntax was detected. This incurs a performance overhead.\r\nTo eliminate this warning, add \"type\": \"module\" to \\\\?\\C:\\Users\\nickm\\Documents\\Codex\\2026-10-16\\you-should-incorporate-the-ux-redesign\\work\\StrataAI2\\package.json.\r\n(Use `node --trace-warnings ...` to show where the warning was created)\r\n✔ an admitted action dispatches exactly one Enter and stops at the expected request (27.0636ms)\r\n✔ an ignored keypress admits one request and stops once that request starts (488.5315ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-enabled (2.9904ms)\r\n✔ request observation retires the launcher while admission is waiting: observed-during-focus (3.3351ms)\r\n✔ an extra request remains a failure even when the launcher has retired (5005.2922ms)\r\n✔ an unexpected initial observation cannot trigger another Enter (0.6908ms)\r\n✔ local action observes one native activation and removes its listener (2.6007ms)\r\n✔ only an ignored local keypress is readmitted (468.0349ms)\r\n✔ local activation during focus cannot send another Enter to a retired control (1.2763ms)\r\n✔ a wrong consumer result after activation is not repaired by another activation (2.4389ms)\r\n✔ duplicate local activations remain a failure (5002.7185ms)\r\n✔ a replacement local control cannot receive the original activation (4941.6805ms)\r\n✔ read-only Tab proves native traversal without focusing its destination (1.6555ms)\r\n✔ an unobserved Shift+Tab repeats from its admitted origin only (107.9965ms)\r\n✔ broken keyboard order still fails within the original five-second budget (4927.7341ms)\r\n✔ nonmutating activity review observes its inline region before returning (2.6715ms)\r\n✔ an ignored review activation is retried only until its region opens (106.2986ms)\r\n✔ an already-open region does not require its retired launcher (0.7028ms)\r\n✔ review opening during focus cannot activate the retired launcher (108.6358ms)\r\n✔ an unopened review remains a failure within the original admission budget (4961.7131ms)\r\n✔ admitted text dispatches one native input event and one insertion (4.0249ms)\r\n✔ only an ignored insertion with no input event can be attempted again (483.5377ms)\r\n✔ a draft cleared after native input still fails its value assertion without refilling (8.0079ms)\r\n✔ a replacement control cannot receive the earlier input intent (4925.6867ms)\r\n✔ extra native input remains a failure and cannot trigger another insertion (5006.8005ms)\r\n✔ local validation observes one native submit and removes its listener (3.6776ms)\r\n✔ local validation retries only a keypress that emitted no submit (470.056ms)\r\n✔ an observed validation submit during focus cannot dispatch another Enter (108.3201ms)\r\n✔ a submit that retires its form is not replayed while its result is pending (3.3085ms)\r\n✔ a retired validation form cannot send a key to a replacement control (4924.5588ms)\r\n✔ duplicate native submits remain a failure without another activation (5008.7336ms)\r\n✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (474.0991ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (62.5732ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (253.0626ms)\r\n✔ phase guard detects eager allocation and accidental default activation (100.0911ms)\r\n✔ ARCH-02-FR-009 rejects direct and aliased browser fetch in feature clients (1496.3306ms)\r\n✔ ARCH-02-FR-009 allows the shared transport and isolated test fixtures (35.6417ms)\r\n✔ ARCH-02-FR-009 permits feature requests through apiFetch (13.4535ms)\r\n✔ MVP source discovery defers all original Board capacity cases without allocating their datasets (510.4763ms)\r\n✔ post-MVP explicit opt-in collects the original capacity cases without executing them (68.1251ms)\r\n✔ small virtualization and keyboard correctness cases remain active in every phase (266.2696ms)\r\n✔ phase guard detects eager allocation and accidental default activation (111.5986ms)\r\nℹ tests 42\r\nℹ suites 0\r\nℹ pass 42\r\nℹ fail 0\r\nℹ cancelled 0\r\nℹ skipped 0\r\nℹ todo 0\r\nℹ duration_ms 48138.9417\r\n"
+    },
+    {
+      "name": "org-shards",
+      "sha256": "ca1b1fee5d0170dba08fe9d173c906daecd917dcd399ee8d69a13265c63a5f77",
+      "text": "Browser shard coverage: 510 cases in 175 intact files; 129/127/127/127 cases across all four shards.\r\n"
+    }
+  ],
+  "unchanged": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "bcbda2abeb881172b62b68f5307cd3aa27795efe9a3d0cbcb78e013ad5f03380"
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "a2e91823c036a5a908cc3297a9382e3524bccb665136083100081faf9d593e2f"
+    },
+    {
+      "path": "playwright.attachment.config.ts",
+      "sha256": "d2d3ef276ae93c6898de7f1cbe2ab831c8e4906eac54dc4e24e70e3c72e7584f"
+    },
+    {
+      "path": "tests/browser/keyboardAdmission.ts",
+      "sha256": "6916ed36ba1c55968963518a39b66f97528665f8576b71ac93d03801522923eb"
+    },
+    {
+      "path": "apps/web/src/features/organizations/operationalLifecycleLive.ts",
+      "sha256": "665cef43604222aeb8680dea4bdf2ce6ac342ff22ce180b4022102f8a6567e99"
+    },
+    {
+      "path": "apps/web/src/features/organizations/operationalLifecycleReplay.ts",
+      "sha256": "80e28ce7d8c835c5faeb2b68513ee50fb24057d8201733bbaf6c37d3f455f9a0"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardScreen.tsx",
+      "sha256": "ccca2dbe4993f68007c5593744dae5b1469d1838f269939f006af1a1db1f3a19"
+    },
+    {
+      "path": "apps/web/src/features/kanban/CardDetailEditor.tsx",
+      "sha256": "dd5dfa5f2bad3ecee0be3fe5503d9bddc3590c5e2c7c29c1445c0463e43cca19"
+    }
+  ],
+  "provenance": "32 complete native workflows and75 units executed at23aa8073. Runtime and relevant component/unit/lifecycle fixture bytes are unchanged ated46f407. Only the Search fixture replaces two spread conversions with Array.from over the same DOMRectList; exact predicate unchanged. Current browser types, lint and one complete320px Search case rerun ated46f407. Source identities remain separate; full fresh hosted qualification mandatory.",
+  "visual": {
+    "path": "docs/delivery/evidence/trello-polish-122-search-320-readable.png",
+    "sha256": "0c78e129937dbd3f0d41725d3a19b726b36bdd737b63f053703cfa6a71f7b8c3",
+    "review": "At320px/200% text, complete Archived work wraps and remains clear of its dropdown icon; original page fit and added text/icon geometry check pass. All4 widths, both presentations, Axe, dirty drafts, native paging focus and private withdrawal pass."
+  },
+  "scope": "Controlled sources exercise real routed consumers and actual native keys. They do not qualify real-service roles/replay/Worker/release. No new Board fixture, business capability, API/schema, tenant boundary, transport cursor, command retry, deadline or CI configuration changes.",
+  "pending": "All fresh final-head hosted gates, original actual-service Organization and cover workflows, strict six-profile normal performance, immutable release, review and verified main integration remain required. Current c1 failures remain Failed."
+}

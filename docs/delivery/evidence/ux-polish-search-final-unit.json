@@ -1,0 +1,25 @@
+{
+  "sourceRevision": "547a6e0518d500e36ca3d54b5078825fcc7b792d",
+  "at": "2026-10-21T02:31:20.432384+00:00",
+  "sourceBlobs": {
+    "apps/web/src/features/search/GlobalSearchPage.tsx": "dfdfa30ba19eae2f094486ed7db3d5934e6da8e0",
+    "apps/web/src/features/search/GlobalSearchPage.test.tsx": "3b49979cbbb3579a279ef862992193098da8c9a9",
+    "tests/browser/ux-search-guidance.spec.ts": "a5a0fa1a30646ce3d11d908253d4906ad38000dd"
+  },
+  "result": "Passed",
+  "scope": "Full current affected Search page/parser/interaction and App/SurfaceAdmission files; all original cases retained. Added applied archived scope and unsent-change case.",
+  "stats": {
+    "passed": 67,
+    "failed": 0,
+    "skipped": 0,
+    "files": 5,
+    "durationSeconds": 85.86
+  },
+  "logs": [
+    {
+      "name": "ux-polish-final-unit.log",
+      "sha256": "1fa8eb6ba3fed4170de103a4b9e2fba42adf024515f9d44fed6c7b5b79d642f4",
+      "rawBase64": "bnBtIG5vdGljZSBydW4gQHN0cmF0YWFpL3dlYkAwLjEuMCB0ZXN0DQpucG0gbm90aWNlIHJ1biB2aXRlc3QgcnVuIHNyYy9mZWF0dXJlcy9zZWFyY2gvR2xvYmFsU2VhcmNoUGFnZS50ZXN0LnRzeCBzcmMvZmVhdHVyZXMvc2VhcmNoL2dsb2JhbFNlYXJjaC50ZXN0LnRzIHNyYy9mZWF0dXJlcy9zZWFyY2gvc2VhcmNoSW50ZXJhY3Rpb24udGVzdC50cyBzcmMvYXBwL0FwcC50ZXN0LnRzeCBzcmMvYXBwL1N1cmZhY2VBZG1pc3Npb24udGVzdC50c3ggLS1tYXhXb3JrZXJzPTINCg0KIFJVTiAgdjUuMC4yIEM6L1VzZXJzL25pY2ttL0RvY3VtZW50cy9Db2RleC8yMDI2LTEwLTE2L3lvdS1zaG91bGQtaW5jb3Jwb3JhdGUtdGhlLXV4LXJlZGVzaWduL3dvcmsvU3RyYXRhQUkyL2FwcHMvd2ViDQoNCg0KIFRlc3QgRmlsZXMgIDUgcGFzc2VkICg1KQ0KICAgICAgVGVzdHMgIDY3IHBhc3NlZCAoNjcpDQogICBTdGFydCBhdCAgMTk6Mjg6MDYNCiAgIER1cmF0aW9uICA4NS44NnMgKGltcG9ydCA1NiUsIHRlc3RzIDE5JSwgZW52aXJvbm1lbnQgMTglLCB0cmFuc2Zvcm0gNSUsIHNldHVwIDMlKQ0KDQogICAgSXNvbGF0ZSAgNSB3b3JrZXJzIHNwYXduZWQgwrcgfjQuOTZzIHN0YXJ0dXAgZWFjaCAoc3Bhd24gKyBlbnZpcm9ubWVudCwgcGVyIGZpbGUpDQogICAgICAgICAgICAgYXQgbGVhc3QgfjcuNDVzIGZhc3RlciB3aXRoIGlzb2xhdGU6IGZhbHNlIOKAlCByZXVzZXMgd29ya2VycyBhY3Jvc3MgZmlsZXMgaW5zdGVhZCBvZiBvbmUgcGVyIGZpbGUNCg0K"
+    }
+  ]
+}

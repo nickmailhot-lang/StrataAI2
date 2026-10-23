@@ -1,0 +1,25 @@
+{
+  "sourceRevision": "e1187ecfafa9e486e6c3f4e47827ac193c9f8a88",
+  "at": "2026-10-21T02:24:02.944513+00:00",
+  "sourceBlobs": {
+    "apps/web/src/features/search/GlobalSearchPage.tsx": "bd05b3b9784ae288f15c6b6d27a091d644233cc0",
+    "apps/web/src/features/search/GlobalSearchPage.test.tsx": "774e4721ea99c952a749b91b8aa053e4767c7537",
+    "tests/browser/ux-search-guidance.spec.ts": "c36e463c9e1892b06ee59037a7851e0039562143"
+  },
+  "result": "Passed",
+  "scope": "Full affected Search page, parser, interaction acknowledgment, App and SurfaceAdmission files; frozen source matched the committed blobs.",
+  "stats": {
+    "passed": 66,
+    "failed": 0,
+    "skipped": 0,
+    "files": 5,
+    "durationSeconds": 99.96
+  },
+  "logs": [
+    {
+      "name": "ux-polish-search-green.log",
+      "sha256": "5a98e42429bb12f13a7aca6c1b25e5a291f8c671e7ee1726ac8479f89257f5a5",
+      "rawBase64": "bnBtIG5vdGljZSBydW4gQHN0cmF0YWFpL3dlYkAwLjEuMCB0ZXN0DQpucG0gbm90aWNlIHJ1biB2aXRlc3QgcnVuIHNyYy9mZWF0dXJlcy9zZWFyY2gvR2xvYmFsU2VhcmNoUGFnZS50ZXN0LnRzeCBzcmMvZmVhdHVyZXMvc2VhcmNoL2dsb2JhbFNlYXJjaC50ZXN0LnRzIHNyYy9mZWF0dXJlcy9zZWFyY2gvc2VhcmNoSW50ZXJhY3Rpb24udGVzdC50cyBzcmMvYXBwL0FwcC50ZXN0LnRzeCBzcmMvYXBwL1N1cmZhY2VBZG1pc3Npb24udGVzdC50c3ggLS1tYXhXb3JrZXJzPTINCg0KIFJVTiAgdjUuMC4yIEM6L1VzZXJzL25pY2ttL0RvY3VtZW50cy9Db2RleC8yMDI2LTEwLTE2L3lvdS1zaG91bGQtaW5jb3Jwb3JhdGUtdGhlLXV4LXJlZGVzaWduL3dvcmsvU3RyYXRhQUkyL2FwcHMvd2ViDQoNCg0KIFRlc3QgRmlsZXMgIDUgcGFzc2VkICg1KQ0KICAgICAgVGVzdHMgIDY2IHBhc3NlZCAoNjYpDQogICBTdGFydCBhdCAgMTk6MTU6MzgNCiAgIER1cmF0aW9uICA5OS45NnMgKGltcG9ydCA2NSUsIHRlc3RzIDE1JSwgZW52aXJvbm1lbnQgMTElLCB0cmFuc2Zvcm0gNiUsIHNldHVwIDIlKQ0KDQo="
+    }
+  ]
+}

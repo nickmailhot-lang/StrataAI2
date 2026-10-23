@@ -1,0 +1,30 @@
+{
+  "revision": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+  "mergedAt": "2026-10-22T00:33:09Z",
+  "result": {
+    "sha": "4c1e27e265a71e0787e0bf40177337a5be2e2155",
+    "merged": true,
+    "message": "Pull Request successfully merged"
+  },
+  "mergeMethod": "merge",
+  "expectedHead": "1730b8915445af0fc3cb9e6d7abf126e720de39d",
+  "actualTree": "599bc9ff93992b5a62b7d4e6b8a5d12740f8b42b",
+  "actualParents": [
+    "37656975f491352a3b9e5dc4ea0b124b546318c4",
+    "1730b8915445af0fc3cb9e6d7abf126e720de39d"
+  ],
+  "testedSynthetic": "e0dbff49d36d88a5410d8014bd40d01e0fc86140",
+  "testedTree": "599bc9ff93992b5a62b7d4e6b8a5d12740f8b42b",
+  "verifiedTarget": "origin/main",
+  "verifiedTargetHead": "4c1e27e265a71e0787e0bf40177337a5be2e2155",
+  "proof": "Fresh Git fetch and actual merge object prove the expected head is an ancestor of the normal merge, that merge is in origin/main, both actual parents match the tested composition, and actual tree equals the qualified immutable release tree. No force, squash, administrative bypass or skipped required gate.",
+  "followUp": {
+    "branch": "ux/trello-card-search-polish",
+    "mainReconciliation": "ae4078dfcbdb9e87e9ed9b8ad210cfd1d424c550",
+    "parents": [
+      "73d68704589d2793653237e2a21932c134c6de0d",
+      "4c1e27e265a71e0787e0bf40177337a5be2e2155"
+    ],
+    "scope": "Normal side-branch merge of actual main preserves Card/Search and original119/120 source/history. This is not acceptance or main integration of Card/Search."
+  }
+}
