@@ -1,0 +1,151 @@
+{
+  "revision": "35c1775ac5a2ea2f8ac6a73c348a45fe41bac0e1",
+  "testedSynthetic": "23f1cf65e7c4cd5bc5ba0ed1193062d13af0a451",
+  "testedTree": "88dbdc642b4fa52162f70453795f1e96c14743d8",
+  "at": "2026-10-23T17:33:12.528353+00:00",
+  "reviewer": "Codex acting under user-delegated Principal Architect, Product Owner and UX Lead responsibilities; not an independent human approval",
+  "result": "Passed",
+  "reviewedInputs": [
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.test.tsx",
+      "sha256": "238b6fb32251a12eab3f1d66893c347051c7702024832038a3f6545bb63834ff"
+    },
+    {
+      "path": "apps/web/src/features/kanban/BoardFilterControl.tsx",
+      "sha256": "0fbccb10885760bec66f82e6e79fc4b74f947b37252ea255fb8221a0c96760af"
+    },
+    {
+      "path": "docs/card-assignment.md",
+      "sha256": "15e5b52d23553d65364d8aeebe2eb32e56e2a599db7bc5dc8326e5246a2e9067"
+    },
+    {
+      "path": "scripts/ci/test-assignable-board-members.sh",
+      "sha256": "9045d59f95ac248b17b642c910abba1362e3182b7297fa40ef19bdf582bb1e1e"
+    },
+    {
+      "path": "src/StrataAI.Infrastructure/WorkManagement/CardMemberPreviewStore.cs",
+      "sha256": "c99650d1004fb490b2a2dc12aab5f0048de198e2822357240aac3e3b698f7cca"
+    },
+    {
+      "path": "tests/StrataAI.Api.Tests/CardMemberEmptyPreviewTests.cs",
+      "sha256": "6803f73979eac515547b5a77763d50dadacdd965a49a35310ec2836cca7dc9e1"
+    },
+    {
+      "path": "tests/browser/board-filter-guidance.spec.ts",
+      "sha256": "8779a739149db8e85b0bba6be20c4b244b5934f4a2623140d97d1dac97647782"
+    },
+    {
+      "path": "tests/browser/card-assignee-empty-preview.spec.ts",
+      "sha256": "a9ba810099aa4a4176d0e1aa1d661e017c3a416c46621914ab8b3441fa00b0e4"
+    }
+  ],
+  "sourceFindings": [
+    "Only eight direct implementation/test/documentation inputs differ from main. Shared shell/navigation/theme, dependencies, APIs, schemas and tenant/Portal rules remain unchanged.",
+    "Board filter guidance uses only validated current result, distinguishes final empty continuation page, retires guidance on loading/error/denial and preserves applied criteria versus unsent edits.",
+    "Paging parks focus synchronously only when owned Next/First currently has focus. Completion does not asynchronously reclaim focus; denial returns only owned canvas feedback to the existing trigger.",
+    "PostgreSQL emits active Cards under active Lists with a left join to the unchanged eligible ranked member subset, explicit zero and Card version in one SQL statement; six-person bound, ordering, current counts and tenant command scope remain.",
+    "Demo store produces the same active Card/version/eligible member mapping under its existing lock. Caller still requires active Organization membership; public outsiders do not gain previews.",
+    "Client strict version/shape validation is unchanged; missing/stale metadata cannot become zero. No new Card requests or writes are introduced.",
+    "New producer role/privacy/version/removal/inactive eligibility tests pass in Linux CI; original skipped-source multisets unchanged, including execution of the locally platform-skipped sanitized-cover check.",
+    "New real-image browser fixture owns scopedBoardWorker in finally, validates canonical API independently of routed stale read, covers all four widths, zoom/Axe, keyboard return, zero unintended writes and logout withdrawal. Positive execution remains required.",
+    "Existing Board filter controlled-browser fixture does not replace real production SQL, role, command/recovery and strict performance gates.",
+    "Retained1974full-group1 failure129passed/4failed:all four new cases reached unchanged zero-business-write assertion after successful canonical/keyboard/zoom/Axe/stale/fresh checks;three exact declared transport POSTs were misclassified. Logout tail was Not Run there.",
+    "The sole repair excludes POST at the exact three established negotiation paths;25 probes verify real commands,lookalike paths and non-POST methods still count. Entire original UI/privacy/zero-write/logout/private404/finally tail and90s scenario are byte-identical.",
+    "Scoped four retained-image and four flag0 compiled-frontend cases pass including logout tail;actual execution95c1f5c2 plus sole dirty fixture patch has exact bytes in0d8939e2 and current35c1775a. The static rollback frontend used unchanged1974API/Worker;not claimed as fresh immutable CI-web proof.",
+    "New35c1775a own source artifacts verify2993frontend/2525backend passes,identical24/5original deferrals,new six producer cases and Linux sanitized-cover case. No old failed-head pass qualifies its native/performance/release gates.",
+    "Initial current CodeQL aggregate was neutral while C# results were missing;after all five current analyses completed,the same aggregate became success with no new alerts. Neutral was never treated as a passing gate.",
+    "Automatic review rejected the local Vite host launch and diagnostic partial-extraction cleanup. No Vite host launched and denied cleanup was not retried through another mechanism. Narrower frontend-only build/read-only isolated Docker web served rollback4pass;only disposable QA project removed. Original user demos remain healthy.",
+    "Current own1975 full native matrix528passed/0failed/2original dedicated-mail conditional skips,Foundation50,notifications93 and80 command steps pass. All eight affected filter/assignee cases pass including unchanged zero-business-write and logout/private404 tail.",
+    "All four provider performance archives and inner hashes verified;exact six original strict profiles pass with no widened budgets.",
+    "Current release input verification,source-free Production/Demo,HTTPS Secure-session/WSS,backup/recovery and unchanged-bundle checks all pass. Same three image archives independently checksum/config/layer verified.",
+    "Current PR has no inline review threads;all22 exact-head gates succeeded. Normal expected-head main merge and actual graph/tree verification remain required before Done."
+  ],
+  "workItems": [
+    "PRD-16-VS-02-T-02-TEST-01",
+    "PRD-16-VS-02-T-02",
+    "PRD-16-VS-02-T-03-TEST-01",
+    "PRD-16-VS-02-T-03",
+    "PRD-11-VS-01-T-02-TEST-01",
+    "PRD-11-VS-01-T-02"
+  ],
+  "criteria": [
+    {
+      "id": "PRD-16-VS-02-T-02/AC-01",
+      "definition": "An admitted empty filter page distinguishes a continuation from the last page and explains the existing next/first/change/clear actions. The dialog and filtered canvas use only the current authoritative page; no stale success guidance on pending, failed or denied reads. Preserve applied criteria versus edits, cursor and actor/org/Board binding, original commands/acknowledgments, focus, scroll and existing navigation.",
+      "status": "Verified",
+      "witness": "Own1975 complete source/native/role/accessibility/regression/release gates; four-width affected cases and unchanged rollback scoped evidence, source inputs hashed above. Detailed gate evidence:trello-polish-123-ci22.json."
+    },
+    {
+      "id": "PRD-16-VS-02-T-02-TEST-01/AC-01",
+      "definition": "Verify empty continuation to final page and first-page return with applied criteria, pending/error/denial withdrawal, no invented writes; complete affected components, four-width keyboard/200%text/Axe and rollback, plus own complete native/role/security/regression/release gates before acceptance.",
+      "status": "Verified",
+      "witness": "Own1975 complete source/native/role/accessibility/regression/release gates; four-width affected cases and unchanged rollback scoped evidence, source inputs hashed above. Detailed gate evidence:trello-polish-123-ci22.json."
+    },
+    {
+      "id": "PRD-16-VS-02-T-03/AC-01",
+      "definition": "Before an owned Next/First filter control retires or disables for a protected result read, anchor focus in the existing named scroll/results region or canvas status with visible unobscured focus. Keep that anchor through completion or recoverable failure; never reclaim focus after the user edits elsewhere. Preserve actor/cursor/criteria, original commands and definitive permission withdrawal/return.",
+      "status": "Verified",
+      "witness": "Own1975 complete source/native/role/accessibility/regression/release gates; four-width affected cases and unchanged rollback scoped evidence, source inputs hashed above. Detailed gate evidence:trello-polish-123-ci22.json."
+    },
+    {
+      "id": "PRD-16-VS-02-T-03-TEST-01/AC-01",
+      "definition": "Reproduce focused paging retirement; verify dialog and filtered-canvas pending/completion/error, edited-field ownership and denial return, four-width keyboard/reflow/200%text/Axe, originalrollback and applicable full native/role/security/regression/release checks. No test retry/deadline/authority weakening.",
+      "status": "Verified",
+      "witness": "Own1975 complete source/native/role/accessibility/regression/release gates; four-width affected cases and unchanged rollback scoped evidence, source inputs hashed above. Detailed gate evidence:trello-polish-123-ci22.json."
+    },
+    {
+      "id": "PRD-11-VS-01-T-02/AC-01",
+      "definition": "An admitted active Organization member receives explicit empty member previews for visible snapshot Cards with zero current eligible assignees,using that Card revision. Existing nonempty previews,ordering,counts and eligibility remain authoritative. The existing Card face reads Unassigned without new requests or client inference.",
+      "status": "Verified",
+      "witness": "Own1975 complete source/native/role/accessibility/regression/release gates; four-width affected cases and unchanged rollback scoped evidence, source inputs hashed above. Detailed gate evidence:trello-polish-123-ci22.json."
+    },
+    {
+      "id": "PRD-11-VS-01-T-02/AC-02",
+      "definition": "Public outsiders and anonymous visitors receive no protected member previews; foreign,unadmitted,stale,failed and withdrawn data never becomes Unassigned. Preserve existing transactions,roles,API/schema,event contracts and version guards.",
+      "status": "Verified",
+      "witness": "Own1975 complete source/native/role/accessibility/regression/release gates; four-width affected cases and unchanged rollback scoped evidence, source inputs hashed above. Detailed gate evidence:trello-polish-123-ci22.json."
+    },
+    {
+      "id": "PRD-11-VS-01-T-02-TEST-01/AC-01",
+      "definition": "Prove canonical empty/nonempty/version/privacy behavior through actual application/API reads and the real Board/Card consumer at320/390/768/1280px in both existing presentations,including zoom,Axe,keyboard return and applicable existing assignment/access regression suites. Record failures and exact source results; own required hosted gates and integration remain mandatory.",
+      "status": "Verified",
+      "witness": "Own1975 complete source/native/role/accessibility/regression/release gates; four-width affected cases and unchanged rollback scoped evidence, source inputs hashed above. Detailed gate evidence:trello-polish-123-ci22.json."
+    }
+  ],
+  "limits": "Bounded delegated source/UX review, not independent human approval. Seven criteria only; no parent PRD/global MVP closure. Historical failures/deferrals/not-run remain intact. Actual integration required separately.",
+  "currentSourceArtifacts": {
+    "web": {
+      "artifactId": 12478583278,
+      "sha256": "a732182375ea526ee1ee53f0e9d64bac69903b5f4d520a4d7ebeafbcffb736df",
+      "reports": [
+        {
+          "passed": 2993,
+          "failed": 0,
+          "skipped": 24,
+          "error": 0
+        }
+      ],
+      "originalDeferrals": "identical source multiset verified"
+    },
+    "dotnet": {
+      "artifactId": 12479752216,
+      "sha256": "caefefa166db4bbd715ec834f2dcca2d408ce033afa23e502a5943ef93d14d65",
+      "reports": [
+        {
+          "passed": 1086,
+          "failed": 0,
+          "skipped": 3,
+          "error": 0
+        },
+        {
+          "passed": 1439,
+          "failed": 0,
+          "skipped": 2,
+          "error": 0
+        }
+      ],
+      "originalDeferrals": "identical source multiset verified"
+    }
+  },
+  "qualification": "trello-polish-123-ci22.json"
+}
