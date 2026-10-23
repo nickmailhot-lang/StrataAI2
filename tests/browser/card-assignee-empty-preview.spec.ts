@@ -3,6 +3,15 @@ import { expect, test } from './releaseTest';
 import { pressObservedLocalAction } from './keyboardAdmission';
 import { scopedBoardWorker, waitForBoardDelivery } from './scopedBoardWorker';
 
+// Existing live hubs negotiate their transport with POST; these are not
+// business commands. Keep every other Organization/Board/Card/List write in
+// the zero-write oracle, including non-POST methods at these exact paths.
+const transportNegotiations = new Set([
+  '/organizations/live/operational-lifecycle/negotiate',
+  '/organizations/live/metadata/negotiate',
+  '/boards/live/negotiate',
+]);
+
 for (const width of [1280, 768, 390, 320]) {
   test(`PRD-11-VS-01-T-02 / UX-CARD-02: actual zero-assignee Card previews stay authoritative at ${width}px`, async ({ page, context }) => {
     test.setTimeout(90_000); await page.setViewportSize({ width, height: 900 });
@@ -37,7 +46,9 @@ for (const width of [1280, 768, 390, 320]) {
         return route.fulfill({ response, json: body });
       });
       page.on('request', request => {
-        if (!['GET', 'HEAD'].includes(request.method()) && /^\/(organizations|boards|cards|lists)(\/|$)/.test(new URL(request.url()).pathname)) browserWrites++;
+        const path = new URL(request.url()).pathname;
+        const transport = request.method() === 'POST' && transportNegotiations.has(path);
+        if (!transport && !['GET', 'HEAD'].includes(request.method()) && /^\/(organizations|boards|cards|lists)(\/|$)/.test(path)) browserWrites++;
       });
       await page.goto(`/app/${org}/boards/${board}`);
       const emptyFace = page.getByRole('link', { name: 'Unassigned work', exact: true });
