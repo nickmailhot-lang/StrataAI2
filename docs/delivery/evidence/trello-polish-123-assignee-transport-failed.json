@@ -1,0 +1,73 @@
+{
+  "revision": "95c1f5c2a9148cef2a3f7f71ea48b2af88fff2d9",
+  "testedSynthetic": "22b7b046a4971af812b53c7dfc05b21f724d4c99",
+  "run": 39885272560,
+  "version": "0.1.0-1974",
+  "at": "2026-10-23T04:09:29.784Z",
+  "result": "Failed",
+  "job": {
+    "id": 120205718504,
+    "head_sha": "95c1f5c2a9148cef2a3f7f71ea48b2af88fff2d9",
+    "name": "container-integration (browser-full, 1/4)",
+    "status": "completed",
+    "conclusion": "failure"
+  },
+  "counts": {
+    "passed": 129,
+    "failed": 4,
+    "skipped": 0
+  },
+  "failures": [
+    {
+      "width": 1280,
+      "test": "card-assignee-empty-preview.spec.ts",
+      "line": 65,
+      "expected": 0,
+      "actual": 3,
+      "cause": "Browser business-write counter also included the three established SignalR negotiation POSTs."
+    },
+    {
+      "width": 768,
+      "test": "card-assignee-empty-preview.spec.ts",
+      "line": 65,
+      "expected": 0,
+      "actual": 3,
+      "cause": "Browser business-write counter also included the three established SignalR negotiation POSTs."
+    },
+    {
+      "width": 390,
+      "test": "card-assignee-empty-preview.spec.ts",
+      "line": 65,
+      "expected": 0,
+      "actual": 3,
+      "cause": "Browser business-write counter also included the three established SignalR negotiation POSTs."
+    },
+    {
+      "width": 320,
+      "test": "card-assignee-empty-preview.spec.ts",
+      "line": 65,
+      "expected": 0,
+      "actual": 3,
+      "cause": "Browser business-write counter also included the three established SignalR negotiation POSTs."
+    }
+  ],
+  "diagnosticArtifact": {
+    "id": 12477538418,
+    "sha256": "35cd27d4687b1077c7a79217b4cd7cabb7d912151586a0b21251ebc6e53acfb9",
+    "privateLocalZip": "work/trello-123-assignee-failed-diagnostics/provider.zip"
+  },
+  "sanitizedBrowserWriteClassification": {
+    "transportPostPaths": [
+      "/organizations/live/operational-lifecycle/negotiate",
+      "/boards/live/negotiate",
+      "/organizations/live/metadata/negotiate"
+    ],
+    "eachCountPerWidth": 1,
+    "unexpectedDomainWrites": 0,
+    "analysis": "All business fixture setup precedes the browser listener/page navigation; private trace network rows were inspected in memory without publishing headers,cookies,body tokens or full traces."
+  },
+  "executedBeforeFailure": "Canonical empty/assigned previews, strict current revisions, Card disclosure, keyboard return,200% reflow,Axe and stale→unavailable→fresh→Unassigned passed at each width.",
+  "notRunAfterFailure": "Logout/live withdrawal/private404 tail follows the failed counter assertion and is not counted as passed.",
+  "disposition": "Preserve all product/assertion/deadline/authority oracles; repair only false-positive classification of exact existing transport POST paths. Fresh own all22 qualification and actual main integration remain mandatory.",
+  "localDiagnosticExtraction": "ZIP verified. Windows long-path partial extraction failed; traces were read directly from ZIP instead. Automatic cleanup review rejected partial-extraction removal:blocked by policy. Files and full ZIP retained."
+}

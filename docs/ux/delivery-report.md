@@ -1,5 +1,41 @@
 # Consolidated PRD delivery report
 
+## 2026-10-22 — PR #123 CI failure diagnosed; strict fixture repair passes both presentations
+
+Candidate `95c1f5c2`/run39885272560/build1974 failed full browser group1 with **129 passes and four failures**. At every width,the new assignee fixture counted three established SignalR transport-negotiation POSTs as business writes. Private traces confirm those exact three handshakes;the original canonical previews,version binding,Card disclosure,keyboard return,200% reflow,Axe and stale-data checks passed before the counter. The logout tail was Not Run in that failed execution. All failed evidence remains retained;this candidate cannot merge or activate a qualified Demo.
+
+Repair `0d8939e2` changes only that measurement:exclude POST at the three exact existing live-hub negotiation paths. The zero-business-write assertion and entire UI/privacy/assertion tail remain byte-identical,as do the90s scenario,roles,widths and deadlines. **Four exact-image and four rollback-native cases now pass**,including logout/private404.25 classification probes prove other methods and lookalike/domain paths are still counted. Browser types pass. These scoped runs executed the sole dirty fixture patch on95c1f5c2;their exact bytes are committed at0d8939e2. They are not fresh full-head qualification.
+
+The host Vite rollback launch was denied by automatic review with only blocked by policy;no host process started. A narrower local frontend-only flag0 build was served read-only in the isolated QA Docker web service over the unchanged CI API/Worker. Those four separate passes retain the denied-host Not Run record. Only that disposable QA project was removed afterward;both user Demo instances remain healthy. Diagnostic partial-extraction cleanup was also denied,so the complete verified ZIP and partial files remain retained.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Existing Board-filter/assignee implementation preserved;fixture measurement repaired without product/API/schema changes. |
+| UX completion | Eight scoped native cases pass in both presentations;all six bounded work records remain Testing. |
+| Test completion | Failed1974 retained. Its source2993/frontend and2525/backend passes,original24/5deferrals,Foundation50/notifications93/commands passes do not qualify the forthcoming head. Fresh all22,strict6 and immutable release remain required. |
+| MVP readiness | 81Done unchanged;no new acceptance,PRD closure,merge or combined product percentage. |
+
+Next:finish consolidated tracking validation,freeze a new main-target head and require its complete own checks before merge or Demo refresh. Ledger:1,627 items,3,924 criteria,1,048 evidence records.
+
+---
+
+## 2026-10-22 — PR #123 source checks pass; complete qualification running
+
+PR #123 frozen head `95c1f5c2` targets current main `ad992105`. Its own run39885272560/build **0.1.0-1974** has passing source quality,PostgreSQL integration,security,Foundation and commands checks. Source artifacts verify **2,993 frontend and2,525 backend passes**,with the original24 frontend/five backend deferrals unchanged by exact skipped-source comparison. Six new assignee role/privacy/version regressions and the locally platform-skipped Linux cover test pass in Linux CI.
+
+The full browser matrix is still running;strict six-profile performance,immutable release and final review remain required. No required failing check is reported at this snapshot;pending is not passing. Candidate images are checksum/identity/layer verified and preloaded only. Both existing Demo instances remain unchanged;the candidate is not deployed or accepted.
+
+| Metric | Current status |
+| --- | --- |
+| Functional completion | Board-filter guidance/focus and authoritative empty-assignee previews implemented;existing capabilities and contracts preserved. |
+| UX completion | Six bounded Task/Test records are Testing;current-image acceptance remains pending. |
+| Test completion | Own source results verified;complete native,strict performance and immutable release gates still required. |
+| MVP readiness | 81 records remain Done;no broad PRD or global MVP acceptance and no combined percentage. |
+
+Next:finish the remaining gates,repair any actual failures without weakening checks,perform final review and merge only after qualification. Then refresh the Demo from the verified images while preserving the current instance. Ledger:1,627 items,3,924 criteria,1,045 evidence records.
+
+---
+
 ## 2026-10-22 — Final integration tracking validated; independent Board CI next
 
 PR #122 is merged as `ad992105`, with all 22 required checks, six original strict performance profiles, final source/UX review and the exact tested main tree verified. Qualified Demo **0.1.0-1972** is running at **http://127.0.0.1:8089/login**. Actual sign-in, Organization context, the copied Work board and its live connection are visible. The original Demo at http://localhost:8088 remains healthy and retains its data and session.
